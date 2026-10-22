@@ -1,0 +1,186 @@
+{
+  "schema_version": 1,
+  "purpose": "Local delivery previews for passage-atlas-v2 concept mockups",
+  "source_collection": "Cosmic Signature",
+  "processing": {
+    "filter": "scale=1280:-2:flags=lanczos,setsar=5589/5585:max=65535,fps=30",
+    "encoder": "libx264",
+    "preset": "medium",
+    "crf": 23,
+    "pixel_format": "yuv420p",
+    "movflags": "+faststart",
+    "audio": "source films have no audio; no audio added",
+    "changes": "Downscaled and re-encoded at 30 fps. Complete source duration retained. No crop, recoloring, reversal, retiming or motion interpolation. Pixel aspect ratio preserves the exact display aspect ratio."
+  },
+  "assets": [
+    {
+      "token_id": 23,
+      "interpretation": "ink",
+      "seed": "0x17d61f1c00e5d16c399a8e341e9feaea32b275e5426a4375394e74cc855affcc",
+      "source": {
+        "path": "/Users/tarasbobrovytsky/museum-lab/viscosity-study-2026-10-18/published-native-controls/nft-23/videos/web/ember.mp4",
+        "bytes": 51837075,
+        "sha256": "24ec570af952b31cc6c1cef5292baea270b6dcc7d72212496c3fb899b7005d0a",
+        "duration_seconds": 30.033333,
+        "audio_streams": 0,
+        "codec_name": "h264",
+        "codec_type": "video",
+        "width": 3456,
+        "height": 2234,
+        "pix_fmt": "yuv420p",
+        "color_range": "tv",
+        "color_space": "bt709",
+        "color_transfer": "iec61966-2-1",
+        "color_primaries": "bt709",
+        "r_frame_rate": "60/1",
+        "nb_frames": "1802"
+      },
+      "preview": {
+        "path": "/Users/tarasbobrovytsky/Dev/Cosmic-Signature-Art/concepts/passage-atlas-v2/assets/23-ink-preview.mp4",
+        "bytes": 8055905,
+        "sha256": "b0a97f3538140bda133217109ffd0aa39be207085caa3919490640062ffe5471",
+        "duration_seconds": 30.033333,
+        "audio_streams": 0,
+        "codec_name": "h264",
+        "codec_type": "video",
+        "width": 1280,
+        "height": 828,
+        "sample_aspect_ratio": "5589:5585",
+        "display_aspect_ratio": "1728:1117",
+        "pix_fmt": "yuv420p",
+        "color_range": "tv",
+        "color_space": "bt709",
+        "color_transfer": "iec61966-2-1",
+        "color_primaries": "bt709",
+        "r_frame_rate": "30/1",
+        "nb_frames": "901"
+      },
+      "verification": {
+        "full_decode": "passed",
+        "faststart": true,
+        "duration_preserved": true,
+        "display_aspect_ratio_preserved": true,
+        "color_metadata_preserved": true
+      }
+    },
+    {
+      "token_id": 31,
+      "interpretation": "ink",
+      "seed": "0x4a0d5b57e13cf40c56cddb4ee2c10f50ab7aff755e24c61a687855663713f5b5",
+      "source": {
+        "path": "/Users/tarasbobrovytsky/museum-lab/viscosity-study-2026-10-18/published-native-controls/nft-31/videos/web/ember.mp4",
+        "bytes": 100790765,
+        "sha256": "da65f85b1ada46dfe03a719875dc2a7e6a505e7a16e72230b13c366d0e492ad8",
+        "duration_seconds": 30.033333,
+        "audio_streams": 0,
+        "codec_name": "h264",
+        "codec_type": "video",
+        "width": 3456,
+        "height": 2234,
+        "pix_fmt": "yuv420p",
+        "color_range": "tv",
+        "color_space": "bt709",
+        "color_transfer": "iec61966-2-1",
+        "color_primaries": "bt709",
+        "r_frame_rate": "60/1",
+        "nb_frames": "1802"
+      },
+      "preview": {
+        "path": "/Users/tarasbobrovytsky/Dev/Cosmic-Signature-Art/concepts/passage-atlas-v2/assets/31-ink-preview.mp4",
+        "bytes": 15739614,
+        "sha256": "4b76c909829c009f6e964efeb4a1ab6c60cc794ae89235850aa3c3cd42ee49d8",
+        "duration_seconds": 30.033333,
+        "audio_streams": 0,
+        "codec_name": "h264",
+        "codec_type": "video",
+        "width": 1280,
+        "height": 828,
+        "sample_aspect_ratio": "5589:5585",
+        "display_aspect_ratio": "1728:1117",
+        "pix_fmt": "yuv420p",
+        "color_range": "tv",
+        "color_space": "bt709",
+        "color_transfer": "iec61966-2-1",
+        "color_primaries": "bt709",
+        "r_frame_rate": "30/1",
+        "nb_frames": "901"
+      },
+      "verification": {
+        "full_decode": "passed",
+        "faststart": true,
+        "duration_preserved": true,
+        "display_aspect_ratio_preserved": true,
+        "color_metadata_preserved": true
+      }
+    },
+    {
+      "token_id": 35,
+      "interpretation": "ink",
+      "seed": "0xf5a6f1d364517c39dd5f1d0fdbeeb0cfb7a73a26e5e17a17f91e7b7f16e0ef36",
+      "source": {
+        "path": "/Users/tarasbobrovytsky/museum-lab/viscosity-study-2026-10-18/published-native-controls/nft-35/videos/web/ember.mp4",
+        "bytes": 52548001,
+        "sha256": "d9525f56c87eec82e97579926103501d1697f8b29c776201bf7d6ca784192a8c",
+        "duration_seconds": 30.033333,
+        "audio_streams": 0,
+        "codec_name": "h264",
+        "codec_type": "video",
+        "width": 3456,
+        "height": 2234,
+        "pix_fmt": "yuv420p",
+        "color_range": "tv",
+        "color_space": "bt709",
+        "color_transfer": "iec61966-2-1",
+        "color_primaries": "bt709",
+        "r_frame_rate": "60/1",
+        "nb_frames": "1802"
+      },
+      "preview": {
+        "path": "/Users/tarasbobrovytsky/Dev/Cosmic-Signature-Art/concepts/passage-atlas-v2/assets/35-ink-preview.mp4",
+        "bytes": 8345029,
+        "sha256": "e0b3a60d3e535bacdde181ffd8bb0b284659ab0d104d51f89ae1b8f636f7207b",
+        "duration_seconds": 30.033333,
+        "audio_streams": 0,
+        "codec_name": "h264",
+        "codec_type": "video",
+        "width": 1280,
+        "height": 828,
+        "sample_aspect_ratio": "5589:5585",
+        "display_aspect_ratio": "1728:1117",
+        "pix_fmt": "yuv420p",
+        "color_range": "tv",
+        "color_space": "bt709",
+        "color_transfer": "iec61966-2-1",
+        "color_primaries": "bt709",
+        "r_frame_rate": "30/1",
+        "nb_frames": "901"
+      },
+      "verification": {
+        "full_decode": "passed",
+        "faststart": true,
+        "duration_preserved": true,
+        "display_aspect_ratio_preserved": true,
+        "color_metadata_preserved": true
+      }
+    }
+  ],
+  "optional_color_preview": {
+    "token_id": 23,
+    "status": "not_created",
+    "reason": "No identity-verified local normal color film for NFT 23 was found in the inspected project and museum-lab media inventories; no substitution or download was performed."
+  },
+  "inspection_frames": [
+    {
+      "token_id": 23,
+      "path": "/Users/tarasbobrovytsky/Dev/Cosmic-Signature-Art/concepts/passage-atlas-v2/assets/23-ink-source-frame-9s.png",
+      "source": "/Users/tarasbobrovytsky/museum-lab/viscosity-study-2026-10-18/published-native-controls/nft-23/videos/web/ember.mp4",
+      "source_time_seconds": 9,
+      "width": 1280,
+      "height": 827,
+      "bytes": 819091,
+      "sha256": "61f60fa94560fd71170fd69f824737b7014fc8d072a45ac6dbaf1323407369e1",
+      "processing": "Actual decoded source-video frame at 9 seconds, downscaled with Lanczos. No generated artwork, crop, recoloring, or retouching. This is an inspection/preview frame, not the canonical final still.",
+      "recommended_preview_start_seconds": 9
+    }
+  ]
+}

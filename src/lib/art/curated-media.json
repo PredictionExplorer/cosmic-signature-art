@@ -1,0 +1,242 @@
+[
+  {
+    "id": 23,
+    "media": [
+      {
+        "id": "light",
+        "still": "/art/23-light.webp",
+        "stillSha256": "bc209112a9965b160799f842920b4624c1651832edabe25b51f027c1c33a355b",
+        "sourceUrl": "https://a1.cosmicsignature.com/images/new/cosmicsignature/0x17d61f1c00e5d16c399a8e341e9feaea32b275e5426a4375394e74cc855affcc/images/web/full.webp",
+        "width": 3456,
+        "height": 2234
+      },
+      {
+        "id": "ink",
+        "still": "/art/23-ink.webp",
+        "stillSha256": "9bcbf71b151094f9eada42409fe1e98a6de02247bc2c8d2a3c9b06e12105352a",
+        "sourceUrl": "https://a1.cosmicsignature.com/images/new/cosmicsignature/0x17d61f1c00e5d16c399a8e341e9feaea32b275e5426a4375394e74cc855affcc/images/web/ember_full.webp",
+        "width": 3456,
+        "height": 2234,
+        "film": {
+          "src": "/art/23-ink-preview.mp4",
+          "sourceUrl": "https://a1.cosmicsignature.com/images/new/cosmicsignature/0x17d61f1c00e5d16c399a8e341e9feaea32b275e5426a4375394e74cc855affcc/videos/web/ember.mp4",
+          "durationSeconds": 30.033333,
+          "sha256": "b0a97f3538140bda133217109ffd0aa39be207085caa3919490640062ffe5471",
+          "sourceSha256": "24ec570af952b31cc6c1cef5292baea270b6dcc7d72212496c3fb899b7005d0a"
+        }
+      }
+    ]
+  },
+  {
+    "id": 31,
+    "media": [
+      {
+        "id": "light",
+        "still": "/art/31-light.webp",
+        "stillSha256": "e4edc0a67983a218477ca3e1313d84387fdcda311b142aaeaeef2a1429aa0d4f",
+        "sourceUrl": "https://a1.cosmicsignature.com/images/new/cosmicsignature/0x4a0d5b57e13cf40c56cddb4ee2c10f50ab7aff755e24c61a687855663713f5b5/images/web/full.webp",
+        "width": 3456,
+        "height": 2234
+      },
+      {
+        "id": "ink",
+        "still": "/art/31-ink.webp",
+        "stillSha256": "41792188d7cf2f515667103f8a6f0d610522df82e6400c1700131b772cb466e4",
+        "sourceUrl": "https://a1.cosmicsignature.com/images/new/cosmicsignature/0x4a0d5b57e13cf40c56cddb4ee2c10f50ab7aff755e24c61a687855663713f5b5/images/web/ember_full.webp",
+        "width": 3456,
+        "height": 2234,
+        "film": {
+          "src": "/art/31-ink-preview.mp4",
+          "sourceUrl": "https://a1.cosmicsignature.com/images/new/cosmicsignature/0x4a0d5b57e13cf40c56cddb4ee2c10f50ab7aff755e24c61a687855663713f5b5/videos/web/ember.mp4",
+          "durationSeconds": 30.033333,
+          "sha256": "4b76c909829c009f6e964efeb4a1ab6c60cc794ae89235850aa3c3cd42ee49d8",
+          "sourceSha256": "da65f85b1ada46dfe03a719875dc2a7e6a505e7a16e72230b13c366d0e492ad8"
+        }
+      }
+    ]
+  },
+  {
+    "id": 35,
+    "media": [
+      {
+        "id": "light",
+        "still": "/art/35-light.webp",
+        "stillSha256": "d49c1fa4b986fe546d9a94137fbf440fc01d7c51ac5da51cc8502af124d02c4c",
+        "sourceUrl": "https://a1.cosmicsignature.com/images/new/cosmicsignature/0xf5a6f1d364517c39dd5f1d0fdbeeb0cfb7a73a26e5e17a17f91e7b7f16e0ef36/images/web/full.webp",
+        "width": 3456,
+        "height": 2234
+      },
+      {
+        "id": "ink",
+        "still": "/art/35-ink.webp",
+        "stillSha256": "757ab82b1757463c7c2a3b7707509f0a988a6b8fecf42cd5331b4deab58107bf",
+        "sourceUrl": "https://a1.cosmicsignature.com/images/new/cosmicsignature/0xf5a6f1d364517c39dd5f1d0fdbeeb0cfb7a73a26e5e17a17f91e7b7f16e0ef36/images/web/ember_full.webp",
+        "width": 3456,
+        "height": 2234,
+        "film": {
+          "src": "/art/35-ink-preview.mp4",
+          "sourceUrl": "https://a1.cosmicsignature.com/images/new/cosmicsignature/0xf5a6f1d364517c39dd5f1d0fdbeeb0cfb7a73a26e5e17a17f91e7b7f16e0ef36/videos/web/ember.mp4",
+          "durationSeconds": 30.033333,
+          "sha256": "e0b3a60d3e535bacdde181ffd8bb0b284659ab0d104d51f89ae1b8f636f7207b",
+          "sourceSha256": "d9525f56c87eec82e97579926103501d1697f8b29c776201bf7d6ca784192a8c"
+        }
+      }
+    ]
+  },
+  {
+    "id": 2,
+    "media": [
+      {
+        "id": "light",
+        "still": "/art/2-light.webp",
+        "stillSha256": "a9a90e4bf1034698169fb2efc71039f5e761375c97ca887336cafc8233152394",
+        "sourceUrl": "https://a1.cosmicsignature.com/images/new/cosmicsignature/0xadbf95ffe328567a552743028b0f8b204fe6ca747fdbce42ede267a8eee7bf0e.png",
+        "width": 1600,
+        "height": 1034
+      }
+    ]
+  },
+  {
+    "id": 3,
+    "media": [
+      {
+        "id": "light",
+        "still": "/art/3-light.webp",
+        "stillSha256": "4ee91ef2f633aac6ee41b88a9573acd762ada93ba20bd43d6c99c47fa886826f",
+        "sourceUrl": "https://a1.cosmicsignature.com/images/new/cosmicsignature/0x203581755eca174027d8d64b53dcb54d320fd2195fae1c7fbf152dfe83c69855.png",
+        "width": 1600,
+        "height": 1034
+      }
+    ]
+  },
+  {
+    "id": 7,
+    "media": [
+      {
+        "id": "light",
+        "still": "/art/7-light.webp",
+        "stillSha256": "794b935129ba26fe946827ffa11f222a3ba10648e56b29aa94f0af045af3b7b6",
+        "sourceUrl": "https://a1.cosmicsignature.com/images/new/cosmicsignature/0xae7e4b937e44eddb5693b29148b6bd03f65417f7a363b60829a562ca2370ec0d.png",
+        "width": 1600,
+        "height": 1034
+      }
+    ]
+  },
+  {
+    "id": 9,
+    "media": [
+      {
+        "id": "light",
+        "still": "/art/9-light.webp",
+        "stillSha256": "b4716b696bb8273c3c569fb71e99b159b960632ce006234ff348573b08b6bcb1",
+        "sourceUrl": "https://a1.cosmicsignature.com/images/new/cosmicsignature/0x1362465d6ffe31bfc33a924a9406663e313cf417c35d8d4461e66db845d39903.png",
+        "width": 1600,
+        "height": 1034
+      }
+    ]
+  },
+  {
+    "id": 11,
+    "media": [
+      {
+        "id": "light",
+        "still": "/art/11-light.webp",
+        "stillSha256": "a20e5c3714acfb4614569dbf2847db315455d82bd0e6ef963b182e54961e9fa3",
+        "sourceUrl": "https://a1.cosmicsignature.com/images/new/cosmicsignature/0x55abfa5aa9c648d15d2f46ea2dc9ad640e32247e130962cf87604029da9c6982.png",
+        "width": 1600,
+        "height": 1034
+      }
+    ]
+  },
+  {
+    "id": 13,
+    "media": [
+      {
+        "id": "light",
+        "still": "/art/13-light.webp",
+        "stillSha256": "e606066ee5ae69c78c5e7f33a4bd18550bfbf4c5cda0157973d80a2956359cb1",
+        "sourceUrl": "https://a1.cosmicsignature.com/images/new/cosmicsignature/0x8b834c15a096e3e2ba8ecaea21627117e104bb37f844f69648c0fdf9406d3457.png",
+        "width": 1600,
+        "height": 1034
+      }
+    ]
+  },
+  {
+    "id": 14,
+    "media": [
+      {
+        "id": "light",
+        "still": "/art/14-light.webp",
+        "stillSha256": "b96d1d2fcf3db33633c807969716c437a81aa7f7f4e2db9f11cf24dd9b9628d1",
+        "sourceUrl": "https://a1.cosmicsignature.com/images/new/cosmicsignature/0x18952be1a43822726d7920df20bc2e1a2be06c1f907a0dc80e7469e50be3ce4b.png",
+        "width": 1600,
+        "height": 1034
+      }
+    ]
+  },
+  {
+    "id": 22,
+    "media": [
+      {
+        "id": "light",
+        "still": "/art/22-light.webp",
+        "stillSha256": "09f653e0db77a2baaf0061cdf492c4fd48fabb89af868b7361b8b8422a2a6112",
+        "sourceUrl": "https://a1.cosmicsignature.com/images/new/cosmicsignature/0x003108837490f9fd840a44e70590173c7f95340872f60eaa13482b4ecb8fb0a8.png",
+        "width": 1600,
+        "height": 1034
+      }
+    ]
+  },
+  {
+    "id": 25,
+    "media": [
+      {
+        "id": "light",
+        "still": "/art/25-light.webp",
+        "stillSha256": "a8bc02f240ff741e0ec614372cd6ccd2e2c1f3767068a629547f13a41a28ba92",
+        "sourceUrl": "https://a1.cosmicsignature.com/images/new/cosmicsignature/0x6b273359fbc21c34f58a546c86a88b21c2bd307797e3c4959c5eccc8e326e4fd.png",
+        "width": 1600,
+        "height": 1034
+      }
+    ]
+  },
+  {
+    "id": 33,
+    "media": [
+      {
+        "id": "light",
+        "still": "/art/33-light.webp",
+        "stillSha256": "b7423d6ff76cc6c66498a1ba9df74e722b499b09dc26481afd2d1002e6d6792c",
+        "sourceUrl": "https://a1.cosmicsignature.com/images/new/cosmicsignature/0xfecd05a4e7f537281200ed720a095da2d5d4db14867a37d2627ebdaa2d2ad1e6.png",
+        "width": 1600,
+        "height": 1034
+      }
+    ]
+  },
+  {
+    "id": 39,
+    "media": [
+      {
+        "id": "light",
+        "still": "/art/39-light.webp",
+        "stillSha256": "1b4446ad1f839de9eea7cc9f56d7e962c9ffbc9fbf6f7a555bd573e6400fd565",
+        "sourceUrl": "https://a1.cosmicsignature.com/images/new/cosmicsignature/0x56d7e21a3dd131a46f7541b0d4fc85faf7996a325f090d5f18d53d099cade7b8.png",
+        "width": 1600,
+        "height": 1034
+      }
+    ]
+  },
+  {
+    "id": 40,
+    "media": [
+      {
+        "id": "light",
+        "still": "/art/40-light.webp",
+        "stillSha256": "cb91b721c42933e77574b0f5296cf12648cce0e6e3733341f21007cae039cb14",
+        "sourceUrl": "https://a1.cosmicsignature.com/images/new/cosmicsignature/0xcdab48977fb18d3c9c46d1e9405c6342cdc58a500013fe856ffb142d31cef6dc.png",
+        "width": 1600,
+        "height": 1034
+      }
+    ]
+  }
+]

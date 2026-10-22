@@ -1,0 +1,89 @@
+{
+  "purpose": "Mockup sources, copied without image modifications. Video is a local symlink.",
+  "artworks": [
+    {
+      "token": 23,
+      "interpretation": "light",
+      "source": "/Users/tarasbobrovytsky/museum-lab/viscosity-study-2026-10-18/published-references/nft-23-main_image_url.webp",
+      "file": "assets/23-light.webp",
+      "sha256": "bc209112a9965b160799f842920b4624c1651832edabe25b51f027c1c33a355b"
+    },
+    {
+      "token": 23,
+      "interpretation": "ink",
+      "source": "/Users/tarasbobrovytsky/museum-lab/viscosity-study-2026-10-18/published-references/nft-23-ink_image_url.webp",
+      "file": "assets/23-ink.webp",
+      "sha256": "9bcbf71b151094f9eada42409fe1e98a6de02247bc2c8d2a3c9b06e12105352a"
+    },
+    {
+      "token": 31,
+      "interpretation": "light",
+      "source": "/Users/tarasbobrovytsky/museum-lab/viscosity-study-2026-10-18/published-references/nft-31-main_image_url.webp",
+      "file": "assets/31-light.webp",
+      "sha256": "e4edc0a67983a218477ca3e1313d84387fdcda311b142aaeaeef2a1429aa0d4f"
+    },
+    {
+      "token": 31,
+      "interpretation": "ink",
+      "source": "/Users/tarasbobrovytsky/museum-lab/viscosity-study-2026-10-18/published-references/nft-31-ink_image_url.webp",
+      "file": "assets/31-ink.webp",
+      "sha256": "41792188d7cf2f515667103f8a6f0d610522df82e6400c1700131b772cb466e4"
+    },
+    {
+      "token": 35,
+      "interpretation": "light",
+      "source": "/Users/tarasbobrovytsky/museum-lab/viscosity-study-2026-10-18/published-references/nft-35-main_image_url.webp",
+      "file": "assets/35-light.webp",
+      "sha256": "d49c1fa4b986fe546d9a94137fbf440fc01d7c51ac5da51cc8502af124d02c4c"
+    },
+    {
+      "token": 35,
+      "interpretation": "ink",
+      "source": "/Users/tarasbobrovytsky/museum-lab/viscosity-study-2026-10-18/published-references/nft-35-ink_image_url.webp",
+      "file": "assets/35-ink.webp",
+      "sha256": "757ab82b1757463c7c2a3b7707509f0a988a6b8fecf42cd5331b4deab58107bf"
+    },
+    {
+      "token": 2,
+      "interpretation": "light",
+      "source": "/Users/tarasbobrovytsky/Dev/cosmicgame-frontend/public/images/learn/signature-2.webp",
+      "file": "assets/2-light.webp",
+      "sha256": "a9a90e4bf1034698169fb2efc71039f5e761375c97ca887336cafc8233152394"
+    },
+    {
+      "token": 7,
+      "interpretation": "light",
+      "source": "/Users/tarasbobrovytsky/Dev/cosmicgame-frontend/public/images/learn/signature-7.webp",
+      "file": "assets/7-light.webp",
+      "sha256": "794b935129ba26fe946827ffa11f222a3ba10648e56b29aa94f0af045af3b7b6"
+    },
+    {
+      "token": 13,
+      "interpretation": "light",
+      "source": "/Users/tarasbobrovytsky/Dev/cosmicgame-frontend/public/images/learn/signature-13.webp",
+      "file": "assets/13-light.webp",
+      "sha256": "e606066ee5ae69c78c5e7f33a4bd18550bfbf4c5cda0157973d80a2956359cb1"
+    },
+    {
+      "token": 22,
+      "interpretation": "light",
+      "source": "/Users/tarasbobrovytsky/Dev/cosmicgame-frontend/public/images/learn/signature-22.webp",
+      "file": "assets/22-light.webp",
+      "sha256": "09f653e0db77a2baaf0061cdf492c4fd48fabb89af868b7361b8b8422a2a6112"
+    },
+    {
+      "token": 39,
+      "interpretation": "light",
+      "source": "/Users/tarasbobrovytsky/Dev/cosmicgame-frontend/public/images/learn/signature-39.webp",
+      "file": "assets/39-light.webp",
+      "sha256": "1b4446ad1f839de9eea7cc9f56d7e962c9ffbc9fbf6f7a555bd573e6400fd565"
+    },
+    {
+      "token": 40,
+      "interpretation": "light",
+      "source": "/Users/tarasbobrovytsky/Dev/cosmicgame-frontend/public/images/learn/signature-40.webp",
+      "file": "assets/40-light.webp",
+      "sha256": "cb91b721c42933e77574b0f5296cf12648cce0e6e3733341f21007cae039cb14"
+    }
+  ]
+}

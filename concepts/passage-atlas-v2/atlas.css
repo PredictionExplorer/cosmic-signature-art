@@ -1,0 +1,61 @@
+/* The Atlas is an editorial arrangement of complete, unaltered artwork plates. */
+.movement-atlas{--atlas-ease:cubic-bezier(.22,.7,.15,1);overflow-x:clip;background:var(--paper);color:var(--ink)}
+.atlas-sr-only{position:absolute!important;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+.atlas-toolbar{margin:0 48px;padding:27px 0 20px;display:flex;align-items:center;justify-content:space-between;gap:30px;position:relative;z-index:5}
+.atlas-toolbar>.eyebrow{font-size:8px;letter-spacing:.13em;color:#555950;display:flex;gap:14px;align-items:center}
+.atlas-index{font-size:11px;color:var(--ink);margin-right:8px;letter-spacing:0}
+.atlas-slash{color:#96998e;margin:0 1px}
+.atlas-toolbar-controls{display:flex;align-items:center;gap:40px}
+.atlas-modes{display:flex;gap:24px;align-items:center}
+.atlas-modes button{font-size:12px;line-height:1.3;padding:7px 0;color:var(--muted);border-bottom:1px solid transparent}
+.atlas-modes button.is-selected{color:var(--ink);border-color:currentColor}
+.atlas-motion-toggle{display:flex;align-items:center;gap:10px;font-size:10px;line-height:1.5;padding:9px 0;min-width:105px;text-align:left}
+.atlas-motion-symbol{font-size:14px;line-height:1;width:12px;display:inline-flex;justify-content:center}
+.constellation{position:relative;margin:0 48px;height:66vw;min-height:680px;max-height:none;isolation:isolate}
+.constellation-work{position:absolute;margin:0;left:var(--plate-left);top:var(--plate-top);width:var(--plate-width);z-index:2;transition:left 1300ms var(--atlas-ease),top 1300ms var(--atlas-ease),width 1300ms var(--atlas-ease);will-change:left,top,width}
+.constellation-work[data-position="anchor"]{--plate-left:25%;--plate-top:5%;--plate-width:65%;z-index:3}
+.constellation-work[data-position="before"]{--plate-left:0%;--plate-top:8%;--plate-width:23%}
+.constellation-work[data-position="after"]{--plate-left:66%;--plate-top:69%;--plate-width:29%}
+.constellation[data-hang="second"] .constellation-work[data-position="before"]{--plate-left:1%;--plate-top:70%;--plate-width:29%}
+.constellation[data-hang="second"] .constellation-work[data-position="after"]{--plate-left:72%;--plate-top:72%;--plate-width:24%}
+.constellation-plate{transform:translate3d(var(--drift-x,0px),var(--drift-y,0px),0);will-change:transform}
+.constellation-select{display:block;width:100%;position:relative;text-align:left;cursor:pointer}
+.constellation-select:focus-visible{outline-offset:9px;outline:1px solid var(--ink)}
+.constellation-media{position:relative;display:block;aspect-ratio:3456/2234;background:#f1eddf;overflow:hidden}
+.constellation-media img,.constellation-media video{display:block;width:100%;height:100%;object-fit:contain;aspect-ratio:3456/2234}
+.constellation-media video{position:absolute;inset:0;opacity:0;pointer-events:none;transition:opacity 650ms ease}
+.constellation-work.has-frame .constellation-media video{opacity:1}
+.constellation-work.is-replaying .constellation-media video{opacity:0;transition:opacity 400ms ease}
+.movement-atlas[data-atlas-mode="light"] .constellation-media{background:#000}
+.movement-atlas[data-atlas-mode="light"] .constellation-media video{display:none}
+.constellation-work figcaption{display:flex;align-items:center;padding:13px 0 0;gap:13px;min-height:30px}
+.constellation-number{font-size:10px;letter-spacing:.02em}
+.constellation-kind{font-size:7px;letter-spacing:.11em;color:var(--muted)}
+.constellation-work figcaption a{font-size:19px;margin-left:auto;width:30px;text-align:right;line-height:1.1}
+.constellation-work[data-position="anchor"] .constellation-number{font-size:12px}
+.constellation-note{position:absolute;left:5%;top:48%;z-index:1;pointer-events:none;transition:opacity .45s}
+.constellation-note .eyebrow{font-size:7px;letter-spacing:.17em;color:var(--muted)}
+.constellation-note p{font-family:var(--serif);font-size:clamp(32px,3.2vw,55px);line-height:.99;letter-spacing:-.035em;margin-top:19px}
+.constellation-note-line{display:block;width:35px;height:1px;background:#8c9183;margin-top:24px}
+.constellation-hint{position:absolute;left:42%;top:84%;font-size:10px;line-height:1.8;color:var(--muted);transition:left 1.3s var(--atlas-ease),top 1.3s var(--atlas-ease)}
+.constellation[data-hang="second"] .constellation-note{opacity:0}
+.constellation[data-hang="second"] .constellation-hint{left:43%;top:82%}
+.atlas-selection{margin:0 48px;display:grid;grid-template-columns:1fr auto;column-gap:36px;row-gap:26px;border-top:1px solid var(--rule);padding:30px 0 42px;align-items:center}
+.atlas-selected-identity>.eyebrow{font-size:8px;letter-spacing:.13em;color:var(--muted)}
+.atlas-selected-identity h2{font-size:clamp(42px,4.8vw,74px);letter-spacing:-.045em;line-height:1.1;margin-top:12px}
+.atlas-selected-meta{font-size:10px;color:var(--muted);margin-top:11px;line-height:1.6}
+.atlas-selected-actions{display:flex;align-items:center;gap:64px}
+.atlas-pager{display:flex;align-items:center;gap:22px}
+.atlas-pager button{font-size:10px;letter-spacing:.06em;padding:10px 0;border-bottom:1px solid transparent;color:var(--muted)}
+.atlas-pager button.is-selected{border-color:var(--ink);color:var(--ink)}
+.atlas-enter{font-size:12px;min-width:150px}
+.atlas-rehang{grid-column:1/-1;justify-self:start;display:flex;align-items:center;gap:12px;font-size:10px;line-height:1.5;color:var(--muted);padding:4px 0}
+.atlas-rehang>span{font-size:20px;line-height:1;display:block;transition:transform .8s var(--atlas-ease)}
+.atlas-rehang[aria-pressed="true"]>span{transform:rotate(180deg)}
+.movement-atlas.motion-paused .constellation-plate{will-change:auto}
+.capture .constellation-media video{display:none!important}
+.capture .constellation-plate{transform:none!important}
+@media(min-width:1500px){.atlas-toolbar,.constellation,.atlas-selection{margin-left:4vw;margin-right:4vw}.constellation{height:66vw}}
+@media(max-width:1100px){.atlas-toolbar-controls{gap:26px}.atlas-toolbar>.eyebrow{font-size:7px;gap:9px}.atlas-index{margin-right:2px}.constellation{min-height:660px;height:76vw}.constellation-work[data-position="anchor"]{--plate-left:23%;--plate-top:9%;--plate-width:73%}.constellation-work[data-position="before"]{--plate-left:0%;--plate-top:5%;--plate-width:21%}.constellation-work[data-position="after"]{--plate-left:65%;--plate-top:71%;--plate-width:31%}.constellation-note{left:2%;top:49%}.constellation-hint{left:34%;top:84%}.atlas-selected-actions{gap:35px}.atlas-pager{gap:15px}}
+@media(max-width:760px){.atlas-toolbar{margin:0 22px;padding:22px 0 14px;align-items:flex-start;gap:18px;flex-wrap:wrap}.atlas-toolbar>.eyebrow{font-size:7px;line-height:1.5;gap:8px;flex:1 1 100%}.atlas-toolbar-controls{width:100%;justify-content:space-between;gap:20px}.atlas-modes{gap:24px}.atlas-modes button{font-size:12px}.atlas-motion-toggle{justify-content:flex-end;font-size:10px;min-width:108px}.constellation{margin:8px 22px 0;height:auto;min-height:0;max-height:none;display:grid;grid-template-columns:1fr 1fr;gap:30px 16px;padding-bottom:30px}.constellation-work{position:relative!important;left:auto!important;top:auto!important;width:auto!important;will-change:auto;transition:none}.constellation-work[data-position="anchor"]{grid-column:1/-1;grid-row:1}.constellation-work[data-position="before"]{grid-column:1;grid-row:2}.constellation-work[data-position="after"]{grid-column:2;grid-row:2;margin-top:44px}.constellation[data-hang="second"] .constellation-work[data-position="before"]{grid-column:2;margin-top:44px}.constellation[data-hang="second"] .constellation-work[data-position="after"]{grid-column:1;margin-top:0}.constellation-plate{transform:none!important;will-change:auto}.constellation-work figcaption{padding-top:10px;gap:8px}.constellation-kind{font-size:6px;letter-spacing:.07em}.constellation-number{font-size:9px}.constellation-work figcaption a{font-size:16px}.constellation-note,.constellation-hint{display:none}.atlas-selection{margin:0 22px;grid-template-columns:1fr;row-gap:24px;padding:25px 0 34px}.atlas-selected-identity h2{font-size:53px}.atlas-selected-identity>.eyebrow{font-size:7px}.atlas-selected-meta{font-size:10px;margin-top:8px}.atlas-selected-actions{justify-content:space-between;gap:24px}.atlas-pager{gap:22px}.atlas-enter{font-size:11px;min-width:139px;gap:28px}.atlas-rehang{font-size:10px;padding-top:2px}.movement-atlas .site-footer>span:last-child{white-space:nowrap}}
+@media(prefers-reduced-motion:reduce){.constellation-work,.constellation-plate,.constellation-media video,.atlas-rehang>span{transition:none!important;will-change:auto}.constellation-plate{transform:none!important}}

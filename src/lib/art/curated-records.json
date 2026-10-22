@@ -1,0 +1,120 @@
+{
+  "source": "Public token API and the existing frontend verified reading-plate registry",
+  "checkedOn": "2026-10-22",
+  "collectionScope": "limited-selection",
+  "records": [
+    {
+      "id": 2,
+      "seed": "0xadbf95ffe328567a552743028b0f8b204fe6ca747fdbce42ede267a8eee7bf0e",
+      "cycle": 0,
+      "mintedAt": "2026-06-15T07:00:02Z",
+      "transactionHash": "0x83b8f2665bc1d4a4c0c2ce74918f7b6f31a6ab1c201028c8b9337f16ce80cfce",
+      "checkedOn": "2026-10-22"
+    },
+    {
+      "id": 7,
+      "seed": "0xae7e4b937e44eddb5693b29148b6bd03f65417f7a363b60829a562ca2370ec0d",
+      "cycle": 0,
+      "mintedAt": "2026-06-15T07:00:02Z",
+      "transactionHash": "0x83b8f2665bc1d4a4c0c2ce74918f7b6f31a6ab1c201028c8b9337f16ce80cfce",
+      "checkedOn": "2026-10-22"
+    },
+    {
+      "id": 9,
+      "seed": "0x1362465d6ffe31bfc33a924a9406663e313cf417c35d8d4461e66db845d39903",
+      "cycle": 0,
+      "mintedAt": "2026-06-15T07:00:02Z",
+      "transactionHash": "0x83b8f2665bc1d4a4c0c2ce74918f7b6f31a6ab1c201028c8b9337f16ce80cfce",
+      "checkedOn": "2026-10-22"
+    },
+    {
+      "id": 13,
+      "seed": "0x8b834c15a096e3e2ba8ecaea21627117e104bb37f844f69648c0fdf9406d3457",
+      "cycle": 0,
+      "mintedAt": "2026-06-15T07:00:02Z",
+      "transactionHash": "0x83b8f2665bc1d4a4c0c2ce74918f7b6f31a6ab1c201028c8b9337f16ce80cfce",
+      "checkedOn": "2026-10-22"
+    },
+    {
+      "id": 14,
+      "seed": "0x18952be1a43822726d7920df20bc2e1a2be06c1f907a0dc80e7469e50be3ce4b",
+      "cycle": 0,
+      "mintedAt": "2026-06-15T07:00:02Z",
+      "transactionHash": "0x83b8f2665bc1d4a4c0c2ce74918f7b6f31a6ab1c201028c8b9337f16ce80cfce",
+      "checkedOn": "2026-10-22"
+    },
+    {
+      "id": 22,
+      "seed": "0x003108837490f9fd840a44e70590173c7f95340872f60eaa13482b4ecb8fb0a8",
+      "cycle": 0,
+      "mintedAt": "2026-06-15T07:00:02Z",
+      "transactionHash": "0x83b8f2665bc1d4a4c0c2ce74918f7b6f31a6ab1c201028c8b9337f16ce80cfce",
+      "checkedOn": "2026-10-22"
+    },
+    {
+      "id": 25,
+      "seed": "0x6b273359fbc21c34f58a546c86a88b21c2bd307797e3c4959c5eccc8e326e4fd",
+      "cycle": 1,
+      "mintedAt": "2026-08-11T23:38:26Z",
+      "transactionHash": "0x40e939fcc61e3bf785e2102cadfb7bd58c4c306fb88d3cae1b2264eb4aa7a248",
+      "checkedOn": "2026-10-22"
+    },
+    {
+      "id": 31,
+      "seed": "0x4a0d5b57e13cf40c56cddb4ee2c10f50ab7aff755e24c61a687855663713f5b5",
+      "cycle": 1,
+      "mintedAt": "2026-08-11T23:38:26Z",
+      "transactionHash": "0x40e939fcc61e3bf785e2102cadfb7bd58c4c306fb88d3cae1b2264eb4aa7a248",
+      "checkedOn": "2026-10-22"
+    },
+    {
+      "id": 33,
+      "seed": "0xfecd05a4e7f537281200ed720a095da2d5d4db14867a37d2627ebdaa2d2ad1e6",
+      "cycle": 1,
+      "mintedAt": "2026-08-11T23:38:26Z",
+      "transactionHash": "0x40e939fcc61e3bf785e2102cadfb7bd58c4c306fb88d3cae1b2264eb4aa7a248",
+      "checkedOn": "2026-10-22"
+    },
+    {
+      "id": 35,
+      "seed": "0xf5a6f1d364517c39dd5f1d0fdbeeb0cfb7a73a26e5e17a17f91e7b7f16e0ef36",
+      "cycle": 1,
+      "mintedAt": "2026-08-11T23:38:26Z",
+      "transactionHash": "0x40e939fcc61e3bf785e2102cadfb7bd58c4c306fb88d3cae1b2264eb4aa7a248",
+      "checkedOn": "2026-10-22"
+    },
+    {
+      "id": 39,
+      "seed": "0x56d7e21a3dd131a46f7541b0d4fc85faf7996a325f090d5f18d53d099cade7b8",
+      "cycle": 1,
+      "mintedAt": "2026-08-11T23:38:26Z",
+      "transactionHash": "0x40e939fcc61e3bf785e2102cadfb7bd58c4c306fb88d3cae1b2264eb4aa7a248",
+      "checkedOn": "2026-10-22"
+    },
+    {
+      "id": 3,
+      "seed": "0x203581755eca174027d8d64b53dcb54d320fd2195fae1c7fbf152dfe83c69855",
+      "cycle": 0,
+      "checkedOn": "2026-09-24"
+    },
+    {
+      "id": 11,
+      "seed": "0x55abfa5aa9c648d15d2f46ea2dc9ad640e32247e130962cf87604029da9c6982",
+      "cycle": 0,
+      "checkedOn": "2026-09-24"
+    },
+    {
+      "id": 40,
+      "seed": "0xcdab48977fb18d3c9c46d1e9405c6342cdc58a500013fe856ffb142d31cef6dc",
+      "cycle": 1,
+      "checkedOn": "2026-09-24"
+    },
+    {
+      "id": 23,
+      "seed": "0x17d61f1c00e5d16c399a8e341e9feaea32b275e5426a4375394e74cc855affcc",
+      "cycle": 0,
+      "mintedAt": "2026-06-15T07:00:02Z",
+      "checkedOn": "2026-09-24"
+    }
+  ]
+}

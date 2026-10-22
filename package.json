@@ -1,0 +1,57 @@
+{
+  "name": "cosmic-signature-art",
+  "version": "0.1.0",
+  "private": true,
+  "packageManager": "npm@10.9.8",
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "scripts": {
+    "dev": "next dev --hostname 127.0.0.1 --port 4318",
+    "build": "next build",
+    "start": "next start --hostname 127.0.0.1 --port 4318",
+    "type-check": "next typegen && tsc --noEmit",
+    "lint": "eslint .",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "test:e2e": "playwright test",
+    "format:check": "prettier --check src tests *.ts *.mjs *.json",
+    "audit": "npm audit --omit=dev"
+  },
+  "dependencies": {
+    "@fontsource-variable/cormorant-garamond": "^5.3.0",
+    "@fontsource-variable/inter": "^5.3.0",
+    "@tailwindcss/postcss": "4.3.3",
+    "lucide-react": "^0.577.0",
+    "next": "16.4.2",
+    "react": "19.3.1",
+    "react-dom": "19.3.1",
+    "server-only": "^0.0.1",
+    "tailwindcss": "4.3.3",
+    "viem": "^2.50.4",
+    "zod": "^4.3.6"
+  },
+  "devDependencies": {
+    "@axe-core/playwright": "^4.11.2",
+    "@eslint/js": "^10.0.1",
+    "@playwright/test": "^1.58.2",
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.2",
+    "@testing-library/user-event": "^14.6.1",
+    "@types/node": "^22",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "@vitejs/plugin-react": "^5",
+    "@vitest/coverage-v8": "5.0.5",
+    "eslint": "^10.13.0",
+    "eslint-plugin-react-hooks": "^7.1.1",
+    "fast-check": "^4",
+    "jsdom": "^27",
+    "prettier": "^3.8.1",
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.72.0",
+    "vitest": "5.0.5"
+  },
+  "type": "module"
+}

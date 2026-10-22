@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f1efe8">
+  <title>Cosmic Signature — The Atlas</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="atlas.css">
+</head>
+<body class="collection movement-atlas" data-page="collection" data-atlas-mode="ink">
+<header class="site-header">
+  <a class="brand" href="index.html">COSMIC SIGNATURE<span class="brand-dot" aria-hidden="true"></span></a>
+  <nav aria-label="Main">
+    <a class="current" href="collection.html" aria-current="page">Collection</a>
+    <a href="#editorial">Exhibitions</a>
+    <a href="artwork.html?id=31&mode=ink" id="atlas-header-work">The work <span aria-hidden="true">↗</span></a>
+  </nav>
+  <span class="header-note">ART IN MOTION</span>
+</header>
+<main>
+  <h1 class="atlas-sr-only">The Atlas — an editorial constellation of Cosmic Signature art</h1>
+  <section class="atlas-toolbar" id="editorial" aria-label="Atlas viewing controls">
+    <p class="eyebrow"><span class="atlas-index">02</span> THE ATLAS <span class="atlas-slash">/</span> EDITORIAL CONSTELLATION</p>
+    <div class="atlas-toolbar-controls">
+      <div class="atlas-modes" role="group" aria-label="Artwork interpretation">
+        <button type="button" class="is-selected" data-atlas-mode="ink" aria-pressed="true">Ink</button>
+        <button type="button" data-atlas-mode="light" aria-pressed="false">Light</button>
+      </div>
+      <button type="button" class="atlas-motion-toggle" id="atlas-motion-toggle" aria-pressed="false">
+        <span class="atlas-motion-symbol" aria-hidden="true">Ⅱ</span><span id="atlas-motion-label">Pause motion</span>
+      </button>
+    </div>
+  </section>
+
+  <section class="constellation" aria-label="Three works in motion. Select a work to bring it to the center." data-hang="first">
+    <figure class="constellation-work" data-token="23" data-position="before">
+      <div class="constellation-plate">
+        <button class="constellation-select" type="button" aria-label="Bring Signature 23 to the center" aria-pressed="false">
+          <span class="constellation-media">
+            <img src="assets/23-ink.webp" width="3456" height="2234" alt="Signature 23, flowing black and grey ink forms on a pale ground" decoding="async">
+            <video muted playsinline preload="none" poster="assets/23-ink.webp" data-film="assets/23-ink-preview.mp4" aria-hidden="true" tabindex="-1"></video>
+          </span>
+        </button>
+        <figcaption><span class="constellation-number">023</span><span class="constellation-kind">INK / FILM</span><a href="artwork.html?id=23&mode=ink" aria-label="Enter Signature 23">↗</a></figcaption>
+      </div>
+    </figure>
+    <figure class="constellation-work" data-token="31" data-position="anchor">
+      <div class="constellation-plate">
+        <button class="constellation-select" type="button" aria-label="Signature 31 is the central work" aria-pressed="true">
+          <span class="constellation-media">
+            <img src="assets/31-ink.webp" width="3456" height="2234" alt="Signature 31, looping ink currents gathering into intricate dark islands" decoding="async" fetchpriority="high">
+            <video muted playsinline preload="none" poster="assets/31-ink.webp" data-film="assets/31-ink-preview.mp4" aria-hidden="true" tabindex="-1"></video>
+          </span>
+        </button>
+        <figcaption><span class="constellation-number">031</span><span class="constellation-kind">INK / FILM</span><a href="artwork.html?id=31&mode=ink" aria-label="Enter Signature 31">↗</a></figcaption>
+      </div>
+    </figure>
+    <figure class="constellation-work" data-token="35" data-position="after">
+      <div class="constellation-plate">
+        <button class="constellation-select" type="button" aria-label="Bring Signature 35 to the center" aria-pressed="false">
+          <span class="constellation-media">
+            <img src="assets/35-ink.webp" width="3456" height="2234" alt="Signature 35, fine ink trails and concentric forms passing across warm paper" decoding="async">
+            <video muted playsinline preload="none" poster="assets/35-ink.webp" data-film="assets/35-ink-preview.mp4" aria-hidden="true" tabindex="-1"></video>
+          </span>
+        </button>
+        <figcaption><span class="constellation-number">035</span><span class="constellation-kind">INK / FILM</span><a href="artwork.html?id=35&mode=ink" aria-label="Enter Signature 35">↗</a></figcaption>
+      </div>
+    </figure>
+    <div class="constellation-note" aria-hidden="true"><span class="eyebrow">THREE WORKS</span><p>A different<br>kind of current.</p><span class="constellation-note-line"></span></div>
+    <p class="constellation-hint">Choose a work.<br>Let the view gather around it.</p>
+  </section>
+
+  <section class="atlas-selection" aria-label="Selected artwork">
+    <div class="atlas-selected-identity">
+      <p class="eyebrow">YOUR POINT OF DEPARTURE</p>
+      <h2 id="atlas-selected-title">Signature 31</h2>
+      <p class="atlas-selected-meta" id="atlas-selected-meta">Ink in motion · an editorial selection</p>
+    </div>
+    <div class="atlas-selected-actions">
+      <div class="atlas-pager" role="group" aria-label="Choose the central artwork">
+        <button type="button" data-select-token="23" aria-pressed="false" aria-label="Center Signature 23">023</button>
+        <button type="button" class="is-selected" data-select-token="31" aria-pressed="true" aria-label="Center Signature 31">031</button>
+        <button type="button" data-select-token="35" aria-pressed="false" aria-label="Center Signature 35">035</button>
+      </div>
+      <a class="text-link atlas-enter" id="atlas-enter" href="artwork.html?id=31&mode=ink">Enter this work <span aria-hidden="true">↗</span></a>
+    </div>
+    <button class="atlas-rehang" id="atlas-rehang" type="button" aria-pressed="false"><span aria-hidden="true">↻</span> Rehang the constellation</button>
+  </section>
+  <p class="atlas-sr-only" role="status" aria-live="polite" id="atlas-announcement"></p>
+</main>
+<footer class="site-footer"><span>Cosmic Signature</span><span>Three works. Their own films. A changing arrangement.</span><span>Movement study 02</span></footer>
+<script src="atlas.js"></script>
+</body>
+</html>
