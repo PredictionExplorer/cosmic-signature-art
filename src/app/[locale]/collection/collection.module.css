@@ -1,0 +1,118 @@
+.intro {
+  display: grid;
+  grid-template-columns: minmax(0, 1.6fr) minmax(230px, 0.65fr);
+  gap: 60px;
+  align-items: end;
+  padding-top: clamp(60px, 8vw, 120px);
+  padding-bottom: 55px;
+}
+.intro h1 {
+  font-size: clamp(66px, 7.6vw, 124px);
+  line-height: 0.95;
+  letter-spacing: -0.045em;
+  max-width: 740px;
+  margin-top: 30px;
+  text-wrap: balance;
+}
+.description {
+  font-size: 13px;
+  line-height: 1.9;
+  max-width: 340px;
+  padding-bottom: 8px;
+  color: var(--muted);
+}
+.views {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px 40px;
+}
+.views a {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 58px;
+  border-bottom: 1px solid transparent;
+  font-size: 12px;
+  color: var(--muted);
+}
+.views a[aria-current] {
+  border-color: var(--ink);
+  color: var(--ink);
+}
+.views a span {
+  font-size: 9px;
+  font-variant-numeric: tabular-nums;
+}
+.views p {
+  font-size: 10px;
+  line-height: 1.7;
+  color: var(--muted);
+  margin-left: auto;
+}
+.page .catalogue {
+  margin-top: 40px;
+}
+.catalogue :global(.collection-header) {
+  padding-top: 28px;
+}
+.catalogue :global(.collection-header h2) {
+  font-size: clamp(30px, 3vw, 48px);
+}
+.catalogue :global(.work-grid) {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 64px 50px;
+}
+.catalogue :global(.work-card-caption) {
+  padding-top: 20px;
+}
+.catalogue :global(.work-card) {
+  min-width: 0;
+}
+.clearSearch {
+  font-size: 10px;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+@media (max-width: 800px) {
+  .intro {
+    grid-template-columns: 1fr;
+    gap: 30px;
+    padding-top: 50px;
+    padding-bottom: 30px;
+  }
+  .intro h1 {
+    max-width: 600px;
+  }
+  .description {
+    max-width: 480px;
+  }
+  .views {
+    gap: 10px 24px;
+  }
+  .views p {
+    flex-basis: 100%;
+    margin-left: 0;
+  }
+  .catalogue :global(.work-grid) {
+    gap: 38px 24px;
+  }
+}
+@media (max-width: 540px) {
+  .intro h1 {
+    font-size: 62px;
+  }
+  .views a {
+    font-size: 11px;
+  }
+  .catalogue :global(.work-grid) {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 42px;
+  }
+  .page .catalogue {
+    margin-top: 30px;
+  }
+}

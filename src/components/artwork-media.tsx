@@ -8,6 +8,7 @@ type ArtworkMediaProps = {
   media?: ArtInterpretation;
   alt: string;
   priority?: boolean;
+  eager?: boolean;
   thumbnail?: boolean;
   still?: boolean;
   repeat?: boolean;
@@ -30,6 +31,7 @@ function ArtworkMediaSession({
   media,
   alt,
   priority = false,
+  eager = false,
   thumbnail = false,
   still = false,
   repeat = false,
@@ -131,6 +133,7 @@ function ArtworkMediaSession({
           height={media?.height ?? 2234}
           unoptimized
           priority={priority}
+          loading={eager && !priority ? 'eager' : undefined}
           onError={() => {
             if (imageSource !== media?.still && media?.still) setThumbnailFailed(true);
             else {

@@ -1,0 +1,382 @@
+.record,
+.sources,
+.composition,
+.history {
+  scroll-margin-top: 30px;
+}
+.record {
+  border-top: 1px solid var(--rule);
+  padding-top: 65px;
+}
+.heading {
+  max-width: 780px;
+  margin-bottom: 65px;
+}
+.heading h2 {
+  font-size: clamp(56px, 6vw, 90px);
+  line-height: 1;
+  letter-spacing: -0.025em;
+  margin: 22px 0;
+}
+.heading > p:last-child,
+.sectionHeading > p {
+  font-size: 12px;
+  line-height: 1.9;
+  color: var(--muted);
+}
+.identity {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.65fr);
+  gap: 70px;
+}
+.origin {
+  border-top: 1px solid var(--rule);
+  padding-top: 22px;
+}
+.originDate {
+  font-family: var(--font-serif);
+  font-size: clamp(29px, 3.2vw, 47px);
+  line-height: 1.15;
+  margin-top: 32px;
+}
+.chain {
+  font-size: 10px;
+  color: var(--muted);
+  margin-top: 20px;
+}
+.origin :global(.text-link) {
+  font-size: 11px;
+  margin-top: 35px;
+}
+.facts {
+  min-width: 0;
+  margin: 0;
+}
+.facts > div {
+  display: grid;
+  grid-template-columns: minmax(110px, 0.6fr) minmax(0, 1fr);
+  gap: 20px;
+  padding: 19px 0;
+  border-top: 1px solid var(--rule);
+  font-size: 12px;
+}
+.facts dt {
+  color: var(--muted);
+  font-size: 11px;
+}
+.facts dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+  min-width: 0;
+}
+.facts code {
+  font-size: 11px;
+  line-height: 1.8;
+}
+.number {
+  font-variant-numeric: tabular-nums;
+}
+.note {
+  font-size: 11px;
+  color: var(--muted);
+  line-height: 1.8;
+}
+.facts .note {
+  margin-top: 10px;
+}
+.sectionHeading {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 0.65fr);
+  gap: 60px;
+  align-items: end;
+  margin-bottom: 35px;
+}
+.sectionHeading h2 {
+  font-size: clamp(36px, 4vw, 58px);
+  margin-top: 12px;
+}
+.sectionHeading > p {
+  max-width: 350px;
+}
+.composition {
+  --muted: #58584f;
+  margin-top: 65px;
+  padding: 40px clamp(20px, 4vw, 60px);
+  background: #e9e2d5;
+}
+.traits {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 32px 35px;
+  margin: 0;
+}
+.traits > div {
+  min-width: 0;
+}
+.traits dt {
+  font-size: 10px;
+  color: var(--muted);
+  margin-bottom: 9px;
+}
+.traits dd {
+  margin: 0;
+  font-size: 21px;
+  font-family: var(--font-serif);
+  overflow-wrap: anywhere;
+}
+.simulation {
+  margin-top: 35px;
+  border-top: 1px solid var(--rule);
+  padding-top: 20px;
+}
+.simulation summary {
+  font-size: 11px;
+  cursor: pointer;
+  min-height: 30px;
+}
+.simulation .traits {
+  margin-top: 25px;
+}
+.history {
+  padding-top: 70px;
+}
+.histories {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(0, 0.8fr);
+  gap: 70px;
+}
+.historyStream {
+  min-width: 0;
+}
+.historyStream h3 {
+  font-size: 30px;
+  border-bottom: 1px solid var(--rule);
+  padding-bottom: 20px;
+}
+.timeline {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.event {
+  position: relative;
+  border-bottom: 1px solid var(--rule);
+  padding: 24px 0 24px 24px;
+}
+.event::before {
+  content: '';
+  width: 5px;
+  height: 5px;
+  position: absolute;
+  left: 1px;
+  top: 31px;
+  border: 1px solid var(--muted);
+  border-radius: 50%;
+}
+.eventHeader {
+  display: flex;
+  justify-content: space-between;
+  gap: 15px;
+  flex-wrap: wrap;
+  align-items: baseline;
+}
+.event h4 {
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 450;
+}
+.event time {
+  font-size: 10px;
+  color: var(--muted);
+}
+.eventAddresses {
+  display: flex;
+  gap: 15px;
+  flex-wrap: wrap;
+  font-size: 11px;
+  margin-top: 16px;
+}
+.eventAddresses span {
+  color: var(--muted);
+  margin-right: 8px;
+}
+.eventName {
+  font-family: var(--font-serif);
+  font-size: 26px;
+  overflow-wrap: anywhere;
+  margin-top: 12px;
+}
+.eventChain {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+  font-size: 9px;
+  margin-top: 18px;
+  color: var(--muted);
+}
+.historyNav {
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+  padding: 22px 0;
+  font-size: 11px;
+}
+.historyNav a {
+  min-height: 32px;
+  display: inline-flex;
+  align-items: center;
+}
+.historyStream > .note {
+  padding-top: 24px;
+}
+.sources {
+  margin-top: 70px;
+  border-top: 1px solid var(--rule);
+  padding-top: 40px;
+}
+.editions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 40px;
+}
+.edition {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 25px;
+}
+.edition img {
+  width: 100%;
+  height: auto;
+  align-self: start;
+}
+.edition h3 {
+  font-size: 29px;
+}
+.edition ul {
+  padding: 0;
+  margin: 18px 0 0;
+  list-style: none;
+  font-size: 11px;
+}
+.edition li {
+  margin: 10px 0;
+}
+.sourceLinks {
+  border-top: 1px solid var(--rule);
+  margin-top: 40px;
+  padding-top: 20px;
+  font-size: 11px;
+  color: var(--muted);
+}
+.sourceLinks summary {
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+  cursor: pointer;
+  min-height: 44px;
+  align-items: center;
+}
+.sourceLinks summary::-webkit-details-marker {
+  display: none;
+}
+.sourceLinks[open] summary span {
+  transform: rotate(45deg);
+}
+.sourceLinks > div {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px 35px;
+  padding: 20px 0;
+}
+.loading {
+  padding: 35px 0;
+  font-size: 12px;
+  color: var(--muted);
+}
+.echoRoom {
+  background: #000;
+  color: var(--paper);
+  margin: 80px calc(-1 * var(--gutter)) 0;
+  padding: 60px var(--gutter) 70px;
+}
+.echoRoom > :global(.eyebrow) {
+  max-width: 1000px;
+  margin: 0 auto 30px;
+}
+.echoRoom > img {
+  width: 100%;
+  height: auto;
+  max-width: 1000px;
+  margin: 0 auto;
+}
+.echoRoom h2 {
+  max-width: 1000px;
+  margin: 30px auto 0;
+  font-size: clamp(38px, 5vw, 70px);
+}
+@media (max-width: 900px) {
+  .identity,
+  .histories {
+    gap: 35px;
+  }
+  .edition {
+    grid-template-columns: 1fr;
+    gap: 18px;
+  }
+}
+@media (max-width: 650px) {
+  .record {
+    padding-top: 40px;
+  }
+  .heading {
+    margin-bottom: 35px;
+  }
+  .heading h2 {
+    font-size: 54px;
+  }
+  .identity,
+  .histories,
+  .sectionHeading {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 28px;
+  }
+  .originDate {
+    margin-top: 20px;
+  }
+  .origin :global(.text-link) {
+    margin-top: 20px;
+  }
+  .facts > div {
+    grid-template-columns: minmax(90px, 0.55fr) minmax(0, 1fr);
+    gap: 16px;
+  }
+  .facts code {
+    font-size: 10px;
+  }
+  .traits {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 25px 20px;
+  }
+  .composition {
+    margin-top: 35px;
+    padding: 30px 22px;
+  }
+  .history,
+  .sources {
+    padding-top: 35px;
+    margin-top: 30px;
+  }
+  .histories {
+    gap: 40px;
+  }
+  .editions {
+    gap: 25px;
+  }
+  .edition li {
+    font-size: 10px;
+  }
+  .sectionHeading {
+    margin-bottom: 25px;
+  }
+}

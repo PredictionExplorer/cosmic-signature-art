@@ -6,7 +6,17 @@ import { getInterpretation, type Artwork } from '@/lib/art/types';
 import type { Messages } from '@/lib/i18n/en';
 import { localizedPath, type Locale } from '@/lib/i18n/routing';
 import { ArtworkMedia } from './artwork-media';
-export function WorkGrid({ works, locale, t }: { works: Artwork[]; locale: Locale; t: Messages }) {
+export function WorkGrid({
+  works,
+  locale,
+  t,
+  eagerFirstRow = false,
+}: {
+  works: Artwork[];
+  locale: Locale;
+  t: Messages;
+  eagerFirstRow?: boolean;
+}) {
   const [mode, setMode] = useState<'ink' | 'light'>('ink');
   return (
     <>
@@ -20,7 +30,7 @@ export function WorkGrid({ works, locale, t }: { works: Artwork[]; locale: Local
         </div>
       </div>
       <div className="work-grid">
-        {works.map((work) => {
+        {works.map((work, index) => {
           const media =
             getInterpretation(work, mode) ?? getInterpretation(work, 'light') ?? work.media[0];
           return (
@@ -35,6 +45,7 @@ export function WorkGrid({ works, locale, t }: { works: Artwork[]; locale: Local
                 alt={`${t.signature} ${work.id}`}
                 still
                 thumbnail
+                eager={eagerFirstRow && index < 2}
               />
               <div className="work-card-caption">
                 <span>

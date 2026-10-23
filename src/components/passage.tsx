@@ -62,7 +62,7 @@ export function Passage({ artwork, locale, t }: { artwork: Artwork; locale: Loca
           <em>{t.ofMotion}</em>
         </h1>
         <p className="hero-copy">{t.heroCopy}</p>
-        <Link className="text-link" href={localizedPath(locale, '/collection')}>
+        <Link className="text-link" href={localizedPath(locale, '/collection?view=atlas')}>
           {t.enterAtlas}
           <ArrowUpRight size={17} />
         </Link>

@@ -10,6 +10,7 @@ import { getCuratedArtwork } from '@/lib/art/catalog';
 import { getCollection } from '@/lib/art/server';
 import { Atlas } from '@/components/atlas';
 import { WorkGrid } from '@/components/work-grid';
+import styles from './collection.module.css';
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
   if (!isLocale(locale)) return {};
@@ -21,29 +22,59 @@ export default async function Collection({
   searchParams,
 }: {
   params: Promise<{ locale: string }>;
-  searchParams: Promise<{ offset?: string; q?: string }>;
+  searchParams: Promise<{
+    offset?: string | string[];
+    q?: string | string[];
+    view?: string | string[];
+  }>;
 }) {
   const { locale } = await params;
   if (!isLocale(locale)) notFound();
   const t = messages(locale);
   const search = await searchParams;
-  const raw = Number(search.offset ?? 0);
+  const raw = typeof search.offset === 'string' ? Number(search.offset) : 0;
   const offset = Number.isSafeInteger(raw) && raw >= 0 && raw <= 1_000_000 ? raw : 0;
   const query = typeof search.q === 'string' ? search.q.slice(0, 100) : undefined;
+  const atlasView = search.view === 'atlas' && !query && offset === 0;
   return (
-    <main id="main">
-      <h1 className="sr-only">{t.atlas}</h1>
-      {!query && offset === 0 ? (
+    <main id="main" className={styles.page}>
+      <header className={`${styles.intro} section-wrap`}>
+        <div>
+          <p className="eyebrow">COSMIC SIGNATURE / {t.collection}</p>
+          <h1>{t.collectionIntro}</h1>
+        </div>
+        <p className={styles.description}>{t.collectionCopy}</p>
+      </header>
+      <nav className={`${styles.views} section-wrap`} aria-label={t.collection}>
+        <Link
+          href={localizedPath(locale, '/collection')}
+          aria-current={!atlasView ? 'page' : undefined}
+        >
+          <span aria-hidden="true">01</span> {t.catalogue}
+        </Link>
+        <Link
+          href={localizedPath(locale, '/collection?view=atlas')}
+          aria-current={atlasView ? 'page' : undefined}
+        >
+          <span aria-hidden="true">02</span> {t.atlasView}
+        </Link>
+        <p>{t.catalogueNote}</p>
+      </nav>
+      {atlasView ? (
         <Atlas
           works={[getCuratedArtwork(23)!, getCuratedArtwork(31)!, getCuratedArtwork(35)!]}
           locale={locale}
           t={t}
         />
       ) : null}
-      <section id="works" className="collection-section section-wrap">
+      <section id="works" className={`${styles.catalogue} collection-section section-wrap`}>
         <div className="collection-header">
           <h2>{t.allWorks}</h2>
-          <form className="collection-search" action={localizedPath(locale, '/collection')}>
+          <form
+            className="collection-search"
+            action={localizedPath(locale, '/collection')}
+            role="search"
+          >
             <label>
               {t.search}
               <input
@@ -54,6 +85,14 @@ export default async function Collection({
               />
             </label>
             <button type="submit">{t.find} ↗</button>
+            {query ? (
+              <Link
+                className={styles.clearSearch}
+                href={localizedPath(locale, '/collection#works')}
+              >
+                {t.clearSearch}
+              </Link>
+            ) : null}
           </form>
         </div>
         <Suspense
@@ -72,7 +111,13 @@ export default async function Collection({
             </div>
           }
         >
-          <CollectionResults locale={locale} t={t} offset={offset} query={query} />
+          <CollectionResults
+            locale={locale}
+            t={t}
+            offset={offset}
+            query={query}
+            eagerFirstRow={!atlasView}
+          />
         </Suspense>
       </section>
     </main>
@@ -84,11 +129,13 @@ async function CollectionResults({
   t,
   offset,
   query,
+  eagerFirstRow,
 }: {
   locale: Locale;
   t: Messages;
   offset: number;
   query?: string;
+  eagerFirstRow: boolean;
 }) {
   const result = await getCollection({ offset, limit: 18, query, includeMedia: true });
   const url = (value: number) =>
@@ -104,7 +151,7 @@ async function CollectionResults({
         </p>
       ) : null}
       {result.items.length ? (
-        <WorkGrid works={result.items} locale={locale} t={t} />
+        <WorkGrid works={result.items} locale={locale} t={t} eagerFirstRow={eagerFirstRow} />
       ) : (
         <p className="notice">{t.noWorks}</p>
       )}

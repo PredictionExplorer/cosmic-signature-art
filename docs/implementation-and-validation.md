@@ -22,24 +22,24 @@ Auction rules match the decision register: seven-day eligibility, first-bid 48-h
 
 ## Initial implementation verification evidence
 
-| Boundary | Result |
-| --- | --- |
-| Production application build | Passed; all locales and dynamic routes compiled |
-| TypeScript, ESLint, formatting | Passed |
-| Dependency audit | Zero known vulnerabilities in the installed frontend dependency graph |
-| Frontend unit/component/property suites | 167 tests passed; the separately enabled real-chain test is skipped by ordinary unit runs |
-| Amount properties | 2,500 deterministic cases covering integer increments, funding conservation and decimal/wei round-trips |
-| Browser matrix | 318 cases passed in Chromium and WebKit: desktop, mobile and reduced-motion profiles |
-| Automated accessibility | 240 axe scans within that matrix: eight locales, five routes, six profiles |
-| Visual evidence | Preserved screenshots in `docs/screenshots/`; actual Ink assets loaded for all 18 first-page collection cards |
-| Financial client integration | Real local-chain journey passed twice, including seven successful frontend-submitted transactions and expected failure paths |
-| Solidity regression suite | 199 tests passed in each of four preprocessing/assertion configurations: 796 executions |
-| Auction stateful model | Four seeded campaigns, 720 randomized actions, checking per-lot state and accounting after each action |
-| Foundry fuzzing | Three properties with 1,024 cases each: 3,072 cases passed |
-| Foundry invariants | 128 sequences of depth 128: 16,384 handler calls, zero handler reverts, custody/liability/cash invariants preserved |
-| Credential and deployment-tool guards | 29 tests passed, including RPC credential-redaction failures and both V4 artifact-name forms |
-| Deployed V3 upgrade rehearsal | Passed against pinned real state and verified implementation runtime, through issuance, sale, forwarding and delivery |
-| Cross-review | Auction and V4 code reviewed by different implementers; the legacy fully qualified-name bypass was found, fixed and regression-tested |
+| Boundary                                | Result                                                                                                                                |
+| --------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
+| Production application build            | Passed; all locales and dynamic routes compiled                                                                                       |
+| TypeScript, ESLint, formatting          | Passed                                                                                                                                |
+| Dependency audit                        | Zero known vulnerabilities in the installed frontend dependency graph                                                                 |
+| Frontend unit/component/property suites | 167 tests passed; the separately enabled real-chain test is skipped by ordinary unit runs                                             |
+| Amount properties                       | 2,500 deterministic cases covering integer increments, funding conservation and decimal/wei round-trips                               |
+| Browser matrix                          | 318 cases passed in Chromium and WebKit: desktop, mobile and reduced-motion profiles                                                  |
+| Automated accessibility                 | 240 axe scans within that matrix: eight locales, five routes, six profiles                                                            |
+| Visual evidence                         | Preserved screenshots in `docs/screenshots/`; actual Ink assets loaded for all 18 first-page collection cards                         |
+| Financial client integration            | Real local-chain journey passed twice, including seven successful frontend-submitted transactions and expected failure paths          |
+| Solidity regression suite               | 199 tests passed in each of four preprocessing/assertion configurations: 796 executions                                               |
+| Auction stateful model                  | Four seeded campaigns, 720 randomized actions, checking per-lot state and accounting after each action                                |
+| Foundry fuzzing                         | Three properties with 1,024 cases each: 3,072 cases passed                                                                            |
+| Foundry invariants                      | 128 sequences of depth 128: 16,384 handler calls, zero handler reverts, custody/liability/cash invariants preserved                   |
+| Credential and deployment-tool guards   | 29 tests passed, including RPC credential-redaction failures and both V4 artifact-name forms                                          |
+| Deployed V3 upgrade rehearsal           | Passed against pinned real state and verified implementation runtime, through issuance, sale, forwarding and delivery                 |
+| Cross-review                            | Auction and V4 code reviewed by different implementers; the legacy fully qualified-name bypass was found, fixed and regression-tested |
 
 Counts describe separate suites and repeated configurations; they must not be summed into a claimed count of unique bugs or unique scenarios. Invariant handler calls can deliberately be no-ops when workflow preconditions do not hold. Passing tests and automated accessibility scans are not proofs of complete correctness or accessibility.
 
@@ -85,3 +85,15 @@ The user approved migrating the undeployed V4 build to **Solidity 0.8.38**, cond
 Compatible Solidity-tool dependency updates removed the critical Handlebars advisory and reduced the audit from **80 affected package entries (1 critical, 32 high)** to **57 (0 critical, 17 high)**. Two exact consumer pins receive documented same-major overrides. Remaining findings and their actual paths are listed in the contracts README; some require separately reviewed framework/dependency migrations and one dependency has no published fix. None of the vulnerable nested OpenZeppelin 4.x copies enters the generated production compiler input. This distinction does not make the tooling audit clean or prove developer tooling safe.
 
 Current Solidity evidence is in `docs/v4-art-auction-verification.json.approvedCompilerMigration` in the contracts repository. Historical 0.8.34 results are retained separately. No deployed contracts, proxy implementation, ownership or configuration were changed. No remote push or deployment was performed.
+
+## Complete collection and artwork records
+
+The collection now opens directly into the full live catalogue, with the moving Atlas available as a separate view. Number/name search and page navigation remain server-rendered. A bounded live traversal verified all 72 currently indexed works, IDs 0–71, across four pages; the site does not hardcode that count. New indexed works appear through cache revalidation without a frontend release.
+
+Each viewing room now includes an editorial origin record, original recipient, indexed custodian, known anchoring participant, generative seed and source-cycle links. Transfer and naming histories use independent validated cursor streams. They distinguish empty pages, absent naming activity and unavailable reads, preserve still mode during navigation, and never infer a sale or price from custody. Published composition and simulation characteristics require an exact token/seed match and are explicitly identified as publisher metadata. Still/master/film links retain their original sources, including longer Ink studies. A full dark Light room closes the page without altering artwork pixels.
+
+The data transport is shared across these reads, with a fixed origin, redirect rejection, a 2 MiB body bound and a deadline covering both headers and streamed body. Optional details and history stream independently so they do not delay the main viewing room. Translations ship together in all eight catalogs. The review caught and corrected insufficient composition-label contrast; the pagination test was corrected to wait for streamed page identity after URL changes.
+
+Verification for this increment: **283 unit/component/property tests passed**, with the separately enabled local-chain fixture skipped in the ordinary unit run; **399 browser cases passed** across Chromium, Firefox and WebKit desktop/mobile/reduced-motion profiles, including **280 axe scans**. The production build, TypeScript, ESLint, formatting and full npm dependency audit passed. V8 line coverage is **90.09%**; coverage is supplementary evidence rather than a correctness guarantee. Browser checks traverse the collection to token 0, search it, inspect real provenance and media sources, and recover from invalid history continuations. Screenshots are preserved in `docs/screenshots/`.
+
+This increment changes only the art repository. Solidity, deployed contracts, the Go service and the renderer are unchanged. There was no remote push or deployment.

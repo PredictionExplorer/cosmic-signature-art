@@ -91,7 +91,17 @@ test.describe('localized public gallery', () => {
         .getByRole('link', { name: t.collection, exact: true })
         .click();
       await expect(page).toHaveURL(new RegExp(`${localizedPath(locale, '/collection')}$`));
-      await expect(page.getByRole('heading', { level: 1 })).toHaveText(t.atlas);
+      await expect(page.getByRole('heading', { level: 1 })).toHaveText(t.collectionIntro);
+      await expect(page.locator('.atlas:visible')).toHaveCount(0);
+      await collectionLoaded(page);
+      const collectionViews = page.locator('main > nav');
+      await expect(
+        collectionViews.getByRole('link', { name: new RegExp(t.catalogue) }),
+      ).toHaveAttribute('aria-current', 'page');
+      await collectionViews.getByRole('link', { name: new RegExp(t.atlasView) }).click();
+      await expect(page).toHaveURL(
+        new RegExp(`${localizedPath(locale, '/collection')}\\?view=atlas$`),
+      );
       await expect(page.locator('.atlas:visible')).toBeVisible();
       await expect(
         page.locator('.atlas:visible .position-anchor .constellation-select'),
@@ -178,7 +188,7 @@ test('Ink and Light preserve token identity and genuine media; motion is control
 test('Atlas selection, rehanging and material changes lead to the selected token', async ({
   page,
 }) => {
-  await page.goto('/collection');
+  await page.goto('/collection?view=atlas');
   await pauseAmbientMotion(page);
   const atlas = page.locator('.atlas:visible');
   await atlas.getByRole('button', { name: 'Signature 35', exact: true }).click();
@@ -199,6 +209,121 @@ test('Atlas selection, rehanging and material changes lead to the selected token
   await atlas.getByRole('link', { name: 'Enter this work', exact: true }).click();
   await expect(page).toHaveURL(/\/art\/35$/);
   await expect(page.getByRole('heading', { level: 1 })).toHaveText('Signature 35');
+});
+
+test('the complete catalogue can be traversed to the first token and searched by token zero', async ({
+  page,
+}) => {
+  test.setTimeout(120_000);
+  await page.goto('/collection');
+  await pauseAmbientMotion(page);
+  const seen = new Set<string>();
+  let pages = 0;
+  while (true) {
+    await collectionLoaded(page);
+    const cards = page.locator('#works .work-grid:not(.collection-skeleton) .work-card');
+    const links = await cards.evaluateAll((elements) =>
+      elements.map((element) => element.getAttribute('href')),
+    );
+    expect(links.length).toBeGreaterThan(0);
+    for (const link of links) {
+      expect(link).toMatch(/^\/art\/\d+$/);
+      expect(seen.has(link!)).toBe(false);
+      seen.add(link!);
+    }
+    pages += 1;
+    const earlier = page.locator('.pagination').getByRole('link', { name: /Earlier works/ });
+    if (!(await earlier.count())) break;
+    await earlier.click();
+    await expect(page).toHaveURL(/\/collection\?offset=\d+#works$/);
+    // The URL can update before the streamed catalogue replaces the preceding page.
+    await expect(cards.first()).not.toHaveAttribute('href', links[0]!, { timeout: 30_000 });
+  }
+  expect(pages).toBeGreaterThan(1);
+  expect(seen.has('/art/0')).toBe(true);
+  const newer = page.locator('.pagination').getByRole('link', { name: /Later works/ });
+  await expect(newer).toBeVisible();
+  const lastPageFirst = await page.locator('#works .work-card').first().getAttribute('href');
+  await newer.click();
+  await expect(page.locator('#works .work-card').first()).not.toHaveAttribute(
+    'href',
+    lastPageFirst!,
+    { timeout: 30_000 },
+  );
+  await collectionLoaded(page);
+  await page.getByRole('textbox', { name: catalogs.en.search }).fill('0');
+  await page.getByRole('button', { name: /Find work/ }).click();
+  await expect(page).toHaveURL(/\/collection\?q=0$/);
+  const result = page.locator('#works .work-grid .work-card');
+  await expect(result).toHaveCount(1);
+  await expect(result).toHaveAttribute('href', '/art/0');
+  await collectionLoaded(page);
+  await result.click();
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText('Signature 0');
+  await expect(page.locator('#record')).toContainText(catalogs.en.cycle);
+  await noHorizontalOverflow(page);
+});
+
+test('an artwork exposes genuine custody history, composition, and original published files', async ({
+  page,
+}) => {
+  await page.goto('/art/31?view=still#record');
+  await pauseAmbientMotion(page);
+  const record = page.locator('#record');
+  await expect(record.getByRole('heading', { name: catalogs.en.provenanceTitle })).toBeVisible();
+  const archive = JSON.parse(
+    readFileSync(new URL('../../src/lib/art/curated-records.json', import.meta.url), 'utf8'),
+  ) as { records: { id: number; transactionHash: string; seed: string }[] };
+  const identity = archive.records.find((entry) => entry.id === 31)!;
+  await expect(record.getByRole('link', { name: /Transaction/ })).toHaveAttribute(
+    'href',
+    `https://arbiscan.io/tx/${identity.transactionHash}`,
+  );
+  await expect(record).toContainText(identity.seed);
+  const custody = page.getByRole('region', { name: catalogs.en.ownershipHistory });
+  await expect(
+    custody.getByRole('heading', { name: catalogs.en.eventMint, exact: true }),
+  ).toBeVisible();
+  await expect(custody.getByRole('link', { name: /Transaction/ }).first()).toHaveAttribute(
+    'href',
+    /^https:\/\/arbiscan\.io\/tx\/0x[\da-f]{64}$/i,
+  );
+  await expect(page.getByText(catalogs.en.historyNote)).toBeVisible();
+  await expect(custody.getByText(/^(Sold|Sale price|ETH)$/i)).toHaveCount(0);
+  const composition = page.getByRole('region', { name: catalogs.en.composition });
+  await expect(composition).toBeVisible();
+  await expect(composition).toContainText(catalogs.en.structure);
+  await expect(composition).toContainText(catalogs.en.syzygies);
+  const sources = page.getByRole('region', { name: catalogs.en.sources });
+  await expect(sources.getByRole('link', { name: /Published film/ }).first()).toHaveAttribute(
+    'href',
+    new RegExp(`/${identity.seed}/videos/web/`),
+  );
+  await sources.locator('summary').click();
+  await expect(sources.getByRole('link', { name: /Token metadata/ })).toHaveAttribute(
+    'href',
+    'https://a1.cosmicsignature.com/metadata/31',
+  );
+  await noHorizontalOverflow(page);
+});
+
+test('invalid history cursors show an honest recovery path without losing the still view', async ({
+  page,
+}) => {
+  await page.goto('/art/31?view=still&transfers=bad%2Fcursor#history');
+  await pauseAmbientMotion(page);
+  const history = page.locator('#history');
+  await expect(history.getByText(catalogs.en.historyUnavailable)).toBeVisible();
+  const reset = history.getByRole('link', { name: /Latest events/ });
+  await expect(reset).toHaveAttribute('href', '/art/31?view=still#history');
+  await reset.click();
+  await expect(page).toHaveURL(/\/art\/31\?view=still#history$/);
+  await expect(page.getByRole('region', { name: catalogs.en.ownershipHistory })).toBeVisible();
+  await expect(
+    page
+      .getByRole('region', { name: catalogs.en.ways })
+      .getByRole('button', { name: catalogs.en.still, exact: true }),
+  ).toHaveAttribute('aria-pressed', 'true');
 });
 
 test('artwork comparison and enlarged viewer preserve identity and Escape returns focus', async ({

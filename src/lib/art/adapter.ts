@@ -1,57 +1,9 @@
 import { curatedArtworks, getCuratedArtwork, withCuratedMedia } from './catalog';
-import {
-  ART_API_ORIGIN,
-  ART_REQUEST_TIMEOUT_MS,
-  ART_REVALIDATE_SECONDS,
-  MAX_COLLECTION_LIMIT,
-  MEDIA_REVALIDATE_SECONDS,
-} from './constants';
+import { MAX_COLLECTION_LIMIT, MEDIA_REVALIDATE_SECONDS } from './constants';
 import { parseMediaManifest, preferVerifiedLocalDelivery } from './media';
 import { parseArtworkId, parseTokenRecord, successEnvelopeSchema } from './validation';
+import { createArtRequest, ArtReadError as ReadError, type ArtFetchLike } from './request';
 import type { Artwork, ArtworkResult, CollectionOptions, CollectionResult } from './types';
-
-type FetchOptions = RequestInit & { next?: { revalidate: number; tags: string[] } };
-type FetchLike = (url: string, options?: FetchOptions) => Promise<Response>;
-const MAX_RESPONSE_BYTES = 2 * 1024 * 1024;
-
-class ReadError extends Error {
-  constructor(readonly notFound = false) {
-    super('Art source unavailable');
-  }
-}
-
-async function boundedJson(response: Response): Promise<unknown> {
-  const size = Number(response.headers.get('content-length'));
-  if (size > MAX_RESPONSE_BYTES) {
-    await response.body?.cancel();
-    throw new ReadError();
-  }
-  if (!response.body) throw new ReadError();
-  const reader = response.body.getReader();
-  const chunks: Uint8Array[] = [];
-  let bytes = 0;
-  try {
-    while (true) {
-      const result = await reader.read();
-      if (result.done) break;
-      bytes += result.value.byteLength;
-      if (bytes > MAX_RESPONSE_BYTES) {
-        await reader.cancel();
-        throw new ReadError();
-      }
-      chunks.push(result.value);
-    }
-  } finally {
-    reader.releaseLock();
-  }
-  const buffer = new Uint8Array(bytes);
-  let offset = 0;
-  for (const chunk of chunks) {
-    buffer.set(chunk, offset);
-    offset += chunk.byteLength;
-  }
-  return JSON.parse(new TextDecoder().decode(buffer)) as unknown;
-}
 
 function object(value: unknown): Record<string, unknown> {
   return value !== null && typeof value === 'object' && !Array.isArray(value)
@@ -76,34 +28,8 @@ function options(input: CollectionOptions) {
   return { offset, limit: Math.min(rawLimit, MAX_COLLECTION_LIMIT), query };
 }
 
-export function createArtRepository(config: { fetch?: FetchLike; timeoutMs?: number } = {}) {
-  const fetcher: FetchLike = config.fetch ?? ((url, init) => fetch(url, init));
-  const timeoutMs = config.timeoutMs ?? ART_REQUEST_TIMEOUT_MS;
-
-  async function request(pathOrUrl: string, revalidate = ART_REVALIDATE_SECONDS): Promise<unknown> {
-    const url = pathOrUrl.startsWith('https://') ? pathOrUrl : `${ART_API_ORIGIN}${pathOrUrl}`;
-    // Every fetch URL is built locally; manifests never control the fetch destination.
-    if (new URL(url).origin !== ART_API_ORIGIN) throw new ReadError();
-    const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), timeoutMs);
-    try {
-      const response = await fetcher(url, {
-        signal: controller.signal,
-        redirect: 'error',
-        headers: { Accept: 'application/json' },
-        next: { revalidate, tags: ['art-collection'] },
-      });
-      const data = await boundedJson(response);
-      if (!response.ok)
-        throw new ReadError(
-          (response.status === 400 || response.status === 404) &&
-            object(data).error === 'record not found',
-        );
-      return data;
-    } finally {
-      clearTimeout(timer);
-    }
-  }
+export function createArtRepository(config: { fetch?: ArtFetchLike; timeoutMs?: number } = {}) {
+  const request = createArtRequest(config);
 
   async function hydrateMedia(artwork: Artwork): Promise<ArtworkResult> {
     if (!artwork.provenance.manifestUrl)

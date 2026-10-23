@@ -1,15 +1,20 @@
 import Image from 'next/image';
+import { Suspense } from 'react';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { isLocale, localizedPath } from '@/lib/i18n/routing';
 import { messages } from '@/lib/i18n/messages';
-import { metadata, jsonLd, NFT_ADDRESS, SITE_URL } from '@/lib/site';
+import { metadata, jsonLd, SITE_URL } from '@/lib/site';
 import { getArtwork } from '@/lib/art/server';
 import { parseArtworkId } from '@/lib/art/validation';
 import { getInterpretation } from '@/lib/art/types';
 import { artworkSharingImage } from '@/lib/art/sharing';
 import { ArtworkViewer } from '@/components/artwork-viewer';
 import { AuctionPanel } from '@/components/auction-panel';
+import { ArtworkIdentity, ArtworkSources } from '@/components/artwork-record';
+import { ArtworkHistorySection, type HistoryQuery } from '@/components/artwork-history';
+import { ArtworkComposition } from '@/components/artwork-composition';
+import recordStyles from '@/components/artwork-record.module.css';
 export async function generateMetadata({
   params,
 }: {
@@ -34,7 +39,7 @@ export default async function ArtworkPage({
   searchParams,
 }: {
   params: Promise<{ locale: string; id: string }>;
-  searchParams: Promise<{ view?: string }>;
+  searchParams: Promise<HistoryQuery>;
 }) {
   const { locale, id } = await params;
   if (!isLocale(locale)) notFound();
@@ -54,7 +59,8 @@ export default async function ArtworkPage({
       </main>
     );
   const light = getInterpretation(work, 'light');
-  const initialStill = (await searchParams).view === 'still';
+  const query = await searchParams;
+  const initialStill = query.view === 'still';
   return (
     <main id="main" className="work-page section-wrap">
       <div className="work-breadcrumb">
@@ -82,52 +88,29 @@ export default async function ArtworkPage({
         </p>
       ) : null}
       <AuctionPanel locale={locale} tokenId={work.id} t={t} />
-      <section id="record" className="work-record">
-        <h2>{t.workRecord}</h2>
-        <dl>
-          <div>
-            <dt>{t.token}</dt>
-            <dd>{work.id}</dd>
-          </div>
-          {work.cycle !== undefined ? (
-            <div>
-              <dt>{t.cycle}</dt>
-              <dd>{work.cycle}</dd>
-            </div>
-          ) : null}
-          {work.seed ? (
-            <div className="seed-row">
-              <dt>{t.seed}</dt>
-              <dd>
-                <code>{work.seed}</code>
-              </dd>
-            </div>
-          ) : null}
-          <div>
-            <dt>{t.collectionContract}</dt>
-            <dd>
-              <a
-                href={`https://arbiscan.io/token/${NFT_ADDRESS}?a=${work.id}`}
-                target="_blank"
-                rel="noreferrer"
-              >
-                {t.viewChain} ↗
-              </a>
-            </dd>
-          </div>
-          {work.owner ? (
-            <div>
-              <dt>{t.indexedOwner}</dt>
-              <dd>
-                <code>{work.owner}</code>
-                <p>{t.indexedNote}</p>
-              </dd>
-            </div>
-          ) : null}
-        </dl>
-      </section>
+      <ArtworkIdentity work={work} locale={locale} t={t} />
+      <Suspense
+        fallback={
+          <p className={recordStyles.loading} aria-busy="true">
+            {t.recordLoading}
+          </p>
+        }
+      >
+        <ArtworkComposition work={work} locale={locale} t={t} />
+      </Suspense>
+      <Suspense
+        key={`${work.id}-${query.transfers ?? ''}-${query.names ?? ''}`}
+        fallback={
+          <p className={recordStyles.loading} aria-busy="true">
+            {t.recordLoading}
+          </p>
+        }
+      >
+        <ArtworkHistorySection tokenId={work.id} locale={locale} t={t} query={query} />
+      </Suspense>
+      <ArtworkSources work={work} locale={locale} t={t} />
       {light?.still ? (
-        <section className="work-echo">
+        <section className={recordStyles.echoRoom}>
           <p className="eyebrow">{t.sameWork}</p>
           <Image
             src={light.still}

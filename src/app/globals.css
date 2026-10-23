@@ -1559,61 +1559,6 @@ html:lang(zh-HK) {
   margin-top: 15px;
   font-size: 11px;
 }
-.work-record {
-  border-top: 1px solid var(--rule);
-  padding: 40px 0;
-  display: grid;
-  grid-template-columns: 1fr 1.8fr;
-  gap: 55px;
-}
-.work-record h2 {
-  font-size: 45px;
-}
-.work-record dl {
-  margin: 0;
-  min-width: 0;
-}
-.work-record dl > div {
-  display: grid;
-  grid-template-columns: 150px minmax(0, 1fr);
-  gap: 20px;
-  padding: 16px 0;
-  border-bottom: 1px solid var(--rule);
-  font-size: 11px;
-}
-.work-record dt {
-  color: var(--muted);
-}
-.work-record dd {
-  margin: 0;
-  overflow-wrap: anywhere;
-}
-.work-record code {
-  font-size: 10px;
-}
-.work-record dd p {
-  margin-top: 10px;
-  font-size: 10px;
-  color: var(--muted);
-}
-.work-echo {
-  margin: 80px auto 0;
-  max-width: 850px;
-  position: relative;
-  padding-bottom: 65px;
-}
-.work-echo > .eyebrow {
-  font-size: 9px;
-  margin-bottom: 28px;
-}
-.work-echo > img {
-  width: 100%;
-  height: auto;
-}
-.work-echo h2 {
-  max-width: 450px;
-  margin-top: 30px;
-}
 .art-dialog {
   border: 0;
   background: var(--paper);
@@ -1657,12 +1602,6 @@ html:lang(zh-HK) {
   .work-caption h1 {
     font-size: 65px;
   }
-  .work-record {
-    gap: 30px;
-  }
-  .work-record dl > div {
-    grid-template-columns: 120px 1fr;
-  }
 }
 @media (max-width: 700px) {
   .viewing-room {
@@ -1698,16 +1637,6 @@ html:lang(zh-HK) {
   .work-caption > div:last-child p {
     max-width: 400px;
   }
-  .work-record {
-    grid-template-columns: 1fr;
-    gap: 25px;
-  }
-  .work-record h2 {
-    font-size: 42px;
-  }
-  .work-record dl > div {
-    grid-template-columns: 110px minmax(0, 1fr);
-  }
   .work-breadcrumb > .eyebrow {
     display: none;
   }
@@ -1721,9 +1650,6 @@ html:lang(zh-HK) {
   }
   .work-transport > span {
     font-size: 8px;
-  }
-  .work-echo {
-    margin-top: 45px;
   }
   .art-dialog {
     padding: 60px 12px 20px;
