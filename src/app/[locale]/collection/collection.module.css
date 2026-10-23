@@ -3,15 +3,15 @@
   grid-template-columns: minmax(0, 1.6fr) minmax(230px, 0.65fr);
   gap: 60px;
   align-items: end;
-  padding-top: clamp(60px, 8vw, 120px);
-  padding-bottom: 55px;
+  padding-top: clamp(40px, 5vw, 75px);
+  padding-bottom: 36px;
 }
 .intro h1 {
   font-size: clamp(66px, 7.6vw, 124px);
   line-height: 0.95;
   letter-spacing: -0.045em;
   max-width: 740px;
-  margin-top: 30px;
+  margin-top: 22px;
   text-wrap: balance;
 }
 .description {
@@ -81,7 +81,7 @@
   .intro {
     grid-template-columns: 1fr;
     gap: 30px;
-    padding-top: 50px;
+    padding-top: 36px;
     padding-bottom: 30px;
   }
   .intro h1 {

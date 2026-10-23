@@ -217,22 +217,24 @@ test('the complete catalogue can be traversed to the first token and searched by
   test.setTimeout(120_000);
   await page.goto('/collection');
   await pauseAmbientMotion(page);
+  const main = page.getByRole('main');
   const seen = new Set<string>();
   let pages = 0;
   while (true) {
     await collectionLoaded(page);
-    const cards = page.locator('#works .work-grid:not(.collection-skeleton) .work-card');
+    const cards = main.locator('#works .work-grid:not(.collection-skeleton) .work-card');
     const links = await cards.evaluateAll((elements) =>
       elements.map((element) => element.getAttribute('href')),
     );
     expect(links.length).toBeGreaterThan(0);
     for (const link of links) {
-      expect(link).toMatch(/^\/art\/\d+$/);
-      expect(seen.has(link!)).toBe(false);
-      seen.add(link!);
+      expect(link).toMatch(/^\/art\/\d+(?:\?expression=light)?$/);
+      const identity = new URL(link!, page.url()).pathname;
+      expect(seen.has(identity)).toBe(false);
+      seen.add(identity);
     }
     pages += 1;
-    const earlier = page.locator('.pagination').getByRole('link', { name: /Earlier works/ });
+    const earlier = main.locator('.pagination').getByRole('link', { name: /Earlier works/ });
     if (!(await earlier.count())) break;
     await earlier.click();
     await expect(page).toHaveURL(/\/collection\?offset=\d+#works$/);
@@ -241,11 +243,11 @@ test('the complete catalogue can be traversed to the first token and searched by
   }
   expect(pages).toBeGreaterThan(1);
   expect(seen.has('/art/0')).toBe(true);
-  const newer = page.locator('.pagination').getByRole('link', { name: /Later works/ });
+  const newer = main.locator('.pagination').getByRole('link', { name: /Later works/ });
   await expect(newer).toBeVisible();
-  const lastPageFirst = await page.locator('#works .work-card').first().getAttribute('href');
+  const lastPageFirst = await main.locator('#works .work-card').first().getAttribute('href');
   await newer.click();
-  await expect(page.locator('#works .work-card').first()).not.toHaveAttribute(
+  await expect(main.locator('#works .work-card').first()).not.toHaveAttribute(
     'href',
     lastPageFirst!,
     { timeout: 30_000 },
@@ -254,13 +256,16 @@ test('the complete catalogue can be traversed to the first token and searched by
   await page.getByRole('textbox', { name: catalogs.en.search }).fill('0');
   await page.getByRole('button', { name: /Find work/ }).click();
   await expect(page).toHaveURL(/\/collection\?q=0$/);
-  const result = page.locator('#works .work-grid .work-card');
+  const result = main.locator('#works .work-grid .work-card');
   await expect(result).toHaveCount(1);
-  await expect(result).toHaveAttribute('href', '/art/0');
+  await expect(result).toHaveAttribute('href', '/art/0?expression=light');
   await collectionLoaded(page);
   await result.click();
+  await expect(page).toHaveURL(/\/art\/0\?expression=light$/);
   await expect(page.getByRole('heading', { level: 1 })).toHaveText('Signature 0');
-  await expect(page.locator('#record')).toContainText(catalogs.en.cycle);
+  await expect(main).toHaveCount(1);
+  await expect(main.locator('.viewer-plate .art-media')).toHaveAttribute('data-material', 'light');
+  await expect(main.locator('#record')).toContainText(catalogs.en.cycle);
   await noHorizontalOverflow(page);
 });
 
@@ -269,7 +274,9 @@ test('an artwork exposes genuine custody history, composition, and original publ
 }) => {
   await page.goto('/art/31?view=still#record');
   await pauseAmbientMotion(page);
-  const record = page.locator('#record');
+  const main = page.getByRole('main');
+  await expect(main).toHaveCount(1);
+  const record = main.locator('#record');
   await expect(record.getByRole('heading', { name: catalogs.en.provenanceTitle })).toBeVisible();
   const archive = JSON.parse(
     readFileSync(new URL('../../src/lib/art/curated-records.json', import.meta.url), 'utf8'),
@@ -280,7 +287,7 @@ test('an artwork exposes genuine custody history, composition, and original publ
     `https://arbiscan.io/tx/${identity.transactionHash}`,
   );
   await expect(record).toContainText(identity.seed);
-  const custody = page.getByRole('region', { name: catalogs.en.ownershipHistory });
+  const custody = main.getByRole('region', { name: catalogs.en.ownershipHistory });
   await expect(
     custody.getByRole('heading', { name: catalogs.en.eventMint, exact: true }),
   ).toBeVisible();
@@ -288,13 +295,13 @@ test('an artwork exposes genuine custody history, composition, and original publ
     'href',
     /^https:\/\/arbiscan\.io\/tx\/0x[\da-f]{64}$/i,
   );
-  await expect(page.getByText(catalogs.en.historyNote)).toBeVisible();
+  await expect(main.getByText(catalogs.en.historyNote)).toBeVisible();
   await expect(custody.getByText(/^(Sold|Sale price|ETH)$/i)).toHaveCount(0);
-  const composition = page.getByRole('region', { name: catalogs.en.composition });
+  const composition = main.getByRole('region', { name: catalogs.en.composition });
   await expect(composition).toBeVisible();
   await expect(composition).toContainText(catalogs.en.structure);
   await expect(composition).toContainText(catalogs.en.syzygies);
-  const sources = page.getByRole('region', { name: catalogs.en.sources });
+  const sources = main.getByRole('region', { name: catalogs.en.sources });
   await expect(sources.getByRole('link', { name: /Published film/ }).first()).toHaveAttribute(
     'href',
     new RegExp(`/${identity.seed}/videos/web/`),

@@ -20,6 +20,7 @@ npm run type-check
 npm run lint
 npm test
 npm run test:coverage
+npm run test:previews
 npm run test:e2e
 npm run build
 npm audit
@@ -34,7 +35,7 @@ Browser tests use the locally running application or start the configured previe
 - **The collection:** the full live catalogue is the default, with number/name search, pagination and Ink/Light views. `/collection?view=atlas` opens the moving editorial constellation. Newly indexed NFTs appear through revalidation without a frontend release; the catalogue never treats the curated archive as a collection total.
 - **The viewing room:** interpretation selection, recorded films, stills, comparison and full viewing, followed by an editorial record of the work's origin, seed, cycle, indexed custodian and any known protocol-custody participant. Independent transfer and naming histories retain their own pagination. Published composition and simulation characteristics are clearly separated from blockchain provenance. Original stills, masters, film variants and source records remain accessible. Media interpretation records accommodate future modes.
 - **Eight locales:** English, Simplified Chinese, Taiwan Traditional Chinese, Hong Kong Traditional Chinese, Ukrainian, Korean, Japanese and Vietnamese. English URLs are unprefixed; other locales retain their exact tags. The art venue has its own auction vocabulary; the existing app's vocabulary rules are unchanged.
-- **Motion:** pause preference persists in the tab; reduced motion starts with stills. Hidden/offscreen films pause. Static collection plates do not load video. Fonts are self-hosted.
+- **Motion:** the catalogue gives one visible Ink work a playback slot, with focus/hover priority and restrained changes as scrolling settles. Only dedicated compact excerpts can use that slot; leaving it detaches the video source. Hidden tabs, pause, data saving and slow connections keep stills. Reduced motion starts with stills; explicit Resume can enable ambient playback while cinematic transitions remain disabled for the system preference. Native React view transitions connect matching token/expression surfaces when ready, with ordinary immediate navigation as the fallback. Fonts are self-hosted.
 - **Data:** validated, bounded requests to the existing public indexer and renderer manifests. Fifteen authenticated archived works provide an explicitly labeled fallback. Unavailable ownership is not invented. Indexed custody is not represented as a guaranteed current wallet owner.
 - **Transactions:** viem loads only in auction UI. EIP-6963 browser-wallet discovery, exact bigint amounts, direct-bid review, fresh chain reads, runtime-hash and destination verification, simulation, wallet-state recheck and receipt verification. An unconfirmed action remains unconfirmed.
 
@@ -61,6 +62,7 @@ Activation requires the exact reviewed immutable address, chain and runtime hash
 - [Implementation and validation](docs/implementation-and-validation.md): completed work, evidence and release prerequisites.
 - [Decision register](docs/decision-register.md): accepted rules and outstanding launch decisions.
 - [Media and indexer integration](docs/media-and-indexer-integration.md): actual APIs, source hashes, manifest handling and suggested Go changes.
+- [Collection preview delivery](docs/collection-preview-delivery.md): compact film excerpts, source binding and the repeatable offline publishing step (`npm run art:previews`).
 - [Auction frontend review](docs/auction-frontend-review.md): transaction security review and evidence.
 - [Contract architecture](docs/contract-architecture-and-auction-rules.md): design and trust boundaries.
 - [Ecosystem plan](docs/ecosystem-and-delivery-plan.md): issuance, reserve economics and operations.

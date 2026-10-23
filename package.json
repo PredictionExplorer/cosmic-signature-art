@@ -15,8 +15,10 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
+    "test:previews": "node --test scripts/build-collection-previews.test.mjs",
+    "art:previews": "node scripts/build-collection-previews.mjs",
     "test:e2e": "playwright test",
-    "format:check": "prettier --check src tests *.ts *.mjs *.json",
+    "format:check": "prettier --check src tests scripts *.ts *.mjs *.json",
     "audit": "npm audit --omit=dev"
   },
   "dependencies": {

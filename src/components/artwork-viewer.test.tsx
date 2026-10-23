@@ -56,6 +56,55 @@ function player(container: HTMLElement) {
 }
 
 describe('artwork viewing controls', () => {
+  it('opens the expression selected in the collection without first showing Ink', () => {
+    const { container } = render(<ArtworkViewer artwork={work} t={en} initialExpression="light" />);
+    expect(container.querySelector('.art-media')).toHaveAttribute('data-material', 'light');
+    expect(screen.getByRole('button', { name: /^02\s*Light/ })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    );
+    expect(screen.getByRole('img', { name: 'Signature 31 · Light' })).toHaveAttribute(
+      'src',
+      expect.stringMatching(/\/art\/31-light.webp$/),
+    );
+    expect(container.querySelector('video')).toBeNull();
+  });
+
+  it('falls back to an available interpretation when a requested expression is unknown', () => {
+    const { container, rerender } = render(
+      <ArtworkViewer artwork={work} t={en} initialExpression="unpublished-mode" />,
+    );
+    expect(container.querySelector('.art-media')).toHaveAttribute('data-material', 'ink');
+    rerender(
+      <ArtworkViewer
+        artwork={{ ...work, media: work.media.filter((media) => media.id === 'light') }}
+        t={en}
+        initialExpression="another-unknown-mode"
+      />,
+    );
+    expect(container.querySelector('.art-media')).toHaveAttribute('data-material', 'light');
+    expect(screen.getByRole('img', { name: 'Signature 31 · Light' })).toBeVisible();
+  });
+
+  it('resets viewer state when the same token is revisited with another expression', () => {
+    const { container, rerender } = render(
+      <ArtworkViewer artwork={work} t={en} initialExpression="ink" />,
+    );
+    const video = player(container);
+    Object.defineProperty(video, 'duration', { configurable: true, value: 30 });
+    video.currentTime = 19;
+    fireEvent.timeUpdate(video);
+    fireEvent.error(video);
+    expect(screen.getByRole('status')).toHaveTextContent(en.mediaUnavailable);
+    rerender(<ArtworkViewer artwork={work} t={en} initialExpression="light" />);
+    expect(screen.queryByRole('status')).toBeNull();
+    expect(container.querySelector('.art-media')).toHaveAttribute('data-material', 'light');
+    rerender(<ArtworkViewer artwork={work} t={en} initialExpression="ink" />);
+    expect(container.querySelector('.art-media')).toHaveAttribute('data-material', 'ink');
+    expect(screen.getByText('00:00 / 00:00')).toBeVisible();
+    expect(player(container)).not.toBe(video);
+  });
+
   it('shows Play when a film ends and one click restarts the same film', () => {
     const { container } = render(<ArtworkViewer artwork={work} t={en} />);
     const video = player(container);

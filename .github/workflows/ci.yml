@@ -24,6 +24,7 @@ jobs:
       - run: npm run type-check
       - run: npm run format:check
       - run: npm run test:coverage
+      - run: npm run test:previews
       - run: npm run build
       - run: npx playwright install --with-deps chromium firefox webkit
       - run: npm run test:e2e

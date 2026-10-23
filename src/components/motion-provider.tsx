@@ -18,19 +18,25 @@ function subscribe(listener: () => void) {
       /* Storage is optional. */
     }
   }
+  if (listeners.size === 0) query.addEventListener('change', notify);
   listeners.add(listener);
-  query.addEventListener('change', listener);
   return () => {
     listeners.delete(listener);
-    query?.removeEventListener('change', listener);
+    if (listeners.size === 0) query?.removeEventListener('change', notify);
   };
 }
 function snapshot() {
   return explicit ?? query?.matches ?? true;
 }
-const MotionContext = createContext({ paused: true, toggle: () => {} });
+function reducedMotionSnapshot() {
+  return query?.matches ?? true;
+}
+const MotionContext = createContext({ paused: true, reducedMotion: true, toggle: () => {} });
 export function MotionProvider({ children }: { children: ReactNode }) {
   const paused = useSyncExternalStore(subscribe, snapshot, () => true);
+  // Keep the system preference in this persistent layout provider. A newly streamed
+  // artwork must inherit the ready client value during its first transition commit.
+  const reducedMotion = useSyncExternalStore(subscribe, reducedMotionSnapshot, () => true);
   function toggle() {
     explicit = !paused;
     try {
@@ -41,7 +47,7 @@ export function MotionProvider({ children }: { children: ReactNode }) {
     notify();
   }
   return (
-    <MotionContext value={{ paused, toggle }}>
+    <MotionContext value={{ paused, reducedMotion, toggle }}>
       <div className={paused ? 'site motion-paused' : 'site'}>{children}</div>
     </MotionContext>
   );

@@ -2,6 +2,7 @@ import { z } from 'zod';
 import { seedPackageUrl } from './constants';
 import { getCuratedArtwork } from './catalog';
 import type { ArtFilm, ArtInterpretation, Artwork } from './types';
+import { withCollectionPreviews } from './collection-previews';
 
 const assetSchema = z.object({
   role: z.string().max(100),
@@ -110,7 +111,7 @@ export function parseMediaManifest(raw: unknown, artwork: Artwork): ArtInterpret
       availability: 'advertised',
     });
   }
-  return interpretations;
+  return withCollectionPreviews(artwork, interpretations);
 }
 
 /** Only substitute a local delivery film when both its source and still hashes match. */

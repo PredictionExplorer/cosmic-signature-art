@@ -151,7 +151,13 @@ async function CollectionResults({
         </p>
       ) : null}
       {result.items.length ? (
-        <WorkGrid works={result.items} locale={locale} t={t} eagerFirstRow={eagerFirstRow} />
+        <WorkGrid
+          works={result.items}
+          locale={locale}
+          t={t}
+          eagerFirstRow={eagerFirstRow}
+          animated
+        />
       ) : (
         <p className="notice">{t.noWorks}</p>
       )}

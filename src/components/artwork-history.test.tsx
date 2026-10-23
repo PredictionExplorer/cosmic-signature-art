@@ -91,46 +91,57 @@ describe('artwork history navigation', () => {
     expect(historyOptions({ names: ['name'] })).toBeNull();
   });
 
-  it('preserves the independent stream and still preference in localized continuation links', () => {
+  it('preserves the independent stream, expression and still preference in localized continuation links', () => {
     expect(
       historyHref(
         'ja',
         31,
-        { transfers: 'old', names: 'names_A', view: 'still' },
+        { transfers: 'old', names: 'names_A', view: 'still', expression: 'light' },
         'transfers',
         'transfers_B',
       ),
-    ).toBe('/ja/art/31?view=still&names=names_A&transfers=transfers_B#custody-history');
+    ).toBe(
+      '/ja/art/31?view=still&expression=light&names=names_A&transfers=transfers_B#custody-history',
+    );
     expect(
       historyHref(
         'en',
         31,
-        { transfers: 'transfers_A', names: 'old', view: 'still' },
+        { transfers: 'transfers_A', names: 'old', view: 'still', expression: 'future-3d' },
         'names',
         null,
       ),
-    ).toBe('/art/31?view=still&transfers=transfers_A#naming-history');
+    ).toBe('/art/31?view=still&expression=future-3d&transfers=transfers_A#naming-history');
     expect(historyHref('en', 31, { names: 'a/b', view: ['still'] }, 'transfers', null)).toBe(
       '/art/31#custody-history',
     );
   });
 
-  it('rejects malformed query data before fetching and offers a localized recovery without losing still mode', async () => {
+  it('rejects malformed query data before fetching and offers recovery without losing the selected expression or still mode', async () => {
     render(
       await ArtworkHistorySection({
         tokenId: 31,
         locale: 'ja',
         t: en,
-        query: { transfers: 'bad/value', view: 'still' },
+        query: { transfers: 'bad/value', view: 'still', expression: 'light' },
       }),
     );
     expect(getArtworkHistory).not.toHaveBeenCalled();
     expect(screen.getByText(en.historyUnavailable)).toBeVisible();
     expect(screen.getByRole('link', { name: /Latest events/ })).toHaveAttribute(
       'href',
-      '/ja/art/31?view=still#history',
+      '/ja/art/31?view=still&expression=light#history',
     );
   });
+
+  it.each(['light&transfers=untrusted', '../light', 'a'.repeat(41), ['light', 'ink']])(
+    'omits malformed expression preferences from history continuation URLs: %s',
+    (expression) => {
+      expect(historyHref('en', 31, { expression }, 'transfers', null)).toBe(
+        '/art/31#custody-history',
+      );
+    },
+  );
 
   it('loads both validated streams through the server repository', async () => {
     vi.mocked(getArtworkHistory).mockResolvedValue(history());
@@ -227,18 +238,23 @@ describe('honest indexed history presentation', () => {
         history={data}
         locale="uk"
         t={en}
-        query={{ transfers: 'transfers_current', names: 'names_current', view: 'still' }}
+        query={{
+          transfers: 'transfers_current',
+          names: 'names_current',
+          view: 'still',
+          expression: 'light',
+        }}
       />,
     );
     const custody = screen.getByRole('navigation', { name: en.ownershipHistory });
     const names = screen.getByRole('navigation', { name: en.namingHistory });
     expect(within(custody).getByRole('link', { name: /Earlier events/ })).toHaveAttribute(
       'href',
-      '/uk/art/31?view=still&names=names_current&transfers=transfers_next#custody-history',
+      '/uk/art/31?view=still&expression=light&names=names_current&transfers=transfers_next#custody-history',
     );
     expect(within(names).getByRole('link', { name: /Latest events/ })).toHaveAttribute(
       'href',
-      '/uk/art/31?view=still&transfers=transfers_current#naming-history',
+      '/uk/art/31?view=still&expression=light&transfers=transfers_current#naming-history',
     );
   });
 });

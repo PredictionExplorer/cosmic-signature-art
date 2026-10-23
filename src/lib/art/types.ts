@@ -30,6 +30,8 @@ export interface ArtInterpretation {
   width?: number;
   height?: number;
   films: ArtFilm[];
+  /** Bounded, short browsing derivative. Never substitute it for a complete film. */
+  previewFilm?: ArtFilm;
   source: MediaSource;
   /** A manifest advertises an asset; it does not prove continued availability. */
   availability: 'local-copy' | 'advertised' | 'unverified';

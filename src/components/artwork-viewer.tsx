@@ -6,10 +6,12 @@ import { getInterpretation, type Artwork } from '@/lib/art/types';
 import type { Messages } from '@/lib/i18n/en';
 import { ArtworkMedia } from './artwork-media';
 import { useMotion } from './motion-provider';
+import { ArtworkTransition } from './artwork-transition';
 type ArtworkViewerProps = {
   artwork: Artwork;
   t: Messages;
   initialStill?: boolean;
+  initialExpression?: string;
 };
 
 /** Explicit full-film playback is independent of ambient motion, but never runs in a hidden tab. */
@@ -69,13 +71,22 @@ function DialogFilm({
 
 export function ArtworkViewer(props: ArtworkViewerProps) {
   return (
-    <ArtworkViewerSession key={`${props.artwork.id}:${props.initialStill ?? false}`} {...props} />
+    <ArtworkViewerSession
+      key={`${props.artwork.id}:${props.initialStill ?? false}:${props.initialExpression ?? ''}`}
+      {...props}
+    />
   );
 }
 
-function ArtworkViewerSession({ artwork, t, initialStill = false }: ArtworkViewerProps) {
+function ArtworkViewerSession({
+  artwork,
+  t,
+  initialStill = false,
+  initialExpression,
+}: ArtworkViewerProps) {
   const [mode, setMode] = useState(
-    artwork.media.some((m) => m.id === 'ink') ? 'ink' : (artwork.media[0]?.id ?? 'light'),
+    artwork.media.find((media) => media.id === initialExpression)?.id ??
+      (artwork.media.some((m) => m.id === 'ink') ? 'ink' : (artwork.media[0]?.id ?? 'light')),
   );
   const [still, setStill] = useState(initialStill);
   const [compare, setCompare] = useState(false);
@@ -114,18 +125,25 @@ function ArtworkViewerSession({ artwork, t, initialStill = false }: ArtworkViewe
       <section className="viewing-room" aria-label={t.ways}>
         <div className="viewer-media">
           <div className={`viewer-plate ${compare ? 'paired' : ''}`}>
-            <ArtworkMedia
-              key={`${artwork.id}-${mode}`}
-              media={media}
-              alt={`${t.signature} ${artwork.id} · ${label(mode)}`}
-              priority
-              still={still || open}
-              restart={restart}
-              playRequest={playRequest}
-              onPlaybackChange={setPlaying}
-              onProgress={(current, duration) => setTime({ current, duration })}
-              onFailure={() => setFailed(true)}
-            />
+            <ArtworkTransition
+              artworkId={artwork.id}
+              interpretationId={mode}
+              role="detail"
+              disabled={compare || open}
+            >
+              <ArtworkMedia
+                key={`${artwork.id}-${mode}`}
+                media={media}
+                alt={`${t.signature} ${artwork.id} · ${label(mode)}`}
+                priority
+                still={still || open}
+                restart={restart}
+                playRequest={playRequest}
+                onPlaybackChange={setPlaying}
+                onProgress={(current, duration) => setTime({ current, duration })}
+                onFailure={() => setFailed(true)}
+              />
+            </ArtworkTransition>
             {compare && light?.still ? (
               <Image
                 src={light.still}

@@ -43,11 +43,14 @@ async function renderFreshProvider() {
   vi.doMock('react', () => React);
   const { MotionProvider, useMotion } = await import('./motion-provider');
   function Controls() {
-    const { paused, toggle } = useMotion();
+    const { paused, reducedMotion, toggle } = useMotion();
     return (
-      <button type="button" onClick={toggle} aria-pressed={paused}>
-        {paused ? 'Resume motion' : 'Pause motion'}
-      </button>
+      <>
+        <button type="button" onClick={toggle} aria-pressed={paused}>
+          {paused ? 'Resume motion' : 'Pause motion'}
+        </button>
+        <span data-testid="system-preference">{reducedMotion ? 'reduced' : 'full'}</span>
+      </>
     );
   }
   return render(
@@ -113,6 +116,19 @@ describe('motion preference', () => {
     sessionStorage.setItem(preferenceKey, 'playing');
     await renderFreshProvider();
     expect(screen.getByRole('button', { name: 'Pause motion' })).toBeInTheDocument();
+    expect(screen.getByTestId('system-preference')).toHaveTextContent('reduced');
+  });
+
+  it('keeps system reduction current even when ambient playback is explicitly enabled', async () => {
+    const preference = mockReducedMotion(false);
+    sessionStorage.setItem(preferenceKey, 'playing');
+    await renderFreshProvider();
+    expect(screen.getByTestId('system-preference')).toHaveTextContent('full');
+    act(() => preference.change(true));
+    expect(screen.getByTestId('system-preference')).toHaveTextContent('reduced');
+    expect(screen.getByRole('button', { name: 'Pause motion' })).toBeInTheDocument();
+    act(() => preference.change(false));
+    expect(screen.getByTestId('system-preference')).toHaveTextContent('full');
   });
 
   it('ignores malformed saved preferences and follows the system', async () => {
@@ -138,7 +154,7 @@ describe('motion preference', () => {
   it('unsubscribes from system changes after the provider is removed', async () => {
     const preference = mockReducedMotion(false);
     const view = await renderFreshProvider();
-    expect(preference.listenerCount()).toBeGreaterThan(0);
+    expect(preference.listenerCount()).toBe(1);
     view.unmount();
     expect(preference.listenerCount()).toBe(0);
   });

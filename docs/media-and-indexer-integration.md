@@ -52,6 +52,14 @@ When live media is available, a local film may replace its larger original-web d
 
 The current manifests for token 31 advertise the Light/Ink stills whose hashes match the local copies and the original Ink film underlying its local delivery. Film and still identities were not substituted between tokens. No arbitrary unpublished 3D or synchronised film capability is advertised.
 
+## Compact catalogue films
+
+The collection's motion path is separate from `films`, which continues to represent complete viewing-room films. Optional `previewFilm` is attached only when a local registry entry matches the NFT's ID, seed, current published normal Ink film URL/hash and paired still hash. It must also meet strict duration, dimensions, byte-size and content-addressed filename bounds. A changed or unrecognized source receives a still, never the large original as an automatic substitute. See [collection preview delivery](collection-preview-delivery.md) for the distinction between publisher-declared original hashes and independently verified derivative hashes.
+
+As of October 23, 2026, 71 of the 72 observed works have published Ink films and corresponding eight-second catalogue excerpts. Token 0 has no published Ink film and retains its available expression. The excerpts total 37,652,880 bytes; each is below 1 MiB. These are observed counts, not a future collection limit. New NFTs still enter the catalogue automatically; their compact excerpts require the offline publishing step until the upstream renderer advertises a supported preview role. The full originals remain separate and available in the viewing room.
+
+The browser selects one visible excerpt per catalogue, waits for scrolling/intent to settle, and releases the previous source. It does not fetch all visible videos. Autoplay denial stops probing other films; explicit Pause then Resume can retry. Global pause, hidden documents, Save-Data and known slow effective connections suppress preview sources. Normal browser caching is safe because output URLs include their content hashes. Native navigation pairs the same token and expression; Light selection carries through to the destination and history pagination.
+
 ## Custody, availability and fallback UI
 
 `owner` is explicitly indexed ERC-721 custody. When anchored, this may be the anchoring contract. The participant is shown separately only when the detail endpoint supplies a valid `StakedOwnerAddr`. Never label that address as an independently verified live `ownerOf()` result. A fallback record omits ownership entirely.

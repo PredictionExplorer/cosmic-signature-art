@@ -15,6 +15,7 @@ import { ArtworkIdentity, ArtworkSources } from '@/components/artwork-record';
 import { ArtworkHistorySection, type HistoryQuery } from '@/components/artwork-history';
 import { ArtworkComposition } from '@/components/artwork-composition';
 import recordStyles from '@/components/artwork-record.module.css';
+import { artworkViewParams } from '@/lib/art/view';
 export async function generateMetadata({
   params,
 }: {
@@ -67,7 +68,12 @@ export default async function ArtworkPage({
         <Link href={localizedPath(locale, '/collection')}>← {t.backAtlas}</Link>
         <span className="eyebrow">{t.allWorks}</span>
       </div>
-      <ArtworkViewer artwork={work} t={t} initialStill={initialStill} />
+      <ArtworkViewer
+        artwork={work}
+        t={t}
+        initialStill={initialStill}
+        initialExpression={artworkViewParams(query).get('expression') ?? undefined}
+      />
       <section className="work-caption">
         <div>
           <p className="eyebrow">COSMIC SIGNATURE / № {String(work.id).padStart(3, '0')}</p>

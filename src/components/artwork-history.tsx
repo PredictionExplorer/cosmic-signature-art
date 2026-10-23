@@ -11,11 +11,11 @@ import type { Messages } from '@/lib/i18n/en';
 import { localizedPath, type Locale } from '@/lib/i18n/routing';
 import { ChainAddress, RecordDate } from './artwork-record';
 import styles from './artwork-record.module.css';
+import { artworkViewParams, type ArtworkViewQuery } from '@/lib/art/view';
 
-export interface HistoryQuery {
+export interface HistoryQuery extends ArtworkViewQuery {
   transfers?: string | string[];
   names?: string | string[];
-  view?: string | string[];
 }
 
 /** Only opaque validated continuations enter links or upstream requests. */
@@ -34,8 +34,7 @@ export function historyHref(
   stream: 'transfers' | 'names',
   cursor: string | null,
 ) {
-  const params = new URLSearchParams();
-  if (query.view === 'still') params.set('view', 'still');
+  const params = artworkViewParams(query);
   const other = stream === 'transfers' ? 'names' : 'transfers';
   const parsed = historyCursorSchema.safeParse(query[other]);
   if (parsed.success) params.set(other, parsed.data);
@@ -58,6 +57,7 @@ export async function ArtworkHistorySection({
   query: HistoryQuery;
 }) {
   const options = historyOptions(query);
+  const viewParams = artworkViewParams(query);
   if (!options)
     return (
       <section id="history" className={styles.history}>
@@ -66,7 +66,7 @@ export async function ArtworkHistorySection({
           className="text-link"
           href={localizedPath(
             locale,
-            `/art/${tokenId}${query.view === 'still' ? '?view=still' : ''}#history`,
+            `/art/${tokenId}${viewParams.size ? `?${viewParams}` : ''}#history`,
           )}
         >
           {t.latestEvents} ↗
