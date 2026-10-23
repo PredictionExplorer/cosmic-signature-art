@@ -1,6 +1,6 @@
 'use client';
 import Image from 'next/image';
-import { useEffect, useEffectEvent, useRef, useState } from 'react';
+import { useCallback, useEffect, useEffectEvent, useRef, useState } from 'react';
 import { useMotion } from './motion-provider';
 import type { ArtInterpretation } from '@/lib/art/types';
 
@@ -45,6 +45,22 @@ function ArtworkMediaSession({
   const { paused } = useMotion();
   const container = useRef<HTMLDivElement>(null);
   const video = useRef<HTMLVideoElement>(null);
+  const attachVideo = useCallback((player: HTMLVideoElement | null) => {
+    video.current = player;
+    if (!player) return;
+    return () => {
+      player.pause();
+      if (video.current === player) video.current = null;
+      // React also detaches refs during Strict Mode replay and Activity hiding. Wait
+      // until the commit finishes so only genuinely removed players release bytes
+      // and their decoder; a reused or merely hidden node keeps its playback position.
+      queueMicrotask(() => {
+        if (player.isConnected || video.current === player) return;
+        player.removeAttribute('src');
+        player.load();
+      });
+    };
+  }, []);
   const [visible, setVisible] = useState(false);
   const [pageVisible, setPageVisible] = useState(true);
   const [hasFrame, setHasFrame] = useState(false);
@@ -149,7 +165,7 @@ function ArtworkMediaSession({
       )}
       {film && !failed && (shouldPlay || hasPlayed) ? (
         <video
-          ref={video}
+          ref={attachVideo}
           src={film.src}
           muted
           playsInline

@@ -1,0 +1,152 @@
+/* Keep native pseudo-element selectors separate: CSS-module list rewriting can produce invalid :is() rules. */
+.stage {
+  width: 100%;
+  min-width: 0;
+}
+
+.stage[data-artwork-stage='room'] {
+  display: grid;
+  height: 100%;
+  min-height: 0;
+}
+
+.stage[data-artwork-stage='room'] > * {
+  min-width: 0;
+  min-height: 0;
+}
+
+/* The browser owns these short-lived still snapshots, never a second video player. */
+:global(:root):has(.stage):global(::view-transition) {
+  pointer-events: none;
+}
+
+:global(:root):has(.stage):global(::view-transition-old(root)) {
+  display: none;
+}
+
+:global(:root):has(.stage):global(::view-transition-new(root)) {
+  animation: none;
+}
+
+:global(:root):has(.stage):global(::view-transition-group(.cosmic-expression-to-light)) {
+  animation-duration: 650ms;
+  animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+}
+:global(:root):has(.stage):global(::view-transition-group(.cosmic-expression-to-ink)) {
+  animation-duration: 650ms;
+  animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+}
+:global(:root):has(.stage):global(::view-transition-group(.cosmic-expression-dissolve)) {
+  animation-duration: 650ms;
+  animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+:global(:root):has(.stage):global(::view-transition-old(.cosmic-expression-to-light)) {
+  animation: departure 650ms ease both;
+  mix-blend-mode: normal;
+  object-fit: contain;
+}
+:global(:root):has(.stage):global(::view-transition-old(.cosmic-expression-to-ink)) {
+  animation: departure 650ms ease both;
+  mix-blend-mode: normal;
+  object-fit: contain;
+}
+:global(:root):has(.stage):global(::view-transition-old(.cosmic-expression-dissolve)) {
+  animation: departure 650ms ease both;
+  mix-blend-mode: normal;
+  object-fit: contain;
+}
+
+:global(:root):has(.stage):global(::view-transition-new(.cosmic-expression-to-light)) {
+  animation: revealLight 650ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  mix-blend-mode: normal;
+  object-fit: contain;
+}
+
+:global(:root):has(.stage):global(::view-transition-new(.cosmic-expression-to-ink)) {
+  animation: revealInk 650ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  mix-blend-mode: normal;
+  object-fit: contain;
+}
+
+:global(:root):has(.stage):global(::view-transition-new(.cosmic-expression-dissolve)) {
+  animation: dissolve 650ms ease both;
+  mix-blend-mode: normal;
+  object-fit: contain;
+}
+
+@keyframes departure {
+  0%,
+  20% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes revealLight {
+  from {
+    opacity: 0;
+    clip-path: inset(0 100% 0 0);
+  }
+  65% {
+    opacity: 1;
+  }
+  to {
+    opacity: 1;
+    clip-path: inset(0);
+  }
+}
+
+@keyframes revealInk {
+  from {
+    opacity: 0;
+    clip-path: inset(0 0 0 100%);
+  }
+  65% {
+    opacity: 1;
+  }
+  to {
+    opacity: 1;
+    clip-path: inset(0);
+  }
+}
+
+@keyframes dissolve {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* A preference may change while a native snapshot is still on screen. */
+:global(:root):has(.stage):has(:global(.motion-paused)):global(::view-transition-group(*)) {
+  animation-duration: 0s !important;
+  animation-delay: 0s !important;
+}
+:global(:root):has(.stage):has(:global(.motion-paused)):global(::view-transition-old(*)) {
+  animation-duration: 0s !important;
+  animation-delay: 0s !important;
+}
+:global(:root):has(.stage):has(:global(.motion-paused)):global(::view-transition-new(*)) {
+  animation-duration: 0s !important;
+  animation-delay: 0s !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :global(:root):has(.stage):global(::view-transition-group(*)) {
+    animation-duration: 0s !important;
+    animation-delay: 0s !important;
+  }
+  :global(:root):has(.stage):global(::view-transition-old(*)) {
+    animation-duration: 0s !important;
+    animation-delay: 0s !important;
+  }
+  :global(:root):has(.stage):global(::view-transition-new(*)) {
+    animation-duration: 0s !important;
+    animation-delay: 0s !important;
+  }
+}

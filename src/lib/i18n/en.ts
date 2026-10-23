@@ -1,4 +1,10 @@
 export const en = {
+  preparingExpression: 'Opening this expression…',
+  expressionFailed: 'This expression could not be loaded. The current work remains on view.',
+  viewingRoom: 'The viewing room',
+  exitFullScreen: 'Exit fullscreen',
+  fullScreenUnavailable: 'Fullscreen is unavailable here. You can continue in the viewing room.',
+  loadingFilm: 'Loading the film…',
   noHistoryOnPage: 'No events are available on this page.',
   longStudy: 'Long study',
   extendedStudy: 'Extended study',

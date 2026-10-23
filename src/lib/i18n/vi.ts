@@ -1,6 +1,13 @@
 import type { Messages } from './en';
 
 export const vi: Messages = {
+  preparingExpression: 'Đang mở cách thể hiện này…',
+  expressionFailed: 'Không thể tải cách thể hiện này. Tác phẩm hiện tại vẫn được trưng bày.',
+  viewingRoom: 'Phòng thưởng lãm',
+  exitFullScreen: 'Thoát toàn màn hình',
+  fullScreenUnavailable:
+    'Không thể mở toàn màn hình tại đây. Bạn vẫn có thể tiếp tục xem trong phòng thưởng lãm.',
+  loadingFilm: 'Đang tải phim…',
   noHistoryOnPage: 'Không có sự kiện nào trên trang này.',
   longStudy: 'Khảo sát dài',
   extendedStudy: 'Khảo sát mở rộng',

@@ -1,4 +1,5 @@
 import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
+import { Activity, StrictMode } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { getCuratedArtwork } from '@/lib/art/catalog';
 import type { ArtInterpretation } from '@/lib/art/types';
@@ -70,10 +71,13 @@ beforeEach(() => {
   vi.spyOn(document, 'visibilityState', 'get').mockReturnValue('visible');
   vi.spyOn(HTMLMediaElement.prototype, 'play').mockResolvedValue();
   vi.spyOn(HTMLMediaElement.prototype, 'pause').mockImplementation(() => {});
+  vi.spyOn(HTMLMediaElement.prototype, 'load').mockImplementation(() => {});
 });
 
-afterEach(() => {
+afterEach(async () => {
   cleanup();
+  // Genuine DOM removal releases media at the end of the React commit.
+  await act(async () => {});
   vi.restoreAllMocks();
   vi.unstubAllGlobals();
   vi.useRealTimers();
@@ -128,6 +132,100 @@ describe('artwork media delivery', () => {
     expect(player(container)).toBe(video);
     expect(video.currentTime).toBe(17);
     expect(video).toHaveClass('has-frame');
+    expect(video).toHaveAttribute('src', '/art/31-ink-preview.mp4');
+    expect(HTMLMediaElement.prototype.load).not.toHaveBeenCalled();
+  });
+
+  it('releases a removed player’s source and decoder after navigation', async () => {
+    const { container, unmount } = render(<ArtworkMedia media={ink(31)} alt="Signature 31" />);
+    enterViewport();
+    const video = player(container);
+    fireEvent.playing(video);
+    vi.mocked(HTMLMediaElement.prototype.pause).mockClear();
+    unmount();
+    expect(vi.mocked(HTMLMediaElement.prototype.pause).mock.contexts).toContain(video);
+    await act(async () => {});
+    expect(video).not.toHaveAttribute('src');
+    expect(vi.mocked(HTMLMediaElement.prototype.load).mock.contexts).toEqual([video]);
+  });
+
+  it.each(['artwork', 'film source'] as const)(
+    'releases the old decoder when the %s changes without clearing the new player',
+    async (change) => {
+      const { container, rerender } = render(<ArtworkMedia media={ink(31)} alt="Signature 31" />);
+      enterViewport();
+      const previous = player(container);
+      fireEvent.playing(previous);
+      const updated =
+        change === 'artwork'
+          ? ink(23)
+          : {
+              ...ink(31),
+              films: [{ ...ink(31).films[0], src: '/art/31-ink-updated-preview.mp4' }],
+            };
+      rerender(<ArtworkMedia media={updated} alt="Updated artwork" />);
+      enterViewport(1);
+      const current = player(container);
+      await act(async () => {});
+      expect(previous).not.toBe(current);
+      expect(previous).not.toHaveAttribute('src');
+      expect(current).toHaveAttribute('src', updated.films[0].src);
+      expect(vi.mocked(HTMLMediaElement.prototype.load).mock.contexts).toEqual([previous]);
+    },
+  );
+
+  it('preserves the mounted source and position across global pause and still-view changes', async () => {
+    const { container, rerender } = render(<ArtworkMedia media={ink(31)} alt="Signature 31" />);
+    enterViewport();
+    const video = player(container);
+    fireEvent.playing(video);
+    video.currentTime = 12;
+    motion.paused = true;
+    rerender(<ArtworkMedia media={ink(31)} alt="Signature 31" still />);
+    await act(async () => {});
+    motion.paused = false;
+    rerender(<ArtworkMedia media={ink(31)} alt="Signature 31" />);
+    await act(async () => {});
+    expect(player(container)).toBe(video);
+    expect(video.currentTime).toBe(12);
+    expect(video).toHaveAttribute('src', '/art/31-ink-preview.mp4');
+    expect(HTMLMediaElement.prototype.load).not.toHaveBeenCalled();
+  });
+
+  it('does not release a video reattached during Strict Mode ref replay', async () => {
+    const { container } = render(
+      <StrictMode>
+        <ArtworkMedia media={ink(31)} alt="Signature 31" />
+      </StrictMode>,
+    );
+    act(() => VisibilityObserver.instances.at(-1)!.setVisible(true));
+    const video = player(container);
+    fireEvent.playing(video);
+    await act(async () => {});
+    expect(video).toHaveAttribute('src', '/art/31-ink-preview.mp4');
+    expect(HTMLMediaElement.prototype.load).not.toHaveBeenCalled();
+  });
+
+  it('preserves a connected player when React temporarily hides its Activity', async () => {
+    const view = (hidden: boolean) => (
+      <Activity mode={hidden ? 'hidden' : 'visible'}>
+        <ArtworkMedia media={ink(31)} alt="Signature 31" />
+      </Activity>
+    );
+    const { container, rerender } = render(view(false));
+    enterViewport();
+    const video = player(container);
+    fireEvent.playing(video);
+    video.currentTime = 12;
+    rerender(view(true));
+    await act(async () => {});
+    expect(video.isConnected).toBe(true);
+    expect(video).toHaveAttribute('src', '/art/31-ink-preview.mp4');
+    rerender(view(false));
+    await act(async () => {});
+    expect(player(container)).toBe(video);
+    expect(video.currentTime).toBe(12);
+    expect(HTMLMediaElement.prototype.load).not.toHaveBeenCalled();
   });
 
   it('acquires no film source while motion is paused, then retains a played frame when paused again', () => {

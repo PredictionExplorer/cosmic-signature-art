@@ -1,0 +1,217 @@
+.room {
+  --room-ink: var(--ink);
+  --room-muted: var(--muted);
+  --room-rule: var(--rule);
+  margin-inline: calc(-1 * var(--gutter));
+  padding: 0 var(--gutter) 36px;
+  background: var(--paper);
+  color: var(--room-ink);
+  transition:
+    background-color 650ms ease,
+    color 450ms ease;
+}
+.room[data-expression='light'] {
+  --room-ink: #f1ebdf;
+  --room-muted: #b8b1a4;
+  --room-rule: #f1ebdf38;
+  background: #000;
+}
+.topbar {
+  display: flex;
+  align-items: center;
+  gap: 25px;
+  min-height: 82px;
+  flex-wrap: wrap;
+  border-top: 1px solid var(--room-rule);
+}
+.topbar > p {
+  font-size: 9px;
+  color: var(--room-muted);
+}
+.expressions {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  margin-left: auto;
+}
+.expressions button {
+  display: flex;
+  gap: 10px;
+  align-items: baseline;
+  padding: 14px 0;
+  min-height: 48px;
+  font-family: var(--serif);
+  font-size: 28px;
+  color: var(--room-muted);
+  border-bottom: 1px solid transparent;
+}
+.expressions button[aria-pressed='true'] {
+  color: var(--room-ink);
+  border-bottom-color: currentColor;
+}
+.expressions button[aria-busy='true'] {
+  border-bottom-style: dashed;
+  border-bottom-color: currentColor;
+}
+.expressions button span {
+  font-family: var(--font-sans);
+  font-size: 8px;
+}
+.enlarge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-height: 44px;
+  font-size: 10px;
+  padding-left: 24px;
+}
+.media {
+  min-width: 0;
+  padding: 12px 0 24px;
+}
+.plate {
+  position: relative;
+  width: min(100%, calc(max(260px, 66svh) * 1.547));
+  margin: 0 auto;
+}
+.paired {
+  width: 100%;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 24px;
+  align-items: center;
+}
+.plate > img {
+  width: 100%;
+  height: auto;
+}
+.lower {
+  max-width: 1320px;
+  margin: 0 auto;
+}
+.transport {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 18px;
+  border-top: 1px solid var(--room-rule);
+  min-height: 60px;
+  font-size: 11px;
+}
+.transport button {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 44px;
+}
+.transport button[aria-pressed='true'] {
+  text-decoration: underline;
+  text-underline-offset: 5px;
+}
+.transport :global(.progress-track) {
+  flex: 1;
+  background: var(--room-rule);
+  min-width: 35px;
+}
+.transport :global(.progress-track i) {
+  background: var(--room-ink);
+}
+.clock {
+  font-size: 9px;
+  font-variant-numeric: tabular-nums;
+  color: var(--room-muted);
+}
+.previewLabel {
+  font-size: 9px;
+  color: var(--room-muted);
+}
+.rail {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 30px;
+  border-top: 1px solid var(--room-rule);
+  padding-top: 24px;
+}
+.ending {
+  font: 36px/1.15 var(--serif);
+  max-width: 400px;
+  letter-spacing: -0.025em;
+}
+.actions {
+  display: flex;
+  gap: 30px;
+  flex-wrap: wrap;
+}
+.actions button {
+  font-size: 11px;
+  border: 0;
+  min-height: 44px;
+}
+.status {
+  margin-top: 18px;
+  font-size: 11px;
+  color: var(--room-muted);
+}
+:global(.motion-paused) .room {
+  transition: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .room {
+    transition: none;
+  }
+}
+@media (max-width: 700px) {
+  .topbar {
+    gap: 8px 18px;
+    padding: 14px 0;
+  }
+  .topbar > p {
+    flex-basis: 100%;
+  }
+  .expressions {
+    margin-left: 0;
+    gap: 24px;
+  }
+  .expressions button {
+    font-size: 27px;
+    padding: 6px 0;
+  }
+  .enlarge {
+    margin-left: auto;
+    padding-left: 0;
+  }
+  .enlarge span {
+    display: none;
+  }
+  .media {
+    padding: 8px 0 18px;
+  }
+  .paired {
+    gap: 12px;
+  }
+  .transport {
+    gap: 10px;
+    font-size: 10px;
+    padding-block: 8px;
+  }
+  .transport :global(.progress-track) {
+    display: none;
+  }
+  .previewLabel {
+    margin-left: auto;
+  }
+  .rail {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 14px;
+    padding-top: 22px;
+  }
+  .ending {
+    font-size: 30px;
+  }
+  .actions {
+    gap: 10px 25px;
+  }
+}

@@ -2,13 +2,21 @@ import { act, cleanup, fireEvent, render, screen } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { ArtworkViewer } from './artwork-viewer';
 import { getCuratedArtwork } from '@/lib/art/catalog';
+import { withCollectionPreviews } from '@/lib/art/collection-previews';
 import { en } from '@/lib/i18n/en';
 
-const motion = vi.hoisted(() => ({ paused: false, toggle: vi.fn() }));
+const motion = vi.hoisted(() => ({ paused: false, reducedMotion: false, toggle: vi.fn() }));
+const imageDecode = Object.getOwnPropertyDescriptor(HTMLImageElement.prototype, 'decode');
+const networkConnection = Object.getOwnPropertyDescriptor(navigator, 'connection');
 vi.mock('./motion-provider', () => ({ useMotion: () => motion }));
 
 beforeEach(() => {
   motion.paused = false;
+  motion.reducedMotion = false;
+  Object.defineProperty(HTMLImageElement.prototype, 'decode', {
+    configurable: true,
+    value: vi.fn().mockResolvedValue(undefined),
+  });
   motion.toggle.mockClear();
   vi.stubGlobal(
     'IntersectionObserver',
@@ -26,6 +34,7 @@ beforeEach(() => {
   vi.spyOn(document, 'visibilityState', 'get').mockReturnValue('visible');
   vi.spyOn(HTMLMediaElement.prototype, 'play').mockResolvedValue();
   vi.spyOn(HTMLMediaElement.prototype, 'pause').mockImplementation(() => {});
+  vi.spyOn(HTMLMediaElement.prototype, 'load').mockImplementation(() => {});
   Object.defineProperty(HTMLDialogElement.prototype, 'showModal', {
     configurable: true,
     value: function (this: HTMLDialogElement) {
@@ -46,9 +55,17 @@ afterEach(() => {
   vi.unstubAllGlobals();
   Reflect.deleteProperty(HTMLDialogElement.prototype, 'close');
   Reflect.deleteProperty(HTMLDialogElement.prototype, 'showModal');
+  if (imageDecode) Object.defineProperty(HTMLImageElement.prototype, 'decode', imageDecode);
+  else Reflect.deleteProperty(HTMLImageElement.prototype, 'decode');
+  if (networkConnection) Object.defineProperty(navigator, 'connection', networkConnection);
+  else Reflect.deleteProperty(navigator, 'connection');
 });
 
-const work = getCuratedArtwork(31)!;
+function previewWork(id: number) {
+  const original = getCuratedArtwork(id)!;
+  return { ...original, media: withCollectionPreviews(original, original.media) };
+}
+const work = previewWork(31);
 function player(container: HTMLElement) {
   const element = container.querySelector('video');
   expect(element).not.toBeNull();
@@ -56,6 +73,88 @@ function player(container: HTMLElement) {
 }
 
 describe('artwork viewing controls', () => {
+  it.each([
+    { saveData: true, effectiveType: '4g' },
+    { saveData: false, effectiveType: '2g' },
+  ])(
+    'loads no ambient film on a constrained connection (%j), but honors an explicit Play',
+    (connection) => {
+      Object.defineProperty(navigator, 'connection', {
+        configurable: true,
+        value: Object.assign(new EventTarget(), connection),
+      });
+      const { container } = render(<ArtworkViewer artwork={work} t={en} />);
+      expect(container.querySelector('video')).toBeNull();
+      expect(screen.getByRole('img', { name: 'Signature 31 · Ink' })).toBeVisible();
+      fireEvent.click(screen.getByRole('button', { name: en.play }));
+      expect(player(container)).toHaveAttribute(
+        'src',
+        expect.stringMatching(/\/art\/previews\/31-[a-f\d]+\.mp4$/),
+      );
+      expect(screen.queryByRole('dialog')).toBeNull();
+    },
+  );
+
+  it('pauses a hidden document and preserves the compact preview’s position for returning visitors', () => {
+    const { container } = render(<ArtworkViewer artwork={work} t={en} />);
+    const preview = player(container);
+    expect(preview).toHaveAttribute(
+      'src',
+      expect.stringMatching(/\/art\/previews\/31-[a-f\d]+\.mp4$/),
+    );
+    fireEvent.playing(preview);
+    preview.currentTime = 3;
+    fireEvent.timeUpdate(preview);
+    vi.mocked(HTMLMediaElement.prototype.pause).mockClear();
+    vi.spyOn(document, 'visibilityState', 'get').mockReturnValue('hidden');
+    fireEvent(document, new Event('visibilitychange'));
+    expect(vi.mocked(HTMLMediaElement.prototype.pause).mock.contexts).toContain(preview);
+    expect(preview.currentTime).toBe(3);
+    vi.mocked(HTMLMediaElement.prototype.play).mockClear();
+    vi.spyOn(document, 'visibilityState', 'get').mockReturnValue('visible');
+    fireEvent(document, new Event('visibilitychange'));
+    expect(player(container)).toBe(preview);
+    expect(preview.currentTime).toBe(3);
+    expect(vi.mocked(HTMLMediaElement.prototype.play).mock.contexts).toContain(preview);
+  });
+
+  it('uses only a bounded preview for ambient movement and reserves complete films for an explicit request', () => {
+    const { container } = render(<ArtworkViewer artwork={work} t={en} />);
+    const preview = player(container);
+    expect(preview).toHaveAttribute(
+      'src',
+      expect.stringMatching(/\/art\/previews\/31-[a-f\d]+\.mp4$/),
+    );
+    expect(screen.getByText(en.mediaPreview)).toBeVisible();
+    fireEvent.playing(preview);
+    const enlarge = screen.getByRole('button', { name: en.enlarge });
+    // Like a Safari pointer click, fireEvent does not focus the launcher for us.
+    expect(enlarge).not.toHaveFocus();
+    fireEvent.click(enlarge);
+    const dialog = screen.getByRole('dialog');
+    expect(dialog.querySelector('video')).toBeNull();
+    expect(dialog.querySelector('img')).toHaveAttribute('alt', 'Signature 31 · Ink');
+    fireEvent.click(screen.getByRole('button', { name: en.close }));
+    expect(enlarge).toHaveFocus();
+    fireEvent.click(screen.getByRole('button', { name: en.completeFilm }));
+    expect(screen.getByRole('dialog').querySelector('video')).toHaveAttribute(
+      'src',
+      '/art/31-ink-preview.mp4',
+    );
+  });
+
+  it('does not substitute an unbounded complete film when a work has no browsing preview', () => {
+    const original = getCuratedArtwork(31)!;
+    const { container } = render(<ArtworkViewer artwork={original} t={en} />);
+    expect(container.querySelector('video')).toBeNull();
+    expect(screen.getByRole('img', { name: 'Signature 31 · Ink' })).toBeVisible();
+    fireEvent.click(screen.getByRole('button', { name: en.completeFilm }));
+    expect(screen.getByRole('dialog').querySelector('video')).toHaveAttribute(
+      'src',
+      '/art/31-ink-preview.mp4',
+    );
+  });
+
   it('opens the expression selected in the collection without first showing Ink', () => {
     const { container } = render(<ArtworkViewer artwork={work} t={en} initialExpression="light" />);
     expect(container.querySelector('.art-media')).toHaveAttribute('data-material', 'light');
@@ -91,8 +190,8 @@ describe('artwork viewing controls', () => {
       <ArtworkViewer artwork={work} t={en} initialExpression="ink" />,
     );
     const video = player(container);
-    Object.defineProperty(video, 'duration', { configurable: true, value: 30 });
-    video.currentTime = 19;
+    Object.defineProperty(video, 'duration', { configurable: true, value: 8 });
+    video.currentTime = 5;
     fireEvent.timeUpdate(video);
     fireEvent.error(video);
     expect(screen.getByRole('status')).toHaveTextContent(en.mediaUnavailable);
@@ -110,7 +209,7 @@ describe('artwork viewing controls', () => {
     const video = player(container);
     fireEvent.playing(video);
     expect(screen.getByRole('button', { name: 'Pause' })).toBeVisible();
-    video.currentTime = 30;
+    video.currentTime = 8;
     fireEvent.ended(video);
     expect(screen.queryByRole('button', { name: 'Pause' })).toBeNull();
     vi.mocked(HTMLMediaElement.prototype.play).mockClear();
@@ -132,30 +231,39 @@ describe('artwork viewing controls', () => {
     expect(motion.toggle).not.toHaveBeenCalled();
   });
 
-  it('forgets the prior artwork’s selected material, failure and comparison when identity changes', () => {
+  it('forgets the prior artwork’s selected material, failure and comparison when identity changes', async () => {
     const { container, rerender } = render(<ArtworkViewer artwork={work} t={en} />);
-    fireEvent.click(screen.getByRole('button', { name: /^02\s*Light/ }));
+    await act(async () => {
+      fireEvent.click(screen.getByRole('button', { name: /^02\s*Light/ }));
+    });
     fireEvent.error(screen.getByRole('img', { name: 'Signature 31 · Light' }));
     expect(screen.getByRole('status')).toHaveTextContent(en.mediaUnavailable);
-    rerender(<ArtworkViewer artwork={getCuratedArtwork(23)!} t={en} />);
+    rerender(<ArtworkViewer artwork={previewWork(23)} t={en} />);
     expect(screen.queryByRole('status')).toBeNull();
     expect(container.querySelector('.art-media')).toHaveAttribute('data-material', 'ink');
     expect(screen.getByRole('img', { name: 'Signature 23 · Ink' })).toHaveAttribute(
       'src',
       expect.stringMatching(/\/art\/23-ink.webp$/),
     );
-    expect(player(container)).toHaveAttribute('src', '/art/23-ink-preview.mp4');
+    expect(player(container)).toHaveAttribute(
+      'src',
+      expect.stringMatching(/\/art\/previews\/23-[a-f\d]+\.mp4$/),
+    );
   });
 
-  it('resets the clock when a new interpretation is selected', () => {
+  it('resets the clock when a new interpretation is selected', async () => {
     const { container } = render(<ArtworkViewer artwork={work} t={en} />);
     const video = player(container);
-    Object.defineProperty(video, 'duration', { configurable: true, value: 30 });
-    video.currentTime = 19;
+    Object.defineProperty(video, 'duration', { configurable: true, value: 8 });
+    video.currentTime = 5;
     fireEvent.timeUpdate(video);
-    expect(screen.getByText('00:19 / 00:30')).toBeVisible();
-    fireEvent.click(screen.getByRole('button', { name: /^02\s*Light/ }));
-    fireEvent.click(screen.getByRole('button', { name: /^01\s*Ink/ }));
+    expect(screen.getByText('00:05 / 00:08')).toBeVisible();
+    await act(async () => {
+      fireEvent.click(screen.getByRole('button', { name: /^02\s*Light/ }));
+    });
+    await act(async () => {
+      fireEvent.click(screen.getByRole('button', { name: /^01\s*Ink/ }));
+    });
     expect(screen.getByText('00:00 / 00:00')).toBeVisible();
   });
 
@@ -199,7 +307,10 @@ describe('artwork viewing controls', () => {
       expect(container.querySelector('.art-media video')).toBeNull();
       fireEvent.click(screen.getByRole('button', { name: control }));
       expect(screen.queryByRole('status')).toBeNull();
-      expect(player(container)).toHaveAttribute('src', '/art/31-ink-preview.mp4');
+      expect(player(container)).toHaveAttribute(
+        'src',
+        expect.stringMatching(/\/art\/previews\/31-[a-f\d]+\.mp4$/),
+      );
       fireEvent.playing(player(container));
       expect(screen.getByRole('button', { name: 'Pause' })).toBeVisible();
     },

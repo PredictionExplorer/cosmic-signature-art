@@ -1,6 +1,12 @@
 import type { Messages } from './en';
 
 export const ja: Messages = {
+  preparingExpression: 'この表現を開いています…',
+  expressionFailed: 'この表現を読み込めませんでした。現在の作品は引き続き表示されます。',
+  viewingRoom: '作品鑑賞室',
+  exitFullScreen: '全画面表示を終了',
+  fullScreenUnavailable: 'ここでは全画面表示を利用できません。鑑賞室で引き続きご覧いただけます。',
+  loadingFilm: '映像を読み込んでいます…',
   noHistoryOnPage: 'このページには表示できるイベントがありません。',
   longStudy: '長い習作',
   extendedStudy: 'さらに長い習作',

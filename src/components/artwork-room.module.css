@@ -1,0 +1,312 @@
+.dialog {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  height: 100dvh;
+  max-width: none;
+  max-height: none;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: var(--paper, #f1ebdf);
+  color: var(--ink, #22231f);
+  overscroll-behavior: contain;
+}
+
+.dialog::backdrop {
+  background: #000;
+}
+
+.room {
+  --room-surface: #f1ebdf;
+  --room-ink: #22231f;
+  --room-muted: #68685e;
+  --room-line: rgb(34 35 31 / 17%);
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto auto;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  background: var(--room-surface);
+  color: var(--room-ink);
+  transition:
+    background-color 600ms ease,
+    color 600ms ease;
+}
+
+.room[data-material='light'] {
+  --room-surface: #000;
+  --room-ink: #f1ebdf;
+  --room-muted: #b8b3a9;
+  --room-line: rgb(241 235 223 / 24%);
+}
+
+.room:fullscreen {
+  height: 100vh;
+  height: 100dvh;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: max(1rem, env(safe-area-inset-top)) max(2.5rem, env(safe-area-inset-right)) 0.6rem
+    max(2.5rem, env(safe-area-inset-left));
+}
+
+.title > span {
+  color: var(--room-muted);
+  font-size: 0.6rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.title p {
+  margin: 0.1rem 0 0;
+  font-family: var(--serif);
+  font-size: 1.5rem;
+  font-weight: 400;
+}
+
+.title p span {
+  margin-inline-start: 0.45em;
+}
+
+.close,
+.fullscreen,
+.expressions button,
+.switch button,
+.filmNotice button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  min-width: 44px;
+  min-height: 44px;
+  padding: 0.65rem 0.8rem;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  font-size: 0.7rem;
+  letter-spacing: 0.04em;
+}
+
+.room button:focus-visible,
+.room select:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 3px;
+}
+
+.close {
+  padding-inline-end: 0;
+}
+
+.canvas {
+  display: grid;
+  min-height: 0;
+  min-width: 0;
+  overflow: hidden;
+  padding: 0.8rem clamp(0.75rem, 3.5vw, 4rem);
+}
+
+.canvas > * {
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  min-width: 0;
+}
+
+.image,
+.video {
+  display: block;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  max-height: 100%;
+  object-fit: contain;
+  object-position: center;
+}
+
+.film,
+.still {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+}
+
+.filmNotice {
+  position: absolute;
+  inset-inline: 1rem;
+  bottom: 3.5rem;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  width: fit-content;
+  max-width: calc(100% - 2rem);
+  margin-inline: auto;
+  padding: 0.5rem 1rem;
+  background: var(--room-surface);
+  color: var(--room-ink);
+  font-size: 0.75rem;
+}
+
+.filmNotice button {
+  text-decoration: underline;
+  text-underline-offset: 0.25em;
+}
+
+.controls {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.5rem max(2.5rem, env(safe-area-inset-right)) 0 max(2.5rem, env(safe-area-inset-left));
+}
+
+.expressions,
+.switch,
+.transport {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.expressions button {
+  position: relative;
+  padding-inline: 0.3rem;
+  margin-inline-end: 1rem;
+  font-family: var(--serif);
+  font-size: 1.5rem;
+}
+
+.expressions button::after {
+  position: absolute;
+  inset-inline: 0.3rem;
+  bottom: 0.2rem;
+  height: 1px;
+  background: currentColor;
+  opacity: 0;
+  content: '';
+  transition: opacity 180ms ease;
+}
+
+.expressions button[aria-pressed='true']::after,
+.expressions button:hover::after {
+  opacity: 1;
+}
+
+.expressions button[aria-busy='true']::after {
+  opacity: 0.45;
+}
+
+.switch {
+  border: 1px solid var(--room-line);
+  border-radius: 100px;
+  gap: 0;
+  padding: 0.15rem;
+}
+
+.switch button {
+  min-height: 38px;
+  padding-inline: 1rem;
+  border-radius: inherit;
+  color: var(--room-muted);
+}
+
+.switch button[aria-pressed='true'] {
+  background: var(--room-ink);
+  color: var(--room-surface);
+}
+
+.transport {
+  justify-content: center;
+  gap: 1rem;
+}
+
+.variant select {
+  min-height: 44px;
+  max-width: 13rem;
+  padding: 0.5rem 1.5rem 0.5rem 0.7rem;
+  border: 0;
+  border-bottom: 1px solid var(--room-line);
+  border-radius: 0;
+  background: var(--room-surface);
+  color: inherit;
+  font: inherit;
+  font-size: 0.7rem;
+}
+
+.fullscreen {
+  justify-self: end;
+  padding-inline-end: 0;
+}
+
+.notice {
+  min-height: 1.7rem;
+  padding: 0.25rem 1rem max(0.5rem, env(safe-area-inset-bottom));
+  color: var(--room-muted);
+  text-align: center;
+  font-size: 0.7rem;
+}
+
+@media (max-width: 700px) {
+  .header {
+    padding-inline: max(1rem, env(safe-area-inset-left)) max(1rem, env(safe-area-inset-right));
+  }
+
+  .canvas {
+    padding-inline: 0;
+  }
+
+  .controls {
+    grid-template-columns: 1fr auto;
+    gap: 0.5rem;
+    padding-inline: max(1rem, env(safe-area-inset-left)) max(1rem, env(safe-area-inset-right));
+  }
+
+  .transport {
+    grid-column: 1 / -1;
+    grid-row: 2;
+  }
+
+  .expressions button {
+    font-size: 1.35rem;
+  }
+}
+
+@media (max-height: 480px) and (min-width: 701px) {
+  .header {
+    padding-top: max(0.4rem, env(safe-area-inset-top));
+  }
+
+  .title > span {
+    display: none;
+  }
+
+  .controls {
+    padding-top: 0;
+  }
+
+  .canvas {
+    padding-block: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .room,
+  .expressions button::after {
+    transition: none;
+  }
+}
+
+:global(.motion-paused) .room,
+:global(.motion-paused) .expressions button::after {
+  transition: none;
+}

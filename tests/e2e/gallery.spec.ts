@@ -354,7 +354,7 @@ test('artwork comparison and enlarged viewer preserve identity and Escape return
   await enlarge.press('Enter');
   const dialog = page.getByRole('dialog');
   await expect(dialog).toBeVisible();
-  await expect(dialog).toHaveAccessibleName('Signature 31');
+  await expect(dialog).toHaveAccessibleName(`Signature 31 · ${catalogs.en.viewingRoom}`);
   await expect(dialog.locator('img')).toHaveAttribute(
     'src',
     /(?:\/art\/31-ink.webp|ember_full.webp)$/,
@@ -390,10 +390,7 @@ test('Play from a still starts the intended film with one explicit action', asyn
   );
   await room.getByRole('button', { name: 'Play', exact: true }).click();
   await expect(room.getByRole('button', { name: 'Pause', exact: true })).toBeVisible();
-  await expect(room.locator('video')).toHaveAttribute(
-    'src',
-    /(?:\/art\/31-ink-preview.mp4|\/videos\/web\/ember.mp4)$/,
-  );
+  await expect(room.locator('video')).toHaveAttribute('src', /\/art\/previews\/31-[a-f\d]+\.mp4$/);
   await expect
     .poll(() => room.locator('video').evaluate((element) => (element as HTMLVideoElement).paused))
     .toBe(false);

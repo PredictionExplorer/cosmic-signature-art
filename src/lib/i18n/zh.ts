@@ -1,6 +1,12 @@
 import type { Messages } from './en';
 
 export const zh: Messages = {
+  preparingExpression: '正在打开这一呈现…',
+  expressionFailed: '无法载入这一呈现。当前作品仍可观赏。',
+  viewingRoom: '作品观览室',
+  exitFullScreen: '退出全屏',
+  fullScreenUnavailable: '此处无法使用全屏模式，仍可在观览室中继续欣赏。',
+  loadingFilm: '正在载入影片…',
   noHistoryOnPage: '此页没有可用的事件记录。',
   longStudy: '长时研究',
   extendedStudy: '延展研究',

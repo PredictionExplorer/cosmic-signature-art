@@ -1,6 +1,13 @@
 import type { Messages } from './en';
 
 export const ko: Messages = {
+  preparingExpression: '이 표현을 여는 중입니다…',
+  expressionFailed: '이 표현을 불러올 수 없습니다. 현재 작품은 계속 표시됩니다.',
+  viewingRoom: '작품 감상실',
+  exitFullScreen: '전체 화면 종료',
+  fullScreenUnavailable:
+    '여기서는 전체 화면을 사용할 수 없습니다. 감상실에서 계속 감상할 수 있습니다.',
+  loadingFilm: '영상을 불러오는 중입니다…',
   noHistoryOnPage: '이 페이지에는 표시할 이벤트가 없습니다.',
   longStudy: '긴 관찰',
   extendedStudy: '더 긴 관찰',

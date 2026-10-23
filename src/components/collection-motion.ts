@@ -2,37 +2,10 @@
 
 import { useEffect, useRef, useState, useSyncExternalStore } from 'react';
 import { useMotion } from './motion-provider';
+import { useMediaPolicy } from './media-policy';
 
 type Intent = 'pointer' | 'focus';
 export type PreviewFailure = 'media' | 'autoplay';
-type Connection = EventTarget & { saveData?: boolean; effectiveType?: string };
-
-function connection(): Connection | undefined {
-  return (navigator as Navigator & { connection?: Connection }).connection;
-}
-
-function canPreview() {
-  const network = connection();
-  return (
-    document.visibilityState === 'visible' &&
-    !network?.saveData &&
-    network?.effectiveType !== 'slow-2g' &&
-    network?.effectiveType !== '2g' &&
-    network?.effectiveType !== '3g'
-  );
-}
-
-function subscribePolicy(listener: () => void) {
-  const network = connection();
-  document.addEventListener('visibilitychange', listener);
-  network?.addEventListener('change', listener);
-  return () => {
-    document.removeEventListener('visibilitychange', listener);
-    network?.removeEventListener('change', listener);
-  };
-}
-
-const noPreviewOnServer = () => false;
 const noSelectionOnServer = () => null;
 const SETTLE_MS = 240;
 const INTENT_MS = 140;
@@ -169,7 +142,8 @@ class CollectionMotionController {
 /** Attach `gridRef` to the grid and `data-preview-id` to each card. */
 export function useCollectionMotion({ enabled, ids }: { enabled: boolean; ids: number[] }) {
   const { paused } = useMotion();
-  const policyAllows = useSyncExternalStore(subscribePolicy, canPreview, noPreviewOnServer);
+  const { visible, constrained } = useMediaPolicy();
+  const policyAllows = visible && !constrained;
   const allowed = enabled && !paused && policyAllows;
   const gridRef = useRef<HTMLDivElement>(null);
   const [controller] = useState(() => new CollectionMotionController());

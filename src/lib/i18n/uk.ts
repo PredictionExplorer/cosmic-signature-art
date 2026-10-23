@@ -1,6 +1,13 @@
 import type { Messages } from './en';
 
 export const uk: Messages = {
+  preparingExpression: 'Відкриваємо це втілення…',
+  expressionFailed: 'Не вдалося завантажити це втілення. Попереднє залишається перед вами.',
+  viewingRoom: 'Зала споглядання',
+  exitFullScreen: 'Вийти з повноекранного режиму',
+  fullScreenUnavailable:
+    'Повноекранний режим тут недоступний. Перегляд можна продовжити в залі споглядання.',
+  loadingFilm: 'Завантажуємо фільм…',
   noHistoryOnPage: 'На цій сторінці немає доступних подій.',
   longStudy: 'Тривалий етюд',
   extendedStudy: 'Розширений етюд',
