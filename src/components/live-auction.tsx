@@ -27,15 +27,14 @@ type EventProvider = EIP1193Provider;
 function isUnknownAuction(error: unknown): boolean {
   return error instanceof Error && error.message.includes('UnknownAuction');
 }
-export function LiveAuction({
-  tokenId,
-  t,
-  locale,
-}: {
-  tokenId: number;
-  t: Messages;
-  locale: Locale;
-}) {
+type LiveAuctionProps = { tokenId: number; t: Messages; locale: Locale };
+
+export function LiveAuction(props: LiveAuctionProps) {
+  // A reviewed payment and all asynchronous wallet work belong to exactly one lot.
+  return <AuctionSession key={props.tokenId} {...props} />;
+}
+
+function AuctionSession({ tokenId, t, locale }: LiveAuctionProps) {
   const [snapshot, setSnapshot] = useState<Snapshot | null>(null);
   const [problem, setProblem] = useState<string | null>(null);
   const [providers, setProviders] = useState<ProviderDetail[]>([]);
@@ -112,9 +111,19 @@ export function LiveAuction({
       setSnapshot(null);
       setRefreshCounter((value) => value + 1);
     };
+    const disconnected = () => {
+      setAccount(null);
+      setProvider(null);
+      setWalletChain(null);
+      setRecipient('');
+      setReview(null);
+      setSnapshot(null);
+    };
+    provider.on?.('disconnect', disconnected);
     provider.on?.('accountsChanged', accountsChanged);
     provider.on?.('chainChanged', chainChanged);
     return () => {
+      provider.removeListener?.('disconnect', disconnected);
       provider.removeListener?.('accountsChanged', accountsChanged);
       provider.removeListener?.('chainChanged', chainChanged);
     };
@@ -173,6 +182,8 @@ export function LiveAuction({
       const addresses = await detail.provider.request({ method: 'eth_requestAccounts' });
       const network = await detail.provider.request({ method: 'eth_chainId' });
       if (active.current && addresses[0]) {
+        setSnapshot(null);
+        setReview(null);
         setProvider(detail.provider);
         setAccount(addresses[0]);
         setWalletChain(Number.parseInt(network, 16));
@@ -247,7 +258,11 @@ export function LiveAuction({
   } catch {
     /* A competing bid invalidates the review without changing the user's amount. */
   }
-  const reviewValid = review !== null && funding !== null && funding === review.funding;
+  const reviewValid =
+    review !== null &&
+    funding !== null &&
+    funding === review.funding &&
+    (phase === 'waiting' || phase === 'active');
   const remaining = snapshot
     ? Math.max(
         0,
@@ -334,6 +349,9 @@ export function LiveAuction({
               onClick={() => {
                 setAccount(null);
                 setProvider(null);
+                setWalletChain(null);
+                setRecipient('');
+                setSnapshot(null);
                 setReview(null);
               }}
               disabled={pending}

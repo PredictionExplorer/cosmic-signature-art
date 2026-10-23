@@ -6,15 +6,74 @@ import { getInterpretation, type Artwork } from '@/lib/art/types';
 import type { Messages } from '@/lib/i18n/en';
 import { ArtworkMedia } from './artwork-media';
 import { useMotion } from './motion-provider';
-export function ArtworkViewer({
-  artwork,
-  t,
-  initialStill = false,
-}: {
+type ArtworkViewerProps = {
   artwork: Artwork;
   t: Messages;
   initialStill?: boolean;
+};
+
+/** Explicit full-film playback is independent of ambient motion, but never runs in a hidden tab. */
+function DialogFilm({
+  media,
+  label,
+  unavailable,
+}: {
+  media: NonNullable<ReturnType<typeof getInterpretation>>;
+  label: string;
+  unavailable: string;
 }) {
+  const video = useRef<HTMLVideoElement>(null);
+  const [failed, setFailed] = useState(false);
+  useEffect(() => {
+    const player = video.current;
+    if (!player) return;
+    let resume = true;
+    const visibility = () => {
+      if (document.visibilityState === 'visible') {
+        if (resume)
+          void player.play().catch(() => {
+            /* Native controls allow retry. */
+          });
+      } else {
+        resume = !player.paused && !player.ended;
+        player.pause();
+      }
+    };
+    document.addEventListener('visibilitychange', visibility);
+    visibility();
+    return () => {
+      document.removeEventListener('visibilitychange', visibility);
+      player.pause();
+    };
+  }, []);
+  return (
+    <>
+      <video
+        ref={video}
+        src={media.films[0].src}
+        poster={media.still}
+        controls
+        muted
+        playsInline
+        aria-label={label}
+        onError={() => setFailed(true)}
+      />
+      {failed ? (
+        <p className="notice" role="status">
+          {unavailable}
+        </p>
+      ) : null}
+    </>
+  );
+}
+
+export function ArtworkViewer(props: ArtworkViewerProps) {
+  return (
+    <ArtworkViewerSession key={`${props.artwork.id}:${props.initialStill ?? false}`} {...props} />
+  );
+}
+
+function ArtworkViewerSession({ artwork, t, initialStill = false }: ArtworkViewerProps) {
   const [mode, setMode] = useState(
     artwork.media.some((m) => m.id === 'ink') ? 'ink' : (artwork.media[0]?.id ?? 'light'),
   );
@@ -23,6 +82,8 @@ export function ArtworkViewer({
   const [open, setOpen] = useState(false);
   const [dialogFilm, setDialogFilm] = useState(false);
   const [restart, setRestart] = useState(0);
+  const [playRequest, setPlayRequest] = useState(0);
+  const [playing, setPlaying] = useState(false);
   const [time, setTime] = useState({ current: 0, duration: 0 });
   const [failed, setFailed] = useState(false);
   const dialog = useRef<HTMLDialogElement>(null);
@@ -60,6 +121,8 @@ export function ArtworkViewer({
               priority
               still={still || open}
               restart={restart}
+              playRequest={playRequest}
+              onPlaybackChange={setPlaying}
               onProgress={(current, duration) => setTime({ current, duration })}
               onFailure={() => setFailed(true)}
             />
@@ -75,7 +138,7 @@ export function ArtworkViewer({
             <button
               className="enlarge-button"
               onClick={() => {
-                setDialogFilm(!still && !paused);
+                setDialogFilm(!still && !paused && playing);
                 setOpen(true);
               }}
               aria-label={t.enlarge}
@@ -87,17 +150,21 @@ export function ArtworkViewer({
             <div className="work-transport">
               <button
                 onClick={() => {
-                  if (still) {
+                  if (playing && !paused && !still) toggle();
+                  else {
+                    setFailed(false);
                     setStill(false);
+                    setPlayRequest((value) => value + 1);
                     if (paused) toggle();
-                  } else toggle();
+                  }
                 }}
               >
-                {paused || still ? <Play size={12} /> : <Pause size={12} />}{' '}
-                {paused || still ? t.play : t.pause}
+                {paused || still || !playing ? <Play size={12} /> : <Pause size={12} />}{' '}
+                {paused || still || !playing ? t.play : t.pause}
               </button>
               <button
                 onClick={() => {
+                  setFailed(false);
                   setStill(false);
                   setRestart((value) => value + 1);
                   if (paused) toggle();
@@ -133,9 +200,13 @@ export function ArtworkViewer({
                 <button
                   key={item.id}
                   onClick={() => {
-                    setMode(item.id);
+                    if (mode !== item.id) {
+                      setMode(item.id);
+                      setTime({ current: 0, duration: 0 });
+                      setPlaying(false);
+                      setFailed(false);
+                    }
                     setCompare(false);
-                    setFailed(false);
                   }}
                   aria-pressed={mode === item.id}
                 >
@@ -187,14 +258,10 @@ export function ArtworkViewer({
         </button>
         {open ? (
           media?.films[0] && dialogFilm ? (
-            <video
-              src={media.films[0].src}
-              poster={media.still}
-              controls
-              autoPlay
-              muted
-              playsInline
-              aria-label={`${t.signature} ${artwork.id} · ${t.film}`}
+            <DialogFilm
+              media={media}
+              label={`${t.signature} ${artwork.id} · ${t.film}`}
+              unavailable={t.mediaUnavailable}
             />
           ) : media?.still ? (
             <Image

@@ -7,6 +7,7 @@ import { metadata, jsonLd, NFT_ADDRESS, SITE_URL } from '@/lib/site';
 import { getArtwork } from '@/lib/art/server';
 import { parseArtworkId } from '@/lib/art/validation';
 import { getInterpretation } from '@/lib/art/types';
+import { artworkSharingImage } from '@/lib/art/sharing';
 import { ArtworkViewer } from '@/components/artwork-viewer';
 import { AuctionPanel } from '@/components/auction-panel';
 export async function generateMetadata({
@@ -16,8 +17,17 @@ export async function generateMetadata({
 }) {
   const { locale, id } = await params;
   if (!isLocale(locale)) return {};
+  const tokenId = parseArtworkId(id);
+  if (tokenId === null) return {};
   const t = messages(locale);
-  return metadata(locale, `/art/${id}`, `${t.signature} ${id}`, t.workCopy);
+  const { artwork } = await getArtwork(tokenId);
+  return metadata(
+    locale,
+    `/art/${tokenId}`,
+    `${t.signature} ${tokenId}`,
+    t.workCopy,
+    artworkSharingImage(artwork, `${t.signature} ${tokenId}`),
+  );
 }
 export default async function ArtworkPage({
   params,
@@ -137,7 +147,7 @@ export default async function ArtworkPage({
             '@type': 'VisualArtwork',
             name: `Cosmic Signature ${work.id}`,
             url: `${SITE_URL}${localizedPath(locale, `/art/${work.id}`)}`,
-            image: light?.still,
+            image: getInterpretation(work, 'ink')?.still ?? light?.still,
             artform: 'Generative digital art',
             identifier: String(work.id),
           }),

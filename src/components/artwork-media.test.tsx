@@ -112,17 +112,22 @@ describe('artwork media delivery', () => {
     expect(HTMLMediaElement.prototype.play).not.toHaveBeenCalled();
   });
 
-  it('pauses a playing film and releases its source when it leaves the viewport', () => {
+  it('pauses offscreen films and resumes the same frame without reloading or resetting the excerpt', () => {
     const { container } = render(<ArtworkMedia media={ink(31)} alt="Signature 31 in ink" />);
     enterViewport();
     const video = player(container);
+    fireEvent.playing(video);
+    video.currentTime = 17;
     expect(HTMLMediaElement.prototype.play).toHaveBeenCalled();
     vi.mocked(HTMLMediaElement.prototype.pause).mockClear();
     act(() => VisibilityObserver.instances[0].setVisible(false));
     expect(HTMLMediaElement.prototype.pause).toHaveBeenCalled();
     expect(vi.mocked(HTMLMediaElement.prototype.pause).mock.contexts).toContain(video);
-    expect(container.querySelector('video')).toBeNull();
-    expect(screen.getByRole('img')).toBeInTheDocument();
+    expect(player(container)).toBe(video);
+    enterViewport();
+    expect(player(container)).toBe(video);
+    expect(video.currentTime).toBe(17);
+    expect(video).toHaveClass('has-frame');
   });
 
   it('acquires no film source while motion is paused, then retains a played frame when paused again', () => {
@@ -241,7 +246,7 @@ describe('artwork media delivery', () => {
     expect(video.currentTime).toBe(0);
   });
 
-  it('does not restart a repeating film after global pause cancels the scheduled replay', () => {
+  it('suspends a scheduled replay while paused and resumes it after motion is enabled', () => {
     vi.useFakeTimers();
     const { container, rerender } = render(
       <ArtworkMedia media={ink(31)} alt="Signature 31 in ink" repeat />,
@@ -254,5 +259,154 @@ describe('artwork media delivery', () => {
     vi.mocked(HTMLMediaElement.prototype.play).mockClear();
     act(() => vi.advanceTimersByTime(5_000));
     expect(HTMLMediaElement.prototype.play).not.toHaveBeenCalled();
+    motion.paused = false;
+    rerender(<ArtworkMedia media={ink(31)} alt="Signature 31 in ink" repeat />);
+    act(() => vi.advanceTimersByTime(2_200));
+    expect(player(container).currentTime).toBe(0);
+    expect(HTMLMediaElement.prototype.play).toHaveBeenCalledOnce();
   });
+
+  it('resumes a replay interrupted during the fade without losing the video element', () => {
+    vi.useFakeTimers();
+    const { container, rerender } = render(
+      <ArtworkMedia media={ink(31)} alt="Signature 31 in ink" repeat startAt={9} />,
+    );
+    enterViewport();
+    const video = player(container);
+    fireEvent.playing(video);
+    fireEvent.ended(video);
+    act(() => vi.advanceTimersByTime(1_800));
+    expect(video).not.toHaveClass('has-frame');
+    motion.paused = true;
+    rerender(<ArtworkMedia media={ink(31)} alt="Signature 31 in ink" repeat startAt={9} />);
+    expect(player(container)).toBe(video);
+    vi.mocked(HTMLMediaElement.prototype.play).mockClear();
+    act(() => vi.advanceTimersByTime(5_000));
+    expect(HTMLMediaElement.prototype.play).not.toHaveBeenCalled();
+    motion.paused = false;
+    rerender(<ArtworkMedia media={ink(31)} alt="Signature 31 in ink" repeat startAt={9} />);
+    act(() => vi.advanceTimersByTime(600));
+    expect(player(container)).toBe(video);
+    expect(video.currentTime).toBe(0);
+    expect(HTMLMediaElement.prototype.play).toHaveBeenCalledOnce();
+  });
+
+  it('an explicit restart cancels a pending replay instead of rewinding twice', () => {
+    vi.useFakeTimers();
+    const { container, rerender } = render(
+      <ArtworkMedia media={ink(31)} alt="Signature 31 in ink" repeat />,
+    );
+    enterViewport();
+    const video = player(container);
+    fireEvent.playing(video);
+    fireEvent.ended(video);
+    act(() => vi.advanceTimersByTime(1_000));
+    rerender(<ArtworkMedia media={ink(31)} alt="Signature 31 in ink" repeat restart={1} />);
+    video.currentTime = 3;
+    vi.mocked(HTMLMediaElement.prototype.play).mockClear();
+    act(() => vi.advanceTimersByTime(5_000));
+    expect(video.currentTime).toBe(3);
+    expect(HTMLMediaElement.prototype.play).not.toHaveBeenCalled();
+  });
+
+  it('retries a blocked play request and replays a finished film only on explicit request', async () => {
+    const onPlaybackChange = vi.fn();
+    vi.mocked(HTMLMediaElement.prototype.play).mockRejectedValueOnce(
+      new DOMException('Autoplay blocked', 'NotAllowedError'),
+    );
+    const { container, rerender } = render(
+      <ArtworkMedia media={ink(31)} alt="Signature 31" onPlaybackChange={onPlaybackChange} />,
+    );
+    await act(async () => VisibilityObserver.instances[0].setVisible(true));
+    expect(onPlaybackChange).toHaveBeenLastCalledWith(false);
+    rerender(
+      <ArtworkMedia
+        media={ink(31)}
+        alt="Signature 31"
+        playRequest={1}
+        onPlaybackChange={onPlaybackChange}
+      />,
+    );
+    const video = player(container);
+    fireEvent.playing(video);
+    expect(onPlaybackChange).toHaveBeenLastCalledWith(true);
+    video.currentTime = 30;
+    fireEvent.ended(video);
+    expect(onPlaybackChange).toHaveBeenLastCalledWith(false);
+    vi.mocked(HTMLMediaElement.prototype.play).mockClear();
+    act(() => VisibilityObserver.instances[0].setVisible(false));
+    enterViewport();
+    expect(HTMLMediaElement.prototype.play).not.toHaveBeenCalled();
+    rerender(
+      <ArtworkMedia
+        media={ink(31)}
+        alt="Signature 31"
+        playRequest={2}
+        onPlaybackChange={onPlaybackChange}
+      />,
+    );
+    expect(video.currentTime).toBe(0);
+    expect(HTMLMediaElement.prototype.play).toHaveBeenCalledOnce();
+  });
+
+  it('resets image and video failures when the artwork source changes', () => {
+    const { container, rerender } = render(<ArtworkMedia media={ink(31)} alt="Signature 31" />);
+    enterViewport();
+    fireEvent.error(player(container));
+    fireEvent.error(screen.getByRole('img'));
+    expect(screen.getByRole('img')).not.toHaveAttribute('src');
+    rerender(<ArtworkMedia media={ink(23)} alt="Signature 23" />);
+    enterViewport(1);
+    expect(imagePath()).toBe('/art/23-ink.webp');
+    expect(player(container)).toHaveAttribute('src', '/art/23-ink-preview.mp4');
+    expect(player(container)).not.toHaveClass('has-frame');
+  });
+
+  it('does not interrupt playback when a parent updates its progress callback', () => {
+    const { container, rerender } = render(
+      <ArtworkMedia media={ink(31)} alt="Signature 31" onProgress={() => {}} />,
+    );
+    enterViewport();
+    fireEvent.playing(player(container));
+    vi.mocked(HTMLMediaElement.prototype.play).mockClear();
+    vi.mocked(HTMLMediaElement.prototype.pause).mockClear();
+    rerender(<ArtworkMedia media={ink(31)} alt="Signature 31" onProgress={() => {}} />);
+    expect(HTMLMediaElement.prototype.play).not.toHaveBeenCalled();
+    expect(HTMLMediaElement.prototype.pause).not.toHaveBeenCalled();
+  });
+
+  it('uses an advertised thumbnail for collection cards and falls back only to the same canonical still', () => {
+    const media = { ...ink(31), thumbnail: '/art/31-ink-thumb.webp' };
+    const onFailure = vi.fn();
+    render(<ArtworkMedia media={media} alt="Signature 31" still thumbnail onFailure={onFailure} />);
+    expect(imagePath()).toBe('/art/31-ink-thumb.webp');
+    fireEvent.error(screen.getByRole('img'));
+    expect(imagePath()).toBe('/art/31-ink.webp');
+    expect(onFailure).not.toHaveBeenCalled();
+    fireEvent.error(screen.getByRole('img'));
+    expect(screen.getByRole('img')).not.toHaveAttribute('src');
+    expect(onFailure).toHaveBeenCalledOnce();
+  });
+
+  it.each(['playRequest', 'restart'] as const)(
+    'only an explicit %s retries a failed film and hides it until a new decoded frame',
+    (request) => {
+      const { container, rerender } = render(<ArtworkMedia media={ink(31)} alt="Signature 31" />);
+      enterViewport();
+      const failedPlayer = player(container);
+      fireEvent.playing(failedPlayer);
+      fireEvent.error(failedPlayer);
+      expect(container.querySelector('video')).toBeNull();
+      act(() => VisibilityObserver.instances[0].setVisible(false));
+      enterViewport();
+      expect(container.querySelector('video')).toBeNull();
+      rerender(<ArtworkMedia media={ink(31)} alt="Signature 31" {...{ [request]: 1 }} />);
+      const retriedPlayer = player(container);
+      expect(retriedPlayer).not.toBe(failedPlayer);
+      expect(retriedPlayer).not.toHaveClass('has-frame');
+      expect(retriedPlayer).toHaveAttribute('src', '/art/31-ink-preview.mp4');
+      fireEvent.playing(retriedPlayer);
+      expect(retriedPlayer).toHaveClass('has-frame');
+    },
+  );
 });

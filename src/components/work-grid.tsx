@@ -34,6 +34,7 @@ export function WorkGrid({ works, locale, t }: { works: Artwork[]; locale: Local
                 media={media}
                 alt={`${t.signature} ${work.id}`}
                 still
+                thumbnail
               />
               <div className="work-card-caption">
                 <span>

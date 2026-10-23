@@ -1,5 +1,5 @@
-import { act, render, screen, waitFor } from '@testing-library/react';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 const mocked = vi.hoisted(() => ({ readBatch: vi.fn() }));
 vi.mock('@/lib/auction/client', () => mocked);
 vi.mock('./artwork-media', () => ({
@@ -21,6 +21,12 @@ const lot = {
 };
 beforeEach(() => {
   vi.clearAllMocks();
+  mocked.readBatch.mockReset();
+  Object.defineProperty(document, 'hidden', { configurable: true, value: false });
+});
+afterEach(() => {
+  vi.useRealTimers();
+  vi.restoreAllMocks();
 });
 describe('auction discovery keeps financial access independent of media', () => {
   it('retains all authenticated lot links when every media request fails', async () => {
@@ -84,5 +90,108 @@ describe('auction discovery keeps financial access independent of media', () => 
     const signal = (fetch.mock.calls[7] as unknown as [string, RequestInit])[1].signal!;
     view.unmount();
     expect(signal.aborted).toBe(true);
+  });
+});
+
+function batch(id = 72, highestBid = MINIMUM_BID) {
+  return {
+    count: 2n,
+    ids: [id],
+    blockTime: 110n,
+    lots: [{ tokenId: id, lot: { ...lot, highestBid } }],
+  };
+}
+
+function deferred<T>() {
+  let resolve!: (value: T) => void;
+  const promise = new Promise<T>((done) => {
+    resolve = done;
+  });
+  return { promise, resolve };
+}
+
+describe('auction discovery freshness and pagination', () => {
+  beforeEach(() => {
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(Response.json({ artwork: null })));
+  });
+
+  it('polls changed financial state without restarting media loading and skips hidden polling', async () => {
+    vi.useFakeTimers();
+    mocked.readBatch.mockResolvedValue(batch());
+    render(<AuctionGallery locale="en" t={en} />);
+    await act(async () => {
+      await Promise.resolve();
+    });
+    expect(screen.getByText('0.00001 ETH')).toBeVisible();
+    expect(fetch).toHaveBeenCalledOnce();
+    mocked.readBatch.mockResolvedValue(batch(72, MINIMUM_BID * 2n));
+    await act(async () => {
+      vi.advanceTimersByTime(12000);
+    });
+    expect(screen.getByText('0.00002 ETH')).toBeVisible();
+    expect(fetch).toHaveBeenCalledOnce();
+    Object.defineProperty(document, 'hidden', { configurable: true, value: true });
+    await act(async () => {
+      vi.advanceTimersByTime(12000);
+    });
+    expect(mocked.readBatch).toHaveBeenCalledTimes(2);
+    Object.defineProperty(document, 'hidden', { configurable: true, value: false });
+    fireEvent(document, new Event('visibilitychange'));
+    await act(async () => {
+      await Promise.resolve();
+    });
+    expect(mocked.readBatch).toHaveBeenCalledTimes(3);
+  });
+
+  it('retains lot access but hides stale prices during an unresolved RPC refresh', async () => {
+    vi.useFakeTimers();
+    mocked.readBatch.mockResolvedValue(batch());
+    render(<AuctionGallery locale="en" t={en} />);
+    await act(async () => {
+      await Promise.resolve();
+    });
+    expect(screen.getByText('0.00001 ETH')).toBeVisible();
+    mocked.readBatch.mockReturnValue(new Promise(() => undefined));
+    await act(async () => {
+      vi.advanceTimersByTime(26000);
+    });
+    expect(screen.queryByText('0.00001 ETH')).toBeNull();
+    expect(screen.getByText(en.liveUnavailable)).toBeVisible();
+    expect(screen.getByRole('link', { name: /Signature 72/ })).toHaveAttribute(
+      'href',
+      '/auctions/72',
+    );
+    expect(mocked.readBatch).toHaveBeenCalledTimes(2);
+  });
+
+  it('clears previous-page lots while loading, blocks page skipping, and retains recovery navigation on failure', async () => {
+    mocked.readBatch.mockResolvedValueOnce(batch()).mockRejectedValueOnce(new Error('RPC failure'));
+    render(<AuctionGallery locale="en" t={en} />);
+    await screen.findByRole('link', { name: /Signature 72/ });
+    fireEvent.click(screen.getByRole('button', { name: en.older }));
+    expect(screen.queryByRole('link', { name: /Signature 72/ })).toBeNull();
+    expect(screen.getByRole('button', { name: en.older })).toBeDisabled();
+    await screen.findByText(en.liveUnavailable);
+    expect(screen.getByRole('button', { name: en.newer })).toBeEnabled();
+    mocked.readBatch.mockResolvedValue(batch());
+    fireEvent.click(screen.getByRole('button', { name: en.newer }));
+    await screen.findByRole('link', { name: /Signature 72/ });
+    expect(mocked.readBatch.mock.calls.map(([page]) => page)).toEqual([0, 1, 0]);
+  });
+
+  it('ignores an obsolete page result that completes after navigating back', async () => {
+    const older = deferred<ReturnType<typeof batch>>();
+    mocked.readBatch
+      .mockResolvedValueOnce(batch())
+      .mockReturnValueOnce(older.promise)
+      .mockResolvedValueOnce(batch());
+    render(<AuctionGallery locale="en" t={en} />);
+    await screen.findByRole('link', { name: /Signature 72/ });
+    fireEvent.click(screen.getByRole('button', { name: en.older }));
+    fireEvent.click(screen.getByRole('button', { name: en.newer }));
+    await screen.findByRole('link', { name: /Signature 72/ });
+    await act(async () => older.resolve(batch(64)));
+    expect(screen.queryByRole('link', { name: /Signature 64/ })).toBeNull();
+    expect(screen.getByRole('link', { name: /Signature 72/ })).toBeVisible();
   });
 });

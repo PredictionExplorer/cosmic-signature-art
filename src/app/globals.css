@@ -892,50 +892,6 @@ html:lang(zh-HK) {
   font-size: 14px;
   line-height: 1.9;
 }
-.process-chapter {
-  display: grid;
-  grid-template-columns: 1fr 1.7fr;
-  gap: 70px;
-  align-items: center;
-  padding: 65px 0;
-  border-top: 1px solid var(--rule);
-}
-.chapter-copy {
-  max-width: 350px;
-}
-.chapter-copy h2 {
-  font-size: 60px;
-  margin: 23px 0;
-}
-.chapter-copy > p {
-  font-size: 13px;
-  color: var(--muted);
-}
-.chapter-reverse {
-  grid-template-columns: 1.7fr 1fr;
-}
-.chapter-reverse .art-media {
-  grid-column: 1;
-  grid-row: 1;
-}
-.chapter-reverse .chapter-copy {
-  grid-column: 2;
-}
-.process-ending {
-  max-width: 800px;
-  padding-block: 70px 20px;
-}
-.process-ending h2 {
-  margin: 25px 0;
-}
-.process-ending > p:not(.eyebrow) {
-  max-width: 600px;
-  font-size: 14px;
-  margin: 20px 0;
-}
-.process-ending .muted {
-  font-size: 12px !important;
-}
 .auction-rules {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -1094,9 +1050,6 @@ html:lang(zh-HK) {
     order: 3;
   }
   .auction-rules {
-    gap: 35px;
-  }
-  .process-chapter {
     gap: 35px;
   }
   .auction-invitation {
@@ -1304,23 +1257,6 @@ html:lang(zh-HK) {
   .page-heading h1 {
     font-size: 72px;
   }
-  .process-chapter,
-  .chapter-reverse {
-    grid-template-columns: 1fr;
-    gap: 35px;
-    padding-block: 45px;
-  }
-  .chapter-reverse .chapter-copy,
-  .chapter-reverse .art-media {
-    grid-column: 1;
-    grid-row: auto;
-  }
-  .chapter-copy {
-    max-width: 570px;
-  }
-  .chapter-copy h2 {
-    font-size: 55px;
-  }
   .auction-rules {
     grid-template-columns: 1fr 1fr;
     gap: 35px;
@@ -1461,9 +1397,6 @@ html:lang(zh-HK) {
   }
   .page-heading > p:last-child:not(.eyebrow) {
     font-size: 13px;
-  }
-  .process-ending h2 {
-    font-size: 48px;
   }
 }
 @media (prefers-reduced-motion: reduce) {
@@ -2097,4 +2030,12 @@ html:lang(zh-HK) {
 }
 .auction-card-facts span {
   overflow-wrap: anywhere;
+}
+.auction-media-loading {
+  display: grid;
+  place-items: center;
+  min-height: 160px;
+  border-block: 1px solid var(--rule);
+  font: 42px var(--serif);
+  color: var(--muted);
 }

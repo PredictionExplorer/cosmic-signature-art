@@ -22,7 +22,10 @@ class ReadError extends Error {
 
 async function boundedJson(response: Response): Promise<unknown> {
   const size = Number(response.headers.get('content-length'));
-  if (size > MAX_RESPONSE_BYTES) throw new ReadError();
+  if (size > MAX_RESPONSE_BYTES) {
+    await response.body?.cancel();
+    throw new ReadError();
+  }
   if (!response.body) throw new ReadError();
   const reader = response.body.getReader();
   const chunks: Uint8Array[] = [];

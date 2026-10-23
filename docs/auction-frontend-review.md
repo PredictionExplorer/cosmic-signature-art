@@ -51,3 +51,31 @@ Reproduce by starting a dedicated local Hardhat node from the contracts reposito
 A successful receipt here means inclusion at the configured confirmation depth, not Ethereum L1 finality. The UI must keep transaction hashes visible for uncertain outcomes and refresh canonical contract state after receipt. The client does not prevent chain-level ordering or later reorganizations.
 
 Injected-provider wallet-panel interaction tests are included; real browser-extension wallet compatibility and complete visual/accessibility journeys remain separate integration checks. Independent security review, production bytecode/configuration verification, the first enabled cycle, and explicit deployment authorization remain release prerequisites. No production transaction was submitted for this review.
+
+**Follow-up review — October 22, 2026**
+
+The second review found and corrected additional UI lifecycle defects:
+
+- A reused auction component could retain another token's financial snapshot and open payment review after navigation while submission used the new token ID. Each token now owns a separate keyed session. Old RPC completions and transaction callbacks cannot update a newly opened lot; navigating requires a new wallet connection and review.
+- Provider `disconnect` events did not clear the connected account or payment review. They now clear both, along with chain and recipient state. Explicit disconnect and reconnection also discard the previous account's snapshot.
+- A review could remain confirmable after polling discovered that the sale had ended. Its validity now requires an open phase as well as unchanged funding. Contract simulation remains the final preflight check.
+- Auction discovery originally read bids and phases only once. It now polls every 12 seconds while visible and refreshes on focus/visibility, with one request in flight. Failed or older-than-25-second snapshots no longer display financial figures; authenticated lot links remain available.
+- Pagination could retain the preceding page's cards while loading, allow repeated forward clicks against its count, and strand navigation after an RPC failure. Results are now associated with their requested page, forward navigation waits for that result, stale responses are ignored, and backward navigation survives failures.
+- Artwork requests have a separate lifecycle from financial polling, retaining the existing four-request concurrency limit and abort behavior. Price updates therefore cannot continually restart video/image metadata requests or wait for a media outage.
+
+Focused verification after these changes: 29 wallet/discovery interaction tests and 68 financial client/amount tests passed. Eight new regression cases exercise cross-lot review isolation, late transaction callbacks, provider disconnect, a closing sale during review, visible/hidden polling, stale financial figures, failed-page recovery, and out-of-order page responses. ESLint passed for all four changed component/test files. This follow-up did not modify auction rules, deployed configuration, Solidity, or the transaction encoding and verification path, and submitted no production transaction.
+
+**Solidity 0.8.38 integration rehearsal — October 22, 2026**
+
+After the approved compiler migration, the real-contract frontend client fixture passed again against a newly started disposable node at `127.0.0.1:8547` (chain ID 31337). The auction, NFT, and test game receiver artifacts were copied to a temporary directory after independently checking that each referenced build-info file reported Solidity 0.8.38. The fixture read those fixed copies, so concurrent regression builds could not change its inputs. Starting the node and running the fixture did not compile or modify the Solidity repository's artifacts or cache. The owned node was stopped after verification.
+
+The same full journey passed: seven successful frontend-submitted transactions covering direct bidding, a delta-funded self-raise, an intervening outbid, withdrawal to the chosen recipient, permissionless settlement, NFT delivery, and successful reserve funding. Attempts before eligibility and during rejected funding failed as expected; a stale self-raise review was rejected before submission. Final escrow liabilities and ETH balance were zero, and only the final winning payment reached the test game's `donateEth()` endpoint.
+
+Rehearsal auction evidence:
+
+- Artifact SHA-256: `e8a7d93f02b8a0b86cc65c18a49f5fd309a3b676691973512c4cb1eb96144e52`.
+- Local deployment: `0x9fe46736679d2d9a65f0992f2272de9f3c7fa6e0`.
+- Deployed runtime: 4,748 bytes; keccak256 `0x280cdf3e2025a89719c791527e1dc217ececffe2ff29490707349883f8752d2b`.
+- The exported frontend client verified that runtime hash and the expected game/NFT addresses before its financial reads and actions.
+
+This is a local integration result using the production auction and NFT with a test game receiver. It does not replace the separate V3-to-V4 game upgrade/storage rehearsal, browser-extension wallet testing, independent security review, or production deployment verification. No public-network writes or user wallet requests occurred, and the website's production auction configuration remains inactive.

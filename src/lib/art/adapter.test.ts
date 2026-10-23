@@ -117,15 +117,36 @@ describe('collection adapter', () => {
     expect(result.notice).toBe('indexer-unavailable');
   });
 
-  it('rejects an excessive body before interpreting upstream content', async () => {
+  it('cancels an excessive declared body without consuming its stream', async () => {
+    const cancel = vi.fn();
     const result = await createArtRepository({
       fetch: vi.fn().mockResolvedValue(
-        new Response('{}', {
+        new Response(new ReadableStream({ cancel }), {
           headers: { 'content-length': '999999999' },
         }),
       ),
     }).getCollection();
     expect(result.source).toBe('curated-fallback');
+    expect(cancel).toHaveBeenCalledOnce();
+  });
+
+  it('cancels a streamed body that exceeds the limit despite a misleading size header', async () => {
+    const cancel = vi.fn();
+    const result = await createArtRepository({
+      fetch: vi.fn().mockResolvedValue(
+        new Response(
+          new ReadableStream({
+            start(controller) {
+              controller.enqueue(new Uint8Array(2 * 1024 * 1024 + 1));
+            },
+            cancel,
+          }),
+          { headers: { 'content-length': '2' } },
+        ),
+      ),
+    }).getCollection();
+    expect(result.source).toBe('curated-fallback');
+    expect(cancel).toHaveBeenCalledOnce();
   });
 });
 

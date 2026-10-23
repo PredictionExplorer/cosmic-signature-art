@@ -1,42 +1,68 @@
 'use client';
 import Image from 'next/image';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useEffectEvent, useRef, useState } from 'react';
 import { useMotion } from './motion-provider';
 import type { ArtInterpretation } from '@/lib/art/types';
 
-/** Original proportions and colors are preserved. Only visible films acquire a src. */
-export function ArtworkMedia({
-  media,
-  alt,
-  priority = false,
-  still = false,
-  repeat = false,
-  startAt = 0,
-  restart = 0,
-  onProgress,
-  onFailure,
-}: {
+type ArtworkMediaProps = {
   media?: ArtInterpretation;
   alt: string;
   priority?: boolean;
+  thumbnail?: boolean;
   still?: boolean;
   repeat?: boolean;
   startAt?: number;
   restart?: number;
+  playRequest?: number;
   onProgress?: (time: number, duration: number) => void;
+  onPlaybackChange?: (playing: boolean) => void;
   onFailure?: () => void;
-}) {
+};
+
+/** A different source starts a new media session, including failure and playback state. */
+export function ArtworkMedia(props: ArtworkMediaProps) {
+  const identity = `${props.media?.id}:${props.media?.still}:${props.thumbnail ? props.media?.thumbnail : ''}:${props.media?.films[0]?.src}`;
+  return <ArtworkMediaSession key={identity} {...props} />;
+}
+
+/** Original proportions and colors are preserved. Only visible films acquire a src. */
+function ArtworkMediaSession({
+  media,
+  alt,
+  priority = false,
+  thumbnail = false,
+  still = false,
+  repeat = false,
+  startAt = 0,
+  restart = 0,
+  playRequest = 0,
+  onProgress,
+  onPlaybackChange,
+  onFailure,
+}: ArtworkMediaProps) {
   const { paused } = useMotion();
   const container = useRef<HTMLDivElement>(null);
   const video = useRef<HTMLVideoElement>(null);
   const [visible, setVisible] = useState(false);
   const [pageVisible, setPageVisible] = useState(true);
   const [hasFrame, setHasFrame] = useState(false);
-  const [failed, setFailed] = useState(false);
+  const [hasPlayed, setHasPlayed] = useState(false);
+  const [replayCycle, setReplayCycle] = useState(0);
+  const [failure, setFailure] = useState<{ restart: number; playRequest: number } | null>(null);
+  const failed = failure?.restart === restart && failure?.playRequest === playRequest;
+  const [thumbnailFailed, setThumbnailFailed] = useState(false);
   const [imageFailed, setImageFailed] = useState(false);
-  const replayTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const ended = useRef(false);
+  const replayPhase = useRef<'hold' | 'fade' | null>(null);
+  const previousRequest = useRef({ restart, playRequest });
   const film = media?.films[0];
+  const imageSource =
+    thumbnail && !thumbnailFailed ? (media?.thumbnail ?? media?.still) : media?.still;
   const shouldPlay = visible && pageVisible && !paused && !still && !failed;
+  const reportPlayback = useEffectEvent((playing: boolean) => onPlaybackChange?.(playing));
+  const reportProgress = useEffectEvent((time: number, duration: number) =>
+    onProgress?.(time, duration),
+  );
   useEffect(() => {
     const observer = new IntersectionObserver(([entry]) => setVisible(entry.isIntersecting), {
       threshold: 0.08,
@@ -53,33 +79,64 @@ export function ArtworkMedia({
   }, []);
   useEffect(() => {
     const player = video.current;
+    const restartRequested = restart !== previousRequest.current.restart;
+    const playRequested = playRequest !== previousRequest.current.playRequest;
+    previousRequest.current = { restart, playRequest };
     if (!player) return;
-    if (shouldPlay)
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    let canceled = false;
+    const play = () => {
       void player.play().catch(() => {
-        /* Autoplay refusal leaves the authentic still visible. */
+        // Autoplay refusal preserves the original still and exposes a Play control.
+        if (!canceled) reportPlayback(false);
       });
-    else player.pause();
-    return () => {
-      player.pause();
-      if (replayTimer.current) clearTimeout(replayTimer.current);
     };
-  }, [shouldPlay, film?.src]);
-  useEffect(() => {
-    if (restart > 0 && video.current) video.current.currentTime = 0;
-  }, [restart]);
+    if (restartRequested || (playRequested && ended.current)) {
+      player.currentTime = 0;
+      ended.current = false;
+      replayPhase.current = null;
+      reportProgress(0, Number.isFinite(player.duration) ? player.duration : 0);
+    }
+    if (shouldPlay) {
+      if (ended.current && repeat) {
+        const rewind = () => {
+          replayPhase.current = 'fade';
+          setHasFrame(false);
+          timer = setTimeout(() => {
+            player.currentTime = 0;
+            ended.current = false;
+            replayPhase.current = null;
+            play();
+          }, 600);
+        };
+        // Pausing or leaving the viewport retains the replay phase; resuming cannot
+        // strand a finished film or skip its deliberate transition through the still.
+        if (replayPhase.current === 'fade') rewind();
+        else timer = setTimeout(rewind, 1600);
+      } else if (!ended.current) play();
+    } else player.pause();
+    return () => {
+      canceled = true;
+      player.pause();
+      if (timer) clearTimeout(timer);
+    };
+  }, [shouldPlay, repeat, restart, playRequest, replayCycle]);
   return (
     <div ref={container} className="art-media" data-material={media?.id ?? 'ink'}>
-      {media?.still && !imageFailed ? (
+      {imageSource && !imageFailed ? (
         <Image
-          src={media.still}
+          src={imageSource}
           alt={alt}
-          width={media.width ?? 3456}
-          height={media.height ?? 2234}
+          width={media?.width ?? 3456}
+          height={media?.height ?? 2234}
           unoptimized
           priority={priority}
           onError={() => {
-            setImageFailed(true);
-            onFailure?.();
+            if (imageSource !== media?.still && media?.still) setThumbnailFailed(true);
+            else {
+              setImageFailed(true);
+              onFailure?.();
+            }
           }}
         />
       ) : (
@@ -87,7 +144,7 @@ export function ArtworkMedia({
           <span>∴</span>
         </div>
       )}
-      {film && visible && !failed && (!still || hasFrame) && (!paused || hasFrame) ? (
+      {film && !failed && (shouldPlay || hasPlayed) ? (
         <video
           ref={video}
           src={film.src}
@@ -98,30 +155,33 @@ export function ArtworkMedia({
           className={hasFrame && !still ? 'has-frame' : ''}
           onLoadedMetadata={(event) => {
             event.currentTarget.currentTime = Math.min(
-              startAt,
+              restart > 0 ? 0 : Math.max(0, startAt),
               Math.max(0, event.currentTarget.duration - 1),
             );
-            if (shouldPlay) void event.currentTarget.play().catch(() => {});
           }}
-          onPlaying={() => setHasFrame(true)}
+          onPlaying={() => {
+            setHasFrame(true);
+            setHasPlayed(true);
+            onPlaybackChange?.(true);
+          }}
+          onPause={() => onPlaybackChange?.(false)}
           onTimeUpdate={(event) =>
             onProgress?.(event.currentTarget.currentTime, event.currentTarget.duration)
           }
           onError={() => {
-            setFailed(true);
+            setFailure({ restart, playRequest });
+            setHasFrame(false);
+            setHasPlayed(false);
+            ended.current = false;
+            replayPhase.current = null;
+            onPlaybackChange?.(false);
             onFailure?.();
           }}
           onEnded={() => {
-            if (!repeat) return;
-            replayTimer.current = setTimeout(() => {
-              setHasFrame(false);
-              replayTimer.current = setTimeout(() => {
-                if (video.current) {
-                  video.current.currentTime = 0;
-                  if (shouldPlay) void video.current.play().catch(() => {});
-                }
-              }, 600);
-            }, 1600);
+            ended.current = true;
+            replayPhase.current = 'hold';
+            onPlaybackChange?.(false);
+            if (repeat) setReplayCycle((value) => value + 1);
           }}
         />
       ) : null}

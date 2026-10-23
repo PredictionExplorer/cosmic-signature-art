@@ -8,8 +8,13 @@ export function metadata(
   path: string,
   title: string,
   description: string,
+  image?: { url: string; width?: number; height?: number; alt: string } | null,
 ): Metadata {
   const url = new URL(localizedPath(locale, path), SITE_URL).href;
+  const preview =
+    image === undefined
+      ? { url: '/art/23-ink.webp', width: 3456, height: 2234, alt: 'Cosmic Signature 23' }
+      : image;
   return {
     title,
     description,
@@ -25,9 +30,14 @@ export function metadata(
       url,
       type: 'website',
       siteName: 'Cosmic Signature',
-      images: [{ url: '/art/23-ink.webp', width: 3456, height: 2234, alt: 'Cosmic Signature 23' }],
+      images: preview ? [preview] : [],
     },
-    twitter: { card: 'summary_large_image', title, description, images: ['/art/23-ink.webp'] },
+    twitter: {
+      card: preview ? 'summary_large_image' : 'summary',
+      title,
+      description,
+      images: preview ? [preview] : [],
+    },
   };
 }
 export function jsonLd(value: object) {

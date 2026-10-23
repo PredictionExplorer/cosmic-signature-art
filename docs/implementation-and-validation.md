@@ -20,7 +20,7 @@ V4 preserves existing allocations and CST issuance, adds a separate eight-NFT ba
 
 Auction rules match the decision register: seven-day eligibility, first-bid 48-hour duration, 0.00001 ETH opening minimum, 10% raises rounded upward, direct funded offers, delta-only self-raises, and uncapped ten-minute extensions. Refunds, settlement, NFT receipt and forwarding are independent actions. The fixed game receives only finalized winning payments through `donateEth()`. No operator can cancel lots, change terms, redirect liabilities, override winners, or anchor escrowed inventory.
 
-## Verification evidence
+## Initial implementation verification evidence
 
 | Boundary | Result |
 | --- | --- |
@@ -62,3 +62,26 @@ See the contracts repository's `docs/v4-art-auction-verification.json` and `docs
 - Apply the [Go integration notes](media-and-indexer-integration.md) in its own reviewed branch when authorized. No Go or renderer source was changed here.
 
 The Next.js project includes a pinned-action CI workflow. The Solidity branch includes its own quick-regression and pinned-Foundry workflow. Neither workflow has run remotely because nothing was pushed.
+
+## Follow-up review and fixes
+
+The subsequent review rebuilt the Process page as two coherent gallery spaces: a black Light room, including matching navigation chrome and authentic Light playback, followed by an Ink room on the media's warm paper ground. Original artwork pixels are preserved. The interface returns to its normal theme when leaving the page. The page has dedicated responsive, media-identity, color-matching and navigation regressions.
+
+Concrete issues fixed:
+
+- A payment review, snapshot or pending UI callback could survive navigation to another NFT. Lot sessions are now isolated; wallet disconnect/reconnection and newly closed auctions invalidate stale reviews.
+- Auction listing prices and phases could remain stale indefinitely. Financial reads now refresh independently of media, hide stale/failed quotes, and ignore obsolete pagination responses while preserving recovery navigation.
+- Offscreen video remounts lost playback position; interrupted replay transitions could stall; ended, blocked or failed films could expose ineffective controls. Media sessions now preserve position, resume their replay phase and support explicit retry. Enlarged films suspend in hidden tabs.
+- Collection cards ignored manifest thumbnails and downloaded full-resolution Ink images. Matching thumbnails now load first, with canonical fallback. Previously timing-out card checks completed in approximately 1.6–1.7 seconds after the fix; this observation is not a universal performance guarantee.
+- Token-specific social previews incorrectly reused Signature 23. Both artwork and auction pages now use the requested token's own media, or omit the preview during an outage.
+- Auction-page rendering unnecessarily waited for artwork data. The media child now streams independently of the financial panel, including when the media lookup never resolves.
+- Oversized upstream response bodies were rejected without canceling the remaining stream. They are now canceled immediately.
+- Clean Solidity CI runners lacked the required native compiler. CI now installs the checksum-pinned native binary.
+
+Final frontend checks: **201 unit/component/property tests passed**, **378 browser cases passed** (324 Chromium/WebKit plus 54 Firefox), TypeScript, ESLint, formatting, production build and full npm audit passed. The browser total includes **280 automated axe scans** across eight languages, five routes and seven profiles. Global frontend V8 line coverage is **88.63%**; it is supplementary evidence, not proof of correctness. The separately enabled real-chain fixture also passed after the compiler migration, with seven actual local transactions and expected failure paths. No real browser wallet or production funds were used.
+
+The user approved migrating the undeployed V4 build to **Solidity 0.8.38**, conditional on leaving deployed contracts untouched. The older optimizer reproduced upstream **SOL-2026-7** under the project's build settings; no Cosmic Signature exploit was demonstrated. The new compiler fixes that reproducer. Exact local compiler pins/pragmas were migrated, historical deployed V3 source/runtime evidence was preserved, and the new compiler passed **801 Hardhat test executions**, **3,072 fuzz cases**, **16,384 invariant handler calls**, a compiler regression, **29 credential tests**, and a new pinned-state fork upgrade/auction rehearsal. The frontend ABI is unchanged. The candidate V4/auction runtimes are **21,951 / 4,748 bytes**. Fork precompile/gas limitations described above still apply.
+
+Compatible Solidity-tool dependency updates removed the critical Handlebars advisory and reduced the audit from **80 affected package entries (1 critical, 32 high)** to **57 (0 critical, 17 high)**. Two exact consumer pins receive documented same-major overrides. Remaining findings and their actual paths are listed in the contracts README; some require separately reviewed framework/dependency migrations and one dependency has no published fix. None of the vulnerable nested OpenZeppelin 4.x copies enters the generated production compiler input. This distinction does not make the tooling audit clean or prove developer tooling safe.
+
+Current Solidity evidence is in `docs/v4-art-auction-verification.json.approvedCompilerMigration` in the contracts repository. Historical 0.8.34 results are retained separately. No deployed contracts, proxy implementation, ownership or configuration were changed. No remote push or deployment was performed.

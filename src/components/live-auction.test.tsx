@@ -398,3 +398,69 @@ describe('LiveAuction independent delivery and refund destinations', () => {
     expect(mocks.submitAction.mock.calls[0][3]).toEqual({ kind: 'forwardProceeds' });
   });
 });
+
+describe('LiveAuction lot and provider session boundaries', () => {
+  it('cannot carry a reviewed payment or the previous lot snapshot into a different lot', async () => {
+    const view = render(<LiveAuction tokenId={100} t={t} locale="en" />);
+    const user = userEvent.setup();
+    await user.click(await screen.findByRole('button', { name: 'Test wallet' }));
+    await user.type(await screen.findByRole('textbox', { name: t.bidTotal }), '100');
+    await user.click(screen.getByRole('button', { name: `${t.placeBid} ↗` }));
+    expect(await screen.findByRole('dialog')).toBeVisible();
+    const nextLot = deferred<Snapshot>();
+    mocks.readAuction.mockReturnValue(nextLot.promise);
+    view.rerender(<LiveAuction tokenId={101} t={t} locale="en" />);
+    expect(screen.queryByRole('dialog')).toBeNull();
+    expect(screen.queryByRole('button', { name: t.disconnect })).toBeNull();
+    expect(screen.queryByRole('textbox', { name: t.bidTotal })).toBeNull();
+    expect(mocks.submitAction).not.toHaveBeenCalled();
+    await act(async () => nextLot.resolve(snapshot));
+    expect(screen.getByRole('textbox', { name: t.bidTotal })).toHaveValue('');
+    expect(screen.getByRole('button', { name: `${t.placeBid} ↗` })).toBeDisabled();
+    expect(mocks.readAuction).toHaveBeenCalledWith(101, undefined);
+  });
+
+  it('cannot apply a previous lot transaction result to a newly navigated lot', async () => {
+    const submission = deferred<unknown>();
+    mocks.submitAction.mockImplementation(async (_provider, _account, _token, _action, onHash) => {
+      onHash(HASH);
+      return submission.promise;
+    });
+    const view = render(<LiveAuction tokenId={100} t={t} locale="en" />);
+    const user = userEvent.setup();
+    await user.click(await screen.findByRole('button', { name: 'Test wallet' }));
+    await user.type(await screen.findByRole('textbox', { name: t.bidTotal }), '1');
+    await user.click(screen.getByRole('button', { name: `${t.placeBid} ↗` }));
+    await user.click(
+      within(await screen.findByRole('dialog')).getByRole('button', { name: t.confirmBid }),
+    );
+    expect(await screen.findByText(t.transactionPending)).toBeVisible();
+    view.rerender(<LiveAuction tokenId={101} t={t} locale="en" />);
+    await act(async () => submission.resolve({ status: 'success', transactionHash: HASH }));
+    expect(screen.queryByText(t.transactionConfirmed)).toBeNull();
+    expect(screen.queryByRole('link', { name: `${t.viewChain} ↗` })).toBeNull();
+    expect(mocks.submitAction.mock.calls[0][2]).toBe(100);
+  });
+
+  it('clears a bid review and connected state on provider disconnect', async () => {
+    await openReview('1');
+    emit('disconnect', { code: 4900, message: 'Disconnected' });
+    expect(screen.queryByRole('dialog')).toBeNull();
+    expect(screen.queryByRole('button', { name: t.disconnect })).toBeNull();
+    await waitFor(() => expect(mocks.readAuction).toHaveBeenLastCalledWith(100, undefined));
+    expect(screen.getByRole('button', { name: `${t.placeBid} ↗` })).toBeDisabled();
+    expect(mocks.submitAction).not.toHaveBeenCalled();
+  });
+
+  it('invalidates a review when the refreshed chain state has ended the sale', async () => {
+    snapshot.lot.endAt = snapshot.blockTime + 10n;
+    const { dialog } = await openReview('1');
+    snapshot.blockTime += 10n;
+    fireEvent(window, new Event('focus'));
+    await waitFor(() =>
+      expect(within(dialog).getByRole('button', { name: t.confirmBid })).toBeDisabled(),
+    );
+    expect(within(dialog).getByText(t.reviewChanged)).toBeVisible();
+    expect(mocks.submitAction).not.toHaveBeenCalled();
+  });
+});

@@ -37,6 +37,7 @@ On October 22, 2026, the user accepted the recommended remaining auction default
 | Custody utility | Escrow never anchors inventory or consumes its once-ever eligibility before delivery |
 | Administrator authority | No key can cancel, pause, change terms, withdraw/substitute allocated works, redirect funds or override winners; includes waiting lots before the first bid |
 | Future versions | New immutable deployments apply only to future batches; existing lots and obligations retain their original rules |
+| Current candidate compiler | Solidity 0.8.38, approved during review; deployed V3 fixture and deployment branch remain unchanged |
 | Current scope | Production Next.js gallery and V4 implementation with comprehensive testing. Local work only; no production deployment, upgrade or push |
 
 The accepted tradeoffs remain explicit: atomic registration adds gas and a contract dependency to game finalization; uncapped extensions may continue indefinitely; media can be unavailable when eligibility begins; pending proceeds cannot be redirected if the game receiver fails; an immutable auction has no discretionary repair key. Existing game upgrade and NFT metadata powers are inherited dependencies, not removed by this plan.
