@@ -17,6 +17,7 @@ type ArtworkViewerProps = {
   t: Messages;
   initialStill?: boolean;
   initialExpression?: string;
+  presentation?: 'gallery' | 'auction';
 };
 export function ArtworkViewer(props: ArtworkViewerProps) {
   return (
@@ -32,6 +33,7 @@ function ArtworkViewerSession({
   t,
   initialStill = false,
   initialExpression,
+  presentation = 'gallery',
 }: ArtworkViewerProps) {
   const [still, setStill] = useState(initialStill);
   const [compare, setCompare] = useState(false);
@@ -96,7 +98,7 @@ function ArtworkViewerSession({
   return (
     <>
       <section
-        className={`viewing-room ${styles.room}`}
+        className={`viewing-room ${styles.room} ${presentation === 'auction' ? styles.auction : ''}`}
         aria-label={t.ways}
         data-expression={expression}
       >
@@ -128,7 +130,7 @@ function ArtworkViewerSession({
             aria-label={t.enlarge}
           >
             <Maximize2 size={17} />
-            <span>{t.fullScreen}</span>
+            <span>{t.enlarge}</span>
           </button>
         </header>
         <div className={`viewer-media ${styles.media}`}>

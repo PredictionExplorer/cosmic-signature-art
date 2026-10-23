@@ -154,7 +154,7 @@ async function showConnected() {
 async function openReview(value: string) {
   const user = await showConnected();
   await user.type(screen.getByRole('textbox', { name: t.bidTotal }), value);
-  await user.click(screen.getByRole('button', { name: `${t.placeBid} ↗` }));
+  await user.click(screen.getByRole('button', { name: t.bidReviewAction }));
   const dialog = await screen.findByRole('dialog');
   return { user, dialog };
 }
@@ -221,7 +221,7 @@ describe('LiveAuction reviewed bidding', () => {
     async (value) => {
       const user = await showConnected();
       await user.type(screen.getByRole('textbox', { name: t.bidTotal }), value);
-      await user.click(screen.getByRole('button', { name: `${t.placeBid} ↗` }));
+      await user.click(screen.getByRole('button', { name: t.bidReviewAction }));
       expect(screen.queryByRole('dialog')).toBeNull();
       expect(mocks.submitAction).not.toHaveBeenCalled();
     },
@@ -252,7 +252,7 @@ describe('LiveAuction reviewed bidding', () => {
     emit('chainChanged', '0x1');
     await waitFor(() => expect(dialog).not.toHaveAttribute('open'));
     expect(await screen.findByRole('button', { name: t.wrongNetwork })).toBeVisible();
-    expect(screen.getByRole('button', { name: `${t.placeBid} ↗` })).toBeDisabled();
+    expect(screen.getByRole('button', { name: t.bidReviewAction })).toBeDisabled();
     expect(mocks.submitAction).not.toHaveBeenCalled();
   });
 });
@@ -274,7 +274,7 @@ describe('LiveAuction unavailable data and transaction outcomes', () => {
             ? t.unregistered
             : t.liveUnavailable;
       expect(await screen.findByText(expected)).toBeVisible();
-      expect(screen.queryByRole('button', { name: `${t.placeBid} ↗` })).toBeNull();
+      expect(screen.queryByRole('button', { name: t.bidReviewAction })).toBeNull();
       expect(screen.queryByRole('button', { name: t.settle })).toBeNull();
       expect(mocks.submitAction).not.toHaveBeenCalled();
     },
@@ -290,12 +290,22 @@ describe('LiveAuction unavailable data and transaction outcomes', () => {
     await act(async () => {
       await Promise.resolve();
     });
-    expect(screen.getByRole('button', { name: `${t.placeBid} ↗` })).toBeEnabled();
+    expect(screen.getByRole('button', { name: t.bidReviewAction })).toBeEnabled();
+    expect(screen.getByText(t.openingBid)).toBeVisible();
+    expect(screen.getByRole('textbox', { name: t.bidTotal })).toHaveAttribute(
+      'placeholder',
+      '0.00001',
+    );
     mocks.readAuction.mockImplementation(() => new Promise<Snapshot>(() => undefined));
     await act(async () => {
       vi.advanceTimersByTime(26000);
     });
-    expect(screen.getByRole('button', { name: `${t.placeBid} ↗` })).toBeDisabled();
+    expect(screen.getByRole('button', { name: t.bidReviewAction })).toBeDisabled();
+    expect(screen.getByText(t.liveUnavailable)).toBeVisible();
+    expect(screen.getByRole('heading', { name: t.status })).toBeVisible();
+    expect(screen.queryByText(t.openingBid)).toBeNull();
+    expect(screen.queryByText(t.minimum)).toBeNull();
+    expect(screen.getByRole('textbox', { name: t.bidTotal })).not.toHaveAttribute('placeholder');
     expect(mocks.submitAction).not.toHaveBeenCalled();
   });
 
@@ -348,8 +358,156 @@ describe('LiveAuction unavailable data and transaction outcomes', () => {
     });
     expect(await screen.findByText(t.transactionFailed)).toBeVisible();
     expect(screen.queryByText(t.transactionConfirmed)).toBeNull();
-    expect(screen.getByRole('button', { name: `${t.placeBid} ↗` })).toBeDisabled();
+    expect(screen.getByRole('button', { name: t.bidReviewAction })).toBeDisabled();
     expect(mocks.submitAction).toHaveBeenCalledOnce();
+  });
+});
+
+describe('LiveAuction gallery presentation and review accessibility', () => {
+  it.each([
+    ['eligibleAt', 8_640_000_000_001n],
+    ['endAt', (1n << 64n) - 1n],
+    ['endAt', -1n],
+  ] as const)(
+    'disables actions without crashing on an invalid %s deadline (%s)',
+    async (field, value) => {
+      snapshot.lot[field] = value;
+      // Keep eligibility already reached so the malformed date cannot merely hide the bid form.
+      if (field === 'eligibleAt') snapshot.blockTime = value + 1n;
+      await showConnected();
+      expect(screen.getByText(t.liveUnavailable)).toBeVisible();
+      expect(document.querySelector('.lot-facts')).toBeNull();
+      expect(document.querySelector('time')).toBeNull();
+      const actions = [
+        ...screen.queryAllByRole('button', { name: t.bidReviewAction }),
+        ...screen.queryAllByRole('button', { name: t.settle }),
+      ];
+      expect(actions).toHaveLength(1);
+      for (const button of actions) expect(button).toBeDisabled();
+      expect(mocks.submitAction).not.toHaveBeenCalled();
+    },
+  );
+
+  it('identifies an opening offer without presenting a nonexistent zero-ETH bid', async () => {
+    await showConnected();
+    const facts = document.querySelector('.lot-facts');
+    expect(facts).toBeInTheDocument();
+    expect(within(facts as HTMLElement).getByText(t.openingBid)).toBeVisible();
+    expect(within(facts as HTMLElement).queryByText(t.highest)).toBeNull();
+    expect(facts).toHaveTextContent('0.00001 ETH');
+    expect(facts).not.toHaveTextContent(/^0 ETH$/);
+    expect(screen.queryByText(t.bidCountdown)).toBeNull();
+  });
+
+  it('keeps exact ETH precision and distinguishes the current offer from the minimum raise', async () => {
+    snapshot.lot.highestBidder = OTHER;
+    snapshot.lot.highestBid = 1_000_000_000_000_000_001n;
+    snapshot.lot.endAt = snapshot.blockTime + 3600n;
+    snapshot.minimum = 1_100_000_000_000_000_002n;
+    await showConnected();
+    const facts = document.querySelector('.lot-facts') as HTMLElement;
+    expect(within(facts).getByText(t.highest)).toBeVisible();
+    expect(within(facts).getByText(t.minimum)).toBeVisible();
+    expect(facts).toHaveTextContent('1.000000000000000001 ETH');
+    expect(facts).toHaveTextContent('1.100000000000000002 ETH');
+    expect(screen.getByText(t.bidCountdown)).toBeVisible();
+  });
+
+  it('labels the deadline timezone explicitly and exposes the same instant in machine-readable form', async () => {
+    snapshot.lot.eligibleAt = 1_792_848_600n;
+    snapshot.blockTime = snapshot.lot.eligibleAt - 600n;
+    render(<LiveAuction tokenId={100} t={t} locale="en" />);
+    const time = await screen.findByText(/UTC$/);
+    expect(time.tagName).toBe('TIME');
+    expect(time).toHaveAttribute(
+      'datetime',
+      new Date(Number(snapshot.lot.eligibleAt) * 1000).toISOString(),
+    );
+    expect(screen.getByText(t.previewCountdown)).toBeVisible();
+    expect(screen.queryByText(t.bidCountdown)).toBeNull();
+    expect(screen.queryByRole('textbox', { name: t.bidTotal })).toBeNull();
+  });
+
+  it('returns focus to the review trigger after a pointer-style opening and cancel', async () => {
+    const user = await showConnected();
+    const input = screen.getByRole('textbox', { name: t.bidTotal });
+    await user.type(input, '1');
+    const trigger = screen.getByRole('button', { name: t.bidReviewAction });
+    // Safari can leave focus on the input when a pointer activates the submit button.
+    fireEvent.submit(input.closest('form')!);
+    const reviewDialog = await screen.findByRole('dialog');
+    expect(within(reviewDialog).getByText('Signature 100 · ETH')).toBeVisible();
+    const cancel = within(reviewDialog).getByRole('button', { name: t.cancel });
+    expect(cancel).toHaveFocus();
+    expect(document.body.style.overflow).toBe('hidden');
+    await user.click(cancel);
+    expect(trigger).toHaveFocus();
+    expect(screen.queryByRole('dialog')).toBeNull();
+    expect(document.body.style.overflow).toBe('');
+    expect(mocks.submitAction).not.toHaveBeenCalled();
+  });
+
+  it('restores existing scroll declarations and focus when Escape cancels review', async () => {
+    document.body.style.setProperty('overflow-y', 'scroll', 'important');
+    const originalPriority = document.body.style.getPropertyPriority('overflow-y');
+    document.documentElement.style.setProperty('overflow', 'clip');
+    try {
+      const { dialog } = await openReview('1');
+      expect(document.body.style.overflow).toBe('hidden');
+      expect(document.documentElement.style.overflow).toBe('hidden');
+      fireEvent(dialog, new Event('cancel', { cancelable: true }));
+      expect(screen.queryByRole('dialog')).toBeNull();
+      expect(screen.getByRole('button', { name: t.bidReviewAction })).toHaveFocus();
+      expect(document.body.style.overflowY).toBe('scroll');
+      expect(document.body.style.getPropertyPriority('overflow-y')).toBe(originalPriority);
+      expect(document.documentElement.style.overflow).toBe('clip');
+      expect(mocks.submitAction).not.toHaveBeenCalled();
+    } finally {
+      for (const element of [document.body, document.documentElement])
+        for (const property of ['overflow', 'overflow-x', 'overflow-y'])
+          element.style.removeProperty(property);
+    }
+  });
+
+  it('releases modal scroll locks when navigation replaces a reviewed lot', async () => {
+    const view = render(<LiveAuction tokenId={100} t={t} locale="en" />);
+    const user = userEvent.setup();
+    await user.click(await screen.findByRole('button', { name: 'Test wallet' }));
+    await user.type(await screen.findByRole('textbox', { name: t.bidTotal }), '1');
+    await user.click(screen.getByRole('button', { name: t.bidReviewAction }));
+    expect(await screen.findByRole('dialog')).toBeVisible();
+    expect(document.body.style.overflow).toBe('hidden');
+    view.rerender(<LiveAuction tokenId={101} t={t} locale="en" />);
+    expect(document.body.style.overflow).toBe('');
+    expect(document.documentElement.style.overflow).toBe('');
+    expect(screen.queryByRole('dialog')).toBeNull();
+  });
+
+  it('locks a confirmed submission before another same-turn activation can reach the wallet', async () => {
+    const submission = deferred<unknown>();
+    mocks.submitAction.mockReturnValue(submission.promise);
+    const { dialog } = await openReview('1');
+    const confirm = within(dialog).getByRole('button', { name: t.confirmBid });
+    act(() => {
+      confirm.click();
+      confirm.click();
+    });
+    expect(mocks.submitAction).toHaveBeenCalledOnce();
+    expect(await screen.findByText(t.walletPending)).toBeVisible();
+    expect(screen.getByRole('button', { name: t.bidReviewAction })).toBeDisabled();
+    await act(async () => submission.resolve({ status: 'success', transactionHash: HASH }));
+    expect(await screen.findByText(t.transactionConfirmed)).toBeVisible();
+  });
+
+  it('invalidates a review if the independently read minimum exceeds the reviewed total', async () => {
+    const { dialog } = await openReview('1');
+    snapshot.minimum = 2n * 10n ** 18n;
+    fireEvent(window, new Event('focus'));
+    await waitFor(() =>
+      expect(within(dialog).getByRole('button', { name: t.confirmBid })).toBeDisabled(),
+    );
+    expect(within(dialog).getByText(t.reviewChanged)).toBeVisible();
+    expect(mocks.submitAction).not.toHaveBeenCalled();
   });
 });
 
@@ -405,7 +563,7 @@ describe('LiveAuction lot and provider session boundaries', () => {
     const user = userEvent.setup();
     await user.click(await screen.findByRole('button', { name: 'Test wallet' }));
     await user.type(await screen.findByRole('textbox', { name: t.bidTotal }), '100');
-    await user.click(screen.getByRole('button', { name: `${t.placeBid} ↗` }));
+    await user.click(screen.getByRole('button', { name: t.bidReviewAction }));
     expect(await screen.findByRole('dialog')).toBeVisible();
     const nextLot = deferred<Snapshot>();
     mocks.readAuction.mockReturnValue(nextLot.promise);
@@ -416,7 +574,7 @@ describe('LiveAuction lot and provider session boundaries', () => {
     expect(mocks.submitAction).not.toHaveBeenCalled();
     await act(async () => nextLot.resolve(snapshot));
     expect(screen.getByRole('textbox', { name: t.bidTotal })).toHaveValue('');
-    expect(screen.getByRole('button', { name: `${t.placeBid} ↗` })).toBeDisabled();
+    expect(screen.getByRole('button', { name: t.bidReviewAction })).toBeDisabled();
     expect(mocks.readAuction).toHaveBeenCalledWith(101, undefined);
   });
 
@@ -430,7 +588,7 @@ describe('LiveAuction lot and provider session boundaries', () => {
     const user = userEvent.setup();
     await user.click(await screen.findByRole('button', { name: 'Test wallet' }));
     await user.type(await screen.findByRole('textbox', { name: t.bidTotal }), '1');
-    await user.click(screen.getByRole('button', { name: `${t.placeBid} ↗` }));
+    await user.click(screen.getByRole('button', { name: t.bidReviewAction }));
     await user.click(
       within(await screen.findByRole('dialog')).getByRole('button', { name: t.confirmBid }),
     );
@@ -448,7 +606,7 @@ describe('LiveAuction lot and provider session boundaries', () => {
     expect(screen.queryByRole('dialog')).toBeNull();
     expect(screen.queryByRole('button', { name: t.disconnect })).toBeNull();
     await waitFor(() => expect(mocks.readAuction).toHaveBeenLastCalledWith(100, undefined));
-    expect(screen.getByRole('button', { name: `${t.placeBid} ↗` })).toBeDisabled();
+    expect(screen.getByRole('button', { name: t.bidReviewAction })).toBeDisabled();
     expect(mocks.submitAction).not.toHaveBeenCalled();
   });
 

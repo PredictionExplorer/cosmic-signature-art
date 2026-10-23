@@ -1,6 +1,28 @@
 import type { Messages } from './en';
 
 export const zhHK: Messages = {
+  auctionExhibition: '流動的藝術，收藏的邀約。',
+  auctionExhibitionCopy:
+    '每個週期都會為現有系列帶來八件新作品。欣賞流動之美，細看作品，以 ETH 直接出價。',
+  auctionEditorial: '來自永久館藏',
+  auctionEditorialNote: '這件精選作品帶您認識本系列。拍品另行列出。',
+  auctionRoom: '拍賣展廳',
+  auctionBeforeBid: '出價之前',
+  auctionAtAGlance: '拍賣概覽',
+  auctionReadMore: '完整拍賣條款',
+  auctionViewRecord: '作品與來源',
+  auctionDuration: '首次出價後 48 小時',
+  auctionSoftClose: '接近結束的出價將剩餘時間延至 10 分鐘',
+  auctionWaitingCopy: '首次出價啟動計時。您可以隨時提出更高的報價。',
+  auctionBrowseArt: '準備期間，先探索藝術',
+  bidPanelLoading: '正在讀取拍賣合約…',
+  auctionNoFee: '無買家佣金',
+  contractStatusLabel: '拍賣狀態',
+  openingBid: '起拍價',
+  bidReviewAction: '核對出價',
+  bidCountdown: '剩餘時間',
+  previewCountdown: '距離開放出價',
+
   preparingExpression: '正在開啟這種呈現…',
   expressionFailed: '無法載入這種呈現。目前的作品仍可觀賞。',
   viewingRoom: '作品觀賞室',

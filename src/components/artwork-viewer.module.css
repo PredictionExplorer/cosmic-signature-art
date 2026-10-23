@@ -16,6 +16,51 @@
   --room-rule: #f1ebdf38;
   background: #000;
 }
+.auction {
+  margin-inline: 0;
+  padding: 0 24px 24px;
+  container-type: inline-size;
+}
+.auction .topbar {
+  min-height: 72px;
+  gap: 16px;
+}
+.auction .topbar > p {
+  flex-basis: 100%;
+  margin-top: 16px;
+}
+.auction .expressions {
+  margin-left: 0;
+}
+.auction .enlarge {
+  margin-left: auto;
+  padding-left: 0;
+}
+.auction .enlarge span {
+  display: none;
+}
+.auction .plate {
+  width: 100%;
+}
+.auction .rail {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 14px;
+}
+.auction .ending {
+  font-size: 30px;
+}
+@container (max-width: 560px) {
+  .auction .transport {
+    gap: 12px;
+  }
+  .auction .transport :global(.progress-track) {
+    display: none;
+  }
+  .auction .previewLabel {
+    margin-left: auto;
+  }
+}
 .topbar {
   display: flex;
   align-items: center;

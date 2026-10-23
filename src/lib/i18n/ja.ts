@@ -1,6 +1,29 @@
 import type { Messages } from './en';
 
 export const ja: Messages = {
+  auctionExhibition: '動く芸術。収集への招待。',
+  auctionExhibitionCopy:
+    '各サイクルで、既存のコレクションに8点の新作が加わります。動きを味わい、細部を鑑賞し、ETHで直接入札できます。',
+  auctionEditorial: '常設コレクションより',
+  auctionEditorialNote:
+    'この作品はコレクションを紹介するための展示です。出品作品は別に掲載します。',
+  auctionRoom: 'オークションルーム',
+  auctionBeforeBid: '入札の前に',
+  auctionAtAGlance: 'オークションの概要',
+  auctionReadMore: 'オークション規約の全文',
+  auctionViewRecord: '作品と来歴',
+  auctionDuration: '最初の入札から48時間',
+  auctionSoftClose: '終了間際の入札で残り10分を確保',
+  auctionWaitingCopy: '最初の入札で時計が動き始めます。より高い金額でも入札できます。',
+  auctionBrowseArt: '準備の間に作品をご覧ください',
+  bidPanelLoading: 'オークションコントラクトを読み込んでいます…',
+  auctionNoFee: '買い手手数料なし',
+  contractStatusLabel: 'オークションの状況',
+  openingBid: '開始価格',
+  bidReviewAction: '入札内容を確認',
+  bidCountdown: '残り時間',
+  previewCountdown: '入札可能になるまで',
+
   preparingExpression: 'この表現を開いています…',
   expressionFailed: 'この表現を読み込めませんでした。現在の作品は引き続き表示されます。',
   viewingRoom: '作品鑑賞室',

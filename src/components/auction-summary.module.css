@@ -1,0 +1,59 @@
+.availability {
+  padding: 28px;
+  border: 1px solid var(--rule);
+  background: #eee7da;
+}
+.availability h2 {
+  font-size: clamp(31px, 3vw, 42px);
+  line-height: 1.08;
+  margin: 20px 0 18px;
+}
+.availability > p:not(:global(.eyebrow)) {
+  font-size: 12px;
+  color: #59594f;
+  line-height: 1.85;
+}
+.summary {
+  padding-top: 26px;
+  margin-top: 26px;
+  border-top: 1px solid var(--rule);
+}
+.summary dl {
+  margin: 18px 0;
+}
+.summary dl > div {
+  padding: 15px 0;
+  border-bottom: 1px solid var(--rule);
+}
+.summary dt {
+  color: #59594f;
+  font-size: 10px;
+  line-height: 1.7;
+}
+.summary dd {
+  margin: 8px 0 0;
+  font-size: 13px;
+  line-height: 1.65;
+}
+.summary dl > div:first-child dd {
+  font: 34px/1.1 var(--serif);
+  letter-spacing: -0.015em;
+}
+.summary dd span {
+  font: 10px var(--font-sans);
+  margin-left: 6px;
+}
+.summary > p:not(:global(.eyebrow)) {
+  font-size: 11px;
+  line-height: 1.8;
+  color: #59594f;
+}
+.summary > a {
+  margin-top: 20px;
+  font-size: 11px;
+}
+@media (max-width: 540px) {
+  .availability {
+    padding: 24px;
+  }
+}

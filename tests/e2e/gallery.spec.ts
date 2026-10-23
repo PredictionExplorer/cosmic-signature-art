@@ -258,6 +258,12 @@ test('the complete catalogue can be traversed to the first token and searched by
   await expect(page).toHaveURL(/\/collection\?q=0$/);
   const result = main.locator('#works .work-grid .work-card');
   await expect(result).toHaveCount(1);
+  // Published works can gain new expressions. Choose Light explicitly instead of
+  // assuming that the first token will always have only its original rendering.
+  await main
+    .locator('#works')
+    .getByRole('button', { name: catalogs.en.light, exact: true })
+    .click();
   await expect(result).toHaveAttribute('href', '/art/0?expression=light');
   await collectionLoaded(page);
   await result.click();

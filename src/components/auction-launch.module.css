@@ -1,0 +1,41 @@
+.opening {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 0.8fr);
+  gap: 70px;
+  border-block: 1px solid var(--rule);
+  padding: 38px 0 42px;
+  align-items: start;
+}
+.title > p {
+  color: var(--muted);
+  font-size: 9px;
+}
+.title h2 {
+  font-size: clamp(30px, 3.8vw, 52px);
+  max-width: 620px;
+  margin-top: 16px;
+  line-height: 1.1;
+}
+.copy {
+  padding-top: 30px;
+}
+.copy > p {
+  font-size: 12px;
+  line-height: 1.9;
+  color: var(--muted);
+  max-width: 480px;
+}
+.copy > a {
+  margin-top: 24px;
+  font-size: 11px;
+}
+@media (max-width: 700px) {
+  .opening {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 22px;
+    padding-block: 28px;
+  }
+  .copy {
+    padding-top: 0;
+  }
+}

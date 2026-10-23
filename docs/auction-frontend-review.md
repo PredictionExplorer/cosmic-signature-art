@@ -79,3 +79,22 @@ Rehearsal auction evidence:
 - The exported frontend client verified that runtime hash and the expected game/NFT addresses before its financial reads and actions.
 
 This is a local integration result using the production auction and NFT with a test game receiver. It does not replace the separate V3-to-V4 game upgrade/storage rehearsal, browser-extension wallet testing, independent security review, or production deployment verification. No public-network writes or user wallet requests occurred, and the website's production auction configuration remains inactive.
+
+**Gallery presentation and bidding review — October 23, 2026**
+
+The auction landing page, lot discovery, and individual lot pages now share the gallery's Ink-first paper setting, authentic compact motion, material transitions, and full viewing room. The introduction explicitly identifies its featured artwork as editorial collection art; it does not imply that the work is available for sale. Actual lot records continue to come exclusively from the contract. The unconfigured application shows the programme's preparation status and agreed rules, without fictional current prices or deadlines.
+
+The bid panel separates current/opening price, minimum next bid, the UTC deadline, countdown, wallet connection, and the review action. Exact totals and funding appear in a native modal before submission. The panel now:
+
+- Removes stale phase and price displays, suppresses a stale minimum placeholder, and retains the visitor's entered amount while disabling actions.
+- Invalidates a review when the refreshed minimum exceeds the reviewed total, including when the funding amount would otherwise remain unchanged.
+- Locks connection and submission synchronously to prevent duplicate activations before React commits a disabled button.
+- Rejects an unrepresentable contract deadline without throwing during rendering.
+- Opens the review with focus on Cancel, restores the opener reliably in Safari, and restores existing document scroll styles when the review closes.
+- Disables the review entrance animation under the site's manual motion pause, preventing a paused animation from trapping focus inside an invisible modal. A browser regression checks actual opacity, animation, focus, and scroll restoration with the system's reduced-motion preference off.
+
+The production transaction encoder, runtime verification, simulation, and receipt handling are unchanged. Discovery still refreshes financial state independently of bounded media loading. Only dedicated compact previews can animate automatically, and missing artwork never suppresses an authentic contract lot.
+
+Evidence for this change includes 33 wallet-panel and 15 auction-discovery unit cases, 119 public-page browser cases (112 full axe scans), and 76 isolated live-interface browser cases (48 axe scans). The isolated fixture renders the actual components and CSS with a synthetic provider/snapshot, is explicitly labelled, binds only to loopback, and blocks external connections. It tests direct bids, leader funding, wrong-chain/stale/failing reads, confirmation focus and scroll restoration, settlement/recovery UI, all eight languages, and single-preview discovery. These are UI tests, not real wallet or contract transaction evidence. Invalid amounts are covered by the component tests. The real-contract rehearsal above was not repeated for this presentation-only change.
+
+The fixture is run with `npm run test:auction-ui`; `npm run test:auction-ui:types` checks its independent TypeScript boundary. Production-page and existing gallery regressions remain in `npm run test:e2e`. No deployment, public-network write, or remote push was performed.

@@ -22,11 +22,15 @@ npm test
 npm run test:coverage
 npm run test:previews
 npm run test:e2e
+npm run test:auction-ui:types
+npm run test:auction-ui
 npm run build
 npm audit
 ```
 
 Browser tests use the locally running application or start the configured preview. Their matrix covers desktop, mobile and reduced motion. Install the pinned Playwright browsers when setting up a new machine.
+
+`test:auction-ui` separately starts a loopback-only Vite fixture on port 4320. It renders the actual auction components and styles with synthetic contract snapshots and a synthetic wallet, clearly labelled in the page. Its network policy blocks external connections. It verifies bidding interactions without activating the public auction configuration, opening a real wallet, or submitting transactions. Stop any manually started fixture on that port before running it. This suite complements the production-page tests and the separately gated real-contract client rehearsal.
 
 ## Architecture
 
@@ -34,6 +38,7 @@ Browser tests use the locally running application or start the configured previe
 - **The Passage:** a moving, uncropped Ink work on paper sampled directly from the films (`#f1ebdf`), with a cinematic change into Light. Original artwork colors are preserved.
 - **The collection:** the full live catalogue is the default, with number/name search, pagination and Ink/Light views. `/collection?view=atlas` opens the moving editorial constellation. Newly indexed NFTs appear through revalidation without a frontend release; the catalogue never treats the curated archive as a collection total.
 - **The viewing room:** full-width Ink/paper and Light/black environments with decoded-image cinematic material changes, comparison, and a full-window modal with optional native fullscreen. Inline motion uses compact excerpts only; complete films and longer variants load on explicit request. Keyboard focus, scroll position, playback memory, failure recovery and media resource release are tested. The editorial record below retains origin, seed, cycle, indexed custodian, known protocol-custody participant and independently paginated histories. Published composition characteristics remain separate from blockchain provenance. Original files remain accessible, and the interpretation model accommodates future modes.
+- **The auction exhibition:** an authentic Ink introduction, spacious lot plates, and the same material transitions and full viewing room. A contained artwork area sits beside a readable bid panel on desktop and above it on mobile. Current price, minimum next bid, UTC deadline, wallet, review, and recovery actions have a deliberate hierarchy. Editorial art is labelled separately from available lots. Missing media never blocks contract discovery; stale financial reads hide current quotes and disable actions. The review preserves the exact entered total and funding amount.
 - **Eight locales:** English, Simplified Chinese, Taiwan Traditional Chinese, Hong Kong Traditional Chinese, Ukrainian, Korean, Japanese and Vietnamese. English URLs are unprefixed; other locales retain their exact tags. The art venue has its own auction vocabulary; the existing app's vocabulary rules are unchanged.
 - **Motion:** the catalogue gives one visible Ink work a playback slot, with focus/hover priority and restrained changes as scrolling settles. Only dedicated compact excerpts can use that slot; leaving it detaches the video source. Hidden tabs, pause, data saving and slow connections keep stills. Reduced motion starts with stills; explicit Resume can enable ambient playback while cinematic transitions remain disabled for the system preference. Native React view transitions connect matching token/expression surfaces when ready, with ordinary immediate navigation as the fallback. Fonts are self-hosted.
 - **Data:** validated, bounded requests to the existing public indexer and renderer manifests. Fifteen authenticated archived works provide an explicitly labeled fallback. Unavailable ownership is not invented. Indexed custody is not represented as a guaranteed current wallet owner.

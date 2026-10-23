@@ -1,7 +1,8 @@
 import type { Messages } from '@/lib/i18n/en';
+import styles from './auction-rules.module.css';
 export function AuctionRules({ t }: { t: Messages }) {
   return (
-    <section className="auction-rules" aria-label={t.auctionRules}>
+    <div className={`auction-rules ${styles.rules}`}>
       {[
         [t.rulePreview, t.rulePreviewCopy],
         [t.ruleFirst, t.ruleFirstCopy],
@@ -16,6 +17,6 @@ export function AuctionRules({ t }: { t: Messages }) {
           <p>{body}</p>
         </article>
       ))}
-    </section>
+    </div>
   );
 }

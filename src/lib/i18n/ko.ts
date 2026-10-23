@@ -1,6 +1,28 @@
 import type { Messages } from './en';
 
 export const ko: Messages = {
+  auctionExhibition: '움직이는 예술. 소장으로의 초대.',
+  auctionExhibitionCopy:
+    '각 사이클마다 기존 컬렉션에 새로운 작품 8점이 더해집니다. 움직임을 감상하고 세부를 살펴본 뒤 ETH로 직접 입찰할 수 있습니다.',
+  auctionEditorial: '상설 컬렉션에서',
+  auctionEditorialNote: '이 대표 작품은 컬렉션을 소개합니다. 경매 작품은 별도로 안내합니다.',
+  auctionRoom: '경매 전시실',
+  auctionBeforeBid: '입찰 전 안내',
+  auctionAtAGlance: '경매 한눈에 보기',
+  auctionReadMore: '경매 약관 전문',
+  auctionViewRecord: '작품과 이력',
+  auctionDuration: '첫 입찰부터 48시간',
+  auctionSoftClose: '마감 직전 입찰 시 10분 확보',
+  auctionWaitingCopy: '첫 입찰로 시간이 시작됩니다. 더 높은 금액으로도 입찰할 수 있습니다.',
+  auctionBrowseArt: '준비하는 동안 작품을 둘러보세요',
+  bidPanelLoading: '경매 계약을 읽는 중입니다…',
+  auctionNoFee: '구매자 수수료 없음',
+  contractStatusLabel: '경매 상태',
+  openingBid: '시작 입찰가',
+  bidReviewAction: '입찰 확인',
+  bidCountdown: '남은 시간',
+  previewCountdown: '입찰 가능 시점까지',
+
   preparingExpression: '이 표현을 여는 중입니다…',
   expressionFailed: '이 표현을 불러올 수 없습니다. 현재 작품은 계속 표시됩니다.',
   viewingRoom: '작품 감상실',

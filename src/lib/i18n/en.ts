@@ -1,4 +1,27 @@
 export const en = {
+  auctionExhibition: 'Art in motion. An invitation to collect.',
+  auctionExhibitionCopy:
+    'Each cycle brings eight new works to the existing collection. Explore their movement, study their details, and make a direct offer in ETH.',
+  auctionEditorial: 'From the permanent collection',
+  auctionEditorialNote:
+    'This featured work introduces the collection. Auction lots are listed separately.',
+  auctionRoom: 'The auction room',
+  auctionBeforeBid: 'Before you bid',
+  auctionAtAGlance: 'The auction at a glance',
+  auctionReadMore: 'Full auction terms',
+  auctionViewRecord: 'Artwork & provenance',
+  auctionDuration: '48 hours from the first bid',
+  auctionSoftClose: 'Late bids leave 10 minutes',
+  auctionWaitingCopy: 'The first bid starts the clock. Larger bids are always welcome.',
+  auctionBrowseArt: 'Explore the art while we prepare',
+  bidPanelLoading: 'Reading the auction contract…',
+  auctionNoFee: 'No buyer premium',
+  contractStatusLabel: 'Auction status',
+  openingBid: 'Opening bid',
+  bidReviewAction: 'Review bid',
+  bidCountdown: 'Time remaining',
+  previewCountdown: 'Until bidding is eligible',
+
   preparingExpression: 'Opening this expression…',
   expressionFailed: 'This expression could not be loaded. The current work remains on view.',
   viewingRoom: 'The viewing room',

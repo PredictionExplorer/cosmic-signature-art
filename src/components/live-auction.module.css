@@ -1,0 +1,349 @@
+.panel {
+  container-type: inline-size;
+  min-width: 0;
+  padding: 28px 0 0;
+  border-top: 1px solid var(--rule);
+  font-size: 12px;
+}
+
+.heading {
+  margin-bottom: 28px;
+}
+
+.heading :global(.eyebrow) {
+  font-size: 9px;
+}
+
+.heading h2 {
+  margin-top: 15px;
+  font-size: clamp(30px, 9cqi, 45px);
+  line-height: 1.12;
+  text-wrap: balance;
+}
+
+.facts {
+  display: grid;
+  gap: 24px;
+  margin: 0;
+}
+
+.facts > div {
+  min-width: 0;
+}
+
+.facts dt,
+.walletLabel,
+.clock > p:first-child {
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.65;
+}
+
+.facts dd {
+  margin: 7px 0 0;
+  font-variant-numeric: tabular-nums;
+  overflow-wrap: anywhere;
+}
+
+.primaryPrice dd {
+  font-family: var(--serif);
+  font-size: clamp(30px, 11cqi, 50px);
+  line-height: 1.1;
+  letter-spacing: -0.035em;
+}
+
+.facts small {
+  font-family: var(--font-sans);
+  font-size: 12px;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+
+.nextPrice {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 18px;
+  padding-top: 14px;
+  border-top: 1px solid var(--rule);
+}
+
+.nextPrice dt {
+  flex: 1 1 45%;
+}
+
+.nextPrice dd {
+  flex: 1 1 55%;
+  margin-top: 0;
+  font-size: 14px;
+  text-align: end;
+}
+
+.deadline dd {
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.clock {
+  margin-top: 24px;
+}
+
+.countdown {
+  margin: 3px 0 0;
+  font-family: var(--serif);
+  font-size: clamp(32px, 10cqi, 44px);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.015em;
+  line-height: 1.2;
+  overflow-wrap: anywhere;
+}
+
+.chainClock {
+  margin-top: 14px;
+  color: var(--muted);
+  font-size: 10px;
+  line-height: 1.65;
+}
+
+.leader {
+  margin-top: 12px;
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.leader a {
+  color: var(--ink);
+  text-decoration: underline;
+  text-underline-offset: 4px;
+  white-space: nowrap;
+}
+
+.wallet {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin: 28px 0 22px;
+  padding-top: 22px;
+  border-top: 1px solid var(--rule);
+}
+
+.walletLabel {
+  flex-basis: 100%;
+}
+
+.wallet p {
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.account {
+  margin-inline-end: auto;
+  font-variant-numeric: tabular-nums;
+}
+
+.wallet > button:not(:global(.primary-button), :global(.outline-button)) {
+  min-height: 44px;
+  color: var(--muted);
+  font-size: 11px;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
+.wallet > :global(.primary-button) {
+  width: 100%;
+}
+
+.bidForm {
+  display: grid;
+  gap: 14px;
+}
+
+.panel label {
+  display: grid;
+  min-width: 0;
+  gap: 10px;
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.65;
+}
+
+.panel input {
+  width: 100%;
+  min-width: 0;
+  border: 1px solid var(--rule);
+  border-radius: 0;
+  background: #fff2;
+  padding: 14px 15px;
+  color: var(--ink);
+  font-size: 16px;
+  font-variant-numeric: tabular-nums;
+}
+
+.panel input::placeholder {
+  color: var(--muted);
+  opacity: 1;
+}
+
+.bidForm > button,
+.actions > button {
+  width: 100%;
+}
+
+.bidForm > button {
+  min-height: 50px;
+  justify-content: space-between;
+  padding-inline: 18px;
+}
+
+.bidForm > p {
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.7;
+}
+
+.actions {
+  display: grid;
+  gap: 16px;
+  margin-top: 25px;
+  padding-top: 25px;
+  border-top: 1px solid var(--rule);
+}
+
+.actions > p {
+  font-size: 12px;
+  overflow-wrap: anywhere;
+}
+
+.transactionStatus {
+  margin-top: 20px;
+  font-size: 11px;
+  line-height: 1.8;
+  overflow-wrap: anywhere;
+}
+
+.transactionStatus a {
+  display: inline-block;
+  min-height: 36px;
+  padding-top: 6px;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
+.footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 6px 20px;
+  padding-top: 12px;
+}
+
+.footer :global(.text-link) {
+  min-height: 44px;
+  padding-block: 10px;
+  font-size: 10px;
+  color: var(--muted);
+}
+
+.dialog {
+  width: min(540px, calc(100vw - 32px));
+  max-height: calc(100dvh - 32px);
+  margin: auto;
+  padding: clamp(24px, 5vw, 40px);
+  border: 1px solid var(--rule);
+  background: var(--paper);
+  color: var(--ink);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.dialog::backdrop {
+  background: #1119;
+  backdrop-filter: blur(5px);
+}
+
+.dialog[open] {
+  animation: review-arrives 220ms var(--ease-gallery);
+}
+
+/* A paused entrance would otherwise freeze the modal at its invisible first frame. */
+:global(.motion-paused) .dialog[open] {
+  animation: none;
+}
+
+.dialog .reviewIdentity {
+  margin: 0 0 24px;
+  font-size: 10px;
+  color: var(--muted);
+}
+
+.dialog h3 {
+  font-size: clamp(34px, 6vw, 46px);
+  line-height: 1.08;
+  text-wrap: balance;
+}
+
+.dialog > p:not(.reviewIdentity) {
+  margin: 20px 0;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.8;
+}
+
+.reviewAmounts {
+  margin: 28px 0;
+  font-size: 12px;
+}
+
+.reviewAmounts > div {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.25fr);
+  align-items: baseline;
+  gap: 20px;
+  padding: 17px 0;
+  border-bottom: 1px solid var(--rule);
+}
+
+.reviewAmounts dt {
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.6;
+}
+
+.reviewAmounts dd {
+  margin: 0;
+  text-align: end;
+  font-size: 18px;
+  font-variant-numeric: tabular-nums;
+  overflow-wrap: anywhere;
+}
+
+.dialogActions {
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.dialogActions button {
+  flex: 1 1 auto;
+  min-height: 48px;
+}
+
+@keyframes review-arrives {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dialog[open] {
+    animation: none;
+  }
+}

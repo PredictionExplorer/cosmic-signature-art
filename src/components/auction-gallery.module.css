@@ -1,0 +1,146 @@
+.gallery {
+  padding-block: 48px 64px;
+  scroll-margin-top: 110px;
+}
+
+.heading {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 24px;
+  padding-block: 24px 36px;
+  border-top: 1px solid var(--rule);
+}
+
+.heading h2 {
+  font-size: clamp(30px, 3vw, 44px);
+  max-width: 24ch;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: clamp(54px, 6vw, 90px) clamp(28px, 4vw, 64px);
+}
+
+.card {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.plate {
+  border: 1px solid var(--rule);
+  overflow: hidden;
+}
+
+.plate :global(.art-media) {
+  width: 100%;
+}
+
+.caption {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 6px 14px;
+  padding-block: 22px 18px;
+}
+
+.caption h3 {
+  font-size: clamp(25px, 2.4vw, 35px);
+  line-height: 1.15;
+}
+
+.caption svg {
+  flex-shrink: 0;
+  margin-inline-start: auto;
+  transition: transform 280ms var(--ease-gallery);
+}
+
+.card:is(:hover, :focus-visible) .caption svg {
+  transform: translate(2px, -2px);
+}
+
+.expression {
+  color: var(--muted);
+  font-size: 10px;
+}
+
+.facts {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 18px 24px;
+  padding-block-start: 20px;
+  border-top: 1px solid var(--rule);
+  font-variant-numeric: tabular-nums;
+  font-size: 11px;
+}
+
+.bid,
+.phase {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.bid > span,
+.phase > span:last-child {
+  color: var(--muted);
+  font-size: 10px;
+}
+
+.bid strong {
+  font-weight: 400;
+  font-size: 18px;
+  overflow-wrap: anywhere;
+}
+
+.phase {
+  text-align: end;
+}
+
+.time {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 6px 20px;
+  color: var(--muted);
+  font-size: 10px;
+}
+
+.time time {
+  color: var(--ink);
+}
+
+@media (max-width: 640px) {
+  .heading {
+    flex-wrap: wrap;
+    padding-block: 20px 28px;
+  }
+
+  .grid {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 52px;
+  }
+
+  .caption {
+    padding-block: 17px 15px;
+  }
+}
+
+:global(.motion-paused) .caption svg {
+  transition: none;
+  transform: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .caption svg {
+    transition: none;
+  }
+
+  .card:is(:hover, :focus-visible) .caption svg {
+    transform: none;
+  }
+}

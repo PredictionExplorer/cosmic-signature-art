@@ -1,5 +1,5 @@
 'use client';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   formatEther,
   isAddress,
@@ -21,11 +21,18 @@ import { auctionAddress, chainId } from '@/lib/auction/config';
 import { auctionPhase, bidFunding, parseEthInput } from '@/lib/auction/rules';
 import type { Messages } from '@/lib/i18n/en';
 import type { Locale } from '@/lib/i18n/routing';
+import styles from './live-auction.module.css';
 
 type ProviderDetail = { info: { uuid: string; name: string }; provider: EIP1193Provider };
 type EventProvider = EIP1193Provider;
 function isUnknownAuction(error: unknown): boolean {
   return error instanceof Error && error.message.includes('UnknownAuction');
+}
+function deadlineDate(timestamp: bigint): Date | null {
+  const milliseconds = Number(timestamp) * 1000;
+  if (!Number.isSafeInteger(milliseconds) || milliseconds < 0 || milliseconds > 8.64e15)
+    return null;
+  return new Date(milliseconds);
 }
 type LiveAuctionProps = { tokenId: number; t: Messages; locale: Locale };
 
@@ -51,7 +58,12 @@ function AuctionSession({ tokenId, t, locale }: LiveAuctionProps) {
   const [refreshCounter, setRefreshCounter] = useState(0);
   const [now, setNow] = useState(0);
   const active = useRef(true);
+  const submission = useRef(false);
+  const connection = useRef(false);
   const dialog = useRef<HTMLDialogElement>(null);
+  const reviewTrigger = useRef<HTMLButtonElement>(null);
+  const cancelReview = useRef<HTMLButtonElement>(null);
+  const reviewOpen = review !== null;
   useEffect(() => {
     active.current = true;
     return () => {
@@ -169,13 +181,37 @@ function AuctionSession({ tokenId, t, locale }: LiveAuctionProps) {
   }, [tokenId, account, refreshCounter, t]);
   useEffect(() => {
     const element = dialog.current;
-    if (!element) return;
-    if (review !== null) element.showModal();
-    else element.close();
-    return () => element.close();
-  }, [review]);
+    if (!element || !reviewOpen) return;
+    // Safari does not focus pointer-activated buttons, so remember the actual opener.
+    const opener = reviewTrigger.current;
+    const overflowProperties = ['overflow', 'overflow-x', 'overflow-y'];
+    const locked = [document.documentElement, document.body].map((target) => ({
+      target,
+      declarations: Array.from(target.style)
+        .filter((property) => overflowProperties.includes(property))
+        .map((property) => ({
+          property,
+          value: target.style.getPropertyValue(property),
+          priority: target.style.getPropertyPriority(property),
+        })),
+    }));
+    for (const { target } of locked) target.style.setProperty('overflow', 'hidden');
+    element.showModal();
+    cancelReview.current?.focus({ preventScroll: true });
+    return () => {
+      element.close();
+      for (const { target, declarations } of locked) {
+        for (const property of overflowProperties) target.style.removeProperty(property);
+        for (const { property, value, priority } of declarations)
+          target.style.setProperty(property, value, priority);
+      }
+      if (opener?.isConnected) opener.focus({ preventScroll: true });
+    };
+  }, [reviewOpen]);
   const refresh = useCallback(() => setRefreshCounter((value) => value + 1), []);
   async function connect(detail: ProviderDetail) {
+    if (connection.current || submission.current) return;
+    connection.current = true;
     setConnecting(true);
     setMessage(null);
     try {
@@ -192,11 +228,14 @@ function AuctionSession({ tokenId, t, locale }: LiveAuctionProps) {
     } catch {
       if (active.current) setMessage(t.transactionFailed);
     } finally {
+      connection.current = false;
       if (active.current) setConnecting(false);
     }
   }
   async function execute(action: AuctionAction) {
-    if (!provider || !account || pending) return;
+    if (!provider || !account || submission.current) return;
+    // Lock synchronously: two activations can occur before React commits disabled=true.
+    submission.current = true;
     setPending(true);
     setReview(null);
     setMessage(t.walletPending);
@@ -219,10 +258,12 @@ function AuctionSession({ tokenId, t, locale }: LiveAuctionProps) {
         refresh();
       }
     } finally {
+      submission.current = false;
       if (active.current) setPending(false);
     }
   }
-  const stale = !snapshot || (now > 0 && now - snapshot.fetchedAt > 25000);
+  const deadline = snapshot ? deadlineDate(snapshot.lot.endAt || snapshot.lot.eligibleAt) : null;
+  const stale = !snapshot || deadline === null || (now > 0 && now - snapshot.fetchedAt > 25000);
   const phase = snapshot ? auctionPhase(snapshot.lot, snapshot.blockTime) : null;
   const leader = !!account && !!snapshot && isAddressEqual(account, snapshot.lot.highestBidder);
   const target = recipient;
@@ -232,13 +273,21 @@ function AuctionSession({ tokenId, t, locale }: LiveAuctionProps) {
     (!auctionAddress || !isAddressEqual(target, auctionAddress));
   const ready = !!account && walletChain === chainId && !pending && !stale;
   const short = (address: string) => `${address.slice(0, 6)}…${address.slice(-4)}`;
-  const date = (value: bigint) =>
-    new Intl.DateTimeFormat(locale, { dateStyle: 'medium', timeStyle: 'short' }).format(
-      Number(value) * 1000,
-    );
+  const dateFormatter = useMemo(
+    () =>
+      new Intl.DateTimeFormat(locale, {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+        timeZone: 'UTC',
+      }),
+    [locale],
+  );
   function prepareBid(event: React.FormEvent) {
     event.preventDefault();
-    if (!ready || !snapshot) return;
+    if (!ready || !snapshot || (phase !== 'waiting' && phase !== 'active')) return;
     const total = parseEthInput(amount);
     if (total === null) {
       setMessage(t.invalidAmount);
@@ -262,34 +311,29 @@ function AuctionSession({ tokenId, t, locale }: LiveAuctionProps) {
     review !== null &&
     funding !== null &&
     funding === review.funding &&
+    snapshot !== null &&
+    review.total >= snapshot.minimum &&
     (phase === 'waiting' || phase === 'active');
-  const remaining = snapshot
-    ? Math.max(
-        0,
-        Number((snapshot.lot.endAt || snapshot.lot.eligibleAt) - snapshot.blockTime) -
-          Math.max(0, Math.floor((now - snapshot.fetchedAt) / 1000)),
-      )
-    : 0;
+  const remaining =
+    snapshot && !stale
+      ? Math.max(
+          0,
+          Number((snapshot.lot.endAt || snapshot.lot.eligibleAt) - snapshot.blockTime) -
+            Math.max(0, Math.floor((now - snapshot.fetchedAt) / 1000)),
+        )
+      : 0;
   const countdown = `${Math.floor(remaining / 3600)
     .toString()
     .padStart(2, '0')}:${Math.floor((remaining % 3600) / 60)
     .toString()
     .padStart(2, '0')}:${(remaining % 60).toString().padStart(2, '0')}`;
   return (
-    <section className="live-auction" aria-label={t.auctions}>
-      <div className="auction-panel-heading">
+    <section className={`${styles.panel} live-auction`} aria-label={t.auctions}>
+      <div className={`${styles.heading} auction-panel-heading`}>
         <div>
           <p className="eyebrow">{t.auctionKicker}</p>
-          <h2>{phase ? t[phase] : t.status}</h2>
+          <h2>{phase && !stale ? t[phase] : t.status}</h2>
         </div>
-        <a
-          className="text-link"
-          href={`https://arbiscan.io/address/${auctionAddress}`}
-          target="_blank"
-          rel="noreferrer"
-        >
-          {t.contract} ↗
-        </a>
       </div>
       {problem ? (
         <p className="notice" role="status">
@@ -299,36 +343,43 @@ function AuctionSession({ tokenId, t, locale }: LiveAuctionProps) {
         <p className="notice" aria-busy="true">
           {t.refresh}…
         </p>
+      ) : stale || deadline === null ? (
+        <p className="notice" role="status">
+          {t.liveUnavailable}
+        </p>
       ) : (
         <>
-          <div className="lot-facts">
-            <div>
-              <span>{t.highest}</span>
-              <strong>
-                {formatEther(snapshot.lot.highestBid)} <small>ETH</small>
-              </strong>
+          <dl className={`${styles.facts} lot-facts`}>
+            <div className={styles.primaryPrice}>
+              <dt>{snapshot.lot.highestBid === 0n ? t.openingBid : t.highest}</dt>
+              <dd>
+                {formatEther(snapshot.lot.highestBid || snapshot.minimum)} <small>ETH</small>
+              </dd>
             </div>
-            <div>
-              <span>{snapshot.lot.endAt === 0n ? t.eligible : t.ends}</span>
-              <strong className="lot-date">
-                {date(snapshot.lot.endAt || snapshot.lot.eligibleAt)}
-              </strong>
+            {snapshot.lot.highestBid > 0n && phase === 'active' ? (
+              <div className={styles.nextPrice}>
+                <dt>{t.minimum}</dt>
+                <dd>
+                  {formatEther(snapshot.minimum)} <small>ETH</small>
+                </dd>
+              </div>
+            ) : null}
+            <div className={styles.deadline}>
+              <dt>{snapshot.lot.endAt === 0n ? t.eligible : t.ends}</dt>
+              <dd>
+                <time dateTime={deadline.toISOString()}>{dateFormatter.format(deadline)} UTC</time>
+              </dd>
             </div>
-            <div>
-              <span>{t.minimum}</span>
-              <strong>
-                {formatEther(snapshot.minimum)} <small>ETH</small>
-              </strong>
+          </dl>
+          {phase === 'active' || phase === 'preview' ? (
+            <div className={styles.clock} aria-live="off">
+              <p>{phase === 'active' ? t.bidCountdown : t.previewCountdown}</p>
+              <p className={`${styles.countdown} auction-countdown`}>{countdown}</p>
             </div>
-          </div>
-          <p className="chain-clock">{t.chainClock}</p>
-          {(phase === 'active' || phase === 'preview') && !stale ? (
-            <p className="auction-countdown" aria-live="off">
-              {countdown}
-            </p>
           ) : null}
+          <p className={`${styles.chainClock} chain-clock`}>{t.chainClock}</p>
           {snapshot.lot.highestBidder !== zeroAddress ? (
-            <p className="leading-wallet">
+            <p className={`${styles.leader} leading-wallet`}>
               {t.leadingWallet}:{' '}
               <a
                 href={`https://arbiscan.io/address/${snapshot.lot.highestBidder}`}
@@ -341,10 +392,12 @@ function AuctionSession({ tokenId, t, locale }: LiveAuctionProps) {
           ) : null}
         </>
       )}
-      <div className="wallet-bar">
+      <div className={`${styles.wallet} wallet-bar`}>
         {account ? (
           <>
-            <span className="account-address">{short(account)}</span>
+            <span className={styles.account} title={account}>
+              {short(account)}
+            </span>
             <button
               onClick={() => {
                 setAccount(null);
@@ -378,7 +431,7 @@ function AuctionSession({ tokenId, t, locale }: LiveAuctionProps) {
           </>
         ) : (
           <>
-            <span>{t.connect}</span>
+            <span className={styles.walletLabel}>{t.chooseWallet}</span>
             {providers.length ? (
               providers.map((detail) => (
                 <button
@@ -397,21 +450,22 @@ function AuctionSession({ tokenId, t, locale }: LiveAuctionProps) {
         )}
       </div>
       {snapshot && (phase === 'waiting' || phase === 'active') ? (
-        <form className="bid-form" onSubmit={prepareBid}>
+        <form className={`${styles.bidForm} bid-form`} onSubmit={prepareBid}>
           <label>
             {t.bidTotal}
             <input
               name="bid"
               inputMode="decimal"
               autoComplete="off"
+              spellCheck={false}
               value={amount}
               onChange={(event) => setAmount(event.target.value)}
-              placeholder={formatEther(snapshot.minimum)}
+              placeholder={!stale ? formatEther(snapshot.minimum) : undefined}
               disabled={pending}
             />
           </label>
-          <button className="primary-button" disabled={!ready} type="submit">
-            {t.placeBid} ↗
+          <button className="primary-button" disabled={!ready} type="submit" ref={reviewTrigger}>
+            {t.bidReviewAction} <span aria-hidden="true">↗</span>
           </button>
           {leader ? <p>{t.yourBid}</p> : null}
         </form>
@@ -426,7 +480,7 @@ function AuctionSession({ tokenId, t, locale }: LiveAuctionProps) {
         </button>
       ) : null}
       {snapshot?.lot.settled ? (
-        <div className="settlement-actions">
+        <div className={`${styles.actions} settlement-actions`}>
           <p>
             {t.winner}: <code>{short(snapshot.lot.highestBidder)}</code>
           </p>
@@ -441,6 +495,7 @@ function AuctionSession({ tokenId, t, locale }: LiveAuctionProps) {
                   onChange={(event) => setRecipient(event.target.value)}
                   autoComplete="off"
                   spellCheck={false}
+                  disabled={pending}
                 />
               </label>
               <button
@@ -466,7 +521,7 @@ function AuctionSession({ tokenId, t, locale }: LiveAuctionProps) {
         </div>
       ) : null}
       {snapshot && snapshot.refund > 0n && account ? (
-        <div className="refund-panel">
+        <div className={`${styles.actions} refund-panel`}>
           <p>
             {t.refund}: <strong>{formatEther(snapshot.refund)} ETH</strong>
           </p>
@@ -477,6 +532,7 @@ function AuctionSession({ tokenId, t, locale }: LiveAuctionProps) {
               onChange={(event) => setRecipient(event.target.value)}
               autoComplete="off"
               spellCheck={false}
+              disabled={pending}
             />
           </label>
           <button
@@ -489,7 +545,12 @@ function AuctionSession({ tokenId, t, locale }: LiveAuctionProps) {
           {!recipientValid ? <p>{t.invalidAddress}</p> : null}
         </div>
       ) : null}
-      <div className="transaction-status" role="status" aria-live="polite">
+      <div
+        className={`${styles.transactionStatus} transaction-status`}
+        role="status"
+        aria-live="polite"
+        aria-atomic="true"
+      >
         {message}
         <span>
           {hash ? (
@@ -499,19 +560,35 @@ function AuctionSession({ tokenId, t, locale }: LiveAuctionProps) {
           ) : null}
         </span>
       </div>
-      <button className="text-link" onClick={refresh} disabled={pending}>
-        {t.refresh} ↻
-      </button>
+      <div className={styles.footer}>
+        <button className="text-link" onClick={refresh} disabled={pending}>
+          {t.refresh} <span aria-hidden="true">↻</span>
+        </button>
+        <a
+          className="text-link"
+          href={`https://arbiscan.io/address/${auctionAddress}`}
+          target="_blank"
+          rel="noreferrer"
+        >
+          {t.contract} <span aria-hidden="true">↗</span>
+        </a>
+      </div>
       <dialog
-        className="bid-dialog"
+        className={`${styles.dialog} bid-dialog`}
         ref={dialog}
-        onCancel={() => setReview(null)}
+        onCancel={(event) => {
+          event.preventDefault();
+          setReview(null);
+        }}
         aria-labelledby={`bid-review-title-${tokenId}`}
         aria-describedby={`bid-review-description-${tokenId}`}
       >
+        <p className={`${styles.reviewIdentity} eyebrow`}>
+          {t.signature} {String(tokenId).padStart(3, '0')} · ETH
+        </p>
         <h3 id={`bid-review-title-${tokenId}`}>{t.bidReview}</h3>
         <p id={`bid-review-description-${tokenId}`}>{t.bidWarning}</p>
-        <dl>
+        <dl className={styles.reviewAmounts}>
           <div>
             <dt>{t.bidTotal}</dt>
             <dd>{review !== null ? formatEther(review.total) : ''} ETH</dd>
@@ -522,8 +599,8 @@ function AuctionSession({ tokenId, t, locale }: LiveAuctionProps) {
           </div>
         </dl>
         {!reviewValid ? <p className="notice">{t.reviewChanged}</p> : null}
-        <div className="dialog-actions">
-          <button className="outline-button" onClick={() => setReview(null)}>
+        <div className={`${styles.dialogActions} dialog-actions`}>
+          <button className="outline-button" ref={cancelReview} onClick={() => setReview(null)}>
             {t.cancel}
           </button>
           <button

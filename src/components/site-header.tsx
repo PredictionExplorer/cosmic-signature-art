@@ -56,7 +56,9 @@ export function SiteHeader({ locale, t }: { locale: Locale; t: Messages }) {
             <span>{paused ? t.resumeMotion : t.pauseMotion}</span>
           </button>
           <details className="language-menu">
-            <summary aria-label={t.language}>{locale.toUpperCase()}</summary>
+            <summary aria-label={`${t.language}: ${locale.toUpperCase()}`}>
+              {locale.toUpperCase()}
+            </summary>
             <div>
               {locales.map((value) => (
                 <Link

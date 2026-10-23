@@ -1,6 +1,30 @@
 import type { Messages } from './en';
 
 export const vi: Messages = {
+  auctionExhibition: 'Nghệ thuật chuyển động. Lời mời sưu tầm.',
+  auctionExhibitionCopy:
+    'Mỗi chu kỳ mang đến tám tác phẩm mới cho bộ sưu tập hiện có. Khám phá chuyển động, ngắm nhìn chi tiết và trực tiếp đặt giá bằng ETH.',
+  auctionEditorial: 'Từ bộ sưu tập thường trực',
+  auctionEditorialNote:
+    'Tác phẩm tiêu biểu này giới thiệu bộ sưu tập. Các tác phẩm đấu giá được liệt kê riêng.',
+  auctionRoom: 'Phòng đấu giá',
+  auctionBeforeBid: 'Trước khi đặt giá',
+  auctionAtAGlance: 'Tổng quan đấu giá',
+  auctionReadMore: 'Toàn bộ điều khoản đấu giá',
+  auctionViewRecord: 'Tác phẩm và nguồn gốc',
+  auctionDuration: '48 giờ kể từ lần đặt giá đầu tiên',
+  auctionSoftClose: 'Đặt giá sát giờ kết thúc để lại 10 phút',
+  auctionWaitingCopy:
+    'Lần đặt giá đầu tiên bắt đầu đếm giờ. Bạn luôn có thể đưa ra mức giá cao hơn.',
+  auctionBrowseArt: 'Khám phá nghệ thuật trong khi chúng tôi chuẩn bị',
+  bidPanelLoading: 'Đang đọc hợp đồng đấu giá…',
+  auctionNoFee: 'Không có phí người mua',
+  contractStatusLabel: 'Trạng thái đấu giá',
+  openingBid: 'Giá khởi điểm',
+  bidReviewAction: 'Xem lại giá đặt',
+  bidCountdown: 'Thời gian còn lại',
+  previewCountdown: 'Đến khi có thể đặt giá',
+
   preparingExpression: 'Đang mở cách thể hiện này…',
   expressionFailed: 'Không thể tải cách thể hiện này. Tác phẩm hiện tại vẫn được trưng bày.',
   viewingRoom: 'Phòng thưởng lãm',

@@ -1,6 +1,28 @@
 import type { Messages } from './en';
 
 export const uk: Messages = {
+  auctionExhibition: 'Мистецтво в русі. Запрошення до колекціонування.',
+  auctionExhibitionCopy:
+    'Кожен цикл додає вісім нових творів до наявної колекції. Спостерігайте за їхнім рухом, розглядайте деталі та робіть пряму пропозицію в ETH.',
+  auctionEditorial: 'З постійної колекції',
+  auctionEditorialNote: 'Цей вибраний твір знайомить із колекцією. Аукціонні лоти наведено окремо.',
+  auctionRoom: 'Аукціонна зала',
+  auctionBeforeBid: 'Перш ніж зробити ставку',
+  auctionAtAGlance: 'Аукціон в огляді',
+  auctionReadMore: 'Повні умови аукціону',
+  auctionViewRecord: 'Твір і провенанс',
+  auctionDuration: '48 годин від першої ставки',
+  auctionSoftClose: 'Пізні ставки залишають 10 хвилин',
+  auctionWaitingCopy: 'Перша ставка запускає відлік. Вищі пропозиції завжди вітаються.',
+  auctionBrowseArt: 'Досліджуйте мистецтво, поки ми готуємося',
+  bidPanelLoading: 'Читаємо аукціонний контракт…',
+  auctionNoFee: 'Без комісії покупця',
+  contractStatusLabel: 'Стан аукціону',
+  openingBid: 'Початкова ставка',
+  bidReviewAction: 'Перевірити ставку',
+  bidCountdown: 'Залишилося часу',
+  previewCountdown: 'До відкриття ставок',
+
   preparingExpression: 'Відкриваємо це втілення…',
   expressionFailed: 'Не вдалося завантажити це втілення. Попереднє залишається перед вами.',
   viewingRoom: 'Зала споглядання',

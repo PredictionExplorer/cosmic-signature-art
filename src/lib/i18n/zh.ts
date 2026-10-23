@@ -1,6 +1,28 @@
 import type { Messages } from './en';
 
 export const zh: Messages = {
+  auctionExhibition: '流动的艺术，收藏的邀约。',
+  auctionExhibitionCopy:
+    '每个周期都会为现有系列带来八件新作品。欣赏流动之美，细读作品，以 ETH 直接出价。',
+  auctionEditorial: '来自永久馆藏',
+  auctionEditorialNote: '这件精选作品带您认识本系列。拍品另行列出。',
+  auctionRoom: '拍卖展厅',
+  auctionBeforeBid: '出价之前',
+  auctionAtAGlance: '拍卖概览',
+  auctionReadMore: '完整拍卖条款',
+  auctionViewRecord: '作品与来源',
+  auctionDuration: '首次出价后 48 小时',
+  auctionSoftClose: '临近结束的出价将剩余时间延至 10 分钟',
+  auctionWaitingCopy: '首次出价启动计时。您可以随时给出更高的报价。',
+  auctionBrowseArt: '在等待期间探索艺术',
+  bidPanelLoading: '正在读取拍卖合约…',
+  auctionNoFee: '无买方佣金',
+  contractStatusLabel: '拍卖状态',
+  openingBid: '起拍价',
+  bidReviewAction: '核对出价',
+  bidCountdown: '剩余时间',
+  previewCountdown: '距离开放出价',
+
   preparingExpression: '正在打开这一呈现…',
   expressionFailed: '无法载入这一呈现。当前作品仍可观赏。',
   viewingRoom: '作品观览室',

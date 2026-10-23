@@ -1,0 +1,40 @@
+.rules {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 45px 50px;
+}
+.rules article {
+  border-top: 1px solid var(--rule);
+  padding-top: 20px;
+  min-width: 0;
+}
+.rules article > span {
+  color: var(--muted);
+  font-size: 9px;
+}
+.rules h3 {
+  font-size: 30px;
+  margin: 22px 0 16px;
+  line-height: 1.1;
+}
+.rules p {
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.9;
+  max-width: 420px;
+}
+@media (max-width: 1000px) {
+  .rules {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 35px;
+  }
+}
+@media (max-width: 600px) {
+  .rules {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 28px;
+  }
+  .rules h3 {
+    margin-top: 16px;
+  }
+}
