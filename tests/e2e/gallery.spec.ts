@@ -26,6 +26,42 @@ async function imageLoaded(image: Locator) {
     .toBe(true);
 }
 
+const archivedMedia = JSON.parse(
+  readFileSync(new URL('../../src/lib/art/curated-media.json', import.meta.url), 'utf8'),
+) as { id: number; media: { id: string; sourceUrl: string }[] }[];
+
+async function artworkImageSource(
+  image: Locator,
+  tokenId: number,
+  expression: 'ink' | 'light',
+  allowPublished = false,
+) {
+  const allowed = [new URL(`/art/${tokenId}-${expression}.webp`, image.page().url()).href];
+  if (allowPublished) {
+    const source = archivedMedia
+      .find((work) => work.id === tokenId)
+      ?.media.find((media) => media.id === expression)?.sourceUrl;
+    if (!source) throw new Error(`Missing authentic source for ${tokenId} / ${expression}`);
+    allowed.push(source);
+  }
+  await expect
+    .poll(
+      async () => {
+        const source = await image.getAttribute('src');
+        if (!source) return false;
+        const url = new URL(source, image.page().url());
+        // Vercel's deployment-routing query changes delivery, not artwork identity.
+        // Preserve the exact expected origin/path and reject every other query or fragment.
+        url.searchParams.delete('dpl');
+        return allowed.includes(url.href);
+      },
+      {
+        message: `Expected authentic ${expression} image for token ${tokenId}: ${allowed.join(' or ')}`,
+      },
+    )
+    .toBe(true);
+}
+
 async function collectionLoaded(page: Page, loadAllImages = false) {
   const section = page.getByRole('main').locator('#works');
   await expect(section.locator('.collection-skeleton:visible')).toHaveCount(0, { timeout: 30_000 });
@@ -81,10 +117,7 @@ test.describe('localized public gallery', () => {
       await expect(page.locator('html')).toHaveAttribute('lang', locale);
       await expect(page.getByRole('heading', { level: 1 })).toContainText(t.shape);
       await imageLoaded(page.locator('.passage:visible .passage-field img'));
-      await expect(page.locator('.passage:visible .passage-field img')).toHaveAttribute(
-        'src',
-        /\/art\/23-ink\.webp$/,
-      );
+      await artworkImageSource(page.locator('.passage:visible .passage-field img'), 23, 'ink');
       await noHorizontalOverflow(page);
       await page
         .locator('.site-header nav')
@@ -143,10 +176,7 @@ test('Ink and Light preserve token identity and genuine media; motion is control
       timeout: 5_000,
     });
     await expect(page.locator('.passage:visible .material-portal')).toBeEnabled();
-    await expect(page.locator('.passage:visible .passage-field img')).toHaveAttribute(
-      'src',
-      /\/art\/23-light\.webp$/,
-    );
+    await artworkImageSource(page.locator('.passage:visible .passage-field img'), 23, 'light');
     await page.getByRole('button', { name: /Return to Ink/ }).click();
     await expect(page.locator('.passage:visible')).toHaveClass(/material-ink/);
     await expect(page.locator('.passage:visible .material-curtain')).toHaveCount(0, {
@@ -161,17 +191,11 @@ test('Ink and Light preserve token identity and genuine media; motion is control
     .toBe(true);
   await page.getByRole('button', { name: /Cross into Light/ }).click();
   await expect(page.locator('.passage:visible')).toHaveClass(/material-light/);
-  await expect(page.locator('.passage:visible .passage-field img')).toHaveAttribute(
-    'src',
-    /\/art\/23-light\.webp$/,
-  );
+  await artworkImageSource(page.locator('.passage:visible .passage-field img'), 23, 'light');
   await expect(page.locator('.passage:visible .passage-field video')).toHaveCount(0);
   await imageLoaded(page.locator('.passage:visible .passage-field img'));
   await page.getByRole('button', { name: /Return to Ink/ }).click();
-  await expect(page.locator('.passage:visible .passage-field img')).toHaveAttribute(
-    'src',
-    /\/art\/23-ink\.webp$/,
-  );
+  await artworkImageSource(page.locator('.passage:visible .passage-field img'), 23, 'ink');
   await expect(film).toHaveCount(0);
   await toggle.click();
   await expect(page.locator('.passage:visible .passage-field video')).toHaveAttribute(
@@ -200,10 +224,7 @@ test('Atlas selection, rehanging and material changes lead to the selected token
   await atlas.getByRole('button', { name: 'Rehang the constellation', exact: true }).click();
   await expect(atlas.locator('.constellation')).toHaveClass(/rehung/);
   await atlas.getByRole('button', { name: 'Light', exact: true }).click();
-  await expect(atlas.locator('.position-anchor img')).toHaveAttribute(
-    'src',
-    /\/art\/35-light\.webp$/,
-  );
+  await artworkImageSource(atlas.locator('.position-anchor img'), 35, 'light');
   await expect(atlas.locator('video')).toHaveCount(0);
   await noHorizontalOverflow(page);
   await atlas.getByRole('link', { name: 'Enter this work', exact: true }).click();
@@ -346,10 +367,7 @@ test('artwork comparison and enlarged viewer preserve identity and Escape return
   await pauseAmbientMotion(page);
   await expect(page.getByRole('heading', { level: 1 })).toHaveText('Signature 31');
   const room = page.getByRole('region', { name: 'Ways of seeing', exact: true });
-  await expect(room.locator('.art-media img')).toHaveAttribute(
-    'src',
-    /(?:\/art\/31-ink.webp|ember_full.webp)$/,
-  );
+  await artworkImageSource(room.locator('.art-media img'), 31, 'ink', true);
   await room.getByRole('button', { name: 'See both expressions', exact: true }).click();
   await expect(room.locator('.viewer-plate')).toHaveClass(/paired/);
   await expect(room.locator('.viewer-plate > img')).toHaveAttribute('alt', 'Signature 31 · Light');
@@ -361,10 +379,7 @@ test('artwork comparison and enlarged viewer preserve identity and Escape return
   const dialog = page.getByRole('dialog');
   await expect(dialog).toBeVisible();
   await expect(dialog).toHaveAccessibleName(`Signature 31 · ${catalogs.en.viewingRoom}`);
-  await expect(dialog.locator('img')).toHaveAttribute(
-    'src',
-    /(?:\/art\/31-ink.webp|ember_full.webp)$/,
-  );
+  await artworkImageSource(dialog.locator('img'), 31, 'ink', true);
   await expect(dialog.locator('video')).toHaveCount(0);
   await page.keyboard.press('Escape');
   await expect(dialog).not.toBeVisible();
@@ -382,7 +397,7 @@ test('artwork comparison and enlarged viewer preserve identity and Escape return
   await expect(completeFilm).toBeFocused();
   await room.getByRole('button', { name: /^01 Light$|^02 Light$/ }).click();
   await expect(room.locator('.art-media')).toHaveAttribute('data-material', 'light');
-  await expect(room.locator('.art-media img')).not.toHaveAttribute('src', /(?:23|35)-/);
+  await artworkImageSource(room.locator('.art-media img'), 31, 'light', true);
   await noHorizontalOverflow(page);
 });
 
@@ -431,10 +446,7 @@ test('Process moves from a seamless Light room into matching Ink paper and resto
     readFileSync(new URL('../../src/lib/art/curated-records.json', import.meta.url), 'utf8'),
   ) as { records: { id: number; seed: string }[] };
   const seed = archive.records.find((item) => item.id === 31)!.seed;
-  await expect(light.locator('img')).toHaveAttribute(
-    'src',
-    new RegExp(`(?:/art/31-light\\.webp$|/${seed}/images/)`),
-  );
+  await artworkImageSource(light.locator('img'), 31, 'light', true);
   if (await light.locator('video').count()) {
     expect(await light.locator('video').getAttribute('src')).toContain(
       `/${seed}/videos/web/main.mp4`,
@@ -451,7 +463,7 @@ test('Process moves from a seamless Light room into matching Ink paper and resto
   await imageLoaded(ink.locator('img'));
   await expect(page.locator('#ink')).toHaveCSS('background-color', 'rgb(241, 235, 223)');
   await expect(ink).toHaveCSS('background-color', 'rgb(241, 235, 223)');
-  await expect(ink.locator('img')).toHaveAttribute('src', /\/art\/31-ink.webp$/);
+  await artworkImageSource(ink.locator('img'), 31, 'ink');
   // Sample the authentic local still's paper, not an invented CSS approximation.
   const paperPixel = await ink.locator('img').evaluate((element) => {
     const image = element as HTMLImageElement;
