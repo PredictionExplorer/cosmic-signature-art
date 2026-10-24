@@ -1,8 +1,8 @@
 # Cosmic Signature Art
 
-The Next.js gallery for `cosmicsignature.art`: Ink first, authentic movement, one existing Cosmic Signature collection. The production application lives in `src/`; the earlier visual studies remain in `concepts/`.
+The Next.js gallery for `cosmic.art`: Ink first, authentic movement, one existing Cosmic Signature collection. The production application lives in `src/`; the earlier visual studies remain in `concepts/`.
 
-Implementation was authorized on October 22, 2026. This checkout is local and has not been published. Auction transactions remain inactive until a reviewed deployment address and exact runtime code hash are configured. There is no simulated live auction or fabricated price.
+Implementation was authorized on October 22, 2026; website publication on GitHub and Vercel was authorized on October 24. Auction transactions remain inactive until a reviewed contract deployment address and exact runtime code hash are configured. There is no simulated live auction or fabricated price in the deployed application.
 
 ## Run locally
 
@@ -85,4 +85,4 @@ Activation requires the exact reviewed immutable address, chain and runtime hash
 - [Ecosystem plan](docs/ecosystem-and-delivery-plan.md): issuance, reserve economics and operations.
 - [Art direction](docs/art-direction-exploration.md): Passage/Atlas rationale and earlier concepts.
 
-The Go repository and renderer are not modified by this implementation. Their suggested additions are documented here. No production deployment, contract upgrade, external transaction or push to a remote branch is included.
+The Go repository and renderer are not modified by this implementation. Their suggested additions are documented here. Publishing this website does not deploy, activate, or upgrade its auction or game contracts.

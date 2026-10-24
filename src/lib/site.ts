@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import { locales, localizedPath, type Locale } from './i18n/routing';
-export const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://cosmicsignature.art';
+export const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://cosmic.art';
 export const NFT_ADDRESS = '0xbb84Be3500A63581d3F2d5AC3bdF8685AAedad25' as const;
 export const GAME_ADDRESS = '0x6a714Ae7B5b6eA520F6BCA23d2E609C4Fd5863F2' as const;
 export function metadata(

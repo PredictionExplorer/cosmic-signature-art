@@ -19,7 +19,7 @@ describe.each([
       source: 'curated-fallback',
     });
     const result = await generateMetadata({ params: Promise.resolve({ locale: 'ja', id: '031' }) });
-    expect(result.alternates?.canonical).toBe(`https://cosmicsignature.art/ja/${section}/31`);
+    expect(result.alternates?.canonical).toBe(`https://cosmic.art/ja/${section}/31`);
     expect(result.openGraph?.images).toEqual([
       expect.objectContaining({ url: '/art/31-ink.webp', width: 3456, height: 2234 }),
     ]);

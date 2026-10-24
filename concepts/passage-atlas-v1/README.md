@@ -31,7 +31,7 @@ The twelve WebP files in assets are byte-for-byte copies of the local source ima
 
 The token-23/31/35 pairs are published-reference captures from the October 18 ink study. Additional Light images are the verified reading-page assets from cosmicgame-frontend. This is a fixed visual sample, not a statement that these images are all current live collection media.
 
-The ink film is a symlink to the existing local Signature 31 file rather than a duplicated large movie. It works on this machine; moving the folder requires supplying that same file. The still-image mockups are self-contained. Baskerville uses the local system font with Times/Georgia fallbacks; the PNG captures preserve the reviewed typography. A local Clash Display font is included for the wordmark.
+The ink film now uses a repository-relative symlink to the bundled Signature 31 web preview in `public/art/31-ink-preview.mp4`. This keeps the study portable within a complete repository checkout without duplicating the original large movie. The saved historical screenshots remain unchanged. The still-image mockups are self-contained. Baskerville uses the local system font with Times/Georgia fallbacks; the PNG captures preserve the reviewed typography. A local Clash Display font is included for the wordmark.
 
 **Verification completed**
 
@@ -39,8 +39,8 @@ The three main screens and the Ink variants were visually inspected. Light/Ink s
 
 Add capture=1 to a mockup URL to disable transitions during screenshots. That is a capture convenience, not a separate layout. Mockup copy and detailed typography remain design proposals; this study does not ship untranslated production UI.
 
-To restart the preview locally, run:
+To restart the preview locally, run from the repository root:
 
-    python3 -m http.server 4318 --bind 127.0.0.1 --directory /Users/tarasbobrovytsky/Dev/Cosmic-Signature-Art/concepts/passage-atlas-v1
+    python3 -m http.server 4318 --bind 127.0.0.1 --directory concepts/passage-atlas-v1
 
 The visual direction can evolve without modifying any approved auction economics or custody rules.
