@@ -1,0 +1,873 @@
+{
+  "date": "2026-10-24",
+  "status": "passed",
+  "command": "npm run test:auction:local",
+  "publicWrites": false,
+  "productionSourceChanged": false,
+  "sourceSha256": {
+    "scripts/run-local-auction-rehearsal.mjs": "06ba1dc7b9b3dc6857f6a1246efc38f4e2a571d8dddb40e4a2d143a9028536ed",
+    "src/lib/auction/client.integration.test.ts": "e8cf9d10c5c6b721fdd3881140da882c13561de3c28ba9fa081902e21d8ff033",
+    "src/lib/auction/client.ts": "9aad0aa6c798007cd9548c3fa5a9b965b1248a8a6a3bafcabee9945f2a2ee952",
+    "tests/real-auction/chain-fixture.ts": "098c8db696aebdc88d541451d67e1a2d642b86481ef5746b04032ef62435f5b8",
+    "tests/real-auction/identity.ts": "c2d2d8f4133b55167fbf30cb43dbf67871c5925d2c71210bab4e41e871df825a",
+    "tests/real-auction/index.html": "8efe3768685f3815dbbda136f9513f731faf0451b05a8ecd1fe6ddbdc656dd3f",
+    "tests/real-auction/lifecycle.spec.ts": "fd803e74e064b04ebfb3ac6fdf3e7d7103e23c70fe487c99afe4fb0fd6811156",
+    "tests/real-auction/main.tsx": "1d2b2ff498d96de41bfba467a46169379debbff351777b2b948a7cb20efecb6a",
+    "tests/real-auction/playwright.config.ts": "56b7e5f016537af881b926518e037bef310704afb33b0ef0c894639b5ceaf270",
+    "tests/real-auction/seed-contracts.mjs": "ef5fc43ad8a2f79b0c3abbdfeaedc1b41cbf691d61a55a12a645fe1e25de5b9b",
+    "tests/real-auction/tsconfig.json": "974473a88e713a6b9563bd8df2a5ad5712c259b6e3ab3b677581b74aa5201274",
+    "tests/real-auction/types.ts": "9d9abe1dc07802add778c94fe24e931841cb36c3d4689d43d94e9ddf72f85333",
+    "tests/real-auction/vite.config.ts": "9adad3ef4fdcf005cb1ccd94d61f6aad10ff31e101bce06c77ab74e28bf3a7e2",
+    "tests/real-auction/wallet.ts": "8a8e25381ebda6318051cab9abd8ba475631d9f1b23d782ffc4fcde3dda1ce7a"
+  },
+  "compilerArtifacts": [
+    {
+      "name": "CosmicSignatureArtAuction",
+      "compiler": "0.8.38+commit.1835d247",
+      "sha256": "e8a7d93f02b8a0b86cc65c18a49f5fd309a3b676691973512c4cb1eb96144e52",
+      "buildInfoSha256": "359576bea71129a44c86b36b21ed202ab32d3a2efc117029e33eb20f5a26f64b",
+      "checkedSourceInputs": 196
+    },
+    {
+      "name": "CosmicSignatureGameV4",
+      "compiler": "0.8.38+commit.1835d247",
+      "sha256": "179cd8c5e4dbcdd493f630144bc910f977c29205d9d9fa91fa1d5c03481cf88a",
+      "buildInfoSha256": "359576bea71129a44c86b36b21ed202ab32d3a2efc117029e33eb20f5a26f64b",
+      "checkedSourceInputs": 196
+    },
+    {
+      "name": "CosmicSignatureNft",
+      "compiler": "0.8.38+commit.1835d247",
+      "sha256": "b62d5d8013334c081934a334c6bc4ff2808590b7826a55622e09f313eaa4ede5",
+      "buildInfoSha256": "359576bea71129a44c86b36b21ed202ab32d3a2efc117029e33eb20f5a26f64b",
+      "checkedSourceInputs": 196
+    }
+  ],
+  "clientIntegration": {
+    "scenarios": 4,
+    "confirmedActions": 29,
+    "attemptsRejectedBeforeBroadcast": 15,
+    "game": "Test receiver for hostile callbacks; actual production NFT and auction"
+  },
+  "browserMatrix": {
+    "startTime": "2026-10-24T08:22:29.396Z",
+    "duration": 16558.341999999997,
+    "expected": 8,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  },
+  "browserReports": [
+    {
+      "browser": "chromium",
+      "reportSha256": "41b4cfb3328e9242368e3ca3f3be9de9e6d9f258b47a5600c6b7ef61aefe11ef",
+      "fixture": {
+        "chainId": 31337,
+        "tokenId": 28,
+        "auction": "0xa9Af9888606843BA7C8dbA6E9f17ea90c4808310",
+        "game": "0x9Fc5015413a62cAD539Fd0b82b6681F92612a627",
+        "nft": "0x693Bc5619152B33b3dC6C61795E9DC46fE9aC694",
+        "codeHash": "0xfba79356827dec246a1cbb73cdca8cb13dcbf5794ee532101b352042195fc6d6",
+        "issuance": {
+          "game": "Real V4 game and production periphery, upgraded through V1/V2/V3 locally",
+          "issuanceTransaction": "0xf0b1f1cd1c79c1573d779ccd9ddf11039fe7f287f95f20e25eb5421b28286414",
+          "sourceCycle": "1",
+          "finalizationBlock": 45,
+          "auctionNfts": 8,
+          "arbitrumPrecompiles": "Repository FakeArbSys/FakeArbGasInfo shims; no native Arbitrum entropy or gas guarantee"
+        }
+      },
+      "actionOrder": [
+        "first bid",
+        "leader raise",
+        "external competing bid",
+        "refund to selected recipient",
+        "first late extension",
+        "second late extension",
+        "keeper settlement",
+        "winner NFT delivery",
+        "proceeds to game reserve"
+      ],
+      "confirmedTransactions": [
+        {
+          "hash": "0x164bdda7061e638bda66b0d4496adab09c7a4b423459c4e94f62d947bef81ba5",
+          "blockNumber": "50",
+          "blockHash": "0xcffa6c74e56ab0ca02582714dbdc991f85d9b88a1fc3db4e85fa0cf112e6b26f",
+          "from": "0x70997970c51812dc3a010c7d01b50e0d17dc79c8",
+          "to": "0xa9af9888606843ba7c8dba6e9f17ea90c4808310",
+          "status": "success",
+          "gasUsed": "120637",
+          "effectiveGasPrice": "1001260147",
+          "value": "10000000000000",
+          "input": "0x598647f8000000000000000000000000000000000000000000000000000000000000001c000000000000000000000000000000000000000000000000000009184e72a000"
+        },
+        {
+          "hash": "0xfa4e75f38a7b38c6fffe6a046b5ab20a0b7d5eb9d0d7fb0959104bd86a7dfcf5",
+          "blockNumber": "51",
+          "blockHash": "0x9c677df30fa71de9b041fbd7867c4a70da088aeaa50c9af273c7fea81028f50e",
+          "from": "0x70997970c51812dc3a010c7d01b50e0d17dc79c8",
+          "to": "0xa9af9888606843ba7c8dba6e9f17ea90c4808310",
+          "status": "success",
+          "gasUsed": "46906",
+          "effectiveGasPrice": "1001102629",
+          "value": "1000000000000",
+          "input": "0x598647f8000000000000000000000000000000000000000000000000000000000000001c00000000000000000000000000000000000000000000000000000a012317b000"
+        },
+        {
+          "hash": "0x4fc9936efcebe1a5aa3d3799240a2336a2dddcb00360b9732157a94d7f5eff91",
+          "blockNumber": "52",
+          "blockHash": "0xbf19d481fde13a5e2d50d0d37d170b5ed1060b1435847dcbfcdfa1bfbbf56395",
+          "from": "0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc",
+          "to": "0xa9af9888606843ba7c8dba6e9f17ea90c4808310",
+          "status": "success",
+          "gasUsed": "95855",
+          "effectiveGasPrice": "1000964801",
+          "value": "22000000000000",
+          "input": "0x598647f8000000000000000000000000000000000000000000000000000000000000001c00000000000000000000000000000000000000000000000000001402462f6000"
+        },
+        {
+          "hash": "0x3817f2a7ef12c80b463b490d1c3d00a357cd25c13aafad9ad5b9d823292161ac",
+          "blockNumber": "53",
+          "blockHash": "0xfcb46f9bed1af219d587785b741c2ec983ed2da7920e1e46d979a58ff27b57ef",
+          "from": "0x70997970c51812dc3a010c7d01b50e0d17dc79c8",
+          "to": "0xa9af9888606843ba7c8dba6e9f17ea90c4808310",
+          "status": "success",
+          "gasUsed": "35034",
+          "effectiveGasPrice": "1000844201",
+          "value": "0",
+          "input": "0xa16c86f700000000000000000000000015d34aaf54267db7d7c367839aaf71a00a2c6a65"
+        },
+        {
+          "hash": "0x7e17b5d16cd1ad9633d9ec92be49a98807b6c609f05f1e957f106d31753eb6d5",
+          "blockNumber": "55",
+          "blockHash": "0xe53afb4e3ab1fad7a671d9de980ff741d1742bfba27234dff3ad7d9d6d63a1d7",
+          "from": "0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc",
+          "to": "0xa9af9888606843ba7c8dba6e9f17ea90c4808310",
+          "status": "success",
+          "gasUsed": "49786",
+          "effectiveGasPrice": "1000646342",
+          "value": "2200000000000",
+          "input": "0x598647f8000000000000000000000000000000000000000000000000000000000000001c0000000000000000000000000000000000000000000000000000160280675000"
+        },
+        {
+          "hash": "0x499ef2b8710aa9eebd3a06ad8b001cb3e784a1864b5b8dd518ba18381ec1e627",
+          "blockNumber": "57",
+          "blockHash": "0xb41bd65ebe45e8629c6865a2f92fed9a09a59cf9427f32a26b0aaea395e033ad",
+          "from": "0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc",
+          "to": "0xa9af9888606843ba7c8dba6e9f17ea90c4808310",
+          "status": "success",
+          "gasUsed": "49786",
+          "effectiveGasPrice": "1000494857",
+          "value": "2420000000000",
+          "input": "0x598647f8000000000000000000000000000000000000000000000000000000000000001c00000000000000000000000000000000000000000000000000001835f3a4d800"
+        },
+        {
+          "hash": "0xa73f00e3a1321b47f52a479f772c110f83b657f581a1332c562fbb23e43036f9",
+          "blockNumber": "59",
+          "blockHash": "0x0114e6596879edbb232355639feb676656b4977274a081ec9ac73caf1e3eff30",
+          "from": "0x90f79bf6eb2c4f870365e785982e1f101e93b906",
+          "to": "0xa9af9888606843ba7c8dba6e9f17ea90c4808310",
+          "status": "success",
+          "gasUsed": "60583",
+          "effectiveGasPrice": "1000378875",
+          "value": "0",
+          "input": "0x8df82800000000000000000000000000000000000000000000000000000000000000001c"
+        },
+        {
+          "hash": "0xe1ea4bba5e1275ddefee29ff65320d33d469a9425a11751e22d762585255eade",
+          "blockNumber": "60",
+          "blockHash": "0x3b9df44d94b2c1ea84ea6f810357804de08dc5b6d3d5d3a7ad14e8fe7a1a0143",
+          "from": "0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc",
+          "to": "0xa9af9888606843ba7c8dba6e9f17ea90c4808310",
+          "status": "success",
+          "gasUsed": "106497",
+          "effectiveGasPrice": "1000331516",
+          "value": "0",
+          "input": "0xac8d590b000000000000000000000000000000000000000000000000000000000000001c00000000000000000000000015d34aaf54267db7d7c367839aaf71a00a2c6a65"
+        },
+        {
+          "hash": "0xf8ada67060f4f41f8fe8782c307f567006bb0fb5141411a7c942c9e19cdbfc69",
+          "blockNumber": "61",
+          "blockHash": "0x158208400923047f0c7495509b86619665248d2a9396f0183cbc6608cce33c89",
+          "from": "0x90f79bf6eb2c4f870365e785982e1f101e93b906",
+          "to": "0xa9af9888606843ba7c8dba6e9f17ea90c4808310",
+          "status": "success",
+          "gasUsed": "54944",
+          "effectiveGasPrice": "1000290077",
+          "value": "0",
+          "input": "0xbc2e4951000000000000000000000000000000000000000000000000000000000000001c"
+        }
+      ],
+      "browserSubmissions": 8,
+      "rejectedBeforeSubmission": [
+        "refund to nonpayable NFT contract",
+        "NFT delivery to unsupported receiver"
+      ],
+      "final": {
+        "highestBid": "26620000000000",
+        "lot": {
+          "roundNum": "1",
+          "eligibleAt": "2052000873",
+          "endAt": "2052174766",
+          "highestBidder": "0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC",
+          "highestBid": "26620000000000",
+          "registered": true,
+          "settled": true,
+          "delivered": true,
+          "proceedsForwarded": true
+        },
+        "reserveBefore": "140800000000003",
+        "reserveAfter": "167420000000003",
+        "refundAmount": "11000000000000",
+        "refundRecipient": "0x15d34AAf54267DB7D7c367839AAf71A00a2C6A65",
+        "recipientBeforeRefund": "10000000000000000000000",
+        "liabilities": "0",
+        "auctionBalance": "0",
+        "custody": [
+          {
+            "tokenId": 28,
+            "owner": "0x15d34AAf54267DB7D7c367839AAf71A00a2C6A65"
+          },
+          {
+            "tokenId": 29,
+            "owner": "0xa9Af9888606843BA7C8dbA6E9f17ea90c4808310"
+          },
+          {
+            "tokenId": 30,
+            "owner": "0xa9Af9888606843BA7C8dbA6E9f17ea90c4808310"
+          },
+          {
+            "tokenId": 31,
+            "owner": "0xa9Af9888606843BA7C8dbA6E9f17ea90c4808310"
+          },
+          {
+            "tokenId": 32,
+            "owner": "0xa9Af9888606843BA7C8dbA6E9f17ea90c4808310"
+          },
+          {
+            "tokenId": 33,
+            "owner": "0xa9Af9888606843BA7C8dbA6E9f17ea90c4808310"
+          },
+          {
+            "tokenId": 34,
+            "owner": "0xa9Af9888606843BA7C8dbA6E9f17ea90c4808310"
+          },
+          {
+            "tokenId": 35,
+            "owner": "0xa9Af9888606843BA7C8dbA6E9f17ea90c4808310"
+          }
+        ]
+      }
+    },
+    {
+      "browser": "firefox",
+      "reportSha256": "cd1803f1ca3c904d51cf149951c8f427e8299536588a90e67bb4f8e6d60f8919",
+      "fixture": {
+        "chainId": 31337,
+        "tokenId": 28,
+        "auction": "0xa9Af9888606843BA7C8dbA6E9f17ea90c4808310",
+        "game": "0x9Fc5015413a62cAD539Fd0b82b6681F92612a627",
+        "nft": "0x693Bc5619152B33b3dC6C61795E9DC46fE9aC694",
+        "codeHash": "0xfba79356827dec246a1cbb73cdca8cb13dcbf5794ee532101b352042195fc6d6",
+        "issuance": {
+          "game": "Real V4 game and production periphery, upgraded through V1/V2/V3 locally",
+          "issuanceTransaction": "0xf0b1f1cd1c79c1573d779ccd9ddf11039fe7f287f95f20e25eb5421b28286414",
+          "sourceCycle": "1",
+          "finalizationBlock": 45,
+          "auctionNfts": 8,
+          "arbitrumPrecompiles": "Repository FakeArbSys/FakeArbGasInfo shims; no native Arbitrum entropy or gas guarantee"
+        }
+      },
+      "actionOrder": [
+        "first bid",
+        "leader raise",
+        "external competing bid",
+        "refund to selected recipient",
+        "first late extension",
+        "second late extension",
+        "keeper settlement",
+        "winner NFT delivery",
+        "proceeds to game reserve"
+      ],
+      "confirmedTransactions": [
+        {
+          "hash": "0x164bdda7061e638bda66b0d4496adab09c7a4b423459c4e94f62d947bef81ba5",
+          "blockNumber": "50",
+          "blockHash": "0xcffa6c74e56ab0ca02582714dbdc991f85d9b88a1fc3db4e85fa0cf112e6b26f",
+          "from": "0x70997970c51812dc3a010c7d01b50e0d17dc79c8",
+          "to": "0xa9af9888606843ba7c8dba6e9f17ea90c4808310",
+          "status": "success",
+          "gasUsed": "120637",
+          "effectiveGasPrice": "1001260147",
+          "value": "10000000000000",
+          "input": "0x598647f8000000000000000000000000000000000000000000000000000000000000001c000000000000000000000000000000000000000000000000000009184e72a000"
+        },
+        {
+          "hash": "0xfa4e75f38a7b38c6fffe6a046b5ab20a0b7d5eb9d0d7fb0959104bd86a7dfcf5",
+          "blockNumber": "51",
+          "blockHash": "0x9c677df30fa71de9b041fbd7867c4a70da088aeaa50c9af273c7fea81028f50e",
+          "from": "0x70997970c51812dc3a010c7d01b50e0d17dc79c8",
+          "to": "0xa9af9888606843ba7c8dba6e9f17ea90c4808310",
+          "status": "success",
+          "gasUsed": "46906",
+          "effectiveGasPrice": "1001102629",
+          "value": "1000000000000",
+          "input": "0x598647f8000000000000000000000000000000000000000000000000000000000000001c00000000000000000000000000000000000000000000000000000a012317b000"
+        },
+        {
+          "hash": "0x4fc9936efcebe1a5aa3d3799240a2336a2dddcb00360b9732157a94d7f5eff91",
+          "blockNumber": "52",
+          "blockHash": "0xbf19d481fde13a5e2d50d0d37d170b5ed1060b1435847dcbfcdfa1bfbbf56395",
+          "from": "0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc",
+          "to": "0xa9af9888606843ba7c8dba6e9f17ea90c4808310",
+          "status": "success",
+          "gasUsed": "95855",
+          "effectiveGasPrice": "1000964801",
+          "value": "22000000000000",
+          "input": "0x598647f8000000000000000000000000000000000000000000000000000000000000001c00000000000000000000000000000000000000000000000000001402462f6000"
+        },
+        {
+          "hash": "0x3817f2a7ef12c80b463b490d1c3d00a357cd25c13aafad9ad5b9d823292161ac",
+          "blockNumber": "53",
+          "blockHash": "0xfcb46f9bed1af219d587785b741c2ec983ed2da7920e1e46d979a58ff27b57ef",
+          "from": "0x70997970c51812dc3a010c7d01b50e0d17dc79c8",
+          "to": "0xa9af9888606843ba7c8dba6e9f17ea90c4808310",
+          "status": "success",
+          "gasUsed": "35034",
+          "effectiveGasPrice": "1000844201",
+          "value": "0",
+          "input": "0xa16c86f700000000000000000000000015d34aaf54267db7d7c367839aaf71a00a2c6a65"
+        },
+        {
+          "hash": "0x7e17b5d16cd1ad9633d9ec92be49a98807b6c609f05f1e957f106d31753eb6d5",
+          "blockNumber": "55",
+          "blockHash": "0xe53afb4e3ab1fad7a671d9de980ff741d1742bfba27234dff3ad7d9d6d63a1d7",
+          "from": "0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc",
+          "to": "0xa9af9888606843ba7c8dba6e9f17ea90c4808310",
+          "status": "success",
+          "gasUsed": "49786",
+          "effectiveGasPrice": "1000646342",
+          "value": "2200000000000",
+          "input": "0x598647f8000000000000000000000000000000000000000000000000000000000000001c0000000000000000000000000000000000000000000000000000160280675000"
+        },
+        {
+          "hash": "0x499ef2b8710aa9eebd3a06ad8b001cb3e784a1864b5b8dd518ba18381ec1e627",
+          "blockNumber": "57",
+          "blockHash": "0xb41bd65ebe45e8629c6865a2f92fed9a09a59cf9427f32a26b0aaea395e033ad",
+          "from": "0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc",
+          "to": "0xa9af9888606843ba7c8dba6e9f17ea90c4808310",
+          "status": "success",
+          "gasUsed": "49786",
+          "effectiveGasPrice": "1000494857",
+          "value": "2420000000000",
+          "input": "0x598647f8000000000000000000000000000000000000000000000000000000000000001c00000000000000000000000000000000000000000000000000001835f3a4d800"
+        },
+        {
+          "hash": "0xa73f00e3a1321b47f52a479f772c110f83b657f581a1332c562fbb23e43036f9",
+          "blockNumber": "59",
+          "blockHash": "0x0114e6596879edbb232355639feb676656b4977274a081ec9ac73caf1e3eff30",
+          "from": "0x90f79bf6eb2c4f870365e785982e1f101e93b906",
+          "to": "0xa9af9888606843ba7c8dba6e9f17ea90c4808310",
+          "status": "success",
+          "gasUsed": "60583",
+          "effectiveGasPrice": "1000378875",
+          "value": "0",
+          "input": "0x8df82800000000000000000000000000000000000000000000000000000000000000001c"
+        },
+        {
+          "hash": "0xe1ea4bba5e1275ddefee29ff65320d33d469a9425a11751e22d762585255eade",
+          "blockNumber": "60",
+          "blockHash": "0x3b9df44d94b2c1ea84ea6f810357804de08dc5b6d3d5d3a7ad14e8fe7a1a0143",
+          "from": "0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc",
+          "to": "0xa9af9888606843ba7c8dba6e9f17ea90c4808310",
+          "status": "success",
+          "gasUsed": "106497",
+          "effectiveGasPrice": "1000331516",
+          "value": "0",
+          "input": "0xac8d590b000000000000000000000000000000000000000000000000000000000000001c00000000000000000000000015d34aaf54267db7d7c367839aaf71a00a2c6a65"
+        },
+        {
+          "hash": "0xf8ada67060f4f41f8fe8782c307f567006bb0fb5141411a7c942c9e19cdbfc69",
+          "blockNumber": "61",
+          "blockHash": "0x158208400923047f0c7495509b86619665248d2a9396f0183cbc6608cce33c89",
+          "from": "0x90f79bf6eb2c4f870365e785982e1f101e93b906",
+          "to": "0xa9af9888606843ba7c8dba6e9f17ea90c4808310",
+          "status": "success",
+          "gasUsed": "54944",
+          "effectiveGasPrice": "1000290077",
+          "value": "0",
+          "input": "0xbc2e4951000000000000000000000000000000000000000000000000000000000000001c"
+        }
+      ],
+      "browserSubmissions": 8,
+      "rejectedBeforeSubmission": [
+        "refund to nonpayable NFT contract",
+        "NFT delivery to unsupported receiver"
+      ],
+      "final": {
+        "highestBid": "26620000000000",
+        "lot": {
+          "roundNum": "1",
+          "eligibleAt": "2052000873",
+          "endAt": "2052174766",
+          "highestBidder": "0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC",
+          "highestBid": "26620000000000",
+          "registered": true,
+          "settled": true,
+          "delivered": true,
+          "proceedsForwarded": true
+        },
+        "reserveBefore": "140800000000003",
+        "reserveAfter": "167420000000003",
+        "refundAmount": "11000000000000",
+        "refundRecipient": "0x15d34AAf54267DB7D7c367839AAf71A00a2C6A65",
+        "recipientBeforeRefund": "10000000000000000000000",
+        "liabilities": "0",
+        "auctionBalance": "0",
+        "custody": [
+          {
+            "tokenId": 28,
+            "owner": "0x15d34AAf54267DB7D7c367839AAf71A00a2C6A65"
+          },
+          {
+            "tokenId": 29,
+            "owner": "0xa9Af9888606843BA7C8dbA6E9f17ea90c4808310"
+          },
+          {
+            "tokenId": 30,
+            "owner": "0xa9Af9888606843BA7C8dbA6E9f17ea90c4808310"
+          },
+          {
+            "tokenId": 31,
+            "owner": "0xa9Af9888606843BA7C8dbA6E9f17ea90c4808310"
+          },
+          {
+            "tokenId": 32,
+            "owner": "0xa9Af9888606843BA7C8dbA6E9f17ea90c4808310"
+          },
+          {
+            "tokenId": 33,
+            "owner": "0xa9Af9888606843BA7C8dbA6E9f17ea90c4808310"
+          },
+          {
+            "tokenId": 34,
+            "owner": "0xa9Af9888606843BA7C8dbA6E9f17ea90c4808310"
+          },
+          {
+            "tokenId": 35,
+            "owner": "0xa9Af9888606843BA7C8dbA6E9f17ea90c4808310"
+          }
+        ]
+      }
+    },
+    {
+      "browser": "mobile",
+      "reportSha256": "64eb5cb27e9ae6604a78e897c9062386e845f2a59be2b9fd35943bead8a75c98",
+      "fixture": {
+        "chainId": 31337,
+        "tokenId": 28,
+        "auction": "0xa9Af9888606843BA7C8dbA6E9f17ea90c4808310",
+        "game": "0x9Fc5015413a62cAD539Fd0b82b6681F92612a627",
+        "nft": "0x693Bc5619152B33b3dC6C61795E9DC46fE9aC694",
+        "codeHash": "0xfba79356827dec246a1cbb73cdca8cb13dcbf5794ee532101b352042195fc6d6",
+        "issuance": {
+          "game": "Real V4 game and production periphery, upgraded through V1/V2/V3 locally",
+          "issuanceTransaction": "0xf0b1f1cd1c79c1573d779ccd9ddf11039fe7f287f95f20e25eb5421b28286414",
+          "sourceCycle": "1",
+          "finalizationBlock": 45,
+          "auctionNfts": 8,
+          "arbitrumPrecompiles": "Repository FakeArbSys/FakeArbGasInfo shims; no native Arbitrum entropy or gas guarantee"
+        }
+      },
+      "actionOrder": [
+        "first bid",
+        "leader raise",
+        "external competing bid",
+        "refund to selected recipient",
+        "first late extension",
+        "second late extension",
+        "keeper settlement",
+        "winner NFT delivery",
+        "proceeds to game reserve"
+      ],
+      "confirmedTransactions": [
+        {
+          "hash": "0x164bdda7061e638bda66b0d4496adab09c7a4b423459c4e94f62d947bef81ba5",
+          "blockNumber": "50",
+          "blockHash": "0xcffa6c74e56ab0ca02582714dbdc991f85d9b88a1fc3db4e85fa0cf112e6b26f",
+          "from": "0x70997970c51812dc3a010c7d01b50e0d17dc79c8",
+          "to": "0xa9af9888606843ba7c8dba6e9f17ea90c4808310",
+          "status": "success",
+          "gasUsed": "120637",
+          "effectiveGasPrice": "1001260147",
+          "value": "10000000000000",
+          "input": "0x598647f8000000000000000000000000000000000000000000000000000000000000001c000000000000000000000000000000000000000000000000000009184e72a000"
+        },
+        {
+          "hash": "0xfa4e75f38a7b38c6fffe6a046b5ab20a0b7d5eb9d0d7fb0959104bd86a7dfcf5",
+          "blockNumber": "51",
+          "blockHash": "0x9c677df30fa71de9b041fbd7867c4a70da088aeaa50c9af273c7fea81028f50e",
+          "from": "0x70997970c51812dc3a010c7d01b50e0d17dc79c8",
+          "to": "0xa9af9888606843ba7c8dba6e9f17ea90c4808310",
+          "status": "success",
+          "gasUsed": "46906",
+          "effectiveGasPrice": "1001102629",
+          "value": "1000000000000",
+          "input": "0x598647f8000000000000000000000000000000000000000000000000000000000000001c00000000000000000000000000000000000000000000000000000a012317b000"
+        },
+        {
+          "hash": "0x4fc9936efcebe1a5aa3d3799240a2336a2dddcb00360b9732157a94d7f5eff91",
+          "blockNumber": "52",
+          "blockHash": "0xbf19d481fde13a5e2d50d0d37d170b5ed1060b1435847dcbfcdfa1bfbbf56395",
+          "from": "0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc",
+          "to": "0xa9af9888606843ba7c8dba6e9f17ea90c4808310",
+          "status": "success",
+          "gasUsed": "95855",
+          "effectiveGasPrice": "1000964801",
+          "value": "22000000000000",
+          "input": "0x598647f8000000000000000000000000000000000000000000000000000000000000001c00000000000000000000000000000000000000000000000000001402462f6000"
+        },
+        {
+          "hash": "0x3817f2a7ef12c80b463b490d1c3d00a357cd25c13aafad9ad5b9d823292161ac",
+          "blockNumber": "53",
+          "blockHash": "0xfcb46f9bed1af219d587785b741c2ec983ed2da7920e1e46d979a58ff27b57ef",
+          "from": "0x70997970c51812dc3a010c7d01b50e0d17dc79c8",
+          "to": "0xa9af9888606843ba7c8dba6e9f17ea90c4808310",
+          "status": "success",
+          "gasUsed": "35034",
+          "effectiveGasPrice": "1000844201",
+          "value": "0",
+          "input": "0xa16c86f700000000000000000000000015d34aaf54267db7d7c367839aaf71a00a2c6a65"
+        },
+        {
+          "hash": "0x7e17b5d16cd1ad9633d9ec92be49a98807b6c609f05f1e957f106d31753eb6d5",
+          "blockNumber": "55",
+          "blockHash": "0xe53afb4e3ab1fad7a671d9de980ff741d1742bfba27234dff3ad7d9d6d63a1d7",
+          "from": "0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc",
+          "to": "0xa9af9888606843ba7c8dba6e9f17ea90c4808310",
+          "status": "success",
+          "gasUsed": "49786",
+          "effectiveGasPrice": "1000646342",
+          "value": "2200000000000",
+          "input": "0x598647f8000000000000000000000000000000000000000000000000000000000000001c0000000000000000000000000000000000000000000000000000160280675000"
+        },
+        {
+          "hash": "0x499ef2b8710aa9eebd3a06ad8b001cb3e784a1864b5b8dd518ba18381ec1e627",
+          "blockNumber": "57",
+          "blockHash": "0xb41bd65ebe45e8629c6865a2f92fed9a09a59cf9427f32a26b0aaea395e033ad",
+          "from": "0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc",
+          "to": "0xa9af9888606843ba7c8dba6e9f17ea90c4808310",
+          "status": "success",
+          "gasUsed": "49786",
+          "effectiveGasPrice": "1000494857",
+          "value": "2420000000000",
+          "input": "0x598647f8000000000000000000000000000000000000000000000000000000000000001c00000000000000000000000000000000000000000000000000001835f3a4d800"
+        },
+        {
+          "hash": "0xa73f00e3a1321b47f52a479f772c110f83b657f581a1332c562fbb23e43036f9",
+          "blockNumber": "59",
+          "blockHash": "0x0114e6596879edbb232355639feb676656b4977274a081ec9ac73caf1e3eff30",
+          "from": "0x90f79bf6eb2c4f870365e785982e1f101e93b906",
+          "to": "0xa9af9888606843ba7c8dba6e9f17ea90c4808310",
+          "status": "success",
+          "gasUsed": "60583",
+          "effectiveGasPrice": "1000378875",
+          "value": "0",
+          "input": "0x8df82800000000000000000000000000000000000000000000000000000000000000001c"
+        },
+        {
+          "hash": "0xe1ea4bba5e1275ddefee29ff65320d33d469a9425a11751e22d762585255eade",
+          "blockNumber": "60",
+          "blockHash": "0x3b9df44d94b2c1ea84ea6f810357804de08dc5b6d3d5d3a7ad14e8fe7a1a0143",
+          "from": "0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc",
+          "to": "0xa9af9888606843ba7c8dba6e9f17ea90c4808310",
+          "status": "success",
+          "gasUsed": "106497",
+          "effectiveGasPrice": "1000331516",
+          "value": "0",
+          "input": "0xac8d590b000000000000000000000000000000000000000000000000000000000000001c00000000000000000000000015d34aaf54267db7d7c367839aaf71a00a2c6a65"
+        },
+        {
+          "hash": "0xf8ada67060f4f41f8fe8782c307f567006bb0fb5141411a7c942c9e19cdbfc69",
+          "blockNumber": "61",
+          "blockHash": "0x158208400923047f0c7495509b86619665248d2a9396f0183cbc6608cce33c89",
+          "from": "0x90f79bf6eb2c4f870365e785982e1f101e93b906",
+          "to": "0xa9af9888606843ba7c8dba6e9f17ea90c4808310",
+          "status": "success",
+          "gasUsed": "54944",
+          "effectiveGasPrice": "1000290077",
+          "value": "0",
+          "input": "0xbc2e4951000000000000000000000000000000000000000000000000000000000000001c"
+        }
+      ],
+      "browserSubmissions": 8,
+      "rejectedBeforeSubmission": [
+        "refund to nonpayable NFT contract",
+        "NFT delivery to unsupported receiver"
+      ],
+      "final": {
+        "highestBid": "26620000000000",
+        "lot": {
+          "roundNum": "1",
+          "eligibleAt": "2052000873",
+          "endAt": "2052174766",
+          "highestBidder": "0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC",
+          "highestBid": "26620000000000",
+          "registered": true,
+          "settled": true,
+          "delivered": true,
+          "proceedsForwarded": true
+        },
+        "reserveBefore": "140800000000003",
+        "reserveAfter": "167420000000003",
+        "refundAmount": "11000000000000",
+        "refundRecipient": "0x15d34AAf54267DB7D7c367839AAf71A00a2C6A65",
+        "recipientBeforeRefund": "10000000000000000000000",
+        "liabilities": "0",
+        "auctionBalance": "0",
+        "custody": [
+          {
+            "tokenId": 28,
+            "owner": "0x15d34AAf54267DB7D7c367839AAf71A00a2C6A65"
+          },
+          {
+            "tokenId": 29,
+            "owner": "0xa9Af9888606843BA7C8dbA6E9f17ea90c4808310"
+          },
+          {
+            "tokenId": 30,
+            "owner": "0xa9Af9888606843BA7C8dbA6E9f17ea90c4808310"
+          },
+          {
+            "tokenId": 31,
+            "owner": "0xa9Af9888606843BA7C8dbA6E9f17ea90c4808310"
+          },
+          {
+            "tokenId": 32,
+            "owner": "0xa9Af9888606843BA7C8dbA6E9f17ea90c4808310"
+          },
+          {
+            "tokenId": 33,
+            "owner": "0xa9Af9888606843BA7C8dbA6E9f17ea90c4808310"
+          },
+          {
+            "tokenId": 34,
+            "owner": "0xa9Af9888606843BA7C8dbA6E9f17ea90c4808310"
+          },
+          {
+            "tokenId": 35,
+            "owner": "0xa9Af9888606843BA7C8dbA6E9f17ea90c4808310"
+          }
+        ]
+      }
+    },
+    {
+      "browser": "webkit",
+      "reportSha256": "afdecfb29fe64a04ff8193fe11d105c6b8cba7324e55539315f081366e7b1df4",
+      "fixture": {
+        "chainId": 31337,
+        "tokenId": 28,
+        "auction": "0xa9Af9888606843BA7C8dbA6E9f17ea90c4808310",
+        "game": "0x9Fc5015413a62cAD539Fd0b82b6681F92612a627",
+        "nft": "0x693Bc5619152B33b3dC6C61795E9DC46fE9aC694",
+        "codeHash": "0xfba79356827dec246a1cbb73cdca8cb13dcbf5794ee532101b352042195fc6d6",
+        "issuance": {
+          "game": "Real V4 game and production periphery, upgraded through V1/V2/V3 locally",
+          "issuanceTransaction": "0xf0b1f1cd1c79c1573d779ccd9ddf11039fe7f287f95f20e25eb5421b28286414",
+          "sourceCycle": "1",
+          "finalizationBlock": 45,
+          "auctionNfts": 8,
+          "arbitrumPrecompiles": "Repository FakeArbSys/FakeArbGasInfo shims; no native Arbitrum entropy or gas guarantee"
+        }
+      },
+      "actionOrder": [
+        "first bid",
+        "leader raise",
+        "external competing bid",
+        "refund to selected recipient",
+        "first late extension",
+        "second late extension",
+        "keeper settlement",
+        "winner NFT delivery",
+        "proceeds to game reserve"
+      ],
+      "confirmedTransactions": [
+        {
+          "hash": "0x164bdda7061e638bda66b0d4496adab09c7a4b423459c4e94f62d947bef81ba5",
+          "blockNumber": "50",
+          "blockHash": "0xcffa6c74e56ab0ca02582714dbdc991f85d9b88a1fc3db4e85fa0cf112e6b26f",
+          "from": "0x70997970c51812dc3a010c7d01b50e0d17dc79c8",
+          "to": "0xa9af9888606843ba7c8dba6e9f17ea90c4808310",
+          "status": "success",
+          "gasUsed": "120637",
+          "effectiveGasPrice": "1001260147",
+          "value": "10000000000000",
+          "input": "0x598647f8000000000000000000000000000000000000000000000000000000000000001c000000000000000000000000000000000000000000000000000009184e72a000"
+        },
+        {
+          "hash": "0xfa4e75f38a7b38c6fffe6a046b5ab20a0b7d5eb9d0d7fb0959104bd86a7dfcf5",
+          "blockNumber": "51",
+          "blockHash": "0x9c677df30fa71de9b041fbd7867c4a70da088aeaa50c9af273c7fea81028f50e",
+          "from": "0x70997970c51812dc3a010c7d01b50e0d17dc79c8",
+          "to": "0xa9af9888606843ba7c8dba6e9f17ea90c4808310",
+          "status": "success",
+          "gasUsed": "46906",
+          "effectiveGasPrice": "1001102629",
+          "value": "1000000000000",
+          "input": "0x598647f8000000000000000000000000000000000000000000000000000000000000001c00000000000000000000000000000000000000000000000000000a012317b000"
+        },
+        {
+          "hash": "0x4fc9936efcebe1a5aa3d3799240a2336a2dddcb00360b9732157a94d7f5eff91",
+          "blockNumber": "52",
+          "blockHash": "0xbf19d481fde13a5e2d50d0d37d170b5ed1060b1435847dcbfcdfa1bfbbf56395",
+          "from": "0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc",
+          "to": "0xa9af9888606843ba7c8dba6e9f17ea90c4808310",
+          "status": "success",
+          "gasUsed": "95855",
+          "effectiveGasPrice": "1000964801",
+          "value": "22000000000000",
+          "input": "0x598647f8000000000000000000000000000000000000000000000000000000000000001c00000000000000000000000000000000000000000000000000001402462f6000"
+        },
+        {
+          "hash": "0x3817f2a7ef12c80b463b490d1c3d00a357cd25c13aafad9ad5b9d823292161ac",
+          "blockNumber": "53",
+          "blockHash": "0xfcb46f9bed1af219d587785b741c2ec983ed2da7920e1e46d979a58ff27b57ef",
+          "from": "0x70997970c51812dc3a010c7d01b50e0d17dc79c8",
+          "to": "0xa9af9888606843ba7c8dba6e9f17ea90c4808310",
+          "status": "success",
+          "gasUsed": "35034",
+          "effectiveGasPrice": "1000844201",
+          "value": "0",
+          "input": "0xa16c86f700000000000000000000000015d34aaf54267db7d7c367839aaf71a00a2c6a65"
+        },
+        {
+          "hash": "0x7e17b5d16cd1ad9633d9ec92be49a98807b6c609f05f1e957f106d31753eb6d5",
+          "blockNumber": "55",
+          "blockHash": "0xe53afb4e3ab1fad7a671d9de980ff741d1742bfba27234dff3ad7d9d6d63a1d7",
+          "from": "0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc",
+          "to": "0xa9af9888606843ba7c8dba6e9f17ea90c4808310",
+          "status": "success",
+          "gasUsed": "49786",
+          "effectiveGasPrice": "1000646342",
+          "value": "2200000000000",
+          "input": "0x598647f8000000000000000000000000000000000000000000000000000000000000001c0000000000000000000000000000000000000000000000000000160280675000"
+        },
+        {
+          "hash": "0x499ef2b8710aa9eebd3a06ad8b001cb3e784a1864b5b8dd518ba18381ec1e627",
+          "blockNumber": "57",
+          "blockHash": "0xb41bd65ebe45e8629c6865a2f92fed9a09a59cf9427f32a26b0aaea395e033ad",
+          "from": "0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc",
+          "to": "0xa9af9888606843ba7c8dba6e9f17ea90c4808310",
+          "status": "success",
+          "gasUsed": "49786",
+          "effectiveGasPrice": "1000494857",
+          "value": "2420000000000",
+          "input": "0x598647f8000000000000000000000000000000000000000000000000000000000000001c00000000000000000000000000000000000000000000000000001835f3a4d800"
+        },
+        {
+          "hash": "0xa73f00e3a1321b47f52a479f772c110f83b657f581a1332c562fbb23e43036f9",
+          "blockNumber": "59",
+          "blockHash": "0x0114e6596879edbb232355639feb676656b4977274a081ec9ac73caf1e3eff30",
+          "from": "0x90f79bf6eb2c4f870365e785982e1f101e93b906",
+          "to": "0xa9af9888606843ba7c8dba6e9f17ea90c4808310",
+          "status": "success",
+          "gasUsed": "60583",
+          "effectiveGasPrice": "1000378875",
+          "value": "0",
+          "input": "0x8df82800000000000000000000000000000000000000000000000000000000000000001c"
+        },
+        {
+          "hash": "0xe1ea4bba5e1275ddefee29ff65320d33d469a9425a11751e22d762585255eade",
+          "blockNumber": "60",
+          "blockHash": "0x3b9df44d94b2c1ea84ea6f810357804de08dc5b6d3d5d3a7ad14e8fe7a1a0143",
+          "from": "0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc",
+          "to": "0xa9af9888606843ba7c8dba6e9f17ea90c4808310",
+          "status": "success",
+          "gasUsed": "106497",
+          "effectiveGasPrice": "1000331516",
+          "value": "0",
+          "input": "0xac8d590b000000000000000000000000000000000000000000000000000000000000001c00000000000000000000000015d34aaf54267db7d7c367839aaf71a00a2c6a65"
+        },
+        {
+          "hash": "0xf8ada67060f4f41f8fe8782c307f567006bb0fb5141411a7c942c9e19cdbfc69",
+          "blockNumber": "61",
+          "blockHash": "0x158208400923047f0c7495509b86619665248d2a9396f0183cbc6608cce33c89",
+          "from": "0x90f79bf6eb2c4f870365e785982e1f101e93b906",
+          "to": "0xa9af9888606843ba7c8dba6e9f17ea90c4808310",
+          "status": "success",
+          "gasUsed": "54944",
+          "effectiveGasPrice": "1000290077",
+          "value": "0",
+          "input": "0xbc2e4951000000000000000000000000000000000000000000000000000000000000001c"
+        }
+      ],
+      "browserSubmissions": 8,
+      "rejectedBeforeSubmission": [
+        "refund to nonpayable NFT contract",
+        "NFT delivery to unsupported receiver"
+      ],
+      "final": {
+        "highestBid": "26620000000000",
+        "lot": {
+          "roundNum": "1",
+          "eligibleAt": "2052000873",
+          "endAt": "2052174766",
+          "highestBidder": "0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC",
+          "highestBid": "26620000000000",
+          "registered": true,
+          "settled": true,
+          "delivered": true,
+          "proceedsForwarded": true
+        },
+        "reserveBefore": "140800000000003",
+        "reserveAfter": "167420000000003",
+        "refundAmount": "11000000000000",
+        "refundRecipient": "0x15d34AAf54267DB7D7c367839AAf71A00a2C6A65",
+        "recipientBeforeRefund": "10000000000000000000000",
+        "liabilities": "0",
+        "auctionBalance": "0",
+        "custody": [
+          {
+            "tokenId": 28,
+            "owner": "0x15d34AAf54267DB7D7c367839AAf71A00a2C6A65"
+          },
+          {
+            "tokenId": 29,
+            "owner": "0xa9Af9888606843BA7C8dbA6E9f17ea90c4808310"
+          },
+          {
+            "tokenId": 30,
+            "owner": "0xa9Af9888606843BA7C8dbA6E9f17ea90c4808310"
+          },
+          {
+            "tokenId": 31,
+            "owner": "0xa9Af9888606843BA7C8dbA6E9f17ea90c4808310"
+          },
+          {
+            "tokenId": 32,
+            "owner": "0xa9Af9888606843BA7C8dbA6E9f17ea90c4808310"
+          },
+          {
+            "tokenId": 33,
+            "owner": "0xa9Af9888606843BA7C8dbA6E9f17ea90c4808310"
+          },
+          {
+            "tokenId": 34,
+            "owner": "0xa9Af9888606843BA7C8dbA6E9f17ea90c4808310"
+          },
+          {
+            "tokenId": 35,
+            "owner": "0xa9Af9888606843BA7C8dbA6E9f17ea90c4808310"
+          }
+        ]
+      }
+    }
+  ],
+  "limitations": [
+    "Disposable chain31337 and unlocked development-account adapter; not a real extension or hardware wallet.",
+    "Actual V4 game and periphery use repository FakeArbSys/FakeArbGasInfo precompile shims.",
+    "Browser test bundle substitutes local game/NFT addresses; production client, ABI and verification are unchanged.",
+    "Full receipts and logs are retained under test-results/real-auction until those local test outputs are replaced.",
+    "Separate pinned-state V3-to-V4 rehearsal and Solidity regressions are recorded in the contracts repository verification JSON."
+  ]
+}

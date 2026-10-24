@@ -20,6 +20,8 @@
     "test:e2e": "playwright test",
     "test:auction-ui": "playwright test --config tests/auction-harness/playwright.config.ts",
     "test:auction-ui:types": "tsc --noEmit -p tests/auction-harness/tsconfig.json",
+    "test:auction:local": "node scripts/run-local-auction-rehearsal.mjs",
+    "test:auction:local:types": "tsc --noEmit -p tests/real-auction/tsconfig.json",
     "format:check": "prettier --check src tests scripts *.ts *.mjs *.json",
     "audit": "npm audit --omit=dev"
   },

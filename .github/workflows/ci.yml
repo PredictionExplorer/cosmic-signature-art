@@ -23,6 +23,7 @@ jobs:
       - run: npm run lint
       - run: npm run type-check
       - run: npm run test:auction-ui:types
+      - run: npm run test:auction:local:types
       - run: npm run format:check
       - run: npm run test:coverage
       - run: npm run test:previews

@@ -32,6 +32,17 @@ Browser tests use the locally running application or start the configured previe
 
 `test:auction-ui` separately starts a loopback-only Vite fixture on port 4320. It renders the actual auction components and styles with synthetic contract snapshots and a synthetic wallet, clearly labelled in the page. Its network policy blocks external connections. It verifies bidding interactions without activating the public auction configuration, opening a real wallet, or submitting transactions. Stop any manually started fixture on that port before running it. This suite complements the production-page tests and the separately gated real-contract client rehearsal.
 
+To exercise the real contracts locally, compile the sibling `Cosmic-Signature` repository's approved V4 branch in production mode (`HARDHAT_MODE_CODE=1 ENABLE_HARDHAT_PREPROCESSOR=false npx hardhat compile`), then run from this gallery:
+
+```sh
+npm run test:auction:local:types
+npm run test:auction:local
+```
+
+This command owns a fresh Hardhat node on `127.0.0.1:8548` and an isolated browser fixture on `127.0.0.1:4321`, refuses occupied ports, and stops its processes when complete. It freezes and verifies compiler artifacts against all referenced source inputs, runs the real auction/NFT client tests, then deploys the actual game and production periphery, upgrades through V4, and finalizes a cycle to generate eight auction NFTs. Four browser profiles exercise the production bid panel and unchanged transaction client against that local deployment. Only local game/NFT identities are substituted in the test bundle; chain, destination, runtime hash, simulation and receipt verification remain active. Browser RPC cannot call administrative methods or send to unrelated accounts/contracts. No public wallet is used, no `.env.local` is changed, and no test token is assigned a public artwork's image or provenance.
+
+The runner prints the temporary evidence directory containing the deployment, issuance record, artifact hashes and node log. Playwright retains verified transaction receipts and final accounting in its test attachments. `ART_AUCTION_CONTRACT_ROOT` can identify another local contracts checkout; `ART_AUCTION_ARTIFACT_ROOT` can identify a previously frozen artifact/cache root. Tests use disposable ETH, accelerated local time and the repository's Arbitrum precompile shims. These checks complement the separate pinned-state V3-to-V4 fork rehearsal and do not substitute for real extension/hardware-wallet compatibility or native Arbitrum execution.
+
 ## Architecture
 
 - **Next.js App Router / React / TypeScript / Tailwind CSS 4.** Server-rendered discovery and metadata, with focused client components for motion, navigation and transactions.
@@ -69,6 +80,7 @@ Activation requires the exact reviewed immutable address, chain and runtime hash
 - [Media and indexer integration](docs/media-and-indexer-integration.md): actual APIs, source hashes, manifest handling and suggested Go changes.
 - [Collection preview delivery](docs/collection-preview-delivery.md): compact film excerpts, source binding and the repeatable offline publishing step (`npm run art:previews`).
 - [Auction frontend review](docs/auction-frontend-review.md): transaction security review and evidence.
+- [Local auction rehearsal record](docs/local-auction-rehearsal.json): verified artifact/source hashes, four-browser transactions and final accounting from the real-contract local run.
 - [Contract architecture](docs/contract-architecture-and-auction-rules.md): design and trust boundaries.
 - [Ecosystem plan](docs/ecosystem-and-delivery-plan.md): issuance, reserve economics and operations.
 - [Art direction](docs/art-direction-exploration.md): Passage/Atlas rationale and earlier concepts.
