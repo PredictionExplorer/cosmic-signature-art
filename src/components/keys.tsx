@@ -64,8 +64,11 @@ export function KeyboardVocabulary({ locale }: { locale: Locale }) {
       if (event.key === 'Escape') forget();
     };
     window.addEventListener('keydown', onKey);
+    // An honest hydration marker: the keys answer only once this listener is attached.
+    document.documentElement.setAttribute('data-keys', 'ready');
     return () => {
       window.removeEventListener('keydown', onKey);
+      document.documentElement.removeAttribute('data-keys');
       forget();
     };
   }, [locale, router]);
