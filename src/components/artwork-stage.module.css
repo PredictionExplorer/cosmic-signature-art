@@ -29,48 +29,48 @@
 }
 
 :global(:root):has(.stage):global(::view-transition-group(.cosmic-expression-to-light)) {
-  animation-duration: 650ms;
-  animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+  animation-duration: var(--t-expand);
+  animation-timing-function: var(--ease-settle);
 }
 :global(:root):has(.stage):global(::view-transition-group(.cosmic-expression-to-ink)) {
-  animation-duration: 650ms;
-  animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+  animation-duration: var(--t-expand);
+  animation-timing-function: var(--ease-settle);
 }
 :global(:root):has(.stage):global(::view-transition-group(.cosmic-expression-dissolve)) {
-  animation-duration: 650ms;
-  animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+  animation-duration: var(--t-expand);
+  animation-timing-function: var(--ease-settle);
 }
 
 :global(:root):has(.stage):global(::view-transition-old(.cosmic-expression-to-light)) {
-  animation: departure 650ms ease both;
+  animation: departure var(--t-expand) var(--ease-settle) both;
   mix-blend-mode: normal;
   object-fit: contain;
 }
 :global(:root):has(.stage):global(::view-transition-old(.cosmic-expression-to-ink)) {
-  animation: departure 650ms ease both;
+  animation: departure var(--t-expand) var(--ease-settle) both;
   mix-blend-mode: normal;
   object-fit: contain;
 }
 :global(:root):has(.stage):global(::view-transition-old(.cosmic-expression-dissolve)) {
-  animation: departure 650ms ease both;
+  animation: departure var(--t-expand) var(--ease-settle) both;
   mix-blend-mode: normal;
   object-fit: contain;
 }
 
 :global(:root):has(.stage):global(::view-transition-new(.cosmic-expression-to-light)) {
-  animation: revealLight 650ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation: revealLight var(--t-expand) var(--ease-settle) both;
   mix-blend-mode: normal;
   object-fit: contain;
 }
 
 :global(:root):has(.stage):global(::view-transition-new(.cosmic-expression-to-ink)) {
-  animation: revealInk 650ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation: revealInk var(--t-expand) var(--ease-settle) both;
   mix-blend-mode: normal;
   object-fit: contain;
 }
 
 :global(:root):has(.stage):global(::view-transition-new(.cosmic-expression-dissolve)) {
-  animation: dissolve 650ms ease both;
+  animation: dissolve var(--t-expand) var(--ease-settle) both;
   mix-blend-mode: normal;
   object-fit: contain;
 }

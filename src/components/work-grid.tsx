@@ -1,8 +1,8 @@
 'use client';
 import Link from 'next/link';
 import { useMemo, useState } from 'react';
-import { ArrowUpRight } from 'lucide-react';
 import { getInterpretation, type Artwork } from '@/lib/art/types';
+import { workNumber } from '@/lib/art/number';
 import type { Messages } from '@/lib/i18n/en';
 import { localizedPath, type Locale } from '@/lib/i18n/routing';
 import { ArtworkMedia } from './artwork-media';
@@ -105,9 +105,7 @@ export function WorkGrid({
                 plate
               )}
               <div className="work-card-caption">
-                <span>
-                  {t.signature} {String(work.id).padStart(3, '0')}
-                </span>
+                <span>{workNumber(work.id)}</span>
                 <span className="eyebrow">
                   {media?.id === 'ink' ? t.ink : mode === 'ink' ? t.lightOnly : t.light}
                   {active ? (
@@ -117,7 +115,6 @@ export function WorkGrid({
                     </span>
                   ) : null}
                 </span>
-                <ArrowUpRight size={15} />
               </div>
             </Link>
           );

@@ -19,7 +19,7 @@ export function AuctionLaunch({ locale, t }: { locale: Locale; t: Messages }) {
       <div className={styles.copy}>
         <p>{t.auctionNotLiveCopy}</p>
         <Link className="text-link" href={localizedPath(locale, '/collection')}>
-          {t.auctionBrowseArt} ↗
+          {t.auctionBrowseArt}
         </Link>
       </div>
     </section>

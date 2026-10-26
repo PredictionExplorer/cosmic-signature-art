@@ -2,9 +2,10 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { useEffect, useRef, useState, useSyncExternalStore } from 'react';
-import { ArrowUpRight, RotateCcw } from 'lucide-react';
+import { RotateCcw } from 'lucide-react';
 import type { Artwork } from '@/lib/art/types';
 import { getInterpretation } from '@/lib/art/types';
+import { workNumber } from '@/lib/art/number';
 import type { Messages } from '@/lib/i18n/en';
 import { localizedPath, type Locale } from '@/lib/i18n/routing';
 import { ArtworkMedia } from './artwork-media';
@@ -124,7 +125,6 @@ export function Passage({
       onFocus={wake}
     >
       <div className="passage-kicker eyebrow">
-        <span>01</span>
         <span>{t.passage}</span>
         <span className="fine-line" />
         <span>{mode === 'ink' ? t.ink : t.light}</span>
@@ -166,13 +166,10 @@ export function Passage({
         <p className="hero-copy">{t.heroCopy}</p>
         <Link className="text-link" href={localizedPath(locale, '/collection?view=atlas')}>
           {t.enterAtlas}
-          <ArrowUpRight size={17} />
         </Link>
       </div>
       <div className="passage-record">
-        <span className="eyebrow">
-          {t.signature} {String(artwork.id).padStart(3, '0')}
-        </span>
+        <span className="eyebrow">{workNumber(artwork.id)}</span>
         <div className="film-record">
           <span className={playing ? 'live-dot is-live' : 'live-dot'} />
           {label}
@@ -201,15 +198,11 @@ export function Passage({
               {t.sit}
             </button>
           ) : null}
-          <Link href={localizedPath(locale, `/art/${artwork.id}?view=still`)}>
-            {t.studyStill} ↗
-          </Link>
+          <Link href={localizedPath(locale, `/art/${artwork.id}?view=still`)}>{t.studyStill}</Link>
         </div>
       </div>
       <button className="material-portal" onClick={cross} disabled={!!crossing}>
-        <span className="eyebrow">
-          {t.anotherExpression} <ArrowUpRight size={15} />
-        </span>
+        <span className="eyebrow">{t.anotherExpression}</span>
         {nextMedia?.still ? (
           <Image
             src={nextMedia.thumbnail ?? nextMedia.still}

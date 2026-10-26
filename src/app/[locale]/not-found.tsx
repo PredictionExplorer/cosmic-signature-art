@@ -13,7 +13,7 @@ export default function NotFound() {
       <p className="eyebrow">404</p>
       <h1>{t.notFound}</h1>
       <Link className="text-link" href={localizedPath(locale, '/collection')}>
-        {t.returnGallery} ↗
+        {t.returnGallery}
       </Link>
     </main>
   );

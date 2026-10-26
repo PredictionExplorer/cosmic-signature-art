@@ -1,8 +1,9 @@
 'use client';
 import Link from 'next/link';
 import { useRef, useState } from 'react';
-import { ArrowUpRight, RotateCcw } from 'lucide-react';
+import { RotateCcw } from 'lucide-react';
 import { getInterpretation, type Artwork } from '@/lib/art/types';
+import { workFolio, workNumber } from '@/lib/art/number';
 import { localizedPath, type Locale } from '@/lib/i18n/routing';
 import type { Messages } from '@/lib/i18n/en';
 import { ArtworkMedia } from './artwork-media';
@@ -18,7 +19,7 @@ export function Atlas({ works, locale, t }: { works: Artwork[]; locale: Locale; 
     <section className="atlas" aria-label={t.atlas}>
       <div className="atlas-toolbar">
         <p className="eyebrow">
-          02 <span>{t.atlas}</span> / {t.editorial}
+          <span>{t.atlas}</span> / {t.editorial}
         </p>
         <div className="mode-switch" aria-label={t.ways}>
           {(['ink', 'light'] as const).map((value) => (
@@ -73,7 +74,7 @@ export function Atlas({ works, locale, t }: { works: Artwork[]; locale: Locale; 
                   />
                 </button>
                 <figcaption>
-                  <span>{String(work.id).padStart(3, '0')}</span>
+                  <span>{workNumber(work.id)}</span>
                   <span className="eyebrow">
                     {t[mode]} / {mode === 'ink' ? t.film : t.still}
                   </span>
@@ -81,7 +82,7 @@ export function Atlas({ works, locale, t }: { works: Artwork[]; locale: Locale; 
                     href={localizedPath(locale, `/art/${work.id}`)}
                     aria-label={`${t.enterWork} ${work.id}`}
                   >
-                    <ArrowUpRight size={20} />
+                    {t.enterWork}
                   </Link>
                 </figcaption>
               </div>
@@ -109,13 +110,12 @@ export function Atlas({ works, locale, t }: { works: Artwork[]; locale: Locale; 
               onClick={() => setSelected(work.id)}
               aria-pressed={work.id === selected}
             >
-              {String(work.id).padStart(3, '0')}
+              {workFolio(work.id)}
             </button>
           ))}
         </div>
         <Link className="text-link" href={localizedPath(locale, `/art/${selected}`)}>
           {t.enterWork}
-          <ArrowUpRight size={18} />
         </Link>
         <button
           className="rehang"

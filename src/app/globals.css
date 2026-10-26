@@ -11,7 +11,8 @@
   --font-serif: 'Cormorant Garamond Variable', Baskerville, Georgia, serif;
   --font-sans: 'Inter Variable', 'Helvetica Neue', Arial, sans-serif;
   --font-mono: 'IBM Plex Mono', 'SFMono-Regular', Menlo, Consolas, monospace;
-  --ease-gallery: cubic-bezier(0.2, 0.75, 0.15, 1);
+  /* Alias kept for compatibility; every rule now references --ease-settle. */
+  --ease-gallery: cubic-bezier(0.22, 1, 0.36, 1);
   /* Motion vocabulary. Every animation and transition references one of these. */
   --ease-settle: cubic-bezier(0.22, 1, 0.36, 1);
   --ease-turn: cubic-bezier(0.76, 0, 0.24, 1);
@@ -33,6 +34,8 @@
   --t-rest-dusk: 6000ms;
   --t-idle: 2000ms;
   --t-breath: 3500ms;
+  /* The material curtain's legacy timing; the Turn replaces it in Phase 1. */
+  --t-curtain: 1250ms;
 }
 :root {
   --paper: #f1ebdf;
@@ -165,6 +168,15 @@ html:lang(zh-TW) {
 html:lang(zh-HK) {
   --serif: 'Noto Serif CJK HK', 'Songti TC', serif;
 }
+/* CJK display: no Latin tracking, no uppercase, a taller line. */
+html:is(:lang(zh), :lang(ja), :lang(ko)) :is(h1, h2, h3) {
+  letter-spacing: 0;
+  line-height: 1.25;
+}
+html:is(:lang(zh), :lang(ja), :lang(ko)) .eyebrow {
+  letter-spacing: 0;
+  text-transform: none;
+}
 .site {
   min-height: 100vh;
   overflow: clip;
@@ -174,7 +186,7 @@ html:lang(zh-HK) {
 }
 .eyebrow {
   text-transform: uppercase;
-  font-size: 10px;
+  font-size: 12px;
   line-height: 1.5;
   letter-spacing: 0.13em;
   font-weight: 450;
@@ -189,14 +201,16 @@ html:lang(zh-HK) {
   gap: 28px;
   padding: 10px 0;
   border-bottom: 1px solid var(--rule);
-  font-size: 12px;
+  font-size: 15px;
   min-height: 44px;
+  transition: box-shadow var(--t-blink) var(--ease-settle);
 }
-.text-link svg {
-  transition: transform 0.4s;
-}
-.text-link:hover svg {
-  transform: translate(3px, -3px);
+/* An internal link is a square rule that thickens; no glyph, no travel. */
+.text-link:hover,
+.text-link:active,
+.text-link:focus-visible {
+  border-color: currentColor;
+  box-shadow: 0 1px 0 0 currentColor;
 }
 .skip-link {
   position: fixed;
@@ -418,8 +432,8 @@ html:lang(zh-HK) {
   padding-inline: var(--gutter);
   isolation: isolate;
   transition:
-    background 0.1s,
-    color 0.1s;
+    background var(--t-blink) var(--ease-settle),
+    color var(--t-blink) var(--ease-settle);
 }
 .passage.material-light {
   background: #080a09;
@@ -471,7 +485,7 @@ html:lang(zh-HK) {
   max-width: 50%;
 }
 .passage-title > .eyebrow {
-  font-size: 9px;
+  font-size: 12px;
   margin-bottom: 20px;
 }
 .passage-title h1 {
@@ -482,7 +496,7 @@ html:lang(zh-HK) {
 .hero-copy {
   white-space: pre-line;
   margin: 30px 0 20px;
-  font-size: 13px;
+  font-size: 16px;
   color: var(--muted);
   line-height: 1.85;
 }
@@ -496,13 +510,15 @@ html:lang(zh-HK) {
   bottom: 55px;
 }
 .passage-record > .eyebrow {
-  font-size: 9px;
+  font-size: 12px;
 }
 .film-record {
   display: flex;
   gap: 8px;
   align-items: center;
-  font-size: 8px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums lining-nums;
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--muted);
@@ -532,14 +548,14 @@ html:lang(zh-HK) {
   display: block;
   background: currentColor;
   height: 100%;
-  transition: width 0.3s linear;
+  transition: width var(--t-chrome) linear;
 }
 .record-actions {
   display: flex;
   justify-content: space-between;
   gap: 10px;
   margin-top: 13px;
-  font-size: 9px;
+  font-size: 15px;
   color: var(--muted);
 }
 .record-actions button,
@@ -547,7 +563,7 @@ html:lang(zh-HK) {
   display: flex;
   align-items: center;
   gap: 8px;
-  min-height: 32px;
+  min-height: 44px;
 }
 .material-portal {
   position: absolute;
@@ -567,7 +583,7 @@ html:lang(zh-HK) {
   display: flex;
   justify-content: space-between;
   gap: 4px;
-  font-size: 7px;
+  font-size: 12px;
 }
 .material-portal img {
   grid-column: 1;
@@ -588,7 +604,7 @@ html:lang(zh-HK) {
   right: 20px;
   top: 36%;
   writing-mode: vertical-rl;
-  font-size: 8px;
+  font-size: 12px;
   color: var(--muted);
 }
 .material-curtain {
@@ -598,7 +614,7 @@ html:lang(zh-HK) {
   background: var(--paper);
   display: grid;
   place-items: center;
-  animation: crossing 1.25s cubic-bezier(0.76, 0, 0.24, 1) both;
+  animation: crossing var(--t-curtain) var(--ease-turn) both;
   pointer-events: none;
 }
 .material-curtain.to-light {
@@ -610,7 +626,7 @@ html:lang(zh-HK) {
 }
 .material-curtain span {
   text-transform: uppercase;
-  font-size: 10px;
+  font-size: 12px;
   letter-spacing: 0.3em;
   text-align: center;
   line-height: 2.5;
@@ -623,12 +639,12 @@ html:lang(zh-HK) {
   gap: 42px;
 }
 .editorial-intro > .eyebrow {
-  font-size: 9px;
+  font-size: 12px;
   max-width: 180px;
 }
 .editorial-intro > div p,
 .auction-invitation > div p {
-  font-size: 13px;
+  font-size: 16px;
   color: var(--muted);
   line-height: 1.9;
   max-width: 320px;
@@ -661,27 +677,26 @@ html:lang(zh-HK) {
 .home-selection .work-card:last-child {
   margin-top: 110px;
 }
-.work-card .art-media {
-  transition: transform 1s var(--ease-gallery);
-}
-.work-card:hover .art-media {
-  transform: translateY(-5px);
-}
 .work-card-caption {
   display: flex;
   gap: 10px;
   align-items: baseline;
   padding-top: 15px;
-  font-size: 12px;
+  font-size: 15px;
   flex-wrap: wrap;
 }
-.work-card-caption .eyebrow {
-  font-size: 8px;
-  color: var(--muted);
+.work-card-caption > span:first-child {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums lining-nums;
 }
-.work-card-caption svg {
-  margin-left: auto;
-  flex-shrink: 0;
+.work-card-film {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums lining-nums;
+  letter-spacing: 0.04em;
+}
+.work-card-caption .eyebrow {
+  font-size: 12px;
+  color: var(--muted);
 }
 .auction-invitation {
   position: relative;
@@ -705,14 +720,6 @@ html:lang(zh-HK) {
 .auction-invitation .text-link {
   margin-top: 20px;
 }
-.invitation-eight {
-  position: absolute;
-  right: 13%;
-  top: -15px;
-  z-index: -1;
-  color: #d4c9b545;
-  font: 500px/0.9 var(--serif);
-}
 /* A finite editorial constellation; keyboard and touch remain first-class inputs. */
 .atlas {
   margin-inline: var(--gutter);
@@ -725,7 +732,7 @@ html:lang(zh-HK) {
   padding-block: 28px;
 }
 .atlas-toolbar > .eyebrow {
-  font-size: 9px;
+  font-size: 12px;
   display: flex;
   gap: 18px;
 }
@@ -736,7 +743,7 @@ html:lang(zh-HK) {
 .mode-switch button {
   padding: 10px 0;
   border-bottom: 1px solid transparent;
-  font-size: 12px;
+  font-size: 15px;
   color: var(--muted);
   min-height: 44px;
 }
@@ -756,9 +763,9 @@ html:lang(zh-HK) {
   top: var(--top);
   width: var(--width);
   transition:
-    left 1.3s var(--ease-gallery),
-    top 1.3s var(--ease-gallery),
-    width 1.3s var(--ease-gallery);
+    left var(--t-hold) var(--ease-settle),
+    top var(--t-hold) var(--ease-settle),
+    width var(--t-hold) var(--ease-settle);
 }
 .position-anchor {
   --left: 25%;
@@ -790,7 +797,7 @@ html:lang(zh-HK) {
 }
 .constellation-drift {
   transform: translate3d(var(--drift-x, 0px), var(--drift-y, 0px), 0);
-  transition: transform 1.4s var(--ease-gallery);
+  transition: transform var(--t-hold) var(--ease-settle);
 }
 .position-before .constellation-drift {
   transform: translate3d(calc(var(--drift-x, 0px) * -0.7), calc(var(--drift-y, 0px) * -0.7), 0);
@@ -805,16 +812,20 @@ html:lang(zh-HK) {
   gap: 14px;
   align-items: center;
   padding-top: 12px;
-  font-size: 11px;
+  font-size: 15px;
+}
+.constellation-work figcaption > span:first-child {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums lining-nums;
 }
 .constellation-work figcaption .eyebrow {
-  font-size: 7px;
+  font-size: 12px;
   color: var(--muted);
 }
 .constellation-work figcaption a {
   margin-left: auto;
-  min-height: 32px;
-  min-width: 32px;
+  min-height: 44px;
+  min-width: 44px;
   display: grid;
   place-items: center;
 }
@@ -832,7 +843,7 @@ html:lang(zh-HK) {
   max-width: 220px;
 }
 .constellation-note .eyebrow {
-  font-size: 8px;
+  font-size: 12px;
 }
 .constellation-note i {
   display: block;
@@ -845,7 +856,7 @@ html:lang(zh-HK) {
   position: absolute;
   left: 42%;
   top: 83%;
-  font-size: 10px;
+  font-size: 12px;
   max-width: 140px;
   color: var(--muted);
 }
@@ -865,14 +876,16 @@ html:lang(zh-HK) {
   margin-top: 10px;
 }
 .atlas-selection .eyebrow {
-  font-size: 8px;
+  font-size: 12px;
 }
 .atlas-pager {
   display: flex;
   gap: 24px;
 }
 .atlas-pager button {
-  font-size: 10px;
+  font-family: var(--font-mono);
+  font-size: 15px;
+  font-variant-numeric: tabular-nums lining-nums;
   min-height: 44px;
   border-bottom: 1px solid transparent;
 }
@@ -884,10 +897,10 @@ html:lang(zh-HK) {
   display: flex;
   gap: 10px;
   align-items: center;
-  font-size: 10px;
+  font-size: 15px;
   color: var(--muted);
   justify-self: start;
-  min-height: 40px;
+  min-height: 44px;
 }
 .collection-section {
   margin-top: 90px;
@@ -912,7 +925,7 @@ html:lang(zh-HK) {
 .collection-search label {
   display: grid;
   gap: 8px;
-  font-size: 10px;
+  font-size: 12px;
 }
 .collection-search input {
   background: transparent;
@@ -921,10 +934,13 @@ html:lang(zh-HK) {
   padding: 12px 0;
   width: 160px;
   border-radius: 0;
+  /* 16 px is the iOS floor below which Safari zooms the page into a field. */
+  font-size: 16px;
+  min-height: 44px;
 }
 .collection-search button {
   min-height: 44px;
-  font-size: 11px;
+  font-size: 15px;
 }
 .collection-display-controls {
   display: flex;
@@ -946,6 +962,13 @@ html:lang(zh-HK) {
   margin-top: 25px;
   border-top: 1px solid var(--rule);
 }
+.pagination a,
+.pagination button {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  font-size: 15px;
+}
 .pagination a:last-child {
   margin-left: auto;
 }
@@ -960,7 +983,7 @@ html:lang(zh-HK) {
   max-width: 570px;
   margin-top: 30px;
   color: var(--muted);
-  font-size: 14px;
+  font-size: 16px;
   line-height: 1.9;
 }
 .legal-copy {
@@ -968,6 +991,7 @@ html:lang(zh-HK) {
 }
 .legal-copy p {
   margin: 30px 0;
+  font-size: 16px;
   line-height: 1.9;
   color: var(--muted);
 }
@@ -1129,7 +1153,7 @@ html:lang(zh-HK) {
   .passage-kicker {
     position: static;
     order: 0;
-    font-size: 8px;
+    font-size: 12px;
   }
   .passage-field {
     position: relative;
@@ -1149,11 +1173,10 @@ html:lang(zh-HK) {
     font-size: clamp(76px, 13vw, 112px);
   }
   .passage-title > .eyebrow {
-    font-size: 8px;
+    font-size: 12px;
     margin-bottom: 20px;
   }
   .hero-copy {
-    font-size: 12px;
     margin-top: 25px;
   }
   .passage-record {
@@ -1177,7 +1200,7 @@ html:lang(zh-HK) {
     writing-mode: horizontal-tb;
     margin-top: -44px;
     max-width: 110px;
-    font-size: 8px;
+    font-size: 12px;
     line-height: 1.8;
     min-height: 44px;
   }
@@ -1214,7 +1237,7 @@ html:lang(zh-HK) {
     padding-block: 22px;
   }
   .atlas-toolbar > .eyebrow {
-    font-size: 8px;
+    font-size: 12px;
   }
   .constellation {
     min-height: 0;
@@ -1354,10 +1377,9 @@ html:lang(zh-HK) {
     gap: 16px;
   }
   .section-heading .eyebrow {
-    font-size: 9px;
+    font-size: 12px;
   }
   .section-heading .text-link {
-    font-size: 10px;
     gap: 10px;
   }
   .auction-invitation {
@@ -1367,20 +1389,15 @@ html:lang(zh-HK) {
     font-size: 51px;
     margin-bottom: 25px;
   }
-  .invitation-eight {
-    font-size: 380px;
-    right: -10px;
-    top: 15px;
-  }
   .atlas-toolbar > .eyebrow {
     gap: 10px;
-    font-size: 7px;
+    font-size: 12px;
   }
   .constellation-work figcaption {
     gap: 8px;
   }
   .constellation-work figcaption .eyebrow {
-    font-size: 6px;
+    font-size: 12px;
   }
   .atlas-selection h2 {
     font-size: 50px;
@@ -1393,7 +1410,6 @@ html:lang(zh-HK) {
   }
   .atlas-selection .text-link {
     gap: 14px;
-    font-size: 11px;
   }
   .work-grid {
     grid-template-columns: 1fr;
@@ -1418,9 +1434,6 @@ html:lang(zh-HK) {
   .footer-coordinate {
     grid-column: auto;
   }
-  .page-heading > p:last-child:not(.eyebrow) {
-    font-size: 13px;
-  }
 }
 @media (prefers-reduced-motion: reduce) {
   html {
@@ -1442,13 +1455,19 @@ html:lang(zh-HK) {
 .work-breadcrumb {
   display: flex;
   justify-content: space-between;
+  align-items: center;
   gap: 25px;
-  padding: 27px 0 38px;
-  font-size: 10px;
+  padding: 16px 0 28px;
+  font-size: 15px;
   color: var(--muted);
 }
+.work-breadcrumb a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+}
 .work-breadcrumb .eyebrow {
-  font-size: 8px;
+  font-size: 12px;
 }
 .work-caption {
   display: grid;
@@ -1463,16 +1482,15 @@ html:lang(zh-HK) {
   margin-top: 14px;
 }
 .work-caption .eyebrow {
-  font-size: 9px;
+  font-size: 12px;
 }
 .work-caption > div:last-child p {
-  font-size: 12px;
+  font-size: 16px;
   color: var(--muted);
   line-height: 1.9;
 }
 .work-caption .text-link {
   margin-top: 15px;
-  font-size: 11px;
 }
 @media (max-width: 1000px) {
   .work-caption {
@@ -1504,7 +1522,7 @@ html:lang(zh-HK) {
   padding: 13px 20px;
   min-height: 44px;
   border: 1px solid var(--rule);
-  font-size: 12px;
+  font-size: 15px;
   display: inline-flex;
   align-items: center;
   justify-content: center;

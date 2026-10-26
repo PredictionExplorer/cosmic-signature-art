@@ -1,12 +1,13 @@
 import Link from 'next/link';
 import { Suspense } from 'react';
 import { notFound } from 'next/navigation';
-import { ArrowDown, ArrowUpRight } from 'lucide-react';
+import { ArrowDown } from 'lucide-react';
 import { isLocale, localizedPath } from '@/lib/i18n/routing';
 import { messages } from '@/lib/i18n/messages';
 import type { Messages } from '@/lib/i18n/en';
 import { metadata } from '@/lib/site';
 import { getCuratedArtwork } from '@/lib/art/catalog';
+import { workNumber } from '@/lib/art/number';
 import { getArtwork } from '@/lib/art/server';
 import { getInterpretation } from '@/lib/art/types';
 import { ArtworkMedia } from '@/components/artwork-media';
@@ -85,9 +86,7 @@ export default async function Process({ params }: { params: Promise<{ locale: st
               <LightFilm t={t} />
             </Suspense>
             <figcaption>
-              <span>
-                {t.signature} {String(work.id).padStart(3, '0')}
-              </span>
+              <span>{workNumber(work.id)}</span>
               <span>{t.light}</span>
             </figcaption>
           </figure>
@@ -114,9 +113,7 @@ export default async function Process({ params }: { params: Promise<{ locale: st
             artworkId={work.id}
           />
           <figcaption>
-            <span>
-              {t.signature} {String(work.id).padStart(3, '0')}
-            </span>
+            <span>{workNumber(work.id)}</span>
             <span>
               {t.ink} / {t.film}
             </span>
@@ -139,7 +136,6 @@ export default async function Process({ params }: { params: Promise<{ locale: st
           <p>{t.expressionCopy}</p>
           <Link className="text-link" href={localizedPath(locale, `/art/${work.id}`)}>
             {t.enterWork}
-            <ArrowUpRight size={18} />
           </Link>
         </div>
       </section>

@@ -49,21 +49,12 @@
 .caption h3 {
   font-size: clamp(25px, 2.4vw, 35px);
   line-height: 1.15;
-}
-
-.caption svg {
-  flex-shrink: 0;
-  margin-inline-start: auto;
-  transition: transform 280ms var(--ease-gallery);
-}
-
-.card:is(:hover, :focus-visible) .caption svg {
-  transform: translate(2px, -2px);
+  font-variant-numeric: tabular-nums lining-nums;
 }
 
 .expression {
   color: var(--muted);
-  font-size: 10px;
+  font-size: 12px;
 }
 
 .facts {
@@ -72,8 +63,9 @@
   gap: 18px 24px;
   padding-block-start: 20px;
   border-top: 1px solid var(--rule);
-  font-variant-numeric: tabular-nums;
-  font-size: 11px;
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums lining-nums;
+  font-size: 12px;
 }
 
 .bid,
@@ -87,7 +79,7 @@
 .bid > span,
 .phase > span:last-child {
   color: var(--muted);
-  font-size: 10px;
+  font-size: 12px;
 }
 
 .bid strong {
@@ -107,7 +99,7 @@
   justify-content: space-between;
   gap: 6px 20px;
   color: var(--muted);
-  font-size: 10px;
+  font-size: 12px;
 }
 
 .time time {

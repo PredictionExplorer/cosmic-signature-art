@@ -179,10 +179,7 @@ describe('artwork viewing controls', () => {
   it('opens the expression selected in the collection without first showing Ink', () => {
     const { container } = render(<ArtworkViewer artwork={work} t={en} initialExpression="light" />);
     expect(container.querySelector('.art-media')).toHaveAttribute('data-material', 'light');
-    expect(screen.getByRole('button', { name: /^02\s*Light/ })).toHaveAttribute(
-      'aria-pressed',
-      'true',
-    );
+    expect(screen.getByRole('button', { name: /^Light$/ })).toHaveAttribute('aria-pressed', 'true');
     expect(screen.getByRole('img', { name: 'Signature 31 · Light' })).toHaveAttribute(
       'src',
       expect.stringMatching(/\/art\/31-light.webp$/),
@@ -255,7 +252,7 @@ describe('artwork viewing controls', () => {
   it('forgets the prior artwork’s selected material, failure and comparison when identity changes', async () => {
     const { container, rerender } = render(<ArtworkViewer artwork={work} t={en} />);
     await act(async () => {
-      fireEvent.click(screen.getByRole('button', { name: /^02\s*Light/ }));
+      fireEvent.click(screen.getByRole('button', { name: /^Light$/ }));
     });
     // The full still fails, then the publisher's preview fails: only then is the work unavailable.
     fireEvent.error(screen.getByRole('img', { name: 'Signature 31 · Light' }));
@@ -280,10 +277,10 @@ describe('artwork viewing controls', () => {
     fireEvent.timeUpdate(video);
     expect(screen.getByText('00:05 / 00:08')).toBeVisible();
     await act(async () => {
-      fireEvent.click(screen.getByRole('button', { name: /^02\s*Light/ }));
+      fireEvent.click(screen.getByRole('button', { name: /^Light$/ }));
     });
     await act(async () => {
-      fireEvent.click(screen.getByRole('button', { name: /^01\s*Ink/ }));
+      fireEvent.click(screen.getByRole('button', { name: /^Ink$/ }));
     });
     expect(screen.getByText('00:00 / 00:00')).toBeVisible();
   });
@@ -396,7 +393,7 @@ describe('artwork viewing controls', () => {
       await live;
     });
     await act(async () => {
-      fireEvent.click(screen.getByRole('button', { name: /^02\s*Light/ }));
+      fireEvent.click(screen.getByRole('button', { name: /^Light$/ }));
     });
     expect(screen.getByRole('img', { name: 'Signature 31 · Light' })).toHaveAttribute(
       'src',

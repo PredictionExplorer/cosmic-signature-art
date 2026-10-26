@@ -11,7 +11,7 @@
 }
 
 .heading :global(.eyebrow) {
-  font-size: 9px;
+  font-size: 12px;
 }
 
 .heading h2 {
@@ -35,7 +35,7 @@
 .walletLabel,
 .clock > p:first-child {
   color: var(--muted);
-  font-size: 11px;
+  font-size: 12px;
   line-height: 1.65;
 }
 
@@ -90,10 +90,10 @@
 
 .countdown {
   margin: 3px 0 0;
-  font-family: var(--serif);
-  font-size: clamp(32px, 10cqi, 44px);
-  font-variant-numeric: tabular-nums;
-  letter-spacing: 0.015em;
+  font-family: var(--font-mono);
+  font-size: clamp(28px, 9cqi, 40px);
+  font-variant-numeric: tabular-nums lining-nums;
+  letter-spacing: 0;
   line-height: 1.2;
   overflow-wrap: anywhere;
 }
@@ -101,14 +101,14 @@
 .chainClock {
   margin-top: 14px;
   color: var(--muted);
-  font-size: 10px;
+  font-size: 12px;
   line-height: 1.65;
 }
 
 .leader {
   margin-top: 12px;
   color: var(--muted);
-  font-size: 11px;
+  font-size: 12px;
 }
 
 .leader a {
@@ -134,18 +134,19 @@
 
 .wallet p {
   color: var(--muted);
-  font-size: 11px;
+  font-size: 12px;
 }
 
 .account {
   margin-inline-end: auto;
-  font-variant-numeric: tabular-nums;
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums lining-nums;
 }
 
 .wallet > button:not(:global(.primary-button), :global(.outline-button)) {
   min-height: 44px;
   color: var(--muted);
-  font-size: 11px;
+  font-size: 15px;
   text-decoration: underline;
   text-underline-offset: 4px;
 }
@@ -164,7 +165,7 @@
   min-width: 0;
   gap: 10px;
   color: var(--muted);
-  font-size: 11px;
+  font-size: 12px;
   line-height: 1.65;
 }
 
@@ -198,7 +199,7 @@
 
 .bidForm > p {
   color: var(--muted);
-  font-size: 11px;
+  font-size: 12px;
   line-height: 1.7;
 }
 
@@ -217,7 +218,7 @@
 
 .transactionStatus {
   margin-top: 20px;
-  font-size: 11px;
+  font-size: 12px;
   line-height: 1.8;
   overflow-wrap: anywhere;
 }
@@ -242,7 +243,7 @@
 .footer :global(.text-link) {
   min-height: 44px;
   padding-block: 10px;
-  font-size: 10px;
+  font-size: 12px;
   color: var(--muted);
 }
 
@@ -264,7 +265,7 @@
 }
 
 .dialog[open] {
-  animation: review-arrives 220ms var(--ease-gallery);
+  animation: review-arrives var(--t-sheet) var(--ease-settle);
 }
 
 /* A paused entrance would otherwise freeze the modal at its invisible first frame. */
@@ -274,7 +275,7 @@
 
 .dialog .reviewIdentity {
   margin: 0 0 24px;
-  font-size: 10px;
+  font-size: 12px;
   color: var(--muted);
 }
 
@@ -307,7 +308,7 @@
 
 .reviewAmounts dt {
   color: var(--muted);
-  font-size: 11px;
+  font-size: 12px;
   line-height: 1.6;
 }
 

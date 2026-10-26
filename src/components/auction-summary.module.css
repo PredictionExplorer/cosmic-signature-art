@@ -9,7 +9,7 @@
   margin: 20px 0 18px;
 }
 .availability > p:not(:global(.eyebrow)) {
-  font-size: 12px;
+  font-size: 16px;
   color: #59594f;
   line-height: 1.85;
 }
@@ -27,30 +27,29 @@
 }
 .summary dt {
   color: #59594f;
-  font-size: 10px;
+  font-size: 12px;
   line-height: 1.7;
 }
 .summary dd {
   margin: 8px 0 0;
-  font-size: 13px;
+  font-size: 15px;
   line-height: 1.65;
 }
 .summary dl > div:first-child dd {
-  font: 34px/1.1 var(--serif);
-  letter-spacing: -0.015em;
+  font: 34px/1.1 var(--font-mono);
+  font-variant-numeric: tabular-nums lining-nums;
 }
 .summary dd span {
-  font: 10px var(--font-sans);
+  font: 12px var(--font-mono);
   margin-left: 6px;
 }
 .summary > p:not(:global(.eyebrow)) {
-  font-size: 11px;
+  font-size: 12px;
   line-height: 1.8;
   color: #59594f;
 }
 .summary > a {
   margin-top: 20px;
-  font-size: 11px;
 }
 @media (max-width: 540px) {
   .availability {

@@ -4,6 +4,7 @@ import type { Artwork } from '@/lib/art/types';
 import type { Messages } from '@/lib/i18n/en';
 import type { Locale } from '@/lib/i18n/routing';
 import { NFT_ADDRESS } from '@/lib/site';
+import { workNumber } from '@/lib/art/number';
 import styles from './artwork-record.module.css';
 
 export function RecordRow({ label, children }: { label: string; children: ReactNode }) {
@@ -52,7 +53,7 @@ export function ArtworkIdentity({
     <section id="record" className={styles.record} aria-labelledby="record-title">
       <header className={styles.heading}>
         <p className="eyebrow">
-          {t.workRecord} / {String(work.id).padStart(3, '0')}
+          {t.workRecord} / {workNumber(work.id)}
         </p>
         <h2 id="record-title">{t.provenanceTitle}</h2>
         <p>{t.provenanceIntro}</p>
@@ -82,7 +83,7 @@ export function ArtworkIdentity({
         </div>
         <dl className={styles.facts}>
           <RecordRow label={t.token}>
-            <span className={styles.number}>№ {String(work.id).padStart(3, '0')}</span>
+            <span className={styles.number}>{workNumber(work.id)}</span>
           </RecordRow>
           {named ? (
             <RecordRow label={t.currentName}>

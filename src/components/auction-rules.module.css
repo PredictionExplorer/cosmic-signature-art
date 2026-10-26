@@ -10,7 +10,9 @@
 }
 .rules article > span {
   color: var(--muted);
-  font-size: 9px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums lining-nums;
 }
 .rules h3 {
   font-size: 30px;
@@ -19,7 +21,7 @@
 }
 .rules p {
   color: var(--muted);
-  font-size: 12px;
+  font-size: 16px;
   line-height: 1.9;
   max-width: 420px;
 }

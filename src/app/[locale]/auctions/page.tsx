@@ -57,7 +57,7 @@ export default async function Auctions({ params }: { params: Promise<{ locale: s
             <h2 id="rules-title">{t.auctionRules}</h2>
           </div>
           <Link className="text-link" href={localizedPath(locale, '/terms')}>
-            {t.auctionReadMore} ↗
+            {t.auctionReadMore}
           </Link>
         </header>
         <AuctionRules t={t} />

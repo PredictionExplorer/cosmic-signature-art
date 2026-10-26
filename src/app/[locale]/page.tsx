@@ -1,6 +1,5 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { ArrowUpRight } from 'lucide-react';
 import { isLocale, localizedPath } from '@/lib/i18n/routing';
 import { messages } from '@/lib/i18n/messages';
 import { getCuratedArtwork } from '@/lib/art/catalog';
@@ -37,7 +36,6 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
           <p>{t.intro}</p>
           <Link href={localizedPath(locale, '/process')} className="text-link">
             {t.exploreProcess}
-            <ArrowUpRight size={18} />
           </Link>
         </div>
       </section>
@@ -46,7 +44,6 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
           <p className="eyebrow">{t.selectedWorks}</p>
           <Link className="text-link" href={localizedPath(locale, '/collection')}>
             {t.viewCollection}
-            <ArrowUpRight size={16} />
           </Link>
         </div>
         <WorkGrid works={[getCuratedArtwork(31)!, getCuratedArtwork(35)!]} locale={locale} t={t} />
@@ -62,12 +59,8 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
           <p>{t.auctionIntro}</p>
           <Link href={localizedPath(locale, '/auctions')} className="text-link">
             {t.exploreAuctions}
-            <ArrowUpRight size={18} />
           </Link>
         </div>
-        <span className="invitation-eight" aria-hidden="true">
-          8
-        </span>
       </section>
     </main>
   );

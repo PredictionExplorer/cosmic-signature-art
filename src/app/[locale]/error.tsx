@@ -11,7 +11,7 @@ export default function ErrorPage({ reset }: { error: Error; reset: () => void }
     <main id="main" className="section-wrap empty-state">
       <h1>{t.errorTitle}</h1>
       <button className="text-link" onClick={reset}>
-        {t.retry} ↗
+        {t.retry}
       </button>
     </main>
   );

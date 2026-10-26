@@ -69,7 +69,7 @@ export async function ArtworkHistorySection({
             `/art/${tokenId}${viewParams.size ? `?${viewParams}` : ''}#history`,
           )}
         >
-          {t.latestEvents} ↗
+          {t.latestEvents}
         </Link>
       </section>
     );

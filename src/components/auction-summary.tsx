@@ -29,7 +29,7 @@ export function AuctionSummary({ locale, t }: { locale: Locale; t: Messages }) {
         {t.ruleRaise} · {t.auctionNoFee}
       </p>
       <Link className="text-link" href={localizedPath(locale, '/terms')}>
-        {t.auctionReadMore} ↗
+        {t.auctionReadMore}
       </Link>
     </section>
   );

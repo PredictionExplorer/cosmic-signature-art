@@ -1,11 +1,11 @@
 'use client';
 import Link from 'next/link';
 import { memo, useEffect, useMemo, useState } from 'react';
-import { ArrowUpRight } from 'lucide-react';
 import { formatEther } from 'viem';
 import { auctionPhase, MINIMUM_BID } from '@/lib/auction/rules';
 import { readBatch } from '@/lib/auction/client';
 import { getCuratedArtwork } from '@/lib/art/catalog';
+import { workNumber } from '@/lib/art/number';
 import { getInterpretation, type Artwork, type ArtworkResult } from '@/lib/art/types';
 import { useCollectionMotion } from './collection-motion';
 import { CollectionPreview, excerptRange, getCollectionPreviewFilm } from './collection-preview';
@@ -256,9 +256,7 @@ const AuctionLots = memo(function AuctionLots({
               )}
             </div>
             <div className={styles.caption}>
-              <h3>
-                {t.signature} {String(id).padStart(3, '0')}
-              </h3>
+              <h3>{workNumber(id)}</h3>
               {media ? (
                 <span className={styles.expression}>
                   {media.id === 'ink' ? t.ink : mode === 'ink' ? t.lightOnly : t.light}
@@ -267,7 +265,6 @@ const AuctionLots = memo(function AuctionLots({
                     : ''}
                 </span>
               ) : null}
-              <ArrowUpRight size={18} aria-hidden="true" />
             </div>
             {lot && !unavailable ? (
               <div className={styles.facts}>

@@ -2,6 +2,7 @@
 import Link from 'next/link';
 import type { Artwork } from '@/lib/art/types';
 import { getInterpretation } from '@/lib/art/types';
+import { workNumber } from '@/lib/art/number';
 import type { Messages } from '@/lib/i18n/en';
 import { localizedPath, type Locale } from '@/lib/i18n/routing';
 import { CollectionPreview, getCollectionPreviewFilm } from './collection-preview';
@@ -49,9 +50,7 @@ export function AuctionExhibition({
         </ArtworkTransition>
       </Link>
       <div className={styles.caption}>
-        <span>
-          {t.signature} {String(work.id).padStart(3, '0')}
-        </span>
+        <span>{workNumber(work.id)}</span>
         <span className="eyebrow">{t.auctionEditorial}</span>
       </div>
       <p className={styles.note}>{t.auctionEditorialNote}</p>

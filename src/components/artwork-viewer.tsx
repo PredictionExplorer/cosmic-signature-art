@@ -1,8 +1,9 @@
 'use client';
 import Image from 'next/image';
 import { Suspense, use, useCallback, useEffect, useRef, useState } from 'react';
-import { ArrowUpRight, Maximize2, RotateCcw, Pause, Play } from 'lucide-react';
+import { Maximize2, RotateCcw, Pause, Play } from 'lucide-react';
 import { getInterpretation, type Artwork } from '@/lib/art/types';
+import { workNumber } from '@/lib/art/number';
 import type { Messages } from '@/lib/i18n/en';
 import { ArtworkMedia } from './artwork-media';
 import { useMotion } from './motion-provider';
@@ -212,12 +213,12 @@ function ArtworkViewerSession({
         ) : null}
         <header className={styles.topbar}>
           <p className="eyebrow">
-            {t.viewingRoom} / № {String(artwork.id).padStart(3, '0')}
+            {t.viewingRoom} / {workNumber(artwork.id)}
           </p>
           <div className={`interpretation-list ${styles.expressions}`} aria-label={t.ways}>
             {[...artwork.media]
               .sort((a, b) => Number(b.id === 'ink') - Number(a.id === 'ink'))
-              .map((item, index) => (
+              .map((item) => (
                 <button
                   key={item.id}
                   onClick={() => {
@@ -227,7 +228,6 @@ function ArtworkViewerSession({
                   aria-pressed={expression === item.id}
                   aria-busy={pendingExpression === item.id}
                 >
-                  <span className="eyebrow">{String(index + 1).padStart(2, '0')}</span>{' '}
                   {label(item.id)}
                 </button>
               ))}
@@ -346,7 +346,6 @@ function ArtworkViewerSession({
                   aria-pressed={compare}
                 >
                   {compare ? t.closeCompare : t.compare}
-                  <ArrowUpRight size={14} />
                 </button>
               ) : null}
               {media?.films.length ? (

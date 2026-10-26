@@ -26,13 +26,13 @@
 }
 .eyeline > p {
   color: var(--night-muted);
-  font-size: 9px;
+  font-size: 12px;
 }
 .chapterNavigation {
   display: flex;
   align-items: center;
   gap: 22px;
-  font-size: 10px;
+  font-size: 15px;
 }
 .chapterNavigation a {
   display: inline-flex;
@@ -61,7 +61,7 @@
   letter-spacing: -0.04em;
 }
 .opening > p {
-  font-size: 13px;
+  font-size: 16px;
   line-height: 1.9;
   color: var(--night-muted);
   max-width: 360px;
@@ -90,14 +90,14 @@
   letter-spacing: -0.025em;
 }
 .chapterIndex > span:last-child {
-  font-size: 9px;
+  font-size: 12px;
 }
 .chapterCopy h2 {
   font-size: clamp(38px, 4vw, 65px);
   margin-top: 28px;
 }
 .bodyCopy {
-  font-size: 12px;
+  font-size: 16px;
   line-height: 1.95;
 }
 .chapterCopy .bodyCopy {
@@ -109,15 +109,9 @@
   align-items: center;
   gap: 55px;
   margin-top: 32px;
-  font-size: 10px;
+  font-size: 15px;
   border-bottom: 1px solid #f1ebdf40;
   min-height: 44px;
-}
-.chapterLink svg {
-  transition: transform 0.4s;
-}
-.chapterLink:hover svg {
-  transform: translateY(4px);
 }
 .lightWork {
   min-width: 0;
@@ -131,7 +125,9 @@
   align-items: center;
   justify-content: space-between;
   gap: 20px;
-  font-size: 9px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums lining-nums;
   text-transform: uppercase;
   letter-spacing: 0.1em;
   padding-top: 24px;
@@ -202,10 +198,10 @@
   border-top: 1px solid #22231f30;
 }
 .colophon > p:first-child {
-  font-size: 9px;
+  font-size: 12px;
 }
 .colophon > p:last-child {
-  font-size: 10px;
+  font-size: 12px;
   color: #68685e;
   max-width: 350px;
   line-height: 1.8;
@@ -227,7 +223,7 @@
   margin-top: 24px;
 }
 .coda :global(.eyebrow) {
-  font-size: 9px;
+  font-size: 12px;
 }
 .codaCopy {
   padding-top: 38px;
@@ -235,7 +231,7 @@
 .codaCopy p {
   max-width: 350px;
   color: #595950;
-  font-size: 12px;
+  font-size: 16px;
   line-height: 1.95;
 }
 .codaCopy :global(.text-link) {
@@ -298,10 +294,10 @@
   }
   .eyeline > p {
     padding-top: 13px;
-    font-size: 8px;
+    font-size: 12px;
   }
   .chapterNavigation {
-    font-size: 9px;
+    font-size: 12px;
     gap: 14px;
   }
   .chapterNavigation a {
@@ -316,7 +312,6 @@
     max-width: 12ch;
   }
   .opening > p {
-    font-size: 12px;
     margin-top: 28px;
     max-width: 430px;
     padding-bottom: 0;
@@ -334,7 +329,7 @@
   }
   .lightWork figcaption {
     padding-top: 16px;
-    font-size: 8px;
+    font-size: 12px;
   }
   .chapterCopy {
     display: grid;
@@ -357,7 +352,6 @@
   .chapterCopy .bodyCopy {
     margin: 0;
     max-width: 400px;
-    font-size: 12px;
   }
   .chapterLink {
     grid-column: 2;
@@ -395,7 +389,7 @@
     margin-top: 25px;
   }
   .inkWork figcaption {
-    font-size: 8px;
+    font-size: 12px;
   }
   .colophon {
     display: block;
@@ -427,10 +421,5 @@
   }
   .codaCopy p {
     max-width: 420px;
-  }
-}
-@media (prefers-reduced-motion: reduce) {
-  .chapterLink svg {
-    transition: none;
   }
 }

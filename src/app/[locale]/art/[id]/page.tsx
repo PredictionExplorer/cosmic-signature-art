@@ -11,6 +11,7 @@ import { getArtwork } from '@/lib/art/server';
 import { getCuratedArtwork } from '@/lib/art/catalog';
 import { inlineCuratedPreview } from '@/lib/art/inline-preview';
 import { parseArtworkId } from '@/lib/art/validation';
+import { workNumber } from '@/lib/art/number';
 import { getInterpretation, type Artwork, type ArtworkResult } from '@/lib/art/types';
 import { artworkSharingImage } from '@/lib/art/sharing';
 import { ArtworkViewer } from '@/components/artwork-viewer';
@@ -80,7 +81,7 @@ export default async function ArtworkPage({
       <main id="main" className="section-wrap empty-state">
         <h1>{t.recordUnavailable}</h1>
         <Link href={localizedPath(locale, '/collection')} className="text-link">
-          {t.backAtlas} ↗
+          {t.backAtlas}
         </Link>
       </main>
     );
@@ -106,7 +107,7 @@ export default async function ArtworkPage({
       />
       <section className="work-caption">
         <div>
-          <p className="eyebrow">COSMIC SIGNATURE / № {String(work.id).padStart(3, '0')}</p>
+          <p className="eyebrow">COSMIC SIGNATURE / {workNumber(work.id)}</p>
           <h1>
             {t.signature} {work.id}
           </h1>
@@ -114,7 +115,7 @@ export default async function ArtworkPage({
         <div>
           <p>{t.workCopy}</p>
           <a href="#record" className="text-link">
-            {t.workRecord} ↗
+            {t.workRecord}
           </a>
         </div>
       </section>

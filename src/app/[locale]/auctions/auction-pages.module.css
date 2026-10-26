@@ -36,13 +36,13 @@
 }
 .copy {
   color: var(--muted);
-  font-size: 12px;
+  font-size: 16px;
   line-height: 1.9;
   max-width: 390px;
   margin-top: 0;
 }
 .preparing {
-  font-size: 11px;
+  font-size: 12px;
   line-height: 1.7;
   margin-top: 24px;
   border-left: 1px solid #8a795b;
@@ -50,7 +50,6 @@
 }
 .invitation > a {
   margin-top: 26px;
-  font-size: 11px;
 }
 .catalogue {
   scroll-margin-top: 30px;
@@ -73,9 +72,6 @@
   font-size: clamp(40px, 4.3vw, 66px);
   margin-top: 18px;
 }
-.rulesHeading > a {
-  font-size: 11px;
-}
 .lotHeading {
   position: relative;
   margin: 12px 0 40px;
@@ -88,7 +84,6 @@
   position: absolute;
   right: 0;
   bottom: 12px;
-  font-size: 11px;
 }
 .lotLayout {
   display: grid;
@@ -122,13 +117,12 @@
 }
 .artLabel p {
   max-width: 360px;
-  font-size: 12px;
+  font-size: 16px;
   line-height: 1.9;
   color: var(--muted);
 }
 .artLabel a {
   align-self: start;
-  font-size: 11px;
 }
 @media (max-width: 1000px) {
   .hero {

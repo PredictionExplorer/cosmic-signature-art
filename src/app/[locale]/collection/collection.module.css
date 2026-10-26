@@ -15,7 +15,7 @@
   text-wrap: balance;
 }
 .description {
-  font-size: 13px;
+  font-size: 16px;
   line-height: 1.9;
   max-width: 340px;
   padding-bottom: 8px;
@@ -33,19 +33,15 @@
   gap: 12px;
   min-height: 58px;
   border-bottom: 1px solid transparent;
-  font-size: 12px;
+  font-size: 15px;
   color: var(--muted);
 }
 .views a[aria-current] {
   border-color: var(--ink);
   color: var(--ink);
 }
-.views a span {
-  font-size: 9px;
-  font-variant-numeric: tabular-nums;
-}
 .views p {
-  font-size: 10px;
+  font-size: 12px;
   line-height: 1.7;
   color: var(--muted);
   margin-left: auto;
@@ -70,7 +66,7 @@
   min-width: 0;
 }
 .clearSearch {
-  font-size: 10px;
+  font-size: 15px;
   min-height: 44px;
   display: flex;
   align-items: center;
@@ -104,9 +100,6 @@
 @media (max-width: 540px) {
   .intro h1 {
     font-size: 62px;
-  }
-  .views a {
-    font-size: 11px;
   }
   .catalogue :global(.work-grid) {
     grid-template-columns: minmax(0, 1fr);

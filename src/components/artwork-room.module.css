@@ -31,8 +31,8 @@
   background: var(--room-surface);
   color: var(--room-ink);
   transition:
-    background-color 600ms ease,
-    color 600ms ease;
+    background-color var(--t-expand) var(--ease-settle),
+    color var(--t-expand) var(--ease-settle);
 }
 
 .room[data-material='light'] {
@@ -68,10 +68,6 @@
   font-family: var(--serif);
   font-size: 1.5rem;
   font-weight: 400;
-}
-
-.title p span {
-  margin-inline-start: 0.45em;
 }
 
 .close,
@@ -194,7 +190,7 @@
   background: currentColor;
   opacity: 0;
   content: '';
-  transition: opacity 180ms ease;
+  transition: opacity var(--t-blink) var(--ease-settle);
 }
 
 .expressions button[aria-pressed='true']::after,

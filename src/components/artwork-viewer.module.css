@@ -7,8 +7,8 @@
   background: var(--paper);
   color: var(--room-ink);
   transition:
-    background-color 650ms ease,
-    color 450ms ease;
+    background-color var(--t-expand) var(--ease-settle),
+    color var(--t-expand) var(--ease-settle);
 }
 .room[data-expression='light'] {
   --room-ink: #f1ebdf;
@@ -70,7 +70,7 @@
   border-top: 1px solid var(--room-rule);
 }
 .topbar > p {
-  font-size: 9px;
+  font-size: 12px;
   color: var(--room-muted);
 }
 .expressions {
@@ -98,17 +98,13 @@
   border-bottom-style: dashed;
   border-bottom-color: currentColor;
 }
-.expressions button span {
-  font-family: var(--font-sans);
-  font-size: 8px;
-}
 .enlarge {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 10px;
   min-height: 44px;
-  font-size: 10px;
+  font-size: 15px;
   padding-left: 24px;
 }
 .media {
@@ -142,7 +138,7 @@
   gap: 18px;
   border-top: 1px solid var(--room-rule);
   min-height: 60px;
-  font-size: 11px;
+  font-size: 15px;
 }
 .transport button {
   display: inline-flex;
@@ -162,16 +158,16 @@
 .transport :global(.progress-track i) {
   background: var(--room-ink);
 }
-.clock {
-  font-size: 9px;
-  font-variant-numeric: tabular-nums;
+.clock,
+.state {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums lining-nums;
   color: var(--room-muted);
 }
 .state {
-  font-size: 11px;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: var(--room-muted);
 }
 /* Sit: the chrome fades while the film plays to its still; any input brings it back. */
 .topbar,
@@ -202,13 +198,13 @@
   flex-wrap: wrap;
 }
 .actions button {
-  font-size: 11px;
+  font-size: 15px;
   border: 0;
   min-height: 44px;
 }
 .status {
   margin-top: 18px;
-  font-size: 11px;
+  font-size: 12px;
   color: var(--room-muted);
 }
 :global(.motion-paused) .room,
@@ -254,7 +250,6 @@
   }
   .transport {
     gap: 10px;
-    font-size: 10px;
     padding-block: 8px;
   }
   .transport :global(.progress-track) {

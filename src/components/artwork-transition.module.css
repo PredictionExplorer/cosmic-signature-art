@@ -18,27 +18,27 @@
 }
 
 :global(:root):has(.surface):global(::view-transition-group(.cosmic-art-shared)) {
-  animation-duration: 480ms;
-  animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+  animation-duration: var(--t-walk);
+  animation-timing-function: var(--ease-settle);
 }
 :global(:root):has(.surface):global(::view-transition-old(.cosmic-art-shared)) {
-  animation-duration: 480ms;
-  animation-timing-function: ease;
+  animation-duration: var(--t-walk);
+  animation-timing-function: var(--ease-settle);
   mix-blend-mode: normal;
   object-fit: contain;
 }
 :global(:root):has(.surface):global(::view-transition-new(.cosmic-art-shared)) {
-  animation-duration: 480ms;
-  animation-timing-function: ease;
+  animation-duration: var(--t-walk);
+  animation-timing-function: var(--ease-settle);
   mix-blend-mode: normal;
   object-fit: contain;
 }
 
 :global(:root):has(.surface):global(::view-transition-group(.cosmic-art-arrival)) {
-  animation-duration: 360ms;
+  animation-duration: var(--t-chrome);
 }
 :global(:root):has(.surface):global(::view-transition-new(.cosmic-art-arrival)) {
-  animation: arrival 360ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation: arrival var(--t-chrome) var(--ease-settle) both;
 }
 
 @keyframes arrival {

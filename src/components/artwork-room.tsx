@@ -10,6 +10,7 @@ import {
   type Artwork,
 } from '@/lib/art/types';
 import type { Messages } from '@/lib/i18n/en';
+import { workNumber } from '@/lib/art/number';
 import { ArtworkStage } from './artwork-stage';
 import styles from './artwork-room.module.css';
 
@@ -324,9 +325,7 @@ export function ArtworkRoom({
         <header className={styles.header}>
           <div className={styles.title}>
             <span>{t.viewingRoom}</span>
-            <p>
-              {t.signature} <span>№ {String(artwork.id).padStart(3, '0')}</span>
-            </p>
+            <p>{workNumber(artwork.id)}</p>
           </div>
           <button ref={closeButton} className={styles.close} type="button" onClick={onClose}>
             <span>{t.close}</span>

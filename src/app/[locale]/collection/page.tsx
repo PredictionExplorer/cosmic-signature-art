@@ -50,13 +50,13 @@ export default async function Collection({
           href={localizedPath(locale, '/collection')}
           aria-current={!atlasView ? 'page' : undefined}
         >
-          <span aria-hidden="true">01</span> {t.catalogue}
+          {t.catalogue}
         </Link>
         <Link
           href={localizedPath(locale, '/collection?view=atlas')}
           aria-current={atlasView ? 'page' : undefined}
         >
-          <span aria-hidden="true">02</span> {t.atlasView}
+          {t.atlasView}
         </Link>
         <p>{t.catalogueNote}</p>
       </nav>
@@ -84,7 +84,7 @@ export default async function Collection({
                 maxLength={100}
               />
             </label>
-            <button type="submit">{t.find} ↗</button>
+            <button type="submit">{t.find}</button>
             {query ? (
               <Link
                 className={styles.clearSearch}

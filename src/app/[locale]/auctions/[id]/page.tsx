@@ -59,7 +59,7 @@ export default async function AuctionWork({
           {t.signature} {tokenId}
         </h1>
         <Link className="text-link" href={localizedPath(locale, `/art/${tokenId}#record`)}>
-          {t.auctionViewRecord} ↗
+          {t.auctionViewRecord}
         </Link>
       </header>
       <div className={styles.lotLayout}>
@@ -96,7 +96,7 @@ export default async function AuctionWork({
             <h2 id="rules-title">{t.auctionRules}</h2>
           </div>
           <Link className="text-link" href={localizedPath(locale, '/terms')}>
-            {t.auctionReadMore} ↗
+            {t.auctionReadMore}
           </Link>
         </header>
         <AuctionRules t={t} />
@@ -131,7 +131,7 @@ async function AuctionArtwork({
       <div className={styles.artLabel}>
         <p>{t.workCopy}</p>
         <Link className="text-link" href={localizedPath(locale, `/art/${tokenId}#record`)}>
-          {t.auctionViewRecord} ↗
+          {t.auctionViewRecord}
         </Link>
       </div>
     </>
