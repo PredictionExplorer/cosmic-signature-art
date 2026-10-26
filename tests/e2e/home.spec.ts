@@ -39,10 +39,12 @@ test.describe('localized home', () => {
       if (!isMobile) {
         await expect(page.locator(current).getByText(t.statementLine)).toBeVisible();
       }
-      // No headline, no kicker, no portal on the wall: the page names itself for a screen reader only.
-      expect(
-        await page.locator('main h1').evaluate((element) => element.getBoundingClientRect().height),
-      ).toBeLessThanOrEqual(1);
+      // No headline, no kicker, no portal on the wall: the page's one h1 is the statement
+      // screen's wordmark, below the plate.
+      const heading = page.locator('main h1');
+      await expect(heading).toHaveCount(1);
+      await expect(heading).toHaveText('Cosmic Signature');
+      expect(await page.locator(`${stage} h1`).count()).toBe(0);
       await noHorizontalOverflow(page);
       // On phones the words live in the Index sheet, built in the collection workstream.
       if (!isMobile) {

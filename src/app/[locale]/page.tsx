@@ -30,10 +30,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
   const work = getCuratedArtwork(workOfTheDay())!;
   return (
     <main id="main" className="home">
-      {/* No headline on the wall; the page still names itself for a screen reader. */}
-      <h1 className="sr-only">
-        {t.shape} {t.ofMotion}
-      </h1>
+      {/* No headline on the wall: the page's h1 is the statement screen's wordmark below. */}
       <ArtworkViewer
         artwork={work}
         t={t}

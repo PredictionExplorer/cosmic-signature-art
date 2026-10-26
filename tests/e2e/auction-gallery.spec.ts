@@ -2,6 +2,7 @@ import { expect, test, type Page } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
 import { catalogs } from '../../src/lib/i18n/messages';
 import { locales, localizedPath } from '../../src/lib/i18n/routing';
+import { fill } from '../../src/lib/i18n/format';
 
 const current = '[data-artwork-stage="page"]:visible [data-layer-state="current"]';
 
@@ -15,33 +16,27 @@ async function pauseMotion(page: Page) {
 }
 
 for (const locale of locales) {
-  test(`${locale} auction exhibition is cinematic, accessible and honest about launch readiness`, async ({
+  test(`${locale} sale opens as a title spread, accessible and honest about launch readiness`, async ({
     page,
   }) => {
     const t = catalogs[locale];
     await pauseMotion(page);
     await page.goto(localizedPath(locale, '/auctions'));
     await expect(page.locator('html')).toHaveAttribute('lang', locale);
-    await expect(page.getByRole('heading', { level: 1 })).toHaveText(t.auctionTitle);
+    // The sale's title spread is the one screen in the venue with no work on it.
+    await expect(page.getByRole('heading', { level: 1 })).toHaveText(
+      fill(t.saleTitle, { n: '01' }),
+    );
     await expect(page.getByText(t.auctionNotLive, { exact: true }).first()).toBeVisible();
-    await expect(
-      page
-        .locator('[data-auction-exhibition]:visible')
-        .getByText(t.auctionEditorialNote, { exact: true }),
-    ).toBeVisible();
+    await expect(page.getByText(t.statementSigned, { exact: true })).toBeVisible();
     await expect(page.locator('input[name="bid"]')).toHaveCount(0);
     await expect(page.locator('.live-auction')).toHaveCount(0);
-    const hero = page.locator('[data-auction-exhibition]:visible');
-    await expect(hero).toBeVisible();
-    await expect(hero.locator('img').first()).toBeVisible();
-    await expect
-      .poll(() =>
-        hero
-          .locator('img')
-          .first()
-          .evaluate((image) => (image as HTMLImageElement).naturalWidth),
-      )
-      .toBeGreaterThan(0);
+    // The coming cycle's chapter strip stands where the lots will hang, its number from the index.
+    await expect(
+      page
+        .getByRole('region', { name: t.contractStatusLabel })
+        .getByText(new RegExp(`^${t.cycle} \\d+$`)),
+    ).toBeVisible();
     await noOverflow(page);
     expect((await new AxeBuilder({ page }).analyze()).violations).toEqual([]);
     const terms = page.getByRole('main').getByRole('link', { name: new RegExp(t.auctionReadMore) });
