@@ -93,9 +93,13 @@
   top: -0.55em;
   margin-left: 2px;
 }
+/* A footnote mark is a link in running text; a hairline underline keeps it legible without colour. */
 .mark a {
   color: var(--muted);
-  text-decoration: none;
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.12em;
+  text-decoration-color: var(--rule-strong);
 }
 .mark a:hover,
 .mark a:focus-visible {
