@@ -424,7 +424,7 @@ test('artwork comparison and enlarged viewer preserve identity and Escape return
   await page.keyboard.press('Escape');
   await expect(dialog).not.toBeVisible();
   await expect(completeFilm).toBeFocused();
-  await room.getByRole('button', { name: /^01 Light$|^02 Light$/ }).click();
+  await room.getByRole('button', { name: /^Light$/ }).click();
   await expect(room.locator('.art-media')).toHaveAttribute('data-material', 'light');
   await artworkImageSource(room.locator('.art-media img.art-still'), 31, 'light', true);
   await noHorizontalOverflow(page);

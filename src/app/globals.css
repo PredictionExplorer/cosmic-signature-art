@@ -283,12 +283,12 @@ html:is(:lang(zh), :lang(ja), :lang(ko)) .eyebrow {
   width: 5.6px;
   height: 5.6px;
 }
-.site-header nav {
+.site-header > nav {
   display: flex;
   gap: 36px;
   margin: auto;
 }
-.site-header nav a {
+.site-header > nav a {
   display: flex;
   align-items: center;
   gap: 8px;
@@ -296,8 +296,8 @@ html:is(:lang(zh), :lang(ja), :lang(ko)) .eyebrow {
   font-size: 15px;
   border-bottom: 1px solid transparent;
 }
-.site-header nav a:hover,
-.site-header nav a[aria-current='page'] {
+.site-header > nav a:hover,
+.site-header > nav a[aria-current='page'] {
   border-color: currentColor;
 }
 .header-tools {
@@ -335,6 +335,15 @@ html:is(:lang(zh), :lang(ja), :lang(ko)) .eyebrow {
   min-width: 200px;
   border: 1px solid var(--rule);
   box-shadow: 0 15px 40px #0001;
+}
+/* The browser hides a closed popover; the header's own nav rule must never reopen it. */
+.language-list[hidden] {
+  display: none;
+}
+@supports selector(:popover-open) {
+  .language-list:not(:popover-open) {
+    display: none;
+  }
 }
 .language-list a {
   display: flex;
@@ -1070,7 +1079,7 @@ html:is(:lang(zh), :lang(ja), :lang(ko)) .eyebrow {
   .site-header {
     gap: 22px;
   }
-  .site-header nav {
+  .site-header > nav {
     gap: 22px;
   }
   .header-tools {
@@ -1126,7 +1135,7 @@ html:is(:lang(zh), :lang(ja), :lang(ko)) .eyebrow {
     gap: 12px 22px;
     padding-block: 20px;
   }
-  .site-header nav {
+  .site-header > nav {
     order: 3;
     flex: 1 1 100%;
     justify-content: space-between;
