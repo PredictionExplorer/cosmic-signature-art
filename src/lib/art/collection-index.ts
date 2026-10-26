@@ -32,6 +32,7 @@ const workSchema = z.object({
     .regex(/^0x[0-9a-fA-F]{64}$/)
     .optional(),
   name: z.string().max(512).optional(),
+  metadataName: z.string().max(200).optional(),
   metadataVersion: z.string().max(40).optional(),
   description: z.string().max(1000).optional(),
   traits: z.object({
@@ -113,7 +114,14 @@ export function parseCollectionIndex(raw: unknown): CollectionIndex {
   return { checkedOn: parsed.data.checkedOn, total: works.length, works };
 }
 
-export const collectionIndex = parseCollectionIndex(data);
+/** The committed index must parse; a build that would ship no works fails here, loudly. */
+export function loadCollectionIndex(raw: unknown): CollectionIndex {
+  if (!indexSchema.safeParse(raw).success)
+    throw new Error('src/lib/art/collection-index.json is malformed; run `npm run art:index`');
+  return parseCollectionIndex(raw);
+}
+
+export const collectionIndex = loadCollectionIndex(data);
 const byId = new Map(collectionIndex.works.map((work) => [work.id, work]));
 
 export function indexedWork(id: number): IndexedWork | undefined {

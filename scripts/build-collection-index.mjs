@@ -59,8 +59,21 @@ const textTraits = {
 function integer(value, max = Number.MAX_SAFE_INTEGER) {
   return Number.isSafeInteger(value) && value >= 0 && value <= max ? value : undefined;
 }
+function positiveInteger(value, max = Number.MAX_SAFE_INTEGER) {
+  const parsed = integer(value, max);
+  return parsed !== undefined && parsed > 0 ? parsed : undefined;
+}
 function finite(value) {
   return typeof value === 'number' && Number.isFinite(value) ? value : undefined;
+}
+function positive(value) {
+  const parsed = finite(value);
+  return parsed !== undefined && parsed > 0 ? parsed : undefined;
+}
+/** The visible spectrum the venue hangs; a value outside it is a publisher anomaly, left unmeasured. */
+function wavelength(value) {
+  const parsed = finite(value);
+  return parsed !== undefined && parsed >= 380 && parsed <= 700 ? parsed : undefined;
 }
 function text(value, max = 120) {
   if (typeof value !== 'string') return undefined;
@@ -107,7 +120,7 @@ export function parseMetadata(raw, expectedId, expectedSeed) {
   const imprinted = integer(uniqueTrait(attributes, 'Imprinted'), 8_640_000_000_000);
   const work = {
     metadataVersion: text(raw.metadata_version, 40),
-    name: text(raw.name, 200),
+    metadataName: text(raw.name, 200),
     description: text(raw.description, 1000),
     traits: {},
     chaos: integer(uniqueTrait(attributes, 'Chaos'), 100),
@@ -119,14 +132,15 @@ export function parseMetadata(raw, expectedId, expectedSeed) {
           ? false
           : undefined,
     imprintedAt: imprinted === undefined ? undefined : new Date(imprinted * 1000).toISOString(),
-    wavelengthNm: finite(palette.dominant_wavelength_nm),
+    wavelengthNm: wavelength(palette.dominant_wavelength_nm),
     hueDegrees:
       hues && hues.length === 3 && hues.every((hue) => hue !== undefined) ? hues : undefined,
     paletteFamily: text(palette.family),
     underlayAlpha: finite(underlay.alpha),
     eccentricity: finite(drift.orbit_eccentricity),
     borda:
-      integer(borda.selected_index) !== undefined && integer(borda.total_candidates) !== undefined
+      integer(borda.selected_index) !== undefined &&
+      positiveInteger(borda.total_candidates) !== undefined
         ? {
             selectedIndex: borda.selected_index,
             totalCandidates: borda.total_candidates,
@@ -166,10 +180,10 @@ export function parseManifest(raw, expectedId) {
     return {
       path,
       sha256: sha256 && shaPattern.test(sha256) ? sha256 : undefined,
-      bytes: integer(asset.bytes),
-      width: integer(asset.width, 100_000),
-      height: integer(asset.height, 100_000),
-      durationSeconds: kind === 'video' ? finite(asset.duration_seconds) : undefined,
+      bytes: positiveInteger(asset.bytes),
+      width: positiveInteger(asset.width, 100_000),
+      height: positiveInteger(asset.height, 100_000),
+      durationSeconds: kind === 'video' ? positive(asset.duration_seconds) : undefined,
     };
   };
   const media = {};

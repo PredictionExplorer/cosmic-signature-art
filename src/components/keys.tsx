@@ -33,7 +33,8 @@ export function KeyboardVocabulary({ locale }: { locale: Locale }) {
       timer = undefined;
     };
     const onKey = (event: KeyboardEvent) => {
-      if (event.defaultPrevented || event.metaKey || event.ctrlKey || event.altKey) return;
+      if (event.defaultPrevented || event.repeat || event.metaKey || event.ctrlKey || event.altKey)
+        return;
       if (inField(event.target)) return;
       if (event.key === '/') {
         event.preventDefault();
@@ -54,6 +55,11 @@ export function KeyboardVocabulary({ locale }: { locale: Locale }) {
         return;
       }
       if (event.key === 'Enter' && digits) {
+        // Enter on a focused control activates the control; the buffer yields to it.
+        if (event.target instanceof Element && event.target.closest('a, button, summary')) {
+          forget();
+          return;
+        }
         event.preventDefault();
         const id = Number(digits);
         forget();

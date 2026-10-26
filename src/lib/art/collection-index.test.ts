@@ -6,6 +6,7 @@ import {
   cycles,
   indexedAssetUrl,
   indexedWork,
+  loadCollectionIndex,
   parseCollectionIndex,
   spectralNeighbour,
   spectrum,
@@ -60,6 +61,10 @@ describe('collection index', () => {
     expect(parsed.works.map((entry) => entry.id)).toEqual([1, 3]);
     expect(parsed.checkedOn).toBe('2026-10-26');
     expect(parseCollectionIndex(index([work(1, { wavelengthNm: 900 })])).works).toEqual([]);
+    expect(() => loadCollectionIndex(index([work(1, { wavelengthNm: 900 })]))).toThrow(
+      /malformed/,
+    );
+    expect(loadCollectionIndex(data).total).toBe(collectionIndex.total);
   });
 
   it('groups cycles with counts and their earliest mint', () => {

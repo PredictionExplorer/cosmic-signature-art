@@ -13,7 +13,7 @@ import { CJK_FACES } from './build-font-subsets.mjs';
  */
 const root = fileURLToPath(new URL('..', import.meta.url));
 const locales = ['en', 'zh', 'zh-TW', 'zh-HK', 'uk', 'ko', 'ja', 'vi'];
-export const SYSTEM_GLYPHS = new Set(['←', '→', '↑', '↓', '↗', '↙']);
+export const SYSTEM_GLYPHS = new Set(['←', '→', '↑', '↓', '↗', '↙', '↻']);
 
 export function parseRanges(css) {
   const ranges = [];
@@ -38,11 +38,29 @@ export function covered(codePoint, ranges) {
   return ranges.some(([start, end]) => codePoint >= start && codePoint <= end);
 }
 
-/** Every string literal in a locale catalog; the catalogs are flat objects of quoted strings. */
+/**
+ * Every quoted or template literal in a source file, plus JSX text between tags, so the words
+ * a component sets itself (a label, a separator, a key cap) are checked beside the catalogs.
+ */
 export function catalogText(source) {
-  return [...source.matchAll(/'((?:[^'\\\n]|\\.)*)'/g)]
-    .map((match) => match[1].replace(/\\(.)/g, '$1'))
+  const literals = [...source.matchAll(/'((?:[^'\\\n]|\\.)*)'|"((?:[^"\\\n]|\\.)*)"|`((?:[^`\\]|\\.)*)`/g)]
+    .map((match) => (match[1] ?? match[2] ?? match[3]).replace(/\\(.)/g, '$1'))
     .join('');
+  const jsxText = [...source.matchAll(/>([^<>{}]+)</g)].map((match) => match[1]).join('');
+  return `${literals}${jsxText}`;
+}
+
+/** The venue's own source: components and routes, read with every catalog. */
+export async function sourceFiles(directory) {
+  const { readdir } = await import('node:fs/promises');
+  const entries = await readdir(directory, { withFileTypes: true });
+  const files = [];
+  for (const entry of entries) {
+    const path = resolve(directory, entry.name);
+    if (entry.isDirectory()) files.push(...(await sourceFiles(path)));
+    else if (/\.tsx$/.test(entry.name) && !/\.test\.tsx$/.test(entry.name)) files.push(path);
+  }
+  return files;
 }
 
 export function uncoveredCharacters(text, ranges) {
@@ -67,8 +85,12 @@ async function main() {
     await packageCss('@fontsource/ibm-plex-mono', '400.css'),
   ].flatMap(parseRanges);
   let failures = 0;
+  const components = await Promise.all(
+    (await sourceFiles(resolve(root, 'src'))).map((file) => readFile(file, 'utf8')),
+  );
+  const shared = components.map(catalogText).join('');
   for (const locale of locales) {
-    const source = await readFile(resolve(root, `src/lib/i18n/${locale}.ts`), 'utf8');
+    const source = `${await readFile(resolve(root, `src/lib/i18n/${locale}.ts`), 'utf8')}${shared}`;
     const face = CJK_FACES[locale];
     const ranges = face
       ? [...latin, ...parseRanges(await packageCss(face.package, '400.css'))]

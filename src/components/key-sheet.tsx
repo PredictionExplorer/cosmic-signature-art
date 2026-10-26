@@ -22,7 +22,7 @@ export function KeySheet({ t }: { t: Messages }) {
     ['S', t.keySit],
     ['Z', t.keyStudy],
     ['/', t.keyIndex],
-    ['0–9 ⏎', t.keyJump],
+    ['0–9 Enter', t.keyJump],
     ['?', t.keyHelp],
     ['Esc', t.close],
   ];

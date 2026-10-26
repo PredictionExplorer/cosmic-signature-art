@@ -60,7 +60,7 @@ export function LanguageMenu({
     const node = list.current;
     if (!anchor || !node) return;
     node.style.top = `${Math.round(anchor.bottom + 6)}px`;
-    node.style.right = `${Math.max(8, Math.round(window.innerWidth - anchor.right))}px`;
+    node.style.right = `${Math.max(8, Math.round(document.documentElement.clientWidth - anchor.right))}px`;
   }
   const toggled = useEffectEvent((isOpen: boolean) => {
     setOpen(isOpen);
@@ -71,8 +71,13 @@ export function LanguageMenu({
     const node = list.current;
     if (!native || !node) return;
     const listener = (event: Event) => toggled((event as ToggleEvent).newState === 'open');
+    // beforetoggle fires before the first paint of the open popover; toggle is a fallback.
+    node.addEventListener('beforetoggle', listener);
     node.addEventListener('toggle', listener);
-    return () => node.removeEventListener('toggle', listener);
+    return () => {
+      node.removeEventListener('beforetoggle', listener);
+      node.removeEventListener('toggle', listener);
+    };
   }, [native]);
 
   useEffect(() => {
@@ -227,14 +232,14 @@ export function RunningHead({ locale, t }: { locale: Locale; t: Messages }) {
               <Wordmark t={t} />
             </span>
             <div className="head-words">
-              {NAVIGATION.map((path) => (
-                <span key={path} aria-current={current(path)}>
-                  {t[NAVIGATION_LABEL[path]]}
-                </span>
-              ))}
-              <button type="button" tabIndex={-1}>
-                {t.index}
-              </button>
+              <span className="head-nav contents">
+                {NAVIGATION.map((path) => (
+                  <span key={path} className="head-word" data-current={current(path)}>
+                    {t[NAVIGATION_LABEL[path]]}
+                  </span>
+                ))}
+              </span>
+              <span className="head-word">{t.index}</span>
               <span className="motion-word">
                 <PauseGlyph paused={paused} />
                 <span>{t.pauseAmbientMotion}</span>

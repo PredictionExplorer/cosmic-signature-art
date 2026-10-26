@@ -96,6 +96,16 @@ html[data-room='night'] {
     --strip: 44px;
   }
 }
+@supports not (color: color-mix(in srgb, red, blue)) {
+  :root {
+    --rule: rgba(34, 35, 31, 0.24);
+    --rule-strong: rgba(34, 35, 31, 0.6);
+  }
+  html[data-room='night'] {
+    --rule: rgba(241, 235, 223, 0.24);
+    --rule-strong: rgba(241, 235, 223, 0.6);
+  }
+}
 
 /* CJK display faces per locale; the identifier, clocks and hashes stay in Plex Mono everywhere. */
 html:lang(zh) {
@@ -441,6 +451,18 @@ html[data-turning][data-room='night'] .head-overlay {
   --muted: #68685e;
   clip-path: inset(0 calc(100% - var(--seam, 0%)) 0 0);
 }
+html[data-turning][data-turn-to='night'] .head-overlay {
+  --ground: var(--night);
+  --type: var(--night-type);
+  --muted: #b8b5ad;
+  clip-path: inset(0 0 0 var(--seam, 100%));
+}
+html[data-turning][data-turn-to='paper'] .head-overlay {
+  --ground: var(--paper);
+  --type: var(--paper-type);
+  --muted: #68685e;
+  clip-path: inset(0 calc(100% - var(--seam, 0%)) 0 0);
+}
 html[data-turning='time'] .head-overlay {
   transition: clip-path var(--t-turn) var(--ease-turn);
 }
@@ -503,7 +525,8 @@ html[data-turning='dusk'] .head-overlay {
   margin-left: auto;
 }
 .head-words a,
-.head-words button {
+.head-words button,
+.head-words .head-word {
   display: inline-flex;
   align-items: center;
   min-height: 44px;
@@ -513,6 +536,7 @@ html[data-turning='dusk'] .head-overlay {
 }
 .head-words a:hover,
 .head-words a[aria-current='page'],
+.head-words .head-word[data-current='page'],
 .head-words button:hover,
 .head-words button[aria-expanded='true'] {
   border-color: currentColor;
@@ -586,6 +610,7 @@ html[data-turning='dusk'] .head-overlay {
   }
   /* On phones the head carries the wordmark, the motion control and Index; the words live in the sheet. */
   .head-words > nav,
+  .head-words > .head-nav,
   .head-words > .language-menu {
     display: none;
   }
@@ -608,6 +633,12 @@ html[data-turning='dusk'] .head-overlay {
   background: var(--plate-ground, var(--ground));
   overflow: hidden;
 }
+.plate > :not(.art-media) {
+  height: 100%;
+  min-width: 0;
+  display: grid;
+  place-items: center;
+}
 .plate > .art-media,
 .plate > * > .art-media {
   height: 100%;
@@ -625,7 +656,8 @@ html[data-turning='dusk'] .head-overlay {
   background: var(--plate-ground, #000);
 }
 .art-media[data-edge='true'] {
-  box-shadow: 0 0 0 1px color-mix(in srgb, var(--type) 10%, transparent);
+  outline: 1px solid color-mix(in srgb, var(--type) 10%, transparent);
+  outline-offset: -1px;
 }
 .art-media img,
 .art-media video {
@@ -830,6 +862,10 @@ dialog.sheet::backdrop {
 }
 .motion-paused * {
   animation-play-state: paused !important;
+}
+/* Pause stops ambient motion; a sheet still arrives, as a state. */
+.motion-paused .sheet {
+  animation: none;
 }
 @media (prefers-reduced-motion: reduce) {
   html {
