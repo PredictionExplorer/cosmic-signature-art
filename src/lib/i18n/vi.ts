@@ -447,4 +447,9 @@ export const vi: Messages = {
   // Trạng thái lặng
   nextDoor: '{work} ở ngay phòng bên.',
   throughSpectrum: 'Xuyên qua quang phổ',
+
+  // The sale
+  saleTitle: 'Phiên {n}',
+  saleSubtitle: 'Tám tác phẩm mới · Chu kỳ {cycle}',
+  conditionsOfSale: 'Điều kiện bán',
 };

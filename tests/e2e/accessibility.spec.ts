@@ -5,7 +5,7 @@ import { collectionLoaded, noHorizontalOverflow, pauseAmbientMotion } from './he
 import AxeBuilder from '@axe-core/playwright';
 
 for (const locale of locales) {
-  for (const route of ['/', '/collection', '/art/31', '/process', '/auctions']) {
+  for (const route of ['/', '/collection', '/art/31', '/process', '/auctions', '/statement']) {
     const title =
       locale === 'en'
         ? `accessibility and visual evidence: ${route}`

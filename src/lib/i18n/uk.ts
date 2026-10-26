@@ -445,4 +445,9 @@ export const uk: Messages = {
   // Тихі стани
   nextDoor: '{work} — за сусідніми дверима.',
   throughSpectrum: 'Крізь спектр',
+
+  // The sale
+  saleTitle: 'Продаж {n}',
+  saleSubtitle: 'Вісім нових робіт · Цикл {cycle}',
+  conditionsOfSale: 'Умови продажу',
 };

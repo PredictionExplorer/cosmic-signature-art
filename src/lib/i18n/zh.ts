@@ -421,4 +421,9 @@ export const zh: Messages = {
   // 静默状态
   nextDoor: '{work} 就在隔壁。',
   throughSpectrum: '穿过光谱',
+
+  // The sale
+  saleTitle: '拍卖 {n}',
+  saleSubtitle: '八件新作 · 周期 {cycle}',
+  conditionsOfSale: '拍卖条件',
 };

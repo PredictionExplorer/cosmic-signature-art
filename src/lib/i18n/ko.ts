@@ -440,4 +440,9 @@ export const ko: Messages = {
   // 조용한 상태
   nextDoor: '{work} — 바로 옆방입니다.',
   throughSpectrum: '스펙트럼을 지나',
+
+  // The sale
+  saleTitle: '경매 {n}',
+  saleSubtitle: '새 작품 여덟 점 · 사이클 {cycle}',
+  conditionsOfSale: '판매 조건',
 };

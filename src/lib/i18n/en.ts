@@ -445,5 +445,10 @@ export const en = {
   // Quiet states
   nextDoor: '{work} is next door.',
   throughSpectrum: 'Through the spectrum',
+
+  // The sale
+  saleTitle: 'Sale {n}',
+  saleSubtitle: 'Eight new works · Cycle {cycle}',
+  conditionsOfSale: 'Conditions of sale',
 } as const;
 export type Messages = { [K in keyof typeof en]: string };

@@ -443,4 +443,9 @@ export const ja: Messages = {
   // 静かな状態
   nextDoor: '{work} は隣にあります。',
   throughSpectrum: 'スペクトルを抜けて',
+
+  // The sale
+  saleTitle: 'セール {n}',
+  saleSubtitle: '新作八点 · サイクル {cycle}',
+  conditionsOfSale: '販売条件',
 };

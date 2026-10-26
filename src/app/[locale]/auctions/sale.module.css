@@ -1,0 +1,68 @@
+.sale {
+  background: var(--ground);
+  color: var(--type);
+}
+/* The title spread: 100svh of paper and type, the one screen in the venue without a work. */
+.title {
+  min-height: calc(100svh - var(--head));
+  display: grid;
+  align-content: center;
+  justify-items: start;
+  gap: 18px;
+  padding: calc(var(--baseline) * 6) var(--gutter);
+  max-width: calc(44em + 2 * var(--gutter));
+}
+.kicker {
+  color: var(--muted);
+}
+.title h1 {
+  margin-top: 9px;
+}
+.state {
+  font-family: var(--font-mono);
+  font-size: var(--fs-folio);
+  font-variant-numeric: tabular-nums lining-nums;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+}
+.foreword {
+  margin-top: 18px;
+  max-width: 36em;
+}
+.foreword p + p {
+  margin-top: 1em;
+}
+.signed {
+  font-size: var(--fs-control);
+  font-style: italic;
+  color: var(--muted);
+}
+.enter {
+  margin-top: 18px;
+}
+.catalogue {
+  padding-inline: var(--gutter);
+  scroll-margin-top: var(--head);
+}
+.conditions {
+  padding: calc(var(--baseline) * 8) var(--gutter) calc(var(--baseline) * 10);
+  border-top: 1px solid var(--rule);
+  scroll-margin-top: var(--head);
+}
+.conditionsHead {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 24px;
+  margin-bottom: 36px;
+}
+@media (max-width: 767px) {
+  .title {
+    min-height: calc(100svh - var(--head));
+    gap: 12px;
+  }
+  .conditions {
+    padding-block: calc(var(--baseline) * 6) calc(var(--baseline) * 8);
+  }
+}

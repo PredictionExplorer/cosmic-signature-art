@@ -1,61 +1,61 @@
 import Link from 'next/link';
-import { Suspense } from 'react';
 import { notFound } from 'next/navigation';
 import { isLocale, localizedPath } from '@/lib/i18n/routing';
 import { messages } from '@/lib/i18n/messages';
+import { fill } from '@/lib/i18n/format';
 import { metadata } from '@/lib/site';
+import { auctionConfigured } from '@/lib/auction/config';
+import { comingCycle } from '@/lib/auction/sale';
 import { AuctionRules } from '@/components/auction-rules';
 import { AuctionLaunch } from '@/components/auction-launch';
-import { AuctionExhibition } from '@/components/auction-exhibition';
-import { getArtwork } from '@/lib/art/server';
-import { getCuratedArtwork } from '@/lib/art/catalog';
-import type { Locale } from '@/lib/i18n/routing';
-import type { Messages } from '@/lib/i18n/en';
-import { auctionConfigured } from '@/lib/auction/config';
-import styles from './auction-pages.module.css';
+import styles from './sale.module.css';
+
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
   if (!isLocale(locale)) return {};
   const t = messages(locale);
   return metadata(locale, '/auctions', t.auctions, t.auctionIntro);
 }
+
+/**
+ * The sale as a bound catalogue. Its title spread is the one screen in the venue with no
+ * work on it; the lots follow when a contract is configured, and the conditions of sale
+ * close the book. Nothing here states a date: dates come from the chain, never from copy.
+ */
 export default async function Auctions({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
   if (!isLocale(locale)) notFound();
   const t = messages(locale);
+  const number = new Intl.NumberFormat(locale);
   return (
-    <main id="main" className={`section-wrap auction-page ${styles.page}`}>
-      <section className={styles.hero} aria-labelledby="auction-title">
-        <header className={styles.introduction}>
-          <p className="eyebrow">{t.auctionKicker}</p>
-          <h1 id="auction-title">{t.auctionTitle}</h1>
-          <p className={styles.lead}>{t.auctionExhibition}</p>
-          {!auctionConfigured ? <p className={styles.preparing}>{t.auctionNotLive}</p> : null}
-        </header>
-        <Suspense
-          fallback={<AuctionExhibition work={getCuratedArtwork(23)!} locale={locale} t={t} />}
-        >
-          <ExhibitionArtwork locale={locale} t={t} />
-        </Suspense>
-        <div className={styles.invitation}>
-          <p className={styles.copy}>{t.auctionExhibitionCopy}</p>
-          <a
-            className="text-link"
-            href={auctionConfigured ? '#auction-catalogue' : '#auction-info'}
-          >
-            {auctionConfigured ? t.browseLots : t.auctionAtAGlance} ↓
-          </a>
+    <main id="main" className={`auction-page ${styles.sale}`}>
+      <section className={styles.title} aria-labelledby="auction-title">
+        <p className={`eyebrow ${styles.kicker}`}>{t.auctionKicker}</p>
+        <h1 id="auction-title" className="cover">
+          {fill(t.saleTitle, { n: '01' })}
+        </h1>
+        <p className="subtitle">{fill(t.saleSubtitle, { cycle: number.format(comingCycle()) })}</p>
+        {!auctionConfigured ? <p className={styles.state}>{t.auctionNotLive}</p> : null}
+        <div className={`reading ${styles.foreword}`}>
+          <p>{t.auctionIntro}</p>
+          <p>{t.auctionExhibitionCopy}</p>
         </div>
+        <p className={styles.signed}>{t.statementSigned}</p>
+        <a
+          className={`text-link ${styles.enter}`}
+          href={auctionConfigured ? '#auction-catalogue' : '#conditions'}
+        >
+          {auctionConfigured ? t.browseLots : t.conditionsOfSale}
+        </a>
       </section>
       <div id="auction-catalogue" className={styles.catalogue}>
-        <AuctionLaunch locale={locale} t={t} />
+        <AuctionLaunch locale={locale} t={t} cycle={comingCycle()} />
       </div>
-      <section id="auction-info" className={styles.rules} aria-labelledby="rules-title">
-        <header className={styles.rulesHeading}>
-          <div>
-            <p className="eyebrow">{t.auctionBeforeBid}</p>
-            <h2 id="rules-title">{t.auctionRules}</h2>
-          </div>
+      <section id="conditions" className={styles.conditions} aria-labelledby="rules-title">
+        <header className={styles.conditionsHead}>
+          <h2 id="rules-title" className="chapter">
+            {t.conditionsOfSale}
+          </h2>
           <Link className="text-link" href={localizedPath(locale, '/terms')}>
             {t.auctionReadMore}
           </Link>
@@ -64,9 +64,4 @@ export default async function Auctions({ params }: { params: Promise<{ locale: s
       </section>
     </main>
   );
-}
-
-async function ExhibitionArtwork({ locale, t }: { locale: Locale; t: Messages }) {
-  const { artwork } = await getArtwork(23);
-  return <AuctionExhibition work={artwork ?? getCuratedArtwork(23)!} locale={locale} t={t} />;
 }
