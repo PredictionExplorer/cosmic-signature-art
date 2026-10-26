@@ -4,8 +4,8 @@ import type { IndexedWork } from '@/lib/art/collection-index';
 export const SPECTRUM_MIN_NM = 380;
 export const SPECTRUM_MAX_NM = 700;
 /** Preview width, the gap between stacked previews and the plate proportion, in container-width units (cqw). */
-export const HANG_WIDTH = 6.2;
-export const HANG_GAP = 0.6;
+export const HANG_WIDTH = 10;
+export const HANG_GAP = 0.8;
 export const HANG_HEIGHT = HANG_WIDTH * (2234 / 3456);
 
 export interface SpectrumGroup {
