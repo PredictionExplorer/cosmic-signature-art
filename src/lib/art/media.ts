@@ -101,6 +101,8 @@ export function parseMediaManifest(raw: unknown, artwork: Artwork): ArtInterpret
       label: mode.label,
       still: url(still),
       thumbnail: url(preview ?? still),
+      thumbnailWidth: (preview ?? still)?.width,
+      thumbnailHeight: (preview ?? still)?.height,
       master: url(master),
       sourceUrl: url(still),
       stillSha256: still?.sha256?.toLowerCase(),
@@ -128,6 +130,8 @@ export function preferVerifiedLocalDelivery(
       ...published,
       still: local.still,
       thumbnail: local.thumbnail,
+      thumbnailWidth: local.thumbnailWidth,
+      thumbnailHeight: local.thumbnailHeight,
       source: 'local-archive',
       availability: 'local-copy',
       films: published.films.map((film) => {

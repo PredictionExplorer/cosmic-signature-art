@@ -65,6 +65,7 @@ export function createCollectionPreviewLookup(raw: unknown) {
         src: entry.src,
         sourceUrl: entry.sourceUrl,
         durationSeconds: entry.durationSeconds,
+        startSeconds: entry.startSeconds,
         sha256: entry.sha256,
         sourceSha256: entry.sourceSha256,
         mimeType: 'video/mp4',

@@ -56,10 +56,12 @@ for (const locale of locales) {
     await expect(page.getByText(t.auctionNotLive, { exact: true }).first()).toBeVisible();
     const stage = page.locator('[data-artwork-stage="page"]:visible');
     await expect(stage).toHaveAttribute('data-expression', 'ink');
-    await expect(stage.locator('img')).toBeVisible();
+    await expect(stage.locator('img.art-still')).toBeVisible();
     await expect
       .poll(() =>
-        stage.locator('img').evaluate((image) => (image as HTMLImageElement).naturalWidth),
+        stage
+          .locator('img.art-still')
+          .evaluate((image) => (image as HTMLImageElement).naturalWidth),
       )
       .toBeGreaterThan(0);
     await expect(
@@ -98,7 +100,7 @@ test('auction pages keep restored motion preferences and the original work ident
   const viewer = page.getByRole('region', { name: t.ways, exact: true });
   await viewer.getByRole('button', { name: /^(?:0[12] )?Light$/ }).click();
   await expect(stage).toHaveAttribute('data-expression', 'light');
-  await expect(stage.locator('img')).toHaveAttribute('alt', 'Signature 31 · Light');
+  await expect(stage.locator('img.art-still')).toHaveAttribute('alt', 'Signature 31 · Light');
   await viewer.getByRole('button', { name: /^(?:0[12] )?Ink$/ }).click();
   await expect(stage).toHaveAttribute('data-expression', 'ink');
   await expect(page.getByRole('heading', { level: 1 })).toHaveText('Signature 31');

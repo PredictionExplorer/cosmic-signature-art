@@ -10,6 +10,8 @@ export interface ArtFilm {
   /** Original published source when src is a local delivery derivative. */
   sourceUrl?: string;
   durationSeconds?: number;
+  /** Where an excerpt begins inside its source film, in source seconds. */
+  startSeconds?: number;
   poster?: string;
   sha256?: string;
   sourceSha256?: string;
@@ -23,7 +25,10 @@ export interface ArtInterpretation {
   id: InterpretationId;
   label: string;
   still?: string;
+  /** The publisher's own small preview of the same still, painted first on every plate. */
   thumbnail?: string;
+  thumbnailWidth?: number;
+  thumbnailHeight?: number;
   master?: string;
   stillSha256?: string;
   sourceUrl?: string;

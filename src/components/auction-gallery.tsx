@@ -8,7 +8,7 @@ import { readBatch } from '@/lib/auction/client';
 import { getCuratedArtwork } from '@/lib/art/catalog';
 import { getInterpretation, type Artwork, type ArtworkResult } from '@/lib/art/types';
 import { useCollectionMotion } from './collection-motion';
-import { CollectionPreview, getCollectionPreviewFilm } from './collection-preview';
+import { CollectionPreview, excerptRange, getCollectionPreviewFilm } from './collection-preview';
 import { ArtworkTransition } from './artwork-transition';
 import styles from './auction-gallery.module.css';
 import { localizedPath, type Locale } from '@/lib/i18n/routing';
@@ -185,7 +185,7 @@ const AuctionLots = memo(function AuctionLots({
     () => entries.filter(({ media }) => getCollectionPreviewFilm(media)).map(({ id }) => id),
     [entries],
   );
-  const { gridRef, activeId, intent, clearIntent, fail } = useCollectionMotion({
+  const { gridRef, activeId, intent, clearIntent, fail, rest } = useCollectionMotion({
     enabled: mode === 'ink',
     ids: previewIds,
   });
@@ -218,6 +218,8 @@ const AuctionLots = memo(function AuctionLots({
             media={media}
             alt={`${t.signature} ${id}`}
             active={active}
+            artworkId={id}
+            onEnded={() => rest(id)}
             onFailure={(reason) => fail(id, reason)}
           />
         );
@@ -260,7 +262,9 @@ const AuctionLots = memo(function AuctionLots({
               {media ? (
                 <span className={styles.expression}>
                   {media.id === 'ink' ? t.ink : mode === 'ink' ? t.lightOnly : t.light}
-                  {active ? ` / ${t.mediaPreview}` : ''}
+                  {active
+                    ? ` / ${t.excerpt} ${excerptRange(getCollectionPreviewFilm(media)) ?? ''}`.trimEnd()
+                    : ''}
                 </span>
               ) : null}
               <ArrowUpRight size={18} aria-hidden="true" />

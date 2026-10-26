@@ -218,6 +218,13 @@ export function ArtworkRoom({
   const [fullscreen, setFullscreen] = useState(false);
   const [fullscreenPending, setFullscreenPending] = useState(false);
   const [fullscreenFailed, setFullscreenFailed] = useState(false);
+  // iPhone Safari never grants element fullscreen; a control that always fails is not offered.
+  const [fullscreenAvailable, setFullscreenAvailable] = useState(false);
+  useEffect(() => {
+    setFullscreenAvailable(
+      document.fullscreenEnabled === true && typeof frame.current?.requestFullscreen === 'function',
+    );
+  }, []);
   const media = getInterpretation(artwork, expression) ?? artwork.media[0];
   const film = media?.films.find((item) => item.id === selectedFilms[media.id]) ?? media?.films[0];
   const label = `${t.signature} ${artwork.id} · ${media ? expressionLabel(media, t) : ''}`;
@@ -397,20 +404,24 @@ export function ArtworkRoom({
               </label>
             ) : null}
           </div>
-          <button
-            className={styles.fullscreen}
-            type="button"
-            onClick={() => void toggleFullscreen()}
-            disabled={fullscreenPending}
-            aria-busy={fullscreenPending}
-          >
-            {fullscreen ? (
-              <Minimize2 size={15} aria-hidden="true" />
-            ) : (
-              <Maximize2 size={15} aria-hidden="true" />
-            )}
-            <span>{fullscreen ? t.exitFullScreen : t.fullScreen}</span>
-          </button>
+          {fullscreenAvailable ? (
+            <button
+              className={styles.fullscreen}
+              type="button"
+              onClick={() => void toggleFullscreen()}
+              disabled={fullscreenPending}
+              aria-busy={fullscreenPending}
+            >
+              {fullscreen ? (
+                <Minimize2 size={15} aria-hidden="true" />
+              ) : (
+                <Maximize2 size={15} aria-hidden="true" />
+              )}
+              <span>{fullscreen ? t.exitFullScreen : t.fullScreen}</span>
+            </button>
+          ) : (
+            <span className={styles.fullscreen} aria-hidden="true" />
+          )}
         </footer>
         <div
           className={styles.notice}

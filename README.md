@@ -10,6 +10,8 @@ The repository is [PredictionExplorer/cosmic-signature-art](https://github.com/P
 
 As of October 24, 2026, `cosmic.art` is attached and ownership-verified on the new Vercel project, but public DNS is still pending. It uses `ns1.verification-hold.suspended-domain.com` / `ns2.verification-hold.suspended-domain.com` at its external registrar (PublicDomainRegistry, potentially via a reseller). Complete the registrar's contact verification and restore working DNS. The Vercel DNS zone already exists; its intended nameservers are `ns1.vercel-dns.com` and `ns2.vercel-dns.com`. Preserve unrelated records and verify HTTPS after the change. The old project and its repository are preserved.
 
+Social preview images resolve against the deployment that serves them (`VERCEL_PROJECT_PRODUCTION_URL`, or `VERCEL_URL` on previews), so share cards work before `cosmic.art` resolves; canonical links, hreflang alternates, robots and the sitemap follow `NEXT_PUBLIC_SITE_URL` (default `https://cosmic.art`). Set `NEXT_PUBLIC_SITE_URL` to the Vercel origin only if canonical links must match the served domain during the DNS hold. App icons, the favicon and the web manifest are static files derived once from the three-body mark (`src/app/icon.svg`, `src/app/apple-icon.png`, `src/app/favicon.ico`, `public/icons/`).
+
 Production and preview explicitly use Arbitrum chain ID 42161 with empty `NEXT_PUBLIC_AUCTION_ADDRESS` and `NEXT_PUBLIC_AUCTION_CODE_HASH`; publishing the art gallery does not activate bidding. Local rehearsal configuration stays in its isolated test bundle.
 
 ## Run locally

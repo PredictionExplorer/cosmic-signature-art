@@ -5,21 +5,8 @@
   --night-muted: #b8b5ad;
 }
 
-/* Light belongs to a dark room; Ink belongs to the paper it was rendered on. */
-:global(.site):has(.page) :global(.site-header) {
-  --paper: #000;
-  --ink: #f1ebdf;
-  --muted: #b8b5ad;
-  --rule: #f1ebdf30;
-  background: var(--paper);
-  color: var(--ink);
-}
-:global(.site):has(.page) :global(.brand-orbit) {
-  border-color: #f1ebdf55;
-}
-:global(.site):has(.page) :global(.site-footer) {
-  margin-top: 0;
-}
+/* Light belongs to a dark room: the running head takes the night ground through
+   <html data-room="night">, set for this route by src/lib/room.ts. */
 
 .night {
   position: relative;

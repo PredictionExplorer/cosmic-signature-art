@@ -1,22 +1,44 @@
 'use client';
-import Image from 'next/image';
-import { useCallback, useEffect, useEffectEvent, useRef, useState } from 'react';
+import {
+  useCallback,
+  useEffect,
+  useEffectEvent,
+  useRef,
+  useState,
+  type CSSProperties,
+} from 'react';
+import { preload } from 'react-dom';
 import { useMotion } from './motion-provider';
+import { getPlateGround } from '@/lib/art/plate-records';
 import type { ArtInterpretation } from '@/lib/art/types';
+
+/** The settled still is held as an object before any film may begin (--t-hold). */
+export const HOLD_MS = 1200;
 
 type ArtworkMediaProps = {
   media?: ArtInterpretation;
   alt: string;
+  /** The route's one hero: eager, high fetch priority, its preview preloaded. */
   priority?: boolean;
   eager?: boolean;
+  /** A browsing card: the publisher's preview is the only image. */
   thumbnail?: boolean;
   still?: boolean;
-  repeat?: boolean;
+  /** Hold the settled still for --t-hold before the first automatic playback. */
+  hold?: boolean;
   startAt?: number;
   restart?: number;
   playRequest?: number;
+  /** Inline bytes for the preview layer, read on the server for the route's hero. */
+  previewSrc?: string;
+  /** The work's identity, so its measured ground can letterbox the plate. */
+  artworkId?: number;
   onProgress?: (time: number, duration: number) => void;
   onPlaybackChange?: (playing: boolean) => void;
+  /** The full still has decoded over the preview (or is the only layer). */
+  onSettled?: () => void;
+  /** The film reached its final frame, which is the still. Nothing rewinds. */
+  onEnded?: () => void;
   onFailure?: () => void;
 };
 
@@ -26,7 +48,17 @@ export function ArtworkMedia(props: ArtworkMediaProps) {
   return <ArtworkMediaSession key={identity} {...props} />;
 }
 
-/** Original proportions and colors are preserved. Only visible films acquire a src. */
+function settleImage(image: HTMLImageElement, settle: () => void) {
+  if (typeof image.decode === 'function') void image.decode().then(settle, settle);
+  else settle();
+}
+
+/**
+ * The arrival ladder: the publisher's own 640 px preview paints the whole plate on the
+ * work's ground at first paint; the full still fades over it only once it has decoded.
+ * Original proportions and colors are preserved. Only visible films acquire a src, and a
+ * finished film holds its last frame, which is the still, until a visitor asks again.
+ */
 function ArtworkMediaSession({
   media,
   alt,
@@ -34,15 +66,20 @@ function ArtworkMediaSession({
   eager = false,
   thumbnail = false,
   still = false,
-  repeat = false,
+  hold = false,
   startAt = 0,
   restart = 0,
   playRequest = 0,
+  previewSrc,
+  artworkId,
   onProgress,
   onPlaybackChange,
+  onSettled,
+  onEnded,
   onFailure,
 }: ArtworkMediaProps) {
-  const { paused } = useMotion();
+  const { paused, theatre } = useMotion();
+  const hushed = theatre === 'hushed';
   const container = useRef<HTMLDivElement>(null);
   const video = useRef<HTMLVideoElement>(null);
   const attachVideo = useCallback((player: HTMLVideoElement | null) => {
@@ -65,22 +102,50 @@ function ArtworkMediaSession({
   const [pageVisible, setPageVisible] = useState(true);
   const [hasFrame, setHasFrame] = useState(false);
   const [hasPlayed, setHasPlayed] = useState(false);
-  const [replayCycle, setReplayCycle] = useState(0);
   const [failure, setFailure] = useState<{ restart: number; playRequest: number } | null>(null);
   const failed = failure?.restart === restart && failure?.playRequest === playRequest;
   const [thumbnailFailed, setThumbnailFailed] = useState(false);
+  const [previewFailed, setPreviewFailed] = useState(false);
   const [imageFailed, setImageFailed] = useState(false);
+  const [settled, setSettled] = useState(false);
   const ended = useRef(false);
-  const replayPhase = useRef<'hold' | 'fade' | null>(null);
+  const held = useRef(false);
   const previousRequest = useRef({ restart, playRequest });
   const film = media?.films[0];
-  const imageSource =
+  const cardSource =
     thumbnail && !thumbnailFailed ? (media?.thumbnail ?? media?.still) : media?.still;
-  const shouldPlay = visible && pageVisible && !paused && !still && !failed;
+  const preview =
+    thumbnail || previewFailed
+      ? undefined
+      : (previewSrc ??
+        (media?.thumbnail && media.thumbnail !== media.still ? media.thumbnail : undefined));
+  // A plate with a preview layer arrives in two steps; anything else is a single image.
+  const layered = !thumbnail && !!preview && !!media?.still;
+  const arrival = layered ? (settled ? 'settled' : 'arriving') : 'single';
+  const ground =
+    artworkId !== undefined && media
+      ? getPlateGround(artworkId, media.id, media.stillSha256)
+      : undefined;
+  if (priority && preview && !preview.startsWith('data:')) {
+    preload(preview, { as: 'image', fetchPriority: 'high' });
+  }
+  const shouldPlay = visible && pageVisible && !paused && !hushed && !still && !failed;
   const reportPlayback = useEffectEvent((playing: boolean) => onPlaybackChange?.(playing));
   const reportProgress = useEffectEvent((time: number, duration: number) =>
     onProgress?.(time, duration),
   );
+  const reportSettled = useEffectEvent(() => onSettled?.());
+  const settle = useCallback(() => setSettled(true), []);
+  const attachStill = useCallback(
+    (image: HTMLImageElement | null) => {
+      // A cached or server-painted still can complete before React attaches its handlers.
+      if (image && image.complete && image.naturalWidth > 0) settleImage(image, settle);
+    },
+    [settle],
+  );
+  useEffect(() => {
+    if (settled || !layered) reportSettled();
+  }, [settled, layered]);
   useEffect(() => {
     const observer = new IntersectionObserver(([entry]) => setVisible(entry.isIntersecting), {
       threshold: 0.08,
@@ -112,55 +177,127 @@ function ArtworkMediaSession({
     if (restartRequested || (playRequested && ended.current)) {
       player.currentTime = 0;
       ended.current = false;
-      replayPhase.current = null;
       reportProgress(0, Number.isFinite(player.duration) ? player.duration : 0);
     }
+    // An explicit request is intent; it never waits out the hold.
+    if (restartRequested || playRequested) held.current = true;
     if (shouldPlay) {
-      if (ended.current && repeat) {
-        const rewind = () => {
-          replayPhase.current = 'fade';
-          setHasFrame(false);
-          timer = setTimeout(() => {
-            player.currentTime = 0;
-            ended.current = false;
-            replayPhase.current = null;
-            play();
-          }, 600);
-        };
-        // Pausing or leaving the viewport retains the replay phase; resuming cannot
-        // strand a finished film or skip its deliberate transition through the still.
-        if (replayPhase.current === 'fade') rewind();
-        else timer = setTimeout(rewind, 1600);
-      } else if (!ended.current) play();
+      if (ended.current) {
+        // The final frame is the still. It rests until someone asks again.
+      } else if (hold && !held.current) {
+        if (layered && !settled) return;
+        timer = setTimeout(() => {
+          held.current = true;
+          play();
+        }, HOLD_MS);
+      } else play();
     } else player.pause();
     return () => {
       canceled = true;
       player.pause();
       if (timer) clearTimeout(timer);
     };
-  }, [shouldPlay, repeat, restart, playRequest, replayCycle]);
-  return (
-    <div ref={container} className="art-media" data-material={media?.id ?? 'ink'}>
-      {imageSource && !imageFailed ? (
-        <Image
-          src={imageSource}
+  }, [shouldPlay, hold, layered, settled, restart, playRequest]);
+  const loading = eager || priority ? 'eager' : 'lazy';
+  const style = ground ? ({ '--plate-ground': ground.tone } as CSSProperties) : undefined;
+  let image: React.ReactNode;
+  if (thumbnail) {
+    image =
+      cardSource && !imageFailed ? (
+        <img
+          className="art-still is-settled"
+          src={cardSource}
           alt={alt}
-          width={media?.width ?? 3456}
-          height={media?.height ?? 2234}
-          unoptimized
-          priority={priority}
-          loading={eager && !priority ? 'eager' : undefined}
+          width={media?.thumbnailWidth ?? media?.width ?? 3456}
+          height={media?.thumbnailHeight ?? media?.height ?? 2234}
+          decoding="async"
+          loading={loading}
           onError={() => {
-            if (imageSource !== media?.still && media?.still) setThumbnailFailed(true);
+            if (cardSource !== media?.still && media?.still) setThumbnailFailed(true);
             else {
               setImageFailed(true);
               onFailure?.();
             }
           }}
         />
-      ) : (
+      ) : null;
+  } else if (layered && !imageFailed) {
+    image = (
+      <>
+        <img
+          className="art-preview"
+          src={preview}
+          alt=""
+          aria-hidden="true"
+          width={media?.thumbnailWidth ?? 640}
+          height={media?.thumbnailHeight ?? 414}
+          decoding="async"
+          loading="eager"
+          fetchPriority={priority ? 'high' : undefined}
+          onError={() => setPreviewFailed(true)}
+        />
+        <img
+          ref={attachStill}
+          className={settled ? 'art-still is-settled' : 'art-still'}
+          src={media?.still}
+          alt={alt}
+          width={media?.width ?? 3456}
+          height={media?.height ?? 2234}
+          decoding="async"
+          loading={loading}
+          onLoad={(event) => settleImage(event.currentTarget, settle)}
+          onError={() => setImageFailed(true)}
+        />
+      </>
+    );
+  } else if (preview && imageFailed) {
+    // The full still could not be fetched; the publisher's preview remains the work.
+    image = (
+      <img
+        className="art-still is-settled"
+        src={preview}
+        alt={alt}
+        width={media?.thumbnailWidth ?? 640}
+        height={media?.thumbnailHeight ?? 414}
+        decoding="async"
+        loading="eager"
+        onError={() => {
+          setPreviewFailed(true);
+          onFailure?.();
+        }}
+      />
+    );
+  } else {
+    image =
+      media?.still && !imageFailed ? (
+        <img
+          className="art-still is-settled"
+          src={media.still}
+          alt={alt}
+          width={media.width ?? 3456}
+          height={media.height ?? 2234}
+          decoding="async"
+          loading={loading}
+          fetchPriority={priority ? 'high' : undefined}
+          onError={() => {
+            setImageFailed(true);
+            onFailure?.();
+          }}
+        />
+      ) : null;
+  }
+  return (
+    <div
+      ref={container}
+      className="art-media"
+      data-material={media?.id ?? 'ink'}
+      data-arrival={arrival}
+      data-edge={ground?.edge ? 'true' : undefined}
+      style={style}
+    >
+      {image ?? (
         <div className="art-placeholder" role="img" aria-label={alt}>
-          <span>∴</span>
+          <span />
         </div>
       )}
       {film && !failed && (shouldPlay || hasPlayed) ? (
@@ -181,6 +318,7 @@ function ArtworkMediaSession({
           onPlaying={() => {
             setHasFrame(true);
             setHasPlayed(true);
+            held.current = true;
             onPlaybackChange?.(true);
           }}
           onPause={() => onPlaybackChange?.(false)}
@@ -192,15 +330,15 @@ function ArtworkMediaSession({
             setHasFrame(false);
             setHasPlayed(false);
             ended.current = false;
-            replayPhase.current = null;
             onPlaybackChange?.(false);
             onFailure?.();
           }}
-          onEnded={() => {
+          onEnded={(event) => {
             ended.current = true;
-            replayPhase.current = 'hold';
+            const duration = event.currentTarget.duration;
+            if (Number.isFinite(duration)) onProgress?.(duration, duration);
             onPlaybackChange?.(false);
-            if (repeat) setReplayCycle((value) => value + 1);
+            onEnded?.();
           }}
         />
       ) : null}

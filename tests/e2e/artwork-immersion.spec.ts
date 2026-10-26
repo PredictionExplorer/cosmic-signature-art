@@ -16,8 +16,8 @@ const light = archive.find((work) => work.id === 31)!.media.find((media) => medi
 const ink = archive.find((work) => work.id === 31)!.media.find((media) => media.id === 'ink')!;
 // Fault injection is limited to this real work's two authenticated delivery locations.
 const isLightStill = (url: URL) => url.pathname === light.still || url.href === light.sourceUrl;
-const originalFilm = (url: string) =>
-  /\/videos\/web\/[^/]+\.mp4(?:\?|$)/.test(url) || /\/art\/31-ink-preview\.mp4$/.test(url);
+// Only a complete published original counts; the hash-verified local film plays inline.
+const originalFilm = (url: string) => /\/videos\/web\/[^/]+\.mp4(?:\?|$)/.test(url);
 
 async function imageReady(image: Locator) {
   await expect(image).toBeVisible();
@@ -36,7 +36,7 @@ async function artworkReady(page: Page, path = '/art/31?view=still') {
   await expect(page.getByRole('heading', { level: 1 })).toHaveText('Signature 31');
   const stage = page.locator(pageStage);
   await expect(stage).toHaveAttribute('data-expression', 'ink');
-  await imageReady(stage.locator('img'));
+  await imageReady(stage.locator('img.art-still'));
   // The motion preference provides an observable hydration boundary before clicking controls.
   const paused = await page.evaluate(() => {
     const saved = sessionStorage.getItem('cosmic-art-motion-v1');
@@ -121,6 +121,31 @@ async function noOverflow(page: Page) {
   expect(dimensions.width).toBeLessThanOrEqual(dimensions.viewport + 1);
 }
 
+test('the plate is painted from an inline preview before any full still arrives', async ({
+  page,
+}) => {
+  await page.goto('/art/31?view=still');
+  const preview = page.locator(`${pageStage} img.art-preview`);
+  await expect(preview).toHaveAttribute('src', /^data:image\/webp;base64,/);
+  await expect(preview).toBeInViewport();
+  expect(
+    await preview.evaluate((element) => {
+      const image = element as HTMLImageElement;
+      return image.complete && image.naturalWidth > 0;
+    }),
+  ).toBe(true);
+  const plate = page.locator(`${pageStage} .art-media`);
+  await expect(plate).toHaveAttribute('data-arrival', /^(?:arriving|settled)$/);
+  const still = page.locator(`${pageStage} img.art-still`);
+  await imageReady(still);
+  await expect(still).toHaveClass(/is-settled/);
+  await expect(plate).toHaveAttribute('data-arrival', 'settled');
+  await expect(page.locator('.work-transport [data-film-state]')).toHaveAttribute(
+    'data-film-state',
+    'still',
+  );
+});
+
 test('Ink and Light move between genuine expressions while preserving the artwork identity', async ({
   page,
 }) => {
@@ -133,11 +158,13 @@ test('Ink and Light move between genuine expressions while preserving the artwor
   const beforeLight = await readyTransitions(page);
   await expressionControl(room, 'Light').click();
   await expect(stage).toHaveAttribute('data-expression', 'light');
-  await imageReady(stage.locator('img'));
-  await expect(stage.locator('img')).toHaveAttribute('alt', 'Signature 31 · Light');
+  await imageReady(stage.locator('img.art-still'));
+  await expect(stage.locator('img.art-still')).toHaveAttribute('alt', 'Signature 31 · Light');
   expect(
     [light.still, light.sourceUrl].map((source) => new URL(source, page.url()).href),
-  ).toContain(await stage.locator('img').evaluate((image) => (image as HTMLImageElement).src));
+  ).toContain(
+    await stage.locator('img.art-still').evaluate((image) => (image as HTMLImageElement).src),
+  );
   if (supported) {
     await expect.poll(() => readyTransitions(page)).toBeGreaterThan(beforeLight);
     const animations = await observedAnimations(page);
@@ -156,9 +183,9 @@ test('Ink and Light move between genuine expressions while preserving the artwor
   const beforeInk = await readyTransitions(page);
   await expressionControl(room, 'Ink').click();
   await expect(stage).toHaveAttribute('data-expression', 'ink');
-  await imageReady(stage.locator('img'));
+  await imageReady(stage.locator('img.art-still'));
   expect([ink.still, ink.sourceUrl].map((source) => new URL(source, page.url()).href)).toContain(
-    await stage.locator('img').evaluate((image) => (image as HTMLImageElement).src),
+    await stage.locator('img.art-still').evaluate((image) => (image as HTMLImageElement).src),
   );
   if (supported) {
     await expect.poll(() => readyTransitions(page)).toBeGreaterThan(beforeInk);
@@ -204,12 +231,12 @@ test('a slower expression keeps the current work visible and the latest choice w
   });
   const room = await artworkReady(page);
   const stage = page.locator(pageStage);
-  const original = await stage.locator('img').getAttribute('src');
+  const original = await stage.locator('img.art-still').getAttribute('src');
   await expressionControl(room, 'Light').click();
   await expect(page.getByText(t.preparingExpression, { exact: true })).toBeVisible();
   await expect(stage).toHaveAttribute('data-expression', 'ink');
-  await imageReady(stage.locator('img'));
-  await expect(stage.locator('img')).toHaveAttribute('src', original!);
+  await imageReady(stage.locator('img.art-still'));
+  await expect(stage.locator('img.art-still')).toHaveAttribute('src', original!);
   await expressionControl(room, 'Ink').click();
   await expect(page.getByText(t.preparingExpression, { exact: true })).toHaveCount(0);
   release();
@@ -219,7 +246,7 @@ test('a slower expression keeps the current work visible and the latest choice w
   // Re-selecting Light proves the abandoned request did not corrupt the following commit.
   await expressionControl(room, 'Light').click();
   await expect(stage).toHaveAttribute('data-expression', 'light');
-  await imageReady(stage.locator('img'));
+  await imageReady(stage.locator('img.art-still'));
   await expressionControl(room, 'Ink').click();
   await expect(stage).toHaveAttribute('data-expression', 'ink');
 });
@@ -232,16 +259,16 @@ test('a failed expression keeps the current artwork and offers a successful retr
   page.on('pageerror', (error) => errors.push(error.message));
   const room = await artworkReady(page);
   const stage = page.locator(pageStage);
-  const original = await stage.locator('img').getAttribute('src');
+  const original = await stage.locator('img.art-still').getAttribute('src');
   await expressionControl(room, 'Light').click();
   await expect(page.getByText(t.expressionFailed, { exact: true })).toBeVisible();
   await expect(stage).toHaveAttribute('data-expression', 'ink');
-  await expect(stage.locator('img')).toHaveAttribute('src', original!);
-  await imageReady(stage.locator('img'));
+  await expect(stage.locator('img.art-still')).toHaveAttribute('src', original!);
+  await imageReady(stage.locator('img.art-still'));
   await page.unroute(isLightStill);
   await expressionControl(room, 'Light').click();
   await expect(stage).toHaveAttribute('data-expression', 'light');
-  await imageReady(stage.locator('img'));
+  await imageReady(stage.locator('img.art-still'));
   await expect(page.getByText(t.expressionFailed, { exact: true })).toHaveCount(0);
   expect(errors).toEqual([]);
 });
@@ -281,7 +308,7 @@ test('the viewing room opens a contained still, releases ambient playback and re
   });
   await artworkReady(page, '/art/31');
   const inline = page.locator(`${pageStage} video`);
-  await expect(inline).toHaveAttribute('src', /\/art\/previews\/31-[a-f\d]+\.mp4$/);
+  await expect(inline).toHaveAttribute('src', /\/art\/31-ink-preview\.mp4$/);
   await expect
     .poll(() => inline.evaluate((element) => !(element as HTMLVideoElement).paused))
     .toBe(true);

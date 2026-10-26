@@ -57,7 +57,7 @@
   .auction .transport :global(.progress-track) {
     display: none;
   }
-  .auction .previewLabel {
+  .auction .state {
     margin-left: auto;
   }
 }
@@ -167,9 +167,21 @@
   font-variant-numeric: tabular-nums;
   color: var(--room-muted);
 }
-.previewLabel {
-  font-size: 9px;
+.state {
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
   color: var(--room-muted);
+}
+/* Sit: the chrome fades while the film plays to its still; any input brings it back. */
+.topbar,
+.lower {
+  transition: opacity var(--t-chrome) var(--ease-settle);
+}
+.room[data-sit] .topbar,
+.room[data-sit] .lower {
+  opacity: 0;
+  transition-duration: var(--t-sit);
 }
 .rail {
   display: flex;
@@ -199,11 +211,15 @@
   font-size: 11px;
   color: var(--room-muted);
 }
-:global(.motion-paused) .room {
+:global(.motion-paused) .room,
+:global(.motion-paused) .topbar,
+:global(.motion-paused) .lower {
   transition: none;
 }
 @media (prefers-reduced-motion: reduce) {
-  .room {
+  .room,
+  .topbar,
+  .lower {
     transition: none;
   }
 }
@@ -244,7 +260,7 @@
   .transport :global(.progress-track) {
     display: none;
   }
-  .previewLabel {
+  .state {
     margin-left: auto;
   }
   .rail {

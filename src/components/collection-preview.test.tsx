@@ -1,7 +1,7 @@
 import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { getCuratedArtwork } from '@/lib/art/catalog';
-import { CollectionPreview, getCollectionPreviewFilm } from './collection-preview';
+import { CollectionPreview, excerptRange, getCollectionPreviewFilm } from './collection-preview';
 
 const archivedInk = getCuratedArtwork(31)!.media.find((media) => media.id === 'ink')!;
 const ink = {
@@ -31,7 +31,7 @@ describe('collection film presentation', () => {
       <CollectionPreview media={ink} alt="Signature 31" active={false} onFailure={vi.fn()} />,
     );
     expect(container.querySelector('video')).toBeNull();
-    expect(imagePath()).toBe('/art/31-ink.webp');
+    expect(imagePath()).toBe('/art/31-ink-640.webp');
     rerender(
       <CollectionPreview
         media={{ ...light, films: ink.films, previewFilm: ink.previewFilm }}
@@ -99,7 +99,7 @@ describe('collection film presentation', () => {
     );
     rerender(<CollectionPreview media={ink} alt="Signature 31" active onFailure={onFailure} />);
     expect(container.querySelector('video')).toBeNull();
-    expect(imagePath()).toBe('/art/31-ink.webp');
+    expect(imagePath()).toBe('/art/31-ink-640.webp');
   });
 
   it('ignores a rejected playback promise after ownership has moved away', async () => {
@@ -121,27 +121,54 @@ describe('collection film presentation', () => {
     expect(onFailure).not.toHaveBeenCalled();
   });
 
-  it('fades through its own still between repeats and cancels the replay when it is inactive', () => {
+  it('holds the last frame, fades back to the still and releases the lease instead of looping', () => {
     vi.useFakeTimers();
+    const onEnded = vi.fn();
     const { container, rerender } = render(
-      <CollectionPreview media={ink} alt="Signature 31" active onFailure={vi.fn()} />,
+      <CollectionPreview
+        media={ink}
+        alt="Signature 31"
+        active
+        onFailure={vi.fn()}
+        onEnded={onEnded}
+      />,
     );
     const video = container.querySelector('video')!;
-    Object.defineProperty(video, 'duration', { configurable: true, value: 30 });
+    Object.defineProperty(video, 'duration', { configurable: true, value: 8 });
+    fireEvent.loadedMetadata(video);
     fireEvent.playing(video);
+    expect(video).toHaveClass('has-frame');
     fireEvent.ended(video);
-    act(() => vi.advanceTimersByTime(1_200));
+    act(() => vi.advanceTimersByTime(1_199));
+    expect(video).toHaveClass('has-frame');
+    act(() => vi.advanceTimersByTime(1));
     expect(video).not.toHaveClass('has-frame');
+    expect(onEnded).not.toHaveBeenCalled();
     act(() => vi.advanceTimersByTime(700));
-    expect(video.currentTime).toBe(0);
+    expect(onEnded).toHaveBeenCalledOnce();
     expect(HTMLMediaElement.prototype.play).toHaveBeenCalledOnce();
-    fireEvent.ended(video);
     rerender(
-      <CollectionPreview media={ink} alt="Signature 31" active={false} onFailure={vi.fn()} />,
+      <CollectionPreview
+        media={ink}
+        alt="Signature 31"
+        active={false}
+        onFailure={vi.fn()}
+        onEnded={onEnded}
+      />,
     );
-    act(() => vi.advanceTimersByTime(2_000));
-    expect(HTMLMediaElement.prototype.play).toHaveBeenCalledOnce();
+    expect(container.querySelector('video')).toBeNull();
     expect(video).not.toHaveAttribute('src');
+    act(() => vi.advanceTimersByTime(5_000));
+    expect(HTMLMediaElement.prototype.play).toHaveBeenCalledOnce();
+    expect(imagePath()).toBe('/art/31-ink-640.webp');
+  });
+
+  it('describes an excerpt by its true place in the source film', () => {
+    expect(excerptRange({ ...ink.previewFilm!, startSeconds: 6, durationSeconds: 8 })).toBe(
+      '00:06–00:14',
+    );
+    expect(excerptRange({ ...ink.previewFilm!, startSeconds: undefined })).toBeUndefined();
+    expect(excerptRange(undefined)).toBeUndefined();
   });
 
   it('falls back from a thumbnail only to its own canonical still and keeps an accessible identity if both fail', () => {

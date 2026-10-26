@@ -116,8 +116,12 @@ test.describe('localized public gallery', () => {
       await page.goto(localizedPath(locale));
       await expect(page.locator('html')).toHaveAttribute('lang', locale);
       await expect(page.getByRole('heading', { level: 1 })).toContainText(t.shape);
-      await imageLoaded(page.locator('.passage:visible .passage-field img'));
-      await artworkImageSource(page.locator('.passage:visible .passage-field img'), 23, 'ink');
+      await imageLoaded(page.locator('.passage:visible .passage-field img.art-still'));
+      await artworkImageSource(
+        page.locator('.passage:visible .passage-field img.art-still'),
+        23,
+        'ink',
+      );
       await noHorizontalOverflow(page);
       await page
         .locator('.site-header nav')
@@ -139,12 +143,25 @@ test.describe('localized public gallery', () => {
       await expect(
         page.locator('.atlas:visible .position-anchor .constellation-select'),
       ).toHaveAttribute('aria-label', `${t.signature} 31`);
-      await imageLoaded(page.locator('.atlas:visible .position-anchor img'));
+      await imageLoaded(page.locator('.atlas:visible .position-anchor img.art-still'));
       await collectionLoaded(page);
       await noHorizontalOverflow(page);
       expect(errors).toEqual([]);
     });
   }
+});
+
+test('the home paints Signature 023 from an inline preview before any image request', async ({
+  page,
+}) => {
+  await page.goto('/');
+  const preview = page.locator('.passage:visible .passage-field img.art-preview');
+  await expect(preview).toHaveAttribute('src', /^data:image\/webp;base64,/);
+  await expect(preview).toBeInViewport();
+  const still = page.locator('.passage:visible .passage-field img.art-still');
+  await imageLoaded(still);
+  await expect(still).toHaveClass(/is-settled/);
+  await artworkImageSource(still, 23, 'ink');
 });
 
 test('Ink and Light preserve token identity and genuine media; motion is controllable', async ({
@@ -176,7 +193,11 @@ test('Ink and Light preserve token identity and genuine media; motion is control
       timeout: 5_000,
     });
     await expect(page.locator('.passage:visible .material-portal')).toBeEnabled();
-    await artworkImageSource(page.locator('.passage:visible .passage-field img'), 23, 'light');
+    await artworkImageSource(
+      page.locator('.passage:visible .passage-field img.art-still'),
+      23,
+      'light',
+    );
     await page.getByRole('button', { name: /Return to Ink/ }).click();
     await expect(page.locator('.passage:visible')).toHaveClass(/material-ink/);
     await expect(page.locator('.passage:visible .material-curtain')).toHaveCount(0, {
@@ -191,11 +212,19 @@ test('Ink and Light preserve token identity and genuine media; motion is control
     .toBe(true);
   await page.getByRole('button', { name: /Cross into Light/ }).click();
   await expect(page.locator('.passage:visible')).toHaveClass(/material-light/);
-  await artworkImageSource(page.locator('.passage:visible .passage-field img'), 23, 'light');
+  await artworkImageSource(
+    page.locator('.passage:visible .passage-field img.art-still'),
+    23,
+    'light',
+  );
   await expect(page.locator('.passage:visible .passage-field video')).toHaveCount(0);
-  await imageLoaded(page.locator('.passage:visible .passage-field img'));
+  await imageLoaded(page.locator('.passage:visible .passage-field img.art-still'));
   await page.getByRole('button', { name: /Return to Ink/ }).click();
-  await artworkImageSource(page.locator('.passage:visible .passage-field img'), 23, 'ink');
+  await artworkImageSource(
+    page.locator('.passage:visible .passage-field img.art-still'),
+    23,
+    'ink',
+  );
   await expect(film).toHaveCount(0);
   await toggle.click();
   await expect(page.locator('.passage:visible .passage-field video')).toHaveAttribute(
@@ -224,7 +253,7 @@ test('Atlas selection, rehanging and material changes lead to the selected token
   await atlas.getByRole('button', { name: 'Rehang the constellation', exact: true }).click();
   await expect(atlas.locator('.constellation')).toHaveClass(/rehung/);
   await atlas.getByRole('button', { name: 'Light', exact: true }).click();
-  await artworkImageSource(atlas.locator('.position-anchor img'), 35, 'light');
+  await artworkImageSource(atlas.locator('.position-anchor img.art-still'), 35, 'light');
   await expect(atlas.locator('video')).toHaveCount(0);
   await noHorizontalOverflow(page);
   await atlas.getByRole('link', { name: 'Enter this work', exact: true }).click();
@@ -367,7 +396,7 @@ test('artwork comparison and enlarged viewer preserve identity and Escape return
   await pauseAmbientMotion(page);
   await expect(page.getByRole('heading', { level: 1 })).toHaveText('Signature 31');
   const room = page.getByRole('region', { name: 'Ways of seeing', exact: true });
-  await artworkImageSource(room.locator('.art-media img'), 31, 'ink', true);
+  await artworkImageSource(room.locator('.art-media img.art-still'), 31, 'ink', true);
   await room.getByRole('button', { name: 'See both expressions', exact: true }).click();
   await expect(room.locator('.viewer-plate')).toHaveClass(/paired/);
   await expect(room.locator('.viewer-plate > img')).toHaveAttribute('alt', 'Signature 31 · Light');
@@ -397,7 +426,7 @@ test('artwork comparison and enlarged viewer preserve identity and Escape return
   await expect(completeFilm).toBeFocused();
   await room.getByRole('button', { name: /^01 Light$|^02 Light$/ }).click();
   await expect(room.locator('.art-media')).toHaveAttribute('data-material', 'light');
-  await artworkImageSource(room.locator('.art-media img'), 31, 'light', true);
+  await artworkImageSource(room.locator('.art-media img.art-still'), 31, 'light', true);
   await noHorizontalOverflow(page);
 });
 
@@ -419,7 +448,7 @@ test('Play from a still starts the intended film with one explicit action', asyn
 
 test('language switching preserves the current artwork route', async ({ page }) => {
   await page.goto('/art/31?view=still');
-  await page.locator('.language-menu summary').click();
+  await page.locator('.language-menu button').click();
   await page.locator('.language-menu a[hreflang="ja"]').click();
   await expect(page).toHaveURL(/\/ja\/art\/31$/);
   await expect(page.locator('html')).toHaveAttribute('lang', 'ja');

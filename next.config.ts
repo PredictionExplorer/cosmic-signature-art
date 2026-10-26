@@ -6,7 +6,9 @@ const nextConfig: NextConfig = {
   async headers() {
     return [
       {
-        source: '/art/previews/:path*',
+        // Hash-named and identity-named artwork derivatives never change in place.
+        // The artwork pages (/art/31) are routes, not files, and stay out of this rule.
+        source: '/art/:file((?:previews/)?[^/]+\\.(?:webp|mp4))',
         headers: [{ key: 'Cache-Control', value: 'public, max-age=31536000, immutable' }],
       },
       {

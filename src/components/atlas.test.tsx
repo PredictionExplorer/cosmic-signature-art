@@ -15,8 +15,16 @@ vi.mock('next/link', () => ({
 }));
 vi.mock('./motion-provider', () => ({ useMotion: () => ({ paused: true, toggle: vi.fn() }) }));
 vi.mock('./artwork-media', () => ({
-  ArtworkMedia: ({ media, alt }: { media?: ArtInterpretation; alt: string }) => (
-    <span role="img" aria-label={alt} data-source={media?.still} />
+  ArtworkMedia: ({
+    media,
+    alt,
+    still,
+  }: {
+    media?: ArtInterpretation;
+    alt: string;
+    still?: boolean;
+  }) => (
+    <span role="img" aria-label={alt} data-source={media?.still} data-still={String(!!still)} />
   ),
 }));
 
@@ -75,5 +83,28 @@ describe('Atlas exploration', () => {
     );
     fireEvent.click(rehang);
     expect(rehang).toHaveAttribute('aria-pressed', 'false');
+  });
+
+  it('lets only the anchor move; its companions rest on their stills', () => {
+    render(<Atlas works={works} locale="en" t={en} />);
+    expect(screen.getByRole('img', { name: 'Signature 31 · Ink' })).toHaveAttribute(
+      'data-still',
+      'false',
+    );
+    for (const id of [23, 35]) {
+      expect(screen.getByRole('img', { name: `Signature ${id} · Ink` })).toHaveAttribute(
+        'data-still',
+        'true',
+      );
+    }
+    fireEvent.click(screen.getByRole('button', { name: 'Signature 35' }));
+    expect(screen.getByRole('img', { name: 'Signature 35 · Ink' })).toHaveAttribute(
+      'data-still',
+      'false',
+    );
+    expect(screen.getByRole('img', { name: 'Signature 31 · Ink' })).toHaveAttribute(
+      'data-still',
+      'true',
+    );
   });
 });

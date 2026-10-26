@@ -1,6 +1,6 @@
 'use client';
 import Image from 'next/image';
-import { useRef, useState } from 'react';
+import { Suspense, use, useCallback, useEffect, useRef, useState } from 'react';
 import { ArrowUpRight, Maximize2, RotateCcw, Pause, Play } from 'lucide-react';
 import { getInterpretation, type Artwork } from '@/lib/art/types';
 import type { Messages } from '@/lib/i18n/en';
@@ -12,12 +12,21 @@ import { ArtworkStage, useArtworkExpression } from './artwork-stage';
 import { ArtworkRoom } from './artwork-room';
 import styles from './artwork-viewer.module.css';
 
+/** After a film resolves into its still, nothing moves for --t-rest; then "Again". */
+const REST_MS = 8000;
+/** Input right after pressing Sit is the press itself, not a request for the chrome back. */
+const SIT_GRACE_MS = 600;
+
 type ArtworkViewerProps = {
   artwork: Artwork;
   t: Messages;
   initialStill?: boolean;
   initialExpression?: string;
   presentation?: 'gallery' | 'auction';
+  /** Inline preview bytes per expression, read on the server for the route's hero. */
+  inlinePreviews?: Partial<Record<string, string>>;
+  /** The streaming live record; its media replace the registry's only when they differ. */
+  live?: Promise<Artwork | null>;
 };
 export function ArtworkViewer(props: ArtworkViewerProps) {
   return (
@@ -28,20 +37,66 @@ export function ArtworkViewer(props: ArtworkViewerProps) {
   );
 }
 
+function mediaSignature(artwork: Artwork) {
+  return JSON.stringify(
+    artwork.media.map((item) => [
+      item.id,
+      item.still,
+      item.thumbnail,
+      item.films.map((film) => film.src),
+    ]),
+  );
+}
+
+/** The live record arrives after the plate; it changes the work only if its media differ. */
+function LiveSync({
+  live,
+  onLive,
+}: {
+  live: Promise<Artwork | null>;
+  onLive: (artwork: Artwork) => void;
+}) {
+  const artwork = use(live);
+  useEffect(() => {
+    if (artwork) onLive(artwork);
+  }, [artwork, onLive]);
+  return null;
+}
+
 function ArtworkViewerSession({
-  artwork,
+  artwork: initial,
   t,
   initialStill = false,
   initialExpression,
   presentation = 'gallery',
+  inlinePreviews,
+  live,
 }: ArtworkViewerProps) {
+  const [liveArtwork, setLiveArtwork] = useState<Artwork | null>(null);
+  const artwork = liveArtwork ?? initial;
+  const adoptLive = useCallback(
+    (candidate: Artwork) => {
+      setLiveArtwork((current) => {
+        const base = current ?? initial;
+        if (candidate.id !== base.id || mediaSignature(candidate) === mediaSignature(base))
+          return current;
+        return candidate;
+      });
+    },
+    [initial],
+  );
   const [still, setStill] = useState(initialStill);
   const [compare, setCompare] = useState(false);
   const [room, setRoom] = useState<'still' | 'film' | null>(null);
   const [restart, setRestart] = useState(0);
   const [playRequest, setPlayRequest] = useState(0);
-  const [explicitPreview, setExplicitPreview] = useState(false);
+  const [explicitFilm, setExplicitFilm] = useState(false);
   const [playing, setPlaying] = useState(false);
+  const [settled, setSettled] = useState(false);
+  const [ended, setEnded] = useState(false);
+  const [rested, setRested] = useState(false);
+  const [sit, setSit] = useState(false);
+  const sitAt = useRef(0);
   const [time, setTime] = useState({ current: 0, duration: 0 });
   const [failed, setFailed] = useState(false);
   const returnFocusRef = useRef<HTMLButtonElement>(null);
@@ -58,17 +113,29 @@ function ArtworkViewerSession({
         setCompare(false);
         setRestart(0);
         setPlayRequest(0);
+        setSettled(false);
+        setEnded(false);
+        setRested(false);
+        setSit(false);
       },
     });
+  useEffect(() => {
+    if (!ended) return;
+    const timer = setTimeout(() => {
+      setRested(true);
+      setSit(false);
+    }, REST_MS);
+    return () => clearTimeout(timer);
+  }, [ended]);
   const media = getInterpretation(artwork, expression);
   const light = getInterpretation(artwork, 'light');
+  // Only a hash-verified local delivery plays inline, from frame 0. The 640 excerpt is a
+  // browsing preview; a complete published original waits for the room.
+  const inlineFilm = media?.films.find((film) => film.delivery === 'local-preview');
   const ambient = media
     ? {
         ...media,
-        films:
-          !room && (!policy.constrained || explicitPreview) && media.previewFilm
-            ? [media.previewFilm]
-            : [],
+        films: !room && inlineFilm && (!policy.constrained || explicitFilm) ? [inlineFilm] : [],
       }
     : undefined;
   const label = (id: string) =>
@@ -90,18 +157,59 @@ function ArtworkViewerSession({
     setPlayRequest(0);
     setRoom(film ? 'film' : 'still');
     setPlaying(false);
+    setSit(false);
   }
   function closeRoom() {
     cancelPending();
     setRoom(null);
   }
+  function requestFilm() {
+    setFailed(false);
+    setStill(false);
+    setExplicitFilm(true);
+    setEnded(false);
+    setRested(false);
+    setPlayRequest((value) => value + 1);
+    if (paused) toggle();
+  }
+  function restartFilm() {
+    setFailed(false);
+    setStill(false);
+    setExplicitFilm(true);
+    setEnded(false);
+    setRested(false);
+    setRestart((value) => value + 1);
+    setTime((value) => ({ ...value, current: 0 }));
+    if (paused) toggle();
+  }
+  function sitDown() {
+    sitAt.current = Date.now();
+    setSit(true);
+  }
+  function wake() {
+    if (!sit || Date.now() - sitAt.current < SIT_GRACE_MS) return;
+    setSit(false);
+  }
+  const idle = paused || still || !playing;
+  const filmState = !settled ? 'arriving' : playing ? 'film' : 'still';
+  const state = t[filmState];
   return (
     <>
       <section
         className={`viewing-room ${styles.room} ${presentation === 'auction' ? styles.auction : ''}`}
         aria-label={t.ways}
         data-expression={expression}
+        data-sit={sit ? '' : undefined}
+        onPointerMove={wake}
+        onKeyDown={wake}
+        onTouchStart={wake}
+        onFocus={wake}
       >
+        {live ? (
+          <Suspense fallback={null}>
+            <LiveSync live={live} onLive={adoptLive} />
+          </Suspense>
+        ) : null}
         <header className={styles.topbar}>
           <p className="eyebrow">
             {t.viewingRoom} / № {String(artwork.id).padStart(3, '0')}
@@ -154,13 +262,20 @@ function ArtworkViewerSession({
                   media={ambient}
                   alt={`${t.signature} ${artwork.id} · ${label(expression)}`}
                   priority
+                  hold
+                  artworkId={artwork.id}
+                  previewSrc={inlinePreviews?.[expression]}
                   still={still || !!room}
-                  repeat
                   startAt={time.current}
                   restart={restart}
                   playRequest={playRequest}
                   onPlaybackChange={setPlaying}
                   onProgress={(current, duration) => setTime({ current, duration })}
+                  onSettled={() => setSettled(true)}
+                  onEnded={() => {
+                    setEnded(true);
+                    setPlaying(false);
+                  }}
                   onFailure={() => setFailed(true)}
                 />
               </ArtworkStage>
@@ -178,37 +293,25 @@ function ArtworkViewerSession({
         </div>
         <div className={styles.lower}>
           <div className={`work-transport ${styles.transport}`}>
-            {media?.previewFilm ? (
+            {inlineFilm ? (
               <>
                 <button
                   onClick={() => {
                     if (playing && !paused && !still) toggle();
-                    else {
-                      setFailed(false);
-                      setStill(false);
-                      setExplicitPreview(true);
-                      setPlayRequest((value) => value + 1);
-                      if (paused) toggle();
-                    }
+                    else requestFilm();
                   }}
                 >
-                  {paused || still || !playing ? <Play size={12} /> : <Pause size={12} />}{' '}
-                  {paused || still || !playing ? t.play : t.pause}
+                  {idle ? <Play size={12} /> : <Pause size={12} />}{' '}
+                  {ended && rested ? t.again : idle ? t.play : t.pause}
                 </button>
-                <button
-                  onClick={() => {
-                    setFailed(false);
-                    setStill(false);
-                    setExplicitPreview(true);
-                    setRestart((value) => value + 1);
-                    setTime((value) => ({ ...value, current: 0 }));
-                    if (paused) toggle();
-                  }}
-                >
+                <button onClick={restartFilm}>
                   <RotateCcw size={12} /> {t.restart}
                 </button>
                 <button onClick={() => setStill((value) => !value)} aria-pressed={still}>
                   {t.still}
+                </button>
+                <button onClick={sitDown} aria-pressed={sit}>
+                  {t.sit}
                 </button>
                 <div className="progress-track" aria-hidden="true">
                   <i
@@ -220,10 +323,14 @@ function ArtworkViewerSession({
                 <span className={styles.clock}>
                   {clock(time.current)} / {clock(time.duration)}
                 </span>
-                <span className={styles.previewLabel}>{t.mediaPreview}</span>
+                <span className={styles.state} data-film-state={filmState}>
+                  {state}
+                </span>
               </>
             ) : (
-              <span className={styles.previewLabel}>{t.still}</span>
+              <span className={styles.state} data-film-state={settled ? 'still' : 'arriving'}>
+                {settled ? t.still : t.arriving}
+              </span>
             )}
           </div>
           <aside className={`work-rail ${styles.rail}`}>

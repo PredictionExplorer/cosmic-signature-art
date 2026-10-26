@@ -159,3 +159,71 @@ describe('motion preference', () => {
     expect(preference.listenerCount()).toBe(0);
   });
 });
+
+describe('theatre', () => {
+  async function freshModule() {
+    vi.resetModules();
+    vi.doMock('react', () => React);
+    return import('./motion-provider');
+  }
+
+  it('starts playing and reflects a hush on the site wrapper and in the context', async () => {
+    mockReducedMotion(false);
+    const { MotionProvider, useMotion, setTheatre } = await freshModule();
+    function Probe() {
+      const { theatre } = useMotion();
+      return <span data-testid="theatre">{theatre}</span>;
+    }
+    const { container } = render(
+      <MotionProvider>
+        <Probe />
+      </MotionProvider>,
+    );
+    const site = container.firstElementChild!;
+    expect(site).toHaveAttribute('data-theatre', 'playing');
+    expect(screen.getByTestId('theatre')).toHaveTextContent('playing');
+    act(() => setTheatre('hushed'));
+    expect(site).toHaveAttribute('data-theatre', 'hushed');
+    expect(screen.getByTestId('theatre')).toHaveTextContent('hushed');
+    act(() => setTheatre('hushed'));
+    expect(site).toHaveAttribute('data-theatre', 'hushed');
+    act(() => setTheatre('playing'));
+    expect(site).toHaveAttribute('data-theatre', 'playing');
+    expect(screen.getByTestId('theatre')).toHaveTextContent('playing');
+  });
+
+  it('leaves the motion preference untouched when the theatre hushes', async () => {
+    mockReducedMotion(false);
+    const { MotionProvider, useMotion, setTheatre } = await freshModule();
+    function Probe() {
+      const { paused, theatre } = useMotion();
+      return (
+        <span data-testid="state">
+          {paused ? 'paused' : 'playing'}/{theatre}
+        </span>
+      );
+    }
+    render(
+      <MotionProvider>
+        <Probe />
+      </MotionProvider>,
+    );
+    act(() => setTheatre('hushed'));
+    expect(screen.getByTestId('state')).toHaveTextContent('playing/hushed');
+    expect(sessionStorage.getItem(preferenceKey)).toBeNull();
+  });
+
+  it('renders the server snapshot as playing whatever the client state is', async () => {
+    mockReducedMotion(false);
+    const { MotionProvider, setTheatre } = await freshModule();
+    const { renderToString } = await import('react-dom/server');
+    setTheatre('hushed');
+    const html = renderToString(
+      <MotionProvider>
+        <span />
+      </MotionProvider>,
+    );
+    expect(html).toContain('data-theatre="playing"');
+    expect(html).toContain('motion-paused');
+  });
+});

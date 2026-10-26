@@ -20,7 +20,7 @@ export function AuctionExhibition({
   t: Messages;
 }) {
   const media = getInterpretation(work, 'ink') ?? work.media[0];
-  const { gridRef, activeId, intent, clearIntent, fail } = useCollectionMotion({
+  const { gridRef, activeId, intent, clearIntent, fail, rest } = useCollectionMotion({
     enabled: true,
     ids: getCollectionPreviewFilm(media) ? [work.id] : [],
   });
@@ -42,6 +42,8 @@ export function AuctionExhibition({
             alt={`${t.signature} ${work.id}`}
             active={activeId === work.id}
             eager
+            artworkId={work.id}
+            onEnded={() => rest(work.id)}
             onFailure={(reason) => fail(work.id, reason)}
           />
         </ArtworkTransition>

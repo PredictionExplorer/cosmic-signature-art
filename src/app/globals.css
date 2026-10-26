@@ -10,7 +10,29 @@
   --color-subtle: #68685e;
   --font-serif: 'Cormorant Garamond Variable', Baskerville, Georgia, serif;
   --font-sans: 'Inter Variable', 'Helvetica Neue', Arial, sans-serif;
+  --font-mono: 'IBM Plex Mono', 'SFMono-Regular', Menlo, Consolas, monospace;
   --ease-gallery: cubic-bezier(0.2, 0.75, 0.15, 1);
+  /* Motion vocabulary. Every animation and transition references one of these. */
+  --ease-settle: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-turn: cubic-bezier(0.76, 0, 0.24, 1);
+  --ease-dusk: cubic-bezier(0.45, 0, 0.2, 1);
+  --ease-breath: ease-in-out;
+  --t-blink: 120ms;
+  --t-sheet: 240ms;
+  --t-chrome: 270ms;
+  --t-focus: 500ms;
+  --t-reel: 700ms;
+  --t-turn: 900ms;
+  --t-walk: 480ms;
+  --t-expand: 650ms;
+  --t-hold: 1200ms;
+  --t-sit: 1200ms;
+  --t-dawn: 2000ms;
+  --t-dusk: 4000ms;
+  --t-rest: 8000ms;
+  --t-rest-dusk: 6000ms;
+  --t-idle: 2000ms;
+  --t-breath: 3500ms;
 }
 :root {
   --paper: #f1ebdf;
@@ -24,6 +46,21 @@
   font-size: 14px;
   background: var(--paper);
   color: var(--ink);
+}
+/* The running head takes the ground of the room the route opens on (src/lib/room.ts). */
+html[data-room='night'] .site-header {
+  --paper: #000;
+  --ink: #f1ebdf;
+  --muted: #b8b5ad;
+  --rule: #f1ebdf30;
+}
+html[data-room='night'] .site-footer {
+  margin-top: 0;
+}
+@media (prefers-reduced-motion: reduce) {
+  .site-header {
+    transition: none;
+  }
 }
 * {
   box-sizing: border-box;
@@ -183,6 +220,11 @@ html:lang(zh-HK) {
   border-bottom: 1px solid var(--rule);
   position: relative;
   z-index: 20;
+  background: var(--paper);
+  color: var(--ink);
+  transition:
+    background-color var(--t-chrome) var(--ease-settle),
+    color var(--t-chrome) var(--ease-settle);
 }
 .brand {
   display: flex;
@@ -192,35 +234,40 @@ html:lang(zh-HK) {
   font-size: 16px;
   letter-spacing: 0.03em;
   line-height: 1.04;
+  color: inherit;
 }
-.brand-orbit {
+/* The mark is one static derivation: three bodies sized by the published masses of
+   Signature 031 (130.7 : 251.0 : 125.0). It never spins and never changes per cycle. */
+.brand-mark {
   display: block;
+  position: relative;
   width: 30px;
   height: 30px;
-  border: 1px solid #22231f45;
-  border-radius: 50%;
-  position: relative;
-  rotate: -28deg;
-  animation: orbit 35s linear infinite;
+  flex-shrink: 0;
 }
-.brand-orbit i {
+.brand-mark i {
   position: absolute;
-  width: 5px;
-  height: 5px;
   background: var(--ink);
   border-radius: 50%;
-  top: -2px;
-  left: 50%;
+  transform: translate(-50%, -50%);
 }
-.brand-orbit i:nth-child(2) {
-  top: 22px;
-  left: 24px;
+.brand-mark i:nth-child(1) {
+  top: 56%;
+  left: 44%;
+  width: 8px;
+  height: 8px;
 }
-.brand-orbit i:nth-child(3) {
-  top: 14px;
-  left: 9px;
-  width: 3px;
-  height: 3px;
+.brand-mark i:nth-child(2) {
+  top: 19%;
+  left: 52%;
+  width: 5.75px;
+  height: 5.75px;
+}
+.brand-mark i:nth-child(3) {
+  top: 67%;
+  left: 78%;
+  width: 5.6px;
+  height: 5.6px;
 }
 .site-header nav {
   display: flex;
@@ -232,7 +279,7 @@ html:lang(zh-HK) {
   align-items: center;
   gap: 8px;
   min-height: 44px;
-  font-size: 12px;
+  font-size: 15px;
   border-bottom: 1px solid transparent;
 }
 .site-header nav a:hover,
@@ -248,39 +295,40 @@ html:lang(zh-HK) {
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: 10px;
+  font-size: 15px;
   min-height: 44px;
 }
 .language-menu {
   position: relative;
-  font-size: 10px;
+  font-size: 15px;
 }
-.language-menu summary {
-  list-style: none;
-  min-width: 30px;
+.language-trigger {
+  min-width: 44px;
   min-height: 44px;
   display: grid;
   place-items: center;
 }
-.language-menu summary::-webkit-details-marker {
-  display: none;
-}
-.language-menu > div {
-  position: absolute;
-  right: 0;
-  top: 45px;
+/* The list is a Popover API sheet where supported (top layer, light dismiss) and the
+   same fixed sheet elsewhere; the trigger places it on open and scrolling closes it. */
+.language-list {
+  position: fixed;
+  inset: auto;
+  margin: 0;
+  z-index: 30;
   background: var(--paper);
-  padding: 16px 22px;
-  min-width: 180px;
+  color: var(--ink);
+  padding: 8px 22px;
+  min-width: 200px;
   border: 1px solid var(--rule);
   box-shadow: 0 15px 40px #0001;
 }
-.language-menu a {
-  display: block;
-  padding: 10px 0;
+.language-list a {
+  display: flex;
+  align-items: center;
+  min-height: 44px;
   white-space: nowrap;
 }
-.language-menu a[aria-current] {
+.language-list a[aria-current] {
   text-decoration: underline;
   text-underline-offset: 5px;
 }
@@ -292,27 +340,25 @@ html:lang(zh-HK) {
   gap: 30px;
   margin-top: 90px;
 }
-.footer-brand {
-  font: 32px var(--serif);
-  letter-spacing: -0.03em;
-}
 .site-footer p {
-  font-size: 11px;
+  font-size: 12px;
   color: var(--muted);
-  margin-top: 9px;
+  margin-top: 12px;
 }
 .site-footer nav {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 6px 28px;
-  font-size: 11px;
+  gap: 0 28px;
+  font-size: 15px;
   align-content: start;
 }
 .site-footer nav a {
-  padding: 6px 0;
+  display: flex;
+  align-items: center;
+  min-height: 44px;
 }
 .footer-coordinate {
-  font-size: 8px;
+  font-size: 12px;
   letter-spacing: 0.15em;
   align-self: end;
 }
@@ -320,10 +366,11 @@ html:lang(zh-HK) {
   position: relative;
   aspect-ratio: 3456/2234;
   overflow: hidden;
-  background: #f1ebdf;
+  /* The reserved box is the work's own ground, never the page wall. */
+  background: var(--plate-ground, var(--paper));
 }
 .art-media[data-material='light'] {
-  background: #000;
+  background: var(--plate-ground, #000);
 }
 .art-media img,
 .art-media video {
@@ -331,12 +378,26 @@ html:lang(zh-HK) {
   height: 100%;
   object-fit: contain;
 }
+/* The arrival: the preview paints the plate at once; the still settles over it on decode. */
+.art-media .art-preview {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+.art-media .art-still {
+  position: relative;
+  opacity: 0;
+  transition: opacity var(--t-focus) var(--ease-settle);
+}
+.art-media .art-still.is-settled {
+  opacity: 1;
+}
 .art-media video {
   position: absolute;
   inset: 0;
   opacity: 0;
   pointer-events: none;
-  transition: opacity 0.7s ease;
+  transition: opacity var(--t-reel) ease;
 }
 .art-media video.has-frame {
   opacity: 1;
@@ -346,9 +407,7 @@ html:lang(zh-HK) {
   place-items: center;
   height: 100%;
   min-height: 100px;
-  color: #8e8778;
-  background: var(--paper);
-  font: 50px var(--serif);
+  background: var(--plate-ground, var(--paper));
 }
 /* The Passage: the moving original occupies the upper field; type carries its own rhythm. */
 .passage {
@@ -367,6 +426,21 @@ html:lang(zh-HK) {
   color: var(--paper);
   --rule: #f1ebdf40;
   --muted: #bab9ac;
+}
+.passage-kicker,
+.passage-title,
+.passage-record,
+.material-portal,
+.passage-margin {
+  transition: opacity var(--t-chrome) var(--ease-settle);
+}
+.passage[data-sit] .passage-kicker,
+.passage[data-sit] .passage-title,
+.passage[data-sit] .passage-record,
+.passage[data-sit] .material-portal,
+.passage[data-sit] .passage-margin {
+  opacity: 0;
+  transition-duration: var(--t-sit);
 }
 .passage-kicker {
   position: absolute;
@@ -388,9 +462,6 @@ html:lang(zh-HK) {
   top: 42px;
   right: 2.3%;
   width: 70%;
-}
-.floating-sheet {
-  animation: sheet-drift 22s ease-in-out infinite;
 }
 .passage-title {
   position: absolute;
@@ -446,7 +517,11 @@ html:lang(zh-HK) {
   height: 4px;
   background: currentColor;
   border-radius: 50%;
-  animation: breathe 3.5s infinite;
+  opacity: 0.35;
+}
+.live-dot.is-live {
+  opacity: 1;
+  animation: breathe var(--t-breath) var(--ease-breath) infinite;
 }
 .progress-track {
   height: 1px;
@@ -486,10 +561,6 @@ html:lang(zh-HK) {
   background: #090c0a;
   color: var(--paper);
   text-align: left;
-  transition: translate 0.5s;
-}
-.material-portal:hover {
-  translate: 0 -5px;
 }
 .material-portal .eyebrow {
   grid-column: 2;
@@ -914,31 +985,20 @@ html:lang(zh-HK) {
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  gap: 30px;
+  gap: 24px;
+  padding-block: 24px 48px;
+}
+/* A quiet plate-shaped reservation on paper: the destination's own skeleton, never a spinner. */
+.loading-plate {
+  width: min(100%, calc(max(260px, 66svh) * 1.547));
+  aspect-ratio: 3456/2234;
+  background: #e9e2d5;
 }
 .loading-room p {
-  font: 30px var(--serif);
-}
-.loading-orbit {
-  font-size: 45px;
-  animation: orbit 8s linear infinite;
-}
-@keyframes orbit {
-  to {
-    rotate: 332deg;
-  }
-}
-@keyframes sheet-drift {
-  0%,
-  100% {
-    transform: translate3d(0, 0, 0);
-  }
-  40% {
-    transform: translate3d(-7px, -9px, 0);
-  }
-  75% {
-    transform: translate3d(5px, -3px, 0);
-  }
+  font-size: 12px;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  color: var(--muted);
 }
 @keyframes breathe {
   50% {
@@ -1249,25 +1309,19 @@ html:lang(zh-HK) {
   }
 }
 @media (max-width: 480px) {
+  /* The toggle keeps its accessible name; only the visible word yields to the plate. */
   .motion-toggle span {
-    font-size: 9px;
+    display: none;
   }
   .header-tools {
     gap: 14px;
   }
-  .brand-orbit {
+  .brand-mark {
     width: 24px;
     height: 24px;
   }
-  .brand-orbit i:nth-child(2) {
-    top: 18px;
-    left: 18px;
-  }
   .brand {
     gap: 10px;
-  }
-  .site-header nav {
-    font-size: 12px;
   }
   .passage-title h1 {
     font-size: 76px;
@@ -1379,9 +1433,6 @@ html:lang(zh-HK) {
     transition: none !important;
   }
   .constellation-drift,
-  .floating-sheet {
-    transform: none !important;
-  }
   .material-curtain {
     display: none;
   }

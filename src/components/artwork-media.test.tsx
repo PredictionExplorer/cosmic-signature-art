@@ -5,8 +5,14 @@ import { getCuratedArtwork } from '@/lib/art/catalog';
 import type { ArtInterpretation } from '@/lib/art/types';
 import { ArtworkMedia } from './artwork-media';
 
-const motion = vi.hoisted(() => ({ paused: false }));
+const motion = vi.hoisted(() => ({ paused: false, theatre: 'playing' as 'playing' | 'hushed' }));
 vi.mock('./motion-provider', () => ({ useMotion: () => motion }));
+vi.mock('@/lib/art/plate-records', () => ({
+  getPlateGround: (id: number, expression: string, sha?: string) =>
+    id === 31 && expression === 'ink' && sha
+      ? { stillSha256: sha, tone: '#efe9dd', edge: true }
+      : undefined,
+}));
 
 class VisibilityObserver implements IntersectionObserver {
   static instances: VisibilityObserver[] = [];
@@ -66,6 +72,7 @@ function imagePath(): string {
 
 beforeEach(() => {
   motion.paused = false;
+  motion.theatre = 'playing';
   VisibilityObserver.instances = [];
   vi.stubGlobal('IntersectionObserver', VisibilityObserver);
   vi.spyOn(document, 'visibilityState', 'get').mockReturnValue('visible');
@@ -308,10 +315,31 @@ describe('artwork media delivery', () => {
 
   it('preserves an accessible artwork identity when its image cannot load', () => {
     const onFailure = vi.fn();
-    render(<ArtworkMedia media={light} alt="Signature 31 in light" onFailure={onFailure} />);
+    render(
+      <ArtworkMedia
+        media={{ ...light, thumbnail: undefined }}
+        alt="Signature 31 in light"
+        onFailure={onFailure}
+      />,
+    );
     fireEvent.error(screen.getByRole('img'));
     expect(screen.getByRole('img', { name: 'Signature 31 in light' })).toBeInTheDocument();
     expect(screen.getByRole('img')).not.toHaveAttribute('src');
+    expect(onFailure).toHaveBeenCalledOnce();
+  });
+
+  it('keeps the publisher’s preview as the work when the full still cannot load', () => {
+    const onFailure = vi.fn();
+    const { container } = render(
+      <ArtworkMedia media={ink(31)} alt="Signature 31 in ink" onFailure={onFailure} />,
+    );
+    fireEvent.error(screen.getByRole('img', { name: 'Signature 31 in ink' }));
+    const remaining = screen.getByRole('img', { name: 'Signature 31 in ink' });
+    expect(new URL((remaining as HTMLImageElement).src).pathname).toBe('/art/31-ink-640.webp');
+    expect(container.querySelectorAll('img')).toHaveLength(1);
+    expect(onFailure).not.toHaveBeenCalled();
+    fireEvent.error(remaining);
+    expect(screen.getByRole('img', { name: 'Signature 31 in ink' })).not.toHaveAttribute('src');
     expect(onFailure).toHaveBeenCalledOnce();
   });
 
@@ -344,67 +372,49 @@ describe('artwork media delivery', () => {
     expect(video.currentTime).toBe(0);
   });
 
-  it('suspends a scheduled replay while paused and resumes it after motion is enabled', () => {
+  it('holds the final frame when a film ends and never rewinds on its own', () => {
     vi.useFakeTimers();
-    const { container, rerender } = render(
-      <ArtworkMedia media={ink(31)} alt="Signature 31 in ink" repeat />,
+    const onEnded = vi.fn();
+    const onProgress = vi.fn();
+    const { container } = render(
+      <ArtworkMedia
+        media={ink(31)}
+        alt="Signature 31 in ink"
+        onEnded={onEnded}
+        onProgress={onProgress}
+      />,
     );
     enterViewport();
-    fireEvent.playing(player(container));
-    fireEvent.ended(player(container));
-    motion.paused = true;
-    rerender(<ArtworkMedia media={ink(31)} alt="Signature 31 in ink" repeat />);
+    const video = player(container);
+    Object.defineProperty(video, 'duration', { configurable: true, value: 30 });
+    fireEvent.playing(video);
+    video.currentTime = 30;
+    fireEvent.ended(video);
+    expect(onEnded).toHaveBeenCalledOnce();
+    expect(onProgress).toHaveBeenLastCalledWith(30, 30);
+    expect(video).toHaveClass('has-frame');
     vi.mocked(HTMLMediaElement.prototype.play).mockClear();
-    act(() => vi.advanceTimersByTime(5_000));
+    act(() => vi.advanceTimersByTime(60_000));
+    expect(video.currentTime).toBe(30);
+    expect(player(container)).toBe(video);
+    act(() => VisibilityObserver.instances[0].setVisible(false));
+    enterViewport();
     expect(HTMLMediaElement.prototype.play).not.toHaveBeenCalled();
-    motion.paused = false;
-    rerender(<ArtworkMedia media={ink(31)} alt="Signature 31 in ink" repeat />);
-    act(() => vi.advanceTimersByTime(2_200));
-    expect(player(container).currentTime).toBe(0);
-    expect(HTMLMediaElement.prototype.play).toHaveBeenCalledOnce();
   });
 
-  it('resumes a replay interrupted during the fade without losing the video element', () => {
-    vi.useFakeTimers();
+  it('replays forward from the first frame only on an explicit request', () => {
     const { container, rerender } = render(
-      <ArtworkMedia media={ink(31)} alt="Signature 31 in ink" repeat startAt={9} />,
+      <ArtworkMedia media={ink(31)} alt="Signature 31 in ink" />,
     );
     enterViewport();
     const video = player(container);
     fireEvent.playing(video);
+    video.currentTime = 30;
     fireEvent.ended(video);
-    act(() => vi.advanceTimersByTime(1_800));
-    expect(video).not.toHaveClass('has-frame');
-    motion.paused = true;
-    rerender(<ArtworkMedia media={ink(31)} alt="Signature 31 in ink" repeat startAt={9} />);
-    expect(player(container)).toBe(video);
     vi.mocked(HTMLMediaElement.prototype.play).mockClear();
-    act(() => vi.advanceTimersByTime(5_000));
-    expect(HTMLMediaElement.prototype.play).not.toHaveBeenCalled();
-    motion.paused = false;
-    rerender(<ArtworkMedia media={ink(31)} alt="Signature 31 in ink" repeat startAt={9} />);
-    act(() => vi.advanceTimersByTime(600));
-    expect(player(container)).toBe(video);
+    rerender(<ArtworkMedia media={ink(31)} alt="Signature 31 in ink" playRequest={1} />);
     expect(video.currentTime).toBe(0);
     expect(HTMLMediaElement.prototype.play).toHaveBeenCalledOnce();
-  });
-
-  it('an explicit restart cancels a pending replay instead of rewinding twice', () => {
-    vi.useFakeTimers();
-    const { container, rerender } = render(
-      <ArtworkMedia media={ink(31)} alt="Signature 31 in ink" repeat />,
-    );
-    enterViewport();
-    const video = player(container);
-    fireEvent.playing(video);
-    fireEvent.ended(video);
-    act(() => vi.advanceTimersByTime(1_000));
-    rerender(<ArtworkMedia media={ink(31)} alt="Signature 31 in ink" repeat restart={1} />);
-    video.currentTime = 3;
-    vi.mocked(HTMLMediaElement.prototype.play).mockClear();
-    act(() => vi.advanceTimersByTime(5_000));
-    expect(video.currentTime).toBe(3);
-    expect(HTMLMediaElement.prototype.play).not.toHaveBeenCalled();
   });
 
   it('retries a blocked play request and replays a finished film only on explicit request', async () => {
@@ -451,6 +461,7 @@ describe('artwork media delivery', () => {
     const { container, rerender } = render(<ArtworkMedia media={ink(31)} alt="Signature 31" />);
     enterViewport();
     fireEvent.error(player(container));
+    fireEvent.error(screen.getByRole('img'));
     fireEvent.error(screen.getByRole('img'));
     expect(screen.getByRole('img')).not.toHaveAttribute('src');
     rerender(<ArtworkMedia media={ink(23)} alt="Signature 23" />);
@@ -507,4 +518,111 @@ describe('artwork media delivery', () => {
       expect(retriedPlayer).toHaveClass('has-frame');
     },
   );
+
+  it('paints the publisher’s preview at once and settles the still over it after decoding', () => {
+    const onSettled = vi.fn();
+    const { container } = render(
+      <ArtworkMedia media={ink(31)} alt="Signature 31 in ink" priority onSettled={onSettled} />,
+    );
+    const box = container.querySelector('.art-media')!;
+    expect(box).toHaveAttribute('data-arrival', 'arriving');
+    const preview = container.querySelector('img.art-preview') as HTMLImageElement;
+    expect(new URL(preview.src).pathname).toBe('/art/31-ink-640.webp');
+    expect(preview).toHaveAttribute('aria-hidden', 'true');
+    expect(preview).toHaveAttribute('fetchpriority', 'high');
+    const still = screen.getByRole('img', { name: 'Signature 31 in ink' });
+    expect(still).toHaveClass('art-still');
+    expect(still).not.toHaveClass('is-settled');
+    expect(onSettled).not.toHaveBeenCalled();
+    fireEvent.load(still);
+    expect(still).toHaveClass('is-settled');
+    expect(box).toHaveAttribute('data-arrival', 'settled');
+    expect(onSettled).toHaveBeenCalledOnce();
+  });
+
+  it('waits for the still to decode when the browser offers decode()', async () => {
+    let decoded!: () => void;
+    Object.defineProperty(HTMLImageElement.prototype, 'decode', {
+      configurable: true,
+      value: vi.fn(
+        () =>
+          new Promise<void>((resolve) => {
+            decoded = resolve;
+          }),
+      ),
+    });
+    try {
+      render(<ArtworkMedia media={ink(31)} alt="Signature 31 in ink" />);
+      const still = screen.getByRole('img');
+      fireEvent.load(still);
+      expect(still).not.toHaveClass('is-settled');
+      await act(async () => decoded());
+      expect(still).toHaveClass('is-settled');
+    } finally {
+      Reflect.deleteProperty(HTMLImageElement.prototype, 'decode');
+    }
+  });
+
+  it('inlines a server-provided preview and uses a lone still when no preview exists', () => {
+    const { container, rerender } = render(
+      <ArtworkMedia media={ink(31)} alt="Signature 31" previewSrc="data:image/webp;base64,AAAA" />,
+    );
+    expect(container.querySelector('img.art-preview')).toHaveAttribute(
+      'src',
+      'data:image/webp;base64,AAAA',
+    );
+    rerender(<ArtworkMedia media={{ ...ink(31), thumbnail: undefined }} alt="Signature 31" />);
+    expect(container.querySelector('img.art-preview')).toBeNull();
+    expect(screen.getByRole('img')).toHaveClass('is-settled');
+    expect(container.querySelector('.art-media')).toHaveAttribute('data-arrival', 'single');
+  });
+
+  it('holds the settled still before the first automatic playback, never before an explicit one', () => {
+    vi.useFakeTimers();
+    const { container, rerender } = render(
+      <ArtworkMedia media={ink(31)} alt="Signature 31" hold />,
+    );
+    enterViewport();
+    expect(player(container)).toHaveAttribute('src', '/art/31-ink-preview.mp4');
+    act(() => vi.advanceTimersByTime(5_000));
+    expect(HTMLMediaElement.prototype.play).not.toHaveBeenCalled();
+    fireEvent.load(screen.getByRole('img'));
+    act(() => vi.advanceTimersByTime(1_199));
+    expect(HTMLMediaElement.prototype.play).not.toHaveBeenCalled();
+    act(() => vi.advanceTimersByTime(1));
+    expect(HTMLMediaElement.prototype.play).toHaveBeenCalledOnce();
+    vi.mocked(HTMLMediaElement.prototype.play).mockClear();
+    rerender(<ArtworkMedia media={ink(23)} alt="Signature 23" hold />);
+    enterViewport(1);
+    rerender(<ArtworkMedia media={ink(23)} alt="Signature 23" hold playRequest={1} />);
+    expect(HTMLMediaElement.prototype.play).toHaveBeenCalledOnce();
+  });
+
+  it('behaves as a still while the theatre is hushed', () => {
+    motion.theatre = 'hushed';
+    const { container, rerender } = render(<ArtworkMedia media={ink(31)} alt="Signature 31" />);
+    enterViewport();
+    expect(container.querySelector('video')).toBeNull();
+    expect(HTMLMediaElement.prototype.play).not.toHaveBeenCalled();
+    motion.theatre = 'playing';
+    rerender(<ArtworkMedia media={ink(31)} alt="Signature 31" />);
+    expect(player(container)).toHaveAttribute('src', '/art/31-ink-preview.mp4');
+    fireEvent.playing(player(container));
+    vi.mocked(HTMLMediaElement.prototype.pause).mockClear();
+    motion.theatre = 'hushed';
+    rerender(<ArtworkMedia media={ink(31)} alt="Signature 31" />);
+    expect(HTMLMediaElement.prototype.pause).toHaveBeenCalled();
+    expect(player(container)).toHaveClass('has-frame');
+  });
+
+  it('letterboxes the plate in the work’s own measured ground', () => {
+    const { container, rerender } = render(
+      <ArtworkMedia media={ink(31)} alt="Signature 31" artworkId={31} />,
+    );
+    const box = container.querySelector('.art-media') as HTMLElement;
+    expect(box.getAttribute('style')).toContain('--plate-ground: #efe9dd');
+    expect(box).toHaveAttribute('data-edge', 'true');
+    rerender(<ArtworkMedia media={ink(23)} alt="Signature 23" artworkId={23} />);
+    expect(container.querySelector('.art-media')).not.toHaveAttribute('style');
+  });
 });

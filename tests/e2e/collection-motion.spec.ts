@@ -76,6 +76,17 @@ test('the collection plays the genuine Ink film in place without replacing the t
   await expect(film).toHaveAttribute('aria-hidden', 'true');
 });
 
+test('the first collection plate paints from the publisher’s own preview', async ({ page }) => {
+  const cards = await collectionReady(page, '/collection');
+  const image = cards.first().locator('img');
+  await expect(image).toHaveAttribute(
+    'src',
+    /(?:-640\.webp|\/images\/web\/(?:ember_)?preview\.webp)(?:\?|$)/,
+  );
+  await expect(image).toBeInViewport();
+  await imageReady(image);
+});
+
 test('focus and scrolling transfer the single film budget across the catalogue', async ({
   page,
 }) => {
@@ -230,7 +241,10 @@ test('Light releases Ink previews and opens the same expression in the viewing r
   await work.click();
   await expect(page).toHaveURL(/\/art\/31\?expression=light$/);
   await expect(page.locator('.viewer-plate .art-media')).toHaveAttribute('data-material', 'light');
-  await expect(page.locator('.viewer-plate img')).toHaveAttribute('alt', 'Signature 31 · Light');
+  await expect(page.locator('.viewer-plate img.art-still')).toHaveAttribute(
+    'alt',
+    'Signature 31 · Light',
+  );
 });
 
 test('an unavailable preview leaves the authentic image and usable artwork link', async ({

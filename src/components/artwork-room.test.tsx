@@ -39,6 +39,7 @@ beforeEach(() => {
     configurable: true,
     get: () => fullscreenElement,
   });
+  Object.defineProperty(document, 'fullscreenEnabled', { configurable: true, get: () => true });
   Object.defineProperty(document, 'exitFullscreen', {
     configurable: true,
     value: vi.fn(async () => {
@@ -78,6 +79,7 @@ afterEach(() => {
   document.body.style.removeProperty('overflow');
   vi.restoreAllMocks();
   Reflect.deleteProperty(document, 'fullscreenElement');
+  Reflect.deleteProperty(document, 'fullscreenEnabled');
   Reflect.deleteProperty(document, 'exitFullscreen');
   Reflect.deleteProperty(HTMLElement.prototype, 'requestFullscreen');
   Reflect.deleteProperty(HTMLDialogElement.prototype, 'showModal');
@@ -483,13 +485,22 @@ describe('immersive artwork room', () => {
     expect(within(room).getByRole('button', { name: en.fullScreen })).toBeVisible();
   });
 
-  it('keeps the room usable when fullscreen is unsupported', async () => {
+  it('offers no fullscreen control where the browser cannot grant it', () => {
     Reflect.deleteProperty(HTMLElement.prototype, 'requestFullscreen');
     const { room } = openRoom();
-    await act(async () =>
-      fireEvent.click(within(room).getByRole('button', { name: en.fullScreen })),
+    expect(within(room).queryByRole('button', { name: en.fullScreen })).toBeNull();
+    fireEvent.click(within(room).getByRole('button', { name: en.light }));
+    expect(within(room).getByRole('img')).toHaveAttribute(
+      'src',
+      expect.stringMatching(/\/art\/31-light\.webp$/),
     );
-    expect(within(room).getByRole('status')).toHaveTextContent(en.fullScreenUnavailable);
+  });
+
+  it('hides the fullscreen control when the document forbids it, as iPhone Safari does', () => {
+    Object.defineProperty(document, 'fullscreenEnabled', { configurable: true, get: () => false });
+    const { room } = openRoom();
+    expect(within(room).queryByRole('button', { name: en.fullScreen })).toBeNull();
+    expect(within(room).getByRole('button', { name: en.close })).toBeVisible();
     fireEvent.click(within(room).getByRole('button', { name: en.light }));
     expect(within(room).getByRole('img')).toHaveAttribute(
       'src',

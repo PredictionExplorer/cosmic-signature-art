@@ -68,8 +68,8 @@ export function Atlas({ works, locale, t }: { works: Artwork[]; locale: Locale; 
                     key={`${work.id}-${mode}`}
                     media={getInterpretation(work, mode)}
                     alt={`${t.signature} ${work.id} · ${t[mode]}`}
-                    startAt={position * 4 + 5}
-                    repeat
+                    artworkId={work.id}
+                    still={role !== 'anchor'}
                   />
                 </button>
                 <figcaption>

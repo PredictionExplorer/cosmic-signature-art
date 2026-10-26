@@ -7,7 +7,7 @@ import type { Messages } from '@/lib/i18n/en';
 import { localizedPath, type Locale } from '@/lib/i18n/routing';
 import { ArtworkMedia } from './artwork-media';
 import { useCollectionMotion } from './collection-motion';
-import { CollectionPreview, getCollectionPreviewFilm } from './collection-preview';
+import { CollectionPreview, excerptRange, getCollectionPreviewFilm } from './collection-preview';
 import { ArtworkTransition } from './artwork-transition';
 export function WorkGrid({
   works,
@@ -31,7 +31,7 @@ export function WorkGrid({
         .map((work) => work.id),
     [works],
   );
-  const { gridRef, activeId, intent, clearIntent, fail } = useCollectionMotion({
+  const { gridRef, activeId, intent, clearIntent, fail, rest } = useCollectionMotion({
     enabled: animated && mode === 'ink',
     ids: previewIds,
   });
@@ -60,15 +60,18 @@ export function WorkGrid({
               key={`${work.id}-${media?.id}`}
               media={media}
               alt={`${t.signature} ${work.id}`}
+              artworkId={work.id}
               eager={eagerFirstRow && index < 2}
               active={active}
               onFailure={(reason) => fail(work.id, reason)}
+              onEnded={() => rest(work.id)}
             />
           ) : (
             <ArtworkMedia
               key={`${work.id}-${media?.id}`}
               media={media}
               alt={`${t.signature} ${work.id}`}
+              artworkId={work.id}
               still
               thumbnail
               eager={eagerFirstRow && index < 2}
@@ -107,7 +110,12 @@ export function WorkGrid({
                 </span>
                 <span className="eyebrow">
                   {media?.id === 'ink' ? t.ink : mode === 'ink' ? t.lightOnly : t.light}
-                  {active ? <span className="work-card-film"> / {t.mediaPreview}</span> : null}
+                  {active ? (
+                    <span className="work-card-film">
+                      {' '}
+                      / {t.excerpt} {excerptRange(getCollectionPreviewFilm(media))}
+                    </span>
+                  ) : null}
                 </span>
                 <ArrowUpRight size={15} />
               </div>

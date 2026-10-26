@@ -1,6 +1,20 @@
 import type { Metadata } from 'next';
 import { locales, localizedPath, type Locale } from './i18n/routing';
+/** The canonical origin: cosmic.art, or NEXT_PUBLIC_SITE_URL while that domain is pending. */
 export const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://cosmic.art';
+/**
+ * The origin this deployment actually serves from. Social crawlers must fetch preview
+ * images from here, so a share card keeps its image while cosmic.art's DNS is pending.
+ */
+export function deploymentUrl(env: Record<string, string | undefined>): string {
+  const vercel =
+    env.VERCEL_ENV === 'production'
+      ? env.VERCEL_PROJECT_PRODUCTION_URL
+      : env.VERCEL_URL || env.VERCEL_PROJECT_PRODUCTION_URL;
+  if (vercel) return `https://${vercel.replace(/^https?:\/\//, '')}`;
+  return env.NEXT_PUBLIC_SITE_URL || 'https://cosmic.art';
+}
+export const DEPLOYMENT_URL = deploymentUrl(process.env);
 export const NFT_ADDRESS = '0xbb84Be3500A63581d3F2d5AC3bdF8685AAedad25' as const;
 export const GAME_ADDRESS = '0x6a714Ae7B5b6eA520F6BCA23d2E609C4Fd5863F2' as const;
 export function metadata(
@@ -11,10 +25,12 @@ export function metadata(
   image?: { url: string; width?: number; height?: number; alt: string } | null,
 ): Metadata {
   const url = new URL(localizedPath(locale, path), SITE_URL).href;
-  const preview =
+  const chosen =
     image === undefined
       ? { url: '/art/23-ink.webp', width: 3456, height: 2234, alt: 'Cosmic Signature 23' }
       : image;
+  // A relative image resolves against the serving deployment, never a domain that may not resolve.
+  const preview = chosen ? { ...chosen, url: new URL(chosen.url, DEPLOYMENT_URL).href } : null;
   return {
     title,
     description,

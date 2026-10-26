@@ -4,6 +4,7 @@ import { ArrowUpRight } from 'lucide-react';
 import { isLocale, localizedPath } from '@/lib/i18n/routing';
 import { messages } from '@/lib/i18n/messages';
 import { getCuratedArtwork } from '@/lib/art/catalog';
+import { inlineCuratedPreview } from '@/lib/art/inline-preview';
 import { metadata } from '@/lib/site';
 import { Passage } from '@/components/passage';
 import { WorkGrid } from '@/components/work-grid';
@@ -19,7 +20,12 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
   const t = messages(locale);
   return (
     <main id="main">
-      <Passage artwork={getCuratedArtwork(23)!} locale={locale} t={t} />
+      <Passage
+        artwork={getCuratedArtwork(23)!}
+        locale={locale}
+        t={t}
+        previewSrc={inlineCuratedPreview(23, 'ink')}
+      />
       <section className="editorial-intro section-wrap">
         <p className="eyebrow">{t.choreography}</p>
         <h2>

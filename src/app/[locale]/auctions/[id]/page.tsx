@@ -66,9 +66,7 @@ export default async function AuctionWork({
         <div className={styles.lotArtwork}>
           <Suspense
             fallback={
-              <div className={styles.mediaLoading} aria-busy="true" aria-label={t.signature}>
-                <span aria-hidden="true">∴</span>
-              </div>
+              <div className={styles.mediaLoading} aria-busy="true" aria-label={t.signature} />
             }
           >
             <AuctionArtwork

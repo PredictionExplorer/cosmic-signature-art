@@ -11,6 +11,7 @@ const coordinator = vi.hoisted(() => ({
   intent: vi.fn(),
   clearIntent: vi.fn(),
   fail: vi.fn(),
+  rest: vi.fn(),
 }));
 vi.mock('./collection-motion', () => ({ useCollectionMotion: coordinator.use }));
 vi.mock('./motion-provider', () => ({ useMotion: () => ({ paused: true }) }));
@@ -28,7 +29,12 @@ const works: Artwork[] = [31, 23, 35].map((id) => {
         ...media,
         previewFilm:
           id === 31 && media.id === 'ink'
-            ? { ...media.films[0], src: '/art/previews/31-ink.mp4', durationSeconds: 8 }
+            ? {
+                ...media.films[0],
+                src: '/art/previews/31-ink.mp4',
+                durationSeconds: 8,
+                startSeconds: 6,
+              }
             : undefined,
       })),
   };
@@ -43,12 +49,14 @@ beforeEach(() => {
   coordinator.intent.mockReset();
   coordinator.clearIntent.mockReset();
   coordinator.fail.mockReset();
+  coordinator.rest.mockReset();
   coordinator.use.mockReturnValue({
     gridRef: { current: null },
     activeId: null,
     intent: coordinator.intent,
     clearIntent: coordinator.clearIntent,
     fail: coordinator.fail,
+    rest: coordinator.rest,
   });
   vi.stubGlobal(
     'IntersectionObserver',
@@ -104,5 +112,21 @@ describe('collection grid integration', () => {
     expect(coordinator.clearIntent).toHaveBeenLastCalledWith(31, 'focus');
     expect(card(31).tagName).toBe('A');
     expect(card(31)).not.toHaveAttribute('role', 'button');
+  });
+
+  it('labels a moving excerpt by its true place in the film, never as the work’s film', () => {
+    coordinator.use.mockReturnValue({
+      gridRef: { current: null },
+      activeId: 31,
+      intent: coordinator.intent,
+      clearIntent: coordinator.clearIntent,
+      fail: coordinator.fail,
+      rest: coordinator.rest,
+    });
+    render(<WorkGrid works={works} locale="en" t={en} animated />);
+    expect(card(31)).toHaveAttribute('data-motion', 'active');
+    expect(card(31)).toHaveTextContent(`${en.excerpt} 00:06–00:14`);
+    expect(card(31)).not.toHaveTextContent(en.mediaPreview);
+    expect(card(23)).not.toHaveTextContent(en.excerpt);
   });
 });

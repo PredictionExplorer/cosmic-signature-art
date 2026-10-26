@@ -26,7 +26,11 @@ async function LightFilm({ t }: { t: Messages }) {
   const matchingWork = live.artwork && live.artwork.seed === work.seed ? live.artwork : work;
   const media = getInterpretation(matchingWork, 'light') ?? getInterpretation(work, 'light');
   return (
-    <ArtworkMedia media={media} alt={`${t.signature} ${work.id} · ${t.light}`} repeat startAt={6} />
+    <ArtworkMedia
+      media={media}
+      alt={`${t.signature} ${work.id} · ${t.light}`}
+      artworkId={work.id}
+    />
   );
 }
 
@@ -73,6 +77,7 @@ export default async function Process({ params }: { params: Promise<{ locale: st
                 <ArtworkMedia
                   media={getInterpretation(work, 'light')}
                   alt={`${t.signature} ${work.id} · ${t.light}`}
+                  artworkId={work.id}
                   still
                 />
               }
@@ -106,8 +111,7 @@ export default async function Process({ params }: { params: Promise<{ locale: st
           <ArtworkMedia
             media={getInterpretation(work, 'ink')}
             alt={`${t.signature} ${work.id} · ${t.ink}`}
-            repeat
-            startAt={6}
+            artworkId={work.id}
           />
           <figcaption>
             <span>
