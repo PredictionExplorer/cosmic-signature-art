@@ -179,7 +179,7 @@ for (const connection of [
     expect(films).toEqual([]);
     await cards.first().click();
     await expect(page).toHaveURL(/\/art\/31$/);
-    await expect(page.getByRole('heading', { level: 1 })).toHaveText('Signature 31');
+    await expect(page.getByRole('heading', { level: 1 })).toHaveText(/^Signature 031/);
   });
 }
 
@@ -280,7 +280,7 @@ test('an unavailable preview leaves the authentic image and usable artwork link'
   expect(rejectedRequests).toBe(requestsAtRelease);
   await work.click();
   await expect(page).toHaveURL(/\/art\/31$/);
-  await expect(page.getByRole('heading', { level: 1 })).toHaveText('Signature 31');
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText(/^Signature 031/);
   expect(errors).toEqual([]);
 });
 
@@ -298,7 +298,7 @@ test('artwork navigation and browser Back work without native view-transition su
   const cards = await collectionReady(page);
   await cards.first().click();
   await expect(page).toHaveURL(/\/art\/31$/);
-  await expect(page.getByRole('heading', { level: 1 })).toHaveText('Signature 31');
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText(/^Signature 031/);
   await expect(page.locator('.viewer-plate .art-media')).toHaveAttribute('data-material', 'ink');
   await page.goBack();
   await expect(page).toHaveURL(/\/collection\?q=31$/);
@@ -364,7 +364,7 @@ test('native artwork transitions complete without delaying navigation or breakin
   );
   await cards.first().click();
   await expect(page).toHaveURL(/\/art\/31$/);
-  await expect(page.getByRole('heading', { level: 1 })).toHaveText('Signature 31');
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText(/^Signature 031/);
   await expect(page.locator('.viewer-plate .art-media')).toHaveAttribute('data-material', 'ink');
   expect(
     await page.evaluate(

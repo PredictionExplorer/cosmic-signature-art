@@ -6,6 +6,7 @@ import { inlineCuratedPreview } from '@/lib/art/inline-preview';
 import { workOfTheDay } from '@/lib/art/work-of-the-day';
 import { metadata } from '@/lib/site';
 import { ArtworkViewer } from '@/components/artwork-viewer';
+import { HomeCycle, HomeSpread, HomeStatement } from '@/components/home-screens';
 
 /** The day's work follows the UTC date; the page is regenerated within the hour. */
 export const revalidate = 3600;
@@ -44,7 +45,12 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
         }}
         dusk={process.env.NEXT_PUBLIC_HOME_DUSK === '1'}
       />
-      {/* Screens 3–6 are composed from the home-screens workstream after merge. */}
+      {/* Screen 3: the statement line, the one screen without a work. */}
+      <HomeStatement locale={locale} t={t} />
+      {/* Screen 4: a spread of two plates, each in its own tone. */}
+      <HomeSpread locale={locale} t={t} />
+      {/* Screen 5: the day's work's cycle as a row of real previews. */}
+      <HomeCycle locale={locale} t={t} dayWork={work.id} />
     </main>
   );
 }

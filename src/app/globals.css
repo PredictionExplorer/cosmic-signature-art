@@ -769,6 +769,16 @@ html[data-turning='dusk'] .head-overlay {
   transition: width var(--t-chrome) linear;
 }
 
+/* Sit: pressing it fades every piece of chrome, the running head included; any input returns it. */
+html[data-sit] .site-header {
+  opacity: 0;
+  pointer-events: none;
+  transition:
+    opacity var(--t-sit) var(--ease-settle),
+    background-color var(--t-chrome) var(--ease-settle),
+    color var(--t-chrome) var(--ease-settle);
+}
+
 /* Sheets (Index, label drawer, keys): a 24 px rise and opacity over --t-sheet. */
 @keyframes sheet-rise {
   from {

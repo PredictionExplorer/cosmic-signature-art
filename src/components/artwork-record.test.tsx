@@ -23,7 +23,7 @@ describe('chain addresses', () => {
     render(
       <ChainAddress address={holder} compact copy={{ label: en.copyAddress, copied: en.copied }} />,
     );
-    const link = screen.getByRole('link', { name: holder });
+    const link = screen.getByRole('link', { name: new RegExp(holder) });
     expect(link).toHaveAttribute('href', `https://arbiscan.io/address/${holder}`);
     expect(link).toHaveTextContent('0x1111…1111');
     expect(screen.getByRole('button', { name: `${en.copyAddress}: ${holder}` })).toHaveTextContent(

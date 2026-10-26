@@ -169,7 +169,6 @@ export default async function Process({ params }: { params: Promise<{ locale: st
           <div>
             <h2 id="ink-title">{t.fluidTitle}</h2>
             <p>{t.fluidCopy}</p>
-            <p className={`folio ${styles.note}`}>{t.processNote}</p>
           </div>
         </header>
         <ChapterPlate media={getInterpretation(work, 'ink')} artworkId={work.id} t={t} />

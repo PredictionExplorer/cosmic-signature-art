@@ -70,8 +70,12 @@ describe('the entry', () => {
     expect(traits).toHaveTextContent('Syzygies 0');
     // The custody line keeps the full addresses in the accessible names and states when it was read.
     const custody = paragraph(/^Minted to/);
-    expect(within(custody).getByRole('link', { name: recipient })).toHaveTextContent('0x7406…Bc6c');
-    expect(within(custody).getByRole('link', { name: holder })).toHaveTextContent('0x6308…1F7C');
+    expect(within(custody).getByRole('link', { name: new RegExp(recipient) })).toHaveTextContent(
+      '0x7406…Bc6c',
+    );
+    expect(within(custody).getByRole('link', { name: new RegExp(holder) })).toHaveTextContent(
+      '0x6308…1F7C',
+    );
     expect(screen.getAllByRole('button', { name: new RegExp(`^${en.copyAddress}:`) })).toHaveLength(
       4,
     );

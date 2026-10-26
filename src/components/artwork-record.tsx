@@ -36,10 +36,10 @@ export function ChainAddress({
         href={`https://arbiscan.io/address/${address}`}
         target="_blank"
         rel="noreferrer"
-        aria-label={address}
         title={address}
       >
         <code>{compact ? compactAddress(address) : address}</code>
+        {compact ? <span className="sr-only"> {address}</span> : null}
       </a>
       {copy ? (
         <CopyButton
