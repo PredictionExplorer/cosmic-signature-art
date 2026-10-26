@@ -1,7 +1,7 @@
 'use client';
 import { useLayoutEffect, useSyncExternalStore } from 'react';
-import { usePathname } from 'next/navigation';
-import { ROOM_COLORS, roomForPath, type Room } from '@/lib/room';
+import { usePathname, useSearchParams } from 'next/navigation';
+import { ROOM_COLORS, roomFor, type Room } from '@/lib/room';
 
 export function applyRoom(room: Room) {
   document.documentElement.setAttribute('data-room', room);
@@ -45,9 +45,15 @@ export function setPlateTone(tone: string | null) {
   else root.removeProperty('--plate-tone');
 }
 
-/** Keeps the ground on <html> in step with client navigation; the inline script covers first paint. */
+/**
+ * Keeps the ground on <html> in step with client navigation; the inline script covers first
+ * paint. Reads the query too, so the Spectrum wall and the Light section arrive on night;
+ * the layout wraps it in Suspense because of that read.
+ */
 export function RoomGround() {
-  const routeRoom = roomForPath(usePathname());
+  const pathname = usePathname();
+  const search = useSearchParams();
+  const routeRoom = roomFor(pathname, search.toString());
   const held = useSyncExternalStore(subscribe, snapshot, noOverrideOnServer);
   const room = held ?? routeRoom;
   useLayoutEffect(() => {

@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from 'next';
 import { notFound } from 'next/navigation';
+import { Suspense } from 'react';
 import { preconnect, prefetchDNS } from 'react-dom';
 import { isLocale, locales } from '@/lib/i18n/routing';
 import { messages } from '@/lib/i18n/messages';
@@ -55,7 +56,9 @@ export default async function LocaleLayout({
         {cjk ? <link rel="stylesheet" href={cjk} precedence="default" /> : null}
         <script dangerouslySetInnerHTML={{ __html: roomScript }} />
         <MotionProvider>
-          <RoomGround />
+          <Suspense fallback={null}>
+            <RoomGround />
+          </Suspense>
           <RunningHead locale={locale} t={t} />
           {children}
           <Colophon locale={locale} t={t} />
