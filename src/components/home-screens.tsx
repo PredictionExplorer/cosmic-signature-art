@@ -8,6 +8,7 @@ import { withCollectionPreviews } from '@/lib/art/collection-previews';
 import { workFolio, workNumber } from '@/lib/art/number';
 import { SpreadPlates } from './home-spread-plates';
 import styles from './home-screens.module.css';
+import { PreviewImage } from './preview-image';
 
 /**
  * Screen 3 of the home, the one screen with no work: the venue's name set in small caps,
@@ -98,7 +99,7 @@ export function HomeCycle({
               <Link href={localizedPath(locale, `/art/${id}`)} className={styles.cell}>
                 <span className="art-media" data-material="ink">
                   {preview ? (
-                    <img
+                    <PreviewImage
                       src={preview}
                       alt={`${workNumber(id)} · ${t.ink}`}
                       width={work?.media.ink?.preview?.width ?? 640}

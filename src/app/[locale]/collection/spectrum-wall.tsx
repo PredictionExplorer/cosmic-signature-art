@@ -4,6 +4,7 @@ import { indexedAssetUrl, type IndexedWork } from '@/lib/art/collection-index';
 import { workFolio, workNumber } from '@/lib/art/number';
 import type { Messages } from '@/lib/i18n/en';
 import { localizedPath, type Locale } from '@/lib/i18n/routing';
+import { PreviewImage } from '@/components/preview-image';
 import {
   HANG_GAP,
   HANG_HEIGHT,
@@ -83,9 +84,8 @@ export function SpectrumWall({
                     data-work={work.id}
                   >
                     {preview(work) ? (
-                      <img
-                        src={preview(work)}
-                        alt=""
+                      <PreviewImage
+                        src={preview(work)!}
                         width={640}
                         height={414}
                         loading="lazy"
@@ -116,9 +116,8 @@ export function SpectrumWall({
                   aria-label={`${workNumber(work.id)} · ${t.light}`}
                 >
                   {preview(work) ? (
-                    <img
-                      src={preview(work)}
-                      alt=""
+                    <PreviewImage
+                      src={preview(work)!}
                       width={640}
                       height={414}
                       loading="lazy"

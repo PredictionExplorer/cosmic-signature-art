@@ -55,11 +55,8 @@ export function KeyboardVocabulary({ locale }: { locale: Locale }) {
         return;
       }
       if (event.key === 'Enter' && digits) {
-        // Enter on a focused control activates the control; the buffer yields to it.
-        if (event.target instanceof Element && event.target.closest('a, button, summary')) {
-          forget();
-          return;
-        }
+        // A typed number is intent from anywhere, the Index sheet included; it wins over a
+        // focused control for the three seconds it is remembered.
         event.preventDefault();
         const id = Number(digits);
         forget();

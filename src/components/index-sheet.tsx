@@ -24,6 +24,7 @@ import {
 import { NAVIGATION_LABEL, POCKET_NAVIGATION } from '@/lib/navigation';
 import { useMediaPolicy } from './media-policy';
 import { useMotion } from './motion-provider';
+import { PreviewImage } from './preview-image';
 import { closeSheet, useOpenSheet } from './sheets-store';
 import styles from './index-sheet.module.css';
 
@@ -333,10 +334,9 @@ function SheetBody({
       </div>
       <div className={styles.wall} data-material={wallMaterial} aria-hidden="true" onClick={close}>
         {wallSource ? (
-          <img
+          <PreviewImage
             key={wallSource}
             src={wallSource}
-            alt=""
             width={640}
             height={414}
             decoding="async"
