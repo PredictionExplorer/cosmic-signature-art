@@ -10,8 +10,8 @@
       "cycle": 0,
       "mintedAt": "2026-06-15T07:00:02.000Z",
       "mintTransactionHash": "0x83b8f2665bc1d4a4c0c2ce74918f7b6f31a6ab1c201028c8b9337f16ce80cfce",
-      "name": "Cosmic Signature #0",
       "metadataVersion": "2.0.0",
+      "metadataName": "Cosmic Signature #0",
       "description": "Three bodies trace time chords in Aurora Mono tones over a harmonic weave underlay. Chaos 16/100 across 0 syzygies; spectral class F; fate: ejection. Imprinted in Round 0 on 15 Jun 2026. Same seed, same pixels — re-render it to verify.",
       "traits": {
         "structure": "Time Chords",
@@ -132,6 +132,7 @@
       "mintTransactionHash": "0x83b8f2665bc1d4a4c0c2ce74918f7b6f31a6ab1c201028c8b9337f16ce80cfce",
       "name": "NUMBA 1",
       "metadataVersion": "2.0.0",
+      "metadataName": "NUMBA 1",
       "description": "Three bodies trace orbit ribbons in Glacial Split tones over a stipple constellation underlay, folded into a 4-fold rosette, plotted in phase-portrait space. Chaos 22/100 across 0 syzygies; spectral class B; fate: ejection. Imprinted in Round 0 on 15 Jun 2026. Same seed, same pixels — re-render it to verify.",
       "traits": {
         "structure": "Orbit Ribbons",
@@ -250,8 +251,8 @@
       "cycle": 0,
       "mintedAt": "2026-06-15T07:00:02.000Z",
       "mintTransactionHash": "0x83b8f2665bc1d4a4c0c2ce74918f7b6f31a6ab1c201028c8b9337f16ce80cfce",
-      "name": "Cosmic Signature #2",
       "metadataVersion": "2.0.0",
+      "metadataName": "Cosmic Signature #2",
       "description": "Three bodies trace orbit ribbons in Cerulean Split tones over a nebula veil underlay. Chaos 23/100 across 1 syzygies; spectral class B; fate: eternal dance. Imprinted in Round 0 on 15 Jun 2026. Same seed, same pixels — re-render it to verify.",
       "traits": {
         "structure": "Orbit Ribbons",
@@ -369,8 +370,8 @@
       "cycle": 0,
       "mintedAt": "2026-06-15T07:00:02.000Z",
       "mintTransactionHash": "0x83b8f2665bc1d4a4c0c2ce74918f7b6f31a6ab1c201028c8b9337f16ce80cfce",
-      "name": "Cosmic Signature #3",
       "metadataVersion": "2.0.0",
+      "metadataName": "Cosmic Signature #3",
       "description": "Three bodies trace a harmonic weave in Aurora Mono tones over a time chords underlay. Chaos 17/100 across 2 syzygies; spectral class F; fate: eternal dance. Imprinted in Round 0 on 15 Jun 2026. Same seed, same pixels — re-render it to verify.",
       "traits": {
         "structure": "Harmonic Weave",
@@ -488,8 +489,8 @@
       "cycle": 0,
       "mintedAt": "2026-06-15T07:00:02.000Z",
       "mintTransactionHash": "0x83b8f2665bc1d4a4c0c2ce74918f7b6f31a6ab1c201028c8b9337f16ce80cfce",
-      "name": "Cosmic Signature #4",
       "metadataVersion": "2.0.0",
+      "metadataName": "Cosmic Signature #4",
       "description": "Three bodies trace time chords in Jade Split tones over a nebula veil underlay. Chaos 25/100 across 3 syzygies; spectral class B; fate: ejection. Imprinted in Round 0 on 15 Jun 2026. Same seed, same pixels — re-render it to verify.",
       "traits": {
         "structure": "Time Chords",
@@ -607,8 +608,8 @@
       "cycle": 0,
       "mintedAt": "2026-06-15T07:00:02.000Z",
       "mintTransactionHash": "0x83b8f2665bc1d4a4c0c2ce74918f7b6f31a6ab1c201028c8b9337f16ce80cfce",
-      "name": "Cosmic Signature #5",
       "metadataVersion": "2.0.0",
+      "metadataName": "Cosmic Signature #5",
       "description": "Three bodies trace orbit ribbons in Violet Analogous tones over a tangent caustics underlay. Chaos 21/100 across 0 syzygies; spectral class B; fate: ejection. Imprinted in Round 0 on 15 Jun 2026. Same seed, same pixels — re-render it to verify.",
       "traits": {
         "structure": "Orbit Ribbons",
@@ -726,8 +727,8 @@
       "cycle": 0,
       "mintedAt": "2026-06-15T07:00:02.000Z",
       "mintTransactionHash": "0x83b8f2665bc1d4a4c0c2ce74918f7b6f31a6ab1c201028c8b9337f16ce80cfce",
-      "name": "Cosmic Signature #6",
       "metadataVersion": "2.0.0",
+      "metadataName": "Cosmic Signature #6",
       "description": "Three bodies trace orbit ribbons in Nebular Mono tones over a harmonic weave underlay, folded into a 3-fold mandala. Chaos 21/100 across 5 syzygies; spectral class O; fate: ejection. Imprinted in Round 0 on 15 Jun 2026. Same seed, same pixels — re-render it to verify.",
       "traits": {
         "structure": "Orbit Ribbons",
@@ -845,8 +846,8 @@
       "cycle": 0,
       "mintedAt": "2026-06-15T07:00:02.000Z",
       "mintTransactionHash": "0x83b8f2665bc1d4a4c0c2ce74918f7b6f31a6ab1c201028c8b9337f16ce80cfce",
-      "name": "Cosmic Signature #7",
       "metadataVersion": "2.0.0",
+      "metadataName": "Cosmic Signature #7",
       "description": "Three bodies trace time chords in Glacial Split tones, mirrored across the frame, plotted in phase-portrait space. Chaos 18/100 across 0 syzygies; spectral class F; fate: eternal dance. Imprinted in Round 0 on 15 Jun 2026. Same seed, same pixels — re-render it to verify.",
       "traits": {
         "structure": "Time Chords",
@@ -962,8 +963,8 @@
       "cycle": 0,
       "mintedAt": "2026-06-15T07:00:02.000Z",
       "mintTransactionHash": "0x83b8f2665bc1d4a4c0c2ce74918f7b6f31a6ab1c201028c8b9337f16ce80cfce",
-      "name": "Cosmic Signature #8",
       "metadataVersion": "2.0.0",
+      "metadataName": "Cosmic Signature #8",
       "description": "Three bodies trace time chords in Rose Mono tones over a orbit ribbons underlay, folded into a 6-fold rosette. Chaos 19/100 across 2 syzygies; spectral class K; fate: eternal dance. Imprinted in Round 0 on 15 Jun 2026. Same seed, same pixels — re-render it to verify.",
       "traits": {
         "structure": "Time Chords",
@@ -1081,8 +1082,8 @@
       "cycle": 0,
       "mintedAt": "2026-06-15T07:00:02.000Z",
       "mintTransactionHash": "0x83b8f2665bc1d4a4c0c2ce74918f7b6f31a6ab1c201028c8b9337f16ce80cfce",
-      "name": "Cosmic Signature #9",
       "metadataVersion": "2.0.0",
+      "metadataName": "Cosmic Signature #9",
       "description": "Three bodies trace time chords in Glacial Split tones over a stipple constellation underlay. Chaos 21/100 across 3 syzygies; spectral class G; fate: ejection. Imprinted in Round 0 on 15 Jun 2026. Same seed, same pixels — re-render it to verify.",
       "traits": {
         "structure": "Time Chords",
@@ -1200,8 +1201,8 @@
       "cycle": 0,
       "mintedAt": "2026-06-15T07:00:02.000Z",
       "mintTransactionHash": "0x83b8f2665bc1d4a4c0c2ce74918f7b6f31a6ab1c201028c8b9337f16ce80cfce",
-      "name": "Cosmic Signature #10",
       "metadataVersion": "2.0.0",
+      "metadataName": "Cosmic Signature #10",
       "description": "Three bodies trace orbit ribbons in Nebular Triad tones over a harmonic weave underlay, plotted in cross-braid space. Chaos 23/100 across 0 syzygies; spectral class G; fate: eternal dance. Imprinted in Round 0 on 15 Jun 2026. Same seed, same pixels — re-render it to verify.",
       "traits": {
         "structure": "Orbit Ribbons",
@@ -1319,8 +1320,8 @@
       "cycle": 0,
       "mintedAt": "2026-06-15T07:00:02.000Z",
       "mintTransactionHash": "0x83b8f2665bc1d4a4c0c2ce74918f7b6f31a6ab1c201028c8b9337f16ce80cfce",
-      "name": "Cosmic Signature #11",
       "metadataVersion": "2.0.0",
+      "metadataName": "Cosmic Signature #11",
       "description": "Three bodies trace orbit ribbons in Aurora Mono tones, mirrored across the frame. Chaos 23/100 across 2 syzygies; spectral class G; fate: eternal dance. Imprinted in Round 0 on 15 Jun 2026. Same seed, same pixels — re-render it to verify.",
       "traits": {
         "structure": "Orbit Ribbons",
@@ -1436,8 +1437,8 @@
       "cycle": 0,
       "mintedAt": "2026-06-15T07:00:02.000Z",
       "mintTransactionHash": "0x83b8f2665bc1d4a4c0c2ce74918f7b6f31a6ab1c201028c8b9337f16ce80cfce",
-      "name": "Cosmic Signature #12",
       "metadataVersion": "2.0.0",
+      "metadataName": "Cosmic Signature #12",
       "description": "Three bodies trace orbit ribbons in Amber Analogous tones over a harmonic weave underlay. Chaos 18/100 across 1 syzygies; spectral class G; fate: eternal dance. Imprinted in Round 0 on 15 Jun 2026. Same seed, same pixels — re-render it to verify.",
       "traits": {
         "structure": "Orbit Ribbons",
@@ -1555,8 +1556,8 @@
       "cycle": 0,
       "mintedAt": "2026-06-15T07:00:02.000Z",
       "mintTransactionHash": "0x83b8f2665bc1d4a4c0c2ce74918f7b6f31a6ab1c201028c8b9337f16ce80cfce",
-      "name": "Cosmic Signature #13",
       "metadataVersion": "2.0.0",
+      "metadataName": "Cosmic Signature #13",
       "description": "Three bodies trace a harmonic weave in Solar Triad tones over a orbit ribbons underlay, mirrored across the frame. Chaos 17/100 across 2 syzygies; spectral class O; fate: ejection. Imprinted in Round 0 on 15 Jun 2026. Same seed, same pixels — re-render it to verify.",
       "traits": {
         "structure": "Harmonic Weave",
@@ -1674,8 +1675,8 @@
       "cycle": 0,
       "mintedAt": "2026-06-15T07:00:02.000Z",
       "mintTransactionHash": "0x83b8f2665bc1d4a4c0c2ce74918f7b6f31a6ab1c201028c8b9337f16ce80cfce",
-      "name": "Cosmic Signature #14",
       "metadataVersion": "2.0.0",
+      "metadataName": "Cosmic Signature #14",
       "description": "Three bodies trace time chords in Nebular Analogous tones over a harmonic weave underlay. Chaos 20/100 across 1 syzygies; spectral class O; fate: ejection. Imprinted in Round 0 on 15 Jun 2026. Same seed, same pixels — re-render it to verify.",
       "traits": {
         "structure": "Time Chords",
@@ -1793,8 +1794,8 @@
       "cycle": 0,
       "mintedAt": "2026-06-15T07:00:02.000Z",
       "mintTransactionHash": "0x83b8f2665bc1d4a4c0c2ce74918f7b6f31a6ab1c201028c8b9337f16ce80cfce",
-      "name": "Cosmic Signature #15",
       "metadataVersion": "2.0.0",
+      "metadataName": "Cosmic Signature #15",
       "description": "Three bodies trace time chords in Nebular Mono tones, folded into a 3-fold rosette, plotted in hodograph space. Chaos 21/100 across 0 syzygies; spectral class O; fate: eternal dance. Imprinted in Round 0 on 15 Jun 2026. Same seed, same pixels — re-render it to verify.",
       "traits": {
         "structure": "Time Chords",
@@ -1910,8 +1911,8 @@
       "cycle": 0,
       "mintedAt": "2026-06-15T07:00:02.000Z",
       "mintTransactionHash": "0x83b8f2665bc1d4a4c0c2ce74918f7b6f31a6ab1c201028c8b9337f16ce80cfce",
-      "name": "Cosmic Signature #16",
       "metadataVersion": "2.0.0",
+      "metadataName": "Cosmic Signature #16",
       "description": "Three bodies trace orbit ribbons in Orchid Mono tones. Chaos 19/100 across 2 syzygies; spectral class M; fate: ejection. Imprinted in Round 0 on 15 Jun 2026. Same seed, same pixels — re-render it to verify.",
       "traits": {
         "structure": "Orbit Ribbons",
@@ -2027,8 +2028,8 @@
       "cycle": 0,
       "mintedAt": "2026-06-15T07:00:02.000Z",
       "mintTransactionHash": "0x83b8f2665bc1d4a4c0c2ce74918f7b6f31a6ab1c201028c8b9337f16ce80cfce",
-      "name": "Cosmic Signature #17",
       "metadataVersion": "2.0.0",
+      "metadataName": "Cosmic Signature #17",
       "description": "Three bodies trace orbit ribbons in Rose Analogous tones over a harmonic weave underlay. Chaos 18/100 across 1 syzygies; spectral class K; fate: ejection. Imprinted in Round 0 on 15 Jun 2026. Same seed, same pixels — re-render it to verify.",
       "traits": {
         "structure": "Orbit Ribbons",
@@ -2146,8 +2147,8 @@
       "cycle": 0,
       "mintedAt": "2026-06-15T07:00:02.000Z",
       "mintTransactionHash": "0x83b8f2665bc1d4a4c0c2ce74918f7b6f31a6ab1c201028c8b9337f16ce80cfce",
-      "name": "Cosmic Signature #18",
       "metadataVersion": "2.0.0",
+      "metadataName": "Cosmic Signature #18",
       "description": "Three bodies trace orbit ribbons in Orchid Analogous tones. Chaos 16/100 across 0 syzygies; spectral class O; fate: eternal dance. Imprinted in Round 0 on 15 Jun 2026. Same seed, same pixels — re-render it to verify.",
       "traits": {
         "structure": "Orbit Ribbons",
@@ -2263,8 +2264,8 @@
       "cycle": 0,
       "mintedAt": "2026-06-15T07:00:02.000Z",
       "mintTransactionHash": "0x83b8f2665bc1d4a4c0c2ce74918f7b6f31a6ab1c201028c8b9337f16ce80cfce",
-      "name": "Cosmic Signature #19",
       "metadataVersion": "2.0.0",
+      "metadataName": "Cosmic Signature #19",
       "description": "Three bodies trace tangent caustics in Violet Split tones, plotted in cross-braid space. Chaos 20/100 across 1 syzygies; spectral class B; fate: eternal dance. Imprinted in Round 0 on 15 Jun 2026. Same seed, same pixels — re-render it to verify.",
       "traits": {
         "structure": "Tangent Caustics",
@@ -2380,8 +2381,8 @@
       "cycle": 0,
       "mintedAt": "2026-06-15T07:00:02.000Z",
       "mintTransactionHash": "0x83b8f2665bc1d4a4c0c2ce74918f7b6f31a6ab1c201028c8b9337f16ce80cfce",
-      "name": "Cosmic Signature #20",
       "metadataVersion": "2.0.0",
+      "metadataName": "Cosmic Signature #20",
       "description": "Three bodies trace time chords in Rose Analogous tones. Chaos 19/100 across 8 syzygies; spectral class K; fate: ejection. Imprinted in Round 0 on 15 Jun 2026. Same seed, same pixels — re-render it to verify.",
       "traits": {
         "structure": "Time Chords",
@@ -2497,8 +2498,8 @@
       "cycle": 0,
       "mintedAt": "2026-06-15T07:00:02.000Z",
       "mintTransactionHash": "0x83b8f2665bc1d4a4c0c2ce74918f7b6f31a6ab1c201028c8b9337f16ce80cfce",
-      "name": "Cosmic Signature #21",
       "metadataVersion": "2.0.0",
+      "metadataName": "Cosmic Signature #21",
       "description": "Three bodies trace time chords in Sapphire Split tones over a harmonic weave underlay. Chaos 22/100 across 0 syzygies; spectral class O; fate: eternal dance. Imprinted in Round 0 on 15 Jun 2026. Same seed, same pixels — re-render it to verify.",
       "traits": {
         "structure": "Time Chords",
@@ -2616,8 +2617,8 @@
       "cycle": 0,
       "mintedAt": "2026-06-15T07:00:02.000Z",
       "mintTransactionHash": "0x83b8f2665bc1d4a4c0c2ce74918f7b6f31a6ab1c201028c8b9337f16ce80cfce",
-      "name": "Cosmic Signature #22",
       "metadataVersion": "2.0.0",
+      "metadataName": "Cosmic Signature #22",
       "description": "Three bodies trace time chords in Rose Mono tones over a nebula veil underlay. Chaos 18/100 across 5 syzygies; spectral class M; fate: ejection. Imprinted in Round 0 on 15 Jun 2026. Same seed, same pixels — re-render it to verify.",
       "traits": {
         "structure": "Time Chords",
@@ -2735,8 +2736,8 @@
       "cycle": 0,
       "mintedAt": "2026-06-15T07:00:02.000Z",
       "mintTransactionHash": "0x83b8f2665bc1d4a4c0c2ce74918f7b6f31a6ab1c201028c8b9337f16ce80cfce",
-      "name": "Cosmic Signature #23",
       "metadataVersion": "2.0.0",
+      "metadataName": "Cosmic Signature #23",
       "description": "Three bodies trace orbit ribbons in Jade Mono tones. Chaos 17/100 across 1 syzygies; spectral class F; fate: eternal dance. Imprinted in Round 0 on 15 Jun 2026. Same seed, same pixels — re-render it to verify.",
       "traits": {
         "structure": "Orbit Ribbons",
@@ -2852,8 +2853,8 @@
       "cycle": 1,
       "mintedAt": "2026-08-11T23:38:26.000Z",
       "mintTransactionHash": "0x40e939fcc61e3bf785e2102cadfb7bd58c4c306fb88d3cae1b2264eb4aa7a248",
-      "name": "Cosmic Signature #24",
       "metadataVersion": "2.0.0",
+      "metadataName": "Cosmic Signature #24",
       "description": "Three bodies trace orbit ribbons in Sapphire Split tones. Chaos 18/100 across 2 syzygies; spectral class B; fate: ejection. Imprinted in Round 1 on 11 Aug 2026. Same seed, same pixels — re-render it to verify.",
       "traits": {
         "structure": "Orbit Ribbons",
@@ -2971,6 +2972,7 @@
       "mintTransactionHash": "0x40e939fcc61e3bf785e2102cadfb7bd58c4c306fb88d3cae1b2264eb4aa7a248",
       "name": "Twisted Mind",
       "metadataVersion": "2.0.0",
+      "metadataName": "Twisted Mind",
       "description": "Three bodies trace orbit ribbons in Solar Mono tones. Chaos 17/100 across 2 syzygies; spectral class G; fate: ejection. Imprinted in Round 1 on 11 Aug 2026. Same seed, same pixels — re-render it to verify.",
       "traits": {
         "structure": "Orbit Ribbons",
@@ -3086,8 +3088,8 @@
       "cycle": 1,
       "mintedAt": "2026-08-11T23:38:26.000Z",
       "mintTransactionHash": "0x40e939fcc61e3bf785e2102cadfb7bd58c4c306fb88d3cae1b2264eb4aa7a248",
-      "name": "Cosmic Signature #26",
       "metadataVersion": "2.0.0",
+      "metadataName": "Cosmic Signature #26",
       "description": "Three bodies trace orbit ribbons in Aurora Analogous tones. Chaos 18/100 across 0 syzygies; spectral class A; fate: eternal dance. Imprinted in Round 1 on 11 Aug 2026. Same seed, same pixels — re-render it to verify.",
       "traits": {
         "structure": "Orbit Ribbons",
@@ -3203,8 +3205,8 @@
       "cycle": 1,
       "mintedAt": "2026-08-11T23:38:26.000Z",
       "mintTransactionHash": "0x40e939fcc61e3bf785e2102cadfb7bd58c4c306fb88d3cae1b2264eb4aa7a248",
-      "name": "Cosmic Signature #27",
       "metadataVersion": "2.0.0",
+      "metadataName": "Cosmic Signature #27",
       "description": "Three bodies trace time chords in Nebular Analogous tones over a harmonic weave underlay. Chaos 19/100 across 2 syzygies; spectral class O; fate: eternal dance. Imprinted in Round 1 on 11 Aug 2026. Same seed, same pixels — re-render it to verify.",
       "traits": {
         "structure": "Time Chords",
@@ -3323,8 +3325,8 @@
       "cycle": 1,
       "mintedAt": "2026-08-11T23:38:26.000Z",
       "mintTransactionHash": "0x40e939fcc61e3bf785e2102cadfb7bd58c4c306fb88d3cae1b2264eb4aa7a248",
-      "name": "Cosmic Signature #28",
       "metadataVersion": "2.0.0",
+      "metadataName": "Cosmic Signature #28",
       "description": "Three bodies trace time chords in Sapphire Mono tones over a tangent caustics underlay, crowned with prism dispersion and stardust. Chaos 18/100 across 1 syzygies; spectral class B; fate: eternal dance. Imprinted in Round 1 on 11 Aug 2026. Same seed, same pixels — re-render it to verify.",
       "traits": {
         "structure": "Time Chords",
@@ -3442,8 +3444,8 @@
       "cycle": 1,
       "mintedAt": "2026-08-11T23:38:26.000Z",
       "mintTransactionHash": "0x40e939fcc61e3bf785e2102cadfb7bd58c4c306fb88d3cae1b2264eb4aa7a248",
-      "name": "Cosmic Signature #29",
       "metadataVersion": "2.0.0",
+      "metadataName": "Cosmic Signature #29",
       "description": "Three bodies trace orbit ribbons in Aurora Mono tones over a harmonic weave underlay. Chaos 22/100 across 4 syzygies; spectral class G; fate: ejection. Imprinted in Round 1 on 11 Aug 2026. Same seed, same pixels — re-render it to verify.",
       "traits": {
         "structure": "Orbit Ribbons",
@@ -3561,8 +3563,8 @@
       "cycle": 1,
       "mintedAt": "2026-08-11T23:38:26.000Z",
       "mintTransactionHash": "0x40e939fcc61e3bf785e2102cadfb7bd58c4c306fb88d3cae1b2264eb4aa7a248",
-      "name": "Cosmic Signature #30",
       "metadataVersion": "2.0.0",
+      "metadataName": "Cosmic Signature #30",
       "description": "Three bodies trace tangent caustics in Jade Split tones over a nebula veil underlay. Chaos 16/100 across 3 syzygies; spectral class G; fate: ejection. Imprinted in Round 1 on 11 Aug 2026. Same seed, same pixels — re-render it to verify.",
       "traits": {
         "structure": "Tangent Caustics",
@@ -3680,8 +3682,8 @@
       "cycle": 1,
       "mintedAt": "2026-08-11T23:38:26.000Z",
       "mintTransactionHash": "0x40e939fcc61e3bf785e2102cadfb7bd58c4c306fb88d3cae1b2264eb4aa7a248",
-      "name": "Cosmic Signature #31",
       "metadataVersion": "2.0.0",
+      "metadataName": "Cosmic Signature #31",
       "description": "Three bodies trace orbit ribbons in Rose Mono tones over a harmonic weave underlay. Chaos 13/100 across 0 syzygies; spectral class M; fate: eternal dance. Imprinted in Round 1 on 11 Aug 2026. Same seed, same pixels — re-render it to verify.",
       "traits": {
         "structure": "Orbit Ribbons",
@@ -3800,8 +3802,8 @@
       "cycle": 1,
       "mintedAt": "2026-08-11T23:38:26.000Z",
       "mintTransactionHash": "0x40e939fcc61e3bf785e2102cadfb7bd58c4c306fb88d3cae1b2264eb4aa7a248",
-      "name": "Cosmic Signature #32",
       "metadataVersion": "2.0.0",
+      "metadataName": "Cosmic Signature #32",
       "description": "Three bodies trace a stipple constellation in Rose Analogous tones over a orbit ribbons underlay, crowned with stardust. Chaos 23/100 across 1 syzygies; spectral class M; fate: ejection. Imprinted in Round 1 on 11 Aug 2026. Same seed, same pixels — re-render it to verify.",
       "traits": {
         "structure": "Stipple Constellation",
@@ -3919,8 +3921,8 @@
       "cycle": 1,
       "mintedAt": "2026-08-11T23:38:26.000Z",
       "mintTransactionHash": "0x40e939fcc61e3bf785e2102cadfb7bd58c4c306fb88d3cae1b2264eb4aa7a248",
-      "name": "Cosmic Signature #33",
       "metadataVersion": "2.0.0",
+      "metadataName": "Cosmic Signature #33",
       "description": "Three bodies trace orbit ribbons in Sapphire Analogous tones over a time chords underlay, plotted in hodograph space. Chaos 13/100 across 0 syzygies; spectral class O; fate: eternal dance. Imprinted in Round 1 on 11 Aug 2026. Same seed, same pixels — re-render it to verify.",
       "traits": {
         "structure": "Orbit Ribbons",
@@ -4038,8 +4040,8 @@
       "cycle": 1,
       "mintedAt": "2026-08-11T23:38:26.000Z",
       "mintTransactionHash": "0x40e939fcc61e3bf785e2102cadfb7bd58c4c306fb88d3cae1b2264eb4aa7a248",
-      "name": "Cosmic Signature #34",
       "metadataVersion": "2.0.0",
+      "metadataName": "Cosmic Signature #34",
       "description": "Three bodies trace time chords in Rose Analogous tones over a stipple constellation underlay. Chaos 21/100 across 1 syzygies; spectral class K; fate: eternal dance. Imprinted in Round 1 on 11 Aug 2026. Same seed, same pixels — re-render it to verify.",
       "traits": {
         "structure": "Time Chords",
@@ -4157,8 +4159,8 @@
       "cycle": 1,
       "mintedAt": "2026-08-11T23:38:26.000Z",
       "mintTransactionHash": "0x40e939fcc61e3bf785e2102cadfb7bd58c4c306fb88d3cae1b2264eb4aa7a248",
-      "name": "Cosmic Signature #35",
       "metadataVersion": "2.0.0",
+      "metadataName": "Cosmic Signature #35",
       "description": "Three bodies trace time chords in Aurora Triad tones over a harmonic weave underlay, plotted in cross-braid space. Chaos 17/100 across 1 syzygies; spectral class M; fate: ejection. Imprinted in Round 1 on 11 Aug 2026. Same seed, same pixels — re-render it to verify.",
       "traits": {
         "structure": "Time Chords",
@@ -4277,8 +4279,8 @@
       "cycle": 1,
       "mintedAt": "2026-08-11T23:38:26.000Z",
       "mintTransactionHash": "0x40e939fcc61e3bf785e2102cadfb7bd58c4c306fb88d3cae1b2264eb4aa7a248",
-      "name": "Cosmic Signature #36",
       "metadataVersion": "2.0.0",
+      "metadataName": "Cosmic Signature #36",
       "description": "Three bodies trace time chords in Ember Split tones over a harmonic weave underlay. Chaos 21/100 across 4 syzygies; spectral class M; fate: eternal dance. Imprinted in Round 1 on 11 Aug 2026. Same seed, same pixels — re-render it to verify.",
       "traits": {
         "structure": "Time Chords",
@@ -4396,8 +4398,8 @@
       "cycle": 1,
       "mintedAt": "2026-08-11T23:38:26.000Z",
       "mintTransactionHash": "0x40e939fcc61e3bf785e2102cadfb7bd58c4c306fb88d3cae1b2264eb4aa7a248",
-      "name": "Cosmic Signature #37",
       "metadataVersion": "2.0.0",
+      "metadataName": "Cosmic Signature #37",
       "description": "Three bodies trace time chords in Orchid Analogous tones over a harmonic weave underlay. Chaos 17/100 across 2 syzygies; spectral class O; fate: eternal dance. Imprinted in Round 1 on 11 Aug 2026. Same seed, same pixels — re-render it to verify.",
       "traits": {
         "structure": "Time Chords",
@@ -4515,8 +4517,8 @@
       "cycle": 1,
       "mintedAt": "2026-08-11T23:38:26.000Z",
       "mintTransactionHash": "0x40e939fcc61e3bf785e2102cadfb7bd58c4c306fb88d3cae1b2264eb4aa7a248",
-      "name": "Cosmic Signature #38",
       "metadataVersion": "2.0.0",
+      "metadataName": "Cosmic Signature #38",
       "description": "Three bodies trace time chords in Solar Split tones over a harmonic weave underlay. Chaos 23/100 across 2 syzygies; spectral class G; fate: ejection. Imprinted in Round 1 on 11 Aug 2026. Same seed, same pixels — re-render it to verify.",
       "traits": {
         "structure": "Time Chords",
@@ -4636,6 +4638,7 @@
       "mintTransactionHash": "0x40e939fcc61e3bf785e2102cadfb7bd58c4c306fb88d3cae1b2264eb4aa7a248",
       "name": "The Signature of Chaos",
       "metadataVersion": "2.0.0",
+      "metadataName": "The Signature of Chaos",
       "description": "Three bodies trace orbit ribbons in Aurora Split tones over a harmonic weave underlay. Chaos 18/100 across 3 syzygies; spectral class B; fate: ejection. Imprinted in Round 1 on 11 Aug 2026. Same seed, same pixels — re-render it to verify.",
       "traits": {
         "structure": "Orbit Ribbons",
@@ -4753,8 +4756,8 @@
       "cycle": 1,
       "mintedAt": "2026-08-11T23:38:26.000Z",
       "mintTransactionHash": "0x40e939fcc61e3bf785e2102cadfb7bd58c4c306fb88d3cae1b2264eb4aa7a248",
-      "name": "Cosmic Signature #40",
       "metadataVersion": "2.0.0",
+      "metadataName": "Cosmic Signature #40",
       "description": "Three bodies trace time chords in Rose Analogous tones, mirrored across the frame. Chaos 19/100 across 1 syzygies; spectral class K; fate: ejection. Imprinted in Round 1 on 11 Aug 2026. Same seed, same pixels — re-render it to verify.",
       "traits": {
         "structure": "Time Chords",
@@ -4870,8 +4873,8 @@
       "cycle": 1,
       "mintedAt": "2026-08-11T23:38:26.000Z",
       "mintTransactionHash": "0x40e939fcc61e3bf785e2102cadfb7bd58c4c306fb88d3cae1b2264eb4aa7a248",
-      "name": "Cosmic Signature #41",
       "metadataVersion": "2.0.0",
+      "metadataName": "Cosmic Signature #41",
       "description": "Three bodies trace orbit ribbons in Aurora Mono tones over a harmonic weave underlay. Chaos 18/100 across 4 syzygies; spectral class F; fate: eternal dance. Imprinted in Round 1 on 11 Aug 2026. Same seed, same pixels — re-render it to verify.",
       "traits": {
         "structure": "Orbit Ribbons",
@@ -4989,8 +4992,8 @@
       "cycle": 1,
       "mintedAt": "2026-08-11T23:38:26.000Z",
       "mintTransactionHash": "0x40e939fcc61e3bf785e2102cadfb7bd58c4c306fb88d3cae1b2264eb4aa7a248",
-      "name": "Cosmic Signature #42",
       "metadataVersion": "2.0.0",
+      "metadataName": "Cosmic Signature #42",
       "description": "Three bodies trace orbit ribbons in Orchid Mono tones over a stipple constellation underlay. Chaos 14/100 across 0 syzygies; spectral class M; fate: eternal dance. Imprinted in Round 1 on 11 Aug 2026. Same seed, same pixels — re-render it to verify.",
       "traits": {
         "structure": "Orbit Ribbons",
@@ -5108,8 +5111,8 @@
       "cycle": 1,
       "mintedAt": "2026-08-11T23:38:26.000Z",
       "mintTransactionHash": "0x40e939fcc61e3bf785e2102cadfb7bd58c4c306fb88d3cae1b2264eb4aa7a248",
-      "name": "Cosmic Signature #43",
       "metadataVersion": "2.0.0",
+      "metadataName": "Cosmic Signature #43",
       "description": "Three bodies trace time chords in Cerulean Mono tones over a orbit ribbons underlay, plotted in cross-braid space. Chaos 24/100 across 2 syzygies; spectral class A; fate: ejection. Imprinted in Round 1 on 11 Aug 2026. Same seed, same pixels — re-render it to verify.",
       "traits": {
         "structure": "Time Chords",
@@ -5227,8 +5230,8 @@
       "cycle": 1,
       "mintedAt": "2026-08-11T23:38:26.000Z",
       "mintTransactionHash": "0x40e939fcc61e3bf785e2102cadfb7bd58c4c306fb88d3cae1b2264eb4aa7a248",
-      "name": "Cosmic Signature #44",
       "metadataVersion": "2.0.0",
+      "metadataName": "Cosmic Signature #44",
       "description": "Three bodies trace time chords in Aurora Analogous tones over a orbit ribbons underlay, crowned with stardust. Chaos 16/100 across 1 syzygies; spectral class G; fate: eternal dance. Imprinted in Round 1 on 11 Aug 2026. Same seed, same pixels — re-render it to verify.",
       "traits": {
         "structure": "Time Chords",
@@ -5346,8 +5349,8 @@
       "cycle": 1,
       "mintedAt": "2026-08-11T23:38:26.000Z",
       "mintTransactionHash": "0x40e939fcc61e3bf785e2102cadfb7bd58c4c306fb88d3cae1b2264eb4aa7a248",
-      "name": "Cosmic Signature #45",
       "metadataVersion": "2.0.0",
+      "metadataName": "Cosmic Signature #45",
       "description": "Three bodies trace orbit ribbons in Rose Mono tones. Chaos 22/100 across 1 syzygies; spectral class M; fate: eternal dance. Imprinted in Round 1 on 11 Aug 2026. Same seed, same pixels — re-render it to verify.",
       "traits": {
         "structure": "Orbit Ribbons",
@@ -5463,8 +5466,8 @@
       "cycle": 1,
       "mintedAt": "2026-08-11T23:38:26.000Z",
       "mintTransactionHash": "0x40e939fcc61e3bf785e2102cadfb7bd58c4c306fb88d3cae1b2264eb4aa7a248",
-      "name": "Cosmic Signature #46",
       "metadataVersion": "2.0.0",
+      "metadataName": "Cosmic Signature #46",
       "description": "Three bodies trace time chords in Aurora Mono tones over a harmonic weave underlay, folded into a 3-fold mandala. Chaos 20/100 across 4 syzygies; spectral class F; fate: eternal dance. Imprinted in Round 1 on 11 Aug 2026. Same seed, same pixels — re-render it to verify.",
       "traits": {
         "structure": "Time Chords",
@@ -5582,8 +5585,8 @@
       "cycle": 1,
       "mintedAt": "2026-08-11T23:38:26.000Z",
       "mintTransactionHash": "0x40e939fcc61e3bf785e2102cadfb7bd58c4c306fb88d3cae1b2264eb4aa7a248",
-      "name": "Cosmic Signature #47",
       "metadataVersion": "2.0.0",
+      "metadataName": "Cosmic Signature #47",
       "description": "Three bodies trace orbit ribbons in Jade Triad tones over a harmonic weave underlay. Chaos 25/100 across 3 syzygies; spectral class O; fate: ejection. Imprinted in Round 1 on 11 Aug 2026. Same seed, same pixels — re-render it to verify.",
       "traits": {
         "structure": "Orbit Ribbons",
@@ -5702,8 +5705,8 @@
       "cycle": 2,
       "mintedAt": "2026-10-05T10:14:37.000Z",
       "mintTransactionHash": "0xb9f0cb825c8b313f9a64dddc80ddaced4530c49befa6858c5049fffd1350a4b9",
-      "name": "Cosmic Signature #48",
       "metadataVersion": "2.0.0",
+      "metadataName": "Cosmic Signature #48",
       "description": "Three bodies trace time chords in Nebular Analogous tones over a harmonic weave underlay. Chaos 21/100 across 0 syzygies; spectral class O; fate: ejection. Imprinted in Round 2 on 05 Oct 2026. Same seed, same pixels — re-render it to verify.",
       "traits": {
         "structure": "Time Chords",
@@ -5821,8 +5824,8 @@
       "cycle": 2,
       "mintedAt": "2026-10-05T10:14:37.000Z",
       "mintTransactionHash": "0xb9f0cb825c8b313f9a64dddc80ddaced4530c49befa6858c5049fffd1350a4b9",
-      "name": "Cosmic Signature #49",
       "metadataVersion": "2.0.0",
+      "metadataName": "Cosmic Signature #49",
       "description": "Three bodies trace time chords in Nebular Analogous tones over a harmonic weave underlay, crowned with prism dispersion. Chaos 14/100 across 0 syzygies; spectral class O; fate: eternal dance. Imprinted in Round 2 on 05 Oct 2026. Same seed, same pixels — re-render it to verify.",
       "traits": {
         "structure": "Time Chords",
@@ -5940,8 +5943,8 @@
       "cycle": 2,
       "mintedAt": "2026-10-05T10:14:37.000Z",
       "mintTransactionHash": "0xb9f0cb825c8b313f9a64dddc80ddaced4530c49befa6858c5049fffd1350a4b9",
-      "name": "Cosmic Signature #50",
       "metadataVersion": "2.0.0",
+      "metadataName": "Cosmic Signature #50",
       "description": "Three bodies trace orbit ribbons in Aurora Analogous tones, plotted in cross-braid space. Chaos 24/100 across 3 syzygies; spectral class F; fate: eternal dance. Imprinted in Round 2 on 05 Oct 2026. Same seed, same pixels — re-render it to verify.",
       "traits": {
         "structure": "Orbit Ribbons",
@@ -6057,8 +6060,8 @@
       "cycle": 2,
       "mintedAt": "2026-10-05T10:14:37.000Z",
       "mintTransactionHash": "0xb9f0cb825c8b313f9a64dddc80ddaced4530c49befa6858c5049fffd1350a4b9",
-      "name": "Cosmic Signature #51",
       "metadataVersion": "2.0.0",
+      "metadataName": "Cosmic Signature #51",
       "description": "Three bodies trace time chords in Amber Mono tones over a triangle web underlay. Chaos 21/100 across 1 syzygies; spectral class K; fate: eternal dance. Imprinted in Round 2 on 05 Oct 2026. Same seed, same pixels — re-render it to verify.",
       "traits": {
         "structure": "Time Chords",
@@ -6176,8 +6179,8 @@
       "cycle": 2,
       "mintedAt": "2026-10-05T10:14:37.000Z",
       "mintTransactionHash": "0xb9f0cb825c8b313f9a64dddc80ddaced4530c49befa6858c5049fffd1350a4b9",
-      "name": "Cosmic Signature #52",
       "metadataVersion": "2.0.0",
+      "metadataName": "Cosmic Signature #52",
       "description": "Three bodies trace orbit ribbons in Rose Analogous tones over a harmonic weave underlay. Chaos 21/100 across 5 syzygies; spectral class M; fate: eternal dance. Imprinted in Round 2 on 05 Oct 2026. Same seed, same pixels — re-render it to verify.",
       "traits": {
         "structure": "Orbit Ribbons",
@@ -6295,8 +6298,8 @@
       "cycle": 2,
       "mintedAt": "2026-10-05T10:14:37.000Z",
       "mintTransactionHash": "0xb9f0cb825c8b313f9a64dddc80ddaced4530c49befa6858c5049fffd1350a4b9",
-      "name": "Cosmic Signature #53",
       "metadataVersion": "2.0.0",
+      "metadataName": "Cosmic Signature #53",
       "description": "Three bodies trace time chords in Ember Split tones over a harmonic weave underlay. Chaos 20/100 across 0 syzygies; spectral class M; fate: ejection. Imprinted in Round 2 on 05 Oct 2026. Same seed, same pixels — re-render it to verify.",
       "traits": {
         "structure": "Time Chords",
@@ -6414,8 +6417,8 @@
       "cycle": 2,
       "mintedAt": "2026-10-05T10:14:37.000Z",
       "mintTransactionHash": "0xb9f0cb825c8b313f9a64dddc80ddaced4530c49befa6858c5049fffd1350a4b9",
-      "name": "Cosmic Signature #54",
       "metadataVersion": "2.0.0",
+      "metadataName": "Cosmic Signature #54",
       "description": "Three bodies trace orbit ribbons in Sapphire Mono tones, plotted in cross-braid space, crowned with prism dispersion and stardust. Chaos 23/100 across 0 syzygies; spectral class B; fate: ejection. Imprinted in Round 2 on 05 Oct 2026. Same seed, same pixels — re-render it to verify.",
       "traits": {
         "structure": "Orbit Ribbons",
@@ -6531,8 +6534,8 @@
       "cycle": 2,
       "mintedAt": "2026-10-05T10:14:37.000Z",
       "mintTransactionHash": "0xb9f0cb825c8b313f9a64dddc80ddaced4530c49befa6858c5049fffd1350a4b9",
-      "name": "Cosmic Signature #55",
       "metadataVersion": "2.0.0",
+      "metadataName": "Cosmic Signature #55",
       "description": "Three bodies trace tangent caustics in Orchid Analogous tones over a harmonic weave underlay. Chaos 21/100 across 0 syzygies; spectral class O; fate: eternal dance. Imprinted in Round 2 on 05 Oct 2026. Same seed, same pixels — re-render it to verify.",
       "traits": {
         "structure": "Tangent Caustics",
@@ -6650,8 +6653,8 @@
       "cycle": 2,
       "mintedAt": "2026-10-05T10:14:37.000Z",
       "mintTransactionHash": "0xb9f0cb825c8b313f9a64dddc80ddaced4530c49befa6858c5049fffd1350a4b9",
-      "name": "Cosmic Signature #56",
       "metadataVersion": "2.0.0",
+      "metadataName": "Cosmic Signature #56",
       "description": "Three bodies trace time chords in Nebular Split tones over a harmonic weave underlay. Chaos 22/100 across 2 syzygies; spectral class B; fate: ejection. Imprinted in Round 2 on 05 Oct 2026. Same seed, same pixels — re-render it to verify.",
       "traits": {
         "structure": "Time Chords",
@@ -6769,8 +6772,8 @@
       "cycle": 2,
       "mintedAt": "2026-10-05T10:14:37.000Z",
       "mintTransactionHash": "0xb9f0cb825c8b313f9a64dddc80ddaced4530c49befa6858c5049fffd1350a4b9",
-      "name": "Cosmic Signature #57",
       "metadataVersion": "2.0.0",
+      "metadataName": "Cosmic Signature #57",
       "description": "Three bodies trace orbit ribbons in Aurora Split tones over a nebula veil underlay. Chaos 19/100 across 1 syzygies; spectral class A; fate: ejection. Imprinted in Round 2 on 05 Oct 2026. Same seed, same pixels — re-render it to verify.",
       "traits": {
         "structure": "Orbit Ribbons",
@@ -6888,8 +6891,8 @@
       "cycle": 2,
       "mintedAt": "2026-10-05T10:14:37.000Z",
       "mintTransactionHash": "0xb9f0cb825c8b313f9a64dddc80ddaced4530c49befa6858c5049fffd1350a4b9",
-      "name": "Cosmic Signature #58",
       "metadataVersion": "2.0.0",
+      "metadataName": "Cosmic Signature #58",
       "description": "Three bodies trace time chords in Orchid Analogous tones over a harmonic weave underlay. Chaos 20/100 across 0 syzygies; spectral class M; fate: ejection. Imprinted in Round 2 on 05 Oct 2026. Same seed, same pixels — re-render it to verify.",
       "traits": {
         "structure": "Time Chords",
@@ -7007,8 +7010,8 @@
       "cycle": 2,
       "mintedAt": "2026-10-05T10:14:37.000Z",
       "mintTransactionHash": "0xb9f0cb825c8b313f9a64dddc80ddaced4530c49befa6858c5049fffd1350a4b9",
-      "name": "Cosmic Signature #59",
       "metadataVersion": "2.0.0",
+      "metadataName": "Cosmic Signature #59",
       "description": "Three bodies trace tangent caustics in Violet Analogous tones. Chaos 25/100 across 4 syzygies; spectral class O; fate: eternal dance. Imprinted in Round 2 on 05 Oct 2026. Same seed, same pixels — re-render it to verify.",
       "traits": {
         "structure": "Tangent Caustics",
@@ -7124,8 +7127,8 @@
       "cycle": 2,
       "mintedAt": "2026-10-05T10:14:37.000Z",
       "mintTransactionHash": "0xb9f0cb825c8b313f9a64dddc80ddaced4530c49befa6858c5049fffd1350a4b9",
-      "name": "Cosmic Signature #60",
       "metadataVersion": "2.0.0",
+      "metadataName": "Cosmic Signature #60",
       "description": "Three bodies trace time chords in Orchid Analogous tones. Chaos 23/100 across 1 syzygies; spectral class O; fate: ejection. Imprinted in Round 2 on 05 Oct 2026. Same seed, same pixels — re-render it to verify.",
       "traits": {
         "structure": "Time Chords",
@@ -7241,8 +7244,8 @@
       "cycle": 2,
       "mintedAt": "2026-10-05T10:14:37.000Z",
       "mintTransactionHash": "0xb9f0cb825c8b313f9a64dddc80ddaced4530c49befa6858c5049fffd1350a4b9",
-      "name": "Cosmic Signature #61",
       "metadataVersion": "2.0.0",
+      "metadataName": "Cosmic Signature #61",
       "description": "Three bodies trace time chords in Amber Mono tones over a orbit ribbons underlay, crowned with stardust. Chaos 23/100 across 1 syzygies; spectral class G; fate: eternal dance. Imprinted in Round 2 on 05 Oct 2026. Same seed, same pixels — re-render it to verify.",
       "traits": {
         "structure": "Time Chords",
@@ -7360,8 +7363,8 @@
       "cycle": 2,
       "mintedAt": "2026-10-05T10:14:37.000Z",
       "mintTransactionHash": "0xb9f0cb825c8b313f9a64dddc80ddaced4530c49befa6858c5049fffd1350a4b9",
-      "name": "Cosmic Signature #62",
       "metadataVersion": "2.0.0",
+      "metadataName": "Cosmic Signature #62",
       "description": "Three bodies trace time chords in Orchid Mono tones. Chaos 15/100 across 1 syzygies; spectral class O; fate: eternal dance. Imprinted in Round 2 on 05 Oct 2026. Same seed, same pixels — re-render it to verify.",
       "traits": {
         "structure": "Time Chords",
@@ -7477,8 +7480,8 @@
       "cycle": 2,
       "mintedAt": "2026-10-05T10:14:37.000Z",
       "mintTransactionHash": "0xb9f0cb825c8b313f9a64dddc80ddaced4530c49befa6858c5049fffd1350a4b9",
-      "name": "Cosmic Signature #63",
       "metadataVersion": "2.0.0",
+      "metadataName": "Cosmic Signature #63",
       "description": "Three bodies trace time chords in Orchid Analogous tones over a harmonic weave underlay, crowned with prism dispersion. Chaos 21/100 across 1 syzygies; spectral class M; fate: eternal dance. Imprinted in Round 2 on 05 Oct 2026. Same seed, same pixels — re-render it to verify.",
       "traits": {
         "structure": "Time Chords",
@@ -7596,8 +7599,8 @@
       "cycle": 2,
       "mintedAt": "2026-10-05T10:14:37.000Z",
       "mintTransactionHash": "0xb9f0cb825c8b313f9a64dddc80ddaced4530c49befa6858c5049fffd1350a4b9",
-      "name": "Cosmic Signature #64",
       "metadataVersion": "2.0.0",
+      "metadataName": "Cosmic Signature #64",
       "description": "Three bodies trace orbit ribbons in Sapphire Analogous tones, plotted in hodograph space. Chaos 20/100 across 0 syzygies; spectral class O; fate: ejection. Imprinted in Round 2 on 05 Oct 2026. Same seed, same pixels — re-render it to verify.",
       "traits": {
         "structure": "Orbit Ribbons",
@@ -7713,8 +7716,8 @@
       "cycle": 2,
       "mintedAt": "2026-10-05T10:14:37.000Z",
       "mintTransactionHash": "0xb9f0cb825c8b313f9a64dddc80ddaced4530c49befa6858c5049fffd1350a4b9",
-      "name": "Cosmic Signature #65",
       "metadataVersion": "2.0.0",
+      "metadataName": "Cosmic Signature #65",
       "description": "Three bodies trace orbit ribbons in Solar Mono tones over a time chords underlay. Chaos 22/100 across 6 syzygies; spectral class G; fate: ejection. Imprinted in Round 2 on 05 Oct 2026. Same seed, same pixels — re-render it to verify.",
       "traits": {
         "structure": "Orbit Ribbons",
@@ -7832,8 +7835,8 @@
       "cycle": 2,
       "mintedAt": "2026-10-05T10:14:37.000Z",
       "mintTransactionHash": "0xb9f0cb825c8b313f9a64dddc80ddaced4530c49befa6858c5049fffd1350a4b9",
-      "name": "Cosmic Signature #66",
       "metadataVersion": "2.0.0",
+      "metadataName": "Cosmic Signature #66",
       "description": "Three bodies trace time chords in Rose Triad tones over a harmonic weave underlay. Chaos 17/100 across 1 syzygies; spectral class O; fate: ejection. Imprinted in Round 2 on 05 Oct 2026. Same seed, same pixels — re-render it to verify.",
       "traits": {
         "structure": "Time Chords",
@@ -7951,8 +7954,8 @@
       "cycle": 2,
       "mintedAt": "2026-10-05T10:14:37.000Z",
       "mintTransactionHash": "0xb9f0cb825c8b313f9a64dddc80ddaced4530c49befa6858c5049fffd1350a4b9",
-      "name": "Cosmic Signature #67",
       "metadataVersion": "2.0.0",
+      "metadataName": "Cosmic Signature #67",
       "description": "Three bodies trace orbit ribbons in Jade Triad tones. Chaos 22/100 across 1 syzygies; spectral class B; fate: ejection. Imprinted in Round 2 on 05 Oct 2026. Same seed, same pixels — re-render it to verify.",
       "traits": {
         "structure": "Orbit Ribbons",
@@ -8068,8 +8071,8 @@
       "cycle": 2,
       "mintedAt": "2026-10-05T10:14:37.000Z",
       "mintTransactionHash": "0xb9f0cb825c8b313f9a64dddc80ddaced4530c49befa6858c5049fffd1350a4b9",
-      "name": "Cosmic Signature #68",
       "metadataVersion": "2.0.0",
+      "metadataName": "Cosmic Signature #68",
       "description": "Three bodies trace orbit ribbons in Nebular Triad tones over a harmonic weave underlay. Chaos 26/100 across 4 syzygies; spectral class G; fate: eternal dance. Imprinted in Round 2 on 05 Oct 2026. Same seed, same pixels — re-render it to verify.",
       "traits": {
         "structure": "Orbit Ribbons",
@@ -8187,8 +8190,8 @@
       "cycle": 2,
       "mintedAt": "2026-10-05T10:14:37.000Z",
       "mintTransactionHash": "0xb9f0cb825c8b313f9a64dddc80ddaced4530c49befa6858c5049fffd1350a4b9",
-      "name": "Cosmic Signature #69",
       "metadataVersion": "2.0.0",
+      "metadataName": "Cosmic Signature #69",
       "description": "Three bodies trace orbit ribbons in Ember Split tones. Chaos 28/100 across 4 syzygies; spectral class F; fate: ejection. Imprinted in Round 2 on 05 Oct 2026. Same seed, same pixels — re-render it to verify.",
       "traits": {
         "structure": "Orbit Ribbons",
@@ -8304,8 +8307,8 @@
       "cycle": 2,
       "mintedAt": "2026-10-05T10:14:37.000Z",
       "mintTransactionHash": "0xb9f0cb825c8b313f9a64dddc80ddaced4530c49befa6858c5049fffd1350a4b9",
-      "name": "Cosmic Signature #70",
       "metadataVersion": "2.0.0",
+      "metadataName": "Cosmic Signature #70",
       "description": "Three bodies trace orbit ribbons in Violet Split tones over a harmonic weave underlay. Chaos 21/100 across 4 syzygies; spectral class M; fate: eternal dance. Imprinted in Round 2 on 05 Oct 2026. Same seed, same pixels — re-render it to verify.",
       "traits": {
         "structure": "Orbit Ribbons",
@@ -8423,8 +8426,8 @@
       "cycle": 2,
       "mintedAt": "2026-10-05T10:14:37.000Z",
       "mintTransactionHash": "0xb9f0cb825c8b313f9a64dddc80ddaced4530c49befa6858c5049fffd1350a4b9",
-      "name": "Cosmic Signature #71",
       "metadataVersion": "2.0.0",
+      "metadataName": "Cosmic Signature #71",
       "description": "Three bodies trace orbit ribbons in Rose Mono tones over a harmonic weave underlay. Chaos 21/100 across 1 syzygies; spectral class M; fate: ejection. Imprinted in Round 2 on 05 Oct 2026. Same seed, same pixels — re-render it to verify.",
       "traits": {
         "structure": "Orbit Ribbons",

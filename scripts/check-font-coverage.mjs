@@ -43,7 +43,9 @@ export function covered(codePoint, ranges) {
  * a component sets itself (a label, a separator, a key cap) are checked beside the catalogs.
  */
 export function catalogText(source) {
-  const literals = [...source.matchAll(/'((?:[^'\\\n]|\\.)*)'|"((?:[^"\\\n]|\\.)*)"|`((?:[^`\\]|\\.)*)`/g)]
+  const literals = [
+    ...source.matchAll(/'((?:[^'\\\n]|\\.)*)'|"((?:[^"\\\n]|\\.)*)"|`((?:[^`\\]|\\.)*)`/g),
+  ]
     .map((match) => (match[1] ?? match[2] ?? match[3]).replace(/\\(.)/g, '$1'))
     .join('');
   const jsxText = [...source.matchAll(/>([^<>{}]+)</g)].map((match) => match[1]).join('');
