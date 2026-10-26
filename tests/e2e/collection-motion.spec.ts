@@ -335,10 +335,20 @@ test('native artwork transitions complete without delaying navigation or breakin
   });
   const errors: string[] = [];
   page.on('pageerror', (error) => errors.push(error.message));
+  // The morph needs the destination in the router before the click: the active card
+  // prefetches its route, and a click that beats that response on a slow runner arrives
+  // through the loading boundary instead, where no shared element exists to animate.
+  const prefetched = page.waitForResponse(
+    (response) =>
+      /\/art\/31\?_rsc=/.test(response.url()) &&
+      !!response.request().headers()['next-router-prefetch'],
+    { timeout: 30_000 },
+  );
   const cards = await collectionReady(page);
   // A live frame is an observable guarantee that this streamed client boundary
   // has hydrated. Earlier clicks must still work, but can use the native anchor fallback.
   await expect(cards.first().locator('video[src]')).toHaveClass(/has-frame/);
+  await prefetched;
   const before = await page.evaluate(
     () =>
       (
