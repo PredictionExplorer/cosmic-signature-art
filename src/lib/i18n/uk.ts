@@ -450,4 +450,8 @@ export const uk: Messages = {
   saleTitle: 'Продаж {n}',
   saleSubtitle: 'Вісім нових робіт · Цикл {cycle}',
   conditionsOfSale: 'Умови продажу',
+  // The entry's copy affordance and footnotes
+  copyAddress: 'Копіювати',
+  copied: 'Скопійовано',
+  footnote: 'Примітка {n}',
 };

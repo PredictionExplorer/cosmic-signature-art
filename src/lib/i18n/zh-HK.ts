@@ -426,4 +426,8 @@ export const zhHK: Messages = {
   saleTitle: '拍賣 {n}',
   saleSubtitle: '八件新作 · 週期 {cycle}',
   conditionsOfSale: '拍賣條件',
+  // The entry's copy affordance and footnotes
+  copyAddress: '複製',
+  copied: '已複製',
+  footnote: '註 {n}',
 };

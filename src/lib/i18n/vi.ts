@@ -452,4 +452,8 @@ export const vi: Messages = {
   saleTitle: 'Phiên {n}',
   saleSubtitle: 'Tám tác phẩm mới · Chu kỳ {cycle}',
   conditionsOfSale: 'Điều kiện bán',
+  // The entry's copy affordance and footnotes
+  copyAddress: 'Sao chép',
+  copied: 'Đã sao chép',
+  footnote: 'Chú thích {n}',
 };

@@ -445,4 +445,8 @@ export const ko: Messages = {
   saleTitle: '경매 {n}',
   saleSubtitle: '새 작품 여덟 점 · 사이클 {cycle}',
   conditionsOfSale: '판매 조건',
+  // The entry's copy affordance and footnotes
+  copyAddress: '복사',
+  copied: '복사됨',
+  footnote: '주석 {n}',
 };

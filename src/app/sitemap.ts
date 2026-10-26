@@ -9,6 +9,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
       '/collection',
       '/process',
       '/auctions',
+      '/statement',
       '/terms',
       '/privacy',
       ...curatedArtworks.map((work) => `/art/${work.id}`),

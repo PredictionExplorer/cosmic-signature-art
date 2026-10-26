@@ -1,8 +1,10 @@
 import type { Messages } from '@/lib/i18n/en';
 import styles from './auction-rules.module.css';
+
+/** The conditions of sale as numbered paragraphs at reading size; the content is unchanged. */
 export function AuctionRules({ t }: { t: Messages }) {
   return (
-    <div className={`auction-rules ${styles.rules}`}>
+    <ol className={`auction-rules ${styles.rules}`}>
       {[
         [t.rulePreview, t.rulePreviewCopy],
         [t.ruleFirst, t.ruleFirstCopy],
@@ -11,12 +13,16 @@ export function AuctionRules({ t }: { t: Messages }) {
         [t.ruleFunds, t.ruleFundsCopy],
         [t.ruleTrust, t.ruleTrustCopy],
       ].map(([title, body], i) => (
-        <article key={title}>
-          <span className="eyebrow">0{i + 1}</span>
-          <h3>{title}</h3>
-          <p>{body}</p>
-        </article>
+        <li key={title} className={styles.rule}>
+          <span className={styles.sign} aria-hidden="true">
+            § {String(i + 1).padStart(2, '0')}
+          </span>
+          <div>
+            <h3>{title}</h3>
+            <p>{body}</p>
+          </div>
+        </li>
       ))}
-    </div>
+    </ol>
   );
 }

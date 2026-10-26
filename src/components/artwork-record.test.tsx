@@ -1,111 +1,86 @@
 import { render, screen, within } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 import { getCuratedArtwork } from '@/lib/art/catalog';
+import { indexedWork } from '@/lib/art/collection-index';
 import { en } from '@/lib/i18n/en';
 import type { Artwork } from '@/lib/art/types';
-import { NFT_ADDRESS } from '@/lib/site';
-import { ArtworkIdentity, ArtworkSources } from './artwork-record';
+import {
+  ArtworkSources,
+  ChainAddress,
+  compactAddress,
+  recordTime,
+  shortHash,
+} from './artwork-record';
 
 const holder = '0x1111111111111111111111111111111111111111';
-const recipient = '0x2222222222222222222222222222222222222222';
 
 function artwork(): Artwork {
   return structuredClone(getCuratedArtwork(31)!);
 }
 
-describe('artwork identity record', () => {
-  it('preserves cycle zero and distinguishes original recipient from indexed current custody', () => {
-    const work = {
-      ...artwork(),
-      cycle: 0,
-      owner: holder,
-      originalRecipient: recipient,
-      title: '<b>A name</b>',
-    };
-    const { container } = render(<ArtworkIdentity work={work} locale="en" t={en} />);
-    const cycle = screen.getByText(en.cycle).parentElement!;
-    expect(within(cycle).getByText('0')).toBeVisible();
-    expect(screen.getByRole('link', { name: holder })).toHaveAttribute(
-      'href',
-      `https://arbiscan.io/address/${holder}`,
+describe('chain addresses', () => {
+  it('compacts an address while keeping the full one in the accessible name, with one word to copy it', () => {
+    render(
+      <ChainAddress address={holder} compact copy={{ label: en.copyAddress, copied: en.copied }} />,
     );
-    expect(screen.getByRole('link', { name: recipient })).toHaveAttribute(
-      'href',
-      `https://arbiscan.io/address/${recipient}`,
+    const link = screen.getByRole('link', { name: holder });
+    expect(link).toHaveAttribute('href', `https://arbiscan.io/address/${holder}`);
+    expect(link).toHaveTextContent('0x1111…1111');
+    expect(screen.getByRole('button', { name: `${en.copyAddress}: ${holder}` })).toHaveTextContent(
+      en.copyAddress,
     );
-    expect(screen.getByText(en.indexedNote)).toBeVisible();
-    expect(screen.getByText('<b>A name</b>')).toBeVisible();
-    expect(container.querySelector('b')).toBeNull();
-    expect(screen.getByRole('link', { name: /View on Arbiscan/ })).toHaveAttribute(
-      'href',
-      `https://arbiscan.io/token/${NFT_ADDRESS}?a=31`,
+    expect(compactAddress(holder)).toBe('0x1111…1111');
+    expect(shortHash('4179abcd'.padEnd(64, '0').replace(/0000$/, '66e4'))).toBe('4179…66e4');
+    expect(recordTime(new Date('2026-10-26T08:04:00Z'), 'en')).toMatch(
+      /Oct 26, 2026, 8:04 AM UTC$/,
     );
-    expect(screen.getByRole('link', { name: /Transaction/ })).toHaveAttribute(
-      'href',
-      `https://arbiscan.io/tx/${work.provenance.mintTransactionHash}`,
-    );
-    expect(container.querySelector('time')).toHaveAttribute('dateTime', work.mintedAt);
-  });
-
-  it('labels a preserved record and leaves unknown ownership or custom naming absent', () => {
-    render(<ArtworkIdentity work={artwork()} locale="en" t={en} />);
-    expect(screen.getByText(en.preservedRecord)).toBeVisible();
-    expect(screen.queryByText(en.indexedOwner)).not.toBeInTheDocument();
-    expect(screen.queryByText(en.originalRecipient)).not.toBeInTheDocument();
-    expect(screen.queryByText(en.currentName)).not.toBeInTheDocument();
-  });
-
-  it('distinguishes the indexed custody contract from the participant while the token is anchored', () => {
-    const work = {
-      ...artwork(),
-      owner: holder,
-      anchoring: { active: true, participant: recipient },
-    };
-    render(<ArtworkIdentity work={work} locale="en" t={en} />);
-    const custody = screen.getByText(en.indexedOwner).parentElement!;
-    const anchoring = screen.getByText(en.anchoringActive).parentElement!;
-    expect(within(custody).getByRole('link', { name: holder })).toBeVisible();
-    expect(within(custody).queryByRole('link', { name: recipient })).not.toBeInTheDocument();
-    expect(within(anchoring).getByText(en.anchoringParticipant)).toBeVisible();
-    expect(within(anchoring).getByRole('link', { name: recipient })).toBeVisible();
   });
 });
 
 describe('published artwork files', () => {
-  it('links source originals rather than local display previews and preserves document provenance', () => {
+  it('states each file with its dimensions, size and hash from the publisher, linking the original', () => {
     const work = artwork();
-    const media = work.media.find((entry) => entry.id === 'ink')!;
-    media.master = 'https://a1.cosmicsignature.com/images/source-master.png';
+    const ink = work.media.find((entry) => entry.id === 'ink')!;
+    ink.master = 'https://a1.cosmicsignature.com/images/source/ember.png';
+    const facts = indexedWork(31)!.media.ink!;
     render(<ArtworkSources work={work} locale="en" t={en} />);
-    const ink = screen.getByRole('heading', { name: en.ink, level: 3 }).closest('article')!;
-    expect(within(ink).getByRole('link', { name: /Published still/ })).toHaveAttribute(
+    const section = screen.getByRole('region', { name: en.sources });
+    const inkFiles = within(section)
+      .getByRole('heading', { name: en.ink, level: 3 })
+      .closest('article')!;
+    const still = within(inkFiles).getByRole('link', { name: /^Still · WebP · 3,456 × 2,234 px/ });
+    expect(still).toHaveAttribute('href', ink.sourceUrl);
+    expect(still).toHaveTextContent(`515 kB · sha256 ${shortHash(ink.stillSha256!)} ↗`);
+    expect(within(inkFiles).getByRole('link', { name: /^Master file · PNG ↗$/ })).toHaveAttribute(
       'href',
-      media.sourceUrl,
+      ink.master,
     );
-    expect(within(ink).getByRole('link', { name: /Published film/ })).toHaveAttribute(
-      'href',
-      media.films[0].sourceUrl,
-    );
-    expect(within(ink).getByRole('link', { name: /Master file/ })).toHaveAttribute(
-      'href',
-      media.master,
-    );
-    expect(within(ink).getByRole('link', { name: /Published film/ })).not.toHaveAttribute(
-      'href',
-      media.films[0].src,
-    );
-    expect(screen.getByRole('link', { name: /Token metadata/, hidden: true })).toHaveAttribute(
+    const film = within(inkFiles).getByRole('link', { name: /^Film · 30 s/ });
+    expect(film).toHaveAttribute('href', ink.films[0].sourceUrl);
+    expect(film).not.toHaveAttribute('href', ink.films[0].src);
+    expect(film).toHaveTextContent(`100.8 MB · sha256 ${shortHash(facts.films.main.sha256!)} ↗`);
+    expect(screen.getByRole('link', { name: /Token metadata/ })).toHaveAttribute(
       'href',
       work.provenance.metadataUrl,
     );
-    expect(screen.getByRole('link', { name: /Media manifest/, hidden: true })).toHaveAttribute(
+    expect(screen.getByRole('link', { name: /Media manifest/ })).toHaveAttribute(
       'href',
       work.provenance.manifestUrl,
     );
-    expect(screen.getByRole('link', { name: /Indexed record/, hidden: true })).toHaveAttribute(
+    expect(screen.getByRole('link', { name: /Indexed record/ })).toHaveAttribute(
       'href',
       work.provenance.recordUrl,
     );
+    // Every link in this section leaves the venue and says so.
+    for (const link of within(section).getAllByRole('link')) expect(link).toHaveTextContent('↗');
+  });
+
+  it('never borrows the index’s sizes for a different seed', () => {
+    const work = { ...artwork(), seed: `0x${'ab'.repeat(32)}` as `0x${string}` };
+    render(<ArtworkSources work={work} locale="en" t={en} />);
+    const still = screen.getAllByRole('link', { name: /^Still · WebP/ })[0];
+    expect(still).not.toHaveTextContent('MB');
+    expect(still).not.toHaveTextContent('kB');
   });
 
   it('keeps future expressions and original web films accessible without fabricating missing dimensions or sources', () => {
@@ -130,14 +105,12 @@ describe('published artwork files', () => {
     ];
     render(<ArtworkSources work={work} locale="en" t={en} />);
     expect(screen.getByRole('heading', { name: 'Spatial study' })).toBeVisible();
-    expect(screen.getByRole('link', { name: /Published film/ })).toHaveAttribute(
+    expect(screen.getByRole('link', { name: /^Film ↗$/ })).toHaveAttribute(
       'href',
       work.media[0].films[0].src,
     );
-    expect(
-      screen.queryByRole('link', { name: /Published still|Master file/ }),
-    ).not.toBeInTheDocument();
-    expect(screen.queryByText(/px$/)).not.toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: /Still|Master file/ })).not.toBeInTheDocument();
+    expect(screen.queryByText(/px/)).not.toBeInTheDocument();
   });
 
   it('honestly indicates that media files are unavailable', () => {
@@ -147,7 +120,7 @@ describe('published artwork files', () => {
     expect(screen.queryByRole('img')).not.toBeInTheDocument();
   });
 
-  it('identifies each longer film separately while linking its published original', () => {
+  it('identifies each longer film and the spectral sweep separately while linking its published original', () => {
     const work = artwork();
     const ink = work.media.find((entry) => entry.id === 'ink')!;
     ink.films = ['normal', 'medium', 'slow'].map((id) => ({
@@ -157,16 +130,32 @@ describe('published artwork files', () => {
       src: `/art/31-${id}-preview.mp4`,
       sourceUrl: `https://a1.cosmicsignature.com/original/${id}.mp4`,
     }));
+    const light = work.media.find((entry) => entry.id === 'light')!;
+    light.films = [
+      {
+        id: 'sweep',
+        label: 'Spectral sweep',
+        src: 'https://a1.cosmicsignature.com/original/spectral_sweep.mp4',
+        durationSeconds: 10,
+        mimeType: 'video/mp4',
+        variantKey: '31:light:sweep',
+        delivery: 'original-web',
+      },
+    ];
     render(<ArtworkSources work={work} locale="en" t={en} />);
     for (const [label, id] of [
-      [en.originalFilm, 'normal'],
+      [en.film, 'normal'],
       [en.longStudy, 'medium'],
       [en.extendedStudy, 'slow'],
     ]) {
-      expect(screen.getByRole('link', { name: new RegExp(label) })).toHaveAttribute(
+      expect(screen.getByRole('link', { name: new RegExp(`^${label} ·`) })).toHaveAttribute(
         'href',
         `https://a1.cosmicsignature.com/original/${id}.mp4`,
       );
     }
+    expect(screen.getByRole('link', { name: /^Spectral sweep · 10 s ↗$/ })).toHaveAttribute(
+      'href',
+      light.films[0].src,
+    );
   });
 });

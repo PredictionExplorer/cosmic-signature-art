@@ -450,5 +450,9 @@ export const en = {
   saleTitle: 'Sale {n}',
   saleSubtitle: 'Eight new works · Cycle {cycle}',
   conditionsOfSale: 'Conditions of sale',
+  // The entry's copy affordance and footnotes
+  copyAddress: 'Copy',
+  copied: 'Copied',
+  footnote: 'Note {n}',
 } as const;
 export type Messages = { [K in keyof typeof en]: string };

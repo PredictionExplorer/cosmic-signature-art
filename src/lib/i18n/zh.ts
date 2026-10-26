@@ -426,4 +426,8 @@ export const zh: Messages = {
   saleTitle: '拍卖 {n}',
   saleSubtitle: '八件新作 · 周期 {cycle}',
   conditionsOfSale: '拍卖条件',
+  // The entry's copy affordance and footnotes
+  copyAddress: '复制',
+  copied: '已复制',
+  footnote: '注 {n}',
 };

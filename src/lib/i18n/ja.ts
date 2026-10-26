@@ -448,4 +448,8 @@ export const ja: Messages = {
   saleTitle: 'セール {n}',
   saleSubtitle: '新作八点 · サイクル {cycle}',
   conditionsOfSale: '販売条件',
+  // The entry's copy affordance and footnotes
+  copyAddress: 'コピー',
+  copied: 'コピーしました',
+  footnote: '注 {n}',
 };
