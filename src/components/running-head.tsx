@@ -235,7 +235,7 @@ export function RunningHead({ locale, t }: { locale: Locale; t: Messages }) {
               <button type="button" tabIndex={-1}>
                 {t.index}
               </button>
-              <span className="motion-toggle">
+              <span className="motion-word">
                 <PauseGlyph paused={paused} />
                 <span>{t.pauseAmbientMotion}</span>
               </span>

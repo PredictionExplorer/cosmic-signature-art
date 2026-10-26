@@ -517,7 +517,8 @@ html[data-turning='dusk'] .head-overlay {
 .head-words button[aria-expanded='true'] {
   border-color: currentColor;
 }
-.motion-toggle {
+.motion-toggle,
+.motion-word {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -526,7 +527,8 @@ html[data-turning='dusk'] .head-overlay {
   min-height: 44px;
   font-size: var(--fs-control);
 }
-.motion-toggle svg {
+.motion-toggle svg,
+.motion-word svg {
   width: 12px;
   height: 12px;
 }
@@ -587,7 +589,8 @@ html[data-turning='dusk'] .head-overlay {
   .head-words > .language-menu {
     display: none;
   }
-  .motion-toggle span {
+  .motion-toggle span,
+  .motion-word span {
     display: none;
   }
 }
