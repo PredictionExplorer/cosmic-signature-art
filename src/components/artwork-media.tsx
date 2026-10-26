@@ -26,6 +26,12 @@ type ArtworkMediaProps = {
   still?: boolean;
   /** Hold the settled still for --t-hold before the first automatic playback. */
   hold?: boolean;
+  /**
+   * The ambient film may load and play. False unmounts the <video> but keeps the session
+   * (settled, played, ended, held), so a room opening or a connection policy changing
+   * never makes the plate arrive again.
+   */
+  ambient?: boolean;
   startAt?: number;
   restart?: number;
   playRequest?: number;
@@ -67,6 +73,7 @@ function ArtworkMediaSession({
   thumbnail = false,
   still = false,
   hold = false,
+  ambient = true,
   startAt = 0,
   restart = 0,
   playRequest = 0,
@@ -82,6 +89,8 @@ function ArtworkMediaSession({
   const hushed = theatre === 'hushed';
   const container = useRef<HTMLDivElement>(null);
   const video = useRef<HTMLVideoElement>(null);
+  // Declared before the player ref: its cleanup clears a stale frame when a player leaves.
+  const [hasFrame, setHasFrame] = useState(false);
   const attachVideo = useCallback((player: HTMLVideoElement | null) => {
     video.current = player;
     if (!player) return;
@@ -95,12 +104,13 @@ function ArtworkMediaSession({
         if (player.isConnected || video.current === player) return;
         player.removeAttribute('src');
         player.load();
+        // A player that returns later must not show a stale frame over the still.
+        setHasFrame(false);
       });
     };
   }, []);
   const [visible, setVisible] = useState(false);
   const [pageVisible, setPageVisible] = useState(true);
-  const [hasFrame, setHasFrame] = useState(false);
   const [hasPlayed, setHasPlayed] = useState(false);
   const [failure, setFailure] = useState<{ restart: number; playRequest: number } | null>(null);
   const failed = failure?.restart === restart && failure?.playRequest === playRequest;
@@ -120,7 +130,8 @@ function ArtworkMediaSession({
       : (previewSrc ??
         (media?.thumbnail && media.thumbnail !== media.still ? media.thumbnail : undefined));
   // A plate with a preview layer arrives in two steps; anything else is a single image.
-  const layered = !thumbnail && !!preview && !!media?.still;
+  // A still that failed leaves the preview as the one image, so the plate still settles.
+  const layered = !thumbnail && !!preview && !!media?.still && !imageFailed;
   const arrival = layered ? (settled ? 'settled' : 'arriving') : 'single';
   const ground =
     artworkId !== undefined && media
@@ -129,7 +140,7 @@ function ArtworkMediaSession({
   if (priority && preview && !preview.startsWith('data:')) {
     preload(preview, { as: 'image', fetchPriority: 'high' });
   }
-  const shouldPlay = visible && pageVisible && !paused && !hushed && !still && !failed;
+  const shouldPlay = visible && pageVisible && !paused && !hushed && !still && !failed && ambient;
   const reportPlayback = useEffectEvent((playing: boolean) => onPlaybackChange?.(playing));
   const reportProgress = useEffectEvent((time: number, duration: number) =>
     onProgress?.(time, duration),
@@ -221,7 +232,7 @@ function ArtworkMediaSession({
           }}
         />
       ) : null;
-  } else if (layered && !imageFailed) {
+  } else if (layered) {
     image = (
       <>
         <img
@@ -300,7 +311,7 @@ function ArtworkMediaSession({
           <span />
         </div>
       )}
-      {film && !failed && (shouldPlay || hasPlayed) ? (
+      {ambient && film && !failed && (shouldPlay || hasPlayed) ? (
         <video
           ref={attachVideo}
           src={film.src}

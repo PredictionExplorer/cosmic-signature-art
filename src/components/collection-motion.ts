@@ -147,6 +147,9 @@ class CollectionMotionController {
   /** A finished excerpt releases the lease; another visible work may move. */
   rest = (id: number) => {
     this.rested.add(id);
+    // The hover or focus that woke this excerpt is spent; only fresh interest replays it.
+    if (this.pointer === id) this.pointer = null;
+    if (this.focus === id) this.focus = null;
     if (this.active === id) this.publish(null);
     this.schedule();
   };

@@ -107,6 +107,7 @@ export const ko: Messages = {
   pauseMotion: '움직임 일시 정지',
   resumeMotion: '움직임 재개',
   language: '언어',
+  siteNavigation: '주 메뉴',
   skip: '작품으로 건너뛰기',
   passage: '통로',
   shape: '움직임의',

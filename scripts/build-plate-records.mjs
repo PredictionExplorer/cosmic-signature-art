@@ -3,7 +3,7 @@ import { createReadStream } from 'node:fs';
 import { open, readFile, rename, rm } from 'node:fs/promises';
 import { writeFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
-import { resolve } from 'node:path';
+import { resolve, sep } from 'node:path';
 import { log } from 'node:console';
 
 /**
@@ -18,9 +18,18 @@ const mediaPath = fileURLToPath(new URL('../src/lib/art/curated-media.json', imp
 const identityPath = fileURLToPath(new URL('../src/lib/art/curated-records.json', import.meta.url));
 const registryPath = fileURLToPath(new URL('../src/lib/art/plate-records.json', import.meta.url));
 const publicDirectory = fileURLToPath(new URL('../public', import.meta.url));
+const artDirectory = resolve(publicDirectory, 'art');
 const lockPath = `${registryPath}.lock`;
 const shaPattern = /^[a-f0-9]{64}$/;
 const seedPattern = /^0x[a-f0-9]{64}$/;
+
+/** The on-disk still for a curated `/art/...` path, refused unless it stays inside public/art. */
+export function resolveStill(still, directory = artDirectory) {
+  if (!still.startsWith('/art/')) throw new Error(`${still} is outside public/art`);
+  const path = resolve(directory, `.${still.slice('/art'.length)}`);
+  if (!path.startsWith(`${directory}${sep}`)) throw new Error(`${still} is outside public/art`);
+  return path;
+}
 
 /** Width of the sampled frame around the still, in pixels. */
 export const BORDER_PX = 8;
@@ -166,7 +175,7 @@ async function measureWork(work, seed) {
     if (!['ink', 'light'].includes(entry.id)) continue;
     if (!shaPattern.test(entry.stillSha256 ?? '') || !entry.still?.startsWith('/art/'))
       throw new Error(`Signature ${work.id}: malformed curated ${entry.id} record`);
-    const path = resolve(publicDirectory, `.${entry.still}`);
+    const path = resolveStill(entry.still);
     const digest = await hash(path);
     if (digest !== entry.stillSha256)
       throw new Error(

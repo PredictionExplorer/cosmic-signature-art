@@ -106,6 +106,7 @@ export const zhTW: Messages = {
   pauseMotion: '暫停動態',
   resumeMotion: '恢復動態',
   language: '語言',
+  siteNavigation: '主導覽',
   skip: '跳至作品',
   passage: '交界',
   shape: '運動的',

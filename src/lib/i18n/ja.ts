@@ -108,6 +108,7 @@ export const ja: Messages = {
   pauseMotion: '動きを一時停止',
   resumeMotion: '動きを再開',
   language: '言語',
+  siteNavigation: 'メインナビゲーション',
   skip: '作品へ移動',
   passage: '境界を越えて',
   shape: '動きの',

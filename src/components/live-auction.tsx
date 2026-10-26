@@ -20,6 +20,7 @@ import {
 import { auctionAddress, chainId } from '@/lib/auction/config';
 import { auctionPhase, bidFunding, parseEthInput } from '@/lib/auction/rules';
 import { formatCountdown } from '@/lib/auction/countdown';
+import { workNumber } from '@/lib/art/number';
 import type { Messages } from '@/lib/i18n/en';
 import type { Locale } from '@/lib/i18n/routing';
 import { setTheatre } from './motion-provider';
@@ -472,7 +473,7 @@ function AuctionSession({ tokenId, t, locale }: LiveAuctionProps) {
             />
           </label>
           <button className="primary-button" disabled={!ready} type="submit" ref={reviewTrigger}>
-            {t.bidReviewAction} <span aria-hidden="true">↗</span>
+            {t.bidReviewAction}
           </button>
           {leader ? <p>{t.yourBid}</p> : null}
         </form>
@@ -590,9 +591,7 @@ function AuctionSession({ tokenId, t, locale }: LiveAuctionProps) {
         aria-labelledby={`bid-review-title-${tokenId}`}
         aria-describedby={`bid-review-description-${tokenId}`}
       >
-        <p className={`${styles.reviewIdentity} eyebrow`}>
-          {t.signature} {String(tokenId).padStart(3, '0')} · ETH
-        </p>
+        <p className={`${styles.reviewIdentity} eyebrow`}>{workNumber(tokenId)} · ETH</p>
         <h3 id={`bid-review-title-${tokenId}`}>{t.bidReview}</h3>
         <p id={`bid-review-description-${tokenId}`}>{t.bidWarning}</p>
         <dl className={styles.reviewAmounts}>

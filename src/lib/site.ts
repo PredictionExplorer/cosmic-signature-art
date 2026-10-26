@@ -3,15 +3,24 @@ import { locales, localizedPath, type Locale } from './i18n/routing';
 /** The canonical origin: cosmic.art, or NEXT_PUBLIC_SITE_URL while that domain is pending. */
 export const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://cosmic.art';
 /**
- * The origin this deployment actually serves from. Social crawlers must fetch preview
- * images from here, so a share card keeps its image while cosmic.art's DNS is pending.
+ * The origin social crawlers can actually fetch preview images from, so a share card keeps
+ * its image while cosmic.art's DNS is pending. NEXT_PUBLIC_DEPLOYMENT_URL wins when set (use
+ * it to point cards at cosmic.art once that domain resolves). On Vercel, a *.vercel.app host
+ * always resolves, so a custom production domain is never assumed to: the branch or
+ * deployment host stands in for it.
  */
 export function deploymentUrl(env: Record<string, string | undefined>): string {
-  const vercel =
-    env.VERCEL_ENV === 'production'
-      ? env.VERCEL_PROJECT_PRODUCTION_URL
-      : env.VERCEL_URL || env.VERCEL_PROJECT_PRODUCTION_URL;
-  if (vercel) return `https://${vercel.replace(/^https?:\/\//, '')}`;
+  const origin = (host: string) => `https://${host.replace(/^https?:\/\//, '')}`;
+  if (env.NEXT_PUBLIC_DEPLOYMENT_URL) return origin(env.NEXT_PUBLIC_DEPLOYMENT_URL);
+  const production = env.VERCEL_PROJECT_PRODUCTION_URL;
+  const resolvable = (host?: string) =>
+    host && /\.vercel\.app$/i.test(host.replace(/^https?:\/\//, ''));
+  if (env.VERCEL_ENV === 'production') {
+    const host = resolvable(production) ? production : env.VERCEL_BRANCH_URL || env.VERCEL_URL;
+    if (host) return origin(host);
+  } else if (env.VERCEL_URL || production) {
+    return origin((env.VERCEL_URL || production) as string);
+  }
   return env.NEXT_PUBLIC_SITE_URL || 'https://cosmic.art';
 }
 export const DEPLOYMENT_URL = deploymentUrl(process.env);

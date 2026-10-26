@@ -13,6 +13,7 @@ import {
   parseRequestedIds,
   plateRecord,
   reachesEdge,
+  resolveStill,
   serializeRegistry,
 } from './build-plate-records.mjs';
 
@@ -146,6 +147,15 @@ test('an unchanged measurement keeps the previous date; a change takes today', (
   assert.equal(decideMeasuredOn('2026-10-26', records, records, '2026-11-01'), '2026-10-26');
   assert.equal(decideMeasuredOn(null, records, records, '2026-11-01'), '2026-11-01');
   assert.equal(decideMeasuredOn('2026-10-26', records, [], '2026-11-01'), '2026-11-01');
+});
+
+test('a curated still path cannot leave public/art', () => {
+  const root = '/srv/public/art';
+  assert.equal(resolveStill('/art/23-ink.webp', root), `${root}/23-ink.webp`);
+  assert.throws(() => resolveStill('/art/../../.env', root), /outside public\/art/);
+  assert.throws(() => resolveStill('/art/', root), /outside public\/art/);
+  assert.throws(() => resolveStill('/etc/passwd', root), /outside public\/art/);
+  assert.throws(() => resolveStill('/art/sub/../../x.webp', root), /outside public\/art/);
 });
 
 test('the registry serializes with schema version 1 and a trailing newline', () => {

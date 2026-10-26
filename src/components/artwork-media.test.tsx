@@ -329,14 +329,30 @@ describe('artwork media delivery', () => {
   });
 
   it('keeps the publisher’s preview as the work when the full still cannot load', () => {
+    vi.useFakeTimers();
     const onFailure = vi.fn();
+    const onSettled = vi.fn();
     const { container } = render(
-      <ArtworkMedia media={ink(31)} alt="Signature 31 in ink" onFailure={onFailure} />,
+      <ArtworkMedia
+        media={ink(31)}
+        alt="Signature 31 in ink"
+        hold
+        onSettled={onSettled}
+        onFailure={onFailure}
+      />,
     );
+    enterViewport();
+    expect(container.querySelector('.art-media')).toHaveAttribute('data-arrival', 'arriving');
     fireEvent.error(screen.getByRole('img', { name: 'Signature 31 in ink' }));
     const remaining = screen.getByRole('img', { name: 'Signature 31 in ink' });
     expect(new URL((remaining as HTMLImageElement).src).pathname).toBe('/art/31-ink-640.webp');
     expect(container.querySelectorAll('img')).toHaveLength(1);
+    // The preview is the plate's one image now: it settles, and the held film may start.
+    expect(container.querySelector('.art-media')).toHaveAttribute('data-arrival', 'single');
+    expect(onSettled).toHaveBeenCalledOnce();
+    expect(HTMLMediaElement.prototype.play).not.toHaveBeenCalled();
+    act(() => vi.advanceTimersByTime(1_200));
+    expect(HTMLMediaElement.prototype.play).toHaveBeenCalledOnce();
     expect(onFailure).not.toHaveBeenCalled();
     fireEvent.error(remaining);
     expect(screen.getByRole('img', { name: 'Signature 31 in ink' })).not.toHaveAttribute('src');
@@ -596,6 +612,50 @@ describe('artwork media delivery', () => {
     enterViewport(1);
     rerender(<ArtworkMedia media={ink(23)} alt="Signature 23" hold playRequest={1} />);
     expect(HTMLMediaElement.prototype.play).toHaveBeenCalledOnce();
+  });
+
+  it('switching the ambient film off keeps the session and never re-arrives the plate', async () => {
+    const show = (ambient: boolean) => (
+      <ArtworkMedia media={ink(31)} alt="Signature 31" ambient={ambient} />
+    );
+    const { container, rerender } = render(show(true));
+    enterViewport();
+    const still = screen.getByRole('img', { name: 'Signature 31' });
+    await act(async () => {
+      fireEvent.load(still);
+    });
+    expect(container.querySelector('.art-media')).toHaveAttribute('data-arrival', 'settled');
+    const video = player(container);
+    fireEvent.playing(video);
+    expect(video).toHaveClass('has-frame');
+    rerender(show(false));
+    // The removed player releases its frame at the end of the commit.
+    await act(async () => {});
+    expect(container.querySelector('video')).toBeNull();
+    expect(screen.getByRole('img', { name: 'Signature 31' })).toBe(still);
+    expect(container.querySelector('.art-media')).toHaveAttribute('data-arrival', 'settled');
+    rerender(show(true));
+    // The player returns without a stale frame over the still.
+    expect(player(container)).not.toHaveClass('has-frame');
+    expect(screen.getByRole('img', { name: 'Signature 31' })).toBe(still);
+  });
+
+  it('a finished film stays at rest when its ambient switch flips off and on', async () => {
+    const show = (ambient: boolean) => (
+      <ArtworkMedia media={ink(31)} alt="Signature 31" ambient={ambient} />
+    );
+    const { container, rerender } = render(show(true));
+    enterViewport();
+    fireEvent.load(screen.getByRole('img'));
+    const video = player(container);
+    fireEvent.playing(video);
+    fireEvent.ended(video);
+    vi.mocked(HTMLMediaElement.prototype.play).mockClear();
+    rerender(show(false));
+    await act(async () => {});
+    rerender(show(true));
+    expect(player(container)).not.toHaveClass('has-frame');
+    expect(HTMLMediaElement.prototype.play).not.toHaveBeenCalled();
   });
 
   it('behaves as a still while the theatre is hushed', () => {

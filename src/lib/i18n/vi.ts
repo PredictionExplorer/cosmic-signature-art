@@ -109,6 +109,7 @@ export const vi: Messages = {
   pauseMotion: 'Tạm dừng chuyển động',
   resumeMotion: 'Tiếp tục chuyển động',
   language: 'Ngôn ngữ',
+  siteNavigation: 'Điều hướng chính',
   skip: 'Chuyển đến tác phẩm',
   passage: 'Lối chuyển',
   shape: 'Hình hài',

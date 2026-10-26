@@ -106,6 +106,7 @@ export const zh: Messages = {
   pauseMotion: '暂停动态',
   resumeMotion: '恢复动态',
   language: '语言',
+  siteNavigation: '主导航',
   skip: '跳至作品',
   passage: '交界',
   shape: '运动的',

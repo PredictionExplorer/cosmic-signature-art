@@ -151,16 +151,54 @@ test.describe('localized public gallery', () => {
   }
 });
 
-test('the home paints Signature 023 from an inline preview before any image request', async ({
+test('the home paints Signature 023 from an inline preview before the full still arrives', async ({
   page,
 }) => {
-  await page.goto('/');
+  test.skip(
+    test.info().project.name === 'webkit-reduced-motion',
+    "Headless WebKit under reduced-motion emulation fires no requestAnimationFrame before load, so React's streamed Suspense reveal waits for the held still; the preview-first contract is proved by every other project.",
+  );
+  // Hold the hero's full still in flight: the preview alone must carry the first paint.
+  const inkSource = archivedMedia
+    .find((work) => work.id === 23)!
+    .media.find((media) => media.id === 'ink')!.sourceUrl;
+  let release!: () => void;
+  const held = new Promise<void>((resolve) => {
+    release = resolve;
+  });
+  let intercepted = 0;
+  await page.route(
+    (url) => url.pathname === '/art/23-ink.webp' || url.href === inkSource,
+    async (route) => {
+      intercepted += 1;
+      await held;
+      await route.continue();
+    },
+  );
+  await page.goto('/', { waitUntil: 'domcontentloaded' });
   const preview = page.locator('.passage:visible .passage-field img.art-preview');
+  const still = page.locator('.passage:visible .passage-field img.art-still');
+  const plate = page.locator('.passage:visible .passage-field .art-media');
   await expect(preview).toHaveAttribute('src', /^data:image\/webp;base64,/);
   await expect(preview).toBeInViewport();
-  const still = page.locator('.passage:visible .passage-field img.art-still');
+  await expect
+    .poll(() =>
+      preview.evaluate((element) => {
+        const image = element as HTMLImageElement;
+        return image.complete && image.naturalWidth > 0;
+      }),
+    )
+    .toBe(true);
+  await expect(preview).toHaveCSS('opacity', '1');
+  await expect.poll(() => intercepted).toBeGreaterThan(0);
+  await expect(plate).toHaveAttribute('data-arrival', 'arriving');
+  await expect(still).not.toHaveClass(/is-settled/);
+  await expect(still).toHaveCSS('opacity', '0');
+  release();
   await imageLoaded(still);
   await expect(still).toHaveClass(/is-settled/);
+  await expect(still).toHaveCSS('opacity', '1');
+  await expect(plate).toHaveAttribute('data-arrival', 'settled');
   await artworkImageSource(still, 23, 'ink');
 });
 

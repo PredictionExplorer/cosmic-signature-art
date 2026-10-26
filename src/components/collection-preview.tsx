@@ -157,6 +157,8 @@ function PreviewVideo({
     if (!player) return;
     let canceled = false;
     let failed = false;
+    // `ended` has fired: the rest is owed even if the lease is lost during the hold or fade.
+    let finished = false;
     let timer: ReturnType<typeof setTimeout> | undefined;
     let frame: number | undefined;
     const fail = (reason: PreviewFailure) => {
@@ -194,10 +196,13 @@ function PreviewVideo({
     const ended = () => {
       // Hold the excerpt's last frame, fade back to the still, then release the lease.
       // Nothing rewinds on its own; an excerpt ends mid-fluid and says so.
+      finished = true;
       timer = setTimeout(() => {
         setHasFrame(false);
         timer = setTimeout(() => {
-          if (!canceled) reportEnded();
+          if (canceled) return;
+          finished = false;
+          reportEnded();
         }, REEL_MS);
       }, HOLD_MS);
     };
@@ -222,6 +227,8 @@ function PreviewVideo({
       // media resource when its single playback lease moves to another artwork.
       player.removeAttribute('src');
       player.load();
+      // A lease lost during the hold or the fade still rests: the excerpt played to its end.
+      if (finished) reportEnded();
     };
   }, [film.src]);
 

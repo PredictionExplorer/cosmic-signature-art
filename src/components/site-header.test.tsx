@@ -42,7 +42,7 @@ afterEach(() => {
 describe('site header', () => {
   it('lists the one navigation vocabulary in order, with no outward arrow on Auctions', () => {
     renderHeader();
-    const nav = screen.getByRole('navigation');
+    const nav = screen.getByRole('navigation', { name: en.siteNavigation });
     const links = within(nav).getAllByRole('link');
     expect(links.map((link) => link.textContent)).toEqual([en.collection, en.auctions, en.process]);
     expect(links.map((link) => link.getAttribute('href'))).toEqual([
@@ -58,7 +58,7 @@ describe('site header', () => {
   it('marks nested routes as current without matching unrelated prefixes', () => {
     pathname = '/auctions/31';
     renderHeader();
-    const nav = screen.getByRole('navigation');
+    const nav = screen.getByRole('navigation', { name: en.siteNavigation });
     expect(within(nav).getByRole('link', { name: en.auctions })).toHaveAttribute(
       'aria-current',
       'page',

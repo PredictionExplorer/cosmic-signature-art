@@ -445,7 +445,7 @@ describe('LiveAuction gallery presentation and review accessibility', () => {
     // Safari can leave focus on the input when a pointer activates the submit button.
     fireEvent.submit(input.closest('form')!);
     const reviewDialog = await screen.findByRole('dialog');
-    expect(within(reviewDialog).getByText('Signature 100 · ETH')).toBeVisible();
+    expect(within(reviewDialog).getByText('№ 100 · ETH')).toBeVisible();
     const cancel = within(reviewDialog).getByRole('button', { name: t.cancel });
     expect(cancel).toHaveFocus();
     expect(document.body.style.overflow).toBe('hidden');

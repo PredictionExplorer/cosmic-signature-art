@@ -135,6 +135,21 @@
   animation-duration: 0s !important;
   animation-delay: 0s !important;
 }
+/* A hush that begins while a snapshot is mid-flight finishes it at once. */
+:global(:root):has(.stage):has(:global([data-theatre='hushed'])):global(
+    ::view-transition-group(*)
+  ) {
+  animation-duration: 0s !important;
+  animation-delay: 0s !important;
+}
+:global(:root):has(.stage):has(:global([data-theatre='hushed'])):global(::view-transition-old(*)) {
+  animation-duration: 0s !important;
+  animation-delay: 0s !important;
+}
+:global(:root):has(.stage):has(:global([data-theatre='hushed'])):global(::view-transition-new(*)) {
+  animation-duration: 0s !important;
+  animation-delay: 0s !important;
+}
 
 @media (prefers-reduced-motion: reduce) {
   :global(:root):has(.stage):global(::view-transition-group(*)) {

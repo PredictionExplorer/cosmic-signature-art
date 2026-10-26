@@ -14,8 +14,9 @@ const pageStage = '[data-artwork-stage="page"]:visible';
 const roomSelector = '[data-testid="artwork-room"]';
 const light = archive.find((work) => work.id === 31)!.media.find((media) => media.id === 'light')!;
 const ink = archive.find((work) => work.id === 31)!.media.find((media) => media.id === 'ink')!;
-// Fault injection is limited to this real work's two authenticated delivery locations.
+// Fault injection is limited to this real work's authenticated delivery locations.
 const isLightStill = (url: URL) => url.pathname === light.still || url.href === light.sourceUrl;
+const isInkStill = (url: URL) => url.pathname === ink.still || url.href === ink.sourceUrl;
 // Only a complete published original counts; the hash-verified local film plays inline.
 const originalFilm = (url: string) => /\/videos\/web\/[^/]+\.mp4(?:\?|$)/.test(url);
 
@@ -121,24 +122,52 @@ async function noOverflow(page: Page) {
   expect(dimensions.width).toBeLessThanOrEqual(dimensions.viewport + 1);
 }
 
-test('the plate is painted from an inline preview before any full still arrives', async ({
+test('the plate is painted from an inline preview before the full still arrives', async ({
   page,
 }) => {
-  await page.goto('/art/31?view=still');
+  test.skip(
+    test.info().project.name === 'webkit-reduced-motion',
+    "Headless WebKit under reduced-motion emulation fires no requestAnimationFrame before load, so React's streamed Suspense reveal waits for the held still; the preview-first contract is proved by every other project.",
+  );
+  // Hold the full still in flight: the ladder must stand on its first rung meanwhile.
+  let release!: () => void;
+  const held = new Promise<void>((resolve) => {
+    release = resolve;
+  });
+  let intercepted = 0;
+  await page.route(isInkStill, async (route) => {
+    intercepted += 1;
+    await held;
+    await route.continue();
+  });
+  // The eager hero <img> delays `load`, so only DOMContentLoaded can be awaited here.
+  await page.goto('/art/31?view=still', { waitUntil: 'domcontentloaded' });
   const preview = page.locator(`${pageStage} img.art-preview`);
+  const still = page.locator(`${pageStage} img.art-still`);
+  const plate = page.locator(`${pageStage} .art-media`);
   await expect(preview).toHaveAttribute('src', /^data:image\/webp;base64,/);
   await expect(preview).toBeInViewport();
-  expect(
-    await preview.evaluate((element) => {
-      const image = element as HTMLImageElement;
-      return image.complete && image.naturalWidth > 0;
-    }),
-  ).toBe(true);
-  const plate = page.locator(`${pageStage} .art-media`);
-  await expect(plate).toHaveAttribute('data-arrival', /^(?:arriving|settled)$/);
-  const still = page.locator(`${pageStage} img.art-still`);
+  await expect
+    .poll(() =>
+      preview.evaluate((element) => {
+        const image = element as HTMLImageElement;
+        return image.complete && image.naturalWidth > 0;
+      }),
+    )
+    .toBe(true);
+  await expect(preview).toHaveCSS('opacity', '1');
+  await expect.poll(() => intercepted).toBeGreaterThan(0);
+  await expect(plate).toHaveAttribute('data-arrival', 'arriving');
+  await expect(still).not.toHaveClass(/is-settled/);
+  await expect(still).toHaveCSS('opacity', '0');
+  await expect(page.locator('.work-transport [data-film-state]')).toHaveAttribute(
+    'data-film-state',
+    'arriving',
+  );
+  release();
   await imageReady(still);
   await expect(still).toHaveClass(/is-settled/);
+  await expect(still).toHaveCSS('opacity', '1');
   await expect(plate).toHaveAttribute('data-arrival', 'settled');
   await expect(page.locator('.work-transport [data-film-state]')).toHaveAttribute(
     'data-film-state',

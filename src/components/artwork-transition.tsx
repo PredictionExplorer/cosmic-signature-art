@@ -28,8 +28,9 @@ export function ArtworkTransition({
   disabled?: boolean;
   children: ReactNode;
 }) {
-  const { paused, reducedMotion } = useMotion();
-  const enabled = !disabled && !paused && !reducedMotion;
+  const { paused, reducedMotion, theatre } = useMotion();
+  // A hushed theatre (bid review) walks between card and plate without the morph.
+  const enabled = !disabled && !paused && !reducedMotion && theatre !== 'hushed';
 
   return (
     <ViewTransition

@@ -163,6 +163,37 @@ describe('collection film presentation', () => {
     expect(imagePath()).toBe('/art/31-ink-640.webp');
   });
 
+  it('still reports the rest when the lease is lost during the hold or the fade', () => {
+    vi.useFakeTimers();
+    const onEnded = vi.fn();
+    const show = (active: boolean) => (
+      <CollectionPreview
+        media={ink}
+        alt="Signature 31"
+        active={active}
+        onFailure={vi.fn()}
+        onEnded={onEnded}
+      />
+    );
+    const { container, rerender } = render(show(true));
+    const video = container.querySelector('video')!;
+    fireEvent.loadedMetadata(video);
+    fireEvent.playing(video);
+    fireEvent.ended(video);
+    act(() => vi.advanceTimersByTime(600));
+    rerender(show(false));
+    expect(onEnded).toHaveBeenCalledOnce();
+    act(() => vi.advanceTimersByTime(5_000));
+    expect(onEnded).toHaveBeenCalledOnce();
+    // An excerpt interrupted before its end owes no rest.
+    rerender(show(true));
+    const again = container.querySelector('video')!;
+    fireEvent.loadedMetadata(again);
+    fireEvent.playing(again);
+    rerender(show(false));
+    expect(onEnded).toHaveBeenCalledOnce();
+  });
+
   it('describes an excerpt by its true place in the source film', () => {
     expect(excerptRange({ ...ink.previewFilm!, startSeconds: 6, durationSeconds: 8 })).toBe(
       '00:06–00:14',

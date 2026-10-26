@@ -1,7 +1,7 @@
 'use client';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useEffect, useRef, useState, useSyncExternalStore } from 'react';
+import { useEffect, useRef, useState, useSyncExternalStore, type MouseEvent } from 'react';
 import { RotateCcw } from 'lucide-react';
 import type { Artwork } from '@/lib/art/types';
 import { getInterpretation } from '@/lib/art/types';
@@ -15,6 +15,8 @@ import { useMotion } from './motion-provider';
 const REST_MS = 6000;
 /** Input right after pressing Sit is the press itself, not a request for the chrome back. */
 const SIT_GRACE_MS = 600;
+/** The click a browser synthesises after a waking tap arrives well within this window. */
+const SWALLOW_MS = 500;
 /** Once the arrival film has resolved in this session, the home opens on the still. */
 const resolvedKey = 'cosmic-art-home-film-v1';
 const noSubscription = () => () => {};
@@ -66,9 +68,17 @@ export function Passage({
   const rested = restedHere || (resolvedOverride === null && !ended && resolvedBefore);
   const [sit, setSit] = useState(false);
   const sitAt = useRef(0);
+  const swallowClick = useRef(false);
+  const swallowTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const timers = useRef<ReturnType<typeof setTimeout>[]>([]);
-  const { paused, toggle } = useMotion();
-  useEffect(() => () => timers.current.forEach(clearTimeout), []);
+  const { paused, reducedMotion, toggle } = useMotion();
+  useEffect(
+    () => () => {
+      timers.current.forEach(clearTimeout);
+      if (swallowTimer.current) clearTimeout(swallowTimer.current);
+    },
+    [],
+  );
   useEffect(() => {
     if (!ended) return;
     const timer = setTimeout(() => {
@@ -86,7 +96,14 @@ export function Passage({
     setSettled(false);
     setPlaying(false);
     setSit(false);
-    if (paused) {
+    // A crossing starts a clean record: the plate that returns reads the session flag, so
+    // a film that already resolved comes back on its still with Again, as a reload would.
+    setEnded(false);
+    setRested(false);
+    setResolvedOverride(null);
+    setProgress({ time: 0, duration: 0 });
+    // Pause and reduced motion take the Turn in one frame; the curtain is hidden for them.
+    if (paused || reducedMotion) {
       setMode(nextMode);
       return;
     }
@@ -108,9 +125,31 @@ export function Passage({
     sitAt.current = Date.now();
     setSit(true);
   }
+  function sitting() {
+    return sit && Date.now() - sitAt.current >= SIT_GRACE_MS;
+  }
+  /** A key, a focus change or a moving pointer brings the chrome back; the key still lands. */
   function wake() {
-    if (!sit || Date.now() - sitAt.current < SIT_GRACE_MS) return;
+    if (sitting()) setSit(false);
+  }
+  /**
+   * A tap or click on the faded section only brings the chrome back. The click the browser
+   * synthesises next must not activate a control the visitor could not see.
+   */
+  function wakeByPress() {
+    if (!sitting()) return;
     setSit(false);
+    swallowClick.current = true;
+    if (swallowTimer.current) clearTimeout(swallowTimer.current);
+    swallowTimer.current = setTimeout(() => {
+      swallowClick.current = false;
+    }, SWALLOW_MS);
+  }
+  function swallow(event: MouseEvent<HTMLElement>) {
+    if (!swallowClick.current) return;
+    swallowClick.current = false;
+    event.preventDefault();
+    event.stopPropagation();
   }
   const state = !settled ? t.arriving : playing ? t.film : t.still;
   const label = `${mode === 'ink' ? t.ink : t.light} / ${state}`;
@@ -121,8 +160,10 @@ export function Passage({
       data-sit={sit ? '' : undefined}
       onPointerMove={wake}
       onKeyDown={wake}
-      onTouchStart={wake}
       onFocus={wake}
+      onPointerDown={wakeByPress}
+      onTouchStart={wakeByPress}
+      onClickCapture={swallow}
     >
       <div className="passage-kicker eyebrow">
         <span>{t.passage}</span>

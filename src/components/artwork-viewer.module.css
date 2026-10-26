@@ -177,6 +177,7 @@
 .room[data-sit] .topbar,
 .room[data-sit] .lower {
   opacity: 0;
+  pointer-events: none;
   transition-duration: var(--t-sit);
 }
 .rail {

@@ -101,6 +101,14 @@ function ArtworkViewerSession({
   const [time, setTime] = useState({ current: 0, duration: 0 });
   const [failed, setFailed] = useState(false);
   const returnFocusRef = useRef<HTMLButtonElement>(null);
+  // The click a browser synthesises after a waking press must not reach faded chrome.
+  const swallowClick = useRef<ReturnType<typeof setTimeout> | null>(null);
+  useEffect(
+    () => () => {
+      if (swallowClick.current) clearTimeout(swallowClick.current);
+    },
+    [],
+  );
   const { paused, toggle } = useMotion();
   const policy = useMediaPolicy();
   const { expression, pendingExpression, failedExpression, selectExpression, cancelPending } =
@@ -130,15 +138,18 @@ function ArtworkViewerSession({
   }, [ended]);
   const media = getInterpretation(artwork, expression);
   const light = getInterpretation(artwork, 'light');
+  // The inline bytes were read from the registry's thumbnail; they follow only that thumbnail.
+  const previewSrc =
+    media?.thumbnail === getInterpretation(initial, expression)?.thumbnail
+      ? inlinePreviews?.[expression]
+      : undefined;
   // Only a hash-verified local delivery plays inline, from frame 0. The 640 excerpt is a
   // browsing preview; a complete published original waits for the room.
   const inlineFilm = media?.films.find((film) => film.delivery === 'local-preview');
-  const ambient = media
-    ? {
-        ...media,
-        films: !room && inlineFilm && (!policy.constrained || explicitFilm) ? [inlineFilm] : [],
-      }
-    : undefined;
+  // The media identity stays stable; whether the film may play is a separate switch, so
+  // the room opening or the connection policy settling never remounts the plate.
+  const ambient = media ? { ...media, films: inlineFilm ? [inlineFilm] : [] } : undefined;
+  const ambientFilm = !room && (!policy.constrained || explicitFilm);
   const label = (id: string) =>
     id === 'ink'
       ? t.ink
@@ -191,6 +202,22 @@ function ArtworkViewerSession({
     if (!sit || Date.now() - sitAt.current < SIT_GRACE_MS) return;
     setSit(false);
   }
+  function wakeByPress() {
+    if (!sit || Date.now() - sitAt.current < SIT_GRACE_MS) return;
+    setSit(false);
+    // The press only brings the chrome back; the click that follows it is not a choice.
+    if (swallowClick.current) clearTimeout(swallowClick.current);
+    swallowClick.current = setTimeout(() => {
+      swallowClick.current = null;
+    }, 500);
+  }
+  function swallowWakingClick(event: React.MouseEvent) {
+    if (!swallowClick.current) return;
+    clearTimeout(swallowClick.current);
+    swallowClick.current = null;
+    event.preventDefault();
+    event.stopPropagation();
+  }
   const idle = paused || still || !playing;
   const filmState = !settled ? 'arriving' : playing ? 'film' : 'still';
   const state = t[filmState];
@@ -202,9 +229,11 @@ function ArtworkViewerSession({
         data-expression={expression}
         data-sit={sit ? '' : undefined}
         onPointerMove={wake}
+        onPointerDown={wakeByPress}
+        onTouchStart={wakeByPress}
         onKeyDown={wake}
-        onTouchStart={wake}
         onFocus={wake}
+        onClickCapture={swallowWakingClick}
       >
         {live ? (
           <Suspense fallback={null}>
@@ -263,8 +292,9 @@ function ArtworkViewerSession({
                   alt={`${t.signature} ${artwork.id} · ${label(expression)}`}
                   priority
                   hold
+                  ambient={ambientFilm}
                   artworkId={artwork.id}
-                  previewSrc={inlinePreviews?.[expression]}
+                  previewSrc={previewSrc}
                   still={still || !!room}
                   startAt={time.current}
                   restart={restart}

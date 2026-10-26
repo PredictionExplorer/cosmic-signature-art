@@ -172,7 +172,7 @@ export function SiteHeader({ locale, t }: { locale: Locale; t: Messages }) {
         <Link className="brand" href={localizedPath(locale)} aria-label="Cosmic Signature">
           <Wordmark t={t} />
         </Link>
-        <nav>
+        <nav aria-label={t.siteNavigation}>
           {NAVIGATION.map((path) => (
             <Link
               key={path}

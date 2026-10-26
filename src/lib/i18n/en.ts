@@ -105,6 +105,7 @@ export const en = {
   pauseMotion: 'Pause motion',
   resumeMotion: 'Resume motion',
   language: 'Language',
+  siteNavigation: 'Main',
   skip: 'Skip to artwork',
   passage: 'The Passage',
   shape: 'The shape',

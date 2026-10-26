@@ -13,6 +13,37 @@ describe('deployment origin', () => {
       }),
     ).toBe('https://cosmic-signature-art.vercel.app');
   });
+  it('never trusts a custom production domain to resolve; the branch host stands in', () => {
+    expect(
+      deploymentUrl({
+        VERCEL_ENV: 'production',
+        VERCEL_PROJECT_PRODUCTION_URL: 'cosmic.art',
+        VERCEL_BRANCH_URL: 'cosmic-signature-art-git-main-randomwalknft.vercel.app',
+        VERCEL_URL: 'cosmic-signature-art-abc123.vercel.app',
+        NEXT_PUBLIC_SITE_URL: 'https://cosmic.art',
+      }),
+    ).toBe('https://cosmic-signature-art-git-main-randomwalknft.vercel.app');
+    expect(
+      deploymentUrl({
+        VERCEL_ENV: 'production',
+        VERCEL_PROJECT_PRODUCTION_URL: 'cosmic.art',
+        VERCEL_URL: 'cosmic-signature-art-abc123.vercel.app',
+      }),
+    ).toBe('https://cosmic-signature-art-abc123.vercel.app');
+  });
+  it('lets an explicit deployment origin win everywhere', () => {
+    expect(
+      deploymentUrl({
+        NEXT_PUBLIC_DEPLOYMENT_URL: 'https://cosmic.art',
+        VERCEL_ENV: 'production',
+        VERCEL_PROJECT_PRODUCTION_URL: 'cosmic.art',
+        VERCEL_URL: 'cosmic-signature-art-abc123.vercel.app',
+      }),
+    ).toBe('https://cosmic.art');
+    expect(deploymentUrl({ NEXT_PUBLIC_DEPLOYMENT_URL: 'cosmic-signature-art.vercel.app' })).toBe(
+      'https://cosmic-signature-art.vercel.app',
+    );
+  });
   it('uses the unique deployment URL on previews', () => {
     expect(
       deploymentUrl({

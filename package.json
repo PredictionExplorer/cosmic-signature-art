@@ -19,6 +19,7 @@
     "art:previews": "node scripts/build-collection-previews.mjs",
     "test:plates": "node --test scripts/build-plate-records.test.mjs",
     "art:plates": "node scripts/build-plate-records.mjs",
+    "art:inline": "node scripts/build-inline-previews.mjs",
     "test:e2e": "playwright test",
     "test:auction-ui": "playwright test --config tests/auction-harness/playwright.config.ts",
     "test:auction-ui:types": "tsc --noEmit -p tests/auction-harness/tsconfig.json",

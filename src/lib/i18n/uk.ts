@@ -107,6 +107,7 @@ export const uk: Messages = {
   pauseMotion: 'Призупинити рух',
   resumeMotion: 'Відновити рух',
   language: 'Мова',
+  siteNavigation: 'Головна навігація',
   skip: 'Перейти до твору',
   passage: 'Перехід',
   shape: 'Форма',

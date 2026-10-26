@@ -6,7 +6,7 @@ import type { Locale } from '@/lib/i18n/routing';
 import type { Messages } from '@/lib/i18n/en';
 import { isLocale, localizedPath } from '@/lib/i18n/routing';
 import { messages } from '@/lib/i18n/messages';
-import { metadata, jsonLd, SITE_URL } from '@/lib/site';
+import { metadata, jsonLd, SITE_URL, DEPLOYMENT_URL } from '@/lib/site';
 import { getArtwork } from '@/lib/art/server';
 import { getCuratedArtwork } from '@/lib/art/catalog';
 import { inlineCuratedPreview } from '@/lib/art/inline-preview';
@@ -90,7 +90,6 @@ export default async function ArtworkPage({
     curated && expression
       ? { [expression]: inlineCuratedPreview(curated.id, expression) }
       : undefined;
-  const light = getInterpretation(work, 'light');
   return (
     <main id="main" className="work-page section-wrap">
       <div className="work-breadcrumb">
@@ -133,33 +132,6 @@ export default async function ArtworkPage({
           <StreamedRecord live={live} fallback={work} locale={locale} t={t} query={query} />
         </Suspense>
       )}
-      {light?.still ? (
-        <section className={recordStyles.echoRoom}>
-          <p className="eyebrow">{t.sameWork}</p>
-          <Image
-            src={light.still}
-            alt={`${t.signature} ${work.id} · ${t.light}`}
-            width={light.width ?? 3456}
-            height={light.height ?? 2234}
-            unoptimized
-          />
-          <h2>{t.echo}</h2>
-        </section>
-      ) : null}
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{
-          __html: jsonLd({
-            '@context': 'https://schema.org',
-            '@type': 'VisualArtwork',
-            name: `Cosmic Signature ${work.id}`,
-            url: `${SITE_URL}${localizedPath(locale, `/art/${work.id}`)}`,
-            image: getInterpretation(work, 'ink')?.still ?? light?.still,
-            artform: 'Generative digital art',
-            identifier: String(work.id),
-          }),
-        }}
-      />
     </main>
   );
 }
@@ -177,7 +149,10 @@ async function StreamedRecord({
   return <ArtworkRecord result={await live} {...props} />;
 }
 
-/** The deeper record: identity, composition, history and files, from the live read. */
+/**
+ * The deeper record: identity, composition, history, files, the Light echo and the
+ * structured data, all from the live read so one page never shows two renderings.
+ */
 function ArtworkRecord({
   result,
   fallback,
@@ -192,6 +167,8 @@ function ArtworkRecord({
   query: HistoryQuery;
 }) {
   const work = result.artwork ?? fallback;
+  const light = getInterpretation(work, 'light');
+  const still = getInterpretation(work, 'ink')?.still ?? light?.still;
   return (
     <>
       {result.notice ? (
@@ -220,6 +197,33 @@ function ArtworkRecord({
         <ArtworkHistorySection tokenId={work.id} locale={locale} t={t} query={query} />
       </Suspense>
       <ArtworkSources work={work} locale={locale} t={t} />
+      {light?.still ? (
+        <section className={recordStyles.echoRoom}>
+          <p className="eyebrow">{t.sameWork}</p>
+          <Image
+            src={light.still}
+            alt={`${t.signature} ${work.id} · ${t.light}`}
+            width={light.width ?? 3456}
+            height={light.height ?? 2234}
+            unoptimized
+          />
+          <h2>{t.echo}</h2>
+        </section>
+      ) : null}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: jsonLd({
+            '@context': 'https://schema.org',
+            '@type': 'VisualArtwork',
+            name: `Cosmic Signature ${work.id}`,
+            url: `${SITE_URL}${localizedPath(locale, `/art/${work.id}`)}`,
+            image: still ? new URL(still, DEPLOYMENT_URL).href : undefined,
+            artform: 'Generative digital art',
+            identifier: String(work.id),
+          }),
+        }}
+      />
     </>
   );
 }

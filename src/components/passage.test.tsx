@@ -8,7 +8,12 @@ import { Passage } from './passage';
 
 type MediaProps = ComponentProps<typeof ArtworkMedia>;
 const media = vi.hoisted(() => ({ current: null as MediaProps | null }));
-const motion = vi.hoisted(() => ({ paused: false, theatre: 'playing' as const, toggle: vi.fn() }));
+const motion = vi.hoisted(() => ({
+  paused: false,
+  reducedMotion: false,
+  theatre: 'playing' as const,
+  toggle: vi.fn(),
+}));
 vi.mock('./motion-provider', () => ({ useMotion: () => motion }));
 vi.mock('next/link', () => ({
   default: ({ href, children, ...props }: { href: string; children: ReactNode }) => (
@@ -46,6 +51,7 @@ function section() {
 beforeEach(() => {
   vi.useFakeTimers();
   motion.paused = false;
+  motion.reducedMotion = false;
   motion.toggle.mockClear();
   media.current = null;
   sessionStorage.clear();
@@ -117,6 +123,70 @@ describe('the Passage', () => {
     act(() => vi.advanceTimersByTime(600));
     fireEvent.pointerMove(section());
     expect(section()).not.toHaveAttribute('data-sit');
+  });
+
+  it('a crossing after the film resolved comes back on the still with Again, not a replay', () => {
+    render(<Passage artwork={work} locale="en" t={en} />);
+    act(() => media.current!.onSettled!());
+    act(() => media.current!.onPlaybackChange!(true));
+    act(() => media.current!.onProgress!(30, 30));
+    act(() => media.current!.onEnded!());
+    act(() => vi.advanceTimersByTime(6_000));
+    expect(screen.getByRole('button', { name: en.again })).toBeVisible();
+    fireEvent.click(screen.getByRole('button', { name: new RegExp(en.crossLight) }));
+    act(() => vi.advanceTimersByTime(600));
+    expect(media.current?.media?.id).toBe('light');
+    act(() => vi.advanceTimersByTime(700));
+    fireEvent.click(screen.getByRole('button', { name: new RegExp(en.crossInk) }));
+    act(() => vi.advanceTimersByTime(600));
+    expect(media.current?.media?.id).toBe('ink');
+    expect(media.current?.still).toBe(true);
+    expect(screen.getByRole('button', { name: en.again })).toBeVisible();
+    expect(document.querySelector('.progress-track i')).toHaveStyle({ width: '0%' });
+    expect(record()).toHaveTextContent(`${en.ink} / ${en.arriving}`);
+  });
+
+  it('Again, then a crossing, also comes back on the still rather than replaying forever', () => {
+    sessionStorage.setItem('cosmic-art-home-film-v1', 'resolved');
+    render(<Passage artwork={work} locale="en" t={en} />);
+    fireEvent.click(screen.getByRole('button', { name: en.again }));
+    expect(media.current?.still).toBe(false);
+    fireEvent.click(screen.getByRole('button', { name: new RegExp(en.crossLight) }));
+    act(() => vi.advanceTimersByTime(1_300));
+    fireEvent.click(screen.getByRole('button', { name: new RegExp(en.crossInk) }));
+    act(() => vi.advanceTimersByTime(600));
+    expect(media.current?.still).toBe(true);
+    expect(screen.getByRole('button', { name: en.again })).toBeVisible();
+  });
+
+  it('reduced motion crosses in one frame, with no curtain and no dead delay', () => {
+    motion.reducedMotion = true;
+    render(<Passage artwork={work} locale="en" t={en} />);
+    fireEvent.click(screen.getByRole('button', { name: new RegExp(en.crossLight) }));
+    expect(media.current?.media?.id).toBe('light');
+    expect(document.querySelector('.material-curtain')).toBeNull();
+    expect(screen.getByRole('button', { name: new RegExp(en.crossInk) })).not.toBeDisabled();
+  });
+
+  it('a tap on the faded section only wakes the chrome; the control under it is not pressed', () => {
+    render(<Passage artwork={work} locale="en" t={en} />);
+    fireEvent.click(screen.getByRole('button', { name: en.sit }));
+    act(() => vi.advanceTimersByTime(600));
+    fireEvent.touchStart(section());
+    expect(section()).not.toHaveAttribute('data-sit');
+    const study = screen.getByRole('link', { name: en.studyStill });
+    expect(fireEvent.click(study)).toBe(false);
+    expect(fireEvent.click(study)).toBe(true);
+    fireEvent.click(screen.getByRole('button', { name: en.sit }));
+    act(() => vi.advanceTimersByTime(600));
+    fireEvent.pointerDown(section());
+    act(() => vi.advanceTimersByTime(500));
+    expect(fireEvent.click(study)).toBe(true);
+    fireEvent.click(screen.getByRole('button', { name: en.sit }));
+    act(() => vi.advanceTimersByTime(600));
+    fireEvent.keyDown(section(), { key: 'Tab' });
+    expect(section()).not.toHaveAttribute('data-sit');
+    expect(fireEvent.click(study)).toBe(true);
   });
 
   it('crossing into Light shows the still and never a film; the record says so', () => {

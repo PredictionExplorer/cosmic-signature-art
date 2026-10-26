@@ -308,8 +308,10 @@ html:is(:lang(zh), :lang(ja), :lang(ko)) .eyebrow {
 .motion-toggle {
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 8px;
   font-size: 15px;
+  min-width: 44px;
   min-height: 44px;
 }
 .language-menu {
@@ -430,7 +432,7 @@ html:is(:lang(zh), :lang(ja), :lang(ko)) .eyebrow {
   place-items: center;
   height: 100%;
   min-height: 100px;
-  background: var(--plate-ground, var(--paper));
+  /* Transparent: the plate's own ground (paper tone or black, per material) shows through. */
 }
 /* The Passage: the moving original occupies the upper field; type carries its own rhythm. */
 .passage {
@@ -463,6 +465,8 @@ html:is(:lang(zh), :lang(ja), :lang(ko)) .eyebrow {
 .passage[data-sit] .material-portal,
 .passage[data-sit] .passage-margin {
   opacity: 0;
+  /* Faded chrome is not a target: a tap only brings it back. Keyboard focus still reaches it. */
+  pointer-events: none;
   transition-duration: var(--t-sit);
 }
 .passage-kicker {
@@ -818,7 +822,9 @@ html:is(:lang(zh), :lang(ja), :lang(ko)) .eyebrow {
 }
 .constellation-work figcaption {
   display: flex;
+  flex-wrap: wrap;
   gap: 14px;
+  row-gap: 6px;
   align-items: center;
   padding-top: 12px;
   font-size: 15px;
@@ -826,6 +832,7 @@ html:is(:lang(zh), :lang(ja), :lang(ko)) .eyebrow {
 .constellation-work figcaption > span:first-child {
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums lining-nums;
+  white-space: nowrap;
 }
 .constellation-work figcaption .eyebrow {
   font-size: 12px;
@@ -1403,7 +1410,7 @@ html:is(:lang(zh), :lang(ja), :lang(ko)) .eyebrow {
     font-size: 12px;
   }
   .constellation-work figcaption {
-    gap: 8px;
+    column-gap: 8px;
   }
   .constellation-work figcaption .eyebrow {
     font-size: 12px;

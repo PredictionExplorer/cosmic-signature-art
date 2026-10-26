@@ -53,15 +53,21 @@
 }
 
 /* Also cover a preference change or a global pause while a snapshot is already running. */
-:global(:root):has(.surface):has(:global(.motion-paused)):global(::view-transition-group(*)) {
+:global(:root):has(.surface):has(:global(.motion-paused), :global([data-theatre='hushed'])):global(
+    ::view-transition-group(*)
+  ) {
   animation-duration: 0s !important;
   animation-delay: 0s !important;
 }
-:global(:root):has(.surface):has(:global(.motion-paused)):global(::view-transition-old(*)) {
+:global(:root):has(.surface):has(:global(.motion-paused), :global([data-theatre='hushed'])):global(
+    ::view-transition-old(*)
+  ) {
   animation-duration: 0s !important;
   animation-delay: 0s !important;
 }
-:global(:root):has(.surface):has(:global(.motion-paused)):global(::view-transition-new(*)) {
+:global(:root):has(.surface):has(:global(.motion-paused), :global([data-theatre='hushed'])):global(
+    ::view-transition-new(*)
+  ) {
   animation-duration: 0s !important;
   animation-delay: 0s !important;
 }

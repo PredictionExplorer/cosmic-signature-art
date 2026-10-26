@@ -45,7 +45,7 @@ export function useArtworkExpression({
   const request = useRef(0);
   const previousExpression = useRef(expression);
   const reportCommit = useEffectEvent((committed: string) => onCommit?.(committed));
-  const { paused, reducedMotion } = useMotion();
+  const { paused, reducedMotion, theatre } = useMotion();
   useEffect(() => {
     if (previousExpression.current === expression) return;
     previousExpression.current = expression;
@@ -54,10 +54,10 @@ export function useArtworkExpression({
     reportCommit(expression);
   }, [expression]);
   // A preference change while decoding must apply to the eventual transition too.
-  const motion = useRef({ paused, reducedMotion });
+  const motion = useRef({ paused, reducedMotion, theatre });
   useEffect(() => {
-    motion.current = { paused, reducedMotion };
-  }, [paused, reducedMotion]);
+    motion.current = { paused, reducedMotion, theatre };
+  }, [paused, reducedMotion, theatre]);
   useEffect(
     () => () => {
       request.current += 1;
@@ -116,7 +116,12 @@ export function useArtworkExpression({
         // A newer click can supersede a transition before React commits it.
         setExpression((current) => (identity === request.current ? target.id : current));
       };
-      if (!motion.current.paused && !motion.current.reducedMotion) {
+      // A hushed theatre (a collector reviewing a bid) crosses instantly, like reduced motion.
+      if (
+        !motion.current.paused &&
+        !motion.current.reducedMotion &&
+        motion.current.theatre !== 'hushed'
+      ) {
         startTransition(() => {
           addTransitionType(
             target.id === 'ink'
@@ -167,8 +172,8 @@ export function ArtworkStage({
   disabled?: boolean;
   children: ReactNode;
 }) {
-  const { paused, reducedMotion } = useMotion();
-  const enabled = !disabled && !paused && !reducedMotion;
+  const { paused, reducedMotion, theatre } = useMotion();
+  const enabled = !disabled && !paused && !reducedMotion && theatre !== 'hushed';
   return (
     <ViewTransition
       name={`cs-expression-${artworkId}-${scope}`}
