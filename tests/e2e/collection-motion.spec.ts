@@ -4,7 +4,7 @@ const previewSelector = '#works [data-collection-preview]';
 const filmSelector = `${previewSelector} video[src]`;
 
 async function collectionReady(page: Page, path = '/collection?q=31') {
-  await page.goto(path);
+  await page.goto(path, { waitUntil: 'domcontentloaded' });
   await expect(page.locator('#works .collection-skeleton')).toHaveCount(0, { timeout: 30_000 });
   const cards = page.locator('#works a[data-preview-id]');
   await expect(cards.first()).toBeVisible();

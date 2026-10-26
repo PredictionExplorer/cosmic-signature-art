@@ -16,7 +16,7 @@ test('the first screen of the collection is a plate in the sequence’s rhythm, 
   page,
   isMobile,
 }) => {
-  await page.goto('/collection');
+  await page.goto('/collection', { waitUntil: 'domcontentloaded' });
   await pauseAmbientMotion(page);
   await expect(page.getByRole('heading', { level: 1 })).toContainText(
     `${t.collection} · ${folio(index.total - 1)}–${folio(index.total - 18)}`,
@@ -52,7 +52,7 @@ test('the number ordering walks the whole collection to token zero with chapter 
   page,
 }) => {
   test.setTimeout(120_000);
-  await page.goto('/collection');
+  await page.goto('/collection', { waitUntil: 'domcontentloaded' });
   await pauseAmbientMotion(page);
   const main = page.getByRole('main');
   const seen = new Set<string>();
@@ -103,7 +103,7 @@ test('the cycle ordering opens every cycle with its strip; the Light view is a n
   page,
   isMobile,
 }) => {
-  await page.goto('/collection?order=cycle');
+  await page.goto('/collection?order=cycle', { waitUntil: 'domcontentloaded' });
   await pauseAmbientMotion(page);
   await collectionLoaded(page);
   const strips = page.locator('#works h2[data-cycle]');
@@ -135,7 +135,7 @@ test('the Spectrum wall hangs every Light preview on black along the nanometre r
   page,
   isMobile,
 }) => {
-  await page.goto('/collection?order=spectrum');
+  await page.goto('/collection?order=spectrum', { waitUntil: 'domcontentloaded' });
   await pauseAmbientMotion(page);
   await expect(page.locator('html')).toHaveAttribute('data-room', 'night');
   await expect(page.getByRole('main')).toHaveCSS('background-color', 'rgb(0, 0, 0)');
@@ -194,7 +194,7 @@ test('filter chips narrow the collection through the published traits and can be
   const expected = index.works.filter(
     (work) => work.cycle === 2 && work.traits.fate === 'Ejection',
   );
-  await page.goto('/collection?cycle=2&fate=Ejection');
+  await page.goto('/collection?cycle=2&fate=Ejection', { waitUntil: 'domcontentloaded' });
   await pauseAmbientMotion(page);
   await collectionLoaded(page);
   await expect(page.locator('#works .work-card')).toHaveCount(expected.length);
@@ -219,7 +219,7 @@ test('the Index of numbers opens from the head and the slash key, hangs the work
   isMobile,
   browserName,
 }) => {
-  await page.goto('/collection');
+  await page.goto('/collection', { waitUntil: 'domcontentloaded' });
   await pauseAmbientMotion(page);
   const indexWord = page
     .locator('.site-header')
@@ -274,7 +274,7 @@ test('the Index sheet searches by number and the Light view follows the result',
   page,
   isMobile,
 }) => {
-  await page.goto('/collection');
+  await page.goto('/collection', { waitUntil: 'domcontentloaded' });
   await pauseAmbientMotion(page);
   await page.locator('.site-header').getByRole('button', { name: t.index, exact: true }).click();
   const sheet = page.getByRole('dialog', { name: t.indexSheet });
@@ -311,7 +311,7 @@ test('on a phone the collection carries a bottom bar and the Index sheet is the 
   isMobile,
 }) => {
   test.skip(!isMobile, 'The pocket edition only');
-  await page.goto('/collection');
+  await page.goto('/collection', { waitUntil: 'domcontentloaded' });
   await pauseAmbientMotion(page);
   const bar = page.getByRole('navigation', { name: t.collectionControls });
   await expect(bar).toBeVisible();

@@ -11,7 +11,7 @@ for (const locale of locales) {
         ? `accessibility and visual evidence: ${route}`
         : `accessibility: ${locale} ${route}`;
     test(title, async ({ page }, testInfo) => {
-      await page.goto(localizedPath(locale, route));
+      await page.goto(localizedPath(locale, route), { waitUntil: 'domcontentloaded' });
       await pauseAmbientMotion(page);
       await expect(page.getByRole('main')).toBeVisible();
       if (route === '/collection') await collectionLoaded(page, locale === 'en');
