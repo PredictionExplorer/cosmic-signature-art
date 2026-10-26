@@ -52,6 +52,7 @@ createRoot(document.getElementById('root')!).render(
             <ArtworkViewer
               artwork={getCuratedArtwork(31)!}
               t={t}
+              locale={locale}
               presentation="auction"
               initialStill
             />

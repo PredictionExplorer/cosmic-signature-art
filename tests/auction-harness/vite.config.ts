@@ -42,6 +42,7 @@ export default defineConfig({
       { find: '@/lib/auction/client', replacement: `${directory}client.ts` },
       { find: '@/lib/auction/config', replacement: `${directory}config.ts` },
       { find: 'next/link', replacement: `${directory}link.tsx` },
+      { find: 'next/navigation', replacement: `${directory}navigation.ts` },
       { find: 'next/image', replacement: `${directory}image.tsx` },
       { find: '@', replacement: source },
     ],
