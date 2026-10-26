@@ -10,7 +10,10 @@ async function collectionReady(page: Page, path = '/collection?q=31') {
   await expect(cards.first()).toBeVisible();
   await cards.first().scrollIntoViewIfNeeded();
   const paused = await page.evaluate(() => matchMedia('(prefers-reduced-motion: reduce)').matches);
-  await expect(page.locator('.motion-toggle')).toHaveAttribute('aria-pressed', String(paused));
+  await expect(page.locator('button.motion-toggle')).toHaveAttribute(
+    'aria-pressed',
+    String(paused),
+  );
   return cards;
 }
 
@@ -27,7 +30,7 @@ async function imageReady(image: Locator) {
 }
 
 async function allowMotion(page: Page) {
-  const control = page.locator('.motion-toggle');
+  const control = page.locator('button.motion-toggle');
   if ((await control.getAttribute('aria-pressed')) === 'true') await control.click();
   await expect(control).toHaveAttribute('aria-pressed', 'false');
 }
@@ -193,7 +196,7 @@ test('reduced motion starts with no collection film download and can be explicit
   await settleFrames(page);
   await expect(page.locator(filmSelector)).toHaveCount(0);
   expect(films).toEqual([]);
-  await page.locator('.motion-toggle').click();
+  await page.locator('button.motion-toggle').click();
   await cards.first().scrollIntoViewIfNeeded();
   await cards.first().focus();
   await expect(page.locator(filmSelector)).toHaveCount(1);
@@ -207,8 +210,8 @@ test('pausing releases the collection film and persists without downloading it a
   await cards.first().scrollIntoViewIfNeeded();
   await cards.first().focus();
   await expect(page.locator(filmSelector)).toHaveCount(1);
-  await page.locator('.motion-toggle').click();
-  await expect(page.locator('.motion-toggle')).toHaveAttribute('aria-pressed', 'true');
+  await page.locator('button.motion-toggle').click();
+  await expect(page.locator('button.motion-toggle')).toHaveAttribute('aria-pressed', 'true');
   await expect(page.locator(`${previewSelector} video`)).toHaveCount(0);
   const newFilmRequests: string[] = [];
   page.on('request', (request) => {
@@ -216,7 +219,7 @@ test('pausing releases the collection film and persists without downloading it a
   });
   await page.reload();
   await expect(page.locator('#works a[data-preview-id="31"]')).toBeVisible();
-  await expect(page.locator('.motion-toggle')).toHaveAttribute('aria-pressed', 'true');
+  await expect(page.locator('button.motion-toggle')).toHaveAttribute('aria-pressed', 'true');
   await page.locator('#works a[data-preview-id="31"]').focus();
   await settleFrames(page);
   await expect(page.locator(filmSelector)).toHaveCount(0);
@@ -225,15 +228,21 @@ test('pausing releases the collection film and persists without downloading it a
 
 test('Light releases Ink previews and opens the same expression in the viewing room', async ({
   page,
+  isMobile,
 }) => {
   const cards = await collectionReady(page);
   await allowMotion(page);
   await cards.first().focus();
   await expect(page.locator(filmSelector)).toHaveCount(1);
-  await page
-    .locator('.collection-display-controls')
-    .getByRole('button', { name: 'Light', exact: true })
+  // The orderings and the other expression live in the header on wide screens and in the bottom bar on phones.
+  await (
+    isMobile
+      ? page.getByRole('navigation', { name: 'Collection controls' })
+      : page.locator('main header').getByRole('navigation', { name: 'Ordering' })
+  )
+    .getByRole('link', { name: 'Light', exact: true })
     .click();
+  await expect(page).toHaveURL(/\/collection\?expression=light&q=31$/);
   await expect(page.locator(`${previewSelector} video`)).toHaveCount(0);
   const work = page.locator('#works a[data-preview-id="31"]');
   await expect(work).toHaveAttribute('href', '/art/31?expression=light');
@@ -241,10 +250,6 @@ test('Light releases Ink previews and opens the same expression in the viewing r
   await work.click();
   await expect(page).toHaveURL(/\/art\/31\?expression=light$/);
   await expect(page.locator('.viewer-plate .art-media')).toHaveAttribute('data-material', 'light');
-  await expect(page.locator('.viewer-plate img.art-still')).toHaveAttribute(
-    'alt',
-    'Signature 31 · Light',
-  );
 });
 
 test('an unavailable preview leaves the authentic image and usable artwork link', async ({

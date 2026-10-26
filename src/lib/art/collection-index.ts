@@ -101,6 +101,8 @@ export interface CompactWork {
   /** Absolute URLs of the publisher's 640 px previews. */
   inkPreview?: string;
   lightPreview?: string;
+  /** The published text traits, so the Index sheet can offer real filter chips. */
+  traits?: IndexedWork['traits'];
 }
 
 /** Only a well-formed, duplicate-free index is kept; a malformed one is an empty collection. */
@@ -182,5 +184,67 @@ export function compactWorks(index: CollectionIndex = collectionIndex): CompactW
     wavelengthNm: work.wavelengthNm,
     inkPreview: indexedAssetUrl(work, work.media.ink?.preview?.path),
     lightPreview: indexedAssetUrl(work, work.media.light?.preview?.path),
+    traits: work.traits,
   }));
+}
+
+/** The six published text traits the collection can be narrowed by, in label order. */
+export const TRAIT_KEYS = [
+  'structure',
+  'underlay',
+  'palette',
+  'spectralClass',
+  'massBalance',
+  'fate',
+] as const;
+export type TraitKey = (typeof TRAIT_KEYS)[number];
+export interface WorkFilter {
+  cycle?: number;
+  traits?: Partial<Record<TraitKey, string>>;
+}
+
+/** Every value a trait takes across the index, sorted, so chips are never invented. */
+export function traitValues(index: CollectionIndex = collectionIndex): Record<TraitKey, string[]> {
+  const values = Object.fromEntries(TRAIT_KEYS.map((key) => [key, new Set<string>()])) as Record<
+    TraitKey,
+    Set<string>
+  >;
+  for (const work of index.works) {
+    for (const key of TRAIT_KEYS) {
+      const value = work.traits[key];
+      if (value) values[key].add(value);
+    }
+  }
+  return Object.fromEntries(
+    TRAIT_KEYS.map((key) => [key, [...values[key]].sort((a, b) => a.localeCompare(b, 'en'))]),
+  ) as Record<TraitKey, string[]>;
+}
+
+export function hasFilter(filter: WorkFilter): boolean {
+  return (
+    filter.cycle !== undefined ||
+    Object.values(filter.traits ?? {}).some((value) => value !== undefined && value !== '')
+  );
+}
+
+/** Works matching every criterion exactly, newest first; an unknown value matches nothing. */
+export function filterWorks(
+  filter: WorkFilter,
+  index: CollectionIndex = collectionIndex,
+): IndexedWork[] {
+  return index.works
+    .filter((work) => {
+      if (filter.cycle !== undefined && work.cycle !== filter.cycle) return false;
+      for (const key of TRAIT_KEYS) {
+        const wanted = filter.traits?.[key];
+        if (wanted && work.traits[key] !== wanted) return false;
+      }
+      return true;
+    })
+    .sort((a, b) => b.id - a.id);
+}
+
+/** The collection by number, newest first: the order the live indexer lists and the pager walks. */
+export function worksByNumber(index: CollectionIndex = collectionIndex): IndexedWork[] {
+  return [...index.works].sort((a, b) => b.id - a.id);
 }

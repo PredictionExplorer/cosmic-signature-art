@@ -1,0 +1,109 @@
+.sequence {
+  display: grid;
+  row-gap: calc(var(--baseline) * 6);
+  padding-bottom: calc(var(--baseline) * 6);
+}
+.row {
+  display: grid;
+  justify-content: center;
+  align-items: start;
+  column-gap: 1px;
+}
+/* The full-bleed plate: the whole band is the sheet's own tone (or the field's black). */
+.row[data-shape='1'] {
+  grid-template-columns: minmax(0, 1fr);
+  background: var(--plate-ground, var(--ground));
+}
+.row[data-shape='2'] {
+  grid-template-columns: repeat(2, 46vw);
+}
+.row[data-shape='3'] {
+  grid-template-columns: repeat(3, 30vw);
+}
+.card {
+  display: grid;
+  min-width: 0;
+  color: inherit;
+}
+.row[data-shape='1'] .card :global(.art-media) {
+  height: var(--plate-height);
+  width: auto;
+  max-width: 100%;
+  margin: 0 auto;
+}
+.caption {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 18px;
+  min-height: 44px;
+  padding-top: 9px;
+  font-size: var(--fs-control);
+}
+.row[data-shape='1'] .caption {
+  min-height: var(--strip);
+  padding: 0 var(--gutter);
+  align-items: center;
+}
+.folio {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums lining-nums;
+}
+/* The label appears only for a hand, a focus or a moving excerpt; the numeral is the caption. */
+.label {
+  color: var(--muted);
+  font-size: var(--fs-folio);
+  font-variant-caps: all-small-caps;
+  letter-spacing: 0.06em;
+  font-variant-numeric: tabular-nums lining-nums;
+  opacity: 0;
+  transition: opacity var(--t-blink) var(--ease-settle);
+}
+.card:hover .label,
+.card:focus-visible .label,
+.card:active .label,
+.card[data-motion='active'] .label {
+  opacity: 1;
+}
+.chapter {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0 24px;
+  min-height: 48px;
+  padding-inline: var(--gutter);
+  border-top: 1px solid var(--rule);
+  font-size: var(--fs-control);
+  font-weight: 400;
+  letter-spacing: 0;
+  line-height: 1.2;
+  margin-bottom: calc(-1 * var(--baseline) * 3);
+}
+.chapterCount,
+.chapterDate {
+  color: var(--muted);
+  font-variant-numeric: tabular-nums lining-nums;
+}
+.chapterDate {
+  font-family: var(--font-mono);
+  font-size: var(--fs-folio);
+}
+@media (max-width: 767px) {
+  .sequence {
+    row-gap: calc(var(--baseline) * 4);
+  }
+  .row[data-shape='2'],
+  .row[data-shape='3'] {
+    grid-template-columns: repeat(2, calc(50vw - 0.5px));
+  }
+  .row[data-shape='1'] .card :global(.art-media) {
+    height: auto;
+    width: 100%;
+  }
+  .caption {
+    padding-inline: 9px;
+  }
+  .row[data-shape='1'] .caption {
+    padding-inline: var(--gutter);
+  }
+}

@@ -5,11 +5,15 @@ import {
   compactWorks,
   cycles,
   indexedAssetUrl,
+  filterWorks,
+  hasFilter,
   indexedWork,
   loadCollectionIndex,
   parseCollectionIndex,
   spectralNeighbour,
   spectrum,
+  traitValues,
+  worksByNumber,
 } from './collection-index';
 
 const seed = (n: number) => `0x${n.toString(16).padStart(64, '0')}`;
@@ -105,7 +109,34 @@ describe('collection index', () => {
       wavelengthNm: 500,
       inkPreview: undefined,
       lightPreview: `https://a1.cosmicsignature.com/images/new/cosmicsignature/${seed(5)}/images/web/preview.webp`,
+      traits: {},
     });
     expect(compactWorks().length).toBe(collectionIndex.total);
+  });
+
+  it('narrows the collection by cycle and exact trait values, newest first', () => {
+    const parsed = parseCollectionIndex(
+      index([
+        work(0, { traits: { fate: 'Ejection', structure: 'Time Chords' } }),
+        work(1, { traits: { fate: 'Eternal Dance' } }),
+        work(2, { traits: { fate: 'Ejection' } }),
+      ]),
+    );
+    expect(traitValues(parsed).fate).toEqual(['Ejection', 'Eternal Dance']);
+    expect(traitValues(parsed).palette).toEqual([]);
+    expect(filterWorks({ traits: { fate: 'Ejection' } }, parsed).map((entry) => entry.id)).toEqual([
+      2, 0,
+    ]);
+    expect(
+      filterWorks({ cycle: 0, traits: { fate: 'Ejection' } }, parsed).map((entry) => entry.id),
+    ).toEqual([0]);
+    expect(filterWorks({ traits: { fate: 'Collision' } }, parsed)).toEqual([]);
+    expect(filterWorks({}, parsed).map((entry) => entry.id)).toEqual([2, 1, 0]);
+    expect(hasFilter({})).toBe(false);
+    expect(hasFilter({ traits: { fate: '' } })).toBe(false);
+    expect(hasFilter({ cycle: 0 })).toBe(true);
+    expect(worksByNumber(parsed).map((entry) => entry.id)).toEqual([2, 1, 0]);
+    expect(worksByNumber()[0].id).toBe(collectionIndex.total - 1);
+    expect(traitValues().spectralClass).toEqual(['A', 'B', 'F', 'G', 'K', 'M', 'O']);
   });
 });

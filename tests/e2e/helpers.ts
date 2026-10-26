@@ -91,7 +91,7 @@ export async function collectionLoaded(page: Page, loadAllImages = false) {
 }
 
 export async function pauseAmbientMotion(page: Page) {
-  const control = page.locator('.motion-toggle');
+  const control = page.locator('button.motion-toggle');
   // Server HTML begins paused. Wait for the actual browser preference before clicking.
   const initiallyPaused = await page.evaluate(() => {
     const saved = sessionStorage.getItem('cosmic-art-motion-v1');
