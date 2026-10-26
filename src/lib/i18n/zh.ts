@@ -159,7 +159,7 @@ export const zh: Messages = {
   compare: '并看两种呈现',
   closeCompare: '查看单一呈现',
   completeFilm: '完整影片',
-  enlarge: '打开完整作品查看器',
+  enlarge: '细看',
   close: '关闭',
   pause: '暂停',
   play: '播放',
@@ -171,7 +171,7 @@ export const zh: Messages = {
   echo: '每一次运动都有回响。',
   sameWork: '同一段舞迹，留驻于光中',
   seed: '生成种子',
-  cycle: '演绎周期',
+  cycle: '周期',
   token: '代币',
   collectionContract: '作品系列合约',
   indexedOwner: '索引中的保管方',
@@ -293,4 +293,132 @@ export const zh: Messages = {
   previous: '上一页',
   leadingWallet: '领先出价钱包',
   reviewChanged: '出价数据已变更。请关闭此确认窗口，并核对最新金额。',
+
+  // 导览、索引与按键
+  statement: '自述',
+  index: '索引',
+  indexSheet: '藏品索引',
+  closeIndex: '关闭索引',
+  keys: '按键',
+  keysSheet: '键盘快捷键',
+  keyPlay: '播放或暂停影片',
+  keyNeighbours: '上一件与下一件作品',
+  keyExpressions: '墨与光；按住可预览',
+  keyFilm: '在观赏室中打开影片',
+  keySit: '静坐：让界面淡去',
+  keyStudy: '以全尺寸细看版面',
+  keyIndex: '打开索引',
+  keyJump: '输入编号后按回车，前往该作品',
+  keyHelp: '显示这些按键',
+  goToWork: '前往作品',
+  workNumber: '作品编号',
+
+  // 排序与筛选
+  ordering: '排序',
+  orderNumber: '编号',
+  orderCycle: '周期',
+  orderSpectrum: '光谱',
+  filters: '筛选',
+  clearFilters: '清除筛选',
+  unmeasured: '未测量',
+  spectrumWall: '沿光谱排列的藏品',
+  spectrumNote: '每件光之版面依其公布的主波长悬挂于黑色之上，380 至 700 nm。',
+  worksCount: '{count} 件作品',
+  oneWork: '1 件作品',
+  imprintedOn: '印记于 {date}',
+  underlay: '底层结构',
+  wildcard: '特例',
+  allocation: '分配',
+  theCollection: '藏品全集',
+  thisCycle: '本周期',
+  collectionControls: '藏品控制',
+
+  // 版面与翻转
+  showLight: '显示光的表达',
+  showInk: '显示墨的表达',
+  holdToPeek: '按住预览',
+  noInkPublished: '尚未发布墨的表达',
+  wholePlate: '整幅版面',
+  previousWork: '上一件作品',
+  nextWork: '下一件作品',
+  nextByWavelength: '按波长的下一件',
+  nmRedder: '偏红 {n} nm',
+  nmBluer: '偏蓝 {n} nm',
+  collect: '收藏',
+
+  // 条目与词汇表
+  entry: '条目',
+  selectionLine: '{total} 条候选轨道之一。第 {index} 号被选中。',
+  bordaNote:
+    '博达计数 · 混沌权重 {chaos} · 平衡权重 {equilibrium} · 美学 {aesthetic} · 得分 {score}',
+  threeBodyOrbit: '三体轨道。',
+  inkMedium: '墨：由模拟流体携带的墨汁，落于楮纸之上。',
+  lightMedium: '光：黑色之上的发光轨道丝带。',
+  filmsWord: '影片',
+  spectralSweep: '光谱扫描',
+  mintedTo: '铸造至',
+  heldBy: '持有者',
+  recordAsOf: 'Arbitrum 记录，截至 {date}',
+  seedShort: '种子',
+  wavelength: '主波长',
+  bodyHues: '天体色相',
+  masses: '质量',
+  eccentricity: '偏心率',
+  selection: '遴选',
+  glossary: '词汇表',
+  glossarySignature:
+    '一件 Signature 即一枚代币：一个种子，一条记录下来的轨道，以及它所有已发布的渲染。',
+  glossaryExpression: '一种表达是对该轨道的一次创作性渲染。光与墨是其中的两种，地位相同。',
+  glossaryCycle:
+    '一个周期是 Cosmic Signature 游戏的一轮。每一轮成功结束时，其作品在同一笔交易中印记。',
+  glossaryUnderlay: '底层结构是绘于主结构之下的次级结构，以所述的不透明度呈现。',
+  glossarySpectralClass: '光谱型沿恒星序列排列，从最蓝的 O 到最红的 M，由调色板的主波长读出。',
+  glossaryChaos: '混沌值从 0 到 100，衡量轨道对初始条件的敏感程度。',
+  glossarySyzygies: '合点是三个天体排成一线的瞬间。零表示它们从未如此。',
+  glossaryBorda: '十万条候选轨道经模拟并以博达计数排序；公布的编号即它选出的那一条。',
+  glossaryWavelength: '主波长是调色板基准色相的波长，以可见光的纳米计。',
+  glossaryMasses: '三个质量决定每个天体对另外两个的引力强弱。',
+  glossaryEccentricity: '偏心率衡量漂移椭圆偏离圆形的程度。',
+  verifyOnChain: '链上核验',
+  honestyRecord: '记录读取自 Arbitrum 索引器，可能比链上状态滞后几个区块。',
+  honestyMedia: '媒体文件属于发布方；其哈希值记录于此，凡保有本地副本之处均经核对。',
+
+  // 自述
+  shapeOfMotion: '运动的形状。',
+  statementLine:
+    '每件作品都是一条记录下来的三体轨道，被渲染两次：作为光，作为墨。两者是同一枚代币。',
+  statementSigned: 'Cosmic Signature · 2026 年 10 月',
+  livingCollection: '一个由记录下来的轨道构成的、仍在生长的收藏',
+  cyclesSpan: '周期 {first} 至周期 {last}',
+  since: '自 {date} 起',
+  statement1:
+    '一件 Signature 即一枚代币。它背后是一个种子、一条记录下来的三体轨道，以及我们为这条轨道发布的每一次渲染。没有什么是手绘的，也没有什么被画过两次。',
+  statement2:
+    '每条轨道被渲染两次：作为光，作为墨。在光中，三个天体在黑色之上留下发光的丝带。在墨中，同一运动将墨汁带入模拟流体，落在楮纸之上。它们是同一件作品的两种表达，地位相同；谁也不是谁的原作。',
+  statement3:
+    '我们选择三体，因为三是引力无法完全预测的最小数目。两个天体永远沿着封闭的图形旋转。三个则即兴而行。它们的路径精确到最后一位小数，却依然令人意外——这正是我们希望每件作品都带有的品质。',
+  statement4:
+    '对于每件作品，十万条候选轨道被模拟，并按混沌、平衡与形态评分。博达计数将它们排序，选出其中一条。被选中候选的编号与选出它的权重一起，公布在作品的记录之中。',
+  statement5:
+    '作品按周期印记。Cosmic Signature 游戏的每一轮成功结束时，都会在 Arbitrum 上铸造新的代币，它们的种子在那一笔交易中被固定。周期 0 于 2026 年 6 月开启了这个收藏。收藏随每个周期生长，且从不修改已发布的内容。',
+  statement6:
+    '此处所示皆为记录下来的渲染，而非实时模拟。每幅版面都依照已发布的文件逐一哈希复制，这些页面上的每一项测量——波长、混沌指数、合点计数——都来自发布方自身。',
+
+  // 版本记录
+  colophon: '版本记录',
+  colophonPlates: '版面复制自 16 位母版已发布的 WebP 衍生文件，3,456 × 2,234 像素。',
+  colophonFilms: '影片为 60 fps ember-v4 渲染的 H.264 衍生文件。',
+  colophonType: '以 Literata 与 IBM Plex Mono 排版。',
+
+  // 过程，重新分章
+  chapterChoice: '遴选',
+  chapterChoiceCopy: '十万条候选轨道被评分；一条被选中。',
+  chapterSpectrum: '光谱',
+  playSweep: '播放光谱扫描',
+  sweepCopy: '已发布的十秒光谱扫描让作品的调色板穿过可见光，从 380 到 700 nm。',
+  chapterWord: '章',
+
+  // 静默状态
+  nextDoor: '{work} 就在隔壁。',
+  throughSpectrum: '穿过光谱',
 };

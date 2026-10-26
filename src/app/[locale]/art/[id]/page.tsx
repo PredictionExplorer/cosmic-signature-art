@@ -1,4 +1,3 @@
-import Image from 'next/image';
 import { Suspense } from 'react';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
@@ -6,19 +5,18 @@ import type { Locale } from '@/lib/i18n/routing';
 import type { Messages } from '@/lib/i18n/en';
 import { isLocale, localizedPath } from '@/lib/i18n/routing';
 import { messages } from '@/lib/i18n/messages';
-import { metadata, jsonLd, SITE_URL, DEPLOYMENT_URL } from '@/lib/site';
+import { metadata } from '@/lib/site';
 import { getArtwork } from '@/lib/art/server';
 import { getCuratedArtwork } from '@/lib/art/catalog';
 import { inlineCuratedPreview } from '@/lib/art/inline-preview';
 import { parseArtworkId } from '@/lib/art/validation';
 import { workNumber } from '@/lib/art/number';
-import { getInterpretation, type Artwork, type ArtworkResult } from '@/lib/art/types';
+import type { Artwork, ArtworkResult } from '@/lib/art/types';
 import { artworkSharingImage } from '@/lib/art/sharing';
 import { ArtworkViewer } from '@/components/artwork-viewer';
 import { AuctionPanel } from '@/components/auction-panel';
-import { ArtworkIdentity, ArtworkSources } from '@/components/artwork-record';
-import { ArtworkHistorySection, type HistoryQuery } from '@/components/artwork-history';
-import { ArtworkComposition } from '@/components/artwork-composition';
+import type { HistoryQuery } from '@/components/artwork-history';
+import { ArtworkEntry } from '@/components/artwork-entry';
 import recordStyles from '@/components/artwork-record.module.css';
 import { artworkViewParams } from '@/lib/art/view';
 export async function generateMetadata({
@@ -120,7 +118,7 @@ export default async function ArtworkPage({
       </section>
       <AuctionPanel locale={locale} tokenId={work.id} t={t} />
       {settled ? (
-        <ArtworkRecord result={settled} fallback={work} locale={locale} t={t} query={query} />
+        <ArtworkEntry result={settled} fallback={work} locale={locale} t={t} query={query} />
       ) : (
         <Suspense
           fallback={
@@ -146,84 +144,5 @@ async function StreamedRecord({
   t: Messages;
   query: HistoryQuery;
 }) {
-  return <ArtworkRecord result={await live} {...props} />;
-}
-
-/**
- * The deeper record: identity, composition, history, files, the Light echo and the
- * structured data, all from the live read so one page never shows two renderings.
- */
-function ArtworkRecord({
-  result,
-  fallback,
-  locale,
-  t,
-  query,
-}: {
-  result: ArtworkResult;
-  fallback: Artwork;
-  locale: Locale;
-  t: Messages;
-  query: HistoryQuery;
-}) {
-  const work = result.artwork ?? fallback;
-  const light = getInterpretation(work, 'light');
-  const still = getInterpretation(work, 'ink')?.still ?? light?.still;
-  return (
-    <>
-      {result.notice ? (
-        <p className="notice">
-          {result.notice === 'media-unavailable' ? t.mediaRecordUnavailable : t.recordUnavailable}
-        </p>
-      ) : null}
-      <ArtworkIdentity work={work} locale={locale} t={t} />
-      <Suspense
-        fallback={
-          <p className={recordStyles.loading} aria-busy="true">
-            {t.recordLoading}
-          </p>
-        }
-      >
-        <ArtworkComposition work={work} locale={locale} t={t} />
-      </Suspense>
-      <Suspense
-        key={`${work.id}-${query.transfers ?? ''}-${query.names ?? ''}`}
-        fallback={
-          <p className={recordStyles.loading} aria-busy="true">
-            {t.recordLoading}
-          </p>
-        }
-      >
-        <ArtworkHistorySection tokenId={work.id} locale={locale} t={t} query={query} />
-      </Suspense>
-      <ArtworkSources work={work} locale={locale} t={t} />
-      {light?.still ? (
-        <section className={recordStyles.echoRoom}>
-          <p className="eyebrow">{t.sameWork}</p>
-          <Image
-            src={light.still}
-            alt={`${t.signature} ${work.id} · ${t.light}`}
-            width={light.width ?? 3456}
-            height={light.height ?? 2234}
-            unoptimized
-          />
-          <h2>{t.echo}</h2>
-        </section>
-      ) : null}
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{
-          __html: jsonLd({
-            '@context': 'https://schema.org',
-            '@type': 'VisualArtwork',
-            name: `Cosmic Signature ${work.id}`,
-            url: `${SITE_URL}${localizedPath(locale, `/art/${work.id}`)}`,
-            image: still ? new URL(still, DEPLOYMENT_URL).href : undefined,
-            artform: 'Generative digital art',
-            identifier: String(work.id),
-          }),
-        }}
-      />
-    </>
-  );
+  return <ArtworkEntry result={await live} {...props} />;
 }

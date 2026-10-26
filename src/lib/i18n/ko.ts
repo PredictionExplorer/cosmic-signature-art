@@ -160,7 +160,7 @@ export const ko: Messages = {
   compare: '두 표현 함께 보기',
   closeCompare: '한 표현 보기',
   completeFilm: '전체 영상',
-  enlarge: '전체 작품 뷰어 열기',
+  enlarge: '자세히 보기',
   close: '닫기',
   pause: '일시 정지',
   play: '재생',
@@ -173,7 +173,7 @@ export const ko: Messages = {
   echo: '모든 움직임에는 메아리가 있습니다.',
   sameWork: '빛에 담긴 같은 안무',
   seed: '생성 시드',
-  cycle: '퍼포먼스 사이클',
+  cycle: '사이클',
   token: '토큰',
   collectionContract: '컬렉션 컨트랙트',
   indexedOwner: '색인된 보관 주소',
@@ -304,4 +304,140 @@ export const ko: Messages = {
   previous: '이전',
   leadingWallet: '최고 입찰 지갑',
   reviewChanged: '입찰 데이터가 변경되었습니다. 이 검토 창을 닫고 최신 금액을 확인합니다.',
+
+  // 러닝 헤드, 시트, 단축키
+  statement: '작가 노트',
+  index: '색인',
+  indexSheet: '컬렉션 색인',
+  closeIndex: '색인 닫기',
+  keys: '단축키',
+  keysSheet: '키보드 단축키',
+  keyPlay: '필름 재생 또는 일시 정지',
+  keyNeighbours: '이전 작품과 다음 작품',
+  keyExpressions: '먹과 빛; 길게 눌러 미리 보기',
+  keyFilm: '관람실에서 필름 열기',
+  keySit: '앉기: 인터페이스가 사라집니다',
+  keyStudy: '플레이트를 실제 크기로 살펴보기',
+  keyIndex: '색인 열기',
+  keyJump: '번호를 입력한 뒤 Enter를 누르면 해당 작품으로 이동합니다',
+  keyHelp: '이 단축키 보기',
+  goToWork: '작품으로 이동',
+  workNumber: '작품 번호',
+
+  // 정렬과 필터
+  ordering: '정렬',
+  orderNumber: '번호',
+  orderCycle: '사이클',
+  orderSpectrum: '스펙트럼',
+  filters: '필터',
+  clearFilters: '필터 지우기',
+  unmeasured: '측정되지 않음',
+  spectrumWall: '스펙트럼을 따라 늘어선 컬렉션',
+  spectrumNote: '모든 빛의 플레이트가 공개된 주파장에 따라 검은 바탕 위에 걸립니다, 380~700 nm.',
+  worksCount: '작품 {count}점',
+  oneWork: '작품 1점',
+  imprintedOn: '{date} 각인',
+  underlay: '밑그림 구조',
+  wildcard: '와일드카드',
+  allocation: '배정',
+  theCollection: '컬렉션',
+  thisCycle: '이번 사이클',
+  collectionControls: '컬렉션 조작',
+
+  // 플레이트와 전환
+  showLight: '빛 표현 보기',
+  showInk: '먹 표현 보기',
+  holdToPeek: '길게 눌러 미리 보기',
+  noInkPublished: '먹 표현이 공개되지 않음',
+  wholePlate: '플레이트 전체',
+  previousWork: '이전 작품',
+  nextWork: '다음 작품',
+  nextByWavelength: '파장순 다음 작품',
+  nmRedder: '{n} nm 더 붉게',
+  nmBluer: '{n} nm 더 푸르게',
+  collect: '소장하기',
+
+  // 도록 항목과 용어 해설
+  entry: '도록 항목',
+  selectionLine: '후보 궤도 {total}개 중 하나. {index}번이 선택되었습니다.',
+  bordaNote:
+    '보르다 집계 · 카오스 가중치 {chaos} · 평형 가중치 {equilibrium} · 미학 {aesthetic} · 점수 {score}',
+  threeBodyOrbit: '삼체 궤도.',
+  inkMedium: '먹: 시뮬레이션된 유체가 닥종이 바탕 위로 옮긴 먹.',
+  lightMedium: '빛: 검은 바탕 위에 빛나는 궤도 리본.',
+  filmsWord: '필름',
+  spectralSweep: '스펙트럼 스윕',
+  mintedTo: '발행 대상',
+  heldBy: '보유',
+  recordAsOf: '{date} 기준 Arbitrum 기록',
+  seedShort: '시드',
+  wavelength: '주파장',
+  bodyHues: '천체 색상',
+  masses: '질량',
+  eccentricity: '이심률',
+  selection: '선정',
+  glossary: '용어 해설',
+  glossarySignature:
+    'Signature는 하나의 토큰입니다: 하나의 시드, 하나의 기록된 궤도, 그리고 공개된 그 궤도의 모든 렌더링.',
+  glossaryExpression:
+    '표현은 그 궤도를 한 번 작가의 손으로 렌더링한 것입니다. 빛과 먹은 그중 둘이며, 지위는 같습니다.',
+  glossaryCycle:
+    '사이클은 Cosmic Signature 게임의 한 라운드입니다. 성공적으로 끝난 라운드는 그 작품들을 한 번의 트랜잭션에 각인합니다.',
+  glossaryUnderlay: '밑그림 구조는 주 구조 아래에 명시된 불투명도로 그려진 보조 구조입니다.',
+  glossarySpectralClass:
+    '스펙트럼 등급은 가장 푸른 O에서 가장 붉은 M까지 항성 척도를 따르며, 팔레트의 주파장에서 읽어냅니다.',
+  glossaryChaos:
+    '카오스는 0에서 100까지로, 궤도가 초기 조건에 얼마나 민감하게 의존했는지를 나타냅니다.',
+  glossarySyzygies:
+    '시지지는 세 천체가 한 직선에 놓이는 순간입니다. 0은 그런 순간이 한 번도 없었다는 뜻입니다.',
+  glossaryBorda:
+    '십만 개의 후보 궤도가 시뮬레이션되고 보르다 집계로 순위가 매겨졌습니다. 공개된 번호가 그 집계가 선택한 궤도입니다.',
+  glossaryWavelength: '주파장은 팔레트 기준 색의 색조를 가시광선의 나노미터로 측정한 값입니다.',
+  glossaryMasses: '세 질량은 각 천체가 다른 두 천체를 끌어당기는 세기를 정합니다.',
+  glossaryEccentricity: '이심률은 드리프트 타원이 원에서 얼마나 벗어났는지를 나타냅니다.',
+  verifyOnChain: '온체인 검증',
+  honestyRecord: '기록은 Arbitrum 인덱서에서 읽어 오며, 체인보다 몇 블록 늦을 수 있습니다.',
+  honestyMedia:
+    '미디어 파일은 발행자의 것입니다. 해시는 여기에 기록되며, 로컬 사본이 있는 곳에서는 모두 검증됩니다.',
+
+  // 작가 노트
+  shapeOfMotion: '움직임의 형상.',
+  statementLine:
+    '모든 작품은 기록된 하나의 삼체 궤도이며, 빛으로 그리고 먹으로, 두 번 렌더링됩니다. 둘은 같은 토큰입니다.',
+  statementSigned: 'Cosmic Signature · 2026년 10월',
+  livingCollection: '기록된 궤도들의 살아 있는 컬렉션',
+  cyclesSpan: '사이클 {first}부터 사이클 {last}까지',
+  since: '{date}부터',
+  statement1:
+    'Signature는 하나의 토큰입니다. 그 뒤에는 하나의 시드, 세 천체의 기록된 궤도 하나, 그리고 그 궤도에 대해 우리가 공개한 모든 렌더링이 있습니다. 손으로 그린 것은 없고, 두 번 그린 것도 없습니다.',
+  statement2:
+    '모든 궤도는 빛과 먹으로 두 번 렌더링됩니다. 빛에서는 세 천체가 검은 바탕 위에 빛나는 리본을 남깁니다. 먹에서는 같은 움직임이 시뮬레이션된 유체를 통해 먹을 닥종이 바탕 위로 옮깁니다. 둘은 한 작품의 두 표현이며 지위가 같습니다. 어느 쪽도 다른 쪽의 원본이 아닙니다.',
+  statement3:
+    '세 천체를 택한 것은, 셋이 중력이 완전히 예측할 수 없는 가장 작은 수이기 때문입니다. 두 천체는 닫힌 도형을 영원히 돕니다. 셋은 즉흥적으로 움직입니다. 그 경로는 마지막 소수점까지 결정되어 있으면서도 여전히 뜻밖이며, 바로 그 성질을 모든 작품에 담고자 했습니다.',
+  statement4:
+    '작품 하나마다 십만 개의 후보 궤도를 시뮬레이션하고 카오스, 균형, 형태로 점수를 매깁니다. 보르다 집계가 순위를 정하고 하나가 선택됩니다. 선택된 후보의 번호는 그것을 선택한 가중치와 함께 작품의 기록에 공개됩니다.',
+  statement5:
+    '작품은 사이클 단위로 각인됩니다. Cosmic Signature 게임의 성공적인 라운드는 Arbitrum에 새 토큰을 발행하며 끝나고, 시드는 그 한 번의 트랜잭션에 고정됩니다. 사이클 0이 2026년 6월에 컬렉션을 열었습니다. 컬렉션은 사이클마다 자라며, 공개한 것을 결코 고치지 않습니다.',
+  statement6:
+    '여기 보이는 모든 것은 기록된 렌더링이며 실시간 시뮬레이션이 아닙니다. 모든 플레이트는 공개된 파일에서 해시 그대로 재현되며, 이 페이지의 모든 측정값—파장, 카오스 지수, 시지지 횟수—은 발행자의 것입니다.',
+
+  // 콜로폰
+  colophon: '콜로폰',
+  colophonPlates:
+    '플레이트는 16비트 마스터의 공개된 WebP 파생 파일에서 재현되었습니다, 3,456 × 2,234 px.',
+  colophonFilms: '필름은 60 fps ember-v4 렌더의 H.264 파생 파일입니다.',
+  colophonType: 'Literata와 IBM Plex Mono로 조판했습니다.',
+
+  // 과정, 새 장 구성
+  chapterChoice: '선택',
+  chapterChoiceCopy: '십만 개의 후보 궤도에 점수를 매기고, 하나를 선택합니다.',
+  chapterSpectrum: '스펙트럼',
+  playSweep: '스윕 재생',
+  sweepCopy:
+    '공개된 10초 스펙트럼 스윕이 작품의 팔레트를 380에서 700 nm까지 가시광선 전체로 이끕니다.',
+  chapterWord: '장',
+
+  // 조용한 상태
+  nextDoor: '{work} — 바로 옆방입니다.',
+  throughSpectrum: '스펙트럼을 지나',
 };

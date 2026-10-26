@@ -161,7 +161,7 @@ export const ja: Messages = {
   compare: '二つの表現を並べる',
   closeCompare: 'ひとつの表現に戻る',
   completeFilm: '全編の映像',
-  enlarge: '作品の全画面ビューアーを開く',
+  enlarge: '細見',
   close: '閉じる',
   pause: '一時停止',
   play: '再生',
@@ -173,7 +173,7 @@ export const ja: Messages = {
   echo: 'すべての動きに余韻があります。',
   sameWork: '同じ振付を、光にとどめて',
   seed: '生成シード',
-  cycle: 'パフォーマンス・サイクル',
+  cycle: 'サイクル',
   token: 'トークン',
   collectionContract: 'コレクションのコントラクト',
   indexedOwner: '索引に記録された保管アドレス',
@@ -306,4 +306,141 @@ export const ja: Messages = {
   previous: '前へ',
   leadingWallet: '最高入札ウォレット',
   reviewChanged: '入札データが変わりました。この確認画面を閉じ、最新の金額を確認してください。',
+
+  // 柱、シート、キー
+  statement: 'ステートメント',
+  index: '索引',
+  indexSheet: 'コレクションの索引',
+  closeIndex: '索引を閉じる',
+  keys: 'キー',
+  keysSheet: 'キーボードショートカット',
+  keyPlay: 'フィルムの再生・一時停止',
+  keyNeighbours: '前の作品と次の作品',
+  keyExpressions: '墨と光。長押しで覗き見る',
+  keyFilm: '鑑賞室でフィルムを開く',
+  keySit: '座る：インターフェースを消す',
+  keyStudy: 'プレートを実寸で見る',
+  keyIndex: '索引を開く',
+  keyJump: '番号を入力して Enter を押すと、その作品へ移動します',
+  keyHelp: 'このキー一覧を表示',
+  goToWork: '作品へ移動',
+  workNumber: '作品番号',
+
+  // 並び順と絞り込み
+  ordering: '並び順',
+  orderNumber: '番号',
+  orderCycle: 'サイクル',
+  orderSpectrum: 'スペクトル',
+  filters: '絞り込み',
+  clearFilters: '絞り込みを解除',
+  unmeasured: '未計測',
+  spectrumWall: 'スペクトルに沿って並ぶコレクション',
+  spectrumNote:
+    'すべての光のプレートを、公開された主波長にしたがって黒の上に掛けています。380 から 700 nm。',
+  worksCount: '{count} 点',
+  oneWork: '1 点',
+  imprintedOn: '{date} 刻印',
+  underlay: '下層構造',
+  wildcard: 'ワイルドカード',
+  allocation: '割り当て',
+  theCollection: 'コレクション',
+  thisCycle: 'このサイクル',
+  collectionControls: 'コレクションの操作',
+
+  // プレートと転回
+  showLight: '光の表現を見る',
+  showInk: '墨の表現を見る',
+  holdToPeek: '長押しで覗き見る',
+  noInkPublished: '墨の表現は未公開',
+  wholePlate: 'プレート全体',
+  previousWork: '前の作品',
+  nextWork: '次の作品',
+  nextByWavelength: '波長順で次の作品',
+  nmRedder: '{n} nm 赤寄り',
+  nmBluer: '{n} nm 青寄り',
+  collect: '収蔵する',
+
+  // 作品解説と用語集
+  entry: '作品解説',
+  selectionLine: '{total} 本の候補軌道のうちの一本。第 {index} 番が選ばれました。',
+  bordaNote:
+    'ボルダ集計 · カオスの重み {chaos} · 平衡の重み {equilibrium} · 美観 {aesthetic} · スコア {score}',
+  threeBodyOrbit: '三体の軌道。',
+  inkMedium: '墨：シミュレートされた流体が楮紙の地に運んだ墨。',
+  lightMedium: '光：黒の上に輝く軌道のリボン。',
+  filmsWord: 'フィルム',
+  spectralSweep: 'スペクトル・スイープ',
+  mintedTo: '発行先',
+  heldBy: '所有',
+  recordAsOf: '{date} 時点の Arbitrum の記録',
+  seedShort: 'シード',
+  wavelength: '主波長',
+  bodyHues: '天体の色相',
+  masses: '質量',
+  eccentricity: '離心率',
+  selection: '選定',
+  glossary: '用語集',
+  glossarySignature:
+    'Signature はひとつのトークンです。ひとつのシード、記録されたひとつの軌道、そしてその軌道の公開されたすべてのレンダリング。',
+  glossaryExpression:
+    '表現とは、その軌道をひとつの作家的な手法でレンダリングしたものです。光と墨はそのうちの二つで、対等です。',
+  glossaryCycle:
+    'サイクルは Cosmic Signature ゲームの一ラウンドです。成功したラウンドは、その作品群を一度のトランザクションで刻印します。',
+  glossaryUnderlay: '下層構造は、主構造の下に、記された不透明度で描かれる副次的な構造です。',
+  glossarySpectralClass:
+    'スペクトル型は、最も青い O から最も赤い M まで恒星の尺度に従い、パレットの主波長から読み取られます。',
+  glossaryChaos: 'カオスは 0 から 100 の値で、軌道が初期条件にどれほど敏感に依存したかを表します。',
+  glossarySyzygies:
+    '朔望（シジギー）は三つの天体が一直線に並ぶ瞬間です。ゼロは、一度も並ばなかったことを意味します。',
+  glossaryBorda:
+    '十万本の候補軌道がシミュレートされ、ボルダ集計で順位づけられました。公開された番号は、その集計が選んだ一本です。',
+  glossaryWavelength: '主波長は、パレットの基準色の色相を可視光のナノメートルで測ったものです。',
+  glossaryMasses: '三つの質量は、各天体が他の二つを引く強さを決めます。',
+  glossaryEccentricity: '離心率は、ドリフトの楕円が円からどれだけ離れているかを表します。',
+  verifyOnChain: 'オンチェーンで検証',
+  honestyRecord:
+    '記録は Arbitrum のインデクサーから読み取っており、チェーンより数ブロック遅れることがあります。',
+  honestyMedia:
+    'メディアファイルは発行者のものです。そのハッシュをここに記録し、ローカルの複製がある箇所ではすべて照合しています。',
+
+  // ステートメント
+  shapeOfMotion: '運動のかたち。',
+  statementLine:
+    'どの作品も、記録されたひとつの三体の軌道を、光として、墨として、二度レンダリングしたものです。両者は同じトークンです。',
+  statementSigned: 'Cosmic Signature · 2026 年 10 月',
+  livingCollection: '記録された軌道からなる、生きたコレクション',
+  cyclesSpan: 'サイクル {first} からサイクル {last} まで',
+  since: '{date} より',
+  statement1:
+    'Signature はひとつのトークンです。その背後には、ひとつのシード、記録された三体のひとつの軌道、そしてその軌道について私たちが公開したすべてのレンダリングがあります。手で描いたものはなく、二度描いたものもありません。',
+  statement2:
+    'どの軌道も、光として、墨として、二度レンダリングされます。光では、三つの天体が黒の上に輝くリボンを残します。墨では、同じ運動がシミュレートされた流体を通して墨を楮紙の地へ運びます。両者はひとつの作品の二つの表現であり、対等です。どちらも、もう一方の原作ではありません。',
+  statement3:
+    '三体を選んだのは、三が重力の予測しきれない最小の数だからです。二つの天体は閉じた図形を永遠に巡ります。三つは即興します。その道筋は最後の小数まで決まっていながら、なお意外で、その性質こそ、すべての作品に持たせたかったものです。',
+  statement4:
+    '一点ごとに、十万本の候補軌道をシミュレートし、カオス、均衡、形で採点します。ボルダ集計がそれらを順位づけ、一本が選ばれます。選ばれた候補の番号は、それを選んだ重みとともに作品の記録に公開されます。',
+  statement5:
+    '作品はサイクルごとに刻印されます。Cosmic Signature ゲームの成功した各ラウンドは Arbitrum に新しいトークンを発行して終わり、そのシードはその一度のトランザクションで固定されます。サイクル 0 が 2026 年 6 月にコレクションを開きました。コレクションはサイクルごとに成長し、公開したものを決して改めません。',
+  statement6:
+    'ここに示すものはすべて記録されたレンダリングであり、ライブのシミュレーションではありません。すべてのプレートは公開されたファイルからハッシュどおりに再現され、これらのページのあらゆる計測値——波長、カオス指数、朔望の回数——は発行者自身のものです。',
+
+  // 奥付
+  colophon: '奥付',
+  colophonPlates:
+    'プレートは 16 ビットのマスターから公開された WebP 派生ファイルより再現。3,456 × 2,234 px。',
+  colophonFilms: 'フィルムは 60 fps の ember-v4 レンダーから派生した H.264 です。',
+  colophonType: '組版は Literata と IBM Plex Mono。',
+
+  // プロセス、章の再構成
+  chapterChoice: '選択',
+  chapterChoiceCopy: '十万本の候補軌道が採点され、一本が選ばれる。',
+  chapterSpectrum: 'スペクトル',
+  playSweep: 'スイープを再生',
+  sweepCopy:
+    '公開された十秒のスペクトル・スイープが、作品のパレットを 380 から 700 nm の可視光の中へ通します。',
+  chapterWord: '章',
+
+  // 静かな状態
+  nextDoor: '{work} は隣にあります。',
+  throughSpectrum: 'スペクトルを抜けて',
 };

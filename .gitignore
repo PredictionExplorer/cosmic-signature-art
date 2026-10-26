@@ -9,3 +9,6 @@ test-results/
 !.env.example
 *.tsbuildinfo
 .DS_Store
+
+# Generated CJK font slices (scripts/build-font-subsets.mjs)
+public/fonts/cjk/

@@ -158,7 +158,7 @@ export const en = {
   compare: 'See both expressions',
   closeCompare: 'Single expression',
   completeFilm: 'The complete film',
-  enlarge: 'Open full artwork viewer',
+  enlarge: 'Study',
   close: 'Close',
   pause: 'Pause',
   play: 'Play',
@@ -171,7 +171,7 @@ export const en = {
   echo: 'Every motion has an echo.',
   sameWork: 'The same choreography, held in light',
   seed: 'Generative seed',
-  cycle: 'Performance Cycle',
+  cycle: 'Cycle',
   token: 'Token',
   collectionContract: 'Collection contract',
   indexedOwner: 'Indexed custodian',
@@ -305,5 +305,145 @@ export const en = {
   previous: 'Previous',
   leadingWallet: 'Leading wallet',
   reviewChanged: 'Bid data changed. Close this review and check the latest amount.',
+
+  // The running head, the sheets and the keys
+  statement: 'Statement',
+  index: 'Index',
+  indexSheet: 'Index of the collection',
+  closeIndex: 'Close the index',
+  keys: 'Keys',
+  keysSheet: 'Keyboard shortcuts',
+  keyPlay: 'Play or pause the film',
+  keyNeighbours: 'Previous and next work',
+  keyExpressions: 'Ink and Light; hold to peek',
+  keyFilm: 'Open the film in the viewing room',
+  keySit: 'Sit: let the chrome fade',
+  keyStudy: 'Study the plate at full size',
+  keyIndex: 'Open the index',
+  keyJump: 'Type a number, then Enter, to go to that work',
+  keyHelp: 'Show these keys',
+  goToWork: 'Go to a work',
+  workNumber: 'Work number',
+
+  // Orderings and filters
+  ordering: 'Ordering',
+  orderNumber: 'Number',
+  orderCycle: 'Cycle',
+  orderSpectrum: 'Spectrum',
+  filters: 'Filters',
+  clearFilters: 'Clear filters',
+  unmeasured: 'Unmeasured',
+  spectrumWall: 'The collection along the spectrum',
+  spectrumNote:
+    'Every Light plate hung on black by its published dominant wavelength, 380 to 700 nm.',
+  worksCount: '{count} works',
+  oneWork: '1 work',
+  imprintedOn: 'imprinted {date}',
+  underlay: 'Underlay',
+  wildcard: 'Wildcard',
+  allocation: 'Allocation',
+  theCollection: 'The collection',
+  thisCycle: 'This cycle',
+  collectionControls: 'Collection controls',
+
+  // The plate and the Turn
+  showLight: 'Show the Light expression',
+  showInk: 'Show the Ink expression',
+  holdToPeek: 'Hold to peek',
+  noInkPublished: 'no Ink expression published',
+  wholePlate: 'Whole plate',
+  previousWork: 'Previous work',
+  nextWork: 'Next work',
+  nextByWavelength: 'Next by wavelength',
+  nmRedder: '{n} nm redder',
+  nmBluer: '{n} nm bluer',
+  collect: 'Collect',
+
+  // The entry and the glossary
+  entry: 'Entry',
+  selectionLine: 'One of {total} candidate orbits. Number {index} was chosen.',
+  bordaNote:
+    'Borda count · chaos weight {chaos} · equilibrium weight {equilibrium} · aesthetic {aesthetic} · score {score}',
+  threeBodyOrbit: 'Three-body orbit.',
+  inkMedium: 'Ink: sumi carried by simulated fluid on a kozo ground.',
+  lightMedium: 'Light: luminous orbit ribbons on black.',
+  filmsWord: 'films',
+  spectralSweep: 'spectral sweep',
+  mintedTo: 'Minted to',
+  heldBy: 'held by',
+  recordAsOf: 'Arbitrum record as of {date}',
+  seedShort: 'Seed',
+  wavelength: 'Dominant wavelength',
+  bodyHues: 'Body hues',
+  masses: 'Masses',
+  eccentricity: 'Eccentricity',
+  selection: 'Selection',
+  glossary: 'Glossary',
+  glossarySignature:
+    'A Signature is one token: one seed, one recorded orbit, every published rendering of it.',
+  glossaryExpression:
+    'An expression is one authored rendering of that orbit. Light and Ink are two, of equal standing.',
+  glossaryCycle:
+    'A cycle is one round of the Cosmic Signature game. Each successful round imprints its works in a single transaction.',
+  glossaryUnderlay:
+    'The underlay is the secondary structure drawn beneath the primary one, at the stated opacity.',
+  glossarySpectralClass:
+    'The spectral class follows the stellar scale, from O, the bluest, to M, the reddest, read from the palette’s dominant wavelength.',
+  glossaryChaos:
+    'Chaos, from 0 to 100, measures how sensitively the orbit depended on its starting conditions.',
+  glossarySyzygies:
+    'A syzygy is a moment when the three bodies fall into one line. Zero means they never did.',
+  glossaryBorda:
+    'One hundred thousand candidate orbits were simulated and ranked by a Borda count; the published number is the one it chose.',
+  glossaryWavelength:
+    'The dominant wavelength is the hue of the palette’s anchor, measured in nanometres of visible light.',
+  glossaryMasses: 'The three masses set how strongly each body pulls on the other two.',
+  glossaryEccentricity: 'Eccentricity measures how far the drift ellipse departs from a circle.',
+  verifyOnChain: 'Verify on chain',
+  honestyRecord:
+    'The record is read from the Arbitrum indexer and may lag the chain by a few blocks.',
+  honestyMedia:
+    'Media files are the publisher’s; their hashes are recorded here and checked wherever a local copy is kept.',
+
+  // The statement
+  shapeOfMotion: 'The shape of motion.',
+  statementLine:
+    'Each work is one recorded three-body orbit, rendered twice, as light and as ink. Both are the same token.',
+  statementSigned: 'Cosmic Signature · October 2026',
+  livingCollection: 'A living collection of recorded orbits',
+  cyclesSpan: 'Cycle {first} to Cycle {last}',
+  since: 'since {date}',
+  statement1:
+    'A Signature is one token. Behind it stand one seed, one recorded orbit of three bodies, and every rendering we have published of that orbit. Nothing is drawn by hand, and nothing is drawn twice.',
+  statement2:
+    'Each orbit is rendered twice, as Light and as Ink. In Light the three bodies leave luminous ribbons on black. In Ink the same motion carries sumi through a simulated fluid onto a kozo ground. They are two expressions of one work, of equal standing; neither is the original of the other.',
+  statement3:
+    'We chose three bodies because three is the smallest number gravity cannot fully predict. Two bodies circle forever in a closed figure. Three improvise. Their paths are determined to the last decimal and still surprising, and that is the quality we wanted every work to carry.',
+  statement4:
+    'For every work, one hundred thousand candidate orbits are simulated and scored for chaos, balance and form. A Borda count ranks them, and one is chosen. The number of the chosen candidate is published in the work’s record beside the weights that chose it.',
+  statement5:
+    'Works are imprinted in cycles. Each successful round of the Cosmic Signature game ends by minting new tokens on Arbitrum, and their seeds are fixed in that one transaction. Cycle 0 opened the collection in June 2026. The collection grows with every cycle and never revises what it has published.',
+  statement6:
+    'Everything shown here is a recorded rendering, not a live simulation. Every plate is reproduced from the published files, hash for hash, and every measurement on these pages, a wavelength, a chaos index, a count of syzygies, is the publisher’s own.',
+
+  // The colophon
+  colophon: 'Colophon',
+  colophonPlates:
+    'Plates are reproduced from the published WebP derivatives of 16-bit masters, 3,456 × 2,234 px.',
+  colophonFilms: 'Films are H.264 derivatives of 60 fps ember-v4 renders.',
+  colophonType: 'Set in Literata and IBM Plex Mono.',
+
+  // The process, re-chaptered
+  chapterChoice: 'The choice',
+  chapterChoiceCopy: 'One hundred thousand candidate orbits are scored; one is chosen.',
+  chapterSpectrum: 'The spectrum',
+  playSweep: 'Play the sweep',
+  sweepCopy:
+    'The published ten-second spectral sweep carries the work’s palette through visible light, 380 to 700 nm.',
+  chapterWord: 'Chapter',
+
+  // Quiet states
+  nextDoor: '{work} is next door.',
+  throughSpectrum: 'Through the spectrum',
 } as const;
 export type Messages = { [K in keyof typeof en]: string };

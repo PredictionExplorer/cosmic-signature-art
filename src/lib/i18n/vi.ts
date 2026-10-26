@@ -162,7 +162,7 @@ export const vi: Messages = {
   compare: 'Xem cả hai cách biểu đạt',
   closeCompare: 'Một cách biểu đạt',
   completeFilm: 'Phim đầy đủ',
-  enlarge: 'Mở trình xem toàn bộ tác phẩm',
+  enlarge: 'Xem kỹ',
   close: 'Đóng',
   pause: 'Tạm dừng',
   play: 'Phát',
@@ -175,7 +175,7 @@ export const vi: Messages = {
   echo: 'Mỗi chuyển động đều có tiếng vọng.',
   sameWork: 'Cùng một vũ điệu, lưu giữ trong ánh sáng',
   seed: 'Hạt giống tạo sinh',
-  cycle: 'Chu kỳ trình diễn',
+  cycle: 'Chu kỳ',
   token: 'Token',
   collectionContract: 'Hợp đồng bộ sưu tập',
   indexedOwner: 'Địa chỉ giữ token theo chỉ mục',
@@ -310,4 +310,141 @@ export const vi: Messages = {
   leadingWallet: 'Ví đang trả giá cao nhất',
   reviewChanged:
     'Dữ liệu trả giá đã thay đổi. Hãy đóng phần xem lại này và kiểm tra số tiền mới nhất.',
+
+  // Đầu trang, các bảng và phím
+  statement: 'Tuyên ngôn',
+  index: 'Mục lục',
+  indexSheet: 'Mục lục bộ sưu tập',
+  closeIndex: 'Đóng mục lục',
+  keys: 'Phím',
+  keysSheet: 'Phím tắt',
+  keyPlay: 'Phát hoặc tạm dừng phim',
+  keyNeighbours: 'Tác phẩm trước và sau',
+  keyExpressions: 'Mực và Ánh sáng; giữ để xem thoáng',
+  keyFilm: 'Mở phim trong phòng xem',
+  keySit: 'Ngồi: để giao diện mờ đi',
+  keyStudy: 'Xem kỹ bản in ở kích cỡ đầy đủ',
+  keyIndex: 'Mở mục lục',
+  keyJump: 'Gõ một số rồi nhấn Enter để đến tác phẩm đó',
+  keyHelp: 'Hiện các phím này',
+  goToWork: 'Đến một tác phẩm',
+  workNumber: 'Số tác phẩm',
+
+  // Thứ tự và bộ lọc
+  ordering: 'Thứ tự',
+  orderNumber: 'Số',
+  orderCycle: 'Chu kỳ',
+  orderSpectrum: 'Quang phổ',
+  filters: 'Bộ lọc',
+  clearFilters: 'Xóa bộ lọc',
+  unmeasured: 'Chưa đo',
+  spectrumWall: 'Bộ sưu tập dọc theo quang phổ',
+  spectrumNote:
+    'Mỗi bản in Ánh sáng được treo trên nền đen theo bước sóng chủ đạo đã công bố, từ 380 đến 700 nm.',
+  worksCount: '{count} tác phẩm',
+  oneWork: '1 tác phẩm',
+  imprintedOn: 'khắc dấu {date}',
+  underlay: 'Lớp nền',
+  wildcard: 'Ngoại lệ',
+  allocation: 'Phân bổ',
+  theCollection: 'Bộ sưu tập',
+  thisCycle: 'Chu kỳ này',
+  collectionControls: 'Điều khiển bộ sưu tập',
+
+  // Bản in và Lật trang
+  showLight: 'Hiện biểu đạt Ánh sáng',
+  showInk: 'Hiện biểu đạt Mực',
+  holdToPeek: 'Giữ để xem thoáng',
+  noInkPublished: 'chưa công bố biểu đạt Mực',
+  wholePlate: 'Toàn bản in',
+  previousWork: 'Tác phẩm trước',
+  nextWork: 'Tác phẩm sau',
+  nextByWavelength: 'Kế tiếp theo bước sóng',
+  nmRedder: 'đỏ hơn {n} nm',
+  nmBluer: 'xanh hơn {n} nm',
+  collect: 'Sưu tầm',
+
+  // Mục ghi và bảng thuật ngữ
+  entry: 'Mục ghi',
+  selectionLine: 'Một trong {total} quỹ đạo ứng viên. Số {index} đã được chọn.',
+  bordaNote:
+    'Kiểm Borda · trọng số hỗn độn {chaos} · trọng số cân bằng {equilibrium} · thẩm mỹ {aesthetic} · điểm {score}',
+  threeBodyOrbit: 'Quỹ đạo ba vật thể.',
+  inkMedium: 'Mực: mực tàu được chất lưu mô phỏng đưa lên nền giấy kozo.',
+  lightMedium: 'Ánh sáng: những dải quỹ đạo phát sáng trên nền đen.',
+  filmsWord: 'phim',
+  spectralSweep: 'quét quang phổ',
+  mintedTo: 'Đúc cho',
+  heldBy: 'đang giữ bởi',
+  recordAsOf: 'Bản ghi Arbitrum tính đến {date}',
+  seedShort: 'Hạt giống',
+  wavelength: 'Bước sóng chủ đạo',
+  bodyHues: 'Sắc độ các vật thể',
+  masses: 'Khối lượng',
+  eccentricity: 'Độ lệch tâm',
+  selection: 'Tuyển chọn',
+  glossary: 'Bảng thuật ngữ',
+  glossarySignature:
+    'Một Signature là một token: một hạt giống, một quỹ đạo được ghi lại, mọi bản kết xuất đã công bố của quỹ đạo ấy.',
+  glossaryExpression:
+    'Một biểu đạt là một lần kết xuất có chủ ý của quỹ đạo ấy. Ánh sáng và Mực là hai biểu đạt, ngang hàng nhau.',
+  glossaryCycle:
+    'Một chu kỳ là một vòng của trò chơi Cosmic Signature. Mỗi vòng thành công khắc dấu các tác phẩm của mình trong một giao dịch duy nhất.',
+  glossaryUnderlay: 'Lớp nền là cấu trúc phụ được vẽ bên dưới cấu trúc chính, với độ mờ đã nêu.',
+  glossarySpectralClass:
+    'Lớp quang phổ theo thang sao, từ O xanh nhất đến M đỏ nhất, đọc từ bước sóng chủ đạo của bảng màu.',
+  glossaryChaos: 'Hỗn độn, từ 0 đến 100, đo mức độ nhạy của quỹ đạo với điều kiện ban đầu.',
+  glossarySyzygies:
+    'Một syzygy là khoảnh khắc ba vật thể thẳng hàng. Số không nghĩa là điều đó chưa từng xảy ra.',
+  glossaryBorda:
+    'Một trăm nghìn quỹ đạo ứng viên được mô phỏng và xếp hạng bằng kiểm Borda; số đã công bố là quỹ đạo nó chọn.',
+  glossaryWavelength:
+    'Bước sóng chủ đạo là sắc độ của màu neo trong bảng màu, đo bằng nanomét ánh sáng khả kiến.',
+  glossaryMasses: 'Ba khối lượng định mức mỗi vật thể hút hai vật thể còn lại mạnh đến đâu.',
+  glossaryEccentricity: 'Độ lệch tâm đo mức hình elip trôi dạt lệch khỏi hình tròn.',
+  verifyOnChain: 'Xác minh trên chuỗi',
+  honestyRecord: 'Bản ghi được đọc từ bộ chỉ mục Arbitrum và có thể chậm hơn chuỗi vài khối.',
+  honestyMedia:
+    'Tệp phương tiện thuộc về nhà phát hành; mã băm được ghi ở đây và được đối chiếu ở mọi nơi có bản sao cục bộ.',
+
+  // Tuyên ngôn
+  shapeOfMotion: 'Hình dáng của chuyển động.',
+  statementLine:
+    'Mỗi tác phẩm là một quỹ đạo ba vật thể được ghi lại, kết xuất hai lần, thành ánh sáng và thành mực. Cả hai là cùng một token.',
+  statementSigned: 'Cosmic Signature · Tháng 10, 2026',
+  livingCollection: 'Một bộ sưu tập sống gồm những quỹ đạo được ghi lại',
+  cyclesSpan: 'Chu kỳ {first} đến chu kỳ {last}',
+  since: 'từ {date}',
+  statement1:
+    'Một Signature là một token. Phía sau nó là một hạt giống, một quỹ đạo ba vật thể được ghi lại, và mọi bản kết xuất của quỹ đạo ấy mà chúng tôi đã công bố. Không gì được vẽ bằng tay, và không gì được vẽ hai lần.',
+  statement2:
+    'Mỗi quỹ đạo được kết xuất hai lần, thành Ánh sáng và thành Mực. Trong Ánh sáng, ba vật thể để lại những dải sáng trên nền đen. Trong Mực, cùng chuyển động ấy đưa mực tàu qua một chất lưu mô phỏng lên nền giấy kozo. Đó là hai biểu đạt của một tác phẩm, ngang hàng nhau; không bên nào là bản gốc của bên kia.',
+  statement3:
+    'Chúng tôi chọn ba vật thể vì ba là con số nhỏ nhất mà lực hấp dẫn không thể tiên đoán trọn vẹn. Hai vật thể xoay mãi trong một hình khép kín. Ba vật thể thì ứng tác. Đường đi của chúng được định đến chữ số cuối cùng mà vẫn bất ngờ, và đó là phẩm chất chúng tôi muốn mỗi tác phẩm mang theo.',
+  statement4:
+    'Với mỗi tác phẩm, một trăm nghìn quỹ đạo ứng viên được mô phỏng và chấm điểm theo hỗn độn, cân bằng và hình thể. Một kiểm Borda xếp hạng chúng, và một quỹ đạo được chọn. Số của ứng viên được chọn được công bố trong bản ghi của tác phẩm, bên cạnh những trọng số đã chọn nó.',
+  statement5:
+    'Các tác phẩm được khắc dấu theo chu kỳ. Mỗi vòng thành công của trò chơi Cosmic Signature kết thúc bằng việc đúc token mới trên Arbitrum, và hạt giống của chúng được cố định trong chính giao dịch ấy. Chu kỳ 0 đã mở bộ sưu tập vào tháng 6 năm 2026. Bộ sưu tập lớn dần theo mỗi chu kỳ và không bao giờ sửa lại những gì đã công bố.',
+  statement6:
+    'Mọi thứ hiển thị ở đây là bản kết xuất được ghi lại, không phải mô phỏng trực tiếp. Mỗi bản in được tái hiện từ các tệp đã công bố, khớp từng mã băm, và mỗi phép đo trên những trang này, một bước sóng, một chỉ số hỗn độn, một số lần syzygy, đều là của nhà phát hành.',
+
+  // Lời cuối sách
+  colophon: 'Lời cuối sách',
+  colophonPlates:
+    'Các bản in được tái hiện từ tệp WebP dẫn xuất đã công bố của bản gốc 16 bit, 3.456 × 2.234 px.',
+  colophonFilms: 'Phim là dẫn xuất H.264 từ các bản kết xuất ember-v4 60 fps.',
+  colophonType: 'Sắp chữ bằng Literata và IBM Plex Mono.',
+
+  // Quy trình, chia chương lại
+  chapterChoice: 'Sự lựa chọn',
+  chapterChoiceCopy: 'Một trăm nghìn quỹ đạo ứng viên được chấm điểm; một quỹ đạo được chọn.',
+  chapterSpectrum: 'Quang phổ',
+  playSweep: 'Phát bản quét',
+  sweepCopy:
+    'Bản quét quang phổ mười giây đã công bố đưa bảng màu của tác phẩm đi qua ánh sáng khả kiến, từ 380 đến 700 nm.',
+  chapterWord: 'Chương',
+
+  // Trạng thái lặng
+  nextDoor: '{work} ở ngay phòng bên.',
+  throughSpectrum: 'Xuyên qua quang phổ',
 };

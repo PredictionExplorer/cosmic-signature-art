@@ -2,8 +2,8 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useEffect, useEffectEvent, useId, useRef, useState, useSyncExternalStore } from 'react';
-import { Pause, Play } from 'lucide-react';
 import { useMotion } from './motion-provider';
+import { openSheet, useOpenSheet } from './sheets-store';
 import {
   locales,
   localeNames,
@@ -11,25 +11,14 @@ import {
   unlocalizedPath,
   type Locale,
 } from '@/lib/i18n/routing';
+import { NAVIGATION, NAVIGATION_LABEL } from '@/lib/navigation';
 import type { Messages } from '@/lib/i18n/en';
 
-/** One navigation vocabulary, in this order, everywhere the venue lists its rooms. */
-export const NAVIGATION = ['/collection', '/auctions', '/process'] as const;
-const NAVIGATION_LABEL: Record<(typeof NAVIGATION)[number], keyof Messages> = {
-  '/collection': 'collection',
-  '/auctions': 'auctions',
-  '/process': 'process',
-};
-
-/** The wordmark and the static three-body mark; header and footer share one setting. */
-function Wordmark({ t }: { t: Messages }) {
+/** The wordmark is typeset in Literata small caps; the mark is one static derivation. */
+export function Wordmark({ t }: { t: Messages }) {
   return (
     <>
-      <span className="brand-name">
-        COSMIC
-        <br />
-        SIGNATURE
-      </span>
+      <span className="brand-name">Cosmic Signature</span>
       <span className="brand-mark" role="img" aria-label={t.markLabel}>
         <i />
         <i />
@@ -49,7 +38,15 @@ const noPopoverOnServer = () => false;
  * with the same behaviour hand-built elsewhere. Every link is a real anchor with hreflang
  * and carries the visitor's current search params into the other language.
  */
-function LanguageMenu({ locale, pathname, t }: { locale: Locale; pathname: string; t: Messages }) {
+export function LanguageMenu({
+  locale,
+  pathname,
+  t,
+}: {
+  locale: Locale;
+  pathname: string;
+  t: Messages;
+}) {
   const native = useSyncExternalStore(noSubscription, popoverSupported, noPopoverOnServer);
   const id = useId();
   const [open, setOpen] = useState(false);
@@ -160,77 +157,95 @@ function LanguageMenu({ locale, pathname, t }: { locale: Locale; pathname: strin
   );
 }
 
-export function SiteHeader({ locale, t }: { locale: Locale; t: Messages }) {
+function PauseGlyph({ paused }: { paused: boolean }) {
+  return paused ? (
+    <svg viewBox="0 0 12 12" aria-hidden="true">
+      <path d="M3 2v8l7-4z" fill="currentColor" />
+    </svg>
+  ) : (
+    <svg viewBox="0 0 12 12" aria-hidden="true">
+      <path d="M3 2h2v8H3zm4 0h2v8H7z" fill="currentColor" />
+    </svg>
+  );
+}
+
+/**
+ * The running head: 48 px, opaque in the current ground, carrying the four words, Index and
+ * the language. A second, inert copy in the other ground is clipped at the seam while the
+ * Turn travels (globals.css reads <html data-turning> and --seam), so the head inverts with it.
+ */
+export function RunningHead({ locale, t }: { locale: Locale; t: Messages }) {
   const { paused, toggle } = useMotion();
   const pathname = unlocalizedPath(usePathname());
+  const sheet = useOpenSheet();
+  const current = (path: string) =>
+    pathname === path || pathname.startsWith(`${path}/`) ? 'page' : undefined;
   return (
     <>
       <a className="skip-link" href="#main">
         {t.skip}
       </a>
       <header className="site-header">
-        <Link className="brand" href={localizedPath(locale)} aria-label="Cosmic Signature">
-          <Wordmark t={t} />
-        </Link>
-        <nav aria-label={t.siteNavigation}>
-          {NAVIGATION.map((path) => (
-            <Link
-              key={path}
-              href={localizedPath(locale, path)}
-              aria-current={
-                pathname === path || pathname.startsWith(`${path}/`) ? 'page' : undefined
-              }
+        <div className="head-row">
+          <Link className="brand" href={localizedPath(locale)} aria-label="Cosmic Signature">
+            <Wordmark t={t} />
+          </Link>
+          <div className="head-words">
+            <nav aria-label={t.siteNavigation} className="contents">
+              {NAVIGATION.map((path) => (
+                <Link key={path} href={localizedPath(locale, path)} aria-current={current(path)}>
+                  {t[NAVIGATION_LABEL[path]]}
+                </Link>
+              ))}
+            </nav>
+            <button
+              type="button"
+              className="index-word"
+              onClick={() => openSheet('index')}
+              aria-haspopup="dialog"
+              aria-expanded={sheet === 'index'}
+              aria-controls="index-sheet"
             >
-              {t[NAVIGATION_LABEL[path]]}
-            </Link>
-          ))}
-        </nav>
-        <div className="header-tools">
-          <button
-            type="button"
-            className="motion-toggle"
-            onClick={toggle}
-            aria-pressed={paused}
-            aria-label={t.pauseAmbientMotion}
-          >
-            {paused ? (
-              <Play size={12} aria-hidden="true" />
-            ) : (
-              <Pause size={12} aria-hidden="true" />
-            )}
-            <span aria-hidden="true">{t.pauseAmbientMotion}</span>
-          </button>
-          <LanguageMenu locale={locale} pathname={pathname} t={t} />
+              {t.index}
+            </button>
+            <button
+              type="button"
+              className="motion-toggle"
+              onClick={toggle}
+              aria-pressed={paused}
+              aria-label={t.pauseAmbientMotion}
+            >
+              <PauseGlyph paused={paused} />
+              <span aria-hidden="true">{t.pauseAmbientMotion}</span>
+            </button>
+            <LanguageMenu locale={locale} pathname={pathname} t={t} />
+          </div>
+        </div>
+        <div className="head-overlay" aria-hidden="true" inert>
+          <div className="head-row">
+            <span className="brand">
+              <Wordmark t={t} />
+            </span>
+            <div className="head-words">
+              {NAVIGATION.map((path) => (
+                <span key={path} aria-current={current(path)}>
+                  {t[NAVIGATION_LABEL[path]]}
+                </span>
+              ))}
+              <button type="button" tabIndex={-1}>
+                {t.index}
+              </button>
+              <span className="motion-toggle">
+                <PauseGlyph paused={paused} />
+                <span>{t.pauseAmbientMotion}</span>
+              </span>
+              <span className="language-menu">
+                <span className="language-trigger">{locale.toUpperCase()}</span>
+              </span>
+            </div>
+          </div>
         </div>
       </header>
     </>
-  );
-}
-
-export function SiteFooter({ locale, t }: { locale: Locale; t: Messages }) {
-  return (
-    <footer className="site-footer">
-      <div>
-        <Link className="brand" href={localizedPath(locale)} aria-label="Cosmic Signature">
-          <Wordmark t={t} />
-        </Link>
-        <p>{t.footerNote}</p>
-      </div>
-      <nav aria-label="Cosmic Signature">
-        {(
-          [
-            ...NAVIGATION.map((path) => [path, t[NAVIGATION_LABEL[path]]] as const),
-            ['/terms', t.terms],
-            ['/privacy', t.privacy],
-          ] as const
-        ).map(([path, label]) => (
-          <Link key={path} href={localizedPath(locale, path)}>
-            {label}
-          </Link>
-        ))}
-        <a href="https://cosmicsignature.com">{t.openProtocol} ↗</a>
-      </nav>
-      <span className="footer-coordinate">ART / ARBITRUM</span>
-    </footer>
   );
 }

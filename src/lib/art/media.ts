@@ -30,7 +30,15 @@ const modeDefinitions = [
     image: ['web_full', 'images/web/full.webp'],
     preview: ['web_preview', 'images/web/preview.webp'],
     master: ['source_master', 'images/source/master.png'],
-    films: [{ id: 'normal', label: 'Film', role: 'main_web', path: 'videos/web/main.mp4' }],
+    films: [
+      { id: 'normal', label: 'Film', role: 'main_web', path: 'videos/web/main.mp4' },
+      {
+        id: 'sweep',
+        label: 'Spectral sweep',
+        role: 'spectral_sweep_web',
+        path: 'videos/web/spectral_sweep.mp4',
+      },
+    ],
   },
   {
     id: 'ink',

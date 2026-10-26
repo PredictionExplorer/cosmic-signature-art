@@ -2,7 +2,8 @@ import { act, fireEvent, render, screen, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { en } from '@/lib/i18n/en';
 import { MotionProvider } from './motion-provider';
-import { SiteFooter, SiteHeader } from './site-header';
+import { RunningHead } from './running-head';
+import { closeSheet, useOpenSheet } from './sheets-store';
 
 let pathname = '/collection';
 vi.mock('next/navigation', () => ({ usePathname: () => pathname }));
@@ -21,10 +22,16 @@ function mockMatchMedia() {
   vi.stubGlobal('matchMedia', vi.fn().mockReturnValue(query));
 }
 
-function renderHeader(locale: 'en' | 'ja' = 'en') {
+function SheetProbe() {
+  const sheet = useOpenSheet();
+  return <output data-testid="sheet">{sheet ?? 'none'}</output>;
+}
+
+function renderHead(locale: 'en' | 'ja' = 'en') {
   return render(
     <MotionProvider>
-      <SiteHeader locale={locale} t={en} />
+      <RunningHead locale={locale} t={en} />
+      <SheetProbe />
     </MotionProvider>,
   );
 }
@@ -34,21 +41,28 @@ beforeEach(() => {
   mockMatchMedia();
   window.history.replaceState(null, '', '/collection');
   sessionStorage.clear();
+  act(() => closeSheet());
 });
 afterEach(() => {
   vi.unstubAllGlobals();
 });
 
-describe('site header', () => {
-  it('lists the one navigation vocabulary in order, with no outward arrow on Auctions', () => {
-    renderHeader();
+describe('running head', () => {
+  it('lists the one navigation vocabulary in order, Statement included, with no outward arrow', () => {
+    renderHead();
     const nav = screen.getByRole('navigation', { name: en.siteNavigation });
     const links = within(nav).getAllByRole('link');
-    expect(links.map((link) => link.textContent)).toEqual([en.collection, en.auctions, en.process]);
+    expect(links.map((link) => link.textContent)).toEqual([
+      en.collection,
+      en.auctions,
+      en.process,
+      en.statement,
+    ]);
     expect(links.map((link) => link.getAttribute('href'))).toEqual([
       '/collection',
       '/auctions',
       '/process',
+      '/statement',
     ]);
     expect(nav.querySelector('svg')).toBeNull();
     expect(links[0]).toHaveAttribute('aria-current', 'page');
@@ -57,7 +71,7 @@ describe('site header', () => {
 
   it('marks nested routes as current without matching unrelated prefixes', () => {
     pathname = '/auctions/31';
-    renderHeader();
+    renderHead();
     const nav = screen.getByRole('navigation', { name: en.siteNavigation });
     expect(within(nav).getByRole('link', { name: en.auctions })).toHaveAttribute(
       'aria-current',
@@ -68,13 +82,36 @@ describe('site header', () => {
     );
   });
 
-  it('gives the mark a constant accessible name', () => {
-    renderHeader();
-    expect(screen.getByRole('img', { name: en.markLabel })).toBeInTheDocument();
+  it('types the wordmark and gives the mark a constant accessible name', () => {
+    renderHead();
+    const brand = screen.getByRole('link', { name: 'Cosmic Signature' });
+    expect(brand.querySelector('.brand-name')).toHaveTextContent('Cosmic Signature');
+    expect(within(brand).getByRole('img', { name: en.markLabel })).toBeInTheDocument();
+  });
+
+  it('opens the Index sheet from the Index word and reports it as expanded', () => {
+    renderHead();
+    const index = screen.getByRole('button', { name: en.index });
+    expect(index).toHaveAttribute('aria-expanded', 'false');
+    expect(index).toHaveAttribute('aria-haspopup', 'dialog');
+    fireEvent.click(index);
+    expect(screen.getByTestId('sheet')).toHaveTextContent('index');
+    expect(index).toHaveAttribute('aria-expanded', 'true');
+  });
+
+  it('keeps the inert overlay copy out of the accessibility tree', () => {
+    renderHead();
+    const overlay = document.querySelector('.head-overlay')!;
+    expect(overlay).toHaveAttribute('aria-hidden', 'true');
+    expect(overlay).toHaveAttribute('inert');
+    expect(screen.getAllByRole('button', { name: en.index })).toHaveLength(1);
+    // The skip link, the wordmark and the four words; the overlay adds no anchor at all.
+    expect(screen.getAllByRole('link')).toHaveLength(6);
+    expect(overlay.querySelectorAll('a')).toHaveLength(0);
   });
 
   it('keeps a constant toggle label and reports the paused state through aria-pressed', () => {
-    renderHeader();
+    renderHead();
     const toggle = screen.getByRole('button', { name: en.pauseAmbientMotion });
     expect(toggle).toHaveClass('motion-toggle');
     expect(toggle).toHaveAttribute('aria-pressed', 'false');
@@ -86,8 +123,8 @@ describe('site header', () => {
   });
 
   it('opens the language list from the trigger and carries the current search params', () => {
-    window.history.replaceState(null, '', '/collection?view=atlas&q=31');
-    renderHeader();
+    window.history.replaceState(null, '', '/collection?order=spectrum&q=31');
+    renderHead();
     const trigger = screen.getByRole('button', { name: `${en.language}: EN` });
     expect(trigger).toHaveAttribute('aria-expanded', 'false');
     expect(screen.queryByRole('navigation', { name: en.language })).toBeNull();
@@ -95,11 +132,11 @@ describe('site header', () => {
     expect(trigger).toHaveAttribute('aria-expanded', 'true');
     const list = screen.getByRole('navigation', { name: en.language });
     const japanese = within(list).getByRole('link', { name: '日本語' });
-    expect(japanese).toHaveAttribute('href', '/ja/collection?view=atlas&q=31');
+    expect(japanese).toHaveAttribute('href', '/ja/collection?order=spectrum&q=31');
     expect(japanese).toHaveAttribute('hreflang', 'ja');
     expect(within(list).getByRole('link', { name: 'English' })).toHaveAttribute(
       'href',
-      '/collection?view=atlas&q=31',
+      '/collection?order=spectrum&q=31',
     );
     expect(within(list).getByRole('link', { name: 'English' })).toHaveAttribute(
       'aria-current',
@@ -109,7 +146,7 @@ describe('site header', () => {
   });
 
   it('closes the language list on Escape, returning focus, and on an outside press', () => {
-    renderHeader();
+    renderHead();
     const trigger = screen.getByRole('button', { name: `${en.language}: EN` });
     fireEvent.click(trigger);
     expect(screen.getByRole('navigation', { name: en.language })).toBeVisible();
@@ -127,30 +164,12 @@ describe('site header', () => {
   });
 
   it('keeps a press inside the list open', () => {
-    renderHeader('ja');
+    renderHead('ja');
     fireEvent.click(screen.getByRole('button', { name: `${en.language}: JA` }));
     const list = screen.getByRole('navigation', { name: en.language });
     act(() => {
       fireEvent.pointerDown(within(list).getByRole('link', { name: 'English' }));
     });
     expect(screen.getByRole('navigation', { name: en.language })).toBeVisible();
-  });
-});
-
-describe('site footer', () => {
-  it('repeats the navigation vocabulary, the policies and the one outward link', () => {
-    render(<SiteFooter locale="en" t={en} />);
-    const nav = screen.getByRole('navigation', { name: 'Cosmic Signature' });
-    const links = within(nav).getAllByRole('link');
-    expect(links.map((link) => link.textContent)).toEqual([
-      en.collection,
-      en.auctions,
-      en.process,
-      en.terms,
-      en.privacy,
-      `${en.openProtocol} ↗`,
-    ]);
-    expect(links.at(-1)).toHaveAttribute('href', 'https://cosmicsignature.com');
-    expect(screen.getByRole('img', { name: en.markLabel })).toBeInTheDocument();
   });
 });
