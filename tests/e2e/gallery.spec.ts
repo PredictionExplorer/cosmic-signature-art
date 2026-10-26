@@ -440,7 +440,7 @@ test('Play from a still starts the intended film with one explicit action', asyn
   );
   await room.getByRole('button', { name: 'Play', exact: true }).click();
   await expect(room.getByRole('button', { name: 'Pause', exact: true })).toBeVisible();
-  await expect(room.locator('video')).toHaveAttribute('src', /\/art\/previews\/31-[a-f\d]+\.mp4$/);
+  await expect(room.locator('video')).toHaveAttribute('src', /\/art\/31-ink-preview\.mp4$/);
   await expect
     .poll(() => room.locator('video').evaluate((element) => (element as HTMLVideoElement).paused))
     .toBe(false);
@@ -450,7 +450,7 @@ test('language switching preserves the current artwork route', async ({ page }) 
   await page.goto('/art/31?view=still');
   await page.locator('.language-menu button').click();
   await page.locator('.language-menu a[hreflang="ja"]').click();
-  await expect(page).toHaveURL(/\/ja\/art\/31$/);
+  await expect(page).toHaveURL(/\/ja\/art\/31\?view=still$/);
   await expect(page.locator('html')).toHaveAttribute('lang', 'ja');
   await expect(page.getByRole('heading', { level: 1 })).toHaveText(`${catalogs.ja.signature} 31`);
 });
@@ -466,16 +466,16 @@ test('Process moves from a seamless Light room into matching Ink paper and resto
   const lightRoom = page.getByRole('region', { name: catalogs.en.processTitle });
   const light = page.locator('#light .art-media:visible');
   await light.scrollIntoViewIfNeeded();
-  await imageLoaded(light.locator('img'));
+  await imageLoaded(light.locator('img.art-still'));
   await expect(header).toHaveCSS('background-color', 'rgb(0, 0, 0)');
   await expect(lightRoom).toHaveCSS('background-color', 'rgb(0, 0, 0)');
   await expect(light).toHaveCSS('background-color', 'rgb(0, 0, 0)');
-  await expect(light.locator('img')).toHaveAttribute('alt', 'Signature 31 · Light');
+  await expect(light.locator('img.art-still')).toHaveAttribute('alt', 'Signature 31 · Light');
   const archive = JSON.parse(
     readFileSync(new URL('../../src/lib/art/curated-records.json', import.meta.url), 'utf8'),
   ) as { records: { id: number; seed: string }[] };
   const seed = archive.records.find((item) => item.id === 31)!.seed;
-  await artworkImageSource(light.locator('img'), 31, 'light', true);
+  await artworkImageSource(light.locator('img.art-still'), 31, 'light', true);
   if (await light.locator('video').count()) {
     expect(await light.locator('video').getAttribute('src')).toContain(
       `/${seed}/videos/web/main.mp4`,
@@ -489,12 +489,13 @@ test('Process moves from a seamless Light room into matching Ink paper and resto
   await expect(page.locator('#ink-title')).toBeInViewport();
   const ink = page.locator('#ink .art-media');
   await ink.scrollIntoViewIfNeeded();
-  await imageLoaded(ink.locator('img'));
+  await imageLoaded(ink.locator('img.art-still'));
   await expect(page.locator('#ink')).toHaveCSS('background-color', 'rgb(241, 235, 223)');
-  await expect(ink).toHaveCSS('background-color', 'rgb(241, 235, 223)');
-  await artworkImageSource(ink.locator('img'), 31, 'ink');
+  // The plate is letterboxed in its own measured ground (plate-records: № 031 Ink is #efe9dd).
+  await expect(ink).toHaveCSS('background-color', 'rgb(239, 233, 221)');
+  await artworkImageSource(ink.locator('img.art-still'), 31, 'ink');
   // Sample the authentic local still's paper, not an invented CSS approximation.
-  const paperPixel = await ink.locator('img').evaluate((element) => {
+  const paperPixel = await ink.locator('img.art-still').evaluate((element) => {
     const image = element as HTMLImageElement;
     const canvas = document.createElement('canvas');
     canvas.width = canvas.height = 1;

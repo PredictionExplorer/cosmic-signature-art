@@ -1432,7 +1432,9 @@ html:lang(zh-HK) {
     animation: none !important;
     transition: none !important;
   }
-  .constellation-drift,
+  .constellation-drift {
+    transform: none !important;
+  }
   .material-curtain {
     display: none;
   }
