@@ -72,57 +72,35 @@
   font-size: clamp(40px, 4.3vw, 66px);
   margin-top: 18px;
 }
-.lotHeading {
-  position: relative;
-  margin: 12px 0 40px;
+/* The lot page: the plate first, then the bid rail and the way to the record. */
+.lotPage {
+  padding-bottom: 0;
 }
-.lotHeading h1 {
-  font-size: clamp(64px, 6vw, 96px);
-  margin-top: 18px;
-}
-.lotHeading > a {
-  position: absolute;
-  right: 0;
-  bottom: 12px;
+.lotLoading {
+  margin-bottom: var(--strip);
 }
 .lotLayout {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(340px, 390px);
-  gap: clamp(28px, 3.5vw, 65px);
+  grid-template-columns: minmax(0, 1fr) minmax(320px, 420px);
+  gap: 36px var(--gutter);
   align-items: start;
-}
-.lotArtwork {
-  min-width: 0;
+  padding: 36px var(--gutter) 54px;
+  border-top: 1px solid var(--rule);
 }
 .bidRail {
   min-width: 0;
-  position: sticky;
-  top: 24px;
-}
-.mediaLoading {
+  grid-column: 2;
   display: grid;
-  place-items: center;
-  aspect-ratio: 3456/2234;
-  border-block: 1px solid var(--rule);
-  color: var(--muted);
-  font: 50px var(--serif);
+  gap: 18px;
 }
-.artLabel {
-  padding: 25px 24px 0;
-  border-top: 1px solid var(--rule);
+.lotKicker {
+  color: var(--muted);
+}
+.lotRecord {
+  grid-column: 1;
+  grid-row: 1;
   display: flex;
-  justify-content: space-between;
-  gap: 30px;
-  flex-wrap: wrap;
-}
-.artLabel p {
-  max-width: 360px;
-  font-size: 16px;
-  line-height: 1.9;
-  color: var(--muted);
-}
-.artLabel a {
-  align-self: start;
+  align-items: start;
 }
 @media (max-width: 1000px) {
   .hero {
@@ -130,13 +108,11 @@
   }
   .lotLayout {
     grid-template-columns: minmax(0, 1fr);
-    gap: 35px;
   }
-  .bidRail {
-    position: static;
-    max-width: 650px;
-    width: 100%;
-    margin-inline: auto;
+  .bidRail,
+  .lotRecord {
+    grid-column: 1;
+    grid-row: auto;
   }
 }
 @media (max-width: 700px) {
@@ -162,17 +138,6 @@
   }
   .lead {
     font-size: 27px;
-  }
-  .lotHeading > a {
-    position: static;
-    margin-top: 20px;
-  }
-  .lotHeading {
-    margin-bottom: 28px;
-  }
-  .artLabel {
-    padding-inline: 0;
-    gap: 20px;
   }
   .rules {
     margin-top: 50px;

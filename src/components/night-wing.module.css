@@ -1,0 +1,51 @@
+/* The night wing: the hand draws the night over the plate; elsewhere, a hard material edge. */
+@property --seam-scroll {
+  syntax: '<percentage>';
+  inherits: true;
+  initial-value: 100%;
+}
+@keyframes seam-scroll {
+  from {
+    --seam-scroll: 100%;
+  }
+  to {
+    --seam-scroll: 0%;
+  }
+}
+.wing {
+  position: relative;
+}
+.stage {
+  position: relative;
+}
+/* The hard edge: a second screen in black with the same Light plate at the same eye line. */
+.fallback {
+  display: block;
+  background: #000;
+}
+.wing[data-expression='light'] .fallback {
+  display: none;
+}
+@supports (animation-timeline: view()) {
+  .wing[data-mode='scroll'] {
+    height: calc(2 * (var(--plate-height) + var(--strip)));
+    animation: seam-scroll linear both;
+    animation-timeline: view();
+    animation-range: contain 0% contain 100%;
+  }
+  .wing[data-mode='scroll'] .stage {
+    position: sticky;
+    top: var(--head);
+  }
+  .wing[data-mode='scroll'] .fallback {
+    display: none;
+  }
+  .wing[data-mode='scroll'][data-expression='ink'] :global(.turn-night) {
+    clip-path: inset(0 0 0 var(--seam-scroll));
+  }
+  /* While the Turn travels, the seam alone rules the clip: it starts where the hand left the
+     night, so a plain percentage interpolates in every engine (min() would not in WebKit). */
+  :global(html[data-turning]) .wing[data-mode='scroll'] :global(.turn-night) {
+    clip-path: inset(0 0 0 var(--seam, 100%));
+  }
+}

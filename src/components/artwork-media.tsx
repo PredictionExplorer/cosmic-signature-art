@@ -333,9 +333,16 @@ function ArtworkMediaSession({
             onPlaybackChange?.(true);
           }}
           onPause={() => onPlaybackChange?.(false)}
-          onTimeUpdate={(event) =>
-            onProgress?.(event.currentTarget.currentTime, event.currentTarget.duration)
-          }
+          onTimeUpdate={(event) => {
+            const player = event.currentTarget;
+            onProgress?.(player.currentTime, player.duration);
+            // A frame that advanced is playback, whether or not an engine announced it.
+            if (!player.paused && !player.ended) {
+              setHasFrame(true);
+              held.current = true;
+              onPlaybackChange?.(true);
+            }
+          }}
           onError={() => {
             setFailure({ restart, playRequest });
             setHasFrame(false);

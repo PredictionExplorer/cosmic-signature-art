@@ -20,12 +20,14 @@ export function ArtworkTransition({
   interpretationId,
   role,
   disabled = false,
+  className = '',
   children,
 }: {
   artworkId: number;
   interpretationId: string;
   role: 'preview' | 'detail';
   disabled?: boolean;
+  className?: string;
   children: ReactNode;
 }) {
   const { paused, reducedMotion, theatre } = useMotion();
@@ -39,7 +41,7 @@ export function ArtworkTransition({
       share={enabled ? 'cosmic-art-shared' : 'none'}
       enter={enabled && role === 'detail' ? 'cosmic-art-arrival' : 'none'}
     >
-      <div className={styles.surface}>{children}</div>
+      <div className={`${styles.surface} ${className}`.trim()}>{children}</div>
     </ViewTransition>
   );
 }

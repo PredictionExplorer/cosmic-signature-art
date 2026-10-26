@@ -2,7 +2,6 @@
 
 import Image from 'next/image';
 import { useEffect, useRef, useState, type RefObject } from 'react';
-import { Maximize2, Minimize2, X } from 'lucide-react';
 import {
   getInterpretation,
   type ArtFilm,
@@ -13,6 +12,9 @@ import type { Messages } from '@/lib/i18n/en';
 import { workNumber } from '@/lib/art/number';
 import { ArtworkStage } from './artwork-stage';
 import styles from './artwork-room.module.css';
+
+/** Controls fade after this quiet spell (--t-idle) and return on any pointer, touch or key. */
+const IDLE_MS = 2000;
 
 type ArtworkRoomProps = {
   artwork: Artwork;
@@ -41,7 +43,9 @@ function filmLabel(film: ArtFilm, t: Messages) {
       ? t.longStudy
       : film.id === 'slow'
         ? t.extendedStudy
-        : film.label;
+        : film.id === 'sweep'
+          ? t.spectralSweep
+          : film.label;
 }
 
 function RoomStill({ media, label, t }: { media: ArtInterpretation; label: string; t: Messages }) {
@@ -195,7 +199,12 @@ function RoomFilm({
   );
 }
 
-/** Mount only while open. The dialog works independently of optional native fullscreen. */
+/**
+ * The chrome-less room. Mount only while open. The dialog works independently of optional
+ * native fullscreen; the work fills the room in its own material, the words sit on a hairline
+ * edge strip that fades after a quiet spell and returns on any input, staying in the DOM so
+ * the keyboard always finds it.
+ */
 export function ArtworkRoom({
   artwork,
   t,
@@ -219,6 +228,7 @@ export function ArtworkRoom({
   const [fullscreen, setFullscreen] = useState(false);
   const [fullscreenPending, setFullscreenPending] = useState(false);
   const [fullscreenFailed, setFullscreenFailed] = useState(false);
+  const [idle, setIdle] = useState(false);
   // iPhone Safari never grants element fullscreen; a control that always fails is not offered.
   const [fullscreenAvailable, setFullscreenAvailable] = useState(false);
   useEffect(() => {
@@ -228,7 +238,7 @@ export function ArtworkRoom({
   }, []);
   const media = getInterpretation(artwork, expression) ?? artwork.media[0];
   const film = media?.films.find((item) => item.id === selectedFilms[media.id]) ?? media?.films[0];
-  const label = `${t.signature} ${artwork.id} · ${media ? expressionLabel(media, t) : ''}`;
+  const label = `${workNumber(artwork.id)} · ${media ? expressionLabel(media, t) : ''}`;
 
   useEffect(() => {
     const modal = dialog.current;
@@ -271,9 +281,34 @@ export function ArtworkRoom({
           element.style.setProperty(property, value, priority);
         }
       }
-      if (opener?.isConnected) opener.focus({ preventScroll: true });
+      // The opener may have moved to the other ground while the room was open; the viewer
+      // points the ref at the live word before closing, so the latest value is the right one.
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+      const explicit = returnFocusRef?.current;
+      const target = explicit?.isConnected && !explicit.closest('[inert]') ? explicit : opener;
+      if (target?.isConnected) target.focus({ preventScroll: true });
     };
   }, [returnFocusRef]);
+
+  // The edge strip rests after a quiet spell; any pointer, touch or key brings it back.
+  useEffect(() => {
+    const room = frame.current;
+    if (!room) return;
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    const rest = () => {
+      if (timer) clearTimeout(timer);
+      setIdle(false);
+      timer = setTimeout(() => setIdle(true), IDLE_MS);
+    };
+    rest();
+    for (const name of ['pointermove', 'pointerdown', 'touchstart', 'keydown'] as const)
+      room.addEventListener(name, rest, { passive: true });
+    return () => {
+      if (timer) clearTimeout(timer);
+      for (const name of ['pointermove', 'pointerdown', 'touchstart', 'keydown'] as const)
+        room.removeEventListener(name, rest);
+    };
+  }, []);
 
   const toggleFullscreen = async () => {
     const room = frame.current;
@@ -306,7 +341,7 @@ export function ArtworkRoom({
     <dialog
       ref={dialog}
       className={styles.dialog}
-      aria-label={`${t.signature} ${artwork.id} · ${t.viewingRoom}`}
+      aria-label={`${workNumber(artwork.id)} · ${t.viewingRoom}`}
       data-testid="artwork-room"
       data-material={media?.id}
       onCancel={(event) => {
@@ -321,7 +356,12 @@ export function ArtworkRoom({
         backdropStart.current = false;
       }}
     >
-      <div ref={frame} className={styles.room} data-material={media?.id}>
+      <div
+        ref={frame}
+        className={styles.room}
+        data-material={media?.id}
+        data-idle={idle ? '' : undefined}
+      >
         <header className={styles.header}>
           <div className={styles.title}>
             <span>{t.viewingRoom}</span>
@@ -329,7 +369,7 @@ export function ArtworkRoom({
           </div>
           <button ref={closeButton} className={styles.close} type="button" onClick={onClose}>
             <span>{t.close}</span>
-            <X size={18} aria-hidden="true" />
+            <span aria-hidden="true">×</span>
           </button>
         </header>
 
@@ -411,12 +451,7 @@ export function ArtworkRoom({
               disabled={fullscreenPending}
               aria-busy={fullscreenPending}
             >
-              {fullscreen ? (
-                <Minimize2 size={15} aria-hidden="true" />
-              ) : (
-                <Maximize2 size={15} aria-hidden="true" />
-              )}
-              <span>{fullscreen ? t.exitFullScreen : t.fullScreen}</span>
+              {fullscreen ? t.exitFullScreen : t.fullScreen}
             </button>
           ) : (
             <span className={styles.fullscreen} aria-hidden="true" />

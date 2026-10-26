@@ -1,0 +1,39 @@
+/* The Turn: two grounds in one frame, the night clipped at the seam. */
+.turn {
+  position: relative;
+  isolation: isolate;
+  touch-action: pan-y;
+}
+.layer {
+  position: relative;
+}
+/* The twin is painted beneath or over the current layer; it is never a target. */
+.layer[data-layer-state='twin'] {
+  pointer-events: none;
+}
+.night {
+  position: absolute;
+  inset: 0;
+  clip-path: inset(0 0 0 100%);
+}
+.turn[data-expression='light'] .night {
+  clip-path: none;
+}
+/* While the Turn travels the seam on <html> rules both layers and the running head alike. */
+:global(html[data-turning]) .turn .night {
+  clip-path: inset(0 0 0 var(--seam, 100%));
+}
+:global(html[data-turning='time']) .turn .night {
+  transition: clip-path var(--t-turn) var(--ease-turn);
+}
+:global(html[data-turning='dusk']) .turn .night {
+  transition: clip-path var(--t-dusk) var(--ease-dusk);
+}
+/* A finger paints every frame itself. */
+:global(html[data-turning='drag']) .turn .night {
+  transition: none;
+}
+.turn[data-dragging] {
+  user-select: none;
+  -webkit-user-select: none;
+}

@@ -30,10 +30,16 @@ export function useArtworkExpression({
   media,
   initialExpression,
   onCommit,
+  onReady,
 }: {
   media: readonly ArtInterpretation[];
   initialExpression?: string;
   onCommit?: (expression: string) => void;
+  /**
+   * The requested still has decoded. When given, the caller decides the moment of the
+   * commit (the Turn travels first); `commit` is a no-op once superseded.
+   */
+  onReady?: (expression: string, commit: () => void) => void;
 }) {
   const [expression, setExpression] = useState(
     media.find((item) => item.id === initialExpression)?.id ??
@@ -45,6 +51,11 @@ export function useArtworkExpression({
   const request = useRef(0);
   const previousExpression = useRef(expression);
   const reportCommit = useEffectEvent((committed: string) => onCommit?.(committed));
+  // Readiness is reported from image callbacks, so the latest handler is read through a ref.
+  const readyHandler = useRef(onReady);
+  useEffect(() => {
+    readyHandler.current = onReady;
+  }, [onReady]);
   const { paused, reducedMotion, theatre } = useMotion();
   useEffect(() => {
     if (previousExpression.current === expression) return;
@@ -117,22 +128,27 @@ export function useArtworkExpression({
         setExpression((current) => (identity === request.current ? target.id : current));
       };
       // A hushed theatre (a collector reviewing a bid) crosses instantly, like reduced motion.
-      if (
-        !motion.current.paused &&
-        !motion.current.reducedMotion &&
-        motion.current.theatre !== 'hushed'
-      ) {
-        startTransition(() => {
-          addTransitionType(
-            target.id === 'ink'
-              ? transitionTypes.ink
-              : target.id === 'light'
-                ? transitionTypes.light
-                : transitionTypes.default,
-          );
-          commit();
-        });
-      } else commit();
+      const run = () => {
+        if (
+          !motion.current.paused &&
+          !motion.current.reducedMotion &&
+          motion.current.theatre !== 'hushed'
+        ) {
+          startTransition(() => {
+            addTransitionType(
+              target.id === 'ink'
+                ? transitionTypes.ink
+                : target.id === 'light'
+                  ? transitionTypes.light
+                  : transitionTypes.default,
+            );
+            commit();
+          });
+        } else commit();
+      };
+      const handler = readyHandler.current;
+      if (handler) handler(target.id, run);
+      else run();
     };
 
     setPendingExpression(target.id);

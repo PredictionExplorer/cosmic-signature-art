@@ -249,7 +249,7 @@ describe('immersive artwork room', () => {
     const originalPriority = document.body.style.getPropertyPriority('overflow');
     document.documentElement.style.setProperty('overflow', 'clip');
     const { room, opener } = openRoom();
-    expect(room).toHaveAccessibleName(`Signature 31 · ${en.viewingRoom}`);
+    expect(room).toHaveAccessibleName(`№ 031 · ${en.viewingRoom}`);
     expect(screen.getByRole('button', { name: en.close })).toHaveFocus();
     expect(document.body.style.overflow).toBe('hidden');
     expect(document.documentElement.style.overflow).toBe('hidden');

@@ -6,7 +6,9 @@ import { notFound } from 'next/navigation';
 import { isLocale, localizedPath } from '@/lib/i18n/routing';
 import { messages } from '@/lib/i18n/messages';
 import { getArtwork } from '@/lib/art/server';
+import { indexedWork } from '@/lib/art/collection-index';
 import { parseArtworkId } from '@/lib/art/validation';
+import { workNumber } from '@/lib/art/number';
 import { metadata } from '@/lib/site';
 import { auctionConfigured } from '@/lib/auction/config';
 import { AuctionPanel } from '@/components/auction-panel';
@@ -30,11 +32,16 @@ export async function generateMetadata({
   return metadata(
     locale,
     `/auctions/${tokenId}`,
-    `${t.signature} ${tokenId} · ${t.auctions}`,
+    `${workNumber(tokenId)} · ${t.auctions}`,
     t.auctionIntro,
-    artworkSharingImage(artwork, `${t.signature} ${tokenId}`),
+    artworkSharingImage(artwork, `${workNumber(tokenId)} · ${t.ink}`),
   );
 }
+/**
+ * The lot page is the artwork page with the bid rail beneath its plate. Nothing in the
+ * panel changes; while a collector reviews a bid the theatre hushes, and the keys that move
+ * the venue are silent inside the rail.
+ */
 export default async function AuctionWork({
   params,
   searchParams,
@@ -49,41 +56,30 @@ export default async function AuctionWork({
   const t = messages(locale);
   const view = artworkViewParams(searchParams ? await searchParams : {});
   return (
-    <main id="main" className={`section-wrap ${styles.lotPage}`}>
-      <div className="work-breadcrumb">
-        <Link href={localizedPath(locale, '/auctions')}>← {t.auctions}</Link>
-      </div>
-      <header className={styles.lotHeading}>
-        <p className="eyebrow">{t.auctionKicker}</p>
-        <h1>
-          {t.signature} {tokenId}
-        </h1>
-        <Link className="text-link" href={localizedPath(locale, `/art/${tokenId}#record`)}>
-          {t.auctionViewRecord}
-        </Link>
-      </header>
-      <div className={styles.lotLayout}>
-        <div className={styles.lotArtwork}>
-          <Suspense
-            fallback={
-              <div
-                className={styles.mediaLoading}
-                role="img"
-                aria-busy="true"
-                aria-label={t.signature}
-              />
-            }
-          >
-            <AuctionArtwork
-              tokenId={tokenId}
-              t={t}
-              locale={locale}
-              initialStill={view.get('view') === 'still'}
-              initialExpression={view.get('expression') ?? undefined}
-            />
-          </Suspense>
-        </div>
-        <aside id="lot-actions" className={styles.bidRail} aria-label={t.auctionRoom}>
+    <main id="main" className={styles.lotPage}>
+      <Suspense
+        fallback={
+          <div
+            className={`loading-plate ${styles.lotLoading}`}
+            role="img"
+            aria-busy="true"
+            aria-label={workNumber(tokenId)}
+          />
+        }
+      >
+        <AuctionArtwork
+          tokenId={tokenId}
+          t={t}
+          locale={locale}
+          initialStill={view.get('view') === 'still'}
+          initialExpression={view.get('expression') ?? undefined}
+        />
+      </Suspense>
+      <section className={styles.lotLayout} aria-label={t.auctionRoom}>
+        <aside id="lot-actions" className={styles.bidRail} data-keys-suppressed="">
+          <h1 className={`eyebrow ${styles.lotKicker}`}>
+            {t.auctionKicker} · {workNumber(tokenId)}
+          </h1>
           {auctionConfigured ? (
             <>
               <AuctionPanel locale={locale} tokenId={tokenId} t={t} />
@@ -93,8 +89,13 @@ export default async function AuctionWork({
             <AuctionAvailability locale={locale} t={t} />
           )}
         </aside>
-      </div>
-      <section className={styles.rules} aria-labelledby="rules-title">
+        <div className={styles.lotRecord}>
+          <Link className="text-link" href={localizedPath(locale, `/art/${tokenId}#record`)}>
+            {t.auctionViewRecord}
+          </Link>
+        </div>
+      </section>
+      <section className={`${styles.rules} section-wrap`} aria-labelledby="rules-title">
         <header className={styles.rulesHeading}>
           <div>
             <p className="eyebrow">{t.auctionBeforeBid}</p>
@@ -124,23 +125,18 @@ async function AuctionArtwork({
   initialExpression?: string;
 }) {
   const { artwork } = await getArtwork(tokenId);
+  const indexed = indexedWork(tokenId);
   return artwork ? (
-    <>
-      <ArtworkViewer
-        artwork={artwork}
-        t={t}
-        presentation="auction"
-        initialStill={initialStill}
-        initialExpression={initialExpression}
-      />
-      <div className={styles.artLabel}>
-        <p>{t.workCopy}</p>
-        <Link className="text-link" href={localizedPath(locale, `/art/${tokenId}#record`)}>
-          {t.auctionViewRecord}
-        </Link>
-      </div>
-    </>
+    <ArtworkViewer
+      artwork={artwork}
+      t={t}
+      locale={locale}
+      presentation="auction"
+      initialStill={initialStill}
+      initialExpression={initialExpression}
+      traits={{ structure: indexed?.traits.structure, underlay: indexed?.traits.underlay }}
+    />
   ) : (
-    <p className="notice">{t.mediaUnavailable}</p>
+    <p className="notice section-wrap">{t.mediaUnavailable}</p>
   );
 }

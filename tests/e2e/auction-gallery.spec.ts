@@ -3,6 +3,8 @@ import AxeBuilder from '@axe-core/playwright';
 import { catalogs } from '../../src/lib/i18n/messages';
 import { locales, localizedPath } from '../../src/lib/i18n/routing';
 
+const current = '[data-artwork-stage="page"]:visible [data-layer-state="current"]';
+
 async function noOverflow(page: Page) {
   expect(
     await page.evaluate(() => document.documentElement.scrollWidth - innerWidth),
@@ -52,38 +54,38 @@ for (const locale of locales) {
     const t = catalogs[locale];
     await pauseMotion(page);
     await page.goto(localizedPath(locale, '/auctions/31'));
-    await expect(page.getByRole('heading', { level: 1 })).toHaveText(`${t.signature} 31`);
+    await expect(page).toHaveTitle(/№ 031/);
     await expect(page.getByText(t.auctionNotLive, { exact: true }).first()).toBeVisible();
     const stage = page.locator('[data-artwork-stage="page"]:visible');
     await expect(stage).toHaveAttribute('data-expression', 'ink');
-    await expect(stage.locator('img.art-still')).toBeVisible();
+    const still = page.locator(`${current} img.art-still`);
+    await expect(still).toBeVisible();
     await expect
-      .poll(() =>
-        stage
-          .locator('img.art-still')
-          .evaluate((image) => (image as HTMLImageElement).naturalWidth),
-      )
+      .poll(() => still.evaluate((image) => (image as HTMLImageElement).naturalWidth))
       .toBeGreaterThan(0);
     await expect(
       page.getByRole('link', { name: new RegExp(t.auctionViewRecord) }).first(),
     ).toHaveAttribute('href', localizedPath(locale, '/art/31#record'));
     await expect(page.locator('input[name="bid"]')).toHaveCount(0);
+    // The bid rail silences the venue's keys.
+    await expect(page.locator('#lot-actions')).toHaveAttribute('data-keys-suppressed', '');
     await noOverflow(page);
     expect((await new AxeBuilder({ page }).analyze()).violations).toEqual([]);
-    await page.getByRole('button', { name: t.enlarge, exact: true }).click();
+    const study = page.locator(current).getByRole('button', { name: t.enlarge, exact: true });
+    await study.click();
     const room = page.getByRole('dialog', {
-      name: `${t.signature} 31 · ${t.viewingRoom}`,
+      name: `№ 031 · ${t.viewingRoom}`,
       exact: true,
     });
     await expect(room).toBeVisible();
-    await room.getByRole('button', { name: new RegExp(`^(?:0[12] )?${t.light}$`) }).click();
+    await room.getByRole('button', { name: new RegExp(`^${t.light}$`) }).click();
     await expect(room.locator('[data-artwork-stage="room"]')).toHaveAttribute(
       'data-expression',
       'light',
     );
     await room.getByRole('button', { name: t.close, exact: true }).click();
     await expect(room).not.toBeVisible();
-    await expect(page.getByRole('button', { name: t.enlarge, exact: true })).toBeFocused();
+    await expect(study).toBeFocused();
   });
 }
 
@@ -92,16 +94,20 @@ test('auction pages keep restored motion preferences and the original work ident
 }) => {
   await pauseMotion(page);
   await page.goto('/auctions/31');
-  const t = catalogs.en;
   const stage = page.locator('[data-artwork-stage="page"]:visible');
   await expect(stage).toHaveAttribute('data-expression', 'ink');
-  await expect(page.locator('.motion-toggle')).toHaveAttribute('aria-pressed', 'true');
+  await expect(page.locator('button.motion-toggle')).toHaveAttribute('aria-pressed', 'true');
   await expect(stage.locator('video')).toHaveCount(0);
-  const viewer = page.getByRole('region', { name: t.ways, exact: true });
-  await viewer.getByRole('button', { name: /^(?:0[12] )?Light$/ }).click();
+  // Paused: the Turn is one frame, and the lot page has no night wing beneath the plate.
+  await expect(page.locator('[data-night-wing]')).toHaveCount(0);
+  await page
+    .locator(current)
+    .getByRole('button', { name: /^Light$/ })
+    .click();
   await expect(stage).toHaveAttribute('data-expression', 'light');
-  await expect(stage.locator('img.art-still')).toHaveAttribute('alt', 'Signature 31 · Light');
-  await viewer.getByRole('button', { name: /^(?:0[12] )?Ink$/ }).click();
+  await expect(page.locator('html')).not.toHaveAttribute('data-turning', /./);
+  await expect(page.locator(`${current} img.art-still`)).toHaveAttribute('alt', '№ 031 · Light');
+  await page.locator(current).getByRole('button', { name: /^Ink$/ }).click();
   await expect(stage).toHaveAttribute('data-expression', 'ink');
-  await expect(page.getByRole('heading', { level: 1 })).toHaveText('Signature 31');
+  await expect(page).toHaveTitle(/№ 031 · Auctions/);
 });

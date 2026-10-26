@@ -1,9 +1,12 @@
-import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { ArtworkViewer } from './artwork-viewer';
 import { getCuratedArtwork } from '@/lib/art/catalog';
 import { withCollectionPreviews } from '@/lib/art/collection-previews';
+import type { Artwork } from '@/lib/art/types';
 import { en } from '@/lib/i18n/en';
+import { BREATH_MS, EXPRESSION_KEY, forgetExpression } from './turn';
+import { closeSheet, openSheet } from './sheets-store';
 
 const motion = vi.hoisted(() => ({
   paused: false,
@@ -11,26 +14,53 @@ const motion = vi.hoisted(() => ({
   theatre: 'playing' as 'playing' | 'hushed',
   toggle: vi.fn(),
 }));
+const push = vi.hoisted(() => vi.fn());
+const overrideRoom = vi.hoisted(() => vi.fn());
+const setPlateTone = vi.hoisted(() => vi.fn());
 const imageDecode = Object.getOwnPropertyDescriptor(HTMLImageElement.prototype, 'decode');
-const networkConnection = Object.getOwnPropertyDescriptor(navigator, 'connection');
 vi.mock('./motion-provider', () => ({ useMotion: () => motion }));
+vi.mock('next/navigation', () => ({ useRouter: () => ({ push }) }));
+vi.mock('./room-ground', () => ({ overrideRoom, setPlateTone }));
+
+const root = () => document.documentElement;
+/** The seam's travel under fake timers: the breath, then --t-turn (900 ms in jsdom's fallback). */
+async function travel() {
+  await act(async () => {});
+  await act(async () => {
+    vi.advanceTimersByTime(BREATH_MS);
+  });
+  await act(async () => {
+    vi.advanceTimersByTime(950);
+  });
+  await act(async () => {});
+}
 
 beforeEach(() => {
+  vi.useFakeTimers();
   motion.paused = false;
   motion.reducedMotion = false;
   motion.theatre = 'playing';
+  motion.toggle.mockClear();
+  push.mockClear();
+  overrideRoom.mockClear();
+  setPlateTone.mockClear();
+  sessionStorage.clear();
+  forgetExpression();
+  act(() => closeSheet());
+  root().removeAttribute('data-turning');
+  root().removeAttribute('data-sit');
+  root().style.removeProperty('--seam');
   Object.defineProperty(HTMLImageElement.prototype, 'decode', {
     configurable: true,
     value: vi.fn().mockResolvedValue(undefined),
   });
-  motion.toggle.mockClear();
   vi.stubGlobal(
     'IntersectionObserver',
     class {
       constructor(private callback: IntersectionObserverCallback) {}
       observe(target: Element) {
         this.callback(
-          [{ isIntersecting: true, target } as IntersectionObserverEntry],
+          [{ isIntersecting: true, intersectionRatio: 1, target } as IntersectionObserverEntry],
           this as unknown as IntersectionObserver,
         );
       }
@@ -64,8 +94,6 @@ afterEach(() => {
   Reflect.deleteProperty(HTMLDialogElement.prototype, 'showModal');
   if (imageDecode) Object.defineProperty(HTMLImageElement.prototype, 'decode', imageDecode);
   else Reflect.deleteProperty(HTMLImageElement.prototype, 'decode');
-  if (networkConnection) Object.defineProperty(navigator, 'connection', networkConnection);
-  else Reflect.deleteProperty(navigator, 'connection');
 });
 
 function previewWork(id: number) {
@@ -73,461 +101,379 @@ function previewWork(id: number) {
   return { ...original, media: withCollectionPreviews(original, original.media) };
 }
 const work = previewWork(31);
-function player(container: HTMLElement) {
-  const element = container.querySelector('video');
-  expect(element).not.toBeNull();
-  return element!;
+const traits = { structure: 'Orbit Ribbons', underlay: 'Harmonic Weave' };
+
+function renderViewer(props: Partial<Parameters<typeof ArtworkViewer>[0]> = {}) {
+  return render(<ArtworkViewer artwork={work} t={en} locale="en" traits={traits} {...props} />);
 }
-function filmState(container: HTMLElement) {
-  return container.querySelector('[data-film-state]')!;
+const stage = () => document.querySelector('[data-artwork-stage="page"]')!;
+const layer = (id: string) => document.querySelector(`[data-layer="${id}"]`)!;
+const currentStill = () =>
+  document.querySelector<HTMLImageElement>('[data-layer-state="current"] img.art-still')!;
+const word = (name: string | RegExp) =>
+  within(document.querySelector<HTMLElement>('[data-layer-state="current"]')!).getByRole('button', {
+    name,
+  });
+/** The committed layer's player: the film is only ever mounted there. */
+const player = () => document.querySelector('[data-layer-state="current"] video');
+/** The stills decode: ArtworkMedia settles each layer after image.decode() resolves. */
+async function settle() {
+  await act(async () => {
+    for (const image of document.querySelectorAll<HTMLImageElement>('img.art-still'))
+      fireEvent.load(image);
+  });
 }
-const localFilm = /\/art\/31-ink-preview\.mp4$/;
 
-describe('artwork viewing controls', () => {
-  it.each([
-    { saveData: true, effectiveType: '4g' },
-    { saveData: false, effectiveType: '2g' },
-  ])(
-    'loads no ambient film on a constrained connection (%j), but honors an explicit Play',
-    (connection) => {
-      Object.defineProperty(navigator, 'connection', {
-        configurable: true,
-        value: Object.assign(new EventTarget(), connection),
-      });
-      const { container } = render(<ArtworkViewer artwork={work} t={en} />);
-      expect(container.querySelector('video')).toBeNull();
-      expect(screen.getByRole('img', { name: 'Signature 31 · Ink' })).toBeVisible();
-      fireEvent.click(screen.getByRole('button', { name: en.play }));
-      expect(player(container)).toHaveAttribute('src', expect.stringMatching(localFilm));
-      expect(screen.queryByRole('dialog')).toBeNull();
-    },
-  );
-
-  it('pauses a hidden document and preserves the compact preview’s position for returning visitors', () => {
-    const { container } = render(<ArtworkViewer artwork={work} t={en} />);
-    const preview = player(container);
-    expect(preview).toHaveAttribute('src', expect.stringMatching(localFilm));
-    fireEvent.playing(preview);
-    preview.currentTime = 3;
-    fireEvent.timeUpdate(preview);
-    vi.mocked(HTMLMediaElement.prototype.pause).mockClear();
-    vi.spyOn(document, 'visibilityState', 'get').mockReturnValue('hidden');
-    fireEvent(document, new Event('visibilitychange'));
-    expect(vi.mocked(HTMLMediaElement.prototype.pause).mock.contexts).toContain(preview);
-    expect(preview.currentTime).toBe(3);
-    vi.mocked(HTMLMediaElement.prototype.play).mockClear();
-    vi.spyOn(document, 'visibilityState', 'get').mockReturnValue('visible');
-    fireEvent(document, new Event('visibilitychange'));
-    expect(player(container)).toBe(preview);
-    expect(preview.currentTime).toBe(3);
-    expect(vi.mocked(HTMLMediaElement.prototype.play).mock.contexts).toContain(preview);
+describe('the plate and its strip', () => {
+  it('mounts both grounds, keeps the twin inert, and labels the work by its number', async () => {
+    renderViewer();
+    expect(stage()).toHaveAttribute('data-expression', 'ink');
+    expect(layer('ink')).toHaveAttribute('data-layer-state', 'current');
+    expect(layer('ink')).toHaveAttribute('data-ground', 'paper');
+    expect(layer('light')).toHaveAttribute('data-layer-state', 'twin');
+    expect(layer('light')).toHaveAttribute('inert');
+    expect(layer('light')).toHaveAttribute('aria-hidden', 'true');
+    expect(currentStill()).toHaveAttribute('alt', '№ 031 · Ink');
+    expect(within(layer('light') as HTMLElement).getByAltText('№ 031 · Light')).toBeInTheDocument();
+    expect(document.querySelectorAll('.hanging-numeral')[0]).toHaveTextContent('031');
+    expect(
+      within(layer('ink') as HTMLElement).getByText('Orbit Ribbons · Harmonic Weave · Ink'),
+    ).toBeVisible();
+    for (const name of [en.light, en.film, en.sit, en.enlarge]) expect(word(name)).toBeVisible();
+    expect(word(en.light)).toHaveAttribute('title', en.showLight);
+    expect(
+      document.querySelector('[data-layer-state="current"] [data-film-state]'),
+    ).toHaveAttribute('data-film-state', 'arriving');
+    await settle();
+    expect(
+      document.querySelector('[data-layer-state="current"] [data-film-state]'),
+    ).toHaveAttribute('data-film-state', 'still');
+    expect(document.querySelector('.viewer-plate')).toBe(layer('ink').firstElementChild);
+    expect(document.querySelectorAll('.viewer-plate')).toHaveLength(1);
   });
 
-  it('plays the verified local film inline from frame 0 and reserves the complete film for the room', () => {
-    const { container } = render(<ArtworkViewer artwork={work} t={en} />);
-    const preview = player(container);
-    expect(preview).toHaveAttribute('src', expect.stringMatching(localFilm));
-    expect(screen.queryByText(en.mediaPreview)).toBeNull();
-    Object.defineProperty(preview, 'duration', { configurable: true, value: 30 });
-    fireEvent.loadedMetadata(preview);
-    expect(preview.currentTime).toBe(0);
-    fireEvent.playing(preview);
-    const enlarge = screen.getByRole('button', { name: en.enlarge });
-    // Like a Safari pointer click, fireEvent does not focus the launcher for us.
-    expect(enlarge).not.toHaveFocus();
-    fireEvent.click(enlarge);
-    const dialog = screen.getByRole('dialog');
-    expect(dialog.querySelector('video')).toBeNull();
-    expect(dialog.querySelector('img')).toHaveAttribute('alt', 'Signature 31 · Ink');
-    fireEvent.click(screen.getByRole('button', { name: en.close }));
-    expect(enlarge).toHaveFocus();
-    fireEvent.click(screen.getByRole('button', { name: en.completeFilm }));
-    expect(screen.getByRole('dialog').querySelector('video')).toHaveAttribute(
-      'src',
-      '/art/31-ink-preview.mp4',
-    );
+  it('opens a work without an Ink expression in Light, says so, and offers no Turn', () => {
+    renderViewer({ artwork: getCuratedArtwork(2)!, traits: undefined });
+    expect(stage()).toHaveAttribute('data-expression', 'light');
+    expect(layer('light')).toHaveAttribute('data-layer-state', 'current');
+    expect(screen.getByText(`${en.light} · ${en.noInkPublished}`)).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: en.ink })).toBeNull();
+    expect(document.querySelector('[data-night-wing]')).toBeNull();
   });
+});
 
-  it('never plays an unbounded published original inline; it waits for the room', async () => {
-    const original = getCuratedArtwork(31)!;
-    const published = {
-      ...original,
-      media: original.media.map((media) => ({
-        ...media,
-        films: media.films.map((film) => ({
-          ...film,
-          src: 'https://a1.cosmicsignature.com/published/ember.mp4',
-          delivery: 'original-web' as const,
-        })),
-      })),
-    };
-    const { container } = render(<ArtworkViewer artwork={published} t={en} />);
-    expect(container.querySelector('video')).toBeNull();
-    expect(screen.queryByRole('button', { name: en.play })).toBeNull();
-    expect(filmState(container)).toHaveAttribute('data-film-state', 'arriving');
-    await act(async () => {
-      fireEvent.load(screen.getByRole('img', { name: 'Signature 31 · Ink' }));
-    });
-    expect(filmState(container)).toHaveAttribute('data-film-state', 'still');
-    expect(container.querySelector('video')).toBeNull();
-    fireEvent.click(screen.getByRole('button', { name: en.completeFilm }));
-    expect(screen.getByRole('dialog').querySelector('video')).toHaveAttribute(
-      'src',
-      'https://a1.cosmicsignature.com/published/ember.mp4',
-    );
-  });
-
-  it('opens the expression selected in the collection without first showing Ink', () => {
-    const { container } = render(<ArtworkViewer artwork={work} t={en} initialExpression="light" />);
-    expect(container.querySelector('.art-media')).toHaveAttribute('data-material', 'light');
-    expect(screen.getByRole('button', { name: /^Light$/ })).toHaveAttribute('aria-pressed', 'true');
-    expect(screen.getByRole('img', { name: 'Signature 31 · Light' })).toHaveAttribute(
-      'src',
-      expect.stringMatching(/\/art\/31-light.webp$/),
-    );
-    expect(container.querySelector('video')).toBeNull();
-  });
-
-  it('falls back to an available interpretation when a requested expression is unknown', () => {
-    const { container, rerender } = render(
-      <ArtworkViewer artwork={work} t={en} initialExpression="unpublished-mode" />,
-    );
-    expect(container.querySelector('.art-media')).toHaveAttribute('data-material', 'ink');
-    rerender(
-      <ArtworkViewer
-        artwork={{ ...work, media: work.media.filter((media) => media.id === 'light') }}
-        t={en}
-        initialExpression="another-unknown-mode"
-      />,
-    );
-    expect(container.querySelector('.art-media')).toHaveAttribute('data-material', 'light');
-    expect(screen.getByRole('img', { name: 'Signature 31 · Light' })).toBeVisible();
-  });
-
-  it('resets viewer state when the same token is revisited with another expression', () => {
-    const { container, rerender } = render(
-      <ArtworkViewer artwork={work} t={en} initialExpression="ink" />,
-    );
-    const video = player(container);
-    Object.defineProperty(video, 'duration', { configurable: true, value: 8 });
-    video.currentTime = 5;
-    fireEvent.timeUpdate(video);
-    fireEvent.error(video);
-    expect(screen.getByRole('status')).toHaveTextContent(en.mediaUnavailable);
-    rerender(<ArtworkViewer artwork={work} t={en} initialExpression="light" />);
-    expect(screen.queryByRole('status')).toBeNull();
-    expect(container.querySelector('.art-media')).toHaveAttribute('data-material', 'light');
-    rerender(<ArtworkViewer artwork={work} t={en} initialExpression="ink" />);
-    expect(container.querySelector('.art-media')).toHaveAttribute('data-material', 'ink');
-    expect(screen.getByText('00:00 / 00:00')).toBeVisible();
-    expect(player(container)).not.toBe(video);
-  });
-
-  it('shows Play when a film ends and one click restarts the same film', () => {
-    const { container } = render(<ArtworkViewer artwork={work} t={en} />);
-    const video = player(container);
-    fireEvent.playing(video);
-    expect(screen.getByRole('button', { name: 'Pause' })).toBeVisible();
-    video.currentTime = 8;
-    fireEvent.ended(video);
-    expect(screen.queryByRole('button', { name: 'Pause' })).toBeNull();
-    vi.mocked(HTMLMediaElement.prototype.play).mockClear();
-    fireEvent.click(screen.getByRole('button', { name: 'Play' }));
-    expect(video.currentTime).toBe(0);
-    expect(HTMLMediaElement.prototype.play).toHaveBeenCalledOnce();
-    expect(motion.toggle).not.toHaveBeenCalled();
-  });
-
-  it('lets the visitor retry refused autoplay without first toggling global pause', async () => {
-    vi.mocked(HTMLMediaElement.prototype.play).mockRejectedValueOnce(
-      new DOMException('Blocked', 'NotAllowedError'),
-    );
-    await act(async () => render(<ArtworkViewer artwork={work} t={en} />));
-    expect(screen.getByRole('button', { name: 'Play' })).toBeVisible();
-    vi.mocked(HTMLMediaElement.prototype.play).mockClear();
-    fireEvent.click(screen.getByRole('button', { name: 'Play' }));
-    expect(HTMLMediaElement.prototype.play).toHaveBeenCalledOnce();
-    expect(motion.toggle).not.toHaveBeenCalled();
-  });
-
-  it('forgets the prior artwork’s selected material, failure and comparison when identity changes', async () => {
-    const { container, rerender } = render(<ArtworkViewer artwork={work} t={en} />);
-    await act(async () => {
-      fireEvent.click(screen.getByRole('button', { name: /^Light$/ }));
-    });
-    // The full still fails, then the publisher's preview fails: only then is the work unavailable.
-    fireEvent.error(screen.getByRole('img', { name: 'Signature 31 · Light' }));
-    expect(screen.queryByRole('status')).toBeNull();
-    fireEvent.error(screen.getByRole('img', { name: 'Signature 31 · Light' }));
-    expect(screen.getByRole('status')).toHaveTextContent(en.mediaUnavailable);
-    rerender(<ArtworkViewer artwork={previewWork(23)} t={en} />);
-    expect(screen.queryByRole('status')).toBeNull();
-    expect(container.querySelector('.art-media')).toHaveAttribute('data-material', 'ink');
-    expect(screen.getByRole('img', { name: 'Signature 23 · Ink' })).toHaveAttribute(
-      'src',
-      expect.stringMatching(/\/art\/23-ink.webp$/),
-    );
-    expect(player(container)).toHaveAttribute('src', '/art/23-ink-preview.mp4');
-  });
-
-  it('resets the clock when a new interpretation is selected', async () => {
-    const { container } = render(<ArtworkViewer artwork={work} t={en} />);
-    const video = player(container);
-    Object.defineProperty(video, 'duration', { configurable: true, value: 8 });
-    video.currentTime = 5;
-    fireEvent.timeUpdate(video);
-    expect(screen.getByText('00:05 / 00:08')).toBeVisible();
-    await act(async () => {
-      fireEvent.click(screen.getByRole('button', { name: /^Light$/ }));
-    });
-    await act(async () => {
-      fireEvent.click(screen.getByRole('button', { name: /^Ink$/ }));
-    });
-    expect(screen.getByText('00:00 / 00:00')).toBeVisible();
-  });
-
-  it('pauses the enlarged film while hidden and resumes only if it was previously playing', () => {
-    const { container } = render(<ArtworkViewer artwork={work} t={en} />);
-    fireEvent.click(screen.getByRole('button', { name: en.completeFilm }));
-    const video = container.querySelector('dialog video')! as HTMLVideoElement;
-    expect(video).toHaveAttribute('src', '/art/31-ink-preview.mp4');
-    Object.defineProperty(video, 'paused', { configurable: true, value: false });
-    vi.mocked(HTMLMediaElement.prototype.pause).mockClear();
-    vi.spyOn(document, 'visibilityState', 'get').mockReturnValue('hidden');
-    fireEvent(document, new Event('visibilitychange'));
-    expect(vi.mocked(HTMLMediaElement.prototype.pause).mock.contexts).toContain(video);
-    vi.mocked(HTMLMediaElement.prototype.play).mockClear();
-    vi.spyOn(document, 'visibilityState', 'get').mockReturnValue('visible');
-    fireEvent(document, new Event('visibilitychange'));
-    expect(vi.mocked(HTMLMediaElement.prototype.play).mock.contexts).toContain(video);
-    Object.defineProperty(video, 'paused', { configurable: true, value: true });
-    vi.spyOn(document, 'visibilityState', 'get').mockReturnValue('hidden');
-    fireEvent(document, new Event('visibilitychange'));
-    vi.mocked(HTMLMediaElement.prototype.play).mockClear();
-    vi.spyOn(document, 'visibilityState', 'get').mockReturnValue('visible');
-    fireEvent(document, new Event('visibilitychange'));
-    expect(vi.mocked(HTMLMediaElement.prototype.play).mock.contexts).not.toContain(video);
-  });
-
-  it('reports enlarged-film decoding errors inside the open dialog', () => {
-    const { container } = render(<ArtworkViewer artwork={work} t={en} />);
-    fireEvent.click(screen.getByRole('button', { name: en.completeFilm }));
-    fireEvent.error(container.querySelector('dialog video')!);
-    expect(screen.getByRole('status')).toHaveTextContent(en.mediaUnavailable);
-    expect(screen.getByRole('dialog')).toContainElement(screen.getByRole('status'));
-  });
-
-  it.each(['Play', 'Restart'])(
-    'an explicit %s retries a failed film and clears the stale failure notice',
-    (control) => {
-      const { container } = render(<ArtworkViewer artwork={work} t={en} />);
-      fireEvent.error(player(container));
-      expect(screen.getByRole('status')).toHaveTextContent(en.mediaUnavailable);
-      expect(container.querySelector('.art-media video')).toBeNull();
-      fireEvent.click(screen.getByRole('button', { name: control }));
-      expect(screen.queryByRole('status')).toBeNull();
-      expect(player(container)).toHaveAttribute('src', expect.stringMatching(localFilm));
-      fireEvent.playing(player(container));
-      expect(screen.getByRole('button', { name: 'Pause' })).toBeVisible();
-    },
-  );
-
-  it('narrates the arrival truthfully and offers Again only after the film has rested', async () => {
-    vi.useFakeTimers();
-    const { container } = render(<ArtworkViewer artwork={work} t={en} />);
-    expect(filmState(container)).toHaveAttribute('data-film-state', 'arriving');
-    expect(filmState(container)).toHaveTextContent(en.arriving);
-    const video = player(container);
-    act(() => vi.advanceTimersByTime(5_000));
-    expect(HTMLMediaElement.prototype.play).not.toHaveBeenCalled();
-    await act(async () => {
-      fireEvent.load(screen.getByRole('img', { name: 'Signature 31 · Ink' }));
-    });
-    expect(filmState(container)).toHaveAttribute('data-film-state', 'still');
-    act(() => vi.advanceTimersByTime(1_200));
-    expect(HTMLMediaElement.prototype.play).toHaveBeenCalledOnce();
-    fireEvent.playing(video);
-    expect(filmState(container)).toHaveAttribute('data-film-state', 'film');
-    Object.defineProperty(video, 'duration', { configurable: true, value: 30 });
-    video.currentTime = 30;
-    fireEvent.ended(video);
-    expect(filmState(container)).toHaveAttribute('data-film-state', 'still');
-    expect(screen.getByText('00:30 / 00:30')).toBeVisible();
-    expect(screen.getByRole('button', { name: en.play })).toBeVisible();
-    expect(screen.queryByRole('button', { name: en.again })).toBeNull();
-    act(() => vi.advanceTimersByTime(8_000));
-    expect(screen.getByRole('button', { name: en.again })).toBeVisible();
-    vi.mocked(HTMLMediaElement.prototype.play).mockClear();
-    fireEvent.click(screen.getByRole('button', { name: en.again }));
-    expect(video.currentTime).toBe(0);
-    expect(HTMLMediaElement.prototype.play).toHaveBeenCalledOnce();
-    expect(screen.queryByRole('button', { name: en.again })).toBeNull();
-  });
-
-  it('Sit fades the chrome until the visitor moves, and the film plays on', async () => {
-    vi.useFakeTimers();
-    const { container } = render(<ArtworkViewer artwork={work} t={en} />);
-    const section = container.querySelector('.viewing-room')!;
-    await act(async () => {
-      fireEvent.load(screen.getByRole('img', { name: 'Signature 31 · Ink' }));
-    });
-    fireEvent.playing(player(container));
-    expect(screen.getByRole('button', { name: en.pause })).toBeVisible();
-    vi.mocked(HTMLMediaElement.prototype.pause).mockClear();
-    fireEvent.click(screen.getByRole('button', { name: en.sit }));
-    expect(section).toHaveAttribute('data-sit');
-    expect(screen.getByRole('button', { name: en.sit })).toHaveAttribute('aria-pressed', 'true');
-    // Sit fades the chrome only; the film keeps moving.
-    expect(HTMLMediaElement.prototype.pause).not.toHaveBeenCalled();
-    expect(motion.toggle).not.toHaveBeenCalled();
-    expect(screen.getByRole('button', { name: en.pause })).toBeVisible();
-    expect(filmState(container)).toHaveAttribute('data-film-state', 'film');
-    fireEvent.pointerMove(section);
-    expect(section).toHaveAttribute('data-sit');
-    act(() => vi.advanceTimersByTime(600));
-    fireEvent.pointerMove(section);
-    expect(section).not.toHaveAttribute('data-sit');
-    fireEvent.click(screen.getByRole('button', { name: en.sit }));
-    act(() => vi.advanceTimersByTime(600));
-    fireEvent.keyDown(section, { key: 'Tab' });
-    expect(section).not.toHaveAttribute('data-sit');
-  });
-
-  it('a press that wakes faded chrome never activates the control beneath the finger', () => {
-    vi.useFakeTimers();
-    const { container } = render(<ArtworkViewer artwork={work} t={en} />);
-    const section = container.querySelector('.viewing-room')!;
-    fireEvent.click(screen.getByRole('button', { name: en.sit }));
-    act(() => vi.advanceTimersByTime(600));
-    fireEvent.pointerDown(section);
-    expect(section).not.toHaveAttribute('data-sit');
-    const light = screen.getByRole('button', { name: /^Light$/ });
-    expect(fireEvent.click(light)).toBe(false);
-    expect(light).not.toHaveAttribute('aria-busy', 'true');
-    expect(section).toHaveAttribute('data-expression', 'ink');
-    // With the chrome back, the next press is a choice.
-    expect(fireEvent.click(light)).toBe(true);
+describe('the Turn', () => {
+  it('travels the seam from the right for Light, commits, and remembers the choice', async () => {
+    renderViewer();
+    const light = word(en.light);
+    fireEvent.click(light);
+    await act(async () => {});
     expect(light).toHaveAttribute('aria-busy', 'true');
-    // A touch wake behaves the same, and a wake that is only a move swallows nothing.
-    fireEvent.click(screen.getByRole('button', { name: en.sit }));
-    act(() => vi.advanceTimersByTime(600));
-    fireEvent.touchStart(section);
-    expect(section).not.toHaveAttribute('data-sit');
-    expect(fireEvent.click(screen.getByRole('button', { name: en.still }))).toBe(false);
-    fireEvent.click(screen.getByRole('button', { name: en.sit }));
-    act(() => vi.advanceTimersByTime(600));
-    fireEvent.pointerMove(section);
-    expect(section).not.toHaveAttribute('data-sit');
-    expect(fireEvent.click(screen.getByRole('button', { name: en.still }))).toBe(true);
+    await act(async () => {
+      vi.advanceTimersByTime(BREATH_MS);
+    });
+    expect(root().getAttribute('data-turning')).toBe('time');
+    expect(root().style.getPropertyValue('--seam')).toBe('0%');
+    expect(stage()).toHaveAttribute('data-expression', 'ink');
+    const seams = vi.fn();
+    window.addEventListener('cosmic:seam', seams);
+    await act(async () => {
+      vi.advanceTimersByTime(950);
+    });
+    await act(async () => {});
+    expect(stage()).toHaveAttribute('data-expression', 'light');
+    expect(layer('light')).toHaveAttribute('data-layer-state', 'current');
+    expect(layer('ink')).toHaveAttribute('inert');
+    expect(root().hasAttribute('data-turning')).toBe(false);
+    expect(root().style.getPropertyValue('--seam')).toBe('');
+    expect(sessionStorage.getItem(EXPRESSION_KEY)).toBe('light');
+    expect(seams).toHaveBeenCalled();
+    // Ink returns from the left: the seam travels back to 100 %.
+    fireEvent.click(word(en.ink));
+    await act(async () => {});
+    await act(async () => {
+      vi.advanceTimersByTime(BREATH_MS);
+    });
+    expect(root().style.getPropertyValue('--seam')).toBe('100%');
+    await act(async () => {
+      vi.advanceTimersByTime(950);
+    });
+    await act(async () => {});
+    expect(stage()).toHaveAttribute('data-expression', 'ink');
+    expect(sessionStorage.getItem(EXPRESSION_KEY)).toBe('ink');
   });
 
-  it('opening and closing the room keeps the plate settled and never replays a finished film', async () => {
-    vi.useFakeTimers();
-    const { container } = render(<ArtworkViewer artwork={work} t={en} />);
-    const still = screen.getByRole('img', { name: 'Signature 31 · Ink' });
+  it('crosses in one frame while paused, reduced or hushed', async () => {
+    for (const quiet of ['paused', 'reducedMotion', 'theatre'] as const) {
+      motion.paused = quiet === 'paused';
+      motion.reducedMotion = quiet === 'reducedMotion';
+      motion.theatre = quiet === 'theatre' ? 'hushed' : 'playing';
+      const view = renderViewer();
+      fireEvent.click(word(en.light));
+      await act(async () => {});
+      expect(root().hasAttribute('data-turning')).toBe(false);
+      expect(stage()).toHaveAttribute('data-expression', 'light');
+      view.unmount();
+    }
+  });
+
+  it('peeks while L is held and returns on release; a tap commits', async () => {
+    renderViewer();
+    fireEvent.keyDown(window, { key: 'L' });
     await act(async () => {
-      fireEvent.load(still);
+      vi.advanceTimersByTime(BREATH_MS);
     });
-    const plate = container.querySelector('.viewer-plate .art-media')!;
-    expect(plate).toHaveAttribute('data-arrival', 'settled');
-    act(() => vi.advanceTimersByTime(1_200));
-    const video = player(container);
-    fireEvent.playing(video);
-    Object.defineProperty(video, 'duration', { configurable: true, value: 30 });
-    video.currentTime = 30;
-    fireEvent.ended(video);
-    expect(filmState(container)).toHaveAttribute('data-film-state', 'still');
-    vi.mocked(HTMLMediaElement.prototype.play).mockClear();
-    fireEvent.click(screen.getByRole('button', { name: en.enlarge }));
-    expect(screen.getByRole('dialog')).toBeVisible();
-    expect(container.querySelector('.viewer-plate video')).toBeNull();
+    expect(root().getAttribute('data-turning')).toBe('time');
+    expect(root().style.getPropertyValue('--seam')).toBe('0%');
+    await act(async () => {
+      vi.advanceTimersByTime(1000);
+    });
+    expect(stage()).toHaveAttribute('data-expression', 'ink');
+    fireEvent.keyUp(window, { key: 'L' });
+    expect(root().style.getPropertyValue('--seam')).toBe('100%');
+    await act(async () => {
+      vi.advanceTimersByTime(950);
+    });
     await act(async () => {});
-    fireEvent.click(screen.getByRole('button', { name: en.close }));
-    expect(screen.queryByRole('dialog')).toBeNull();
-    act(() => vi.advanceTimersByTime(5_000));
-    expect(screen.getByRole('img', { name: 'Signature 31 · Ink' })).toBe(still);
-    expect(plate).toHaveAttribute('data-arrival', 'settled');
-    expect(container.querySelector('.viewer-plate video')).not.toHaveClass('has-frame');
+    expect(root().hasAttribute('data-turning')).toBe(false);
+    expect(stage()).toHaveAttribute('data-expression', 'ink');
+    // A tap: down and up inside the tap window completes the Turn.
+    fireEvent.keyDown(window, { key: 'l' });
+    await act(async () => {
+      vi.advanceTimersByTime(100);
+    });
+    fireEvent.keyUp(window, { key: 'l' });
+    await travel();
+    expect(stage()).toHaveAttribute('data-expression', 'light');
+  });
+
+  it('follows the session’s remembered expression when the URL names none, and never for a work with one expression', async () => {
+    sessionStorage.setItem(EXPRESSION_KEY, 'light');
+    forgetExpression();
+    sessionStorage.setItem(EXPRESSION_KEY, 'light');
+    renderViewer();
+    await act(async () => {});
+    expect(stage()).toHaveAttribute('data-expression', 'light');
+    expect(root().hasAttribute('data-turning')).toBe(false);
+    cleanup();
+    renderViewer({ initialExpression: 'ink' });
+    await act(async () => {});
+    expect(stage()).toHaveAttribute('data-expression', 'ink');
+    cleanup();
+    renderViewer({ artwork: getCuratedArtwork(2)!, traits: undefined });
+    await act(async () => {});
+    expect(sessionStorage.getItem(EXPRESSION_KEY)).toBe('light');
+  });
+});
+
+describe('the film, the rest and Sit', () => {
+  it('holds the settled still, plays the verified film, freezes the time line at the end and offers Again after the rest', async () => {
+    const { container } = renderViewer();
+    await settle();
+    // The still is held as an object for --t-hold before the film may begin.
+    await act(async () => {
+      vi.advanceTimersByTime(1100);
+    });
     expect(HTMLMediaElement.prototype.play).not.toHaveBeenCalled();
-    expect(filmState(container)).toHaveAttribute('data-film-state', 'still');
-    expect(screen.queryByRole('button', { name: en.pause })).toBeNull();
+    await act(async () => {
+      vi.advanceTimersByTime(150);
+    });
+    expect(HTMLMediaElement.prototype.play).toHaveBeenCalled();
+    const video = player()!;
+    expect(video).toHaveAttribute('src', expect.stringMatching(/\/art\/31-ink-preview\.mp4$/));
+    Object.defineProperty(video, 'duration', { configurable: true, value: 30 });
+    Object.defineProperty(video, 'currentTime', { configurable: true, value: 12, writable: true });
+    fireEvent.playing(video);
+    fireEvent.timeUpdate(video);
+    expect(word(en.still)).toBeInTheDocument();
+    expect(container.querySelector('[data-film-state]')).toHaveAttribute('data-film-state', 'film');
+    expect(document.querySelector('.time-line i')).toHaveStyle({ width: '40%' });
+    fireEvent.ended(video);
+    expect(container.querySelector('[data-film-state]')).toHaveAttribute(
+      'data-film-state',
+      'still',
+    );
+    expect(document.querySelector('.time-line i')).toHaveStyle({ width: '100%' });
+    expect(screen.queryByRole('button', { name: en.again })).toBeNull();
+    await act(async () => {
+      vi.advanceTimersByTime(8000);
+    });
+    expect(document.querySelector('.time-line')).toBeNull();
+    const again = word(en.again);
+    fireEvent.click(again);
+    expect(screen.queryByRole('button', { name: en.again })).toBeNull();
+    expect(word(en.film)).toBeInTheDocument();
   });
 
-  it('drops the registry’s inline preview once the live record brings its own thumbnail', async () => {
-    const inline = 'data:image/webp;base64,AAAA';
-    const renewed = {
-      ...work,
-      media: work.media.map((media) =>
-        media.id === 'ink'
-          ? {
-              ...media,
-              still: 'https://publisher.example/31/images/web/ember_full.webp',
-              thumbnail: 'https://publisher.example/31/images/web/ember_preview.webp',
-            }
-          : media,
-      ),
-    };
-    // A settled thenable takes React's synchronous path so the adoption commits under act.
-    const live = Object.assign(Promise.resolve(renewed), { status: 'fulfilled', value: renewed });
-    const { container } = render(
-      <ArtworkViewer artwork={work} t={en} inlinePreviews={{ ink: inline }} live={live} />,
+  it('Sit fades the strip and the head until the visitor moves, swallowing the waking click', async () => {
+    const { container } = renderViewer();
+    const section = container.querySelector('section')!;
+    fireEvent.click(word(en.sit));
+    expect(section).toHaveAttribute('data-sit');
+    expect(root()).toHaveAttribute('data-sit');
+    fireEvent.pointerMove(section);
+    expect(section).toHaveAttribute('data-sit');
+    await act(async () => {
+      vi.advanceTimersByTime(700);
+    });
+    const study = word(en.enlarge);
+    fireEvent.pointerDown(study);
+    expect(section).not.toHaveAttribute('data-sit');
+    expect(root()).not.toHaveAttribute('data-sit');
+    fireEvent.click(study);
+    expect(screen.queryByRole('dialog')).toBeNull();
+  });
+});
+
+describe('the room and the keys', () => {
+  it('Study opens the room on the still, silences the plate keys, and returns focus', () => {
+    renderViewer();
+    const study = word(en.enlarge);
+    study.focus();
+    fireEvent.click(study);
+    const dialog = screen.getByRole('dialog');
+    expect(dialog).toHaveAccessibleName(`№ 031 · ${en.viewingRoom}`);
+    expect(dialog.querySelector('video')).toBeNull();
+    fireEvent.keyDown(window, { key: 'L' });
+    expect(root().hasAttribute('data-turning')).toBe(false);
+    fireEvent.click(within(dialog).getByRole('button', { name: en.close }));
+    expect(screen.queryByRole('dialog')).toBeNull();
+    expect(study).toHaveFocus();
+  });
+
+  it('answers Space, the arrows and F, and is silent in a field or under a sheet', async () => {
+    renderViewer({
+      neighbours: { previous: { id: 30 }, next: { id: 32 } },
+    });
+    await settle();
+    fireEvent.keyDown(window, { key: 'ArrowRight' });
+    expect(push).toHaveBeenLastCalledWith('/art/32');
+    fireEvent.keyDown(window, { key: 'ArrowLeft' });
+    expect(push).toHaveBeenLastCalledWith('/art/30');
+    const field = document.createElement('input');
+    document.body.append(field);
+    fireEvent.keyDown(field, { key: 'ArrowRight' });
+    expect(push).toHaveBeenCalledTimes(2);
+    field.remove();
+    act(() => openSheet('index'));
+    fireEvent.keyDown(window, { key: 'ArrowRight' });
+    expect(push).toHaveBeenCalledTimes(2);
+    act(() => closeSheet());
+    fireEvent.keyDown(window, { key: 'f' });
+    expect(screen.getByRole('dialog').querySelector('video')).toHaveAttribute(
+      'src',
+      expect.stringMatching(/\/art\/31-ink-preview\.mp4$/),
     );
+  });
+
+  it('lists the neighbours with the remembered expression in their links', async () => {
+    renderViewer({
+      neighbours: {
+        previous: { id: 30, preview: '/art/previews/30.webp' },
+        next: { id: 32 },
+        spectral: { id: 44, deltaNm: 18, direction: 'redder' },
+        lot: true,
+      },
+    });
+    expect(screen.getByRole('link', { name: `${en.previousWork} · № 030` })).toHaveAttribute(
+      'href',
+      '/art/30',
+    );
+    expect(screen.getByRole('link', { name: /Next by wavelength/ })).toHaveTextContent(
+      'Next by wavelength · № 044 · 18 nm redder',
+    );
+    expect(screen.getByRole('link', { name: /Collect/ })).toHaveAttribute('href', '/auctions/31');
+    fireEvent.click(word(en.light));
+    await travel();
+    expect(screen.getByRole('link', { name: `${en.nextWork} · № 032` })).toHaveAttribute(
+      'href',
+      '/art/32?expression=light',
+    );
+  });
+});
+
+describe('the home', () => {
+  it('sets the one line in the strip, remembers a resolved arrival, and opens the night wing’s words', async () => {
+    const { container } = renderViewer({ presentation: 'home' });
+    expect(within(layer('ink') as HTMLElement).getByText(en.statementLine)).toBeInTheDocument();
+    expect(within(layer('ink') as HTMLElement).getByText(en.statementSigned)).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: en.enlarge })).toBeNull();
+    expect(
+      within(layer('light') as HTMLElement).getByRole('link', {
+        name: `${en.throughSpectrum} →`,
+        hidden: true,
+      }),
+    ).toHaveAttribute('href', '/collection?order=spectrum');
+    await settle();
+    await act(async () => {
+      vi.advanceTimersByTime(1200);
+    });
+    const video = player()!;
+    Object.defineProperty(video, 'duration', { configurable: true, value: 30 });
+    fireEvent.playing(video);
+    fireEvent.ended(video);
+    expect(sessionStorage.getItem('cosmic-art-home-film-v1')).toBe('resolved');
+    await act(async () => {
+      vi.advanceTimersByTime(6000);
+    });
+    expect(word(en.again)).toBeInTheDocument();
+    cleanup();
+    // The next visit to the home in this session opens on the still with Again.
+    const second = renderViewer({ presentation: 'home' });
+    expect(within(second.container).getByRole('button', { name: en.again })).toBeInTheDocument();
+    expect(container.querySelector('video')).toBeNull();
+  });
+
+  it('the Dusk, behind its flag, lowers the wall after the rest and is cancelled by any input', async () => {
+    renderViewer({ presentation: 'home', dusk: true });
+    await settle();
+    await act(async () => {
+      vi.advanceTimersByTime(1200);
+    });
+    const video = player()!;
+    Object.defineProperty(video, 'duration', { configurable: true, value: 30 });
+    fireEvent.playing(video);
+    fireEvent.ended(video);
+    await act(async () => {
+      vi.advanceTimersByTime(6000);
+    });
     await act(async () => {});
-    expect(container.querySelector('img.art-preview')).toHaveAttribute(
-      'src',
-      'https://publisher.example/31/images/web/ember_preview.webp',
-    );
-    expect(screen.getByRole('img', { name: 'Signature 31 · Ink' })).toHaveAttribute(
-      'src',
-      'https://publisher.example/31/images/web/ember_full.webp',
-    );
+    expect(root().getAttribute('data-turning')).toBe('dusk');
+    expect(root().style.getPropertyValue('--seam')).toBe('0%');
+    fireEvent.keyDown(window, { key: 'ArrowDown' });
+    expect(root().getAttribute('data-turning')).toBe('time');
+    expect(root().style.getPropertyValue('--seam')).toBe('100%');
+    await act(async () => {
+      vi.advanceTimersByTime(5000);
+    });
+    await act(async () => {});
+    expect(stage()).toHaveAttribute('data-expression', 'ink');
+    expect(root().hasAttribute('data-turning')).toBe(false);
   });
+});
 
-  it('keeps the inline preview when only the live record’s film delivery differs', async () => {
-    const inline = 'data:image/webp;base64,AAAA';
-    const renewed = {
+describe('the live record', () => {
+  it('adopts the live record’s media only when they differ from the registry’s', async () => {
+    vi.useRealTimers();
+    const differing: Artwork = {
       ...work,
-      media: work.media.map((media) =>
-        media.id === 'ink'
-          ? {
-              ...media,
-              films: media.films.map((film, index) =>
-                index === 0 ? { ...film, src: '/art/31-ink-renewed.mp4' } : film,
-              ),
-            }
-          : media,
+      media: work.media.map((item) =>
+        item.id === 'ink' ? { ...item, still: '/art/31-ink-live.webp' } : item,
       ),
     };
-    // An already-settled thenable takes React's synchronous path, so the plate's effects
-    // (and with them its film) run under act; a bare promise would leave them pending here.
-    const live = Object.assign(Promise.resolve(renewed), { status: 'fulfilled', value: renewed });
-    const { container } = render(
-      <ArtworkViewer artwork={work} t={en} inlinePreviews={{ ink: inline }} live={live} />,
-    );
+    let resolve!: (value: Artwork | null) => void;
+    const live = new Promise<Artwork | null>((done) => {
+      resolve = done;
+    });
+    // A suspended boundary inside render() is only retried when the act scope is awaited.
     await act(async () => {
-      await live;
+      renderViewer({ live });
     });
-    expect(container.querySelector('img.art-preview')).toHaveAttribute('src', inline);
-    expect(player(container)).toHaveAttribute('src', '/art/31-ink-renewed.mp4');
-  });
-
-  it('adopts the live record’s media only when they differ from the registry’s', async () => {
-    const live = Promise.resolve({
-      ...work,
-      media: work.media.map((media) =>
-        media.id === 'light' ? { ...media, still: '/art/31-light-renewed.webp' } : media,
-      ),
-    });
-    render(<ArtworkViewer artwork={work} t={en} live={live} />);
+    expect(currentStill()).toHaveAttribute('src', '/art/31-ink.webp');
     await act(async () => {
-      await live;
+      resolve(differing);
     });
-    await act(async () => {
-      fireEvent.click(screen.getByRole('button', { name: /^Light$/ }));
-    });
-    expect(screen.getByRole('img', { name: 'Signature 31 · Light' })).toHaveAttribute(
-      'src',
-      expect.stringMatching(/\/art\/31-light-renewed\.webp$/),
-    );
+    await act(async () => {});
+    expect(currentStill()).toHaveAttribute('src', '/art/31-ink-live.webp');
   });
 });

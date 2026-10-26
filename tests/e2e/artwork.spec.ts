@@ -2,33 +2,35 @@ import { expect, test } from '@playwright/test';
 import { catalogs } from '../../src/lib/i18n/messages';
 import { artworkImageSource, noHorizontalOverflow, pauseAmbientMotion } from './helpers';
 
-test('artwork comparison and enlarged viewer preserve identity and Escape returns focus', async ({
+const current = '[data-artwork-stage="page"]:visible [data-layer-state="current"]';
+
+test('the plate, the room and the keys preserve identity; Escape returns focus', async ({
   page,
+  isMobile,
 }) => {
   await page.goto('/art/31');
   await pauseAmbientMotion(page);
-  await expect(page.getByRole('heading', { level: 1 })).toHaveText('Signature 31');
-  const room = page.getByRole('region', { name: 'Ways of seeing', exact: true });
-  await artworkImageSource(room.locator('.art-media img.art-still'), 31, 'ink', true);
-  await room.getByRole('button', { name: 'See both expressions', exact: true }).click();
-  await expect(room.locator('.viewer-plate')).toHaveClass(/paired/);
-  await expect(room.locator('.viewer-plate > img')).toHaveAttribute('alt', 'Signature 31 · Light');
-  await room.getByRole('button', { name: 'Single expression', exact: true }).click();
-  await expect(room.locator('.viewer-plate')).not.toHaveClass(/paired/);
-  const enlarge = page.getByRole('button', { name: 'Open full artwork viewer', exact: true });
-  await enlarge.focus();
-  await enlarge.press('Enter');
+  await expect(page).toHaveTitle(/№ 031/);
+  const plate = page.locator(current);
+  await artworkImageSource(plate.locator('img.art-still'), 31, 'ink', true);
+  // The strip: the folio, the label from the published traits, and the words.
+  await expect(plate.locator('.hanging-numeral')).toHaveText('031');
+  // The label line yields to the words on a phone; the numeral and the words remain.
+  if (!isMobile)
+    await expect(plate.getByText('Orbit Ribbons · Harmonic Weave · Ink')).toBeVisible();
+  const study = plate.getByRole('button', { name: 'Study', exact: true });
+  await study.focus();
+  await study.press('Enter');
   const dialog = page.getByRole('dialog');
   await expect(dialog).toBeVisible();
-  await expect(dialog).toHaveAccessibleName(`Signature 31 · ${catalogs.en.viewingRoom}`);
+  await expect(dialog).toHaveAccessibleName(`№ 031 · ${catalogs.en.viewingRoom}`);
   await artworkImageSource(dialog.locator('img'), 31, 'ink', true);
   await expect(dialog.locator('video')).toHaveCount(0);
   await page.keyboard.press('Escape');
   await expect(dialog).not.toBeVisible();
-  await expect(enlarge).toBeFocused();
-  const completeFilm = room.getByRole('button', { name: 'The complete film', exact: true });
-  await completeFilm.focus();
-  await completeFilm.press('Enter');
+  await expect(study).toBeFocused();
+  // F opens the film in the room; Z the still.
+  await page.keyboard.press('f');
   await expect(dialog).toBeVisible();
   await expect(dialog.locator('video')).toHaveAttribute(
     'src',
@@ -36,34 +38,58 @@ test('artwork comparison and enlarged viewer preserve identity and Escape return
   );
   await page.keyboard.press('Escape');
   await expect(dialog).not.toBeVisible();
-  await expect(completeFilm).toBeFocused();
-  await room.getByRole('button', { name: /^Light$/ }).click();
-  await expect(room.locator('.art-media')).toHaveAttribute('data-material', 'light');
-  await artworkImageSource(room.locator('.art-media img.art-still'), 31, 'light', true);
+  await plate.getByRole('button', { name: /^Light$/ }).click();
+  await expect(page.locator(current).locator('.art-media')).toHaveAttribute(
+    'data-material',
+    'light',
+  );
+  await artworkImageSource(page.locator(current).locator('img.art-still'), 31, 'light', true);
   await noHorizontalOverflow(page);
 });
 
-test('Play from a still starts the intended film with one explicit action', async ({ page }) => {
+test('Film from a still starts the intended film with one explicit word', async ({ page }) => {
   await page.goto('/art/31?view=still');
   await pauseAmbientMotion(page);
-  const room = page.getByRole('region', { name: 'Ways of seeing', exact: true });
-  await expect(room.getByRole('button', { name: 'Still', exact: true })).toHaveAttribute(
-    'aria-pressed',
-    'true',
-  );
-  await room.getByRole('button', { name: 'Play', exact: true }).click();
-  await expect(room.getByRole('button', { name: 'Pause', exact: true })).toBeVisible();
-  await expect(room.locator('video')).toHaveAttribute('src', /\/art\/31-ink-preview\.mp4$/);
+  const plate = page.locator(current);
+  await expect(plate.locator('[data-film-state]')).toHaveAttribute('data-film-state', 'still');
+  await plate.getByRole('button', { name: 'Film', exact: true }).click();
+  await expect(plate.locator('video')).toHaveAttribute('src', /\/art\/31-ink-preview\.mp4$/);
   await expect
-    .poll(() => room.locator('video').evaluate((element) => (element as HTMLVideoElement).paused))
+    .poll(() => plate.locator('video').evaluate((element) => (element as HTMLVideoElement).paused))
     .toBe(false);
+  await expect(plate.getByRole('button', { name: 'Still', exact: true })).toBeVisible();
+  // The one time line runs at the viewport's bottom edge while the film plays.
+  await expect(page.locator('.time-line')).toBeVisible();
+  await plate.getByRole('button', { name: 'Still', exact: true }).click();
+  await expect(plate.getByRole('button', { name: 'Film', exact: true })).toBeVisible();
 });
 
-test('language switching preserves the current artwork route', async ({ page }) => {
+test('the neighbours carry the visitor on by number and by wavelength', async ({ page }) => {
+  await page.goto('/art/31?view=still');
+  await pauseAmbientMotion(page);
+  const next = page.locator('[data-neighbour="next"]');
+  await expect(next).toHaveAttribute('href', '/art/32');
+  await expect(page.locator('[data-neighbour="previous"]')).toHaveAttribute('href', '/art/30');
+  const star = page.locator('[data-neighbour="spectral"]');
+  await expect(star).toHaveText(/Next by wavelength · № \d{3} · \d+ nm (?:redder|bluer)/);
+  await page.keyboard.press('ArrowRight');
+  await expect(page).toHaveURL(/\/art\/32$/);
+  await expect(page).toHaveTitle(/№ 032/);
+});
+
+test('language switching preserves the current artwork route', async ({ page, isMobile }) => {
+  test.skip(
+    isMobile,
+    'On phones the languages live in the Index sheet, built in the collection workstream.',
+  );
   await page.goto('/art/31?view=still');
   await page.locator('.language-menu button').click();
   await page.locator('.language-menu a[hreflang="ja"]').click();
   await expect(page).toHaveURL(/\/ja\/art\/31\?view=still$/);
   await expect(page.locator('html')).toHaveAttribute('lang', 'ja');
-  await expect(page.getByRole('heading', { level: 1 })).toHaveText(`${catalogs.ja.signature} 31`);
+  await expect(page).toHaveTitle(/№ 031/);
+  await expect(page.locator(current).locator('img.art-still')).toHaveAttribute(
+    'alt',
+    `№ 031 · ${catalogs.ja.ink}`,
+  );
 });

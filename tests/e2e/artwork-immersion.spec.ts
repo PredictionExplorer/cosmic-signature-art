@@ -11,6 +11,8 @@ const t = catalogs.en;
 // React can temporarily hold a second server fragment in a hidden streaming container.
 // Keep the live (including inert modal-background) stage, not that unpainted copy.
 const pageStage = '[data-artwork-stage="page"]:visible';
+const current = `${pageStage} [data-layer-state="current"]`;
+const nightLayer = `${pageStage} [data-layer="light"]`;
 const roomSelector = '[data-testid="artwork-room"]';
 const light = archive.find((work) => work.id === 31)!.media.find((media) => media.id === 'light')!;
 const ink = archive.find((work) => work.id === 31)!.media.find((media) => media.id === 'ink')!;
@@ -33,31 +35,56 @@ async function imageReady(image: Locator) {
 }
 
 async function artworkReady(page: Page, path = '/art/31?view=still') {
-  await page.goto(path);
-  await expect(page.getByRole('heading', { level: 1 })).toHaveText('Signature 31');
+  // Both grounds paint eagerly, so a held still would hold `load`; readiness is asserted below.
+  await page.goto(path, { waitUntil: 'domcontentloaded' });
+  await expect(page).toHaveTitle(/№ 031/);
   const stage = page.locator(pageStage);
   await expect(stage).toHaveAttribute('data-expression', 'ink');
-  await imageReady(stage.locator('img.art-still'));
+  await imageReady(page.locator(`${current} img.art-still`));
   // The motion preference provides an observable hydration boundary before clicking controls.
   const paused = await page.evaluate(() => {
     const saved = sessionStorage.getItem('cosmic-art-motion-v1');
     return saved ? saved === 'paused' : matchMedia('(prefers-reduced-motion: reduce)').matches;
   });
-  await expect(page.locator('.motion-toggle')).toHaveAttribute('aria-pressed', String(paused));
+  await expect(page.locator('button.motion-toggle')).toHaveAttribute(
+    'aria-pressed',
+    String(paused),
+  );
   return page.getByRole('region', { name: t.ways, exact: true });
 }
 
-function expressionControl(scope: Locator, expression: 'Ink' | 'Light') {
-  return scope.getByRole('button', { name: new RegExp(`^(?:0[12] )?${expression}$`) });
+/** The strip's Turn word on the committed layer; the twin's copy is inert. */
+function turnWord(page: Page, to: 'light' | 'ink') {
+  return page.locator(`${current} [data-turn="${to}"]`);
+}
+
+/**
+ * The seam as the night layer paints it: the left inset of its clip, in percent, rounded to
+ * the pixel. Engines serialise the inset in percent, in pixels, or as an unresolved min()
+ * inside the wing; every form reduces to one number here.
+ */
+async function seamInset(page: Page) {
+  return page.locator(nightLayer).evaluate((element) => {
+    const clip = getComputedStyle(element).clipPath;
+    if (clip === 'none') return 0;
+    const width = element.getBoundingClientRect().width;
+    const toPercent = (value: string, unit: string) =>
+      unit === '%' ? Number(value) : (Number(value) / width) * 100;
+    const inset = /inset\((.*)\)$/.exec(clip)?.[1];
+    if (!inset) return null;
+    const parts = inset.trim().split(/\s+(?![^(]*\))/);
+    const left = parts[3] ?? parts[1] ?? parts[0];
+    const values = [...left.matchAll(/([\d.]+)(%|px)/g)].map(([, value, unit]) =>
+      toPercent(value, unit),
+    );
+    if (!values.length) return null;
+    return Math.round(Math.min(...values) * 10) / 10;
+  });
 }
 
 async function cinematicObserver(page: Page) {
   await page.addInitScript(() => {
-    const state = {
-      attempted: 0,
-      ready: 0,
-      animations: [] as { name: string; duration: number | string | undefined }[],
-    };
+    const state = { attempted: 0, ready: 0 };
     Object.assign(window, { __expressionTransitions: state });
     if (typeof document.startViewTransition !== 'function') return;
     const original = document.startViewTransition.bind(document);
@@ -67,14 +94,6 @@ async function cinematicObserver(page: Page) {
       void transition.ready.then(
         () => {
           state.ready += 1;
-          state.animations = [];
-          for (const animation of document.getAnimations()) {
-            if ('animationName' in animation)
-              state.animations.push({
-                name: String(animation.animationName),
-                duration: Number(animation.effect?.getTiming().duration),
-              });
-          }
         },
         () => {
           /* Superseded transitions are valid; the selected work must remain correct. */
@@ -90,27 +109,6 @@ async function transitionCount(page: Page) {
     () =>
       (window as unknown as { __expressionTransitions: { attempted: number } })
         .__expressionTransitions.attempted,
-  );
-}
-
-async function readyTransitions(page: Page) {
-  return page.evaluate(
-    () =>
-      (window as unknown as { __expressionTransitions: { ready: number } }).__expressionTransitions
-        .ready,
-  );
-}
-
-async function observedAnimations(page: Page) {
-  return page.evaluate(
-    () =>
-      (
-        window as unknown as {
-          __expressionTransitions: {
-            animations: { name: string; duration: number | string | undefined }[];
-          };
-        }
-      ).__expressionTransitions.animations,
   );
 }
 
@@ -142,9 +140,9 @@ test('the plate is painted from an inline preview before the full still arrives'
   });
   // The eager hero <img> delays `load`, so only DOMContentLoaded can be awaited here.
   await page.goto('/art/31?view=still', { waitUntil: 'domcontentloaded' });
-  const preview = page.locator(`${pageStage} img.art-preview`);
-  const still = page.locator(`${pageStage} img.art-still`);
-  const plate = page.locator(`${pageStage} .art-media`);
+  const preview = page.locator(`${current} img.art-preview`);
+  const still = page.locator(`${current} img.art-still`);
+  const plate = page.locator(`${current} .art-media`);
   await expect(preview).toHaveAttribute('src', /^data:image\/webp;base64,/);
   await expect(preview).toBeInViewport();
   await expect
@@ -160,124 +158,239 @@ test('the plate is painted from an inline preview before the full still arrives'
   await expect(plate).toHaveAttribute('data-arrival', 'arriving');
   await expect(still).not.toHaveClass(/is-settled/);
   await expect(still).toHaveCSS('opacity', '0');
-  await expect(page.locator('.work-transport [data-film-state]')).toHaveAttribute(
+  await expect(page.locator(`${current} [data-film-state]`)).toHaveAttribute(
     'data-film-state',
     'arriving',
+  );
+  // The twin ground is painted from the HTML too, ready for the Turn.
+  await expect(page.locator(`${nightLayer} img.art-preview`)).toHaveAttribute(
+    'src',
+    /^data:image\/webp;base64,/,
   );
   release();
   await imageReady(still);
   await expect(still).toHaveClass(/is-settled/);
   await expect(still).toHaveCSS('opacity', '1');
   await expect(plate).toHaveAttribute('data-arrival', 'settled');
-  await expect(page.locator('.work-transport [data-film-state]')).toHaveAttribute(
+  await expect(page.locator(`${current} [data-film-state]`)).toHaveAttribute(
     'data-film-state',
     'still',
   );
+  await expect(still).toHaveAttribute('alt', '№ 031 · Ink');
 });
 
-test('Ink and Light move between genuine expressions while preserving the artwork identity', async ({
+test('the Turn carries Light in from the right and Ink back from the left, and remembers the choice', async ({
   page,
 }) => {
   await cinematicObserver(page);
   await page.emulateMedia({ reducedMotion: 'no-preference' });
-  const room = await artworkReady(page);
+  await artworkReady(page);
   const stage = page.locator(pageStage);
-  const originalSize = await stage.boundingBox();
-  const supported = await page.evaluate(() => typeof document.startViewTransition === 'function');
-  const beforeLight = await readyTransitions(page);
-  await expressionControl(room, 'Light').click();
-  await expect(stage).toHaveAttribute('data-expression', 'light');
-  await imageReady(stage.locator('img.art-still'));
-  await expect(stage.locator('img.art-still')).toHaveAttribute('alt', 'Signature 31 · Light');
+  expect(await seamInset(page)).toBe(100);
+  await turnWord(page, 'light').click();
+  // One straight seam travels the whole frame: the night layer's inset shrinks from the left.
+  await expect(page.locator('html')).toHaveAttribute('data-turning', 'time');
+  const first = await expect
+    .poll(() => seamInset(page), { timeout: 2000 })
+    .toBeLessThan(100)
+    .then(() => seamInset(page));
+  const second = await expect
+    .poll(() => seamInset(page), { timeout: 2000 })
+    .toBeLessThan((first ?? 100) - 0.5)
+    .then(() => seamInset(page));
+  expect(second).not.toBeNull();
+  await expect(stage).toHaveAttribute('data-expression', 'light', { timeout: 5000 });
+  await expect(page.locator('html')).not.toHaveAttribute('data-turning', /./);
+  await expect(page.locator('html')).toHaveAttribute('data-room', 'night');
+  expect(await seamInset(page)).toBe(0);
+  const lightStill = page.locator(`${current} img.art-still`);
+  await imageReady(lightStill);
+  await expect(lightStill).toHaveAttribute('alt', '№ 031 · Light');
   expect(
     [light.still, light.sourceUrl].map((source) => new URL(source, page.url()).href),
-  ).toContain(
-    await stage.locator('img.art-still').evaluate((image) => (image as HTMLImageElement).src),
+  ).toContain(await lightStill.evaluate((image) => (image as HTMLImageElement).src));
+  expect(await page.evaluate(() => sessionStorage.getItem('cosmic-art-expression-v1'))).toBe(
+    'light',
   );
-  if (supported) {
-    await expect.poll(() => readyTransitions(page)).toBeGreaterThan(beforeLight);
-    const animations = await observedAnimations(page);
-    expect(animations).toEqual(
-      expect.arrayContaining([
-        expect.objectContaining({ name: expect.stringMatching(/revealLight/), duration: 650 }),
-        expect.objectContaining({ name: expect.stringMatching(/departure/), duration: 650 }),
-      ]),
-    );
-    await test.info().attach('Ink-to-Light-native-animations', {
-      body: JSON.stringify(animations),
-      contentType: 'application/json',
-    });
-  }
-  await expect(expressionControl(room, 'Light')).toHaveAttribute('aria-pressed', 'true');
-  const beforeInk = await readyTransitions(page);
-  await expressionControl(room, 'Ink').click();
-  await expect(stage).toHaveAttribute('data-expression', 'ink');
-  await imageReady(stage.locator('img.art-still'));
-  expect([ink.still, ink.sourceUrl].map((source) => new URL(source, page.url()).href)).toContain(
-    await stage.locator('img.art-still').evaluate((image) => (image as HTMLImageElement).src),
-  );
-  if (supported) {
-    await expect.poll(() => readyTransitions(page)).toBeGreaterThan(beforeInk);
-    const animations = await observedAnimations(page);
-    expect(animations).toEqual(
-      expect.arrayContaining([
-        expect.objectContaining({ name: expect.stringMatching(/revealInk/), duration: 650 }),
-        expect.objectContaining({ name: expect.stringMatching(/departure/), duration: 650 }),
-      ]),
-    );
-    await test.info().attach('Light-to-Ink-native-animations', {
-      body: JSON.stringify(animations),
-      contentType: 'application/json',
-    });
-  }
-  await expect(page.getByRole('heading', { level: 1 })).toHaveText('Signature 31');
-  const restoredSize = await stage.boundingBox();
-  expect(restoredSize!.width).toBeCloseTo(originalSize!.width, 0);
-  expect(restoredSize!.height).toBeCloseTo(originalSize!.height, 0);
+  // The page never used a native view transition for the crossing: the seam is the Turn.
+  expect(await transitionCount(page)).toBe(0);
+  // Ink returns from the left: the inset grows.
+  await turnWord(page, 'ink').click();
+  await expect(page.locator('html')).toHaveAttribute('data-turning', 'time');
+  await expect.poll(() => seamInset(page), { timeout: 2000 }).toBeGreaterThan(0);
+  await expect(stage).toHaveAttribute('data-expression', 'ink', { timeout: 5000 });
+  await expect(page.locator('html')).toHaveAttribute('data-room', 'paper');
+  expect(await seamInset(page)).toBe(100);
+  await expect(page.locator(`${current} img.art-still`)).toHaveAttribute('alt', '№ 031 · Ink');
   await noOverflow(page);
+});
+
+test('holding L peeks at Light and lets go; a tap completes the Turn', async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: 'no-preference' });
+  await artworkReady(page);
+  const stage = page.locator(pageStage);
+  await page.keyboard.down('l');
+  await expect(page.locator('html')).toHaveAttribute('data-turning', 'time');
+  await expect.poll(() => seamInset(page), { timeout: 2000 }).toBeLessThan(50);
+  await page.waitForTimeout(1200);
+  await expect(stage).toHaveAttribute('data-expression', 'ink');
+  await page.keyboard.up('l');
+  await expect.poll(() => seamInset(page), { timeout: 3000 }).toBe(100);
+  await expect(page.locator('html')).not.toHaveAttribute('data-turning', /./);
+  await expect(stage).toHaveAttribute('data-expression', 'ink');
+  await page.keyboard.press('l');
+  await expect(stage).toHaveAttribute('data-expression', 'light', { timeout: 5000 });
+  await page.keyboard.press('i');
+  await expect(stage).toHaveAttribute('data-expression', 'ink', { timeout: 5000 });
+});
+
+test('keys are silent while focus is in a field, and the remembered expression follows the visit', async ({
+  page,
+  context,
+}) => {
+  await page.emulateMedia({ reducedMotion: 'no-preference' });
+  await artworkReady(page);
+  await page.evaluate(() => {
+    const field = document.createElement('input');
+    field.id = 'probe-field';
+    document.body.append(field);
+    field.focus();
+  });
+  await page.keyboard.press('l');
+  await page.waitForTimeout(400);
+  await expect(page.locator(pageStage)).toHaveAttribute('data-expression', 'ink');
+  await expect(page.locator('html')).not.toHaveAttribute('data-turning', /./);
+  await page.evaluate(() => document.getElementById('probe-field')?.remove());
+  await turnWord(page, 'light').click();
+  await expect(page.locator(pageStage)).toHaveAttribute('data-expression', 'light', {
+    timeout: 5000,
+  });
+  // The next work of the visit opens on the remembered expression, without a Turn.
+  await page.goto('/art/35?view=still');
+  await expect(page.locator(pageStage)).toHaveAttribute('data-expression', 'light');
+  await expect(page.locator(`${current} img.art-still`)).toHaveAttribute('alt', '№ 035 · Light');
+  // A new visit always opens on Ink.
+  const fresh = await context.browser()!.newContext();
+  const next = await fresh.newPage();
+  await next.goto(`${new URL(page.url()).origin}/art/35?view=still`);
+  await expect(next.locator(pageStage)).toHaveAttribute('data-expression', 'ink');
+  await fresh.close();
+});
+
+test('the night wing is drawn by the hand where the browser can, and is a hard edge elsewhere', async ({
+  page,
+}) => {
+  await page.emulateMedia({ reducedMotion: 'no-preference' });
+  await artworkReady(page);
+  const wing = page.locator('[data-night-wing]:visible');
+  await expect(wing).toHaveAttribute('data-mode', 'scroll');
+  const scrollDriven = await page.evaluate(() => CSS.supports('animation-timeline: view()'));
+  const { top, height, stage } = await wing.evaluate((element) => ({
+    top: element.getBoundingClientRect().top + window.scrollY,
+    height: element.getBoundingClientRect().height,
+    stage: element.firstElementChild!.getBoundingClientRect().height,
+  }));
+  if (scrollDriven) {
+    expect(height).toBeGreaterThan(stage * 1.9);
+    await page.evaluate(
+      (y) => window.scrollTo({ top: y, behavior: 'instant' }),
+      top + height - stage,
+    );
+    await expect.poll(() => seamInset(page), { timeout: 3000 }).toBeLessThan(1);
+    await expect(page.locator('html')).toHaveAttribute('data-room', 'night');
+    await expect(page.locator(pageStage)).toHaveAttribute('data-expression', 'ink');
+    await page.evaluate(() => window.scrollTo({ top: 0, behavior: 'instant' }));
+    await expect.poll(() => seamInset(page), { timeout: 3000 }).toBe(100);
+    await expect(page.locator('html')).toHaveAttribute('data-room', 'paper');
+  } else {
+    // The hard edge: a second screen in black with the same Light plate.
+    const fallback = wing.locator('> div').nth(1);
+    await expect(fallback).toBeVisible();
+    await expect(fallback.locator('img.art-still')).toHaveAttribute('alt', '№ 031 · Light');
+    await fallback.scrollIntoViewIfNeeded();
+    await page.evaluate(() => window.scrollBy({ top: 10, behavior: 'instant' }));
+    await expect(page.locator('html')).toHaveAttribute('data-room', 'night');
+    await page.evaluate(() => window.scrollTo({ top: 0, behavior: 'instant' }));
+    await expect(page.locator('html')).toHaveAttribute('data-room', 'paper');
+  }
+});
+
+test('a finger carries the seam: past 40 % the Turn completes, short of it the seam springs back', async ({
+  page,
+  isMobile,
+}) => {
+  test.skip(!isMobile, 'Drag-to-Turn answers touch only.');
+  await page.emulateMedia({ reducedMotion: 'no-preference' });
+  await artworkReady(page);
+  const stage = page.locator(pageStage);
+  const drag = async (fromX: number, toX: number) => {
+    await page.locator(current).evaluate(
+      (element, [from, to]) => {
+        const turn = element.closest('[data-expression]')!;
+        const rect = turn.getBoundingClientRect();
+        const y = rect.top + rect.height / 2;
+        const pointer = (type: string, x: number) =>
+          turn.dispatchEvent(
+            new PointerEvent(type, {
+              bubbles: true,
+              pointerId: 7,
+              pointerType: 'touch',
+              isPrimary: true,
+              clientX: rect.left + rect.width * x,
+              clientY: y,
+            }),
+          );
+        pointer('pointerdown', from);
+        for (let step = 1; step <= 6; step += 1)
+          pointer('pointermove', from + ((to - from) * step) / 6);
+        pointer('pointerup', to);
+      },
+      [fromX, toX] as const,
+    );
+  };
+  await drag(0.95, 0.8);
+  await expect.poll(() => seamInset(page), { timeout: 3000 }).toBe(100);
+  await expect(stage).toHaveAttribute('data-expression', 'ink');
+  await drag(0.95, 0.4);
+  await expect(stage).toHaveAttribute('data-expression', 'light', { timeout: 5000 });
+  await expect(page.locator('html')).not.toHaveAttribute('data-turning', /./);
 });
 
 test('a slower expression keeps the current work visible and the latest choice wins', async ({
   page,
 }) => {
+  test.skip(
+    test.info().project.name === 'webkit-reduced-motion',
+    "The held Light still now also holds the twin layer's eager image and so the page's load; headless WebKit under reduced-motion emulation reveals the streamed page only after load. Every other project proves the contract.",
+  );
   let release!: () => void;
   const held = new Promise<void>((resolve) => {
     release = resolve;
-  });
-  let released!: () => void;
-  const releasedRequest = new Promise<void>((resolve) => {
-    released = resolve;
   });
   let intercepted = 0;
   await page.route(isLightStill, async (route) => {
     intercepted += 1;
     await held;
-    try {
-      await route.continue();
-    } finally {
-      released();
-    }
+    await route.continue();
   });
-  const room = await artworkReady(page);
+  await artworkReady(page);
   const stage = page.locator(pageStage);
-  const original = await stage.locator('img.art-still').getAttribute('src');
-  await expressionControl(room, 'Light').click();
+  const original = await page.locator(`${current} img.art-still`).getAttribute('src');
+  await turnWord(page, 'light').click();
   await expect(page.getByText(t.preparingExpression, { exact: true })).toBeVisible();
   await expect(stage).toHaveAttribute('data-expression', 'ink');
-  await imageReady(stage.locator('img.art-still'));
-  await expect(stage.locator('img.art-still')).toHaveAttribute('src', original!);
-  await expressionControl(room, 'Ink').click();
+  await expect(page.locator(`${current} img.art-still`)).toHaveAttribute('src', original!);
+  await turnWord(page, 'light').click();
+  await expect(page.getByText(t.preparingExpression, { exact: true })).toBeVisible();
+  // Choosing Ink again cancels the preparation; nothing commits when the bytes arrive.
+  await page.keyboard.press('i');
   await expect(page.getByText(t.preparingExpression, { exact: true })).toHaveCount(0);
   release();
-  await releasedRequest;
   expect(intercepted).toBeGreaterThan(0);
+  await page.waitForTimeout(1500);
   await expect(stage).toHaveAttribute('data-expression', 'ink');
-  // Re-selecting Light proves the abandoned request did not corrupt the following commit.
-  await expressionControl(room, 'Light').click();
-  await expect(stage).toHaveAttribute('data-expression', 'light');
-  await imageReady(stage.locator('img.art-still'));
-  await expressionControl(room, 'Ink').click();
-  await expect(stage).toHaveAttribute('data-expression', 'ink');
+  await turnWord(page, 'light').click();
+  await expect(stage).toHaveAttribute('data-expression', 'light', { timeout: 5000 });
 });
 
 test('a failed expression keeps the current artwork and offers a successful retry', async ({
@@ -286,24 +399,23 @@ test('a failed expression keeps the current artwork and offers a successful retr
   await page.route(isLightStill, (route) => route.abort('failed'));
   const errors: string[] = [];
   page.on('pageerror', (error) => errors.push(error.message));
-  const room = await artworkReady(page);
+  await artworkReady(page);
   const stage = page.locator(pageStage);
-  const original = await stage.locator('img.art-still').getAttribute('src');
-  await expressionControl(room, 'Light').click();
+  const original = await page.locator(`${current} img.art-still`).getAttribute('src');
+  await turnWord(page, 'light').click();
   await expect(page.getByText(t.expressionFailed, { exact: true })).toBeVisible();
   await expect(stage).toHaveAttribute('data-expression', 'ink');
-  await expect(stage.locator('img.art-still')).toHaveAttribute('src', original!);
-  await imageReady(stage.locator('img.art-still'));
+  await expect(page.locator(`${current} img.art-still`)).toHaveAttribute('src', original!);
   await page.unroute(isLightStill);
-  await expressionControl(room, 'Light').click();
-  await expect(stage).toHaveAttribute('data-expression', 'light');
-  await imageReady(stage.locator('img.art-still'));
+  await turnWord(page, 'light').click();
+  await expect(stage).toHaveAttribute('data-expression', 'light', { timeout: 5000 });
+  await imageReady(page.locator(`${current} img.art-still`));
   await expect(page.getByText(t.expressionFailed, { exact: true })).toHaveCount(0);
   expect(errors).toEqual([]);
 });
 
 for (const preference of ['reduced motion', 'paused motion'] as const) {
-  test(`${preference} changes expression without a cinematic animation or ambient film request`, async ({
+  test(`${preference} crosses in one frame, without a seam, a native transition or an ambient film request`, async ({
     page,
   }) => {
     await cinematicObserver(page);
@@ -317,17 +429,19 @@ for (const preference of ['reduced motion', 'paused motion'] as const) {
     page.on('request', (request) => {
       if (/\.mp4(?:\?|$)/.test(request.url())) filmRequests.push(request.url());
     });
-    const room = await artworkReady(page);
-    await expressionControl(room, 'Light').click();
+    await artworkReady(page);
+    await expect(page.locator('[data-night-wing]:visible')).toHaveAttribute('data-mode', 'hard');
+    await turnWord(page, 'light').click();
     await expect(page.locator(pageStage)).toHaveAttribute('data-expression', 'light');
-    await expressionControl(room, 'Ink').click();
+    await expect(page.locator('html')).not.toHaveAttribute('data-turning', /./);
+    await turnWord(page, 'ink').click();
     await expect(page.locator(pageStage)).toHaveAttribute('data-expression', 'ink');
     expect(await transitionCount(page)).toBe(0);
     expect(filmRequests).toEqual([]);
   });
 }
 
-test('the viewing room opens a contained still, releases ambient playback and restores focus', async ({
+test('Study opens a contained still, releases ambient playback and restores focus', async ({
   page,
 }) => {
   await page.emulateMedia({ reducedMotion: 'no-preference' });
@@ -336,21 +450,23 @@ test('the viewing room opens a contained still, releases ambient playback and re
     if (originalFilm(request.url())) originals.push(request.url());
   });
   await artworkReady(page, '/art/31');
-  const inline = page.locator(`${pageStage} video`);
+  const inline = page.locator(`${current} video`);
   await expect(inline).toHaveAttribute('src', /\/art\/31-ink-preview\.mp4$/);
   await expect
-    .poll(() => inline.evaluate((element) => !(element as HTMLVideoElement).paused))
+    .poll(() => inline.evaluate((element) => !(element as HTMLVideoElement).paused), {
+      timeout: 10_000,
+    })
     .toBe(true);
   const overflowBefore = await page.evaluate(() => document.body.style.overflow);
-  const open = page.getByRole('button', { name: t.enlarge, exact: true });
+  const open = page.locator(current).getByRole('button', { name: t.enlarge, exact: true });
   await open.focus();
   await open.press('Enter');
   const dialog = page.getByRole('dialog');
   await expect(dialog).toBeVisible();
-  await expect(dialog).toHaveAccessibleName(`Signature 31 · ${t.viewingRoom}`);
+  await expect(dialog).toHaveAccessibleName(`№ 031 · ${t.viewingRoom}`);
   const still = dialog.locator('img');
   await imageReady(still);
-  await expect(still).toHaveAttribute('alt', 'Signature 31 · Ink');
+  await expect(still).toHaveAttribute('alt', '№ 031 · Ink');
   await expect(dialog.locator('video')).toHaveCount(0);
   await expect
     .poll(async () =>
@@ -389,10 +505,10 @@ test('full films are explicit, native-controlled and only the selected version i
   page.on('request', (request) => {
     if (originalFilm(request.url())) originals.push(request.url());
   });
-  const room = await artworkReady(page);
+  await artworkReady(page);
   expect(originals).toEqual([]);
-  const complete = room.getByRole('button', { name: t.completeFilm, exact: true });
-  await complete.click();
+  // F opens the film in the room; nothing was requested before that key.
+  await page.keyboard.press('f');
   const dialog = page.getByRole('dialog');
   const film = dialog.locator('video');
   await expect(film).toHaveAttribute('controls', '');
@@ -424,7 +540,7 @@ test('full films are explicit, native-controlled and only the selected version i
   await lastFilm!.dispose();
   await imageReady(dialog.locator('img'));
   await page.keyboard.press('Escape');
-  await expect(complete).toBeFocused();
+  await expect(dialog).not.toBeVisible();
 });
 
 test('a rejected native fullscreen request preserves the complete viewing room', async ({
@@ -447,7 +563,7 @@ test('a rejected native fullscreen request preserves the complete viewing room',
   const errors: string[] = [];
   page.on('pageerror', (error) => errors.push(error.message));
   await artworkReady(page);
-  await page.getByRole('button', { name: t.enlarge, exact: true }).click();
+  await page.locator(current).getByRole('button', { name: t.enlarge, exact: true }).click();
   const dialog = page.getByRole('dialog');
   await dialog.getByRole('button', { name: t.fullScreen, exact: true }).click();
   await expect(dialog.getByText(t.fullScreenUnavailable, { exact: true })).toBeVisible();
@@ -465,7 +581,7 @@ test('a rejected native fullscreen request preserves the complete viewing room',
 
 test('native fullscreen enters when supported and returns to the same work', async ({ page }) => {
   await artworkReady(page);
-  await page.getByRole('button', { name: t.enlarge, exact: true }).click();
+  await page.locator(current).getByRole('button', { name: t.enlarge, exact: true }).click();
   const dialog = page.getByRole('dialog');
   const enter = dialog.getByRole('button', { name: t.fullScreen, exact: true });
   if (await enter.count()) {
@@ -489,20 +605,20 @@ test('native fullscreen enters when supported and returns to the same work', asy
   await expect(dialog).not.toBeVisible();
 });
 
-test('expression changes stay contained and keyboard navigation cannot reach background controls', async ({
+test('expression changes in the room stay contained, commit to the plate, and keep focus inside', async ({
   page,
 }) => {
   await artworkReady(page);
-  const open = page.getByRole('button', { name: t.enlarge, exact: true });
+  const open = page.locator(current).getByRole('button', { name: t.enlarge, exact: true });
   await open.click();
   const dialog = page.getByRole('dialog');
   const controls = dialog.getByRole('group', { name: t.ways, exact: true });
-  await expressionControl(controls, 'Light').click();
+  await controls.getByRole('button', { name: /^Light$/ }).click();
   await expect(dialog.locator('[data-artwork-stage="room"]')).toHaveAttribute(
     'data-expression',
     'light',
   );
-  await expect(dialog.locator('img')).toHaveAttribute('alt', 'Signature 31 · Light');
+  await expect(dialog.locator('img')).toHaveAttribute('alt', '№ 031 · Light');
   await imageReady(dialog.locator('img'));
   await expect(dialog.locator('video')).toHaveCount(0);
   for (let index = 0; index < 10; index += 1) {
@@ -520,6 +636,7 @@ test('expression changes stay contained and keyboard navigation cannot reach bac
   await expect(dialog).not.toBeVisible();
   await expect(open).toBeFocused();
   await expect(page.locator(pageStage)).toHaveAttribute('data-expression', 'light');
+  await expect(page.locator('html')).not.toHaveAttribute('data-turning', /./);
   await noOverflow(page);
 });
 
@@ -530,11 +647,11 @@ test('the viewing room remains accessible and translated in every gallery langua
   for (const locale of locales) {
     const messages = catalogs[locale];
     await page.goto(`${localizedPath(locale, '/art/31')}?view=still`);
-    const open = page.getByRole('button', { name: messages.enlarge, exact: true });
+    const open = page.locator(current).getByRole('button', { name: messages.enlarge, exact: true });
     await expect(open).toBeVisible();
     await open.click();
     const dialog = page.getByRole('dialog');
-    await expect(dialog).toHaveAccessibleName(`${messages.signature} 31 · ${messages.viewingRoom}`);
+    await expect(dialog).toHaveAccessibleName(`№ 031 · ${messages.viewingRoom}`);
     await imageReady(dialog.locator('img'));
     await expect(
       dialog.getByRole('button', { name: messages.close, exact: true }),

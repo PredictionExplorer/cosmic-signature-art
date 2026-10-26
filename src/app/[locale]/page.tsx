@@ -1,67 +1,50 @@
-import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { isLocale, localizedPath } from '@/lib/i18n/routing';
+import { isLocale } from '@/lib/i18n/routing';
 import { messages } from '@/lib/i18n/messages';
 import { getCuratedArtwork } from '@/lib/art/catalog';
 import { inlineCuratedPreview } from '@/lib/art/inline-preview';
+import { workOfTheDay } from '@/lib/art/work-of-the-day';
 import { metadata } from '@/lib/site';
-import { Passage } from '@/components/passage';
-import { WorkGrid } from '@/components/work-grid';
+import { ArtworkViewer } from '@/components/artwork-viewer';
+
+/** The day's work follows the UTC date; the page is regenerated within the hour. */
+export const revalidate = 3600;
+
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
   if (!isLocale(locale)) return {};
   const t = messages(locale);
-  return metadata(locale, '/', `${t.shape} ${t.ofMotion}`, t.intro);
+  return metadata(locale, '/', `${t.shape} ${t.ofMotion}`, t.statementLine);
 }
+
+/**
+ * The home opens on the day's work: Screen 1 is its Ink plate with the one line, Screen 2
+ * the same orbit in Light, one Turn away. The Dusk, the home's one automatic event, waits
+ * behind NEXT_PUBLIC_HOME_DUSK until the owner has watched naive visitors meet it.
+ */
 export default async function Home({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
   if (!isLocale(locale)) notFound();
   const t = messages(locale);
+  const work = getCuratedArtwork(workOfTheDay())!;
   return (
-    <main id="main">
-      <Passage
-        artwork={getCuratedArtwork(23)!}
-        locale={locale}
+    <main id="main" className="home">
+      {/* No headline on the wall; the page still names itself for a screen reader. */}
+      <h1 className="sr-only">
+        {t.shape} {t.ofMotion}
+      </h1>
+      <ArtworkViewer
+        artwork={work}
         t={t}
-        previewSrc={inlineCuratedPreview(23, 'ink')}
+        locale={locale}
+        presentation="home"
+        inlinePreviews={{
+          ink: inlineCuratedPreview(work.id, 'ink'),
+          light: inlineCuratedPreview(work.id, 'light'),
+        }}
+        dusk={process.env.NEXT_PUBLIC_HOME_DUSK === '1'}
       />
-      <section className="editorial-intro section-wrap">
-        <p className="eyebrow">{t.choreography}</p>
-        <h2>
-          {t.follow}
-          <br />
-          <em>{t.movesYou}</em>
-        </h2>
-        <div>
-          <p>{t.intro}</p>
-          <Link href={localizedPath(locale, '/process')} className="text-link">
-            {t.exploreProcess}
-          </Link>
-        </div>
-      </section>
-      <section className="home-selection section-wrap">
-        <div className="section-heading">
-          <p className="eyebrow">{t.selectedWorks}</p>
-          <Link className="text-link" href={localizedPath(locale, '/collection')}>
-            {t.viewCollection}
-          </Link>
-        </div>
-        <WorkGrid works={[getCuratedArtwork(31)!, getCuratedArtwork(35)!]} locale={locale} t={t} />
-      </section>
-      <section className="auction-invitation section-wrap">
-        <p className="eyebrow">{t.auctionKicker}</p>
-        <h2>
-          {t.eightWorks}
-          <br />
-          <em>{t.continuingStory}</em>
-        </h2>
-        <div>
-          <p>{t.auctionIntro}</p>
-          <Link href={localizedPath(locale, '/auctions')} className="text-link">
-            {t.exploreAuctions}
-          </Link>
-        </div>
-      </section>
+      {/* Screens 3–6 are composed from the home-screens workstream after merge. */}
     </main>
   );
 }
