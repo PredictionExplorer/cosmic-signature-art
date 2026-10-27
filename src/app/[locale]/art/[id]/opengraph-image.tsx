@@ -6,10 +6,9 @@ import { en } from '@/lib/i18n/en';
 import { indexedWork, indexedAssetUrl } from '@/lib/art/collection-index';
 import { artworkFromIndex } from '@/lib/art/collection-cards';
 import { getPlateGround } from '@/lib/art/plate-records';
-import { rungFor } from '@/lib/art/still-ladder';
 import { parseArtworkId } from '@/lib/art/validation';
 import { workNumber } from '@/lib/art/number';
-import { getInterpretation } from '@/lib/art/types';
+import { getInterpretation, rungFor } from '@/lib/art/types';
 import { CARD, SharingCard, cardFonts, verifiedPicture } from '@/components/sharing-card';
 
 /**

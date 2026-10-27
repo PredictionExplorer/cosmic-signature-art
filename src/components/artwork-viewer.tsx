@@ -931,7 +931,7 @@ function ArtworkViewerSession({
           expressionFailed={!!failedExpression}
           onExpressionChange={selectExpression}
           initialFilm={room === 'film'}
-          startAt={time.current}
+          startAt={ended ? 0 : time.current}
           locale={locale}
           onClose={closeRoom}
           returnFocusRef={returnFocusRef}

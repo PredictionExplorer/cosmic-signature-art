@@ -2,7 +2,8 @@ import { describe, expect, it } from 'vitest';
 import { fireEvent, render, screen, within } from '@testing-library/react';
 import { getCuratedArtwork } from '@/lib/art/catalog';
 import { en } from '@/lib/i18n/en';
-import { ArtworkGatefold, sourceSet } from './artwork-gatefold';
+import { ArtworkGatefold } from './artwork-gatefold';
+import { stillSourceSet as sourceSet } from '@/lib/art/types';
 
 const work = getCuratedArtwork(31)!;
 

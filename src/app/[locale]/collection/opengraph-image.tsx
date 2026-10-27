@@ -5,8 +5,7 @@ import { messages } from '@/lib/i18n/messages';
 import { fill } from '@/lib/i18n/format';
 import { getCuratedArtwork } from '@/lib/art/catalog';
 import { collectionIndex } from '@/lib/art/collection-index';
-import { rungFor } from '@/lib/art/still-ladder';
-import { getInterpretation } from '@/lib/art/types';
+import { getInterpretation, rungFor } from '@/lib/art/types';
 import { CARD, SharingCard, cardFonts, verifiedPicture } from '@/components/sharing-card';
 
 /** The collection's card: three plates side by side on paper and the count from the index. */

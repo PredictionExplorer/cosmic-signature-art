@@ -11,8 +11,10 @@ import {
   type PointerEvent as ReactPointerEvent,
   type WheelEvent as ReactWheelEvent,
 } from 'react';
-import type { ArtInterpretation, PlateDetail, StillRung } from '@/lib/art/types';
+import type { ArtInterpretation, PlateDetail } from '@/lib/art/types';
 import styles from './loupe.module.css';
+import { ART_HEIGHT, ART_WIDTH } from '@/lib/art/constants';
+import { rungFor } from '@/lib/art/types';
 
 /*
   The zero-pixel loupe: the published still itself, moved and scaled with CSS transforms, never
@@ -105,11 +107,6 @@ export function viewOf(pose: Pose, viewport: Size, art: Size, devicePixelRatio: 
     y1: Math.min(art.height, Math.round(toArt(viewport.height - pose.y))),
   };
 }
-/** The smallest rung at least as wide as asked, or the widest when none is; the ladder is ascending. */
-export function firstRung(rungs: StillRung[] | undefined, width: number): StillRung | undefined {
-  if (!rungs?.length) return undefined;
-  return rungs.find((rung) => rung.width >= width) ?? rungs[rungs.length - 1];
-}
 /** The double tap's ladder over the fitted plate: ×2, ×4, then native, then back to the whole. */
 export function nextStep(scale: number, fit: number, native: number) {
   const steps = [fit * 2, fit * 4].filter((step) => step < native).concat(native);
@@ -132,7 +129,7 @@ export function Loupe({
   onView?: (view: LoupeView) => void;
 }) {
   const art = useMemo(
-    () => ({ width: media.width ?? 3456, height: media.height ?? 2234 }),
+    () => ({ width: media.width ?? ART_WIDTH, height: media.height ?? ART_HEIGHT }),
     [media.width, media.height],
   );
   const viewport = useRef<HTMLDivElement>(null);
@@ -174,7 +171,7 @@ export function Loupe({
   const inertia = useRef<number | null>(null);
   const lastTap = useRef(0);
   // Narrow viewports paint the 1280 rung first; the full still takes its place once decoded.
-  const rung = firstRung(media.rungs, 1280);
+  const rung = rungFor(media.rungs, 1280);
   const rungFirst = !!rung && size.width > 0 && size.width < RUNG_FIRST_BELOW_PX;
   const source = !size.width ? undefined : rungFirst && !fullReady && rung ? rung.src : media.still;
 

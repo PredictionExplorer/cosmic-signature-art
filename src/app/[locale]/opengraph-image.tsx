@@ -5,10 +5,9 @@ import { messages } from '@/lib/i18n/messages';
 import { getCuratedArtwork } from '@/lib/art/catalog';
 import { indexedWork } from '@/lib/art/collection-index';
 import { getPlateGround } from '@/lib/art/plate-records';
-import { rungFor } from '@/lib/art/still-ladder';
 import { workOfTheDay } from '@/lib/art/work-of-the-day';
 import { workNumber } from '@/lib/art/number';
-import { getInterpretation } from '@/lib/art/types';
+import { getInterpretation, rungFor } from '@/lib/art/types';
 import { CARD, SharingCard, cardFonts, verifiedPicture } from '@/components/sharing-card';
 
 /**

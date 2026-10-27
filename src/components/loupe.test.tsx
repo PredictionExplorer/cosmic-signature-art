@@ -5,7 +5,6 @@ import {
   Loupe,
   clampPose,
   clampScale,
-  firstRung,
   fitScale,
   nativeScale,
   nextStep,
@@ -13,6 +12,7 @@ import {
   viewOf,
   zoomAbout,
 } from './loupe';
+import { rungFor } from '@/lib/art/types';
 
 const art = { width: 3456, height: 2234 };
 const viewport = { width: 1440, height: 900 };
@@ -68,11 +68,11 @@ describe('the loupe’s arithmetic', () => {
       { src: 'a', width: 1280, height: 828, sha256: 'a', bytes: 1 },
       { src: 'b', width: 1920, height: 1242, sha256: 'b', bytes: 1 },
     ];
-    expect(firstRung(rungs, 1280)?.src).toBe('a');
-    expect(firstRung(rungs, 1281)?.src).toBe('b');
-    expect(firstRung(rungs, 4000)?.src).toBe('b');
-    expect(firstRung([], 1280)).toBeUndefined();
-    expect(firstRung(undefined, 1280)).toBeUndefined();
+    expect(rungFor(rungs, 1280)?.src).toBe('a');
+    expect(rungFor(rungs, 1281)?.src).toBe('b');
+    expect(rungFor(rungs, 4000)?.src).toBe('b');
+    expect(rungFor([], 1280)).toBeUndefined();
+    expect(rungFor(undefined, 1280)).toBeUndefined();
   });
 });
 

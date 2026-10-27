@@ -4,7 +4,7 @@ import { useEffect, useEffectEvent, useRef, useState, type CSSProperties } from 
 import type { ArtFilm, ArtInterpretation } from '@/lib/art/types';
 import { getPlateGround } from '@/lib/art/plate-records';
 import type { PreviewFailure } from './collection-motion';
-import { stillSourceSet } from './artwork-media';
+import { stillSourceSet } from '@/lib/art/types';
 
 /** The last frame rests this long before the excerpt fades back to its still (--t-hold). */
 const HOLD_MS = 1200;

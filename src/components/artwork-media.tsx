@@ -12,7 +12,9 @@ import { preload } from 'react-dom';
 import { useMotion } from './motion-provider';
 import { useMediaPolicy } from './media-policy';
 import { getPlateGround } from '@/lib/art/plate-records';
-import type { ArtFilm, ArtInterpretation, StillRung } from '@/lib/art/types';
+import type { ArtFilm, ArtInterpretation } from '@/lib/art/types';
+import { ART_HEIGHT, ART_WIDTH } from '@/lib/art/constants';
+import { rungFor, stillSourceSet } from '@/lib/art/types';
 
 /** The settled still is held as an object before any film may begin (--t-hold). */
 export const HOLD_MS = 1200;
@@ -80,20 +82,7 @@ function settleImage(image: HTMLImageElement, settle: () => void) {
   else settle();
 }
 
-/** The still ladder as a srcset: the rungs, then the published still at its native width. */
-export function stillSourceSet(media?: ArtInterpretation): string | undefined {
-  if (!media?.still || !media.rungs?.length) return undefined;
-  return [
-    ...media.rungs.map((rung) => `${rung.src} ${rung.width}w`),
-    `${media.still} ${media.width ?? 3456}w`,
-  ].join(', ');
-}
-
-/** The smallest rung at least as wide as `width`, or the widest when none is. */
-function rungFor(rungs: StillRung[] | undefined, width: number): StillRung | undefined {
-  if (!rungs?.length) return undefined;
-  return rungs.find((rung) => rung.width >= width) ?? rungs[rungs.length - 1];
-}
+export { stillSourceSet };
 
 /** Where a player's frame sits in the complete film: a clip carries its own start. */
 export function filmTime(film: ArtFilm | undefined, playerTime: number): number {
@@ -408,8 +397,8 @@ function ArtworkMediaSession({
           }
           sizes={ladder ? sizes : undefined}
           alt={alt}
-          width={media?.thumbnailWidth ?? media?.width ?? 3456}
-          height={media?.thumbnailHeight ?? media?.height ?? 2234}
+          width={media?.thumbnailWidth ?? media?.width ?? ART_WIDTH}
+          height={media?.thumbnailHeight ?? media?.height ?? ART_HEIGHT}
           decoding="async"
           loading={loading}
           onError={() => {
@@ -443,8 +432,8 @@ function ArtworkMediaSession({
           srcSet={stillSet}
           sizes={stillSizes}
           alt={alt}
-          width={media?.width ?? 3456}
-          height={media?.height ?? 2234}
+          width={media?.width ?? ART_WIDTH}
+          height={media?.height ?? ART_HEIGHT}
           decoding="async"
           loading={loading}
           onLoad={(event) => settleImage(event.currentTarget, settle)}
@@ -478,8 +467,8 @@ function ArtworkMediaSession({
           srcSet={stillSet}
           sizes={stillSizes}
           alt={alt}
-          width={media.width ?? 3456}
-          height={media.height ?? 2234}
+          width={media.width ?? ART_WIDTH}
+          height={media.height ?? ART_HEIGHT}
           decoding="async"
           loading={loading}
           fetchPriority={priority ? 'high' : undefined}

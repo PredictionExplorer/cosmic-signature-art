@@ -89,9 +89,4 @@ export function withStillLadder(
   return media.map((interpretation) => lookup(work, interpretation));
 }
 
-/** The largest rung no wider than `width`, or the smallest rung when none is small enough. */
-export function rungFor(rungs: StillRung[] | undefined, width: number): StillRung | undefined {
-  if (!rungs?.length) return undefined;
-  const fitting = rungs.filter((rung) => rung.width >= width);
-  return fitting[0] ?? rungs[rungs.length - 1];
-}
+export { rungFor } from './types';

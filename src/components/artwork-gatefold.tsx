@@ -13,6 +13,8 @@ import { fill } from '@/lib/i18n/format';
 import type { Messages } from '@/lib/i18n/en';
 import type { Locale } from '@/lib/i18n/routing';
 import styles from './artwork-gatefold.module.css';
+import { ART_HEIGHT, ART_WIDTH } from '@/lib/art/constants';
+import { stillSourceSet } from '@/lib/art/types';
 
 /*
   The gatefold (vision §6, Beat 3): the Ink plate on paper beside the Light plate on black at
@@ -21,16 +23,6 @@ import styles from './artwork-gatefold.module.css';
   stacked, the night clipped at a line the hand or the keyboard moves, the way the Turn does.
   Stills only, from the ladder's rungs; nothing here plays.
 */
-const STILL_WIDTH = 3456;
-const STILL_HEIGHT = 2234;
-
-/** The rungs and the published still as one srcset, so each panel fetches what its width needs. */
-export function sourceSet(media: ArtInterpretation): string | undefined {
-  const rungs = (media.rungs ?? []).map((rung) => `${rung.src} ${rung.width}w`);
-  if (!media.still) return rungs.length ? rungs.join(', ') : undefined;
-  return [...rungs, `${media.still} ${media.width ?? STILL_WIDTH}w`].join(', ');
-}
-
 function Still({
   media,
   alt,
@@ -46,11 +38,11 @@ function Still({
     <img
       className={className}
       src={media.still}
-      srcSet={sourceSet(media)}
+      srcSet={stillSourceSet(media)}
       sizes={sizes}
       alt={alt}
-      width={media.width ?? STILL_WIDTH}
-      height={media.height ?? STILL_HEIGHT}
+      width={media.width ?? ART_WIDTH}
+      height={media.height ?? ART_HEIGHT}
       loading="lazy"
       decoding="async"
       draggable={false}

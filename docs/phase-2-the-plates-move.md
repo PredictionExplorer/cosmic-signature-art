@@ -89,6 +89,9 @@ its second view and the caption "Plate 031, in ink and in light. One orbit."
 - Sixty-frame catalogue excerpts were not cut: the 640 px excerpts are hover, focus and phone
   previews, and doubling their bytes for a hover is not worth it while the settling clips carry
   every plate's motion at 60 fps.
+- The running head speaks five words instead of four: `Exhibitions` joins Collection, Auctions,
+  Process and Statement, because the hangs and trails are rooms of the venue, not an index at
+  the back; the pocket order puts Auctions first as before.
 - The lot strip's chain line is not a live region, so it never competes with the panel's own
   transaction status in a screen reader.
 - The loupe fills the room's canvas rather than a 320 px window; it is still zero new pixels,

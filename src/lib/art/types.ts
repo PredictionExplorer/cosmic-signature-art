@@ -1,4 +1,5 @@
 /** Public, serializable art records. Safe to import from client components. */
+import { ART_WIDTH } from './constants';
 export type ArtSource = 'live' | 'curated-fallback';
 export type InterpretationId = 'light' | 'ink' | (string & {});
 /** The two authored expressions; any other interpretation id is a future medium. */
@@ -149,4 +150,19 @@ export function getInterpretation(
   id: InterpretationId,
 ): ArtInterpretation | undefined {
   return artwork.media.find((interpretation) => interpretation.id === id);
+}
+
+/** The smallest rung at least as wide as `width`, or the widest when none is; the ladder is ascending. */
+export function rungFor(rungs: StillRung[] | undefined, width: number): StillRung | undefined {
+  if (!rungs?.length) return undefined;
+  return rungs.find((rung) => rung.width >= width) ?? rungs[rungs.length - 1];
+}
+
+/** The still ladder as a srcset: the rungs, then the published still at its native width. */
+export function stillSourceSet(media?: ArtInterpretation): string | undefined {
+  if (!media?.still || !media.rungs?.length) return undefined;
+  return [
+    ...media.rungs.map((rung) => `${rung.src} ${rung.width}w`),
+    `${media.still} ${media.width ?? ART_WIDTH}w`,
+  ].join(', ');
 }

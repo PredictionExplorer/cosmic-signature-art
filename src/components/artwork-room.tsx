@@ -28,6 +28,8 @@ import { Loupe, type LoupeView } from './loupe';
 import { useMediaPolicy } from './media-policy';
 import { useMotion } from './motion-provider';
 import styles from './artwork-room.module.css';
+import { ART_HEIGHT, ART_WIDTH } from '@/lib/art/constants';
+import { stillSourceSet } from '@/lib/art/types';
 
 /*
   The chrome-less room (vision §6): the work fills 100dvh in its own material, black for Light
@@ -107,12 +109,6 @@ function tokenMs(element: Element, name: string, fallback: number): number {
 }
 
 /** The rungs and the published still as one srcset: a phone rests on the 1280 rung. */
-function sourceSet(media: ArtInterpretation) {
-  const rungs = (media.rungs ?? []).map((rung) => `${rung.src} ${rung.width}w`);
-  if (!rungs.length || !media.still) return undefined;
-  return [...rungs, `${media.still} ${media.width ?? 3456}w`].join(', ');
-}
-
 function RoomStill({
   media,
   label,
@@ -131,11 +127,11 @@ function RoomStill({
         key={attempt}
         className={styles.image}
         src={media.still}
-        srcSet={sourceSet(media)}
+        srcSet={stillSourceSet(media)}
         sizes="100vw"
         alt={label}
-        width={media.width ?? 3456}
-        height={media.height ?? 2234}
+        width={media.width ?? ART_WIDTH}
+        height={media.height ?? ART_HEIGHT}
         loading="eager"
         decoding="async"
         data-room-media
