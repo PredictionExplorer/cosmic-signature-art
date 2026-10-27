@@ -5,6 +5,7 @@ import type { ArtFilm, ArtInterpretation } from '@/lib/art/types';
 import { getPlateGround } from '@/lib/art/plate-records';
 import type { PreviewFailure } from './collection-motion';
 import { stillSourceSet } from '@/lib/art/types';
+import { clock } from '@/lib/i18n/format';
 
 /** The last frame rests this long before the excerpt fades back to its still (--t-hold). */
 const HOLD_MS = 1200;
@@ -30,13 +31,6 @@ type CollectionPreviewProps = {
 /** Only explicitly verified, compact excerpts belong in a browsing grid. */
 export function getCollectionPreviewFilm(media?: ArtInterpretation): ArtFilm | undefined {
   return media?.id === 'ink' ? media.previewFilm : undefined;
-}
-
-function clock(seconds: number) {
-  const whole = Math.max(0, Math.floor(seconds));
-  return `${Math.floor(whole / 60)
-    .toString()
-    .padStart(2, '0')}:${(whole % 60).toString().padStart(2, '0')}`;
 }
 
 /** The excerpt's true place in its source film, e.g. "00:06–00:14". */

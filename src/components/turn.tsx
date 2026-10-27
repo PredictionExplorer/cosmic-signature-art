@@ -42,7 +42,8 @@ export function seamFor(expression: string): number {
 
 const clamp = (value: number) => Math.min(100, Math.max(0, value));
 
-function tokenMs(element: HTMLElement, name: string, fallback: number): number {
+/** A duration token read from an element's computed style, in milliseconds. */
+export function tokenMs(element: Element, name: string, fallback: number): number {
   const value = getComputedStyle(element).getPropertyValue(name).trim();
   const match = /^([\d.]+)(ms|s)$/.exec(value);
   if (!match) return fallback;

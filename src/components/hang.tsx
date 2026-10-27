@@ -8,6 +8,7 @@ import type { Messages } from '@/lib/i18n/en';
 import { localizedPath, type Locale } from '@/lib/i18n/routing';
 import { ArtworkMedia } from './artwork-media';
 import styles from './hang.module.css';
+import { expressionWord } from '@/lib/i18n/format';
 
 /** A leaf is a third of the wall at rest and a little over half when chosen; a phone hangs leaves the full width. */
 export const LEAF_SIZES = '(max-width: 767px) 100vw, 55vw';
@@ -57,7 +58,7 @@ export function Hang({
           ? getPlateGround(work.id, media.id, media.stillSha256)?.tone
           : undefined;
         const state = chosen === null ? 'even' : chosen === work.id ? 'chosen' : 'other';
-        const word = media?.id === 'ink' ? t.ink : media?.id === 'light' ? t.light : media?.label;
+        const word = expressionWord(media, t);
         const style = ground ? ({ '--plate-ground': ground } as CSSProperties) : undefined;
         return (
           <Link

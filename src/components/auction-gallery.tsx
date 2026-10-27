@@ -11,7 +11,7 @@ import {
 import { getPlateGround } from '@/lib/art/plate-records';
 import { workNumber } from '@/lib/art/number';
 import { getInterpretation, type Artwork, type ArtworkResult } from '@/lib/art/types';
-import { fill } from '@/lib/i18n/format';
+import { expressionWord, fill } from '@/lib/i18n/format';
 import type { Messages } from '@/lib/i18n/en';
 import { localizedPath, type Locale } from '@/lib/i18n/routing';
 import { useCollectionMotion } from './collection-motion';
@@ -416,7 +416,7 @@ const Lots = memo(function Lots({
       {entries.map(({ id, index, media, settling, lot }) => {
         const active = activeId === id;
         const expression = media?.id ?? lotExpression(index);
-        const word = expression === 'ink' ? t.ink : expression === 'light' ? t.light : media?.label;
+        const word = expressionWord(media ?? expression, t);
         const alt = `${workNumber(id)} · ${word ?? ''}`.trim();
         const state = lot && !unavailable ? chainStateLine(lot, result.blockTime, t, locale) : null;
         const entry = entryLine(traits?.[id]);

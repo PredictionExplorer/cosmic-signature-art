@@ -21,7 +21,7 @@ import {
 } from '@/lib/art/types';
 import { getPlateGround } from '@/lib/art/plate-records';
 import { workFolio, workNumber } from '@/lib/art/number';
-import { fill, formatBytes } from '@/lib/i18n/format';
+import { clock, expressionWord, fill, filmLabel, formatBytes } from '@/lib/i18n/format';
 import type { Messages } from '@/lib/i18n/en';
 import type { Locale } from '@/lib/i18n/routing';
 import { ArtworkStage } from './artwork-stage';
@@ -32,6 +32,7 @@ import { useMotion } from './motion-provider';
 import styles from './artwork-room.module.css';
 import { ART_HEIGHT, ART_WIDTH } from '@/lib/art/constants';
 import { stillSourceSet } from '@/lib/art/types';
+import { tokenMs } from './turn';
 
 /*
   The chrome-less room (vision §6): the work fills 100dvh in its own material, black for Light
@@ -74,40 +75,9 @@ type ArtworkRoomProps = {
 type FilmMemory = Map<string, number>;
 type FilmStatus = 'loading' | 'failed' | null;
 
-function expressionLabel(media: ArtInterpretation, t: Messages) {
-  return media.id === 'ink' ? t.ink : media.id === 'light' ? t.light : media.label;
-}
-
-export function filmLabel(film: ArtFilm, t: Messages) {
-  return film.id === 'normal'
-    ? t.film
-    : film.id === 'medium'
-      ? t.longStudy
-      : film.id === 'slow'
-        ? t.extendedStudy
-        : film.id === 'sweep'
-          ? t.spectralSweep
-          : film.label;
-}
-
 /** A long study is a complete film of minutes; the normal film and the sweep are not. */
 export function isStudy(film: ArtFilm) {
   return film.id === 'medium' || film.id === 'slow';
-}
-
-/** Elapsed time in plain minutes and seconds; never the contract's hours. */
-export function clock(seconds: number) {
-  const whole = Math.max(0, Math.floor(Number.isFinite(seconds) ? seconds : 0));
-  return `${Math.floor(whole / 60)
-    .toString()
-    .padStart(2, '0')}:${(whole % 60).toString().padStart(2, '0')}`;
-}
-
-function tokenMs(element: Element, name: string, fallback: number): number {
-  const value = getComputedStyle(element).getPropertyValue(name).trim();
-  const match = /^([\d.]+)(ms|s)$/.exec(value);
-  if (!match) return fallback;
-  return parseFloat(match[1]) * (match[2] === 's' ? 1000 : 1);
 }
 
 /** The rungs and the published still as one srcset: a phone rests on the 1280 rung. */
@@ -368,7 +338,7 @@ export function ArtworkRoom({
     ? [...media.films].sort((a, b) => FILM_ORDER.indexOf(a.id) - FILM_ORDER.indexOf(b.id))
     : [];
   const film = films.find((item) => item.id === selectedFilms[media?.id ?? '']) ?? films[0];
-  const label = `${workNumber(artwork.id)} · ${media ? expressionLabel(media, t) : ''}`;
+  const label = `${workNumber(artwork.id)} · ${media ? expressionWord(media, t) : ''}`;
   const plate = media ? getPlateGround(artwork.id, media.id, media.stillSha256) : undefined;
   const tone = media?.id === 'light' ? '#000000' : (plate?.tone ?? '#f1ebdf');
   // The detail windows travel with the work's own media, bound to the still they were cut from.
@@ -756,7 +726,7 @@ export function ArtworkRoom({
                       aria-pressed={expression === item.id}
                       aria-busy={pendingExpression === item.id}
                     >
-                      {expressionLabel(item, t)}
+                      {expressionWord(item, t)}
                     </button>
                   ))}
               </div>

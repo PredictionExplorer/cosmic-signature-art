@@ -49,6 +49,7 @@ import { useSit } from './sit';
 import { useCompactWall } from './compact-wall';
 import { excerptRange } from './collection-preview';
 import styles from './artwork-viewer.module.css';
+import { clock } from '@/lib/i18n/format';
 
 /** After a film resolves into its still, nothing moves for --t-rest; then "Again". */
 const REST_MS = 8000;
@@ -123,13 +124,6 @@ function homeResolvedInSession() {
   }
 }
 const unresolvedOnServer = () => false;
-
-function clock(seconds: number) {
-  const whole = Math.max(0, Math.floor(seconds));
-  return `${Math.floor(whole / 60)
-    .toString()
-    .padStart(2, '0')}:${(whole % 60).toString().padStart(2, '0')}`;
-}
 
 function ArtworkViewerSession({
   artwork: initial,

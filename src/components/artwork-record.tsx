@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
 import type { ArtFilm, ArtInterpretation, Artwork } from '@/lib/art/types';
 import type { Messages } from '@/lib/i18n/en';
-import { formatBytes } from '@/lib/i18n/format';
+import { expressionWord, filmLabel, formatBytes } from '@/lib/i18n/format';
 import type { Locale } from '@/lib/i18n/routing';
 import { indexedAssetUrl, indexedWork, type IndexedWork } from '@/lib/art/collection-index';
 import { CopyButton } from './copy-button';
@@ -90,18 +90,6 @@ export function sentenceCase(label: string, locale: Locale) {
   return label.charAt(0).toLocaleUpperCase(locale) + label.slice(1);
 }
 
-export function filmLabel(film: ArtFilm, t: Messages) {
-  return film.id === 'normal'
-    ? t.film
-    : film.id === 'medium'
-      ? t.longStudy
-      : film.id === 'slow'
-        ? t.extendedStudy
-        : film.id === 'sweep'
-          ? t.spectralSweep
-          : film.label;
-}
-
 const indexFilmIds: Record<string, string> = {
   normal: 'main',
   medium: 'medium',
@@ -144,8 +132,7 @@ export function ArtworkSources({
   const number = new Intl.NumberFormat(locale, { maximumFractionDigits: 1 });
   const indexed = indexedWork(work.id);
   const sameSeed = !!indexed && !!work.seed && indexed.seed === work.seed;
-  const expressionName = (media: ArtInterpretation) =>
-    media.id === 'ink' ? t.ink : media.id === 'light' ? t.light : media.label;
+  const expressionName = (media: ArtInterpretation) => expressionWord(media, t);
   const line = (parts: (string | undefined)[]) => parts.filter(Boolean).join(' · ');
   /** The manifest path of a published file, "videos/web/ember.mp4", from its seed-package URL. */
   const manifestPath = (url?: string) => {

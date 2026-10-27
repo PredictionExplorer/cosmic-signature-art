@@ -6,15 +6,9 @@ import { workNumber } from '@/lib/art/number';
 import type { ArtFilm, ArtInterpretation } from '@/lib/art/types';
 import type { Messages } from '@/lib/i18n/en';
 import styles from './process.module.css';
+import { clock } from '@/lib/i18n/format';
 
 const SPECTRUM = { from: 380, to: 700 };
-
-function clock(seconds: number) {
-  const whole = Math.max(0, Math.floor(seconds));
-  return `${Math.floor(whole / 60)
-    .toString()
-    .padStart(2, '0')}:${(whole % 60).toString().padStart(2, '0')}`;
-}
 
 /**
  * The published spectral sweep, on intent only: the Light still rests until the visitor asks,

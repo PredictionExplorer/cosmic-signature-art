@@ -9,16 +9,10 @@ import { workNumber } from '@/lib/art/number';
 import type { ArtInterpretation } from '@/lib/art/types';
 import type { Messages } from '@/lib/i18n/en';
 import styles from './process.module.css';
+import { clock, expressionWord } from '@/lib/i18n/format';
 
 /** After a film resolves into its still, nothing moves for --t-rest; then "Again". */
 const REST_MS = 8000;
-
-function clock(seconds: number) {
-  const whole = Math.max(0, Math.floor(seconds));
-  return `${Math.floor(whole / 60)
-    .toString()
-    .padStart(2, '0')}:${(whole % 60).toString().padStart(2, '0')}`;
-}
 
 /**
  * A chapter's plate: the work full-bleed in its own measured tone, the film from frame 0
@@ -58,7 +52,7 @@ export function ChapterPlate({
   const film = media?.films[0];
   const ambient = !policy.constrained || explicit;
   const ground = media ? getPlateGround(artworkId, media.id, media.stillSha256) : undefined;
-  const expression = media?.id === 'ink' ? t.ink : media?.id === 'light' ? t.light : media?.label;
+  const expression = expressionWord(media, t);
   const state = !settled ? t.arriving : playing ? t.film : t.still;
   // Films answer to an explicit word whenever something keeps them still: the connection,
   // Pause or a reduced-motion preference. The word resumes ambient motion, as the viewer's does.

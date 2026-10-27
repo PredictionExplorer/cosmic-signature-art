@@ -115,9 +115,9 @@ exceptions, recorded here rather than left silent:
   dependency for it in this phase.
 - No Lighthouse step was added to CI for the lot page with the sheet open; the budgets remain
   the Phase 0 measurements, checked by hand.
-- The Sit ritual and the expression-word and clock helpers are implemented more than once
-  (the viewer, the process chapter plate, the sale); they are consolidated after this phase's
-  merge rather than across four workstreams at once.
+- The sale's lots keep their own Sit (a per-lot state with window listeners, mirrored to the
+  running head) rather than the `useSit` hook the viewer and the process chapter now share;
+  its shape differs enough that folding it in is a change of its own.
 
 ## Open for the owner (vision §8)
 

@@ -11,7 +11,7 @@ import {
 import { workFolio, workNumber } from '@/lib/art/number';
 import { getPlateGround } from '@/lib/art/plate-records';
 import type { CycleSummary } from '@/lib/art/collection-index';
-import { fill } from '@/lib/i18n/format';
+import { expressionWord, fill } from '@/lib/i18n/format';
 import type { Messages } from '@/lib/i18n/en';
 import { localizedPath, type Locale } from '@/lib/i18n/routing';
 import { ArtworkMedia } from './artwork-media';
@@ -232,8 +232,7 @@ export function PlateSequence({
                   getInterpretation(work, expression) ??
                   getInterpretation(work, 'light') ??
                   work.media[0];
-                const word =
-                  media?.id === 'ink' ? t.ink : media?.id === 'light' ? t.light : media?.label;
+                const word = expressionWord(media, t);
                 const alt = `${workNumber(work.id)} · ${word ?? ''}`.trim();
                 const label =
                   media?.id === 'ink' ? t.ink : expression === 'ink' ? t.lightOnly : t.light;

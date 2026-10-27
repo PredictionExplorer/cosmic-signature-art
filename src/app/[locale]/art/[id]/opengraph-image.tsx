@@ -10,6 +10,7 @@ import { parseArtworkId } from '@/lib/art/validation';
 import { workNumber } from '@/lib/art/number';
 import { getInterpretation, rungFor } from '@/lib/art/types';
 import { CARD, SharingCard, cardFonts, verifiedPicture } from '@/components/sharing-card';
+import { expressionWord } from '@/lib/i18n/format';
 
 /**
  * The work's sharing card: its Ink plate (the 1280 rung, hash-verified) on its measured
@@ -62,7 +63,7 @@ export default async function Image({ params }: { params: Params }) {
   const night = media.id === 'light';
   const ground =
     getPlateGround(work.id, media.id, media.stillSha256)?.tone ?? (night ? '#000000' : '#f1ebdf');
-  const word = media.id === 'ink' ? t.ink : media.id === 'light' ? t.light : media.label;
+  const word = expressionWord(media, t);
   const words = [indexed.traits.structure, indexed.traits.underlay].filter(Boolean).join(' · ');
   const label = `${workNumber(work.id)} · ${word}`;
   const monogram = `${t.seedShort} ${indexed.seed.slice(0, 6)}…${indexed.seed.slice(-4)}`;

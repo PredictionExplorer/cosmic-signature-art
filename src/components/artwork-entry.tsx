@@ -2,14 +2,14 @@ import { Suspense, type ReactNode } from 'react';
 import type { Locale } from '@/lib/i18n/routing';
 import type { Messages } from '@/lib/i18n/en';
 import { localizedPath } from '@/lib/i18n/routing';
-import { fill } from '@/lib/i18n/format';
+import { expressionWord, fill, filmLabel } from '@/lib/i18n/format';
 import { jsonLd, NFT_ADDRESS, SITE_URL, DEPLOYMENT_URL } from '@/lib/site';
 import { getArtworkDetails } from '@/lib/art/server';
 import { indexedWork } from '@/lib/art/collection-index';
 import { detailsFromIndexedWork, type ArtworkDetails } from '@/lib/art/details-validation';
 import { workFolio, workNumber } from '@/lib/art/number';
 import { getInterpretation, type Artwork, type ArtworkResult } from '@/lib/art/types';
-import { ArtworkSources, ChainAddress, RecordDate, filmLabel, recordTime } from './artwork-record';
+import { ArtworkSources, ChainAddress, RecordDate, recordTime } from './artwork-record';
 import { ArtworkHistorySection, type HistoryQuery } from './artwork-history';
 import recordStyles from './artwork-record.module.css';
 import styles from './artwork-entry.module.css';
@@ -262,14 +262,14 @@ export function EntryView({
   const stillHashes = work.media
     .filter((media) => media.stillSha256)
     .map((media) => ({
-      label: `${media.id === 'ink' ? t.ink : media.id === 'light' ? t.light : media.label} · ${t.still}`,
+      label: `${expressionWord(media, t)} · ${t.still}`,
       hash: media.stillSha256!,
     }));
   const filmHashes = work.media.flatMap((media) =>
     media.films
       .filter((film) => film.sourceSha256 ?? film.sha256)
       .map((film) => ({
-        label: `${media.id === 'ink' ? t.ink : media.id === 'light' ? t.light : media.label} · ${filmLabel(film, t)}`,
+        label: `${expressionWord(media, t)} · ${filmLabel(film, t)}`,
         hash: (film.sourceSha256 ?? film.sha256)!,
       })),
   );
