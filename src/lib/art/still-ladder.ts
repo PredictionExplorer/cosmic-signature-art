@@ -56,9 +56,10 @@ export function createStillLadderLookup(raw: unknown) {
   return (work: Pick<Artwork, 'id' | 'seed'>, media: ArtInterpretation): ArtInterpretation => {
     const clean = { ...media };
     delete clean.rungs;
+    delete clean.masterSha256;
     if (!work.seed || !isExpression(media.id) || !media.stillSha256) return clean;
     const expression = media.id;
-    const rungs = (entries.get(`${work.id}:${expression}`) ?? [])
+    const bound = (entries.get(`${work.id}:${expression}`) ?? [])
       .filter(
         (entry) =>
           entry.seed === work.seed &&
@@ -68,15 +69,21 @@ export function createStillLadderLookup(raw: unknown) {
           entry.src.startsWith(`/art/stills/${work.id}-${expression}-${entry.width}-`) &&
           entry.src.endsWith(`-${entry.sha256.slice(0, 16)}.webp`),
       )
-      .sort((a, b) => a.width - b.width)
-      .map<StillRung>((entry) => ({
-        src: entry.src,
-        width: entry.width,
-        height: entry.height,
-        sha256: entry.sha256,
-        bytes: entry.bytes,
-      }));
+      .sort((a, b) => a.width - b.width);
+    const rungs = bound.map<StillRung>((entry) => ({
+      src: entry.src,
+      width: entry.width,
+      height: entry.height,
+      sha256: entry.sha256,
+      bytes: entry.bytes,
+    }));
     if (rungs.length) clean.rungs = rungs;
+    // The rungs were cut from one master; its hash is theirs to vouch for, and the manifest's URL is the file.
+    const masters = new Set(bound.map((entry) => entry.masterSha256));
+    if (masters.size === 1) {
+      clean.masterSha256 = bound[0].masterSha256;
+      clean.master ??= bound[0].masterUrl;
+    }
     return clean;
   };
 }

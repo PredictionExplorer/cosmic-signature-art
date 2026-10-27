@@ -64,15 +64,17 @@ export default async function Image({ params }: { params: Params }) {
     getPlateGround(work.id, media.id, media.stillSha256)?.tone ?? (night ? '#000000' : '#f1ebdf');
   const word = media.id === 'ink' ? t.ink : media.id === 'light' ? t.light : media.label;
   const words = [indexed.traits.structure, indexed.traits.underlay].filter(Boolean).join(' · ');
+  const label = `${workNumber(work.id)} · ${word}`;
+  const monogram = `${t.seedShort} ${indexed.seed.slice(0, 6)}…${indexed.seed.slice(-4)}`;
   return new ImageResponse(
     <SharingCard
       ground={ground}
       night={night}
       pictures={[picture]}
-      label={`${workNumber(work.id)} · ${word}`}
+      label={label}
       words={words}
-      monogram={`${t.seedShort} ${indexed.seed.slice(0, 6)}…${indexed.seed.slice(-4)}`}
+      monogram={monogram}
     />,
-    { ...size, fonts: await cardFonts() },
+    { ...size, fonts: await cardFonts(locale, `${label} ${words} ${monogram}`) },
   );
 }

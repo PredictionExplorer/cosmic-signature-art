@@ -179,6 +179,14 @@ export function ArtworkSources({
               path: stillPath,
               sha256: stillHash,
             });
+          // The master's hash comes from the still ladder, which hashed the file it cut the rungs from.
+          const masterPath = manifestPath(media.master);
+          if (media.masterSha256 && masterPath)
+            verifiable.push({
+              label: `${expressionName(media)} · ${t.masterFile}`,
+              path: masterPath,
+              sha256: media.masterSha256,
+            });
           return (
             <article className={styles.edition} key={media.id}>
               <h3>{expressionName(media)}</h3>
@@ -205,8 +213,16 @@ export function ArtworkSources({
                 {media.master ? (
                   <li>
                     <a href={media.master} target="_blank" rel="noreferrer">
-                      {line([t.masterFile, fileFormat(media.master)])} ↗
+                      {line([
+                        t.masterFile,
+                        fileFormat(media.master),
+                        media.masterSha256 ? `sha256 ${shortHash(media.masterSha256)}` : undefined,
+                      ])}{' '}
+                      ↗
                     </a>
+                    {media.masterSha256 ? (
+                      <CopyButton className={styles.copy} value={media.masterSha256} {...copy} />
+                    ) : null}
                   </li>
                 ) : null}
                 {media.films.map((film) => {

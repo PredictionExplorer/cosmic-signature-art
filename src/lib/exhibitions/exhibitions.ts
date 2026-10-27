@@ -6,6 +6,7 @@ import {
   type IndexedWork,
 } from '@/lib/art/collection-index';
 import type { Messages } from '@/lib/i18n/en';
+import { fill } from '@/lib/i18n/format';
 import type { Locale } from '@/lib/i18n/routing';
 
 /**
@@ -176,4 +177,24 @@ export function exhibitionTitle(item: Exhibition, t: Messages): string {
   if (item.kind === 'hang') return t.hangTitle;
   if (item.kind === 'trail') return t[item.rule.title];
   return `${t.cycle} ${item.cycle.cycle}`;
+}
+
+/** The exhibition's kind and date, as one quiet line: "Trail · 27 October 2026". */
+export function exhibitionLine(item: Exhibition, locale: Locale, t: Messages): string {
+  const kind = item.kind === 'hang' ? t.hang : item.kind === 'trail' ? t.trail : t.cycle;
+  const date = item.hungOn
+    ? new Intl.DateTimeFormat(locale, { dateStyle: 'long', timeZone: 'UTC' }).format(
+        new Date(`${item.hungOn}T00:00:00Z`),
+      )
+    : undefined;
+  return [kind, date].filter(Boolean).join(' · ');
+}
+
+/** The one line beneath a title: a trail's rule, the hang's or cycle's count of works. */
+export function exhibitionSummary(item: Exhibition, locale: Locale, t: Messages): string {
+  if (item.kind === 'trail') return t[item.rule.rule];
+  const count = exhibitionIds(item).length;
+  return count === 1
+    ? t.oneWork
+    : fill(t.worksCount, { count: new Intl.NumberFormat(locale).format(count) });
 }

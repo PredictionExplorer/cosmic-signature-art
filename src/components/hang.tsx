@@ -9,6 +9,9 @@ import { localizedPath, type Locale } from '@/lib/i18n/routing';
 import { ArtworkMedia } from './artwork-media';
 import styles from './hang.module.css';
 
+/** A leaf is a third of the wall at rest and a little over half when chosen; a phone hangs leaves the full width. */
+export const LEAF_SIZES = '(max-width: 767px) 100vw, 55vw';
+
 /**
  * A hang: a few works on one wall, each a plate on its own measured ground. The work under
  * the hand, the focus or the first tap grows in place, and the others re-form around it a
@@ -75,7 +78,14 @@ export function Hang({
             onClick={(event) => clicked(event, work.id)}
           >
             <span className={styles.plate}>
-              <ArtworkMedia media={media} alt="" artworkId={work.id} still eager />
+              <ArtworkMedia
+                media={media}
+                alt=""
+                artworkId={work.id}
+                sizes={LEAF_SIZES}
+                still
+                eager
+              />
             </span>
             <span className={styles.caption} aria-hidden="true">
               <span className="hanging-numeral">{workFolio(work.id)}</span>

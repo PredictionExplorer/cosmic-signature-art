@@ -60,6 +60,11 @@ export interface ArtInterpretation {
   thumbnailWidth?: number;
   thumbnailHeight?: number;
   master?: string;
+  /**
+   * The published master's hash, as the still ladder recorded it when it cut the rungs; the
+   * live manifest parser carries no master hash yet, so the ladder registry is the one source.
+   */
+  masterSha256?: string;
   stillSha256?: string;
   sourceUrl?: string;
   width?: number;

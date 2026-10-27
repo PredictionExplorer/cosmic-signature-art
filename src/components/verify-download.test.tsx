@@ -59,6 +59,27 @@ describe('verify a download', () => {
     expect(await screen.findByText(en.verifyNoMatch)).toBeInTheDocument();
   });
 
+  it('says it is reading while the file is read, and says plainly when the read fails', async () => {
+    const original = Blob.prototype.arrayBuffer;
+    let fail!: (reason: Error) => void;
+    Blob.prototype.arrayBuffer = () =>
+      new Promise<ArrayBuffer>((_, reject) => {
+        fail = reject;
+      });
+    try {
+      render(<VerifyDownload files={files} t={en} />);
+      choose(new File([bytes], 'ember.mp4'));
+      const status = await screen.findByRole('status');
+      expect(status).toHaveAttribute('data-state', 'reading');
+      expect(status).toHaveTextContent('Reading ember.mp4…');
+      fail(new Error('unreadable'));
+      await screen.findByText(en.verifyFailed);
+      expect(screen.getByRole('status')).toHaveAttribute('data-state', 'failed');
+    } finally {
+      Blob.prototype.arrayBuffer = original;
+    }
+  });
+
   it('hands a very large file to the shell with the command spelled out', () => {
     render(<VerifyDownload files={files} t={en} />);
     const large = new File([], 'ember_slow.mp4');

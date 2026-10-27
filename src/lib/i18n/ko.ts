@@ -466,11 +466,11 @@ export const ko: Messages = {
   // Fork E · exhibitions, trails, sharing images, Verify a download
   exhibitions: '전시',
   exhibitionsIntro:
-    '컬렉션을 가로지르는 전시와 산책길. 각 전시에는 날짜와 서명이 있고, 각 산책길은 그것이 따르는 공개된 측정값을 밝힙니다.',
-  hang: '전시',
+    '컬렉션을 가로지르는 진열과 산책길. 각 진열에는 날짜와 서명이 있고, 각 산책길은 그것이 따르는 공개된 측정값을 밝힙니다.',
+  hang: '진열',
   trail: '산책길',
-  hungBy: '{curator} 기획',
-  hangTitle: '한 번의 전시: 023, 031, 035',
+  hungBy: '{curator} 진열',
+  hangTitle: '하나의 진열: 023, 031, 035',
   hangNote:
     '세 작품을 하나의 방으로 걸었습니다. 23번은 가볍습니다. 빛에서는 붉고 푸르고 초록인 리본, 먹에서는 옅은 소용돌이를 품은 짙은 덩이입니다. 31번은 종이 전체로 퍼져, 보라와 올리브와 장미색이 가장자리까지 닿는 먹의 장으로 이어집니다. 35번은 오른쪽 위로 기울어, 라임과 보라가 대각선으로 놓입니다. 하나를 고르면 그 자리에서 커지고, 다른 둘은 그 주위로 다시 자리를 잡습니다. 자르거나 색을 입힌 것은 없습니다. 각 판은 공개된 정지 화상이며, 스스로 측정된 바탕 위에 놓입니다.',
   theRule: '규칙',
@@ -498,7 +498,7 @@ export const ko: Messages = {
   cycleNote:
     '한 사이클의 모든 작품은 사이클이 끝날 때 하나의 거래로 각인됩니다. 사이클은 컬렉션의 장이며, 이 페이지는 걸린 그대로를 간직합니다.',
   results: '결과',
-  settledAt: '정산 완료 · {eth} ETH',
+  resultsPartial: '일부 결과를 읽을 수 없었습니다.',
   allExhibitions: '모든 전시',
   otherExhibitions: '다른 전시',
   verifyDownload: '다운로드 검증',

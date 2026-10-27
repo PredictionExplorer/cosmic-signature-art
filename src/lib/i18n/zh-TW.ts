@@ -478,7 +478,7 @@ export const zhTW: Messages = {
   cycleNote:
     '一個週期的全部作品在週期結束時以一筆交易壓印。週期是典藏的章節，本頁按其陳列之貌保留。',
   results: '結果',
-  settledAt: '已結算 · {eth} ETH',
+  resultsPartial: '部分結果無法讀取。',
   allExhibitions: '全部展覽',
   otherExhibitions: '其他展覽',
   verifyDownload: '驗證下載檔案',

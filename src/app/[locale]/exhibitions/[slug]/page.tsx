@@ -16,11 +16,12 @@ import {
   CURATOR,
   exhibition,
   exhibitionIds,
+  exhibitionLine,
+  exhibitionSummary,
   exhibitionTitle,
   exhibitions,
   formatMeasure,
 } from '@/lib/exhibitions/exhibitions';
-import { exhibitionLine, exhibitionSummary } from '../page';
 import { CycleResults } from '../cycle-results';
 import styles from '../exhibitions.module.css';
 
@@ -125,9 +126,7 @@ export default async function ExhibitionPage({ params }: { params: Params }) {
           </ol>
         </section>
       ) : null}
-      {item.kind === 'cycle' && auctionConfigured ? (
-        <CycleResults ids={ids} locale={locale} t={t} />
-      ) : null}
+      {item.kind === 'cycle' && auctionConfigured ? <CycleResults ids={ids} t={t} /> : null}
       <nav className={styles.others} aria-label={t.otherExhibitions}>
         {others.map((other) => (
           <Link key={other.slug} href={localizedPath(locale, `/exhibitions/${other.slug}`)}>

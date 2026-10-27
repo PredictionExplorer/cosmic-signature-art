@@ -4,22 +4,86 @@ import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import type { ImageResponse } from 'next/og';
 import { DEPLOYMENT_URL } from '@/lib/site';
+import type { Locale } from '@/lib/i18n/routing';
 
 /**
  * The sharing card: the work on its own measured ground, the one label line, the wordmark
  * and the seed as a monogram, composed for the 1200 × 630 frame social crawlers fetch. The
  * plate bytes are the venue's hash-verified rungs, read from the deployment and checked
- * against the registry before they are drawn; nothing is tinted or cropped. Satori needs
- * static faces, so the card is set in the static Literata and Plex Mono the site also ships.
+ * against the registry before they are drawn; nothing is tinted or cropped. The rasteriser
+ * needs static faces, so the card is set in the static Literata and Plex Mono the site also
+ * ships, and in each CJK locale's own sliced display face. The type is the site's scale at
+ * twice its size for the 1200 px frame: 24 / 30 / 36.
  */
 export const CARD = { width: 1200, height: 630 };
 type Fonts = NonNullable<ConstructorParameters<typeof ImageResponse>[1]>['fonts'];
 
+/** The sliced display face each CJK locale reads in, from the packages the site already ships. */
+const LOCALE_FACES: Partial<Record<Locale, { package: string; family: string }>> = {
+  zh: { package: 'noto-serif-sc', family: 'Noto Serif SC' },
+  'zh-TW': { package: 'noto-serif-tc', family: 'Noto Serif TC' },
+  'zh-HK': { package: 'noto-serif-hk', family: 'Noto Serif HK' },
+  ja: { package: 'shippori-mincho-b1', family: 'Shippori Mincho B1' },
+  ko: { package: 'gowun-batang', family: 'Gowun Batang' },
+};
+const fontsource = (...segments: string[]) =>
+  join(/* turbopackIgnore: true */ process.cwd(), 'node_modules/@fontsource', ...segments);
+
+/** One `@font-face` of a vendor-sliced stylesheet: its woff file and the code points it carries. */
+export interface FontSlice {
+  file: string;
+  ranges: [number, number][];
+}
+
+/** The slices a fontsource stylesheet declares, in order. */
+export function parseSlices(css: string): FontSlice[] {
+  return css
+    .split(/(?=@font-face)/)
+    .filter((block) => block.includes('@font-face'))
+    .flatMap((block) => {
+      const file = /url\(\.\/files\/([^)]+\.woff)\) format\('woff'\)/.exec(block)?.[1];
+      const ranges = /unicode-range:\s*([^;]+);/.exec(block)?.[1];
+      if (!file || !ranges) return [];
+      return [
+        {
+          file,
+          ranges: ranges.split(',').map((range): [number, number] => {
+            const [from, to] = range.trim().replace(/^U\+/i, '').split('-');
+            return [parseInt(from, 16), parseInt(to ?? from, 16)];
+          }),
+        },
+      ];
+    });
+}
+
+/** Literata carries everything below the CJK radicals: Latin, Cyrillic, the punctuation, the numero sign. */
+export const CJK_FROM = 0x2e80;
+
 /**
- * The Latin faces, and the Cyrillic slice under its own family name, because that slice is
- * where Literata keeps the numero sign and the rasteriser takes glyphs from one family only.
+ * The slices that carry the code points of `text` from the CJK radicals up, each once, in
+ * stylesheet order; the Latin, digits and punctuation on a card are Literata's.
  */
-export async function cardFonts(): Promise<Fonts> {
+export function slicesFor(slices: FontSlice[], text: string, from = CJK_FROM): FontSlice[] {
+  const needed = new Set<FontSlice>();
+  for (const character of new Set(text)) {
+    const point = character.codePointAt(0)!;
+    if (point < from) continue;
+    const slice = slices.find((candidate) =>
+      candidate.ranges.some(([from, to]) => point >= from && point <= to),
+    );
+    if (slice) needed.add(slice);
+  }
+  return slices.filter((slice) => needed.has(slice));
+}
+
+/**
+ * The faces a card needs: the Latin Literata and Plex Mono, the Cyrillic slice under its own
+ * family name because that slice is where Literata keeps the numero sign and the rasteriser
+ * takes a named family's glyphs from one file, Literata's Vietnamese slice for vi, and for a
+ * CJK locale only the slices of its own display face that the card's text touches. Every
+ * loaded face is a fallback for every glyph, so nothing is fetched at render time.
+ */
+export async function cardFonts(locale: Locale = 'en', text = ''): Promise<Fonts> {
   // Each path is a literal, so the bundler traces exactly these files into the server output.
   const [book, light, numero, mono] = await Promise.all([
     readFile(
@@ -41,12 +105,54 @@ export async function cardFonts(): Promise<Fonts> {
       ),
     ),
   ]);
-  return [
+  const fonts: NonNullable<Fonts> = [
     { name: 'Literata', weight: 400, style: 'normal', data: book },
     { name: 'Literata', weight: 300, style: 'normal', data: light },
     { name: 'Literata Numero', weight: 300, style: 'normal', data: numero },
     { name: 'IBM Plex Mono', weight: 400, style: 'normal', data: mono },
   ];
+  if (locale === 'vi') {
+    const [regular, thin] = await Promise.all([
+      readFile(
+        join(
+          process.cwd(),
+          'node_modules/@fontsource/literata/files/literata-vietnamese-400-normal.woff',
+        ),
+      ),
+      readFile(
+        join(
+          process.cwd(),
+          'node_modules/@fontsource/literata/files/literata-vietnamese-300-normal.woff',
+        ),
+      ),
+    ]);
+    fonts.push(
+      { name: 'Literata Vietnamese', weight: 400, style: 'normal', data: regular },
+      { name: 'Literata Vietnamese', weight: 300, style: 'normal', data: thin },
+    );
+  }
+  const face = LOCALE_FACES[locale];
+  if (face) {
+    // The sliced faces are read by name at render time; next.config.ts traces them into the output.
+    const slices = slicesFor(await parseSlicesOf(face.package), text);
+    const files = await Promise.all(
+      slices.map((slice) => readFile(fontsource(face.package, 'files', slice.file))),
+    );
+    files.forEach((data, index) =>
+      fonts.push({ name: `${face.family} ${index + 1}`, weight: 400, style: 'normal', data }),
+    );
+  }
+  return fonts;
+}
+
+const sliceTables = new Map<string, Promise<FontSlice[]>>();
+function parseSlicesOf(pkg: string): Promise<FontSlice[]> {
+  let table = sliceTables.get(pkg);
+  if (!table) {
+    table = readFile(fontsource(pkg, '400.css'), 'utf8').then(parseSlices);
+    sliceTables.set(pkg, table);
+  }
+  return table;
 }
 
 /**
@@ -119,7 +225,7 @@ export function SharingCard({
         background: ground,
         color: colours.type,
         fontFamily: 'Literata',
-        padding: 48,
+        padding: 54,
       }}
     >
       <div style={{ flex: 1, display: 'flex', gap: 2, minWidth: 0 }}>
@@ -146,17 +252,26 @@ export function SharingCard({
       <div
         style={{
           width: 330,
-          marginLeft: 48,
+          marginLeft: 54,
           display: 'flex',
           flexDirection: 'column',
           justifyContent: 'space-between',
         }}
       >
-        <div style={{ display: 'flex', fontSize: 26, fontWeight: 300, letterSpacing: 1 }}>
+        {/* The wordmark as the site sets it: small capitals at the folio stop, twice over for 1200 px. */}
+        <div
+          style={{
+            display: 'flex',
+            fontSize: 24,
+            fontWeight: 400,
+            letterSpacing: '0.12em',
+            textTransform: 'uppercase',
+          }}
+        >
           Cosmic Signature
         </div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
-          <div style={{ display: 'flex', fontSize: 44, fontWeight: 300, lineHeight: 1.1 }}>
+          <div style={{ display: 'flex', fontSize: 36, fontWeight: 300, lineHeight: 1.2 }}>
             {label.startsWith('№') ? (
               <>
                 <span style={{ fontFamily: 'Literata Numero' }}>№</span>
@@ -170,7 +285,7 @@ export function SharingCard({
             <div
               style={{
                 display: 'flex',
-                fontSize: 22,
+                fontSize: 30,
                 lineHeight: 1.4,
                 color: colours.muted,
               }}
@@ -183,7 +298,7 @@ export function SharingCard({
           style={{
             display: 'flex',
             fontFamily: 'IBM Plex Mono',
-            fontSize: 18,
+            fontSize: 24,
             color: colours.muted,
           }}
         >

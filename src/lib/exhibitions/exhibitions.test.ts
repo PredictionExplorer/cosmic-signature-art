@@ -9,6 +9,8 @@ import {
   TRAIL_SIZE,
   exhibition,
   exhibitionIds,
+  exhibitionLine,
+  exhibitionSummary,
   exhibitionTitle,
   exhibitions,
   formatMeasure,
@@ -96,5 +98,21 @@ describe('the exhibitions', () => {
     expect(exhibitionTitle(all[1], en)).toBe(en.trailLongCurve);
     expect(exhibitionTitle(all[5], en)).toBe('Cycle 0');
     expect(exhibitionIds(all[1])).toEqual(trailMembers(TRAILS[0]).map((member) => member.work.id));
+  });
+});
+
+describe('the lines beneath a title', () => {
+  it('state the kind and date, and a rule or a count, in the visitor’s words', () => {
+    const all = exhibitions();
+    const hang = all[0];
+    const cycle = all[5];
+    if (hang.kind !== 'hang' || cycle.kind !== 'cycle') throw new Error('the order changed');
+    expect(exhibitionLine(hang, 'en', en)).toBe('Hang · October 27, 2026');
+    expect(exhibitionLine(all[1], 'en', en)).toBe('Trail · October 27, 2026');
+    expect(exhibitionLine(cycle, 'en', en)).toMatch(/^Cycle · /);
+    expect(exhibitionLine({ ...cycle, hungOn: undefined }, 'en', en)).toBe('Cycle');
+    expect(exhibitionSummary(all[1], 'en', en)).toBe(en.trailLongCurveRule);
+    expect(exhibitionSummary(hang, 'en', en)).toBe('3 works');
+    expect(exhibitionSummary({ ...hang, ids: [31] }, 'en', en)).toBe(en.oneWork);
   });
 });

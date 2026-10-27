@@ -1,58 +1,80 @@
 'use client';
-import { useEffect, useState } from 'react';
-import { formatEther } from 'viem';
-import { readAuction } from '@/lib/auction/client';
+import { useEffect, useRef, useState } from 'react';
+import { readBatch } from '@/lib/auction/client';
+import { formatEth } from '@/lib/auction/catalogue';
+import { collectCycleLots } from '@/lib/exhibitions/results';
 import { workNumber } from '@/lib/art/number';
-import { fill } from '@/lib/i18n/format';
 import type { Messages } from '@/lib/i18n/en';
-import type { Locale } from '@/lib/i18n/routing';
 import styles from './exhibitions.module.css';
 
+/** The read begins when the section is this close to the viewport. */
+const NEAR_PX = 200;
+
 /**
- * A cycle's results, read from the configured contract: one quiet mono line per settled
- * lot, nothing for a lot that has not settled and nothing at all while no lot has. The
- * page mounts this only when a contract is configured; an unreachable chain prints nothing
- * rather than an apology, because the works above are the exhibition.
+ * A cycle's results, read from the configured contract once the section nears the
+ * viewport: one quiet mono line per settled lot, the exact chain amount as the catalogue
+ * states it, nothing for a lot that has not settled, and one line more when a batch could
+ * not be read. The page mounts this only when a contract is configured; while no lot has
+ * settled and every batch was read it prints nothing at all, because the works above are
+ * the exhibition.
  */
-export function CycleResults({ ids, locale, t }: { ids: number[]; locale: Locale; t: Messages }) {
-  const [settled, setSettled] = useState<{ id: number; eth: string }[]>([]);
+export function CycleResults({ ids, t }: { ids: number[]; t: Messages }) {
+  const section = useRef<HTMLElement>(null);
+  const [near, setNear] = useState(false);
+  const [results, setResults] = useState<{
+    settled: { id: number; price: string }[];
+    partial: boolean;
+  } | null>(null);
   useEffect(() => {
-    let live = true;
-    const results: { id: number; eth: string }[] = [];
-    let next = 0;
-    async function worker() {
-      while (live && next < ids.length) {
-        const id = ids[next++];
-        try {
-          const snapshot = await readAuction(id);
-          if (snapshot.lot.settled && snapshot.lot.highestBid > 0n)
-            results.push({
-              id,
-              eth: new Intl.NumberFormat(locale, { maximumFractionDigits: 5 }).format(
-                Number(formatEther(snapshot.lot.highestBid)),
-              ),
-            });
-        } catch {
-          /* A lot that cannot be read has no result to show. */
-        }
-      }
+    const node = section.current;
+    if (!node || typeof IntersectionObserver === 'undefined') {
+      setNear(true);
+      return;
     }
-    void Promise.all([worker(), worker()]).then(() => {
-      if (live) setSettled([...results].sort((a, b) => a.id - b.id));
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) setNear(true);
+      },
+      { rootMargin: `${NEAR_PX}px` },
+    );
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, []);
+  useEffect(() => {
+    if (!near) return;
+    let live = true;
+    void collectCycleLots(ids, readBatch).then(({ lots, partial }) => {
+      if (!live) return;
+      const settled = [...lots]
+        .filter(([, lot]) => lot.settled && lot.highestBid > 0n)
+        .map(([id, lot]) => ({ id, price: formatEth(lot.highestBid) }))
+        .sort((a, b) => a.id - b.id);
+      setResults({ settled, partial });
     });
     return () => {
       live = false;
     };
-  }, [ids, locale]);
-  if (settled.length === 0) return null;
+  }, [near, ids]);
+  const shown = results && (results.settled.length > 0 || results.partial);
   return (
-    <section className={styles.results} aria-label={t.results}>
-      <h2 className="eyebrow">{t.results}</h2>
-      {settled.map((lot) => (
-        <p key={lot.id}>
-          {workNumber(lot.id)} · {fill(t.settledAt, { eth: lot.eth })}
-        </p>
-      ))}
+    <section
+      ref={section}
+      className={styles.results}
+      aria-label={t.results}
+      hidden={!shown}
+      data-results={results ? (results.partial ? 'partial' : 'read') : 'pending'}
+    >
+      {shown ? (
+        <>
+          <h2 className="eyebrow">{t.results}</h2>
+          {results.settled.map((lot) => (
+            <p key={lot.id}>
+              {workNumber(lot.id)} · {t.settled} · {lot.price}
+            </p>
+          ))}
+          {results.partial ? <p className={styles.resultsNote}>{t.resultsPartial}</p> : null}
+        </>
+      ) : null}
     </section>
   );
 }

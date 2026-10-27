@@ -3,6 +3,24 @@ const nextConfig: NextConfig = {
   poweredByHeader: false,
   reactStrictMode: true,
   images: { remotePatterns: [{ protocol: 'https', hostname: 'a1.cosmicsignature.com' }] },
+  // The sharing cards read a CJK locale's sliced face by name at render time
+  // (src/components/sharing-card.tsx), which no bundler can trace; the slices and their
+  // range tables travel with the card routes.
+  outputFileTracingIncludes: Object.fromEntries(
+    ['/**/opengraph-image', '/**/twitter-image'].map((route) => [
+      route,
+      [
+        'noto-serif-sc',
+        'noto-serif-tc',
+        'noto-serif-hk',
+        'shippori-mincho-b1',
+        'gowun-batang',
+      ].flatMap((face) => [
+        `./node_modules/@fontsource/${face}/400.css`,
+        `./node_modules/@fontsource/${face}/files/*-400-normal.woff`,
+      ]),
+    ]),
+  ),
   async headers() {
     return [
       {

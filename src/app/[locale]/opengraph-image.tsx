@@ -33,17 +33,19 @@ export default async function Image({ params }: { params: Promise<{ locale: stri
     height: rung.height,
   };
   const indexed = indexedWork(work.id);
+  const label = `${workNumber(work.id)} · ${t.ink}`;
+  const monogram = indexed
+    ? `${t.seedShort} ${indexed.seed.slice(0, 6)}…${indexed.seed.slice(-4)}`
+    : undefined;
   return new ImageResponse(
     <SharingCard
       ground={getPlateGround(work.id, 'ink', media.stillSha256)?.tone ?? '#f1ebdf'}
       night={false}
       pictures={[picture]}
-      label={`${workNumber(work.id)} · ${t.ink}`}
+      label={label}
       words={t.statementLine}
-      monogram={
-        indexed ? `${t.seedShort} ${indexed.seed.slice(0, 6)}…${indexed.seed.slice(-4)}` : undefined
-      }
+      monogram={monogram}
     />,
-    { ...size, fonts: await cardFonts() },
+    { ...size, fonts: await cardFonts(locale, `${label} ${t.statementLine} ${monogram ?? ''}`) },
   );
 }

@@ -504,7 +504,7 @@ export const en = {
   cycleNote:
     'Every work of a cycle is imprinted in one transaction at the cycle’s close. The cycle is the collection’s chapter, and this page keeps it as it was hung.',
   results: 'Results',
-  settledAt: 'Settled · {eth} ETH',
+  resultsPartial: 'Some results could not be read.',
   allExhibitions: 'All exhibitions',
   otherExhibitions: 'Other exhibitions',
   verifyDownload: 'Verify a download',

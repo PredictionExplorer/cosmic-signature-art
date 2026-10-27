@@ -141,6 +141,12 @@
   font-size: var(--fs-folio);
   color: var(--muted);
 }
+/* When a batch could not be read, the list says so in the venue's own type, not the chain's. */
+.resultsNote {
+  font-family: var(--font-serif);
+  font-size: var(--fs-control);
+  padding-top: 9px;
+}
 
 /* Onward: the other exhibitions, as rows. */
 .others {

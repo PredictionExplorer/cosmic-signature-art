@@ -20,7 +20,10 @@
   transition: flex-grow var(--t-expand) var(--ease-settle);
 }
 .leaf[data-material='light'] {
+  --type: var(--night-type);
+  --muted: #b8b5ad;
   background: var(--plate-ground, #000);
+  color: var(--type);
 }
 .leaf[data-state='chosen'] {
   flex-grow: 2.4;

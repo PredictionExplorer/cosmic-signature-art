@@ -1,5 +1,7 @@
 import type { Metadata } from 'next';
 import { locales, localizedPath, type Locale } from './i18n/routing';
+import { messages } from './i18n/messages';
+import { workNumber } from './art/number';
 /** The canonical origin: cosmic.art, or NEXT_PUBLIC_SITE_URL while that domain is pending. */
 export const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://cosmic.art';
 /**
@@ -41,7 +43,12 @@ export function metadata(
   const url = new URL(localizedPath(locale, path), SITE_URL).href;
   const chosen =
     image === undefined
-      ? { url: '/art/23-ink.webp', width: 3456, height: 2234, alt: 'Cosmic Signature 23' }
+      ? {
+          url: '/art/23-ink.webp',
+          width: 3456,
+          height: 2234,
+          alt: `${workNumber(23)} · ${messages(locale).ink}`,
+        }
       : image;
   // A relative image resolves against the serving deployment, never a domain that may not resolve.
   const preview = chosen ? { ...chosen, url: new URL(chosen.url, DEPLOYMENT_URL).href } : null;

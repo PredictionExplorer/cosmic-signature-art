@@ -469,11 +469,11 @@ export const ja: Messages = {
   // Fork E · exhibitions, trails, sharing images, Verify a download
   exhibitions: '展示',
   exhibitionsIntro:
-    'コレクションをめぐる展示と小径。いずれも日付と署名を持ち、小径はそれぞれ、よりどころとする公開された計測値を明記します。',
-  hang: '展示',
+    'コレクションをめぐる陳列と小径。いずれも日付と署名を持ち、小径はそれぞれ、よりどころとする公開された計測値を明記します。',
+  hang: '陳列',
   trail: '小径',
-  hungBy: '{curator} 構成',
-  hangTitle: 'ひとつの展示：023、031、035',
+  hungBy: '{curator} 陳列',
+  hangTitle: 'ひとつの陳列：023、031、035',
   hangNote:
     '三点を一室として掛けました。二十三番は軽やかです。光では赤・青・緑のリボン、墨では淡い渦を抱く密な塊。三十一番は紙一面に広がり、紫とオリーブと薔薇色が、縁まで達する墨の面へと譲ります。三十五番は右上へ傾き、ライムと紫が対角線に沿って走ります。ひとつを選ぶとその場で育ち、残る二点はその周りに組み直されます。切り取りも着色もありません。どの図版も、公開された静止画を、みずから測られた地色の上に置いたものです。',
   theRule: '規則',
@@ -502,7 +502,7 @@ export const ja: Messages = {
   cycleNote:
     'サイクルのすべての作品は、サイクルの終わりに一度の取引で刻印されます。サイクルはコレクションの章であり、このページは掛けられたままの姿を保ちます。',
   results: '結果',
-  settledAt: '決済済み · {eth} ETH',
+  resultsPartial: '一部の結果を読み込めませんでした。',
   allExhibitions: 'すべての展示',
   otherExhibitions: 'ほかの展示',
   verifyDownload: 'ダウンロードを検証',

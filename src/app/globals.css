@@ -907,3 +907,19 @@ dialog.sheet::backdrop {
 .art-media video.has-ended {
   transition-duration: var(--t-focus);
 }
+
+/* ── Phase 2 · Fork E ── */
+/*
+  Five words in the head. Between the phone and the desk the motion word is its glyph alone
+  (the control keeps its name) and the words close up, so a tablet in portrait still carries
+  Collection · Exhibitions · Auctions · Process · Statement, Index and the language on one row.
+*/
+@media (min-width: 768px) and (max-width: 1099px) {
+  .head-words {
+    gap: 12px;
+  }
+  .motion-toggle span,
+  .motion-word span {
+    display: none;
+  }
+}

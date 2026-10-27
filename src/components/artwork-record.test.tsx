@@ -41,7 +41,6 @@ describe('published artwork files', () => {
   it('states each file with its dimensions, size and hash from the publisher, linking the original', () => {
     const work = artwork();
     const ink = work.media.find((entry) => entry.id === 'ink')!;
-    ink.master = 'https://a1.cosmicsignature.com/images/source/ember.png';
     const facts = indexedWork(31)!.media.ink!;
     render(<ArtworkSources work={work} locale="en" t={en} />);
     const section = screen.getByRole('region', { name: en.sources });
@@ -51,10 +50,11 @@ describe('published artwork files', () => {
     const still = within(inkFiles).getByRole('link', { name: /^Still · WebP · 3,456 × 2,234 px/ });
     expect(still).toHaveAttribute('href', ink.sourceUrl);
     expect(still).toHaveTextContent(`515 kB · sha256 ${shortHash(ink.stillSha256!)} ↗`);
-    expect(within(inkFiles).getByRole('link', { name: /^Master file · PNG ↗$/ })).toHaveAttribute(
-      'href',
-      ink.master,
-    );
+    // The master's hash comes from the still ladder, which hashed the file it cut the rungs from.
+    const master = within(inkFiles).getByRole('link', {
+      name: new RegExp(`^Master file · PNG · sha256 ${shortHash(ink.masterSha256!)} ↗$`),
+    });
+    expect(master).toHaveAttribute('href', ink.master);
     const film = within(inkFiles).getByRole('link', { name: /^Film · 30 s/ });
     expect(film).toHaveAttribute('href', ink.films[0].sourceUrl);
     expect(film).not.toHaveAttribute('href', ink.films[0].src);
@@ -92,7 +92,10 @@ describe('published artwork files', () => {
     expect(
       within(verify).getByText(facts.films.main.sha256!, { selector: 'code' }),
     ).toBeInTheDocument();
-    expect(within(verify).queryByText(/Master file/)).not.toBeInTheDocument();
+    expect(
+      within(verify).getByText(`${en.ink} · ${en.masterFile} · images/source/ember.png`),
+    ).toBeInTheDocument();
+    expect(within(verify).getByText(ink.masterSha256!, { selector: 'code' })).toBeInTheDocument();
   });
 
   it('never borrows the index’s sizes for a different seed', () => {

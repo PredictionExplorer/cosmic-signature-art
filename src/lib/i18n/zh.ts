@@ -478,7 +478,7 @@ export const zh: Messages = {
   cycleNote:
     '一个周期的全部作品在周期结束时以一笔交易压印。周期是藏品的章节，本页按其陈列之貌保留。',
   results: '结果',
-  settledAt: '已结算 · {eth} ETH',
+  resultsPartial: '部分结果无法读取。',
   allExhibitions: '全部展览',
   otherExhibitions: '其他展览',
   verifyDownload: '校验下载文件',

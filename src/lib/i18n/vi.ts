@@ -474,7 +474,7 @@ export const vi: Messages = {
     'Những phòng treo và lối đi xuyên qua bộ sưu tập. Mỗi triển lãm đều ghi ngày và ký tên, và mỗi lối đi nêu rõ phép đo đã công bố mà nó đi theo.',
   hang: 'Phòng treo',
   trail: 'Lối đi',
-  hungBy: 'Treo bởi {curator}',
+  hungBy: 'Người treo: {curator}',
   hangTitle: 'Một phòng treo: 023, 031, 035',
   hangNote:
     'Ba tác phẩm, treo thành một phòng. Hai mươi ba nhẹ nhõm: trong Ánh sáng là những dải đỏ, xanh dương và xanh lục, trong Mực là một cụm đặc với những xoáy nhạt. Ba mươi mốt trải khắp tờ giấy, tím, ô liu và hồng nhường chỗ cho một trường mực chạm đến mép. Ba mươi lăm nghiêng về góc trên bên phải, vàng chanh và tím theo đường chéo. Chọn một tác phẩm, nó lớn lên tại chỗ; hai tác phẩm còn lại sắp lại quanh nó. Không gì bị cắt xén hay nhuộm màu: mỗi bản in là bức ảnh tĩnh đã công bố trên nền màu tự đo của chính nó.',
@@ -506,7 +506,7 @@ export const vi: Messages = {
   cycleNote:
     'Mọi tác phẩm của một chu kỳ được khắc trong một giao dịch khi chu kỳ khép lại. Chu kỳ là chương của bộ sưu tập, và trang này giữ nó như khi được treo.',
   results: 'Kết quả',
-  settledAt: 'Đã quyết toán · {eth} ETH',
+  resultsPartial: 'Một số kết quả không đọc được.',
   allExhibitions: 'Tất cả triển lãm',
   otherExhibitions: 'Triển lãm khác',
   verifyDownload: 'Xác minh tệp đã tải',
