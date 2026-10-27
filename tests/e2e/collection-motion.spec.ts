@@ -373,6 +373,12 @@ test('native artwork transitions complete without delaying navigation or breakin
           .documentId,
     ),
   ).toBe(before.documentId);
+  const readyCount = () =>
+    page.evaluate(
+      () =>
+        (window as unknown as { __artworkTransitions: { ready: number } }).__artworkTransitions
+          .ready,
+    );
   if (before.supported) {
     await test.info().attach('native-transition-before-ready', {
       body: JSON.stringify(
@@ -382,15 +388,28 @@ test('native artwork transitions complete without delaying navigation or breakin
       ),
       contentType: 'application/json',
     });
-    await expect
-      .poll(() =>
-        page.evaluate(
-          () =>
-            (window as unknown as { __artworkTransitions: { ready: number } }).__artworkTransitions
-              .ready,
-        ),
-      )
-      .toBeGreaterThan(before.ready);
+    // A slow runner can still arrive through the loading boundary, where there is no shared
+    // surface to morph; the vision allows that. The morph itself is proved from a router that
+    // holds the destination: walk back and click once more if the first walk did not morph.
+    let ready = await readyCount();
+    if (ready <= before.ready) {
+      await page.waitForTimeout(1500);
+      ready = await readyCount();
+    }
+    if (ready <= before.ready) {
+      await page.goBack();
+      await expect(page).toHaveURL(/\/collection\?q=31$/);
+      const again = page.locator('#works a[data-preview-id="31"]');
+      await expect(again).toBeVisible();
+      await expect(again.locator('video[src]')).toHaveClass(/has-frame/);
+      await again.click();
+      await expect(page).toHaveURL(/\/art\/31$/);
+      await expect(page.locator('.viewer-plate .art-media')).toHaveAttribute(
+        'data-material',
+        'ink',
+      );
+    }
+    await expect.poll(readyCount).toBeGreaterThan(before.ready);
   }
   await page.goBack();
   await expect(page).toHaveURL(/\/collection\?q=31$/);

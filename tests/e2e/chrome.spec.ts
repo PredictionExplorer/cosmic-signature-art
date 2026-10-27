@@ -95,10 +95,13 @@ test('a CJK locale links its own sliced display face and the Latin pages load no
   expect(requests.some((url) => url.endsWith('/fonts/cjk/ja.css'))).toBe(true);
   const loaded = await page.evaluate(async () => {
     await document.fonts.ready;
-    return [...document.fonts]
-      .filter((font) => font.status === 'loaded')
-      .map((font) => font.family)
-      .filter((family, index, all) => all.indexOf(family) === index);
+    return (
+      [...document.fonts]
+        .filter((font) => font.status === 'loaded')
+        // Firefox quotes a family name that contains spaces; the name itself is what matters.
+        .map((font) => font.family.replace(/^"|"$/g, ''))
+        .filter((family, index, all) => all.indexOf(family) === index)
+    );
   });
   expect(loaded).toEqual(
     expect.arrayContaining(['Literata Variable', 'IBM Plex Mono', 'Shippori Mincho B1']),
