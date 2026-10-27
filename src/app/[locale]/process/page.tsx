@@ -17,8 +17,12 @@ import { SweepPlayer } from './sweep-player';
 import { RoomSeams } from './room-seams';
 import styles from './process.module.css';
 
-/** The day's work turns over at UTC midnight; the essay follows it within the hour. */
-export const revalidate = 3600;
+/**
+ * The day's work turns over at UTC midnight. The essay and the home regenerate every five
+ * minutes rather than restructuring the cache around midnight, so both agree on the day's
+ * work within that window after the boundary.
+ */
+export const revalidate = 300;
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
@@ -206,7 +210,7 @@ export default async function Process({ params }: { params: Promise<{ locale: st
         data-ground="paper"
         aria-labelledby="expression-title"
       >
-        <ChapterIndex numeral="∴" word={t.ways} />
+        <ChapterIndex numeral="·" word={t.ways} />
         <div>
           <h2 id="expression-title" className="chapter">
             {t.expressionTitle}

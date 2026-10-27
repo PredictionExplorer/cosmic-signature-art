@@ -10,7 +10,15 @@ import { log } from 'node:console';
  * English venue loads none of them. The files are copied from node_modules at build time
  * into public/fonts/cjk, which is generated and never committed. Nothing is re-encoded.
  */
-const root = fileURLToPath(new URL('..', import.meta.url));
+/** The repository root; under a test runner whose module URLs are not file URLs, the working directory. */
+function repositoryRoot() {
+  try {
+    return fileURLToPath(new URL('..', import.meta.url));
+  } catch {
+    return process.cwd();
+  }
+}
+const root = repositoryRoot();
 const output = resolve(root, 'public/fonts/cjk');
 
 /** Locale → the OFL face the vision names for it. */

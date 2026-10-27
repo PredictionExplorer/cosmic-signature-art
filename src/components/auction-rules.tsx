@@ -4,7 +4,7 @@ import styles from './auction-rules.module.css';
 /** The conditions of sale as numbered paragraphs at reading size; the content is unchanged. */
 export function AuctionRules({ t }: { t: Messages }) {
   return (
-    <ol className={`auction-rules ${styles.rules}`}>
+    <ol className={`auction-rules ${styles.rules}`} role="list">
       {[
         [t.rulePreview, t.rulePreviewCopy],
         [t.ruleFirst, t.ruleFirstCopy],
@@ -14,9 +14,7 @@ export function AuctionRules({ t }: { t: Messages }) {
         [t.ruleTrust, t.ruleTrustCopy],
       ].map(([title, body], i) => (
         <li key={title} className={styles.rule}>
-          <span className={styles.sign} aria-hidden="true">
-            § {String(i + 1).padStart(2, '0')}
-          </span>
+          <span className={styles.sign}>§ {String(i + 1).padStart(2, '0')}</span>
           <div>
             <h3>{title}</h3>
             <p>{body}</p>

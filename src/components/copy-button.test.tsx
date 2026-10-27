@@ -13,12 +13,14 @@ describe('copy button', () => {
     const writeText = vi.fn().mockResolvedValue(undefined);
     vi.stubGlobal('navigator', { clipboard: { writeText } });
     render(<CopyButton value="0xabc" label="Copy" copied="Copied" />);
-    const button = screen.getByRole('button', { name: 'Copy: 0xabc' });
+    const button = screen.getByRole('button', { name: 'Copy 0xabc' });
     await act(async () => {
       fireEvent.click(button);
     });
     expect(writeText).toHaveBeenCalledWith('0xabc');
     expect(button).toHaveTextContent('Copied');
+    // The visible word is the accessible name; the value stays beside it for a screen reader.
+    expect(button).toHaveAccessibleName('Copied 0xabc');
     act(() => vi.advanceTimersByTime(1300));
     expect(button).toHaveTextContent('Copy');
   });

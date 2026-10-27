@@ -106,13 +106,23 @@ export default async function ArtworkPage({
   const query = await searchParams;
   const view = artworkViewParams(query);
   const initialStill = view.get('view') === 'still';
-  const initialExpression = view.get('expression') ?? undefined;
+  const requestedExpression = view.get('expression') ?? undefined;
   // A curated work paints at once from the identity-verified registry while its live
   // record streams, but only when the registry holds the expression the plate opens on:
   // Ink is the first encounter, and a registry with Light alone must not decide otherwise.
   // The record for any other work must arrive before the page can exist.
   const indexed = indexedWork(tokenId);
   const registry = getCuratedArtwork(tokenId);
+  // Only an expression the registry or the index publishes may shape the opening; anything
+  // else is dropped here, so the plate still opens on Ink from the registry's own bytes.
+  const published = (expression: string) =>
+    registry?.media.some((item) => item.id === expression) ||
+    (expression === 'ink' && !!indexed?.media.ink) ||
+    (expression === 'light' && !!indexed?.media.light);
+  const initialExpression =
+    requestedExpression && (!indexed && !registry ? true : published(requestedExpression))
+      ? requestedExpression
+      : undefined;
   const opening = initialExpression ?? (indexed?.media.ink || !indexed ? 'ink' : 'light');
   const curated = registry?.media.some((item) => item.id === opening && item.still)
     ? registry

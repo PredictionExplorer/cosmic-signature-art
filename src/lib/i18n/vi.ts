@@ -293,7 +293,7 @@ export const vi: Messages = {
   oneWork: '1 tác phẩm',
   imprintedOn: 'khắc dấu {date}',
   underlay: 'Lớp nền',
-  wildcard: 'Ngoại lệ',
+  wildcard: 'Wildcard',
   allocation: 'Phân bổ',
   theCollection: 'Bộ sưu tập',
   collectionControls: 'Điều khiển bộ sưu tập',
@@ -354,7 +354,7 @@ export const vi: Messages = {
   shapeOfMotion: 'Hình dáng của chuyển động.',
   statementLine:
     'Mỗi tác phẩm là một quỹ đạo ba vật thể được ghi lại, kết xuất hai lần, thành ánh sáng và thành mực. Cả hai là cùng một token.',
-  statementSigned: 'Cosmic Signature · Tháng 10, 2026',
+  statementSigned: 'Cosmic Signature · Tháng 10 năm 2026',
   livingCollection: 'Một bộ sưu tập sống gồm những quỹ đạo được ghi lại',
   cyclesSpan: 'Chu kỳ {first} đến chu kỳ {last}',
   since: 'từ {date}',

@@ -155,18 +155,19 @@ export function EntryView({
     if (!notes.some((entry) => entry.key === key)) notes.push({ key, text });
     return notes.findIndex((entry) => entry.key === key) + 1;
   };
+  // The selection line sits above the entry, so its Borda note is numbered before the traits.
+  const bordaNote = details?.borda ? note('borda', t.glossaryBorda) : 0;
   const underlayNote = details?.underlay ? note('underlay', t.glossaryUnderlay) : 0;
   const spectralNote = details?.spectralClass ? note('spectralClass', t.glossarySpectralClass) : 0;
   const wavelengthNote =
     details?.wavelengthNm !== undefined ? note('wavelength', t.glossaryWavelength) : 0;
   const chaosNote = details?.chaos !== undefined ? note('chaos', t.glossaryChaos) : 0;
   const syzygyNote = details?.syzygies !== undefined ? note('syzygies', t.glossarySyzygies) : 0;
-  const bordaNote = details?.borda ? note('borda', t.glossaryBorda) : 0;
   const massesNote = details?.masses ? note('masses', t.glossaryMasses) : 0;
   const eccentricityNote =
     details?.eccentricity !== undefined ? note('eccentricity', t.glossaryEccentricity) : 0;
 
-  const filmDurations = (ink?.films ?? [])
+  const filmDurations = (frame?.films ?? [])
     .filter((film) => film.id !== 'sweep' && film.durationSeconds)
     .map((film) => `${nf.format(Math.round(film.durationSeconds!))} s`);
   const sweep = light?.films.find((film) => film.id === 'sweep');
@@ -299,18 +300,22 @@ export function EntryView({
       </>,
     );
   if (recordAt) custody.push(fill(t.recordAsOf, { date: recordTime(recordAt, locale) }));
-  else if (work.provenance.checkedOn)
+  else if (work.provenance.checkedOn) {
+    // The placeholder leads in some locales (ja, ko): the template is split around it, never trimmed.
+    const [before, after] = t.recordAsOf.split('{date}');
     custody.push(
       <>
-        {fill(t.recordAsOf, { date: '' }).trim()}{' '}
+        {before}
         <RecordDate value={work.provenance.checkedOn} locale={locale} />
+        {after}
       </>,
     );
+  }
   const structured = {
     '@context': 'https://schema.org',
     '@type': 'VisualArtwork',
-    name: `Cosmic Signature ${work.id}`,
-    alternateName: workNumber(work.id),
+    name: workNumber(work.id),
+    alternateName: `Cosmic Signature ${folio}`,
     url: `${SITE_URL}${localizedPath(locale, `/art/${work.id}`)}`,
     image: frame?.still ? new URL(frame.still, DEPLOYMENT_URL).href : undefined,
     artform: 'Generative digital art',
@@ -439,7 +444,7 @@ export function EntryView({
         </dl>
       ) : null}
       <aside className={styles.notes} aria-label={t.glossary}>
-        <ol>
+        <ol role="list">
           {notes.map((entry, index) => (
             <li key={entry.key} id={`note-${index + 1}`}>
               <span className={styles.noteNumber} aria-hidden="true">

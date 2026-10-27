@@ -5,7 +5,6 @@ import type { Locale } from '@/lib/i18n/routing';
 import type { Messages } from '@/lib/i18n/en';
 import { auctionConfigured } from '@/lib/auction/config';
 import { localizedPath } from '@/lib/i18n/routing';
-import { fill } from '@/lib/i18n/format';
 import styles from './auction-launch.module.css';
 const AuctionGallery = dynamic(() => import('./auction-gallery'), { ssr: false });
 
@@ -28,9 +27,6 @@ export function AuctionLaunch({
     <section className={`auction-opening ${styles.opening}`} aria-label={t.contractStatusLabel}>
       <div className={styles.strip}>
         <span className="chapter">{`${t.cycle} ${number.format(cycle)}`}</span>
-        <span className={styles.count}>
-          {fill(t.saleSubtitle, { cycle: number.format(cycle) })}
-        </span>
       </div>
       <div className={styles.copy}>
         <p className="eyebrow">{t.contractStatusLabel}</p>

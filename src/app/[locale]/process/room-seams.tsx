@@ -15,14 +15,19 @@ export function RoomSeams() {
       frame = undefined;
       const centre = window.innerHeight / 2;
       let ground: Room | null = null;
+      // Past the last chapter (the colophon), the ground of the section above the centre holds,
+      // so the paper coda never snaps back to night beneath itself.
+      let above: Room | null = null;
       for (const section of document.querySelectorAll<HTMLElement>('main [data-ground]')) {
         const bounds = section.getBoundingClientRect();
+        const room: Room = section.dataset.ground === 'paper' ? 'paper' : 'night';
+        if (bounds.top <= centre) above = room;
         if (bounds.top <= centre && bounds.bottom > centre) {
-          ground = section.dataset.ground === 'paper' ? 'paper' : 'night';
+          ground = room;
           break;
         }
       }
-      overrideRoom(ground);
+      overrideRoom(ground ?? above);
     };
     const schedule = () => {
       if (frame === undefined) frame = requestAnimationFrame(measure);

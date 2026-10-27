@@ -39,10 +39,10 @@ export function CopyButton({
       type="button"
       className={className}
       onClick={() => void copy()}
-      aria-label={`${label}: ${value}`}
+      title={value}
       aria-live="polite"
     >
-      {done ? copied : label}
+      {done ? copied : label} <span className="sr-only">{value}</span>
     </button>
   );
 }

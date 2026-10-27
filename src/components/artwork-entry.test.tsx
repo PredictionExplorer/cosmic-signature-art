@@ -76,9 +76,9 @@ describe('the entry', () => {
     expect(within(custody).getByRole('link', { name: new RegExp(holder) })).toHaveTextContent(
       '0x6308…1F7C',
     );
-    expect(screen.getAllByRole('button', { name: new RegExp(`^${en.copyAddress}:`) })).toHaveLength(
-      4,
-    );
+    expect(
+      screen.getAllByRole('button', { name: new RegExp(`^${en.copyAddress} 0x`) }),
+    ).toHaveLength(4);
     expect(screen.getByText(/Arbitrum record as of Oct 26, 2026, 8:04 AM UTC/)).toBeVisible();
     expect(screen.getByText(/^Seed/)).toHaveTextContent('0x4a0d…f5b5');
     // The glossary is numbered in order of appearance, Signature and expression first.
@@ -89,7 +89,9 @@ describe('the entry', () => {
     );
     expect(notes[0]).toHaveTextContent(en.glossarySignature);
     expect(notes[1]).toHaveTextContent(en.glossaryExpression);
-    expect(notes[2]).toHaveTextContent(en.glossaryUnderlay);
+    // The selection line reads first, so its Borda note precedes the traits' notes.
+    expect(notes[2]).toHaveTextContent(en.glossaryBorda);
+    expect(notes[3]).toHaveTextContent(en.glossaryUnderlay);
     expect(notes.at(-1)).toHaveTextContent(en.glossaryEccentricity);
     expect(screen.getByRole('link', { name: 'Note 1' })).toHaveAttribute('href', '#note-1');
     expect(screen.getByRole('link', { name: 'Note 10' })).toHaveAttribute('href', '#note-10');
@@ -112,7 +114,8 @@ describe('the entry', () => {
     );
     expect(structured).toMatchObject({
       '@type': 'VisualArtwork',
-      alternateName: '№ 031',
+      name: '№ 031',
+      alternateName: 'Cosmic Signature 031',
       creator: { name: 'Cosmic Signature' },
       dateCreated: '2026-08-11',
       artworkSurface: 'kozo paper ground',

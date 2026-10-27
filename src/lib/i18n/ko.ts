@@ -326,7 +326,7 @@ export const ko: Messages = {
   glossarySignature:
     'Signature는 하나의 토큰입니다: 하나의 시드, 하나의 기록된 궤도, 그리고 공개된 그 궤도의 모든 렌더링.',
   glossaryExpression:
-    '표현은 그 궤도를 한 번 작가의 손으로 렌더링한 것입니다. 빛과 먹은 그중 둘이며, 지위는 같습니다.',
+    '표현은 그 궤도를 작가가 구성한 하나의 렌더링입니다. 빛과 먹은 그중 둘이며, 지위는 같습니다.',
   glossaryUnderlay: '밑그림 구조는 주 구조 아래에 명시된 불투명도로 그려진 보조 구조입니다.',
   glossarySpectralClass:
     '스펙트럼 등급은 가장 푸른 O에서 가장 붉은 M까지 항성 척도를 따르며, 팔레트의 주파장에서 읽어냅니다.',

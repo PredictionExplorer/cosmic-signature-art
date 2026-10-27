@@ -111,7 +111,7 @@ export function ArtworkHistoryView({
                   {t.historyUnavailable}
                 </p>
               ) : page.items.length ? (
-                <ol className={styles.timeline}>
+                <ol className={styles.timeline} role="list">
                   {page.items.map((event) => (
                     <HistoryEvent key={event.eventLogId} event={event} locale={locale} t={t} />
                   ))}

@@ -8,8 +8,12 @@ import { metadata } from '@/lib/site';
 import { ArtworkViewer } from '@/components/artwork-viewer';
 import { HomeCycle, HomeSpread, HomeStatement } from '@/components/home-screens';
 
-/** The day's work follows the UTC date; the page is regenerated within the hour. */
-export const revalidate = 3600;
+/**
+ * The day's work follows the UTC date. Both the home and the process regenerate every five
+ * minutes rather than restructuring the cache around midnight, so the two agree on the day's
+ * work within that window after the boundary.
+ */
+export const revalidate = 300;
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;

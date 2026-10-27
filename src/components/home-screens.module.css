@@ -2,6 +2,7 @@
 .screen {
   background: var(--paper);
   color: var(--paper-type);
+  --type: var(--paper-type);
   --muted: #68685e;
   --rule: color-mix(in srgb, #22231f 24%, transparent);
 }
@@ -50,7 +51,8 @@
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   column-gap: 1px;
   align-items: center;
-  padding: 54px max(var(--gutter), 6vw);
+  /* The outer padding reserves the hanging numerals (three figures at --fs-plate plus 9 px). */
+  padding: 54px max(var(--gutter), 6vw, calc(var(--fs-plate) * 2 + 9px));
   overflow-x: clip;
 }
 .leaf {

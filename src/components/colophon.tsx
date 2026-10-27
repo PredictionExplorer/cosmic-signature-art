@@ -21,7 +21,7 @@ export function Colophon({ locale, t }: { locale: Locale; t: Messages }) {
         <p>{t.colophonPlates}</p>
         <p>{t.colophonFilms}</p>
         <p>{t.processNote}</p>
-        <p>{fill(t.recordAsOf, { date: recordDate })}.</p>
+        <p>{fill(t.recordAsOf, { date: recordDate })}</p>
         <p>{t.colophonType}</p>
       </div>
       <nav className={styles.rows} aria-label={t.colophon}>

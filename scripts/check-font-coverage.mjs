@@ -11,7 +11,15 @@ import { CJK_FACES } from './build-font-subsets.mjs';
  * Vietnamese; each CJK locale adds its own face. The arrows are the one deliberate
  * exception: they are typographic devices and may come from the system.
  */
-const root = fileURLToPath(new URL('..', import.meta.url));
+/** The repository root; under a test runner whose module URLs are not file URLs, the working directory. */
+function repositoryRoot() {
+  try {
+    return fileURLToPath(new URL('..', import.meta.url));
+  } catch {
+    return process.cwd();
+  }
+}
+const root = repositoryRoot();
 const locales = ['en', 'zh', 'zh-TW', 'zh-HK', 'uk', 'ko', 'ja', 'vi'];
 export const SYSTEM_GLYPHS = new Set(['←', '→', '↑', '↓', '↗', '↙', '↻']);
 
@@ -60,7 +68,12 @@ export async function sourceFiles(directory) {
   for (const entry of entries) {
     const path = resolve(directory, entry.name);
     if (entry.isDirectory()) files.push(...(await sourceFiles(path)));
-    else if (/\.tsx$/.test(entry.name) && !/\.test\.tsx$/.test(entry.name)) files.push(path);
+    else if (
+      /\.tsx?$/.test(entry.name) &&
+      !/\.test\.tsx?$/.test(entry.name) &&
+      !/\/i18n\/[a-zA-Z-]+\.ts$/.test(path)
+    )
+      files.push(path);
   }
   return files;
 }
@@ -90,14 +103,16 @@ async function main() {
   const components = await Promise.all(
     (await sourceFiles(resolve(root, 'src'))).map((file) => readFile(file, 'utf8')),
   );
+  // Component text is extracted once here; the catalog is extracted per locale below.
   const shared = components.map(catalogText).join('');
   for (const locale of locales) {
-    const source = `${await readFile(resolve(root, `src/lib/i18n/${locale}.ts`), 'utf8')}${shared}`;
+    const catalog = await readFile(resolve(root, `src/lib/i18n/${locale}.ts`), 'utf8');
+    const source = `${catalogText(catalog)}${shared}`;
     const face = CJK_FACES[locale];
     const ranges = face
       ? [...latin, ...parseRanges(await packageCss(face.package, '400.css'))]
       : latin;
-    const missing = uncoveredCharacters(catalogText(source), ranges);
+    const missing = uncoveredCharacters(source, ranges);
     if (missing.length) {
       failures += 1;
       error(

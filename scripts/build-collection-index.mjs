@@ -274,8 +274,27 @@ export function serializeIndex(index) {
   return `${JSON.stringify(index, (key, value) => (value === undefined ? undefined : value), 2)}\n`;
 }
 
+/** A listing that shrinks is an outage or an API change until a human says otherwise. */
+export function refusesToShrink(previous, works, allowShrink) {
+  if (allowShrink) return null;
+  if (works.length === 0) return 'The origin listed no works; the index was not written';
+  if (previous && Array.isArray(previous.works) && works.length < previous.works.length)
+    return `The origin listed ${works.length} works, fewer than the ${previous.works.length} committed; pass --allow-shrink to accept`;
+  return null;
+}
+
 async function main() {
-  const lock = await open(lockPath, 'wx');
+  const allowShrink = process.argv.includes('--allow-shrink');
+  let lock;
+  try {
+    lock = await open(lockPath, 'wx');
+  } catch (failure) {
+    if (failure.code === 'EEXIST')
+      throw new Error(`Stale lock at ${lockPath}; remove it if no index build is running`, {
+        cause: failure,
+      });
+    throw failure;
+  }
   try {
     const list = await tokens();
     log(`${list.length} indexed tokens.`);
@@ -316,6 +335,8 @@ async function main() {
     } catch {
       /* First build. */
     }
+    const refusal = refusesToShrink(previous, works, allowShrink);
+    if (refusal) throw new Error(refusal);
     const today = new Date().toISOString().slice(0, 10);
     const unchanged =
       previous &&
@@ -329,8 +350,13 @@ async function main() {
       works,
     };
     const temporary = `${registryPath}.${randomUUID()}.tmp`;
-    await writeFile(temporary, serializeIndex(index));
-    await rename(temporary, registryPath);
+    try {
+      await writeFile(temporary, serializeIndex(index));
+      await rename(temporary, registryPath);
+    } catch (failure) {
+      await rm(temporary, { force: true });
+      throw failure;
+    }
     log(`Wrote ${works.length} works; checked on ${index.checkedOn}.`);
   } finally {
     await lock.close();

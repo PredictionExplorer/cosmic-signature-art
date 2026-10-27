@@ -12,3 +12,7 @@ test-results/
 
 # Generated CJK font slices (scripts/build-font-subsets.mjs)
 public/fonts/cjk/
+
+# The index builder's lock and temporary file (scripts/build-collection-index.mjs)
+src/lib/art/collection-index.json.lock
+src/lib/art/collection-index.json.*.tmp

@@ -1,12 +1,13 @@
 import Link from 'next/link';
-import { Suspense } from 'react';
-import type { Messages } from '@/lib/i18n/en';
 import { artworkSharingImage } from '@/lib/art/sharing';
 import { notFound } from 'next/navigation';
 import { isLocale, localizedPath } from '@/lib/i18n/routing';
 import { messages } from '@/lib/i18n/messages';
 import { getArtwork } from '@/lib/art/server';
 import { indexedWork } from '@/lib/art/collection-index';
+import { getCuratedArtwork } from '@/lib/art/catalog';
+import { inlineCuratedPreview } from '@/lib/art/inline-preview';
+import type { Artwork } from '@/lib/art/types';
 import { parseArtworkId } from '@/lib/art/validation';
 import { workNumber } from '@/lib/art/number';
 import { metadata } from '@/lib/site';
@@ -16,7 +17,6 @@ import { ArtworkViewer } from '@/components/artwork-viewer';
 import { AuctionAvailability, AuctionSummary } from '@/components/auction-summary';
 import { AuctionRules } from '@/components/auction-rules';
 import { artworkViewParams, type ArtworkViewQuery } from '@/lib/art/view';
-import type { Locale } from '@/lib/i18n/routing';
 import styles from '../auction-pages.module.css';
 export async function generateMetadata({
   params,
@@ -28,7 +28,8 @@ export async function generateMetadata({
   const tokenId = parseArtworkId(id);
   if (tokenId === null) return {};
   const t = messages(locale);
-  const { artwork } = await getArtwork(tokenId);
+  const { artwork, status } = await getArtwork(tokenId);
+  if (status === 'not-found') return {};
   return metadata(
     locale,
     `/auctions/${tokenId}`,
@@ -55,26 +56,47 @@ export default async function AuctionWork({
   if (tokenId === null) notFound();
   const t = messages(locale);
   const view = artworkViewParams(searchParams ? await searchParams : {});
+  const initialExpression = view.get('expression') ?? undefined;
+  const indexed = indexedWork(tokenId);
+  // A curated work paints at once from the registry while its live record streams, as on the
+  // artwork page; any other token waits for the publisher, and one it reports as not found is
+  // not a lot: no rail, no canonical record.
+  const registry = getCuratedArtwork(tokenId);
+  const opening = initialExpression ?? (indexed?.media.ink || !indexed ? 'ink' : 'light');
+  const curated = registry?.media.some((item) => item.id === opening && item.still)
+    ? registry
+    : undefined;
+  const live = getArtwork(tokenId);
+  let artwork: Artwork | null = curated ?? null;
+  if (!curated) {
+    const settled = await live;
+    if (settled.status === 'not-found') notFound();
+    artwork = settled.artwork;
+  }
   return (
     <main id="main" className={styles.lotPage}>
-      <Suspense
-        fallback={
-          <div
-            className={`loading-plate ${styles.lotLoading}`}
-            role="img"
-            aria-busy="true"
-            aria-label={workNumber(tokenId)}
-          />
-        }
-      >
-        <AuctionArtwork
-          tokenId={tokenId}
+      {artwork ? (
+        <ArtworkViewer
+          artwork={artwork}
           t={t}
           locale={locale}
+          presentation="auction"
           initialStill={view.get('view') === 'still'}
-          initialExpression={view.get('expression') ?? undefined}
+          initialExpression={initialExpression}
+          inlinePreviews={
+            curated
+              ? {
+                  ink: inlineCuratedPreview(curated.id, 'ink'),
+                  light: inlineCuratedPreview(curated.id, 'light'),
+                }
+              : undefined
+          }
+          live={curated ? live.then((result) => result.artwork) : undefined}
+          traits={{ structure: indexed?.traits.structure, underlay: indexed?.traits.underlay }}
         />
-      </Suspense>
+      ) : (
+        <p className="notice section-wrap">{t.mediaUnavailable}</p>
+      )}
       <section className={styles.lotLayout} aria-label={t.auctionRoom}>
         <aside id="lot-actions" className={styles.bidRail} data-keys-suppressed="">
           <h1 className={`eyebrow ${styles.lotKicker}`}>
@@ -108,35 +130,5 @@ export default async function AuctionWork({
         <AuctionRules t={t} />
       </section>
     </main>
-  );
-}
-
-async function AuctionArtwork({
-  tokenId,
-  t,
-  locale,
-  initialStill,
-  initialExpression,
-}: {
-  tokenId: number;
-  t: Messages;
-  locale: Locale;
-  initialStill: boolean;
-  initialExpression?: string;
-}) {
-  const { artwork } = await getArtwork(tokenId);
-  const indexed = indexedWork(tokenId);
-  return artwork ? (
-    <ArtworkViewer
-      artwork={artwork}
-      t={t}
-      locale={locale}
-      presentation="auction"
-      initialStill={initialStill}
-      initialExpression={initialExpression}
-      traits={{ structure: indexed?.traits.structure, underlay: indexed?.traits.underlay }}
-    />
-  ) : (
-    <p className="notice section-wrap">{t.mediaUnavailable}</p>
   );
 }

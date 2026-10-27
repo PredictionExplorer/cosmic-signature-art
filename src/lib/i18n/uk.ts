@@ -285,11 +285,11 @@ export const uk: Messages = {
   spectrumWall: 'Колекція вздовж спектра',
   spectrumNote:
     'Кожна плата Світла повішена на чорному за її опублікованою домінантною довжиною хвилі, від 380 до 700 нм.',
-  worksCount: '{count} робіт',
+  worksCount: 'Роботи: {count}',
   oneWork: '1 робота',
   imprintedOn: 'відбито {date}',
   underlay: 'Підкладка',
-  wildcard: 'Виняток',
+  wildcard: 'Wildcard',
   allocation: 'Розподіл',
   theCollection: 'Колекція',
   collectionControls: 'Керування колекцією',

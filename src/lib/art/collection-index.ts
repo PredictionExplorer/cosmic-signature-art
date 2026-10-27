@@ -80,7 +80,7 @@ const indexSchema = z.object({
   origin: z.string().url(),
   checkedOn: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
   total: z.number().int().nonnegative(),
-  works: z.array(workSchema),
+  works: z.array(workSchema).min(1),
 });
 
 export type IndexedWork = z.infer<typeof workSchema>;

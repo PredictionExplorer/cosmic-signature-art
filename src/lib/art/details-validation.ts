@@ -261,7 +261,7 @@ export function detailsFromIndexedWork(work: IndexedWork): ArtworkDetails {
     seed: work.seed as `0x${string}`,
     sourceUrl: `${ART_API_ORIGIN}/metadata/${work.id}`,
     metadataVersion: work.metadataVersion,
-    name: work.name,
+    name: work.metadataName,
     description: work.description,
     structure: work.traits.structure,
     underlay: work.traits.underlay,

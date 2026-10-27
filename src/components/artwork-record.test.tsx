@@ -26,7 +26,7 @@ describe('chain addresses', () => {
     const link = screen.getByRole('link', { name: new RegExp(holder) });
     expect(link).toHaveAttribute('href', `https://arbiscan.io/address/${holder}`);
     expect(link).toHaveTextContent('0x1111…1111');
-    expect(screen.getByRole('button', { name: `${en.copyAddress}: ${holder}` })).toHaveTextContent(
+    expect(screen.getByRole('button', { name: `${en.copyAddress} ${holder}` })).toHaveTextContent(
       en.copyAddress,
     );
     expect(compactAddress(holder)).toBe('0x1111…1111');

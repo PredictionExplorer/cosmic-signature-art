@@ -277,7 +277,7 @@ export const zhTW: Messages = {
   oneWork: '1 件作品',
   imprintedOn: '印記於 {date}',
   underlay: '底層結構',
-  wildcard: '特例',
+  wildcard: 'Wildcard',
   allocation: '分配',
   theCollection: '藏品全集',
   collectionControls: '藏品控制',

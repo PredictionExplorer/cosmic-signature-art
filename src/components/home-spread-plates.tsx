@@ -32,6 +32,8 @@ export function SpreadPlates({
   const { gridRef, activeId, intent, clearIntent, fail, rest } = useCollectionMotion({
     enabled: true,
     ids: previewIds,
+    // No caption and no excerpt until hover or focus: scrolling past the spread wakes nothing.
+    intentOnly: true,
   });
   const [intentId, setIntentId] = useState<number | null>(null);
   return (

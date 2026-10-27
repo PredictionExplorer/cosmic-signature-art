@@ -25,6 +25,8 @@ class CollectionMotionController {
   private timer: ReturnType<typeof setTimeout> | undefined;
   private attached = false;
   private autoplayBlocked = false;
+  /** Only hover, focus or a press may wake an excerpt; scrolling into view never does. */
+  private intentOnly = false;
 
   subscribe = (listener: () => void) => {
     this.listeners.add(listener);
@@ -62,6 +64,7 @@ class CollectionMotionController {
     // Explicit interest replays a rested excerpt; automatic selection leaves it still.
     if (this.focus !== null && candidates.has(this.focus)) return this.wake(this.focus);
     if (this.pointer !== null && candidates.has(this.pointer)) return this.wake(this.pointer);
+    if (this.intentOnly) return this.publish(null);
 
     let best: number | null = null;
     let bestScore = -Infinity;
@@ -83,8 +86,9 @@ class CollectionMotionController {
     this.publish(id);
   }
 
-  attach(grid: HTMLElement, ids: number[]) {
+  attach(grid: HTMLElement, ids: number[], intentOnly = false) {
     this.attached = true;
+    this.intentOnly = intentOnly;
     const eligible = new Set(ids);
     this.failed = new Set([...this.failed].filter((id) => eligible.has(id)));
     this.rested = new Set([...this.rested].filter((id) => eligible.has(id)));
@@ -160,7 +164,16 @@ class CollectionMotionController {
 }
 
 /** Attach `gridRef` to the grid and `data-preview-id` to each card. */
-export function useCollectionMotion({ enabled, ids }: { enabled: boolean; ids: number[] }) {
+export function useCollectionMotion({
+  enabled,
+  ids,
+  intentOnly = false,
+}: {
+  enabled: boolean;
+  ids: number[];
+  /** Wake an excerpt only on hover, focus or a press, never by scrolling it into view. */
+  intentOnly?: boolean;
+}) {
   const { paused, theatre } = useMotion();
   const { visible, constrained } = useMediaPolicy();
   const policyAllows = visible && !constrained;
@@ -183,8 +196,12 @@ export function useCollectionMotion({ enabled, ids }: { enabled: boolean; ids: n
 
   useEffect(() => {
     if (!allowed || !gridRef.current || typeof IntersectionObserver === 'undefined') return;
-    return controller.attach(gridRef.current, identity ? identity.split(',').map(Number) : []);
-  }, [allowed, controller, identity]);
+    return controller.attach(
+      gridRef.current,
+      identity ? identity.split(',').map(Number) : [],
+      intentOnly,
+    );
+  }, [allowed, controller, identity, intentOnly]);
 
   return {
     gridRef,

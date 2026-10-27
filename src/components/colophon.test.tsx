@@ -26,7 +26,7 @@ describe('colophon', () => {
     const date = new Intl.DateTimeFormat('en', { dateStyle: 'long', timeZone: 'UTC' }).format(
       new Date(`${collectionIndex.checkedOn}T00:00:00Z`),
     );
-    expect(screen.getByText(`Arbitrum record as of ${date}.`)).toBeInTheDocument();
+    expect(screen.getByText(`Arbitrum record as of ${date}`)).toBeInTheDocument();
     // The only outward arrow on the page belongs to the one link that leaves the venue.
     expect(screen.getAllByText(/↗/)).toHaveLength(1);
   });
