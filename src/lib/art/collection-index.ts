@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import data from './collection-index.json';
+import data from './collection-index.json' with { type: 'json' };
 import { seedPackageUrl } from './constants';
 import { TRAIT_KEYS, type CompactWork, type TraitKey, type WorkFilter } from './collection-traits';
 

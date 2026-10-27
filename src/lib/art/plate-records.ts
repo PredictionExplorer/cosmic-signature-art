@@ -1,4 +1,4 @@
-import data from './plate-grounds.json';
+import data from './plate-grounds.json' with { type: 'json' };
 
 /**
  * The ground every plate hangs on, measured offline and keyed to the still hash it was taken

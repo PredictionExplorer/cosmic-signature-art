@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import registry from './still-ladder.json';
+import registry from './still-ladder.json' with { type: 'json' };
 import { isExpression, type ArtInterpretation, type Artwork, type StillRung } from './types';
 import { seedPackageUrl } from './constants';
 

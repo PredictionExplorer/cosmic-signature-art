@@ -1,5 +1,5 @@
-import records from './curated-records.json';
-import mediaRecords from './curated-media.json';
+import records from './curated-records.json' with { type: 'json' };
+import mediaRecords from './curated-media.json' with { type: 'json' };
 import { ART_API_ORIGIN, seedPackageUrl } from './constants';
 import type { Artwork, ArtInterpretation } from './types';
 import { withLocalDerivatives } from './derivatives';

@@ -1,4 +1,4 @@
-import data from './plate-records.json';
+import data from './plate-records.json' with { type: 'json' };
 import type { PlateGround } from './plate-records';
 import { isExpression, type ArtInterpretation, type Artwork, type PlateDetail } from './types';
 

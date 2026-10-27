@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import registry from './collection-previews.json';
+import registry from './collection-previews.json' with { type: 'json' };
 import type { ArtInterpretation, Artwork } from './types';
 import { seedPackageUrl } from './constants';
 

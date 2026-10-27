@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import registry from './plate-clips.json';
+import registry from './plate-clips.json' with { type: 'json' };
 import { isExpression, type ArtFilm, type ArtInterpretation, type Artwork } from './types';
 import { seedPackageUrl } from './constants';
 

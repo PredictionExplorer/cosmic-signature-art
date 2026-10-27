@@ -1,5 +1,5 @@
-import registry from './inline-previews.json';
-import mediaRecords from './curated-media.json';
+import registry from './inline-previews.json' with { type: 'json' };
+import mediaRecords from './curated-media.json' with { type: 'json' };
 
 /**
  * The route's one hero paints its 640 px preview from the HTML itself, before any image
