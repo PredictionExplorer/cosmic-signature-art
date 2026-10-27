@@ -1,0 +1,228 @@
+.sheet {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  height: 100dvh;
+  overflow: hidden;
+}
+.sheet:not([open]) {
+  display: none;
+}
+/* Under Pause the rise is a state, not a frozen first frame: the sheet is simply there. */
+:global(.motion-paused) .sheet,
+:global(.motion-paused) .wall img {
+  animation: none;
+}
+.top {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0 24px;
+  min-height: var(--head);
+  padding: 0 var(--gutter);
+  border-bottom: 1px solid var(--rule);
+}
+.orderings {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+.divider {
+  width: 1px;
+  height: 18px;
+  background: var(--rule);
+}
+.top a,
+.top button,
+.chips a,
+.pocket a,
+.pocket button,
+.filterHead a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  font-size: var(--fs-control);
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.3em;
+  text-decoration-color: transparent;
+  transition: text-decoration-color var(--t-blink) var(--ease-settle);
+}
+.top a:hover,
+.top button:hover,
+.chips a:hover,
+.pocket a:hover,
+.filterHead a:hover,
+.top a[aria-current],
+.chips a[aria-current],
+.pocket a[aria-current],
+.pocket button[aria-pressed='true'] {
+  text-decoration-color: currentColor;
+}
+.search {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin-left: auto;
+}
+.search input {
+  background: transparent;
+  border: 0;
+  border-bottom: 1px solid var(--rule);
+  border-radius: 0;
+  min-height: 44px;
+  width: 11em;
+  color: inherit;
+}
+.search input::placeholder {
+  color: var(--muted);
+}
+.close {
+  margin-left: 12px;
+}
+/* The wall: the work under the hand stands contain-fitted on its own ground, behind the type. */
+.wall {
+  position: relative;
+  background: var(--paper);
+  overflow: hidden;
+}
+.wall[data-material='light'] {
+  background: #000;
+}
+@keyframes wall-rise {
+  from {
+    opacity: 0;
+  }
+}
+.wall img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  animation: wall-rise var(--t-focus) var(--ease-settle) both;
+}
+.lower {
+  display: grid;
+  gap: 9px;
+  padding: 9px var(--gutter) calc(18px + env(safe-area-inset-bottom));
+  overflow: auto;
+  max-height: 55dvh;
+  border-top: 1px solid var(--rule);
+}
+.cycles {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 9px;
+}
+.cycleLabel {
+  display: flex;
+  gap: 18px;
+  align-items: baseline;
+  font-size: var(--fs-folio);
+  opacity: 0.5;
+}
+.cycleLabel time {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums lining-nums;
+}
+.numerals {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+}
+.numeral {
+  display: grid;
+  place-items: center;
+  min-width: 44px;
+  min-height: 44px;
+  font-family: var(--font-mono);
+  font-size: var(--fs-control);
+  font-variant-numeric: tabular-nums lining-nums;
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.3em;
+  text-decoration-color: transparent;
+  transition: text-decoration-color var(--t-blink) var(--ease-settle);
+}
+.numeral:hover,
+.numeral:focus-visible,
+.numeral[data-active] {
+  text-decoration-color: currentColor;
+}
+.filters {
+  display: grid;
+  gap: 0;
+  border-top: 1px solid var(--rule);
+  padding-top: 9px;
+}
+.filterHead {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 24px;
+  min-height: 44px;
+  color: var(--muted);
+}
+.chips {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 24px;
+}
+.palette summary {
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  font-size: var(--fs-control);
+  cursor: pointer;
+  color: var(--muted);
+}
+.pocket {
+  display: none;
+}
+@media (max-width: 767px) {
+  .sheet {
+    grid-template-rows: auto minmax(30dvh, 1fr) auto;
+  }
+  .top {
+    gap: 0 12px;
+  }
+  .search {
+    margin-left: 0;
+    flex-basis: 100%;
+  }
+  .search input {
+    flex: 1;
+  }
+  .lower {
+    max-height: 60dvh;
+  }
+  .pocket {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0 24px;
+    border-bottom: 1px solid var(--rule);
+  }
+  .pocket a {
+    font-size: var(--fs-subtitle);
+    min-height: 54px;
+  }
+  .pocket button {
+    min-height: 54px;
+  }
+  .languages {
+    border-bottom: 0;
+    border-top: 1px solid var(--rule);
+    padding-top: 9px;
+  }
+  .languages a {
+    font-size: 16px;
+    min-height: 44px;
+  }
+}

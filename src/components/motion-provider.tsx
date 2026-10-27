@@ -31,12 +31,33 @@ function snapshot() {
 function reducedMotionSnapshot() {
   return query?.matches ?? true;
 }
-const MotionContext = createContext({ paused: true, reducedMotion: true, toggle: () => {} });
+/**
+ * The theatre hushes while a collector reviews or signs a transaction: films hold on
+ * their stills, crossings are instant and ambient choreography stops. Nothing is
+ * disabled; the other expression stays one press away. Only the bid flow sets it.
+ */
+export type Theatre = 'playing' | 'hushed';
+let theatre: Theatre = 'playing';
+function theatreSnapshot() {
+  return theatre;
+}
+export function setTheatre(value: Theatre) {
+  if (theatre === value) return;
+  theatre = value;
+  notify();
+}
+const MotionContext = createContext<{
+  paused: boolean;
+  reducedMotion: boolean;
+  theatre: Theatre;
+  toggle: () => void;
+}>({ paused: true, reducedMotion: true, theatre: 'playing', toggle: () => {} });
 export function MotionProvider({ children }: { children: ReactNode }) {
   const paused = useSyncExternalStore(subscribe, snapshot, () => true);
   // Keep the system preference in this persistent layout provider. A newly streamed
   // artwork must inherit the ready client value during its first transition commit.
   const reducedMotion = useSyncExternalStore(subscribe, reducedMotionSnapshot, () => true);
+  const theatreState = useSyncExternalStore(subscribe, theatreSnapshot, () => 'playing' as const);
   function toggle() {
     explicit = !paused;
     try {
@@ -47,8 +68,10 @@ export function MotionProvider({ children }: { children: ReactNode }) {
     notify();
   }
   return (
-    <MotionContext value={{ paused, reducedMotion, toggle }}>
-      <div className={paused ? 'site motion-paused' : 'site'}>{children}</div>
+    <MotionContext value={{ paused, reducedMotion, theatre: theatreState, toggle }}>
+      <div className={paused ? 'site motion-paused' : 'site'} data-theatre={theatreState}>
+        {children}
+      </div>
     </MotionContext>
   );
 }

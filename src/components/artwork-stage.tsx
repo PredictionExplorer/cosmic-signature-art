@@ -30,10 +30,16 @@ export function useArtworkExpression({
   media,
   initialExpression,
   onCommit,
+  onReady,
 }: {
   media: readonly ArtInterpretation[];
   initialExpression?: string;
   onCommit?: (expression: string) => void;
+  /**
+   * The requested still has decoded. When given, the caller decides the moment of the
+   * commit (the Turn travels first); `commit` is a no-op once superseded.
+   */
+  onReady?: (expression: string, commit: () => void) => void;
 }) {
   const [expression, setExpression] = useState(
     media.find((item) => item.id === initialExpression)?.id ??
@@ -45,7 +51,12 @@ export function useArtworkExpression({
   const request = useRef(0);
   const previousExpression = useRef(expression);
   const reportCommit = useEffectEvent((committed: string) => onCommit?.(committed));
-  const { paused, reducedMotion } = useMotion();
+  // Readiness is reported from image callbacks, so the latest handler is read through a ref.
+  const readyHandler = useRef(onReady);
+  useEffect(() => {
+    readyHandler.current = onReady;
+  }, [onReady]);
+  const { paused, reducedMotion, theatre } = useMotion();
   useEffect(() => {
     if (previousExpression.current === expression) return;
     previousExpression.current = expression;
@@ -54,10 +65,10 @@ export function useArtworkExpression({
     reportCommit(expression);
   }, [expression]);
   // A preference change while decoding must apply to the eventual transition too.
-  const motion = useRef({ paused, reducedMotion });
+  const motion = useRef({ paused, reducedMotion, theatre });
   useEffect(() => {
-    motion.current = { paused, reducedMotion };
-  }, [paused, reducedMotion]);
+    motion.current = { paused, reducedMotion, theatre };
+  }, [paused, reducedMotion, theatre]);
   useEffect(
     () => () => {
       request.current += 1;
@@ -116,18 +127,28 @@ export function useArtworkExpression({
         // A newer click can supersede a transition before React commits it.
         setExpression((current) => (identity === request.current ? target.id : current));
       };
-      if (!motion.current.paused && !motion.current.reducedMotion) {
-        startTransition(() => {
-          addTransitionType(
-            target.id === 'ink'
-              ? transitionTypes.ink
-              : target.id === 'light'
-                ? transitionTypes.light
-                : transitionTypes.default,
-          );
-          commit();
-        });
-      } else commit();
+      // A hushed theatre (a collector reviewing a bid) crosses instantly, like reduced motion.
+      const run = () => {
+        if (
+          !motion.current.paused &&
+          !motion.current.reducedMotion &&
+          motion.current.theatre !== 'hushed'
+        ) {
+          startTransition(() => {
+            addTransitionType(
+              target.id === 'ink'
+                ? transitionTypes.ink
+                : target.id === 'light'
+                  ? transitionTypes.light
+                  : transitionTypes.default,
+            );
+            commit();
+          });
+        } else commit();
+      };
+      const handler = readyHandler.current;
+      if (handler) handler(target.id, run);
+      else run();
     };
 
     setPendingExpression(target.id);
@@ -167,8 +188,8 @@ export function ArtworkStage({
   disabled?: boolean;
   children: ReactNode;
 }) {
-  const { paused, reducedMotion } = useMotion();
-  const enabled = !disabled && !paused && !reducedMotion;
+  const { paused, reducedMotion, theatre } = useMotion();
+  const enabled = !disabled && !paused && !reducedMotion && theatre !== 'hushed';
   return (
     <ViewTransition
       name={`cs-expression-${artworkId}-${scope}`}

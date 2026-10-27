@@ -26,7 +26,8 @@ jobs:
       - run: npm run test:auction:local:types
       - run: npm run format:check
       - run: npm run test:coverage
-      - run: npm run test:previews
+      - run: npm run test:scripts
+      - run: npm run test:fonts
       - run: npm run build
       - run: npx playwright install --with-deps chromium firefox webkit
       - run: npm run test:e2e

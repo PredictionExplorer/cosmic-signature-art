@@ -2,7 +2,7 @@ import { z } from 'zod';
 import { seedPackageUrl } from './constants';
 import { getCuratedArtwork } from './catalog';
 import type { ArtFilm, ArtInterpretation, Artwork } from './types';
-import { withCollectionPreviews } from './collection-previews';
+import { withLocalDerivatives } from './derivatives';
 
 const assetSchema = z.object({
   role: z.string().max(100),
@@ -11,6 +11,7 @@ const assetSchema = z.object({
   width: z.number().int().positive().max(100_000).optional(),
   height: z.number().int().positive().max(100_000).optional(),
   duration_seconds: z.number().positive().max(86_400).optional(),
+  bytes: z.number().int().positive().optional(),
   sha256: z
     .string()
     .regex(/^[a-f0-9]{64}$/i)
@@ -30,7 +31,15 @@ const modeDefinitions = [
     image: ['web_full', 'images/web/full.webp'],
     preview: ['web_preview', 'images/web/preview.webp'],
     master: ['source_master', 'images/source/master.png'],
-    films: [{ id: 'normal', label: 'Film', role: 'main_web', path: 'videos/web/main.mp4' }],
+    films: [
+      { id: 'normal', label: 'Film', role: 'main_web', path: 'videos/web/main.mp4' },
+      {
+        id: 'sweep',
+        label: 'Spectral sweep',
+        role: 'spectral_sweep_web',
+        path: 'videos/web/spectral_sweep.mp4',
+      },
+    ],
   },
   {
     id: 'ink',
@@ -86,6 +95,7 @@ export function parseMediaManifest(raw: unknown, artwork: Artwork): ArtInterpret
           src: url(file)!,
           sourceUrl: url(file),
           durationSeconds: file.duration_seconds,
+          bytes: file.bytes,
           poster: url(still),
           sha256: file.sha256?.toLowerCase(),
           sourceSha256: file.sha256?.toLowerCase(),
@@ -101,6 +111,8 @@ export function parseMediaManifest(raw: unknown, artwork: Artwork): ArtInterpret
       label: mode.label,
       still: url(still),
       thumbnail: url(preview ?? still),
+      thumbnailWidth: (preview ?? still)?.width,
+      thumbnailHeight: (preview ?? still)?.height,
       master: url(master),
       sourceUrl: url(still),
       stillSha256: still?.sha256?.toLowerCase(),
@@ -111,7 +123,7 @@ export function parseMediaManifest(raw: unknown, artwork: Artwork): ArtInterpret
       availability: 'advertised',
     });
   }
-  return withCollectionPreviews(artwork, interpretations);
+  return withLocalDerivatives(artwork, interpretations);
 }
 
 /** Only substitute a local delivery film when both its source and still hashes match. */
@@ -128,6 +140,8 @@ export function preferVerifiedLocalDelivery(
       ...published,
       still: local.still,
       thumbnail: local.thumbnail,
+      thumbnailWidth: local.thumbnailWidth,
+      thumbnailHeight: local.thumbnailHeight,
       source: 'local-archive',
       availability: 'local-copy',
       films: published.films.map((film) => {

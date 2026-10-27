@@ -1,0 +1,171 @@
+/* Screens 3–5 of the home: a type screen, a spread, and a cycle's row, all on paper. */
+.screen {
+  background: var(--paper);
+  color: var(--paper-type);
+  --type: var(--paper-type);
+  --muted: #68685e;
+  --rule: color-mix(in srgb, #22231f 24%, transparent);
+}
+
+/* Screen 3: the one screen without a work. */
+.statement {
+  min-height: calc(100svh - var(--head));
+  display: grid;
+  place-items: center;
+  padding: 72px var(--gutter);
+}
+.statementBlock {
+  display: grid;
+  gap: 27px;
+  max-width: var(--measure);
+  justify-items: start;
+}
+.wordmark {
+  font-size: var(--fs-entry);
+  line-height: 1;
+  font-weight: 200;
+  font-variant-caps: all-small-caps;
+  letter-spacing: 0.04em;
+}
+.subtitle {
+  color: var(--type);
+}
+.counts {
+  font-size: var(--fs-reading);
+  line-height: 1.5;
+  color: var(--muted);
+  font-variant-numeric: lining-nums tabular-nums;
+}
+.line {
+  margin-top: 9px;
+}
+.byline {
+  font-size: var(--fs-control);
+  color: var(--muted);
+}
+
+/* Screen 4: two leaves, a 1 px gutter, the numerals hanging in the outer margins. */
+.spread {
+  min-height: calc(100svh - var(--head));
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  column-gap: 1px;
+  align-items: center;
+  /* The outer padding reserves the hanging numerals (three figures at --fs-plate plus 9 px). */
+  padding: 54px max(var(--gutter), 6vw, calc(var(--fs-plate) * 2 + 9px));
+  overflow-x: clip;
+}
+.leaf {
+  /* The leaf's strip reads on the sheet's own tone: 5.1:1 on the darkest kozo measured. */
+  --muted: #5a5a51;
+  position: relative;
+  display: grid;
+  grid-template-rows: auto var(--strip);
+  background: var(--plate-ground, var(--paper));
+}
+.leafNumeral {
+  position: absolute;
+  top: 0;
+  color: var(--type);
+}
+.leaf[data-side='left'] .leafNumeral {
+  right: calc(100% + 9px);
+}
+.leaf[data-side='right'] .leafNumeral {
+  left: calc(100% + 9px);
+}
+.leafPlate {
+  display: block;
+  min-width: 0;
+}
+.leafStrip {
+  grid-template-columns: auto minmax(0, 1fr);
+  padding-inline: 18px;
+  color: var(--type);
+  opacity: 0;
+  transition: opacity var(--t-chrome) var(--ease-settle);
+}
+.leaf:hover .leafStrip,
+.leaf:focus-within .leafStrip,
+.leaf:has([data-motion='active']) .leafStrip {
+  opacity: 1;
+}
+.leafLabel {
+  font-size: var(--fs-control);
+  color: var(--muted);
+  font-variant-numeric: tabular-nums lining-nums;
+}
+
+/* Screen 5: this cycle. */
+.cycle {
+  padding: 90px var(--gutter) 108px;
+  display: grid;
+  gap: 45px;
+  justify-items: start;
+}
+.cycleHead {
+  display: grid;
+  gap: 9px;
+}
+.cycleMeta {
+  font-size: var(--fs-reading);
+  color: var(--muted);
+  font-variant-numeric: lining-nums tabular-nums;
+}
+.row {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 27px 18px;
+}
+.cell {
+  display: grid;
+  gap: 9px;
+  justify-items: start;
+}
+.cell > :global(.art-media) {
+  width: 100%;
+}
+.cell > :global(.art-media) img {
+  width: 100%;
+  height: auto;
+}
+.cell:hover > span:last-child,
+.cell:focus-visible > span:last-child {
+  text-decoration: underline;
+  text-underline-offset: 0.3em;
+}
+
+@media (max-width: 767px) {
+  .statement {
+    padding-block: 54px;
+  }
+  .spread {
+    grid-template-columns: minmax(0, 1fr);
+    row-gap: 36px;
+    padding: 36px var(--gutter);
+    align-content: center;
+  }
+  .leaf {
+    grid-template-rows: auto auto var(--strip);
+  }
+  .leafNumeral {
+    position: static;
+    padding: 9px 18px 0;
+    order: -1;
+  }
+  .leafStrip {
+    opacity: 1;
+  }
+  .cycle {
+    padding-block: 54px 72px;
+    gap: 27px;
+  }
+  .row {
+    grid-template-columns: repeat(auto-fill, minmax(104px, 1fr));
+    gap: 18px 9px;
+  }
+}

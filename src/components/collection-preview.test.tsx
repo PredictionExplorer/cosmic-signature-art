@@ -1,9 +1,13 @@
 import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { getCuratedArtwork } from '@/lib/art/catalog';
-import { CollectionPreview, getCollectionPreviewFilm } from './collection-preview';
+import { CollectionPreview, excerptRange, getCollectionPreviewFilm } from './collection-preview';
 
-const archivedInk = getCuratedArtwork(31)!.media.find((media) => media.id === 'ink')!;
+// The curated archive carries its verified excerpt; this fixture is the same Ink without one.
+const archivedInk = {
+  ...getCuratedArtwork(31)!.media.find((media) => media.id === 'ink')!,
+  previewFilm: undefined,
+};
 const ink = {
   ...archivedInk,
   previewFilm: { ...archivedInk.films[0], src: '/art/previews/31-ink.mp4', durationSeconds: 8 },
@@ -31,7 +35,7 @@ describe('collection film presentation', () => {
       <CollectionPreview media={ink} alt="Signature 31" active={false} onFailure={vi.fn()} />,
     );
     expect(container.querySelector('video')).toBeNull();
-    expect(imagePath()).toBe('/art/31-ink.webp');
+    expect(imagePath()).toBe('/art/31-ink-640.webp');
     rerender(
       <CollectionPreview
         media={{ ...light, films: ink.films, previewFilm: ink.previewFilm }}
@@ -99,7 +103,7 @@ describe('collection film presentation', () => {
     );
     rerender(<CollectionPreview media={ink} alt="Signature 31" active onFailure={onFailure} />);
     expect(container.querySelector('video')).toBeNull();
-    expect(imagePath()).toBe('/art/31-ink.webp');
+    expect(imagePath()).toBe('/art/31-ink-640.webp');
   });
 
   it('ignores a rejected playback promise after ownership has moved away', async () => {
@@ -121,27 +125,116 @@ describe('collection film presentation', () => {
     expect(onFailure).not.toHaveBeenCalled();
   });
 
-  it('fades through its own still between repeats and cancels the replay when it is inactive', () => {
+  it('holds the last frame, fades back to the still and releases the lease instead of looping', () => {
     vi.useFakeTimers();
+    const onEnded = vi.fn();
     const { container, rerender } = render(
-      <CollectionPreview media={ink} alt="Signature 31" active onFailure={vi.fn()} />,
+      <CollectionPreview
+        media={ink}
+        alt="Signature 31"
+        active
+        onFailure={vi.fn()}
+        onEnded={onEnded}
+      />,
     );
     const video = container.querySelector('video')!;
-    Object.defineProperty(video, 'duration', { configurable: true, value: 30 });
+    Object.defineProperty(video, 'duration', { configurable: true, value: 8 });
+    fireEvent.loadedMetadata(video);
+    fireEvent.playing(video);
+    expect(video).toHaveClass('has-frame');
+    fireEvent.ended(video);
+    act(() => vi.advanceTimersByTime(1_199));
+    expect(video).toHaveClass('has-frame');
+    act(() => vi.advanceTimersByTime(1));
+    expect(video).not.toHaveClass('has-frame');
+    expect(onEnded).not.toHaveBeenCalled();
+    act(() => vi.advanceTimersByTime(700));
+    expect(onEnded).toHaveBeenCalledOnce();
+    expect(HTMLMediaElement.prototype.play).toHaveBeenCalledOnce();
+    rerender(
+      <CollectionPreview
+        media={ink}
+        alt="Signature 31"
+        active={false}
+        onFailure={vi.fn()}
+        onEnded={onEnded}
+      />,
+    );
+    expect(container.querySelector('video')).toBeNull();
+    expect(video).not.toHaveAttribute('src');
+    act(() => vi.advanceTimersByTime(5_000));
+    expect(HTMLMediaElement.prototype.play).toHaveBeenCalledOnce();
+    expect(imagePath()).toBe('/art/31-ink-640.webp');
+  });
+
+  it('still reports the rest when the lease is lost during the hold or the fade', () => {
+    vi.useFakeTimers();
+    const onEnded = vi.fn();
+    const show = (active: boolean) => (
+      <CollectionPreview
+        media={ink}
+        alt="Signature 31"
+        active={active}
+        onFailure={vi.fn()}
+        onEnded={onEnded}
+      />
+    );
+    const { container, rerender } = render(show(true));
+    const video = container.querySelector('video')!;
+    fireEvent.loadedMetadata(video);
     fireEvent.playing(video);
     fireEvent.ended(video);
-    act(() => vi.advanceTimersByTime(1_200));
-    expect(video).not.toHaveClass('has-frame');
-    act(() => vi.advanceTimersByTime(700));
-    expect(video.currentTime).toBe(0);
-    expect(HTMLMediaElement.prototype.play).toHaveBeenCalledOnce();
-    fireEvent.ended(video);
-    rerender(
-      <CollectionPreview media={ink} alt="Signature 31" active={false} onFailure={vi.fn()} />,
+    act(() => vi.advanceTimersByTime(600));
+    rerender(show(false));
+    expect(onEnded).toHaveBeenCalledOnce();
+    act(() => vi.advanceTimersByTime(5_000));
+    expect(onEnded).toHaveBeenCalledOnce();
+    // An excerpt interrupted before its end owes no rest.
+    rerender(show(true));
+    const again = container.querySelector('video')!;
+    fireEvent.loadedMetadata(again);
+    fireEvent.playing(again);
+    rerender(show(false));
+    expect(onEnded).toHaveBeenCalledOnce();
+  });
+
+  it('plays the film it is handed, says which, and serves the ladder when sized', () => {
+    const settling = {
+      ...archivedInk.films[0],
+      id: 'settling',
+      src: '/art/clips/31-ink-settling.mp4',
+      durationSeconds: 8,
+      startSeconds: 22.033333,
+    };
+    const { container } = render(
+      <CollectionPreview
+        media={ink}
+        alt="Signature 31"
+        active
+        film={settling}
+        sizes="46vw"
+        onFailure={vi.fn()}
+      />,
     );
-    act(() => vi.advanceTimersByTime(2_000));
-    expect(HTMLMediaElement.prototype.play).toHaveBeenCalledOnce();
-    expect(video).not.toHaveAttribute('src');
+    expect(container.querySelector('video')).toHaveAttribute('src', settling.src);
+    expect(container.querySelector('[data-collection-preview]')).toHaveAttribute(
+      'data-film',
+      'settling',
+    );
+    const image = screen.getByRole('img') as HTMLImageElement;
+    expect(image.getAttribute('srcset')).toContain('/art/31-ink-640.webp 640w');
+    expect(image.getAttribute('srcset')).toContain('/art/stills/31-ink-1280-');
+    expect(image.getAttribute('srcset')).toContain('/art/31-ink.webp 3456w');
+    expect(image).toHaveAttribute('sizes', '46vw');
+    expect(excerptRange(settling)).toBe('00:22–00:30');
+  });
+
+  it('describes an excerpt by its true place in the source film', () => {
+    expect(excerptRange({ ...ink.previewFilm!, startSeconds: 6, durationSeconds: 8 })).toBe(
+      '00:06–00:14',
+    );
+    expect(excerptRange({ ...ink.previewFilm!, startSeconds: undefined })).toBeUndefined();
+    expect(excerptRange(undefined)).toBeUndefined();
   });
 
   it('falls back from a thumbnail only to its own canonical still and keeps an accessible identity if both fail', () => {

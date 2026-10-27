@@ -1,3 +1,4 @@
+/* The chrome-less room: the work fills the viewport in its own material; words on a hairline. */
 .dialog {
   position: fixed;
   inset: 0;
@@ -9,304 +10,349 @@
   margin: 0;
   padding: 0;
   border: 0;
-  background: var(--paper, #f1ebdf);
-  color: var(--ink, #22231f);
+  background: transparent;
+  color: var(--night-type);
   overscroll-behavior: contain;
 }
-
+/* The ground inside the room is the material; the native backdrop stays clear so the plate
+   beneath shows through while the work grows out of it. */
 .dialog::backdrop {
-  background: #000;
+  background: transparent;
 }
-
 .room {
-  --room-surface: #f1ebdf;
-  --room-ink: #22231f;
-  --room-muted: #68685e;
-  --room-line: rgb(34 35 31 / 17%);
+  --room-surface: var(--paper);
+  --room-ink: var(--paper-type);
+  /* Muted words carry only sizes and status; they still read at 12 px on the darkest measured sheet (#e2ddd2): 5.1:1. */
+  --room-muted: #5a5a51;
+  --room-line: color-mix(in srgb, var(--paper-type) 24%, transparent);
+  position: relative;
   display: grid;
-  grid-template-rows: auto minmax(0, 1fr) auto auto;
+  grid-template-rows: minmax(0, 1fr) auto;
   width: 100%;
   height: 100%;
   min-height: 0;
-  background: var(--room-surface);
   color: var(--room-ink);
-  transition:
-    background-color 600ms ease,
-    color 600ms ease;
+  transition: color var(--t-expand) var(--ease-settle);
 }
-
 .room[data-material='light'] {
-  --room-surface: #000;
-  --room-ink: #f1ebdf;
-  --room-muted: #b8b3a9;
-  --room-line: rgb(241 235 223 / 24%);
+  --room-ink: var(--night-type);
+  --room-muted: #b8b5ad;
+  --room-line: color-mix(in srgb, var(--night-type) 24%, transparent);
 }
-
 .room:fullscreen {
   height: 100vh;
   height: 100dvh;
 }
-
-.header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
-  padding: max(1rem, env(safe-area-inset-top)) max(2.5rem, env(safe-area-inset-right)) 0.6rem
-    max(2.5rem, env(safe-area-inset-left));
+.room[data-closing] {
+  pointer-events: none;
 }
-
-.title > span {
-  color: var(--room-muted);
-  font-size: 0.6rem;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
+.ground {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: var(--room-surface);
+  transition: background-color var(--t-expand) var(--ease-settle);
 }
-
-.title p {
-  margin: 0.1rem 0 0;
-  font-family: var(--serif);
-  font-size: 1.5rem;
-  font-weight: 400;
+/* The edge strip rests after a quiet spell and returns on any input; it never leaves the DOM. */
+.edge {
+  position: relative;
+  transition: opacity var(--t-chrome) var(--ease-settle);
 }
-
-.title p span {
-  margin-inline-start: 0.45em;
+.room[data-idle] .edge {
+  opacity: 0;
 }
-
-.close,
-.fullscreen,
-.expressions button,
-.switch button,
-.filmNotice button {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.6rem;
-  min-width: 44px;
-  min-height: 44px;
-  padding: 0.65rem 0.8rem;
-  border: 0;
-  background: transparent;
-  color: inherit;
-  cursor: pointer;
-  font-size: 0.7rem;
-  letter-spacing: 0.04em;
+.room[data-idle] .edge:focus-within {
+  opacity: 1;
 }
-
-.room button:focus-visible,
-.room select:focus-visible {
-  outline: 2px solid currentColor;
-  outline-offset: 3px;
+/* The Slow room: the chrome rests sooner and stays down; the line and the clock remain. */
+.room[data-slow] .edge {
+  transition-duration: var(--t-sit);
 }
-
-.close {
-  padding-inline-end: 0;
-}
-
 .canvas {
   display: grid;
   min-height: 0;
   min-width: 0;
   overflow: hidden;
-  padding: 0.8rem clamp(0.75rem, 3.5vw, 4rem);
+  padding: 0;
 }
-
 .canvas > * {
   width: 100%;
   height: 100%;
   min-height: 0;
   min-width: 0;
 }
-
-.image,
-.video {
-  display: block;
+.film,
+.still {
+  position: relative;
+  display: grid;
+  place-items: center;
   width: 100%;
   height: 100%;
   min-height: 0;
+}
+/* The media box is the work's own proportion inside the canvas, so a transform of the box is
+   a transform of the painted plate and the Expansion lands exactly. */
+.image,
+.video {
+  display: block;
+  width: auto;
+  height: auto;
+  max-width: 100%;
   max-height: 100%;
   object-fit: contain;
   object-position: center;
 }
-
-.film,
-.still {
-  position: relative;
-  width: 100%;
-  height: 100%;
-  min-height: 0;
-}
-
-.filmNotice {
-  position: absolute;
-  inset-inline: 1rem;
-  bottom: 3.5rem;
-  display: flex;
-  flex-wrap: wrap;
+.strip {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
   align-items: center;
+  gap: 18px;
+  min-height: var(--strip);
+  padding: 0 max(var(--gutter), env(safe-area-inset-right)) 0
+    max(var(--gutter), env(safe-area-inset-left));
+  border-top: 1px solid var(--room-line);
+}
+.identity,
+.expressions,
+.sources,
+.actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 18px;
+  min-width: 0;
+}
+.identity {
+  gap: 27px;
+}
+.sources {
   justify-content: center;
-  gap: 0.6rem;
-  width: fit-content;
-  max-width: calc(100% - 2rem);
-  margin-inline: auto;
-  padding: 0.5rem 1rem;
+}
+.actions {
+  justify-content: flex-end;
+}
+/* The work's number stays in the room's ink, on every screen; it is the room's name. */
+.number {
+  font-family: var(--font-mono);
+  font-size: var(--fs-control);
+  font-variant-numeric: tabular-nums lining-nums;
+  color: var(--room-ink);
+}
+.strip button,
+.notice button {
+  display: inline-flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 0;
+  white-space: pre;
+  min-width: 44px;
+  min-height: 44px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--room-ink);
+  cursor: pointer;
+  font-size: var(--fs-control);
+  line-height: 1.2;
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.3em;
+  text-decoration-color: transparent;
+  transition:
+    color var(--t-blink) var(--ease-settle),
+    text-decoration-color var(--t-blink) var(--ease-settle);
+}
+/* Words are the room's ink; the hairline beneath marks the chosen one and the one under the hand. */
+.strip button:hover,
+.notice button,
+.strip button[aria-pressed='true'] {
+  text-decoration-color: currentColor;
+}
+.strip button[aria-busy='true'] {
+  text-decoration-color: currentColor;
+  text-decoration-style: dotted;
+}
+.strip button:disabled {
+  color: var(--room-muted);
+  cursor: default;
+  opacity: 0.6;
+}
+/* The loupe draws its own ring inside its clipped canvas (loupe.module.css). */
+.room button:focus-visible,
+.room input:focus-visible,
+.room [tabindex]:not([data-loupe]):focus-visible {
+  outline: 1px solid currentColor;
+  outline-offset: 3px;
+}
+/* Sizes and lengths are the muted words; the film's name stays in ink. */
+.meta {
+  font-family: var(--font-mono);
+  font-size: var(--fs-folio);
+  font-variant-numeric: tabular-nums lining-nums;
+  white-space: nowrap;
+  color: var(--room-muted);
+}
+/* Status lives on the strip's second line, never over the work. */
+.notice {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  min-height: 27px;
+  padding: 0 max(var(--gutter), env(safe-area-inset-right)) max(12px, env(safe-area-inset-bottom))
+    max(var(--gutter), env(safe-area-inset-left));
+  color: var(--room-muted);
+  font-size: var(--fs-folio);
+}
+.statusText {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.hint {
+  position: absolute;
+  right: max(var(--gutter), env(safe-area-inset-right));
+  bottom: calc(var(--strip) + 36px);
+  padding: 18px 24px;
   background: var(--room-surface);
   color: var(--room-ink);
-  font-size: 0.75rem;
-}
-
-.filmNotice button {
-  text-decoration: underline;
-  text-underline-offset: 0.25em;
-}
-
-.controls {
-  display: grid;
-  grid-template-columns: 1fr auto 1fr;
-  align-items: center;
-  gap: 1rem;
-  padding: 0.5rem max(2.5rem, env(safe-area-inset-right)) 0 max(2.5rem, env(safe-area-inset-left));
-}
-
-.expressions,
-.switch,
-.transport {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 0.35rem;
-}
-
-.expressions button {
-  position: relative;
-  padding-inline: 0.3rem;
-  margin-inline-end: 1rem;
-  font-family: var(--serif);
-  font-size: 1.5rem;
-}
-
-.expressions button::after {
-  position: absolute;
-  inset-inline: 0.3rem;
-  bottom: 0.2rem;
-  height: 1px;
-  background: currentColor;
-  opacity: 0;
-  content: '';
-  transition: opacity 180ms ease;
-}
-
-.expressions button[aria-pressed='true']::after,
-.expressions button:hover::after {
-  opacity: 1;
-}
-
-.expressions button[aria-busy='true']::after {
-  opacity: 0.45;
-}
-
-.switch {
   border: 1px solid var(--room-line);
-  border-radius: 100px;
-  gap: 0;
-  padding: 0.15rem;
+  font-size: var(--fs-control);
 }
-
-.switch button {
-  min-height: 38px;
-  padding-inline: 1rem;
-  border-radius: inherit;
+.hint dl {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 6px 18px;
+  margin: 0;
+}
+.hint dl > div {
+  display: contents;
+}
+.hint dt,
+.hint dd {
+  margin: 0;
+}
+.hint kbd {
+  font-family: var(--font-mono);
+  font-size: var(--fs-folio);
+}
+/* The clock, bottom right, above the line: plain minutes and seconds, never hours. */
+.readout {
+  position: absolute;
+  right: max(var(--gutter), env(safe-area-inset-right));
+  bottom: max(12px, env(safe-area-inset-bottom));
+  font-family: var(--font-mono);
+  font-size: var(--fs-folio);
+  font-variant-numeric: tabular-nums lining-nums;
   color: var(--room-muted);
+  pointer-events: none;
 }
-
-.switch button[aria-pressed='true'] {
-  background: var(--room-ink);
-  color: var(--room-surface);
-}
-
+/* The transport: one pixel at the viewport's bottom edge; the hand finds a 44 px grip above it. */
 .transport {
-  justify-content: center;
-  gap: 1rem;
+  position: absolute;
+  inset: auto 0 env(safe-area-inset-bottom, 0px) 0;
+  width: 100%;
+  height: 44px;
+  margin: 0;
+  appearance: none;
+  -webkit-appearance: none;
+  background: transparent;
+  cursor: pointer;
 }
-
-.variant select {
-  min-height: 44px;
-  max-width: 13rem;
-  padding: 0.5rem 1.5rem 0.5rem 0.7rem;
+/* The line: the ink of the elapsed part, the hairline of what remains. */
+.transport::-webkit-slider-runnable-track {
+  height: 1px;
+  margin-top: 43px;
+  background: linear-gradient(
+    to right,
+    var(--room-ink) var(--progress, 0%),
+    var(--room-line) var(--progress, 0%)
+  );
+}
+.transport::-moz-range-track {
+  height: 1px;
+  background: linear-gradient(
+    to right,
+    var(--room-ink) var(--progress, 0%),
+    var(--room-line) var(--progress, 0%)
+  );
+}
+.transport::-moz-range-progress {
+  height: 1px;
+  background: var(--room-ink);
+}
+.transport::-webkit-slider-thumb {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 9px;
+  height: 9px;
+  margin-top: -4px;
   border: 0;
-  border-bottom: 1px solid var(--room-line);
-  border-radius: 0;
-  background: var(--room-surface);
-  color: inherit;
-  font: inherit;
-  font-size: 0.7rem;
+  border-radius: 50%;
+  background: var(--room-ink);
 }
-
-.fullscreen {
-  justify-self: end;
-  padding-inline-end: 0;
+.transport::-moz-range-thumb {
+  width: 9px;
+  height: 9px;
+  border: 0;
+  border-radius: 50%;
+  background: var(--room-ink);
 }
-
-.notice {
-  min-height: 1.7rem;
-  padding: 0.25rem 1rem max(0.5rem, env(safe-area-inset-bottom));
-  color: var(--room-muted);
-  text-align: center;
-  font-size: 0.7rem;
+.transport:focus-visible {
+  outline: none;
 }
-
-@media (max-width: 700px) {
-  .header {
-    padding-inline: max(1rem, env(safe-area-inset-left)) max(1rem, env(safe-area-inset-right));
-  }
-
-  .canvas {
-    padding-inline: 0;
-  }
-
-  .controls {
-    grid-template-columns: 1fr auto;
-    gap: 0.5rem;
-    padding-inline: max(1rem, env(safe-area-inset-left)) max(1rem, env(safe-area-inset-right));
-  }
-
-  .transport {
-    grid-column: 1 / -1;
-    grid-row: 2;
-  }
-
-  .expressions button {
-    font-size: 1.35rem;
-  }
+.transport:focus-visible::-webkit-slider-thumb {
+  outline: 1px solid var(--room-ink);
+  outline-offset: 3px;
 }
-
-@media (max-height: 480px) and (min-width: 701px) {
-  .header {
-    padding-top: max(0.4rem, env(safe-area-inset-top));
-  }
-
-  .title > span {
-    display: none;
-  }
-
-  .controls {
-    padding-top: 0;
-  }
-
-  .canvas {
+.transport:focus-visible::-moz-range-thumb {
+  outline: 1px solid var(--room-ink);
+  outline-offset: 3px;
+}
+@media (max-width: 767px) {
+  /* Two rows: the identity and the actions share the first; the sources take the second. */
+  .strip {
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 0 12px;
     padding-block: 0;
   }
+  .identity,
+  .expressions,
+  .actions {
+    flex-wrap: nowrap;
+    gap: 9px;
+  }
+  .identity {
+    gap: 12px;
+  }
+  /* Every word keeps its 44 px box; the boxes themselves space the words. */
+  .strip button {
+    min-width: 44px;
+    padding-inline: 0;
+  }
+  .sources {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    justify-content: flex-start;
+    gap: 0;
+  }
+  .hint {
+    right: max(var(--gutter), env(safe-area-inset-right));
+    left: max(var(--gutter), env(safe-area-inset-left));
+    bottom: calc(2 * var(--strip) + 36px);
+  }
 }
-
 @media (prefers-reduced-motion: reduce) {
   .room,
-  .expressions button::after {
+  .ground,
+  .edge,
+  .strip button,
+  .notice button {
     transition: none;
   }
 }
-
 :global(.motion-paused) .room,
-:global(.motion-paused) .expressions button::after {
+:global(.motion-paused) .ground,
+:global(.motion-paused) .edge {
   transition: none;
 }

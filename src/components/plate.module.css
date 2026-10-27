@@ -1,0 +1,86 @@
+/* One art screen: the plate on the sheet's own tone, the strip beneath it in the same ground. */
+.screen {
+  --ground: var(--paper);
+  --type: var(--paper-type);
+  /* Muted words on a sheet's own tone: 5.1:1 on the darkest kozo measured (#e2ddd2). */
+  --muted: #5a5a51;
+  background: var(--plate-ground, var(--ground));
+  color: var(--type);
+}
+.nightScreen {
+  --ground: var(--night);
+  --type: var(--night-type);
+  --muted: #b8b5ad;
+}
+.plate {
+  position: relative;
+}
+/* The shared surface of the Walk keeps the plate's height so the work lands on itself. */
+.plate > * {
+  height: 100%;
+  min-width: 0;
+  display: grid;
+  place-items: center;
+}
+/* The media box follows the work: as wide as the room allows, never taller than the plate, so
+   the hairline (globals.css) rings the work and not the letterbox. */
+.screen .plate > * > :global(.art-media),
+.screen .plate > :global(.art-media) {
+  width: min(100%, calc(var(--plate-height) * 3456 / 2234));
+  height: auto;
+  max-width: 100%;
+}
+.strip {
+  position: relative;
+  color: var(--type);
+}
+.numeral {
+  color: var(--type);
+}
+.centre {
+  min-width: 0;
+  font-size: var(--fs-control);
+  line-height: 1.6;
+  color: var(--muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+/* The strip's centre rises one baseline after the still settles. */
+.centre > * {
+  opacity: 0;
+  transform: translateY(var(--baseline));
+  transition:
+    opacity var(--t-chrome) var(--ease-settle),
+    transform var(--t-chrome) var(--ease-settle);
+}
+.screen[data-settled] .centre > * {
+  opacity: 1;
+  transform: none;
+}
+.words {
+  color: var(--type);
+}
+@media (max-width: 767px) {
+  /* The plate is the first pixel under the masthead: 100 vw, letterboxed in its own tone. */
+  .screen .plate {
+    height: auto;
+    aspect-ratio: 3456 / 2234;
+  }
+  .screen .plate > * > :global(.art-media),
+  .screen .plate > :global(.art-media) {
+    width: 100%;
+    height: auto;
+  }
+  .centre {
+    display: none;
+  }
+  .strip {
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: 12px;
+  }
+  .words {
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+}

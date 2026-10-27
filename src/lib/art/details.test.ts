@@ -1,7 +1,8 @@
 import { describe, expect, it, vi } from 'vitest';
 import { ART_API_ORIGIN, MEDIA_REVALIDATE_SECONDS } from './constants';
 import { createArtworkDetailsRepository } from './details';
-import { parseArtworkDetails } from './details-validation';
+import { detailsFromIndexedWork, parseArtworkDetails } from './details-validation';
+import { indexedWork } from './collection-index';
 
 const seed = '0x17d61f1c00e5d16c399a8e341e9feaea32b275e5426a4375394e74cc855affcc';
 
@@ -18,7 +19,7 @@ function metadata() {
       { trait_type: 'Chaos', value: 17, display_type: 'number', max_value: 100 },
       { trait_type: 'Syzygies', value: 1, display_type: 'number' },
       { trait_type: 'Round', value: 0, display_type: 'number' },
-    ],
+    ] as { trait_type: string; value: unknown; display_type?: string; max_value?: number }[],
     properties: {
       token_id: 23,
       seed,
@@ -50,13 +51,14 @@ describe('published artwork details', () => {
         fate: 'Eternal Dance',
         chaos: 17,
         syzygies: 1,
+        round: 0,
+        masses: [141.7666122857421, 123.42091484633418, 148.542917056232],
         integrator: 'yoshida4',
         simulationSteps: 1_000_000,
         braidCrossings: 33,
       },
     });
-    // Simulation masses/energy carry no physical-unit contract and stay out of the UI.
-    expect(result.details).not.toHaveProperty('masses');
+    // Energy carries no published unit contract and stays out of the record.
     expect(result.details).not.toHaveProperty('total_energy');
   });
 
@@ -110,7 +112,7 @@ describe('published artwork details', () => {
     document.attributes = [
       { trait_type: 'Structure', value: 'Orbit Ribbons' },
       { trait_type: 'Structure', value: 'Triangle Web' },
-      { trait_type: 'Palette', value: 'Jade\u202e Mono' },
+      { trait_type: 'Palette', value: 'Jade‮ Mono' },
       { trait_type: 'Spectral Class', value: 'x'.repeat(121) },
       { trait_type: 'Mass Balance', value: '' },
       { trait_type: 'Fate', value: 'Eternal\nDance' },
@@ -128,7 +130,7 @@ describe('published artwork details', () => {
     },
   );
 
-  it('keeps valid zero values and strips unknown traits, URLs, and prose', () => {
+  it('keeps valid zero values and the publisher’s description, and strips unknown traits and URLs', () => {
     const document = {
       ...metadata(),
       attributes: [
@@ -144,7 +146,9 @@ describe('published artwork details', () => {
     };
     const result = parseArtworkDetails(document, 23, seed);
     expect(result.details).toMatchObject({ chaos: 0, syzygies: 0 });
-    expect(result.details).not.toHaveProperty('description');
+    expect(result.details?.description).toBe('An unrelated claim.');
+    expect(result.details).not.toHaveProperty('external_url');
+    expect(result.details).not.toHaveProperty('image');
     expect(result.details?.sourceUrl).toBe(`${ART_API_ORIGIN}/metadata/23`);
   });
 
@@ -158,25 +162,140 @@ describe('published artwork details', () => {
         simulation: { steps: 0, integrator: null, braid: { crossings: -1 } },
       },
     };
-    expect(parseArtworkDetails(document, 23, seed).details).toMatchObject({
-      metadataVersion: undefined,
-      integrator: undefined,
-      simulationSteps: undefined,
-      braidCrossings: undefined,
-    });
+    const absent = ['metadataVersion', 'integrator', 'simulationSteps', 'braidCrossings'];
+    const parsed = parseArtworkDetails(document, 23, seed).details;
+    for (const key of absent) expect(parsed).not.toHaveProperty(key);
     for (const simulation of [null, [], 'invalid', { braid: 'invalid' }]) {
-      expect(
-        parseArtworkDetails(
-          { ...metadata(), properties: { token_id: 23, seed, simulation } },
-          23,
-          seed,
-        ).details,
-      ).toMatchObject({
-        integrator: undefined,
-        simulationSteps: undefined,
-        braidCrossings: undefined,
-      });
+      const result = parseArtworkDetails(
+        { ...metadata(), properties: { token_id: 23, seed, simulation } },
+        23,
+        seed,
+      ).details;
+      for (const key of absent.slice(1)) expect(result).not.toHaveProperty(key);
     }
+  });
+});
+
+describe('the publisher’s generation and selection facts', () => {
+  function published() {
+    const document = metadata();
+    document.attributes.push(
+      { trait_type: 'Underlay', value: 'Harmonic Weave' },
+      { trait_type: 'Wildcard', value: 'Yes' },
+      { trait_type: 'Allocation', value: 'Stellar Selection' },
+      { trait_type: 'Imprinted', value: 1786491506, display_type: 'date' },
+    );
+    return {
+      ...document,
+      name: 'Cosmic Signature #23',
+      description: 'Three bodies trace orbit ribbons.',
+      properties: {
+        ...document.properties,
+        generation: {
+          palette: {
+            dominant_wavelength_nm: 632 as number,
+            body_base_hues_deg: [19.2, 22.5, 9.2] as number[],
+            family: 'Rose Mono',
+          },
+          borda: {
+            selected_index: 77741,
+            total_candidates: 100000,
+            chaos_weight: 1,
+            equil_weight: 5.8429,
+            aesthetic_score: 1,
+            selection_score: 1.075,
+          },
+          drift: { orbit_eccentricity: 0.4007 },
+          structure: { underlay: { alpha: 0.29 } },
+        },
+        simulation: {
+          ...document.properties.simulation,
+          masses: [...document.properties.simulation.masses] as number[],
+          fate: { outcome: 'eternal_dance' },
+        },
+      },
+    };
+  }
+
+  it('exposes every validated field the entry sets, and nothing it cannot vouch for', () => {
+    const { details } = parseArtworkDetails(published(), 23, seed);
+    expect(details).toMatchObject({
+      name: 'Cosmic Signature #23',
+      description: 'Three bodies trace orbit ribbons.',
+      underlay: 'Harmonic Weave',
+      wildcard: true,
+      allocation: 'Stellar Selection',
+      round: 0,
+      imprintedAt: '2026-08-11T23:38:26.000Z',
+      wavelengthNm: 632,
+      hueDegrees: [19.2, 22.5, 9.2],
+      paletteFamily: 'Rose Mono',
+      underlayAlpha: 0.29,
+      eccentricity: 0.4007,
+      borda: {
+        selectedIndex: 77741,
+        totalCandidates: 100000,
+        chaosWeight: 1,
+        equilibriumWeight: 5.8429,
+        aestheticScore: 1,
+        selectionScore: 1.075,
+      },
+      fateOutcome: 'eternal_dance',
+    });
+  });
+
+  it('drops a wavelength outside visible light, a selection outside its candidates, and malformed triples', () => {
+    const document = published();
+    document.properties.generation.palette.dominant_wavelength_nm = 900;
+    document.properties.generation.borda.selected_index = 100000;
+    document.properties.generation.palette.body_base_hues_deg = [1, 2];
+    document.properties.simulation.masses = [1, 2, 3, 4];
+    document.attributes.push({ trait_type: 'Wildcard', value: 'Maybe' });
+    const { details, status } = parseArtworkDetails(document, 23, seed);
+    expect(status).toBe('available');
+    expect(details).not.toHaveProperty('wavelengthNm');
+    expect(details).not.toHaveProperty('borda');
+    expect(details).not.toHaveProperty('hueDegrees');
+    expect(details).not.toHaveProperty('masses');
+    expect(details).not.toHaveProperty('wildcard');
+    expect(details?.paletteFamily).toBe('Rose Mono');
+  });
+
+  it('treats identity, dates and prose alone as a pending record', () => {
+    const result = parseArtworkDetails(
+      {
+        name: 'Cosmic Signature #23',
+        description: 'Prose only.',
+        attributes: [
+          { trait_type: 'Round', value: 0 },
+          { trait_type: 'Imprinted', value: 1786491506 },
+        ],
+        properties: { token_id: 23, seed },
+      },
+      23,
+      seed,
+    );
+    expect(result.status).toBe('pending');
+    expect(result.details).toMatchObject({ round: 0, imprintedAt: '2026-08-11T23:38:26.000Z' });
+  });
+
+  it('maps an indexed work to the same record shape, for the identical seed only by contract', () => {
+    const work = indexedWork(31)!;
+    const details = detailsFromIndexedWork(work);
+    expect(details).toMatchObject({
+      tokenId: 31,
+      seed: work.seed,
+      sourceUrl: `${ART_API_ORIGIN}/metadata/31`,
+      structure: 'Orbit Ribbons',
+      underlay: 'Harmonic Weave',
+      fate: 'Eternal Dance',
+      round: 1,
+      wavelengthNm: 632,
+      chaos: 13,
+      syzygies: 0,
+      borda: { selectedIndex: 77741, totalCandidates: 100000 },
+    });
+    expect(details.masses).toHaveLength(3);
   });
 });
 

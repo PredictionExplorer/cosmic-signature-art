@@ -24,8 +24,17 @@ vi.mock('@/lib/auction/config', () => ({
   rpcUrl: 'https://rpc.invalid.example',
   expectedCodeHash: undefined,
 }));
+// Observe the theatre hush while letting the real provider reflect it.
+vi.mock('./motion-provider', async (importOriginal) => {
+  const original = await importOriginal<typeof import('./motion-provider')>();
+  return {
+    ...original,
+    setTheatre: vi.fn((value: 'playing' | 'hushed') => original.setTheatre(value)),
+  };
+});
 
 import { LiveAuction } from './live-auction';
+import { MotionProvider, setTheatre } from './motion-provider';
 import { AuctionConfigurationError } from '@/lib/auction/client';
 
 const AUCTION = '0x1111111111111111111111111111111111111111' as Address;
@@ -436,7 +445,7 @@ describe('LiveAuction gallery presentation and review accessibility', () => {
     // Safari can leave focus on the input when a pointer activates the submit button.
     fireEvent.submit(input.closest('form')!);
     const reviewDialog = await screen.findByRole('dialog');
-    expect(within(reviewDialog).getByText('Signature 100 · ETH')).toBeVisible();
+    expect(within(reviewDialog).getByText('№ 100 · ETH')).toBeVisible();
     const cancel = within(reviewDialog).getByRole('button', { name: t.cancel });
     expect(cancel).toHaveFocus();
     expect(document.body.style.overflow).toBe('hidden');
@@ -620,5 +629,87 @@ describe('LiveAuction lot and provider session boundaries', () => {
     );
     expect(within(dialog).getByText(t.reviewChanged)).toBeVisible();
     expect(mocks.submitAction).not.toHaveBeenCalled();
+  });
+});
+
+describe('LiveAuction theatre hush', () => {
+  function stubMatchMedia() {
+    vi.stubGlobal(
+      'matchMedia',
+      vi.fn().mockReturnValue({
+        matches: false,
+        media: '(prefers-reduced-motion: reduce)',
+        onchange: null,
+        addEventListener: vi.fn(),
+        removeEventListener: vi.fn(),
+        addListener: vi.fn(),
+        removeListener: vi.fn(),
+        dispatchEvent: () => true,
+      }),
+    );
+  }
+  async function reviewInsideTheatre(tokenId = 100) {
+    stubMatchMedia();
+    const view = render(
+      <MotionProvider>
+        <LiveAuction tokenId={tokenId} t={t} locale="en" />
+      </MotionProvider>,
+    );
+    const site = view.container.firstElementChild!;
+    expect(site).toHaveAttribute('data-theatre', 'playing');
+    const user = userEvent.setup();
+    await user.click(await screen.findByRole('button', { name: 'Test wallet' }));
+    await user.type(await screen.findByRole('textbox', { name: t.bidTotal }), '1');
+    await user.click(screen.getByRole('button', { name: t.bidReviewAction }));
+    const dialog = await screen.findByRole('dialog');
+    expect(site).toHaveAttribute('data-theatre', 'hushed');
+    expect(vi.mocked(setTheatre)).toHaveBeenLastCalledWith('hushed');
+    return { view, site, user, dialog };
+  }
+  afterEach(() => {
+    vi.unstubAllGlobals();
+    setTheatre('playing');
+  });
+
+  it('hushes the theatre while a bid is under review and restores it on cancel', async () => {
+    const { site, user, dialog } = await reviewInsideTheatre();
+    await user.click(within(dialog).getByRole('button', { name: t.cancel }));
+    await waitFor(() => expect(site).toHaveAttribute('data-theatre', 'playing'));
+    expect(vi.mocked(setTheatre)).toHaveBeenLastCalledWith('playing');
+  });
+
+  it('keeps the theatre hushed while a submitted transaction is pending and restores it once it settles', async () => {
+    const submission = deferred<unknown>();
+    mocks.submitAction.mockImplementation((_provider, _account, _token, _action, onHash) => {
+      onHash(HASH);
+      return submission.promise;
+    });
+    const { site, user, dialog } = await reviewInsideTheatre();
+    await user.click(within(dialog).getByRole('button', { name: t.confirmBid }));
+    expect(await screen.findByText(t.transactionPending)).toBeVisible();
+    expect(screen.queryByRole('dialog')).toBeNull();
+    expect(site).toHaveAttribute('data-theatre', 'hushed');
+    await act(async () => {
+      submission.resolve({ status: 'success', transactionHash: HASH });
+    });
+    expect(await screen.findByText(t.transactionConfirmed)).toBeVisible();
+    await waitFor(() => expect(site).toHaveAttribute('data-theatre', 'playing'));
+  });
+
+  it('hands the room back when navigation replaces a reviewed lot', async () => {
+    const { view, site } = await reviewInsideTheatre();
+    view.rerender(
+      <MotionProvider>
+        <LiveAuction tokenId={101} t={t} locale="en" />
+      </MotionProvider>,
+    );
+    expect(screen.queryByRole('dialog')).toBeNull();
+    await waitFor(() => expect(site).toHaveAttribute('data-theatre', 'playing'));
+  });
+
+  it('hands the room back when a reviewed lot unmounts', async () => {
+    const { view } = await reviewInsideTheatre();
+    view.unmount();
+    expect(vi.mocked(setTheatre)).toHaveBeenLastCalledWith('playing');
   });
 });

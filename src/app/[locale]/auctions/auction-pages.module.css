@@ -1,186 +1,62 @@
+/* The page keeps the 9 px rhythm the lot strip set: 27, 36, 54, 72. */
 .page,
 .lotPage {
-  padding-bottom: 25px;
-}
-.hero {
-  display: grid;
-  grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr);
-  gap: 24px 5vw;
-  align-items: center;
-  padding: clamp(45px, 6vw, 90px) 0 55px;
-}
-.hero > :global([data-auction-exhibition]) {
-  grid-column: 2;
-  grid-row: 1 / span 2;
-}
-.introduction {
-  grid-column: 1;
-  grid-row: 1;
-  max-width: 500px;
-}
-.invitation {
-  grid-column: 1;
-  grid-row: 2;
-  align-self: start;
-}
-.introduction h1 {
-  font-size: clamp(70px, 7.3vw, 118px);
-  line-height: 0.95;
-  letter-spacing: -0.045em;
-  margin: 25px 0 30px;
-  text-wrap: balance;
-}
-.lead {
-  font: 30px/1.15 var(--serif);
-  max-width: 390px;
-}
-.copy {
-  color: var(--muted);
-  font-size: 12px;
-  line-height: 1.9;
-  max-width: 390px;
-  margin-top: 0;
-}
-.preparing {
-  font-size: 11px;
-  line-height: 1.7;
-  margin-top: 24px;
-  border-left: 1px solid #8a795b;
-  padding-left: 12px;
-}
-.invitation > a {
-  margin-top: 26px;
-  font-size: 11px;
+  padding-bottom: 27px;
 }
 .catalogue {
-  scroll-margin-top: 30px;
+  scroll-margin-top: var(--head);
 }
 .rules {
   border-top: 1px solid var(--rule);
-  margin-top: 70px;
-  padding-top: 32px;
-  scroll-margin-top: 30px;
+  margin-top: 72px;
+  padding-top: 36px;
+  scroll-margin-top: var(--head);
 }
 .rulesHeading {
   display: flex;
   align-items: end;
   justify-content: space-between;
   flex-wrap: wrap;
-  gap: 25px;
-  margin-bottom: 35px;
+  gap: 27px;
+  margin-bottom: 36px;
 }
 .rulesHeading h2 {
-  font-size: clamp(40px, 4.3vw, 66px);
+  font-size: var(--fs-chapter);
   margin-top: 18px;
 }
-.rulesHeading > a {
-  font-size: 11px;
+/* The lot page: the plate first, then the lot strip, with the way to the record at its left. */
+.lotPage {
+  padding-bottom: 0;
 }
-.lotHeading {
-  position: relative;
-  margin: 12px 0 40px;
-}
-.lotHeading h1 {
-  font-size: clamp(64px, 6vw, 96px);
-  margin-top: 18px;
-}
-.lotHeading > a {
-  position: absolute;
-  right: 0;
-  bottom: 12px;
-  font-size: 11px;
-}
-.lotLayout {
+.lotStrip {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(340px, 390px);
-  gap: clamp(28px, 3.5vw, 65px);
+  grid-template-columns: minmax(0, 1fr) minmax(320px, 420px);
+  gap: 36px var(--gutter);
   align-items: start;
+  padding: 36px var(--gutter) 54px;
+  border-top: 1px solid var(--rule);
 }
-.lotArtwork {
-  min-width: 0;
+.lotIdentity {
+  display: grid;
+  gap: 18px;
+  justify-items: start;
+  align-content: start;
 }
 .bidRail {
   min-width: 0;
-  position: sticky;
-  top: 24px;
-}
-.mediaLoading {
   display: grid;
-  place-items: center;
-  aspect-ratio: 3456/2234;
-  border-block: 1px solid var(--rule);
+  gap: 18px;
+}
+.lotKicker {
   color: var(--muted);
-  font: 50px var(--serif);
-}
-.artLabel {
-  padding: 25px 24px 0;
-  border-top: 1px solid var(--rule);
-  display: flex;
-  justify-content: space-between;
-  gap: 30px;
-  flex-wrap: wrap;
-}
-.artLabel p {
-  max-width: 360px;
-  font-size: 12px;
-  line-height: 1.9;
-  color: var(--muted);
-}
-.artLabel a {
-  align-self: start;
-  font-size: 11px;
 }
 @media (max-width: 1000px) {
-  .hero {
-    gap: 30px;
-  }
-  .lotLayout {
+  .lotStrip {
     grid-template-columns: minmax(0, 1fr);
-    gap: 35px;
-  }
-  .bidRail {
-    position: static;
-    max-width: 650px;
-    width: 100%;
-    margin-inline: auto;
   }
 }
 @media (max-width: 700px) {
-  .hero {
-    grid-template-columns: 1fr;
-    padding-top: 40px;
-    gap: 35px;
-  }
-  .hero > :global([data-auction-exhibition]) {
-    grid-column: 1;
-    grid-row: 2;
-  }
-  .invitation {
-    grid-row: 3;
-  }
-  .introduction {
-    max-width: none;
-  }
-  .introduction h1 {
-    font-size: 70px;
-    max-width: 420px;
-    margin-bottom: 24px;
-  }
-  .lead {
-    font-size: 27px;
-  }
-  .lotHeading > a {
-    position: static;
-    margin-top: 20px;
-  }
-  .lotHeading {
-    margin-bottom: 28px;
-  }
-  .artLabel {
-    padding-inline: 0;
-    gap: 20px;
-  }
   .rules {
-    margin-top: 50px;
+    margin-top: 54px;
   }
 }

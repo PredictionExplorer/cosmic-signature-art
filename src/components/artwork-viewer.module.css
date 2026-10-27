@@ -1,262 +1,187 @@
+/* The viewer: a plate under the running head, its strip, the night wing, and the neighbours. */
 .room {
-  --room-ink: var(--ink);
-  --room-muted: var(--muted);
-  --room-rule: var(--rule);
-  margin-inline: calc(-1 * var(--gutter));
-  padding: 0 var(--gutter) 36px;
-  background: var(--paper);
-  color: var(--room-ink);
-  transition:
-    background-color 650ms ease,
-    color 450ms ease;
-}
-.room[data-expression='light'] {
-  --room-ink: #f1ebdf;
-  --room-muted: #b8b1a4;
-  --room-rule: #f1ebdf38;
-  background: #000;
-}
-.auction {
-  margin-inline: 0;
-  padding: 0 24px 24px;
-  container-type: inline-size;
-}
-.auction .topbar {
-  min-height: 72px;
-  gap: 16px;
-}
-.auction .topbar > p {
-  flex-basis: 100%;
-  margin-top: 16px;
-}
-.auction .expressions {
-  margin-left: 0;
-}
-.auction .enlarge {
-  margin-left: auto;
-  padding-left: 0;
-}
-.auction .enlarge span {
-  display: none;
-}
-.auction .plate {
-  width: 100%;
-}
-.auction .rail {
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 14px;
-}
-.auction .ending {
-  font-size: 30px;
-}
-@container (max-width: 560px) {
-  .auction .transport {
-    gap: 12px;
-  }
-  .auction .transport :global(.progress-track) {
-    display: none;
-  }
-  .auction .previewLabel {
-    margin-left: auto;
-  }
-}
-.topbar {
-  display: flex;
-  align-items: center;
-  gap: 25px;
-  min-height: 82px;
-  flex-wrap: wrap;
-  border-top: 1px solid var(--room-rule);
-}
-.topbar > p {
-  font-size: 9px;
-  color: var(--room-muted);
-}
-.expressions {
-  display: flex;
-  align-items: center;
-  gap: 24px;
-  margin-left: auto;
-}
-.expressions button {
-  display: flex;
-  gap: 10px;
-  align-items: baseline;
-  padding: 14px 0;
-  min-height: 48px;
-  font-family: var(--serif);
-  font-size: 28px;
-  color: var(--room-muted);
-  border-bottom: 1px solid transparent;
-}
-.expressions button[aria-pressed='true'] {
-  color: var(--room-ink);
-  border-bottom-color: currentColor;
-}
-.expressions button[aria-busy='true'] {
-  border-bottom-style: dashed;
-  border-bottom-color: currentColor;
-}
-.expressions button span {
-  font-family: var(--font-sans);
-  font-size: 8px;
-}
-.enlarge {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-  min-height: 44px;
-  font-size: 10px;
-  padding-left: 24px;
-}
-.media {
-  min-width: 0;
-  padding: 12px 0 24px;
-}
-.plate {
   position: relative;
-  width: min(100%, calc(max(260px, 66svh) * 1.547));
-  margin: 0 auto;
 }
-.paired {
-  width: 100%;
+.gallery,
+.home,
+.auction {
+  margin: 0;
+}
+/* The Walk's shared surface fills the plate so the work lands on itself. */
+.surface {
+  height: 100%;
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-  gap: 24px;
-  align-items: center;
+  place-items: center;
 }
-.plate > img {
-  width: 100%;
-  height: auto;
-}
-.lower {
-  max-width: 1320px;
-  margin: 0 auto;
-}
-.transport {
+.wordsRow {
   display: flex;
   align-items: center;
-  flex-wrap: wrap;
   gap: 18px;
-  border-top: 1px solid var(--room-rule);
-  min-height: 60px;
-  font-size: 11px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
 }
-.transport button {
+.word {
   display: inline-flex;
   align-items: center;
-  gap: 7px;
   min-height: 44px;
-}
-.transport button[aria-pressed='true'] {
+  font-size: var(--fs-control);
+  color: var(--type);
   text-decoration: underline;
-  text-underline-offset: 5px;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.3em;
+  text-decoration-color: transparent;
+  transition: text-decoration-color var(--t-blink) var(--ease-settle);
 }
-.transport :global(.progress-track) {
-  flex: 1;
-  background: var(--room-rule);
-  min-width: 35px;
+.word:hover,
+.word:focus-visible,
+.word[aria-pressed='true'] {
+  text-decoration-color: currentColor;
 }
-.transport :global(.progress-track i) {
-  background: var(--room-ink);
+.word[aria-busy='true'] {
+  text-decoration-color: currentColor;
+  text-decoration-style: dotted;
 }
-.clock {
-  font-size: 9px;
-  font-variant-numeric: tabular-nums;
-  color: var(--room-muted);
+.clock,
+.state {
+  font-family: var(--font-mono);
+  font-size: var(--fs-folio);
+  font-variant-numeric: tabular-nums lining-nums;
+  color: var(--muted);
+  white-space: nowrap;
 }
-.previewLabel {
-  font-size: 9px;
-  color: var(--room-muted);
+.state {
+  font-variant-caps: all-small-caps;
+  letter-spacing: 0.08em;
 }
-.rail {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 30px;
-  border-top: 1px solid var(--room-rule);
-  padding-top: 24px;
+/* The home's one line, italic at 15 px, signed. */
+.line {
+  font-size: var(--fs-control);
+  line-height: 1.6;
+  white-space: normal;
+  color: var(--type);
+  max-width: 44em;
 }
-.ending {
-  font: 36px/1.15 var(--serif);
-  max-width: 400px;
-  letter-spacing: -0.025em;
+.line em {
+  font-style: italic;
 }
-.actions {
-  display: flex;
-  gap: 30px;
-  flex-wrap: wrap;
+.line .folio,
+.line :global(.folio) {
+  color: var(--muted);
+  margin-left: 12px;
+  white-space: nowrap;
 }
-.actions button {
-  font-size: 11px;
-  border: 0;
-  min-height: 44px;
+/* Sit: the strip and the time line fade while the film plays to its still; any input returns them. */
+.room :global(.strip),
+.room :global(.time-line) {
+  transition: opacity var(--t-chrome) var(--ease-settle);
+}
+.room[data-sit] :global(.strip),
+.room[data-sit] :global(.time-line) {
+  opacity: 0;
+  pointer-events: none;
+  transition-duration: var(--t-sit);
 }
 .status {
-  margin-top: 18px;
-  font-size: 11px;
-  color: var(--room-muted);
+  padding: 9px var(--gutter);
+  font-size: var(--fs-folio);
+  color: var(--muted);
 }
-:global(.motion-paused) .room {
+/* The hard-edge night wing's second screen. */
+.echo {
+  min-height: calc(var(--plate-height) + var(--strip));
+}
+/* Beat 9: the neighbours. */
+.neighbours {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: center;
+  gap: 24px;
+  padding: 18px var(--gutter);
+  border-top: 1px solid var(--rule);
+  border-bottom: 1px solid var(--rule);
+  background: var(--ground);
+  color: var(--type);
+}
+.step {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 44px;
+  font-size: var(--fs-control);
+  font-variant-numeric: tabular-nums lining-nums;
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.3em;
+  text-decoration-color: transparent;
+  transition: text-decoration-color var(--t-blink) var(--ease-settle);
+}
+.step:hover,
+.step:focus-visible {
+  text-decoration-color: currentColor;
+}
+.stepNext {
+  justify-content: flex-end;
+  flex-direction: row-reverse;
+}
+.step img {
+  height: 36px;
+  width: auto;
+  background: var(--paper);
+}
+.step img[data-material='light'] {
+  background: #000;
+}
+.stepLabel {
+  font-family: var(--font-mono);
+  font-size: var(--fs-control);
+}
+.between {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0;
+  text-align: center;
+  font-size: var(--fs-control);
+}
+.spectral,
+.collect {
+  font-variant-numeric: tabular-nums lining-nums;
+}
+:global(.motion-paused) .room :global(.strip),
+:global(.motion-paused) .word,
+:global(.motion-paused) .step {
   transition: none;
 }
-@media (prefers-reduced-motion: reduce) {
-  .room {
-    transition: none;
+@media (max-width: 767px) {
+  /* The phone's art screen is still a screen: the 100 vw plate at its top, the strip beneath,
+     the sheet's own tone to the fold. The night wing keeps a whole screen to draw across, so
+     its two-screen travel and the view() range agree as they do on a desk. The lot page's
+     plate stays compact above the sale. */
+  .gallery [data-plate-ground],
+  .home [data-plate-ground] {
+    min-height: calc(var(--plate-height) + var(--strip));
   }
-}
-@media (max-width: 700px) {
-  .topbar {
-    gap: 8px 18px;
-    padding: 14px 0;
-  }
-  .topbar > p {
-    flex-basis: 100%;
-  }
-  .expressions {
-    margin-left: 0;
-    gap: 24px;
-  }
-  .expressions button {
-    font-size: 27px;
-    padding: 6px 0;
-  }
-  .enlarge {
-    margin-left: auto;
-    padding-left: 0;
-  }
-  .enlarge span {
-    display: none;
-  }
-  .media {
-    padding: 8px 0 18px;
-  }
-  .paired {
+  .neighbours {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
     gap: 12px;
   }
-  .transport {
-    gap: 10px;
-    font-size: 10px;
-    padding-block: 8px;
+  .between {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    align-items: flex-start;
+    text-align: left;
   }
-  .transport :global(.progress-track) {
+  .step img {
     display: none;
   }
-  .previewLabel {
-    margin-left: auto;
+  .line {
+    display: none;
   }
-  .rail {
-    align-items: flex-start;
-    flex-direction: column;
-    gap: 14px;
-    padding-top: 22px;
-  }
-  .ending {
-    font-size: 30px;
-  }
-  .actions {
-    gap: 10px 25px;
+}
+@media (prefers-reduced-motion: reduce) {
+  .room :global(.strip),
+  .word,
+  .step {
+    transition: none;
   }
 }

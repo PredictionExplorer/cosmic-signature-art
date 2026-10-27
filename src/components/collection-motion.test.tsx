@@ -4,7 +4,7 @@ import { getCuratedArtwork } from '@/lib/art/catalog';
 import { useCollectionMotion } from './collection-motion';
 import { CollectionPreview } from './collection-preview';
 
-const motion = vi.hoisted(() => ({ paused: false }));
+const motion = vi.hoisted(() => ({ paused: false, theatre: 'playing' as 'playing' | 'hushed' }));
 vi.mock('./motion-provider', () => ({ useMotion: () => motion }));
 
 class PreviewObserver implements IntersectionObserver {
@@ -66,7 +66,10 @@ const previewMedia = new Map(
 );
 
 function Grid({ enabled = true }: { enabled?: boolean }) {
-  const { gridRef, activeId, intent, clearIntent, fail } = useCollectionMotion({ enabled, ids });
+  const { gridRef, activeId, intent, clearIntent, fail, rest } = useCollectionMotion({
+    enabled,
+    ids,
+  });
   return (
     <div ref={gridRef}>
       {ids.map((id) => (
@@ -85,6 +88,7 @@ function Grid({ enabled = true }: { enabled?: boolean }) {
             alt={`Signature ${id}`}
             active={activeId === id}
             onFailure={(reason) => fail(id, reason)}
+            onEnded={() => rest(id)}
           />
         </a>
       ))}
@@ -121,6 +125,7 @@ function active(container: HTMLElement) {
 beforeEach(() => {
   vi.useFakeTimers();
   motion.paused = false;
+  motion.theatre = 'playing';
   PreviewObserver.instances = [];
   network = new Network();
   vi.stubGlobal('IntersectionObserver', PreviewObserver);
@@ -300,7 +305,7 @@ describe('bounded collection motion', () => {
     expect(HTMLMediaElement.prototype.play).toHaveBeenCalledOnce();
     expect(
       new URL((screen.getByRole('img', { name: 'Signature 23' }) as HTMLImageElement).src).pathname,
-    ).toBe('/art/23-ink.webp');
+    ).toBe('/art/23-ink-640.webp');
     settle();
     expect(container.querySelector('video')).toBeNull();
     fireEvent.focus(screen.getByRole('link', { name: 'Signature 31' }));
@@ -339,5 +344,107 @@ describe('bounded collection motion', () => {
     expect(active(container)).toHaveAttribute('data-preview-id', '23');
     await act(async () => fireEvent.loadedMetadata(container.querySelector('video')!));
     expect(HTMLMediaElement.prototype.play).toHaveBeenCalledTimes(2);
+  });
+
+  it('a finished excerpt rests on its still and hands the lease to the next visible work', () => {
+    const { container } = render(<Grid />);
+    ids.forEach((id) => position(id));
+    settle();
+    const first = container.querySelector('video')!;
+    fireEvent.loadedMetadata(first);
+    fireEvent.playing(first);
+    fireEvent.ended(first);
+    act(() => vi.advanceTimersByTime(1_900));
+    expect(first).not.toHaveAttribute('src');
+    act(() => vi.advanceTimersByTime(240));
+    expect(active(container)).toHaveAttribute('data-preview-id', '31');
+    // Automatic selection leaves the rested work still; explicit focus replays it.
+    fireEvent.focus(screen.getByRole('link', { name: 'Signature 23' }));
+    act(() => vi.advanceTimersByTime(140));
+    expect(active(container)).toHaveAttribute('data-preview-id', '23');
+    expect(container.querySelector('video')).toHaveAttribute('src', '/art/previews/23-ink.mp4');
+  });
+
+  it.each(['focus', 'hover'] as const)(
+    'a card that keeps %s plays its excerpt once; only fresh interest replays it',
+    (kind) => {
+      const { container } = render(<Grid />);
+      ids.forEach((id) => position(id));
+      settle();
+      const card = screen.getByRole('link', { name: 'Signature 31' });
+      const show = () =>
+        kind === 'focus'
+          ? fireEvent.focus(card)
+          : fireEvent.pointerEnter(card, { pointerType: 'mouse' });
+      const hide = () => (kind === 'focus' ? fireEvent.blur(card) : fireEvent.pointerLeave(card));
+      show();
+      act(() => vi.advanceTimersByTime(140));
+      expect(active(container)).toHaveAttribute('data-preview-id', '31');
+      const film = card.querySelector('video')!;
+      fireEvent.loadedMetadata(film);
+      fireEvent.playing(film);
+      fireEvent.ended(film);
+      act(() => vi.advanceTimersByTime(1_900));
+      expect(film).not.toHaveAttribute('src');
+      // The interest that woke the card is spent: the settled selector moves on.
+      act(() => vi.advanceTimersByTime(240));
+      expect(active(container)).toHaveAttribute('data-preview-id', '23');
+      expect(card.querySelector('video')).toBeNull();
+      expect(HTMLMediaElement.prototype.play).toHaveBeenCalledOnce();
+      fireEvent.scroll(window);
+      act(() => vi.advanceTimersByTime(240));
+      expect(card.querySelector('video')).toBeNull();
+      // Fresh explicit interest replays it.
+      hide();
+      show();
+      act(() => vi.advanceTimersByTime(140));
+      expect(active(container)).toHaveAttribute('data-preview-id', '31');
+      expect(card.querySelector('video')).toHaveAttribute('src', '/art/previews/31-ink.mp4');
+    },
+  );
+
+  it('a lease lost during the hold or the fade still rests the finished excerpt', () => {
+    const { container } = render(<Grid />);
+    ids.forEach((id) => position(id));
+    settle();
+    expect(active(container)).toHaveAttribute('data-preview-id', '23');
+    const first = container.querySelector('video')!;
+    fireEvent.loadedMetadata(first);
+    fireEvent.playing(first);
+    fireEvent.ended(first);
+    act(() => vi.advanceTimersByTime(600));
+    // The card scrolls out while its last frame is still held; the rest is recorded anyway.
+    act(() => {
+      PreviewObserver.instances.at(-1)!.report([23], false);
+      vi.advanceTimersByTime(240);
+    });
+    expect(first).not.toHaveAttribute('src');
+    act(() => {
+      PreviewObserver.instances.at(-1)!.report([31, 35], false);
+      vi.advanceTimersByTime(240);
+    });
+    expect(active(container)).toBeNull();
+    // Everything returns to view: the first card would win again, but it has rested.
+    settle();
+    expect(active(container)).toHaveAttribute('data-preview-id', '31');
+    // Explicit focus still replays the rested work.
+    fireEvent.focus(screen.getByRole('link', { name: 'Signature 23' }));
+    act(() => vi.advanceTimersByTime(140));
+    expect(active(container)).toHaveAttribute('data-preview-id', '23');
+  });
+
+  it('a hushed theatre stops every ambient film until it is playing again', () => {
+    const { container, rerender } = render(<Grid />);
+    ids.forEach((id) => position(id));
+    settle();
+    expect(container.querySelector('video')).not.toBeNull();
+    motion.theatre = 'hushed';
+    rerender(<Grid />);
+    expect(container.querySelector('video')).toBeNull();
+    motion.theatre = 'playing';
+    rerender(<Grid />);
+    ids.forEach((id) => position(id));
+    settle();
+    expect(container.querySelector('video')).not.toBeNull();
   });
 });

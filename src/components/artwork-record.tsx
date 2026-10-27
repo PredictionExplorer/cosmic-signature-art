@@ -1,9 +1,11 @@
-import Image from 'next/image';
 import type { ReactNode } from 'react';
-import type { Artwork } from '@/lib/art/types';
+import type { ArtFilm, ArtInterpretation, Artwork } from '@/lib/art/types';
 import type { Messages } from '@/lib/i18n/en';
+import { expressionWord, filmLabel, formatBytes } from '@/lib/i18n/format';
 import type { Locale } from '@/lib/i18n/routing';
-import { NFT_ADDRESS } from '@/lib/site';
+import { indexedAssetUrl, indexedWork, type IndexedWork } from '@/lib/art/collection-index';
+import { CopyButton } from './copy-button';
+import { VerifyDownload, type VerifiableFile } from './verify-download';
 import styles from './artwork-record.module.css';
 
 export function RecordRow({ label, children }: { label: string; children: ReactNode }) {
@@ -15,16 +17,41 @@ export function RecordRow({ label, children }: { label: string; children: ReactN
   );
 }
 
-export function ChainAddress({ address, compact = false }: { address: string; compact?: boolean }) {
+/** `0x7406…6c6c` with the whole address in the accessible name; the full form when asked. */
+export function compactAddress(address: string) {
+  return `${address.slice(0, 6)}…${address.slice(-4)}`;
+}
+
+export function ChainAddress({
+  address,
+  compact = false,
+  copy,
+}: {
+  address: string;
+  compact?: boolean;
+  /** Offer one word that copies the full address; the labels are the visitor's. */
+  copy?: { label: string; copied: string };
+}) {
   return (
-    <a
-      href={`https://arbiscan.io/address/${address}`}
-      target="_blank"
-      rel="noreferrer"
-      aria-label={address}
-    >
-      <code>{compact ? `${address.slice(0, 6)}…${address.slice(-4)}` : address}</code>
-    </a>
+    <span className={styles.address}>
+      <a
+        href={`https://arbiscan.io/address/${address}`}
+        target="_blank"
+        rel="noreferrer"
+        title={address}
+      >
+        <code>{compact ? compactAddress(address) : address}</code>
+        {compact ? <span className="sr-only"> {address}</span> : null}
+      </a>
+      {copy ? (
+        <CopyButton
+          className={styles.copy}
+          value={address}
+          label={copy.label}
+          copied={copy.copied}
+        />
+      ) : null}
+    </span>
   );
 }
 
@@ -38,106 +65,61 @@ export function RecordDate({ value, locale }: { value: string; locale: Locale })
   );
 }
 
-export function ArtworkIdentity({
-  work,
-  locale,
-  t,
-}: {
-  work: Artwork;
-  locale: Locale;
-  t: Messages;
-}) {
-  const named = work.title !== `Signature ${work.id}`;
-  return (
-    <section id="record" className={styles.record} aria-labelledby="record-title">
-      <header className={styles.heading}>
-        <p className="eyebrow">
-          {t.workRecord} / {String(work.id).padStart(3, '0')}
-        </p>
-        <h2 id="record-title">{t.provenanceTitle}</h2>
-        <p>{t.provenanceIntro}</p>
-      </header>
-      {work.provenance.source === 'curated-fallback' ? (
-        <p className="notice">{t.preservedRecord}</p>
-      ) : null}
-      <div className={styles.identity}>
-        <div className={styles.origin}>
-          <p className="eyebrow">{t.origin}</p>
-          {work.mintedAt ? (
-            <p className={styles.originDate}>
-              <RecordDate value={work.mintedAt} locale={locale} />
-            </p>
-          ) : null}
-          <p className={styles.chain}>{t.onChain}</p>
-          {work.provenance.mintTransactionHash ? (
-            <a
-              className="text-link"
-              href={`https://arbiscan.io/tx/${work.provenance.mintTransactionHash}`}
-              target="_blank"
-              rel="noreferrer"
-            >
-              {t.transaction} ↗
-            </a>
-          ) : null}
-        </div>
-        <dl className={styles.facts}>
-          <RecordRow label={t.token}>
-            <span className={styles.number}>№ {String(work.id).padStart(3, '0')}</span>
-          </RecordRow>
-          {named ? (
-            <RecordRow label={t.currentName}>
-              <bdi>{work.title}</bdi>
-            </RecordRow>
-          ) : null}
-          {work.cycle !== undefined ? (
-            <RecordRow label={t.cycle}>
-              {new Intl.NumberFormat(locale).format(work.cycle)}
-            </RecordRow>
-          ) : null}
-          {work.originalRecipient ? (
-            <RecordRow label={t.originalRecipient}>
-              <ChainAddress address={work.originalRecipient} />
-            </RecordRow>
-          ) : null}
-          {work.owner ? (
-            <RecordRow label={t.indexedOwner}>
-              <ChainAddress address={work.owner} />
-              <p className={styles.note}>{t.indexedNote}</p>
-            </RecordRow>
-          ) : null}
-          {work.anchoring?.active ? (
-            <RecordRow label={t.anchoringActive}>
-              {work.anchoring.participant ? (
-                <>
-                  <span className={styles.note}>{t.anchoringParticipant}</span>
-                  <br />
-                  <ChainAddress address={work.anchoring.participant} />
-                </>
-              ) : (
-                t.anchoringActive
-              )}
-            </RecordRow>
-          ) : null}
-          <RecordRow label={t.collectionContract}>
-            <a
-              href={`https://arbiscan.io/token/${NFT_ADDRESS}?a=${work.id}`}
-              target="_blank"
-              rel="noreferrer"
-            >
-              {t.viewChain} ↗
-            </a>
-          </RecordRow>
-          {work.seed ? (
-            <RecordRow label={t.seed}>
-              <code>{work.seed}</code>
-            </RecordRow>
-          ) : null}
-        </dl>
-      </div>
-    </section>
-  );
+/** A date and time in UTC, the way the record states when it was read. */
+export function recordTime(value: Date, locale: Locale) {
+  return `${new Intl.DateTimeFormat(locale, {
+    dateStyle: 'medium',
+    timeStyle: 'short',
+    timeZone: 'UTC',
+  }).format(value)} UTC`;
 }
 
+export function shortHash(hash: string) {
+  return `${hash.slice(0, 4)}…${hash.slice(-4)}`;
+}
+
+function fileFormat(url?: string) {
+  const match = /\.([a-z0-9]+)(?:\?|#|$)/i.exec(url ?? '');
+  if (!match) return undefined;
+  const extension = match[1].toLowerCase();
+  return extension === 'webp' ? 'WebP' : extension === 'mp4' ? 'MP4' : extension.toUpperCase();
+}
+
+/** A label as a line begins: the catalog keeps the sweep lowercase for use mid-sentence. */
+export function sentenceCase(label: string, locale: Locale) {
+  return label.charAt(0).toLocaleUpperCase(locale) + label.slice(1);
+}
+
+const indexFilmIds: Record<string, string> = {
+  normal: 'main',
+  medium: 'medium',
+  slow: 'slow',
+  sweep: 'sweep',
+};
+
+/**
+ * The index knows byte sizes and hashes the live manifest parser does not carry; they are
+ * attached only when the index describes the same seed and the same published path.
+ */
+function indexedMedia(work: Artwork, media: ArtInterpretation): IndexedWork['media']['ink'] {
+  const indexed = indexedWork(work.id);
+  if (!indexed || !work.seed || indexed.seed !== work.seed) return undefined;
+  return media.id === 'ink'
+    ? indexed.media.ink
+    : media.id === 'light'
+      ? indexed.media.light
+      : undefined;
+}
+
+function sameAsset(indexed: IndexedWork | undefined, path: string | undefined, url?: string) {
+  return !!indexed && !!path && !!url && indexedAssetUrl(indexed, path) === url;
+}
+
+/**
+ * Files by medium: the still, the master and every published film of each expression, with
+ * dimensions, duration, size and hash where the publisher states them. Every link leaves the
+ * venue, so every link carries the one outward arrow.
+ */
 export function ArtworkSources({
   work,
   locale,
@@ -148,88 +130,150 @@ export function ArtworkSources({
   t: Messages;
 }) {
   const number = new Intl.NumberFormat(locale, { maximumFractionDigits: 1 });
+  const indexed = indexedWork(work.id);
+  const sameSeed = !!indexed && !!work.seed && indexed.seed === work.seed;
+  const expressionName = (media: ArtInterpretation) => expressionWord(media, t);
+  const line = (parts: (string | undefined)[]) => parts.filter(Boolean).join(' · ');
+  /** The manifest path of a published file, "videos/web/ember.mp4", from its seed-package URL. */
+  const manifestPath = (url?: string) => {
+    if (!url || !work.seed) return undefined;
+    const marker = `/${work.seed}/`;
+    const at = url.indexOf(marker);
+    return at === -1 ? undefined : url.slice(at + marker.length);
+  };
+  const copy = { label: t.copyAddress, copied: t.copied };
+  /** The published hash of a film: its source's, or its own only when it is the published file. */
+  const filmHash = (film: ArtFilm, indexedHash?: string) =>
+    film.sourceSha256 ??
+    (film.delivery === 'original-web' ? film.sha256 : undefined) ??
+    indexedHash;
+  const verifiable: VerifiableFile[] = [];
   return (
     <section className={styles.sources} aria-labelledby="sources-title">
-      <header className={styles.sectionHeading}>
-        <div>
-          <p className="eyebrow">{t.allExpressions}</p>
-          <h2 id="sources-title">{t.sources}</h2>
-        </div>
-        <p>{t.expressionRecordCopy}</p>
-      </header>
+      <h2 id="sources-title" className={styles.sectionTitle}>
+        {t.sources}
+      </h2>
       <div className={styles.editions}>
-        {work.media.map((media) => (
-          <article className={styles.edition} key={media.id}>
-            {media.still ? (
-              <Image
-                src={media.thumbnail ?? media.still}
-                alt={`${t.signature} ${work.id} · ${media.id === 'ink' ? t.ink : media.id === 'light' ? t.light : media.label}`}
-                width={media.width ?? 3456}
-                height={media.height ?? 2234}
-                unoptimized
-              />
-            ) : null}
-            <div>
-              <h3>{media.id === 'ink' ? t.ink : media.id === 'light' ? t.light : media.label}</h3>
-              {media.width && media.height ? (
-                <p className={styles.note}>
-                  {number.format(media.width)} × {number.format(media.height)} px
-                </p>
-              ) : null}
+        {work.media.map((media) => {
+          const facts = indexedMedia(work, media);
+          const stillKnown = sameSeed && sameAsset(indexed, facts?.still?.path, media.sourceUrl);
+          const stillBytes = stillKnown ? facts?.still?.bytes : undefined;
+          const stillHash = media.stillSha256 ?? (stillKnown ? facts?.still?.sha256 : undefined);
+          const stillPath = manifestPath(media.sourceUrl);
+          if (stillHash && stillPath)
+            verifiable.push({
+              label: `${expressionName(media)} · ${t.still}`,
+              path: stillPath,
+              sha256: stillHash,
+            });
+          // The master's hash comes from the still ladder, which hashed the file it cut the rungs from.
+          const masterPath = manifestPath(media.master);
+          if (media.masterSha256 && masterPath)
+            verifiable.push({
+              label: `${expressionName(media)} · ${t.masterFile}`,
+              path: masterPath,
+              sha256: media.masterSha256,
+            });
+          return (
+            <article className={styles.edition} key={media.id}>
+              <h3>{expressionName(media)}</h3>
               <ul>
                 {media.sourceUrl ? (
                   <li>
                     <a href={media.sourceUrl} target="_blank" rel="noreferrer">
-                      {t.originalStill} ↗
+                      {line([
+                        t.still,
+                        fileFormat(media.sourceUrl),
+                        media.width && media.height
+                          ? `${number.format(media.width)} × ${number.format(media.height)} px`
+                          : undefined,
+                        stillBytes ? formatBytes(stillBytes, locale) : undefined,
+                        stillHash ? `sha256 ${shortHash(stillHash)}` : undefined,
+                      ])}{' '}
+                      ↗
                     </a>
+                    {stillHash ? (
+                      <CopyButton className={styles.copy} value={stillHash} {...copy} />
+                    ) : null}
                   </li>
                 ) : null}
                 {media.master ? (
                   <li>
                     <a href={media.master} target="_blank" rel="noreferrer">
-                      {t.masterFile} ↗
+                      {line([
+                        t.masterFile,
+                        fileFormat(media.master),
+                        media.masterSha256 ? `sha256 ${shortHash(media.masterSha256)}` : undefined,
+                      ])}{' '}
+                      ↗
                     </a>
+                    {media.masterSha256 ? (
+                      <CopyButton className={styles.copy} value={media.masterSha256} {...copy} />
+                    ) : null}
                   </li>
                 ) : null}
-                {media.films.map((film) => (
-                  <li key={film.variantKey}>
-                    <a href={film.sourceUrl ?? film.src} target="_blank" rel="noreferrer">
-                      {film.id === 'medium'
-                        ? t.longStudy
-                        : film.id === 'slow'
-                          ? t.extendedStudy
-                          : t.originalFilm}
-                      {film.durationSeconds ? ` · ${number.format(film.durationSeconds)} s` : ''} ↗
-                    </a>
-                  </li>
-                ))}
+                {media.films.map((film) => {
+                  const indexedFilm = facts?.films[indexFilmIds[film.id] ?? film.id];
+                  const href = film.sourceUrl ?? film.src;
+                  const known = sameSeed && sameAsset(indexed, indexedFilm?.path, href);
+                  const hash = filmHash(film, known ? indexedFilm?.sha256 : undefined);
+                  const path = manifestPath(href);
+                  if (hash && path)
+                    verifiable.push({
+                      label: `${expressionName(media)} · ${sentenceCase(filmLabel(film, t), locale)}`,
+                      path,
+                      sha256: hash,
+                    });
+                  return (
+                    <li key={film.variantKey}>
+                      <a href={href} target="_blank" rel="noreferrer">
+                        {line([
+                          sentenceCase(filmLabel(film, t), locale),
+                          film.durationSeconds
+                            ? `${number.format(Math.round(film.durationSeconds))} s`
+                            : undefined,
+                          known && indexedFilm?.width && indexedFilm?.height
+                            ? `${number.format(indexedFilm.width)} × ${number.format(indexedFilm.height)} px`
+                            : undefined,
+                          known && indexedFilm?.bytes
+                            ? formatBytes(indexedFilm.bytes, locale)
+                            : undefined,
+                          hash ? `sha256 ${shortHash(hash)}` : undefined,
+                        ])}{' '}
+                        ↗
+                      </a>
+                      {hash ? <CopyButton className={styles.copy} value={hash} {...copy} /> : null}
+                    </li>
+                  );
+                })}
               </ul>
-            </div>
-          </article>
-        ))}
+            </article>
+          );
+        })}
         {!work.media.length ? <p className={styles.note}>{t.noMediaFiles}</p> : null}
       </div>
-      <details className={styles.sourceLinks}>
-        <summary>
-          {t.sourcesCopy}
-          <span aria-hidden="true">+</span>
-        </summary>
-        <div>
-          {work.provenance.metadataUrl ? (
+      {verifiable.length ? <VerifyDownload files={verifiable} t={t} /> : null}
+      <ul className={styles.records}>
+        {work.provenance.metadataUrl ? (
+          <li>
             <a href={work.provenance.metadataUrl} target="_blank" rel="noreferrer">
               {t.metadataRecord} ↗
             </a>
-          ) : null}
-          {work.provenance.manifestUrl ? (
+          </li>
+        ) : null}
+        {work.provenance.manifestUrl ? (
+          <li>
             <a href={work.provenance.manifestUrl} target="_blank" rel="noreferrer">
               {t.mediaManifest} ↗
             </a>
-          ) : null}
+          </li>
+        ) : null}
+        <li>
           <a href={work.provenance.recordUrl} target="_blank" rel="noreferrer">
             {t.indexedRecord} ↗
           </a>
-        </div>
-      </details>
+        </li>
+      </ul>
     </section>
   );
 }

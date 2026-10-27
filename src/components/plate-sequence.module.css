@@ -1,0 +1,145 @@
+/* Each row of the rhythm is one screen of wall, so one eye line runs through the sequence. */
+.sequence {
+  display: grid;
+  row-gap: 0;
+  padding-bottom: calc(var(--baseline) * 6);
+}
+.row {
+  display: grid;
+  justify-content: center;
+  align-items: start;
+  column-gap: 1px;
+}
+/* The eye line: a sheet in a row of two or three hangs so its measured centre (--centre-y, a
+   fraction of its height, from the plate records) sits at half the band, clamped so neither the
+   sheet nor the caption beneath it (44 px and 9 px) leaves the band. */
+.row[data-shape='2'],
+.row[data-shape='3'] {
+  --eye: 0.5;
+  min-height: var(--plate-height);
+}
+.row[data-shape='2'] .card {
+  --sheet-h: calc(46vw * 2234 / 3456);
+}
+.row[data-shape='3'] .card {
+  --sheet-h: calc(30vw * 2234 / 3456);
+}
+.row[data-shape='2'] .card,
+.row[data-shape='3'] .card {
+  margin-top: clamp(
+    0px,
+    calc(var(--plate-height) * var(--eye) - var(--centre-y, 0.5) * var(--sheet-h)),
+    calc(var(--plate-height) - var(--sheet-h) - 53px)
+  );
+}
+/* The full-bleed plate: the whole band is the sheet's own tone (or the field's black), and the
+   words on it read against that tone: a darker muted on kozo, the night's type on the field. */
+.row[data-shape='1'] {
+  --muted: #5a5a51;
+  grid-template-columns: minmax(0, 1fr);
+  background: var(--plate-ground, var(--ground));
+}
+.row[data-shape='1'][data-material='light'] {
+  --type: var(--night-type);
+  --muted: #b8b5ad;
+  color: var(--type);
+}
+.row[data-shape='2'] {
+  grid-template-columns: repeat(2, 46vw);
+}
+.row[data-shape='3'] {
+  grid-template-columns: repeat(3, 30vw);
+}
+.card {
+  display: grid;
+  min-width: 0;
+  color: inherit;
+}
+.row[data-shape='1'] .card :global(.art-media) {
+  height: var(--plate-height);
+  width: auto;
+  max-width: 100%;
+  margin: 0 auto;
+}
+.caption {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 18px;
+  min-height: 44px;
+  padding-top: 9px;
+  font-size: var(--fs-control);
+}
+.row[data-shape='1'] .caption {
+  min-height: var(--strip);
+  padding: 0 var(--gutter);
+  align-items: center;
+}
+.folio {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums lining-nums;
+}
+/* The label appears only for a hand, a focus or a moving excerpt; the numeral is the caption. */
+.label {
+  color: var(--muted);
+  font-size: var(--fs-folio);
+  font-variant-caps: all-small-caps;
+  letter-spacing: 0.06em;
+  font-variant-numeric: tabular-nums lining-nums;
+  opacity: 0;
+  transition: opacity var(--t-blink) var(--ease-settle);
+}
+.card:hover .label,
+.card:focus-visible .label,
+.card:active .label,
+.card[data-motion='active'] .label {
+  opacity: 1;
+}
+.chapter {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0 24px;
+  min-height: 48px;
+  padding-inline: var(--gutter);
+  border-top: 1px solid var(--rule);
+  font-size: var(--fs-control);
+  font-weight: 400;
+  letter-spacing: 0;
+  line-height: 1.2;
+  margin-bottom: calc(-1 * var(--baseline) * 3);
+}
+.chapterCount,
+.chapterDate {
+  color: var(--muted);
+  font-variant-numeric: tabular-nums lining-nums;
+}
+.chapterDate {
+  font-family: var(--font-mono);
+  font-size: var(--fs-folio);
+}
+@media (max-width: 767px) {
+  /* A phone's wall is its own height: the sheets fill their cells and the eye line rests. */
+  .sequence {
+    row-gap: calc(var(--baseline) * 4);
+  }
+  .row[data-shape='2'],
+  .row[data-shape='3'] {
+    grid-template-columns: repeat(2, calc(50vw - 0.5px));
+    min-height: 0;
+  }
+  .row[data-shape='2'] .card,
+  .row[data-shape='3'] .card {
+    margin-top: 0;
+  }
+  .row[data-shape='1'] .card :global(.art-media) {
+    height: auto;
+    width: 100%;
+  }
+  .caption {
+    padding-inline: 9px;
+  }
+  .row[data-shape='1'] .caption {
+    padding-inline: var(--gutter);
+  }
+}

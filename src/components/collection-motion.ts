@@ -17,12 +17,16 @@ class CollectionMotionController {
   private nodes = new Map<number, HTMLElement>();
   private visible = new Set<number>();
   private failed = new Set<number>();
+  /** Excerpts that have played to their end stay on the still unless a visitor asks. */
+  private rested = new Set<number>();
   private focus: number | null = null;
   private pointer: number | null = null;
   private active: number | null = null;
   private timer: ReturnType<typeof setTimeout> | undefined;
   private attached = false;
   private autoplayBlocked = false;
+  /** Only hover, focus or a press may wake an excerpt; scrolling into view never does. */
+  private intentOnly = false;
 
   subscribe = (listener: () => void) => {
     this.listeners.add(listener);
@@ -57,12 +61,15 @@ class CollectionMotionController {
       const distance = Math.abs((rect.top + rect.bottom) / 2 - innerHeight / 2) / innerHeight;
       candidates.set(id, ratio - Math.min(distance, 1) * 0.25);
     }
-    if (this.focus !== null && candidates.has(this.focus)) return this.publish(this.focus);
-    if (this.pointer !== null && candidates.has(this.pointer)) return this.publish(this.pointer);
+    // Explicit interest replays a rested excerpt; automatic selection leaves it still.
+    if (this.focus !== null && candidates.has(this.focus)) return this.wake(this.focus);
+    if (this.pointer !== null && candidates.has(this.pointer)) return this.wake(this.pointer);
+    if (this.intentOnly) return this.publish(null);
 
     let best: number | null = null;
     let bestScore = -Infinity;
     for (const [id, score] of candidates) {
+      if (this.rested.has(id)) continue;
       if (score > bestScore) {
         best = id;
         bestScore = score;
@@ -74,10 +81,17 @@ class CollectionMotionController {
     this.publish(best);
   }
 
-  attach(grid: HTMLElement, ids: number[]) {
+  private wake(id: number) {
+    this.rested.delete(id);
+    this.publish(id);
+  }
+
+  attach(grid: HTMLElement, ids: number[], intentOnly = false) {
     this.attached = true;
+    this.intentOnly = intentOnly;
     const eligible = new Set(ids);
     this.failed = new Set([...this.failed].filter((id) => eligible.has(id)));
+    this.rested = new Set([...this.rested].filter((id) => eligible.has(id)));
     for (const node of grid.querySelectorAll<HTMLElement>('[data-preview-id]')) {
       const id = Number(node.dataset.previewId);
       if (eligible.has(id)) this.nodes.set(id, node);
@@ -134,17 +148,37 @@ class CollectionMotionController {
     this.schedule();
   };
 
+  /** A finished excerpt releases the lease; another visible work may move. */
+  rest = (id: number) => {
+    this.rested.add(id);
+    // The hover or focus that woke this excerpt is spent; only fresh interest replays it.
+    if (this.pointer === id) this.pointer = null;
+    if (this.focus === id) this.focus = null;
+    if (this.active === id) this.publish(null);
+    this.schedule();
+  };
+
   resetAutoplayBlock = () => {
     this.autoplayBlocked = false;
   };
 }
 
 /** Attach `gridRef` to the grid and `data-preview-id` to each card. */
-export function useCollectionMotion({ enabled, ids }: { enabled: boolean; ids: number[] }) {
-  const { paused } = useMotion();
+export function useCollectionMotion({
+  enabled,
+  ids,
+  intentOnly = false,
+}: {
+  enabled: boolean;
+  ids: number[];
+  /** Wake an excerpt only on hover, focus or a press, never by scrolling it into view. */
+  intentOnly?: boolean;
+}) {
+  const { paused, theatre } = useMotion();
   const { visible, constrained } = useMediaPolicy();
   const policyAllows = visible && !constrained;
-  const allowed = enabled && !paused && policyAllows;
+  // A hushed theatre (a collector reviewing a bid) stops every ambient film.
+  const allowed = enabled && !paused && theatre !== 'hushed' && policyAllows;
   const gridRef = useRef<HTMLDivElement>(null);
   const [controller] = useState(() => new CollectionMotionController());
   const selected = useSyncExternalStore(
@@ -162,8 +196,12 @@ export function useCollectionMotion({ enabled, ids }: { enabled: boolean; ids: n
 
   useEffect(() => {
     if (!allowed || !gridRef.current || typeof IntersectionObserver === 'undefined') return;
-    return controller.attach(gridRef.current, identity ? identity.split(',').map(Number) : []);
-  }, [allowed, controller, identity]);
+    return controller.attach(
+      gridRef.current,
+      identity ? identity.split(',').map(Number) : [],
+      intentOnly,
+    );
+  }, [allowed, controller, identity, intentOnly]);
 
   return {
     gridRef,
@@ -171,5 +209,6 @@ export function useCollectionMotion({ enabled, ids }: { enabled: boolean; ids: n
     intent: controller.intent,
     clearIntent: controller.clearIntent,
     fail: controller.fail,
+    rest: controller.rest,
   };
 }

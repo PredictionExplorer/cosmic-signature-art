@@ -3,10 +3,17 @@ import { Activity, StrictMode } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { getCuratedArtwork } from '@/lib/art/catalog';
 import type { ArtInterpretation } from '@/lib/art/types';
-import { ArtworkMedia } from './artwork-media';
+import { renderToString } from 'react-dom/server';
+import { ArtworkMedia, PLATE_SIZES, cappedSourceSet } from './artwork-media';
 
-const motion = vi.hoisted(() => ({ paused: false }));
+const motion = vi.hoisted(() => ({ paused: false, theatre: 'playing' as 'playing' | 'hushed' }));
 vi.mock('./motion-provider', () => ({ useMotion: () => motion }));
+vi.mock('@/lib/art/plate-records', () => ({
+  getPlateGround: (id: number, expression: string, sha?: string) =>
+    id === 31 && expression === 'ink' && sha
+      ? { stillSha256: sha, tone: '#efe9dd', edge: true }
+      : undefined,
+}));
 
 class VisibilityObserver implements IntersectionObserver {
   static instances: VisibilityObserver[] = [];
@@ -66,6 +73,7 @@ function imagePath(): string {
 
 beforeEach(() => {
   motion.paused = false;
+  motion.theatre = 'playing';
   VisibilityObserver.instances = [];
   vi.stubGlobal('IntersectionObserver', VisibilityObserver);
   vi.spyOn(document, 'visibilityState', 'get').mockReturnValue('visible');
@@ -308,10 +316,47 @@ describe('artwork media delivery', () => {
 
   it('preserves an accessible artwork identity when its image cannot load', () => {
     const onFailure = vi.fn();
-    render(<ArtworkMedia media={light} alt="Signature 31 in light" onFailure={onFailure} />);
+    render(
+      <ArtworkMedia
+        media={{ ...light, thumbnail: undefined }}
+        alt="Signature 31 in light"
+        onFailure={onFailure}
+      />,
+    );
     fireEvent.error(screen.getByRole('img'));
     expect(screen.getByRole('img', { name: 'Signature 31 in light' })).toBeInTheDocument();
     expect(screen.getByRole('img')).not.toHaveAttribute('src');
+    expect(onFailure).toHaveBeenCalledOnce();
+  });
+
+  it('keeps the publisher’s preview as the work when the full still cannot load', () => {
+    vi.useFakeTimers();
+    const onFailure = vi.fn();
+    const onSettled = vi.fn();
+    const { container } = render(
+      <ArtworkMedia
+        media={ink(31)}
+        alt="Signature 31 in ink"
+        hold
+        onSettled={onSettled}
+        onFailure={onFailure}
+      />,
+    );
+    enterViewport();
+    expect(container.querySelector('.art-media')).toHaveAttribute('data-arrival', 'arriving');
+    fireEvent.error(screen.getByRole('img', { name: 'Signature 31 in ink' }));
+    const remaining = screen.getByRole('img', { name: 'Signature 31 in ink' });
+    expect(new URL((remaining as HTMLImageElement).src).pathname).toBe('/art/31-ink-640.webp');
+    expect(container.querySelectorAll('img')).toHaveLength(1);
+    // The preview is the plate's one image now: it settles, and the held film may start.
+    expect(container.querySelector('.art-media')).toHaveAttribute('data-arrival', 'single');
+    expect(onSettled).toHaveBeenCalledOnce();
+    expect(HTMLMediaElement.prototype.play).not.toHaveBeenCalled();
+    act(() => vi.advanceTimersByTime(1_200));
+    expect(HTMLMediaElement.prototype.play).toHaveBeenCalledOnce();
+    expect(onFailure).not.toHaveBeenCalled();
+    fireEvent.error(remaining);
+    expect(screen.getByRole('img', { name: 'Signature 31 in ink' })).not.toHaveAttribute('src');
     expect(onFailure).toHaveBeenCalledOnce();
   });
 
@@ -344,67 +389,302 @@ describe('artwork media delivery', () => {
     expect(video.currentTime).toBe(0);
   });
 
-  it('suspends a scheduled replay while paused and resumes it after motion is enabled', () => {
+  it('holds the final frame when a film ends and never rewinds on its own', () => {
     vi.useFakeTimers();
-    const { container, rerender } = render(
-      <ArtworkMedia media={ink(31)} alt="Signature 31 in ink" repeat />,
+    const onEnded = vi.fn();
+    const onProgress = vi.fn();
+    const { container } = render(
+      <ArtworkMedia
+        media={ink(31)}
+        alt="Signature 31 in ink"
+        onEnded={onEnded}
+        onProgress={onProgress}
+      />,
     );
     enterViewport();
-    fireEvent.playing(player(container));
-    fireEvent.ended(player(container));
-    motion.paused = true;
-    rerender(<ArtworkMedia media={ink(31)} alt="Signature 31 in ink" repeat />);
+    const video = player(container);
+    Object.defineProperty(video, 'duration', { configurable: true, value: 30 });
+    fireEvent.playing(video);
+    video.currentTime = 30;
+    fireEvent.ended(video);
+    expect(onEnded).toHaveBeenCalledOnce();
+    expect(onProgress).toHaveBeenLastCalledWith(30, 30);
+    expect(video).toHaveClass('has-frame');
     vi.mocked(HTMLMediaElement.prototype.play).mockClear();
-    act(() => vi.advanceTimersByTime(5_000));
+    // The last frame is the still: held for --t-hold, then the film fades into the still beneath.
+    act(() => vi.advanceTimersByTime(1_199));
+    expect(video).toHaveClass('has-frame');
+    expect(video).toHaveClass('has-ended');
+    act(() => vi.advanceTimersByTime(1));
+    expect(video).not.toHaveClass('has-frame');
+    act(() => vi.advanceTimersByTime(60_000));
+    expect(video.currentTime).toBe(30);
+    expect(player(container)).toBe(video);
+    act(() => VisibilityObserver.instances[0].setVisible(false));
+    enterViewport();
     expect(HTMLMediaElement.prototype.play).not.toHaveBeenCalled();
-    motion.paused = false;
-    rerender(<ArtworkMedia media={ink(31)} alt="Signature 31 in ink" repeat />);
-    act(() => vi.advanceTimersByTime(2_200));
-    expect(player(container).currentTime).toBe(0);
-    expect(HTMLMediaElement.prototype.play).toHaveBeenCalledOnce();
   });
 
-  it('resumes a replay interrupted during the fade without losing the video element', () => {
-    vi.useFakeTimers();
+  it('reports a clip’s time in the film it was cut from and seeks by film time', () => {
+    const onProgress = vi.fn();
+    const settling = ink(31).settlingFilm!;
+    const { container } = render(
+      <ArtworkMedia
+        media={{ ...ink(31), films: [settling] }}
+        alt="Signature 31"
+        startAt={25}
+        onProgress={onProgress}
+      />,
+    );
+    enterViewport();
+    const video = player(container);
+    expect(video).toHaveAttribute('src', settling.src);
+    Object.defineProperty(video, 'duration', { configurable: true, value: 8 });
+    fireEvent.loadedMetadata(video);
+    expect(video.currentTime).toBeCloseTo(25 - settling.startSeconds!, 3);
+    video.currentTime = 1;
+    fireEvent.timeUpdate(video);
+    expect(onProgress).toHaveBeenLastCalledWith(
+      settling.startSeconds! + 1,
+      settling.startSeconds! + 8,
+    );
+  });
+
+  it('hands the opening clip over to the complete film at the same frame', () => {
+    const onProgress = vi.fn();
+    const onEnded = vi.fn();
+    const onHandover = vi.fn();
+    const opening = ink(31).openingFilm!;
+    const complete = ink(31).films[0];
+    const { container } = render(
+      <ArtworkMedia
+        media={{ ...ink(31), films: [opening, complete] }}
+        alt="Signature 31"
+        onProgress={onProgress}
+        onEnded={onEnded}
+        onHandover={onHandover}
+      />,
+    );
+    enterViewport();
+    const clip = player(container);
+    expect(clip).toHaveAttribute('src', opening.src);
+    const box = container.querySelector('.art-media')!;
+    expect(box).toHaveAttribute('data-handover', 'opening');
+    Object.defineProperty(clip, 'duration', { configurable: true, value: 10 });
+    fireEvent.playing(clip);
+    clip.currentTime = 1;
+    fireEvent.timeUpdate(clip);
+    // The clock states the complete film's length from the first frame.
+    expect(onProgress).toHaveBeenLastCalledWith(1, complete.durationSeconds);
+    expect(container.querySelectorAll('video')).toHaveLength(1);
+    clip.currentTime = 2.5;
+    fireEvent.timeUpdate(clip);
+    const relay = container.querySelector<HTMLVideoElement>('video[data-relay]')!;
+    expect(relay).toHaveAttribute('src', complete.src);
+    expect(relay).toHaveAttribute('preload', 'auto');
+    expect(relay).not.toHaveClass('has-frame');
+    // Nothing buffered past the cue: the clip keeps the plate.
+    fireEvent.canPlay(relay);
+    expect(box).toHaveAttribute('data-handover', 'opening');
+    Object.defineProperty(relay, 'duration', { configurable: true, value: 30 });
+    Object.defineProperty(relay, 'readyState', { configurable: true, value: 4 });
+    Object.defineProperty(relay, 'buffered', {
+      configurable: true,
+      value: { length: 1, start: () => 0, end: () => 30 },
+    });
+    vi.mocked(HTMLMediaElement.prototype.play).mockClear();
+    fireEvent.canPlay(relay);
+    expect(relay.currentTime).toBeCloseTo(2.5 + 2 / 60, 3);
+    expect(HTMLMediaElement.prototype.play).toHaveBeenCalledOnce();
+    vi.mocked(HTMLMediaElement.prototype.pause).mockClear();
+    fireEvent.playing(relay);
+    expect(box).toHaveAttribute('data-handover', 'film');
+    expect(relay).toHaveClass('has-frame');
+    // The clip has handed over: only the complete film remains on the plate.
+    expect(container.querySelectorAll('video')).toHaveLength(1);
+    expect(clip.isConnected).toBe(false);
+    expect(HTMLMediaElement.prototype.pause).toHaveBeenCalled();
+    expect(onHandover).not.toHaveBeenCalled();
+    relay.currentTime = 12;
+    fireEvent.timeUpdate(relay);
+    expect(onProgress).toHaveBeenLastCalledWith(12, 30);
+    relay.currentTime = 30;
+    fireEvent.ended(relay);
+    expect(onEnded).toHaveBeenCalledOnce();
+  });
+
+  it('holds the opening clip’s last frame as arriving until the complete film can take over', () => {
+    const onEnded = vi.fn();
+    const onHandover = vi.fn();
+    const opening = ink(31).openingFilm!;
+    const complete = ink(31).films[0];
+    const { container } = render(
+      <ArtworkMedia
+        media={{ ...ink(31), films: [opening, complete] }}
+        alt="Signature 31"
+        onEnded={onEnded}
+        onHandover={onHandover}
+      />,
+    );
+    enterViewport();
+    const clip = player(container);
+    Object.defineProperty(clip, 'duration', { configurable: true, value: 10 });
+    fireEvent.playing(clip);
+    clip.currentTime = 10;
+    fireEvent.ended(clip);
+    expect(onEnded).not.toHaveBeenCalled();
+    expect(onHandover).toHaveBeenLastCalledWith(true);
+    expect(clip).toHaveClass('has-frame');
+    const box = container.querySelector('.art-media')!;
+    expect(box).toHaveAttribute('data-handover', 'waiting');
+    const relay = container.querySelector<HTMLVideoElement>('video[data-relay]')!;
+    Object.defineProperty(relay, 'duration', { configurable: true, value: 30 });
+    Object.defineProperty(relay, 'readyState', { configurable: true, value: 4 });
+    Object.defineProperty(relay, 'buffered', {
+      configurable: true,
+      value: { length: 1, start: () => 0, end: () => 30 },
+    });
+    fireEvent.canPlayThrough(relay);
+    expect(relay.currentTime).toBe(10);
+    fireEvent.playing(relay);
+    expect(onHandover).toHaveBeenLastCalledWith(false);
+    expect(box).toHaveAttribute('data-handover', 'film');
+  });
+
+  it('serves the still ladder as a srcset sized to the plate, and the 1280 rung alone on a constrained connection', () => {
+    const { unmount } = render(<ArtworkMedia media={ink(31)} alt="Signature 31" />);
+    const still = screen.getByRole('img') as HTMLImageElement;
+    expect(still.getAttribute('srcset')).toMatch(
+      /^\/art\/stills\/31-ink-1280-[a-f0-9]{16}\.webp 1280w, \/art\/stills\/31-ink-1920-[a-f0-9]{16}\.webp 1920w, \/art\/31-ink\.webp 3456w$/,
+    );
+    expect(still).toHaveAttribute('sizes', PLATE_SIZES);
+    expect(imagePath()).toBe('/art/31-ink.webp');
+    unmount();
+    Object.defineProperty(navigator, 'connection', {
+      configurable: true,
+      value: Object.assign(new EventTarget(), { saveData: true }),
+    });
+    try {
+      render(<ArtworkMedia media={ink(31)} alt="Signature 31" />);
+      const rung = screen.getByRole('img') as HTMLImageElement;
+      // The src is the published still on every connection, so the server's markup is the
+      // client's; a constrained connection is offered the 1280 rung as its only candidate.
+      expect(new URL(rung.src).pathname).toBe('/art/31-ink.webp');
+      expect(rung.getAttribute('srcset')).toMatch(
+        /^\/art\/stills\/31-ink-1280-[a-f0-9]{16}\.webp 1280w$/,
+      );
+      expect(rung).toHaveAttribute('sizes', PLATE_SIZES);
+    } finally {
+      Reflect.deleteProperty(navigator, 'connection');
+    }
+  });
+
+  it('keeps the still’s markup the same on the server and on the client, whatever the connection', () => {
+    Object.defineProperty(navigator, 'connection', {
+      configurable: true,
+      value: Object.assign(new EventTarget(), { saveData: true }),
+    });
+    try {
+      const server = renderToString(<ArtworkMedia media={ink(31)} alt="Signature 31" />);
+      const serverStill = /<img[^>]*class="art-still[^"]*"[^>]*>/.exec(server)?.[0] ?? '';
+      expect(serverStill).toContain('src="/art/31-ink.webp"');
+      expect(serverStill).toMatch(/srcSet="[^"]*1920w, \/art\/31-ink\.webp 3456w"/);
+      const { container } = render(<ArtworkMedia media={ink(31)} alt="Signature 31" />);
+      const still = container.querySelector<HTMLImageElement>('img.art-still')!;
+      expect(new URL(still.src).pathname).toBe('/art/31-ink.webp');
+      // Only the candidates narrow once the client knows the connection; the src never moves.
+      expect(still.getAttribute('srcset')).toMatch(/1280w$/);
+      expect(cappedSourceSet(ink(31))).toMatch(
+        /^\/art\/stills\/31-ink-1280-[a-f0-9]{16}\.webp 1280w$/,
+      );
+      expect(cappedSourceSet({ ...ink(31), rungs: undefined })).toBeUndefined();
+    } finally {
+      Reflect.deleteProperty(navigator, 'connection');
+    }
+  });
+
+  it('cues the complete film behind the opening clip without pausing the clip', () => {
+    const onPlaybackChange = vi.fn();
+    const opening = ink(31).openingFilm!;
+    const complete = ink(31).films[0];
+    const { container } = render(
+      <ArtworkMedia
+        media={{ ...ink(31), films: [opening, complete] }}
+        alt="Signature 31"
+        onPlaybackChange={onPlaybackChange}
+      />,
+    );
+    enterViewport();
+    const clip = player(container);
+    Object.defineProperty(clip, 'duration', { configurable: true, value: 10 });
+    fireEvent.playing(clip);
+    vi.mocked(HTMLMediaElement.prototype.pause).mockClear();
+    onPlaybackChange.mockClear();
+    clip.currentTime = 2.5;
+    fireEvent.timeUpdate(clip);
+    expect(container.querySelector('video[data-relay]')).not.toBeNull();
+    // The relay's arrival is the relay's own business: the clip beneath it was not paused.
+    expect(HTMLMediaElement.prototype.pause).not.toHaveBeenCalled();
+    expect(onPlaybackChange).not.toHaveBeenCalledWith(false);
+  });
+
+  it('tries a failed relay afresh after the plate is asked to play again', () => {
+    const onFailure = vi.fn();
+    const onHandover = vi.fn();
+    const opening = ink(31).openingFilm!;
+    const complete = ink(31).films[0];
     const { container, rerender } = render(
-      <ArtworkMedia media={ink(31)} alt="Signature 31 in ink" repeat startAt={9} />,
+      <ArtworkMedia
+        media={{ ...ink(31), films: [opening, complete] }}
+        alt="Signature 31"
+        onFailure={onFailure}
+        onHandover={onHandover}
+      />,
+    );
+    enterViewport();
+    const clip = player(container);
+    Object.defineProperty(clip, 'duration', { configurable: true, value: 10 });
+    fireEvent.playing(clip);
+    clip.currentTime = 2.5;
+    fireEvent.timeUpdate(clip);
+    const relay = container.querySelector<HTMLVideoElement>('video[data-relay]')!;
+    fireEvent.error(relay);
+    clip.currentTime = 10;
+    fireEvent.ended(clip);
+    // The film could not arrive and the clip has nothing left: the plate fails once.
+    expect(onFailure).toHaveBeenCalledOnce();
+    rerender(
+      <ArtworkMedia
+        media={{ ...ink(31), films: [opening, complete] }}
+        alt="Signature 31"
+        onFailure={onFailure}
+        onHandover={onHandover}
+        restart={1}
+      />,
+    );
+    const again = player(container);
+    Object.defineProperty(again, 'duration', { configurable: true, value: 10 });
+    fireEvent.playing(again);
+    again.currentTime = 10;
+    fireEvent.ended(again);
+    // The earlier failure is forgotten: the clip holds as arriving while the film is tried again.
+    expect(onFailure).toHaveBeenCalledOnce();
+    expect(onHandover).toHaveBeenLastCalledWith(true);
+  });
+
+  it('replays forward from the first frame only on an explicit request', () => {
+    const { container, rerender } = render(
+      <ArtworkMedia media={ink(31)} alt="Signature 31 in ink" />,
     );
     enterViewport();
     const video = player(container);
     fireEvent.playing(video);
+    video.currentTime = 30;
     fireEvent.ended(video);
-    act(() => vi.advanceTimersByTime(1_800));
-    expect(video).not.toHaveClass('has-frame');
-    motion.paused = true;
-    rerender(<ArtworkMedia media={ink(31)} alt="Signature 31 in ink" repeat startAt={9} />);
-    expect(player(container)).toBe(video);
     vi.mocked(HTMLMediaElement.prototype.play).mockClear();
-    act(() => vi.advanceTimersByTime(5_000));
-    expect(HTMLMediaElement.prototype.play).not.toHaveBeenCalled();
-    motion.paused = false;
-    rerender(<ArtworkMedia media={ink(31)} alt="Signature 31 in ink" repeat startAt={9} />);
-    act(() => vi.advanceTimersByTime(600));
-    expect(player(container)).toBe(video);
+    rerender(<ArtworkMedia media={ink(31)} alt="Signature 31 in ink" playRequest={1} />);
     expect(video.currentTime).toBe(0);
     expect(HTMLMediaElement.prototype.play).toHaveBeenCalledOnce();
-  });
-
-  it('an explicit restart cancels a pending replay instead of rewinding twice', () => {
-    vi.useFakeTimers();
-    const { container, rerender } = render(
-      <ArtworkMedia media={ink(31)} alt="Signature 31 in ink" repeat />,
-    );
-    enterViewport();
-    const video = player(container);
-    fireEvent.playing(video);
-    fireEvent.ended(video);
-    act(() => vi.advanceTimersByTime(1_000));
-    rerender(<ArtworkMedia media={ink(31)} alt="Signature 31 in ink" repeat restart={1} />);
-    video.currentTime = 3;
-    vi.mocked(HTMLMediaElement.prototype.play).mockClear();
-    act(() => vi.advanceTimersByTime(5_000));
-    expect(video.currentTime).toBe(3);
-    expect(HTMLMediaElement.prototype.play).not.toHaveBeenCalled();
   });
 
   it('retries a blocked play request and replays a finished film only on explicit request', async () => {
@@ -451,6 +731,7 @@ describe('artwork media delivery', () => {
     const { container, rerender } = render(<ArtworkMedia media={ink(31)} alt="Signature 31" />);
     enterViewport();
     fireEvent.error(player(container));
+    fireEvent.error(screen.getByRole('img'));
     fireEvent.error(screen.getByRole('img'));
     expect(screen.getByRole('img')).not.toHaveAttribute('src');
     rerender(<ArtworkMedia media={ink(23)} alt="Signature 23" />);
@@ -507,4 +788,155 @@ describe('artwork media delivery', () => {
       expect(retriedPlayer).toHaveClass('has-frame');
     },
   );
+
+  it('paints the publisher’s preview at once and settles the still over it after decoding', () => {
+    const onSettled = vi.fn();
+    const { container } = render(
+      <ArtworkMedia media={ink(31)} alt="Signature 31 in ink" priority onSettled={onSettled} />,
+    );
+    const box = container.querySelector('.art-media')!;
+    expect(box).toHaveAttribute('data-arrival', 'arriving');
+    const preview = container.querySelector('img.art-preview') as HTMLImageElement;
+    expect(new URL(preview.src).pathname).toBe('/art/31-ink-640.webp');
+    expect(preview).toHaveAttribute('aria-hidden', 'true');
+    expect(preview).toHaveAttribute('fetchpriority', 'high');
+    const still = screen.getByRole('img', { name: 'Signature 31 in ink' });
+    expect(still).toHaveClass('art-still');
+    expect(still).not.toHaveClass('is-settled');
+    expect(onSettled).not.toHaveBeenCalled();
+    fireEvent.load(still);
+    expect(still).toHaveClass('is-settled');
+    expect(box).toHaveAttribute('data-arrival', 'settled');
+    expect(onSettled).toHaveBeenCalledOnce();
+  });
+
+  it('waits for the still to decode when the browser offers decode()', async () => {
+    let decoded!: () => void;
+    Object.defineProperty(HTMLImageElement.prototype, 'decode', {
+      configurable: true,
+      value: vi.fn(
+        () =>
+          new Promise<void>((resolve) => {
+            decoded = resolve;
+          }),
+      ),
+    });
+    try {
+      render(<ArtworkMedia media={ink(31)} alt="Signature 31 in ink" />);
+      const still = screen.getByRole('img');
+      fireEvent.load(still);
+      expect(still).not.toHaveClass('is-settled');
+      await act(async () => decoded());
+      expect(still).toHaveClass('is-settled');
+    } finally {
+      Reflect.deleteProperty(HTMLImageElement.prototype, 'decode');
+    }
+  });
+
+  it('inlines a server-provided preview and uses a lone still when no preview exists', () => {
+    const { container, rerender } = render(
+      <ArtworkMedia media={ink(31)} alt="Signature 31" previewSrc="data:image/webp;base64,AAAA" />,
+    );
+    expect(container.querySelector('img.art-preview')).toHaveAttribute(
+      'src',
+      'data:image/webp;base64,AAAA',
+    );
+    rerender(<ArtworkMedia media={{ ...ink(31), thumbnail: undefined }} alt="Signature 31" />);
+    expect(container.querySelector('img.art-preview')).toBeNull();
+    expect(screen.getByRole('img')).toHaveClass('is-settled');
+    expect(container.querySelector('.art-media')).toHaveAttribute('data-arrival', 'single');
+  });
+
+  it('holds the settled still before the first automatic playback, never before an explicit one', () => {
+    vi.useFakeTimers();
+    const { container, rerender } = render(
+      <ArtworkMedia media={ink(31)} alt="Signature 31" hold />,
+    );
+    enterViewport();
+    expect(player(container)).toHaveAttribute('src', '/art/31-ink-preview.mp4');
+    act(() => vi.advanceTimersByTime(5_000));
+    expect(HTMLMediaElement.prototype.play).not.toHaveBeenCalled();
+    fireEvent.load(screen.getByRole('img'));
+    act(() => vi.advanceTimersByTime(1_199));
+    expect(HTMLMediaElement.prototype.play).not.toHaveBeenCalled();
+    act(() => vi.advanceTimersByTime(1));
+    expect(HTMLMediaElement.prototype.play).toHaveBeenCalledOnce();
+    vi.mocked(HTMLMediaElement.prototype.play).mockClear();
+    rerender(<ArtworkMedia media={ink(23)} alt="Signature 23" hold />);
+    enterViewport(1);
+    rerender(<ArtworkMedia media={ink(23)} alt="Signature 23" hold playRequest={1} />);
+    expect(HTMLMediaElement.prototype.play).toHaveBeenCalledOnce();
+  });
+
+  it('switching the ambient film off keeps the session and never re-arrives the plate', async () => {
+    const show = (ambient: boolean) => (
+      <ArtworkMedia media={ink(31)} alt="Signature 31" ambient={ambient} />
+    );
+    const { container, rerender } = render(show(true));
+    enterViewport();
+    const still = screen.getByRole('img', { name: 'Signature 31' });
+    await act(async () => {
+      fireEvent.load(still);
+    });
+    expect(container.querySelector('.art-media')).toHaveAttribute('data-arrival', 'settled');
+    const video = player(container);
+    fireEvent.playing(video);
+    expect(video).toHaveClass('has-frame');
+    rerender(show(false));
+    // The removed player releases its frame at the end of the commit.
+    await act(async () => {});
+    expect(container.querySelector('video')).toBeNull();
+    expect(screen.getByRole('img', { name: 'Signature 31' })).toBe(still);
+    expect(container.querySelector('.art-media')).toHaveAttribute('data-arrival', 'settled');
+    rerender(show(true));
+    // The player returns without a stale frame over the still.
+    expect(player(container)).not.toHaveClass('has-frame');
+    expect(screen.getByRole('img', { name: 'Signature 31' })).toBe(still);
+  });
+
+  it('a finished film stays at rest when its ambient switch flips off and on', async () => {
+    const show = (ambient: boolean) => (
+      <ArtworkMedia media={ink(31)} alt="Signature 31" ambient={ambient} />
+    );
+    const { container, rerender } = render(show(true));
+    enterViewport();
+    fireEvent.load(screen.getByRole('img'));
+    const video = player(container);
+    fireEvent.playing(video);
+    fireEvent.ended(video);
+    vi.mocked(HTMLMediaElement.prototype.play).mockClear();
+    rerender(show(false));
+    await act(async () => {});
+    rerender(show(true));
+    expect(player(container)).not.toHaveClass('has-frame');
+    expect(HTMLMediaElement.prototype.play).not.toHaveBeenCalled();
+  });
+
+  it('behaves as a still while the theatre is hushed', () => {
+    motion.theatre = 'hushed';
+    const { container, rerender } = render(<ArtworkMedia media={ink(31)} alt="Signature 31" />);
+    enterViewport();
+    expect(container.querySelector('video')).toBeNull();
+    expect(HTMLMediaElement.prototype.play).not.toHaveBeenCalled();
+    motion.theatre = 'playing';
+    rerender(<ArtworkMedia media={ink(31)} alt="Signature 31" />);
+    expect(player(container)).toHaveAttribute('src', '/art/31-ink-preview.mp4');
+    fireEvent.playing(player(container));
+    vi.mocked(HTMLMediaElement.prototype.pause).mockClear();
+    motion.theatre = 'hushed';
+    rerender(<ArtworkMedia media={ink(31)} alt="Signature 31" />);
+    expect(HTMLMediaElement.prototype.pause).toHaveBeenCalled();
+    expect(player(container)).toHaveClass('has-frame');
+  });
+
+  it('letterboxes the plate in the work’s own measured ground', () => {
+    const { container, rerender } = render(
+      <ArtworkMedia media={ink(31)} alt="Signature 31" artworkId={31} />,
+    );
+    const box = container.querySelector('.art-media') as HTMLElement;
+    expect(box.getAttribute('style')).toContain('--plate-ground: #efe9dd');
+    expect(box).toHaveAttribute('data-edge', 'true');
+    rerender(<ArtworkMedia media={ink(23)} alt="Signature 23" artworkId={23} />);
+    expect(container.querySelector('.art-media')).not.toHaveAttribute('style');
+  });
 });

@@ -13,7 +13,7 @@ export default async function Privacy({ params }: { params: Promise<{ locale: st
   if (!isLocale(locale)) notFound();
   const t = messages(locale);
   return (
-    <main id="main" className="section-wrap legal-page">
+    <main id="main" className="type-page legal-page">
       <div className="page-heading">
         <p className="eyebrow">{t.privacy}</p>
         <h1>{t.privacyTitle}</h1>

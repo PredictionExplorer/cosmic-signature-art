@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import registry from './collection-previews.json';
+import registry from './collection-previews.json' with { type: 'json' };
 import type { ArtInterpretation, Artwork } from './types';
 import { seedPackageUrl } from './constants';
 
@@ -65,6 +65,7 @@ export function createCollectionPreviewLookup(raw: unknown) {
         src: entry.src,
         sourceUrl: entry.sourceUrl,
         durationSeconds: entry.durationSeconds,
+        startSeconds: entry.startSeconds,
         sha256: entry.sha256,
         sourceSha256: entry.sourceSha256,
         mimeType: 'video/mp4',
@@ -78,7 +79,7 @@ export function createCollectionPreviewLookup(raw: unknown) {
 
 const lookup = createCollectionPreviewLookup(registry);
 export function withCollectionPreviews(
-  work: Artwork,
+  work: Pick<Artwork, 'id' | 'seed'>,
   media: ArtInterpretation[],
 ): ArtInterpretation[] {
   return media.map((interpretation) => lookup(work, interpretation));

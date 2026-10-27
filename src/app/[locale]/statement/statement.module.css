@@ -1,0 +1,80 @@
+/* The statement: the one screen with no work on it, type only, on paper. */
+.page {
+  padding: calc(var(--baseline) * 10) var(--gutter) calc(var(--baseline) * 14);
+  max-width: calc(var(--measure) + 10em + 2 * var(--gutter));
+  margin-inline: auto;
+}
+.epigraph {
+  font-size: var(--fs-control);
+  font-style: italic;
+  color: var(--muted);
+  margin-bottom: 54px;
+}
+.wordmark {
+  font-size: var(--fs-entry);
+  font-weight: 200;
+  font-variant-caps: all-small-caps;
+  letter-spacing: 0.06em;
+  line-height: 1;
+}
+.subtitle {
+  margin-top: 18px;
+  color: var(--type);
+}
+.counts {
+  margin-top: 36px;
+  font-family: var(--font-mono);
+  font-size: var(--fs-folio);
+  font-variant-numeric: tabular-nums lining-nums;
+  color: var(--muted);
+  line-height: 1.5;
+  max-width: var(--measure);
+}
+.sections {
+  margin-top: 72px;
+  display: grid;
+  gap: 36px;
+}
+.section {
+  display: grid;
+  grid-template-columns: 4em minmax(0, var(--measure));
+  column-gap: 18px;
+  align-items: baseline;
+}
+.sign {
+  font-family: var(--font-mono);
+  font-size: var(--fs-folio);
+  font-variant-numeric: tabular-nums lining-nums;
+  color: var(--muted);
+  line-height: 1.5;
+}
+.paragraph {
+  text-wrap: pretty;
+}
+.byline {
+  margin-top: 72px;
+  font-size: var(--fs-control);
+  color: var(--muted);
+}
+.onward {
+  margin-top: 45px;
+}
+@media (max-width: 767px) {
+  .page {
+    padding-top: calc(var(--baseline) * 6);
+  }
+  .epigraph {
+    margin-bottom: 36px;
+  }
+  .sections {
+    margin-top: 54px;
+    gap: 27px;
+  }
+  .section {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 3px;
+  }
+  .byline {
+    margin-top: 54px;
+  }
+}

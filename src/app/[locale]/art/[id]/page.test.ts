@@ -20,8 +20,20 @@ describe.each([
     });
     const result = await generateMetadata({ params: Promise.resolve({ locale: 'ja', id: '031' }) });
     expect(result.alternates?.canonical).toBe(`https://cosmic.art/ja/${section}/31`);
+    if (section === 'art') {
+      // An indexed work's card is drawn beside its route from its own rung; the page names no
+      // image of its own and needs no live read to share it.
+      expect(result.openGraph).not.toHaveProperty('images');
+      expect(result.twitter).not.toHaveProperty('images');
+      expect(getArtwork).not.toHaveBeenCalled();
+      return;
+    }
     expect(result.openGraph?.images).toEqual([
-      expect.objectContaining({ url: '/art/31-ink.webp', width: 3456, height: 2234 }),
+      expect.objectContaining({
+        url: expect.stringMatching(/\/art\/31-ink\.webp$/),
+        width: 3456,
+        height: 2234,
+      }),
     ]);
     expect(result.twitter?.images).toEqual(result.openGraph?.images);
     expect(getArtwork).toHaveBeenCalledWith(31);
@@ -34,8 +46,12 @@ describe.each([
       source: 'curated-fallback',
     });
     const result = await generateMetadata({ params: Promise.resolve({ locale: 'en', id: '2' }) });
+    if (section === 'art') {
+      expect(result.openGraph).not.toHaveProperty('images');
+      return;
+    }
     expect(result.openGraph?.images).toEqual([
-      expect.objectContaining({ url: '/art/2-light.webp' }),
+      expect.objectContaining({ url: expect.stringMatching(/\/art\/2-light\.webp$/) }),
     ]);
   });
 
@@ -46,8 +62,9 @@ describe.each([
       source: 'curated-fallback',
     });
     const result = await generateMetadata({ params: Promise.resolve({ locale: 'en', id: '999' }) });
-    expect(result.openGraph?.images).toEqual([]);
-    expect(result.twitter?.images).toEqual([]);
+    expect(getArtwork).toHaveBeenCalledWith(999);
+    expect(result.openGraph).not.toHaveProperty('images');
+    expect(result.twitter).not.toHaveProperty('images');
   });
 
   it('rejects malformed identity and unsupported locales before contacting the indexer', async () => {

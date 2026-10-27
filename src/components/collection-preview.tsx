@@ -1,16 +1,31 @@
 'use client';
 
-import Image from 'next/image';
-import { useEffect, useEffectEvent, useRef, useState } from 'react';
+import { useEffect, useEffectEvent, useRef, useState, type CSSProperties } from 'react';
 import type { ArtFilm, ArtInterpretation } from '@/lib/art/types';
+import { getPlateGround } from '@/lib/art/plate-records';
 import type { PreviewFailure } from './collection-motion';
+import { stillSourceSet } from '@/lib/art/types';
+import { clock } from '@/lib/i18n/format';
+
+/** The last frame rests this long before the excerpt fades back to its still (--t-hold). */
+const HOLD_MS = 1200;
+/** The fade from the held frame to the still (--t-reel). */
+const REEL_MS = 700;
 
 type CollectionPreviewProps = {
   media?: ArtInterpretation;
   alt: string;
   active: boolean;
   eager?: boolean;
+  /** The work's identity, so its measured ground can letterbox the card. */
+  artworkId?: number;
+  /** The film the lease plays on this card; the verified excerpt when none is named. */
+  film?: ArtFilm;
+  /** The card's layout width, so the still ladder can serve its rung instead of the 640 preview. */
+  sizes?: string;
   onFailure: (reason: PreviewFailure) => void;
+  /** The excerpt has finished and faded to the still; the lease may move on. */
+  onEnded?: () => void;
 };
 
 /** Only explicitly verified, compact excerpts belong in a browsing grid. */
@@ -18,29 +33,70 @@ export function getCollectionPreviewFilm(media?: ArtInterpretation): ArtFilm | u
   return media?.id === 'ink' ? media.previewFilm : undefined;
 }
 
+/** The excerpt's true place in its source film, e.g. "00:06–00:14". */
+export function excerptRange(film?: ArtFilm): string | undefined {
+  if (!film || film.startSeconds === undefined || film.durationSeconds === undefined) return;
+  return `${clock(film.startSeconds)}–${clock(film.startSeconds + film.durationSeconds)}`;
+}
+
 /** A canonical still is always present; only the grid's selected Ink film has a video source. */
 export function CollectionPreview(props: CollectionPreviewProps) {
-  const identity = `${props.media?.id}:${props.media?.still}:${props.media?.thumbnail}:${getCollectionPreviewFilm(props.media)?.src}`;
+  const identity = `${props.media?.id}:${props.media?.still}:${props.media?.thumbnail}:${(props.film ?? getCollectionPreviewFilm(props.media))?.src}`;
   return <PreviewSession key={identity} {...props} />;
 }
 
-function PreviewSession({ media, alt, active, eager, onFailure }: CollectionPreviewProps) {
+function PreviewSession({
+  media,
+  alt,
+  active,
+  eager,
+  artworkId,
+  film: namedFilm,
+  sizes,
+  onFailure,
+  onEnded,
+}: CollectionPreviewProps) {
   const [thumbnailFailed, setThumbnailFailed] = useState(false);
   const [imageFailed, setImageFailed] = useState(false);
   const [filmFailed, setFilmFailed] = useState(false);
   const imageSource = thumbnailFailed ? media?.still : (media?.thumbnail ?? media?.still);
-  const film = getCollectionPreviewFilm(media);
+  const film = namedFilm ?? getCollectionPreviewFilm(media);
+  // The ladder serves a sheet its rung; the 640 preview stays the smallest candidate.
+  const ladder = sizes && imageSource === media?.thumbnail ? stillSourceSet(media) : undefined;
+  const ground =
+    artworkId !== undefined && media
+      ? getPlateGround(artworkId, media.id, media.stillSha256)
+      : undefined;
+  const style = ground ? ({ '--plate-ground': ground.tone } as CSSProperties) : undefined;
 
   return (
-    <div className="art-media" data-material={media?.id ?? 'ink'} data-collection-preview>
+    <div
+      className="art-media"
+      data-material={media?.id ?? 'ink'}
+      data-collection-preview
+      data-film={film?.id}
+      data-edge={ground?.edge ? 'true' : undefined}
+      style={style}
+    >
       {imageSource && !imageFailed ? (
-        <Image
+        <img
+          className="art-still is-settled"
           src={imageSource}
+          srcSet={ladder ? `${imageSource} ${media?.thumbnailWidth ?? 640}w, ${ladder}` : undefined}
+          sizes={ladder ? sizes : undefined}
           alt={alt}
-          width={media?.width ?? 3456}
-          height={media?.height ?? 2234}
-          unoptimized
-          loading={eager ? 'eager' : undefined}
+          width={
+            (imageSource === media?.thumbnail ? media?.thumbnailWidth : undefined) ??
+            media?.width ??
+            3456
+          }
+          height={
+            (imageSource === media?.thumbnail ? media?.thumbnailHeight : undefined) ??
+            media?.height ??
+            2234
+          }
+          decoding="async"
+          loading={eager ? 'eager' : 'lazy'}
           onError={() => {
             if (imageSource !== media?.still && media?.still) setThumbnailFailed(true);
             else setImageFailed(true);
@@ -48,12 +104,13 @@ function PreviewSession({ media, alt, active, eager, onFailure }: CollectionPrev
         />
       ) : (
         <div className="art-placeholder" role="img" aria-label={alt}>
-          <span>∴</span>
+          <span />
         </div>
       )}
       {active && film && !filmFailed ? (
         <PreviewFilm
           film={film}
+          onEnded={onEnded}
           onFailure={(reason) => {
             if (reason === 'media') setFilmFailed(true);
             onFailure(reason);
@@ -67,14 +124,17 @@ function PreviewSession({ media, alt, active, eager, onFailure }: CollectionPrev
 function PreviewFilm({
   film,
   onFailure,
+  onEnded,
 }: {
   film: ArtFilm;
   onFailure: (reason: PreviewFailure) => void;
+  onEnded?: () => void;
 }) {
   const [failed, setFailed] = useState(false);
   return failed ? null : (
     <PreviewVideo
       film={film}
+      onEnded={onEnded}
       onFailure={(reason) => {
         setFailed(true);
         onFailure(reason);
@@ -86,19 +146,24 @@ function PreviewFilm({
 function PreviewVideo({
   film,
   onFailure,
+  onEnded,
 }: {
   film: ArtFilm;
   onFailure: (reason: PreviewFailure) => void;
+  onEnded?: () => void;
 }) {
   const video = useRef<HTMLVideoElement>(null);
   const [hasFrame, setHasFrame] = useState(false);
   const reportFailure = useEffectEvent(onFailure);
+  const reportEnded = useEffectEvent(() => onEnded?.());
 
   useEffect(() => {
     const player = video.current;
     if (!player) return;
     let canceled = false;
     let failed = false;
+    // `ended` has fired: the rest is owed even if the lease is lost during the hold or fade.
+    let finished = false;
     let timer: ReturnType<typeof setTimeout> | undefined;
     let frame: number | undefined;
     const fail = (reason: PreviewFailure) => {
@@ -117,13 +182,10 @@ function PreviewVideo({
       });
     };
     const mediaError = () => fail('media');
-    const seekToOpening = () => {
+    const loaded = () => {
       // The compact source already contains an excerpt of the original film.
       // Preserve all of that excerpt, at its original playback speed.
       player.currentTime = 0;
-    };
-    const loaded = () => {
-      seekToOpening();
       play();
     };
     const reveal = () => {
@@ -137,13 +199,17 @@ function PreviewVideo({
       } else setHasFrame(true);
     };
     const ended = () => {
+      // Hold the excerpt's last frame, fade back to the still, then release the lease.
+      // Nothing rewinds on its own; an excerpt ends mid-fluid and says so.
+      finished = true;
       timer = setTimeout(() => {
         setHasFrame(false);
         timer = setTimeout(() => {
-          seekToOpening();
-          play();
-        }, 700);
-      }, 1_200);
+          if (canceled) return;
+          finished = false;
+          reportEnded();
+        }, REEL_MS);
+      }, HOLD_MS);
     };
     player.addEventListener('loadedmetadata', loaded);
     player.addEventListener('playing', reveal);
@@ -166,6 +232,8 @@ function PreviewVideo({
       // media resource when its single playback lease moves to another artwork.
       player.removeAttribute('src');
       player.load();
+      // A lease lost during the hold or the fade still rests: the excerpt played to its end.
+      if (finished) reportEnded();
     };
   }, [film.src]);
 

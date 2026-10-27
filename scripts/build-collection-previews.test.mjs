@@ -77,6 +77,7 @@ test('supports sources without an ETag while keeping range identity mandatory', 
 
 test('caps source reads below a complete original and below the global ceiling', () => {
   assert.equal(sourceByteLimit(10_000_000), 9_000_000);
+  assert.equal(sourceByteLimit(1_000_000), 8 * 1024 * 1024);
   assert.equal(sourceByteLimit(200_000_000), 96 * 1024 * 1024);
   for (const size of [0, -1, NaN, Infinity, 1.5, Number.MAX_SAFE_INTEGER + 1])
     assert.throws(() => sourceByteLimit(size));

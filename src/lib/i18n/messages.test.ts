@@ -44,5 +44,8 @@ describe('production translations', () => {
     expect(Object.values(catalogs.ko).join(' ')).not.toContain('당신');
     expect(Object.values(catalogs.ja).join(' ')).not.toContain('あなた');
     expect(Object.values(catalogs.vi).join(' ')).not.toMatch(/quý khách|quý vị|\.\.\./u);
+    // The Chinese catalogs address the reader as 你 throughout; 您 would change register mid-page.
+    for (const locale of ['zh', 'zh-TW', 'zh-HK'] as const)
+      expect(Object.values(catalogs[locale]).join(' ')).not.toContain('您');
   });
 });

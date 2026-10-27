@@ -19,8 +19,11 @@ import {
 } from '@/lib/auction/client';
 import { auctionAddress, chainId } from '@/lib/auction/config';
 import { auctionPhase, bidFunding, parseEthInput } from '@/lib/auction/rules';
+import { formatCountdown } from '@/lib/auction/countdown';
+import { workNumber } from '@/lib/art/number';
 import type { Messages } from '@/lib/i18n/en';
 import type { Locale } from '@/lib/i18n/routing';
+import { setTheatre } from './motion-provider';
 import styles from './live-auction.module.css';
 
 type ProviderDetail = { info: { uuid: string; name: string }; provider: EIP1193Provider };
@@ -64,6 +67,14 @@ function AuctionSession({ tokenId, t, locale }: LiveAuctionProps) {
   const reviewTrigger = useRef<HTMLButtonElement>(null);
   const cancelReview = useRef<HTMLButtonElement>(null);
   const reviewOpen = review !== null;
+  // The theatre hushes while a collector reviews or signs: films hold on their stills
+  // and crossings are instant. Nothing is disabled. A lot that unmounts (navigation
+  // replaces it, or the page leaves) always hands the room back to the art.
+  const hushed = reviewOpen || pending;
+  useEffect(() => {
+    setTheatre(hushed ? 'hushed' : 'playing');
+  }, [hushed]);
+  useEffect(() => () => setTheatre('playing'), []);
   useEffect(() => {
     active.current = true;
     return () => {
@@ -322,11 +333,8 @@ function AuctionSession({ tokenId, t, locale }: LiveAuctionProps) {
             Math.max(0, Math.floor((now - snapshot.fetchedAt) / 1000)),
         )
       : 0;
-  const countdown = `${Math.floor(remaining / 3600)
-    .toString()
-    .padStart(2, '0')}:${Math.floor((remaining % 3600) / 60)
-    .toString()
-    .padStart(2, '0')}:${(remaining % 60).toString().padStart(2, '0')}`;
+  // The only ticking clock on the site: the contract's own, against the latest block.
+  const countdown = formatCountdown(remaining);
   return (
     <section className={`${styles.panel} live-auction`} aria-label={t.auctions}>
       <div className={`${styles.heading} auction-panel-heading`}>
@@ -465,7 +473,7 @@ function AuctionSession({ tokenId, t, locale }: LiveAuctionProps) {
             />
           </label>
           <button className="primary-button" disabled={!ready} type="submit" ref={reviewTrigger}>
-            {t.bidReviewAction} <span aria-hidden="true">↗</span>
+            {t.bidReviewAction}
           </button>
           {leader ? <p>{t.yourBid}</p> : null}
         </form>
@@ -583,9 +591,7 @@ function AuctionSession({ tokenId, t, locale }: LiveAuctionProps) {
         aria-labelledby={`bid-review-title-${tokenId}`}
         aria-describedby={`bid-review-description-${tokenId}`}
       >
-        <p className={`${styles.reviewIdentity} eyebrow`}>
-          {t.signature} {String(tokenId).padStart(3, '0')} · ETH
-        </p>
+        <p className={`${styles.reviewIdentity} eyebrow`}>{workNumber(tokenId)} · ETH</p>
         <h3 id={`bid-review-title-${tokenId}`}>{t.bidReview}</h3>
         <p id={`bid-review-description-${tokenId}`}>{t.bidWarning}</p>
         <dl className={styles.reviewAmounts}>

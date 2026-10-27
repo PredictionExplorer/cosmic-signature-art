@@ -1,118 +1,335 @@
-.intro {
-  display: grid;
-  grid-template-columns: minmax(0, 1.6fr) minmax(230px, 0.65fr);
-  gap: 60px;
-  align-items: end;
-  padding-top: clamp(40px, 5vw, 75px);
-  padding-bottom: 36px;
+.page {
+  /* The page's running line takes 48 px under the head; the first plate still fits the first screen. */
+  --plate-height: calc(100svh - var(--chrome) - 48px);
+  min-height: calc(100svh - var(--head));
+  background: var(--ground);
+  color: var(--type);
 }
-.intro h1 {
-  font-size: clamp(66px, 7.6vw, 124px);
-  line-height: 0.95;
-  letter-spacing: -0.045em;
-  max-width: 740px;
-  margin-top: 22px;
-  text-wrap: balance;
+/* A Light section or the Spectrum wall is the night ground from the first paint, before the room flips. */
+.page[data-night] {
+  --ground: var(--night);
+  --type: var(--night-type);
+  --muted: #b8b5ad;
+  background: var(--night);
+  color: var(--night-type);
 }
-.description {
-  font-size: 13px;
-  line-height: 1.9;
-  max-width: 340px;
-  padding-bottom: 8px;
-  color: var(--muted);
-}
-.views {
+/* The page's own running line: the room and the range of numbers it holds. */
+.running {
   display: flex;
   align-items: center;
+  justify-content: space-between;
   flex-wrap: wrap;
-  gap: 12px 40px;
+  gap: 0 24px;
+  min-height: 48px;
+  padding-inline: var(--gutter);
+  border-bottom: 1px solid var(--rule);
 }
-.views a {
+.range {
+  font-size: var(--fs-control);
+  font-weight: 400;
+  letter-spacing: 0;
+  line-height: 1;
+  font-variant-caps: all-small-caps;
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
+  min-height: 44px;
+  align-self: center;
+}
+.rangeNumbers,
+.count {
+  font-family: var(--font-mono);
+  font-variant-caps: normal;
+  font-variant-numeric: tabular-nums lining-nums;
+  font-size: var(--fs-folio);
+  letter-spacing: 0.04em;
+}
+.count {
+  color: var(--muted);
+}
+.orderings {
   display: flex;
   align-items: center;
-  gap: 12px;
-  min-height: 58px;
-  border-bottom: 1px solid transparent;
-  font-size: 12px;
+  gap: 18px;
+}
+.orderings a,
+.activeFilters a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  font-size: var(--fs-control);
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.3em;
+  text-decoration-color: transparent;
+  transition: text-decoration-color var(--t-blink) var(--ease-settle);
+}
+.orderings a:hover,
+.orderings a[aria-current],
+.activeFilters a:hover {
+  text-decoration-color: currentColor;
+}
+.divider {
+  width: 1px;
+  height: 18px;
+  background: var(--rule);
+}
+.activeFilters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0 24px;
+  padding-inline: var(--gutter);
+  min-height: 44px;
+  border-bottom: 1px solid var(--rule);
+}
+.activeChip {
+  text-decoration-color: currentColor !important;
+}
+.clear {
+  margin-left: auto;
   color: var(--muted);
 }
-.views a[aria-current] {
-  border-color: var(--ink);
-  color: var(--ink);
+.works {
+  padding-bottom: calc(var(--baseline) * 4);
 }
-.views a span {
-  font-size: 9px;
-  font-variant-numeric: tabular-nums;
+.skeleton {
+  display: grid;
 }
-.views p {
-  font-size: 10px;
-  line-height: 1.7;
-  color: var(--muted);
+.skeleton :global(.loading-plate) {
+  height: var(--plate-height);
+}
+.empty {
+  margin: calc(var(--baseline) * 6) var(--gutter);
+}
+.pager {
+  display: flex;
+  justify-content: space-between;
+  gap: 30px;
+  margin: 0 var(--gutter);
+  padding-top: 27px;
+  border-top: 1px solid var(--rule);
+}
+.pager a:last-child {
   margin-left: auto;
 }
-.page .catalogue {
-  margin-top: 40px;
+
+/* The pocket bottom bar: shown only where the head carries no words. */
+.bar {
+  display: none;
 }
-.catalogue :global(.collection-header) {
-  padding-top: 28px;
+@media (max-width: 767px) {
+  .page {
+    padding-bottom: calc(44px + env(safe-area-inset-bottom));
+  }
+  /* The colophon follows the page; it clears the fixed bar too, so its last row stays tappable. */
+  :global(body):has(.bar) :global(.site-footer) {
+    padding-bottom: calc(36px + 44px + env(safe-area-inset-bottom));
+  }
+  .running {
+    min-height: 44px;
+  }
+  .orderings {
+    display: none;
+  }
+  .bar {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 20;
+    display: flex;
+    align-items: stretch;
+    justify-content: space-between;
+    gap: 0;
+    min-height: 44px;
+    padding: 0 var(--gutter) env(safe-area-inset-bottom);
+    background: var(--ground);
+    color: var(--type);
+    border-top: 1px solid var(--rule);
+  }
+  .bar a,
+  .bar button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 44px;
+    min-width: 44px;
+    font-size: var(--fs-control);
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 0.3em;
+    text-decoration-color: transparent;
+  }
+  .bar a[aria-current] {
+    text-decoration-color: currentColor;
+  }
 }
-.catalogue :global(.collection-header h2) {
-  font-size: clamp(30px, 3vw, 48px);
+
+/* The Spectrum wall. */
+.spectrum {
+  container-type: inline-size;
+  padding: calc(var(--baseline) * 3) var(--gutter) calc(var(--baseline) * 6);
 }
-.catalogue :global(.work-grid) {
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 64px 50px;
-}
-.catalogue :global(.work-card-caption) {
-  padding-top: 20px;
-}
-.catalogue :global(.work-card) {
-  min-width: 0;
-}
-.clearSearch {
-  font-size: 10px;
-  min-height: 44px;
+.spectrumHead {
   display: flex;
-  align-items: center;
-  text-decoration: underline;
-  text-underline-offset: 4px;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 24px;
+  flex-wrap: wrap;
+  margin-bottom: calc(var(--baseline) * 4);
 }
-@media (max-width: 800px) {
-  .intro {
-    grid-template-columns: 1fr;
-    gap: 30px;
-    padding-top: 36px;
-    padding-bottom: 30px;
-  }
-  .intro h1 {
-    max-width: 600px;
-  }
-  .description {
-    max-width: 480px;
-  }
-  .views {
-    gap: 10px 24px;
-  }
-  .views p {
-    flex-basis: 100%;
-    margin-left: 0;
-  }
-  .catalogue :global(.work-grid) {
-    gap: 38px 24px;
-  }
+.spectrumHead h2 {
+  font-size: var(--fs-control);
+  font-weight: 400;
+  letter-spacing: 0.08em;
 }
-@media (max-width: 540px) {
-  .intro h1 {
-    font-size: 62px;
+.rule {
+  position: relative;
+  height: 27px;
+  border-top: 1px solid var(--type);
+  margin: 0 calc(var(--hang-width, 10cqw) / 2);
+}
+.tick {
+  position: absolute;
+  left: var(--x);
+  top: -1px;
+  width: 1px;
+  height: 6px;
+  background: var(--type);
+}
+.tick[data-labelled] {
+  height: 10px;
+}
+.tickLabel {
+  position: absolute;
+  top: 12px;
+  left: 0;
+  transform: translateX(-50%);
+  font-family: var(--font-mono);
+  font-size: var(--fs-folio);
+  font-variant-numeric: tabular-nums lining-nums;
+  color: var(--muted);
+  white-space: nowrap;
+}
+.wall {
+  position: relative;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  height: var(--wall-height);
+}
+.column {
+  position: absolute;
+  left: var(--x);
+  top: var(--y);
+  width: var(--hang-width);
+}
+.nm {
+  display: none;
+}
+.stack {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: var(--hang-gap);
+}
+.hang {
+  position: relative;
+  display: block;
+  color: var(--night-type);
+}
+.hang img,
+.missing {
+  display: block;
+  width: 100%;
+  aspect-ratio: 3456/2234;
+  object-fit: contain;
+  background: #000;
+}
+.hangFolio {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  padding: 3px 6px;
+  font-family: var(--font-mono);
+  font-size: var(--fs-folio);
+  font-variant-numeric: tabular-nums lining-nums;
+  background: #000;
+  opacity: 0;
+  transition: opacity var(--t-blink) var(--ease-settle);
+}
+.hang:hover .hangFolio,
+.hang:focus-visible .hangFolio {
+  opacity: 1;
+}
+.shelf {
+  margin-top: calc(var(--baseline) * 6);
+  border-top: 1px solid var(--rule);
+  padding-top: 18px;
+}
+.shelf h3 {
+  font-size: var(--fs-control);
+  font-weight: 400;
+  color: var(--muted);
+  margin-bottom: 18px;
+}
+.shelfRow {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 9px;
+}
+@media (max-width: 767px) {
+  .spectrum {
+    display: grid;
+    grid-template-columns: 56px minmax(0, 1fr);
+    column-gap: 9px;
+    padding-inline: var(--gutter);
   }
-  .views a {
-    font-size: 11px;
+  .spectrumHead {
+    grid-column: 1 / -1;
   }
-  .catalogue :global(.work-grid) {
+  /* The rule runs vertically in the left margin; the wall becomes a stack ordered by nanometre. */
+  .rule {
+    grid-column: 1;
+    height: auto;
+    border-top: 0;
+    border-left: 1px solid var(--type);
+    margin: 0;
+  }
+  .tick {
+    display: none;
+  }
+  .wall {
+    grid-column: 2;
+    height: auto;
+    display: grid;
+    gap: 18px;
+  }
+  .column {
+    position: static;
+    width: auto;
+  }
+  .nm {
+    display: block;
+    font-family: var(--font-mono);
+    font-size: var(--fs-folio);
+    font-variant-numeric: tabular-nums lining-nums;
+    color: var(--muted);
+    margin-bottom: 6px;
+  }
+  .stack {
     grid-template-columns: minmax(0, 1fr);
-    gap: 42px;
+    gap: 1px;
   }
-  .page .catalogue {
-    margin-top: 30px;
+  .column[data-count]:not([data-count='1']) .stack {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .shelf {
+    grid-column: 1 / -1;
   }
 }

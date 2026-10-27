@@ -1,0 +1,98 @@
+/*
+  A hang: leaves side by side on one wall, a 1 px gutter between them, each the work's own
+  measured ground. The chosen leaf grows; the others follow a blink and a quarter later.
+*/
+.hang {
+  display: flex;
+  gap: 1px;
+  height: calc(100svh - var(--head) - var(--strip));
+  min-height: 360px;
+  background: var(--ground);
+}
+.leaf {
+  position: relative;
+  flex: 1 1 0;
+  min-width: 0;
+  display: grid;
+  grid-template-rows: minmax(0, 1fr) var(--strip);
+  background: var(--plate-ground, var(--paper));
+  color: var(--type);
+  transition: flex-grow var(--t-expand) var(--ease-settle);
+}
+.leaf[data-material='light'] {
+  --type: var(--night-type);
+  --muted: #b8b5ad;
+  background: var(--plate-ground, #000);
+  color: var(--type);
+}
+.leaf[data-state='chosen'] {
+  flex-grow: 2.4;
+}
+.leaf[data-state='other'] {
+  /* The neighbours re-form a blink and a quarter after the chosen leaf begins to grow. */
+  transition-delay: calc(var(--t-blink) * 1.25);
+}
+.leaf:focus-visible {
+  outline: 1px solid var(--type);
+  outline-offset: -1px;
+}
+.plate {
+  display: grid;
+  place-items: center;
+  min-height: 0;
+  padding: 27px 0;
+}
+.plate > :global(.art-media) {
+  height: 100%;
+  width: auto;
+  max-width: 100%;
+}
+.caption {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 0 18px;
+  min-width: 0;
+}
+.label {
+  font-size: var(--fs-folio);
+  font-variant-caps: all-small-caps;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  opacity: 0;
+  transition: opacity var(--t-chrome) var(--ease-settle);
+}
+.leaf[data-state='chosen'] .label,
+.hang:not([data-chosen]) .leaf:hover .label {
+  opacity: 1;
+}
+:global(.motion-paused) .leaf,
+:global(.motion-paused) .label {
+  transition: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .leaf,
+  .label {
+    transition: none;
+  }
+}
+@media (max-width: 767px) {
+  .hang {
+    flex-direction: column;
+    height: calc(100svh - var(--head));
+    min-height: 480px;
+  }
+  .leaf {
+    grid-template-rows: minmax(0, 1fr) 44px;
+  }
+  .leaf[data-state='chosen'] {
+    flex-grow: 2;
+  }
+  .plate {
+    padding: 9px 0;
+  }
+}

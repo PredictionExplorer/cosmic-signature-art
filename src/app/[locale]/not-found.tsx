@@ -1,20 +1,15 @@
-'use client';
-import Link from 'next/link';
-import { useParams } from 'next/navigation';
-import { messages } from '@/lib/i18n/messages';
-import { isLocale, localizedPath } from '@/lib/i18n/routing';
+import { getCuratedArtwork } from '@/lib/art/catalog';
+import { getInterpretation } from '@/lib/art/types';
+import { NotFoundView } from './not-found-view';
+
+/** The work next door: a curated Light still that is always held locally. */
+const NEIGHBOUR = 31;
+
+/**
+ * The server hands the client view one interpretation of one work, so the page never carries
+ * the curated catalog and its derivative registries into the browser.
+ */
 export default function NotFound() {
-  const params = useParams();
-  const locale =
-    typeof params.locale === 'string' && isLocale(params.locale) ? params.locale : 'en';
-  const t = messages(locale);
-  return (
-    <main id="main" className="section-wrap empty-state">
-      <p className="eyebrow">404</p>
-      <h1>{t.notFound}</h1>
-      <Link className="text-link" href={localizedPath(locale, '/collection')}>
-        {t.returnGallery} ↗
-      </Link>
-    </main>
-  );
+  const light = getInterpretation(getCuratedArtwork(NEIGHBOUR)!, 'light');
+  return <NotFoundView neighbour={NEIGHBOUR} light={light} />;
 }

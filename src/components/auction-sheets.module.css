@@ -1,0 +1,186 @@
+/*
+  The sheets of the sale: a native modal dialog in paper, 420 px at the right on a desk and a
+  bottom sheet rising to 60 % behind a 44 px handle on a phone. The backdrop is transparent:
+  the plate stays in view, never under a tint.
+*/
+@keyframes sheet-in {
+  from {
+    opacity: 0;
+    transform: translateX(24px);
+  }
+}
+@keyframes sheet-up {
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+}
+.sheet {
+  --ground: var(--paper);
+  --type: var(--paper-type);
+  --muted: #68685e;
+  --rule: color-mix(in srgb, var(--type) 24%, transparent);
+  position: fixed;
+  inset: 0 0 0 auto;
+  width: min(420px, 100vw);
+  height: 100dvh;
+  max-width: none;
+  max-height: none;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-left: 1px solid var(--rule);
+  background: var(--ground);
+  color: var(--type);
+  color-scheme: light;
+  overflow: hidden auto;
+  overscroll-behavior: contain;
+  font-size: var(--fs-reading);
+}
+.sheet:not([open]) {
+  display: none;
+}
+.sheet[open] {
+  animation: sheet-in var(--t-sheet) var(--ease-settle) both;
+}
+.sheet::backdrop {
+  background: transparent;
+}
+:global(.motion-paused) .sheet[open] {
+  animation: none;
+}
+.inner {
+  display: grid;
+  gap: 27px;
+  padding: 18px var(--gutter) 54px;
+}
+.handle {
+  display: none;
+}
+.head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 24px;
+  border-bottom: 1px solid var(--rule);
+  padding-bottom: 9px;
+}
+.head p {
+  color: var(--muted);
+}
+.close {
+  min-height: 44px;
+  font-size: var(--fs-control);
+}
+.intro {
+  color: var(--muted);
+  font-size: var(--fs-control);
+  line-height: 1.6;
+}
+.lookup {
+  display: grid;
+  gap: 18px;
+}
+.lookup label {
+  display: grid;
+  gap: 9px;
+  font-size: var(--fs-control);
+  color: var(--muted);
+}
+.lookup input {
+  min-height: 44px;
+  padding: 9px 12px;
+  border: 1px solid var(--rule);
+  background: transparent;
+  color: var(--type);
+  font-family: var(--font-mono);
+  font-size: 16px;
+}
+.lookupActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.activity {
+  display: grid;
+  gap: 18px;
+}
+.activityFor {
+  font-family: var(--font-mono);
+  font-size: var(--fs-control);
+  font-variant-numeric: tabular-nums lining-nums;
+  color: var(--muted);
+}
+.facts {
+  display: grid;
+  margin: 0;
+}
+.facts > div {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr);
+  gap: 18px;
+  align-items: baseline;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--rule);
+}
+.facts dt {
+  color: var(--muted);
+  font-size: var(--fs-control);
+}
+.facts dd {
+  margin: 0;
+  text-align: end;
+  font-variant-numeric: tabular-nums lining-nums;
+  overflow-wrap: anywhere;
+}
+.facts ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 6px;
+}
+.facts a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.3em;
+  text-decoration-color: var(--rule);
+}
+.facts a:hover,
+.facts a:focus-visible {
+  text-decoration-color: currentColor;
+}
+.quiet {
+  color: var(--muted);
+  font-size: var(--fs-control);
+}
+@media (max-width: 767px) {
+  .sheet {
+    inset: auto 0 0 0;
+    width: 100vw;
+    height: 60dvh;
+    border-left: 0;
+    border-top: 1px solid var(--rule);
+  }
+  .sheet[open] {
+    animation: sheet-up var(--t-sheet) var(--ease-settle) both;
+  }
+  .inner {
+    padding-top: 0;
+  }
+  .handle {
+    display: grid;
+    place-items: center;
+    width: 100%;
+    height: 44px;
+  }
+  .handle span {
+    display: block;
+    width: 44px;
+    height: 2px;
+    background: var(--rule-strong);
+  }
+}

@@ -69,7 +69,7 @@ export async function ArtworkHistorySection({
             `/art/${tokenId}${viewParams.size ? `?${viewParams}` : ''}#history`,
           )}
         >
-          {t.latestEvents} ↗
+          {t.latestEvents}
         </Link>
       </section>
     );
@@ -77,6 +77,10 @@ export async function ArtworkHistorySection({
   return <ArtworkHistoryView history={history} locale={locale} t={t} query={query} />;
 }
 
+/**
+ * Mint, transfers and naming events as lanes on one 1 px timeline with 44 px nodes. The two
+ * streams stay independently paginated; nothing implies a merged chronology or a sale.
+ */
 export function ArtworkHistoryView({
   history,
   locale,
@@ -107,7 +111,7 @@ export function ArtworkHistoryView({
                   {t.historyUnavailable}
                 </p>
               ) : page.items.length ? (
-                <ol className={styles.timeline}>
+                <ol className={styles.timeline} role="list">
                   {page.items.map((event) => (
                     <HistoryEvent key={event.eventLogId} event={event} locale={locale} t={t} />
                   ))}
@@ -141,7 +145,7 @@ export function ArtworkHistoryView({
           );
         })}
       </div>
-      <p className={`${styles.note} mt-6`}>{t.historyNote}</p>
+      <p className={`${styles.note} ${styles.historyNote}`}>{t.historyNote}</p>
     </section>
   );
 }
@@ -165,6 +169,7 @@ function HistoryEvent({
             ? t.eventName
             : t.nameCleared
           : t.eventTransfer;
+  const copy = { label: t.copyAddress, copied: t.copied };
   return (
     <li className={styles.event}>
       <div className={styles.eventHeader}>
@@ -181,7 +186,7 @@ function HistoryEvent({
           <div className={styles.eventAddresses}>
             <div>
               <span>{t.namedBy}</span>
-              <ChainAddress address={event.changedByAddress} compact />
+              <ChainAddress address={event.changedByAddress} compact copy={copy} />
             </div>
           </div>
         </>
@@ -190,13 +195,13 @@ function HistoryEvent({
           {event.kind !== 'mint' ? (
             <div>
               <span>{t.fromAddress}</span>
-              <ChainAddress address={event.fromAddress} compact />
+              <ChainAddress address={event.fromAddress} compact copy={copy} />
             </div>
           ) : null}
           {event.kind !== 'burn' ? (
             <div>
               <span>{t.toAddress}</span>
-              <ChainAddress address={event.toAddress} compact />
+              <ChainAddress address={event.toAddress} compact copy={copy} />
             </div>
           ) : null}
         </div>

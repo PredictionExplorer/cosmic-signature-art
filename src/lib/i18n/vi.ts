@@ -1,10 +1,8 @@
 import type { Messages } from './en';
 
 export const vi: Messages = {
-  auctionExhibition: 'Nghệ thuật chuyển động. Lời mời sưu tầm.',
   auctionExhibitionCopy:
     'Mỗi chu kỳ mang đến tám tác phẩm mới cho bộ sưu tập hiện có. Khám phá chuyển động, ngắm nhìn chi tiết và trực tiếp đặt giá bằng ETH.',
-  auctionEditorial: 'Từ bộ sưu tập thường trực',
   auctionEditorialNote:
     'Tác phẩm tiêu biểu này giới thiệu bộ sưu tập. Các tác phẩm đấu giá được liệt kê riêng.',
   auctionRoom: 'Phòng đấu giá',
@@ -14,10 +12,7 @@ export const vi: Messages = {
   auctionViewRecord: 'Tác phẩm và nguồn gốc',
   auctionDuration: '48 giờ kể từ lần đặt giá đầu tiên',
   auctionSoftClose: 'Đặt giá sát giờ kết thúc để lại 10 phút',
-  auctionWaitingCopy:
-    'Lần đặt giá đầu tiên bắt đầu đếm giờ. Bạn luôn có thể đưa ra mức giá cao hơn.',
   auctionBrowseArt: 'Khám phá nghệ thuật trong khi chúng tôi chuẩn bị',
-  bidPanelLoading: 'Đang đọc hợp đồng đấu giá…',
   auctionNoFee: 'Không có phí người mua',
   contractStatusLabel: 'Trạng thái đấu giá',
   openingBid: 'Giá khởi điểm',
@@ -37,19 +32,11 @@ export const vi: Messages = {
   extendedStudy: 'Khảo sát mở rộng',
   anchoringActive: 'Đang được giao thức lưu giữ',
   anchoringParticipant: 'Địa chỉ tham gia neo giữ',
-  collectionIntro: 'Một bộ sưu tập sống.',
-  collectionCopy:
-    'Lần theo dấu vết, ngắm một ảnh tĩnh, hay ở lại cùng chuyển động. Mỗi tác phẩm đều thuộc về cùng một bộ sưu tập không ngừng phát triển.',
   catalogue: 'Tất cả tác phẩm',
-  atlasView: 'Bản đồ chuyển động',
-  catalogueNote: 'Tác phẩm mới xuất hiện trong danh mục sau khi được lập chỉ mục.',
-  clearSearch: 'Xóa tìm kiếm',
   provenanceTitle: 'Đời sống của một tác phẩm.',
-  provenanceIntro: 'Một bản sắc tạo sinh. Một lịch sử được ghi lại trên Arbitrum.',
   origin: 'Nguồn gốc',
   created: 'Ngày tạo',
   originalRecipient: 'Địa chỉ nhận đầu tiên',
-  currentName: 'Tên hiện tại',
   identity: 'Bản sắc tạo sinh',
   ownershipHistory: 'Lịch sử lưu giữ',
   namingHistory: 'Lịch sử đặt tên',
@@ -71,8 +58,6 @@ export const vi: Messages = {
   earlierEvents: 'Sự kiện trước',
   latestEvents: 'Sự kiện mới nhất',
   sources: 'Tệp và cách biểu đạt',
-  sourcesCopy: 'Khám phá các tệp đã công bố và hồ sơ phía sau tác phẩm này.',
-  originalStill: 'Ảnh tĩnh đã công bố',
   masterFile: 'Tệp gốc',
   originalFilm: 'Phim đã công bố',
   metadataRecord: 'Siêu dữ liệu token',
@@ -80,14 +65,9 @@ export const vi: Messages = {
   indexedRecord: 'Hồ sơ theo chỉ mục',
   dimensions: 'Kích thước',
   duration: 'Thời lượng',
-  onChain: 'Arbitrum · ERC-721',
   preservedRecord: 'Đây là hồ sơ được lưu giữ. Thông tin trực tiếp có thể tạm thời không khả dụng.',
   recordLoading: 'Đang mở lịch sử tác phẩm…',
-  allExpressions: 'Những cách biểu đạt của một tác phẩm',
-  expressionRecordCopy: 'Nhiều cách nhìn cùng một chuyển động, gắn kết qua một token.',
   noMediaFiles: 'Các tệp phương tiện đã công bố chưa khả dụng.',
-  composition: 'Bố cục',
-  compositionCopy: 'Các đặc điểm được mô tả trong siêu dữ liệu đã công bố của tác phẩm.',
   structure: 'Cấu trúc',
   palette: 'Bảng màu',
   spectralClass: 'Lớp phổ',
@@ -103,51 +83,32 @@ export const vi: Messages = {
   partialRecords: 'Không thể đọc một số hồ sơ tác phẩm. Các tác phẩm hiện có được hiển thị.',
   mediaRecordUnavailable: 'Một số thông tin về phương tiện tạm thời không có sẵn.',
   collection: 'Bộ sưu tập',
-  exhibitions: 'Triển lãm',
   process: 'Quá trình',
   auctions: 'Đấu giá',
   pauseMotion: 'Tạm dừng chuyển động',
-  resumeMotion: 'Tiếp tục chuyển động',
   language: 'Ngôn ngữ',
+  siteNavigation: 'Điều hướng chính',
   skip: 'Chuyển đến tác phẩm',
-  passage: 'Lối chuyển',
   shape: 'Hình hài',
   ofMotion: 'của chuyển động.',
-  threeBodies: 'Ba thiên thể. Một miền mực.',
-  heroCopy: 'Trọng lực tạo nhịp điệu.\nMực chuyên chở chuyển động.',
-  enterAtlas: 'Bước vào bản đồ chuyển động',
   ink: 'Mực',
   light: 'Ánh sáng',
   film: 'Phim',
   still: 'Ảnh tĩnh',
   signature: 'Dấu ấn',
-  anotherExpression: 'Một cách biểu đạt khác',
-  crossLight: 'Bước sang Ánh sáng',
-  crossInk: 'Trở về Mực',
   oneMotion: 'Một chuyển động. Nhiều đời sống.',
   beginning: 'Từ đầu',
-  studyStill: 'Ngắm ảnh tĩnh',
   choreography: 'Vũ điệu tiếp diễn',
   follow: 'Đi theo điều',
-  movesYou: 'làm bạn rung động.',
   intro:
     'Quỹ đạo trở thành dòng chảy. Dòng chảy để lại dấu vết. Mỗi Cosmic Signature bắt đầu từ ba thiên thể chuyển động, rồi tìm thấy một đời sống khác trong mực.',
-  exploreProcess: 'Khám phá quá trình',
   selectedWorks: 'Tác phẩm tuyển chọn',
-  viewCollection: 'Xem bộ sưu tập',
-  eightWorks: 'Tám tác phẩm.',
-  continuingStory: 'Một câu chuyện tiếp nối.',
   auctionIntro:
     'Mỗi chu kỳ trình diễn, tám tác phẩm mới gia nhập cùng bộ sưu tập Cosmic Signature. Khoản thanh toán cuối cùng từ đấu giá được chuyển về quỹ dự trữ hiện có của giao thức.',
-  exploreAuctions: 'Khám phá đấu giá',
-  atlas: 'Bản đồ',
   editorial: 'Một chòm sao do giám tuyển sắp đặt',
   departure: 'Điểm khởi đầu của bạn',
   enterWork: 'Mở tác phẩm này',
-  rehang: 'Sắp lại chòm sao',
-  chooseWork: 'Chọn một tác phẩm. Để bố cục hội tụ quanh nó.',
   current: 'Một dòng chảy khác.',
-  allWorks: 'Bộ sưu tập thường trực',
   search: 'Tìm tác phẩm theo số hoặc tên',
   searchPlaceholder: 'Số token hoặc tên',
   find: 'Tìm tác phẩm',
@@ -158,25 +119,17 @@ export const vi: Messages = {
   lightOnly: 'Ánh sáng · Mực chưa được lập chỉ mục',
   backAtlas: 'Về bộ sưu tập',
   ways: 'Những cách nhìn',
-  compare: 'Xem cả hai cách biểu đạt',
-  closeCompare: 'Một cách biểu đạt',
   completeFilm: 'Phim đầy đủ',
-  enlarge: 'Mở trình xem toàn bộ tác phẩm',
+  enlarge: 'Xem kỹ',
   close: 'Đóng',
   pause: 'Tạm dừng',
   play: 'Phát',
   restart: 'Phát lại từ đầu',
-  seek: 'Vị trí trong phim',
   fullScreen: 'Toàn màn hình',
-  workRecord: 'Hồ sơ tác phẩm',
-  workCopy:
-    'Ba thiên thể vạch nên một vũ điệu. Chuyển động của chúng chuyên chở sắc tố. Điều còn lại là ký ức về chuyển động.',
   echo: 'Mỗi chuyển động đều có tiếng vọng.',
-  sameWork: 'Cùng một vũ điệu, lưu giữ trong ánh sáng',
   seed: 'Hạt giống tạo sinh',
-  cycle: 'Chu kỳ trình diễn',
+  cycle: 'Chu kỳ',
   token: 'Token',
-  collectionContract: 'Hợp đồng bộ sưu tập',
   indexedOwner: 'Địa chỉ giữ token theo chỉ mục',
   indexedNote:
     'Thông tin sở hữu được lập chỉ mục và có thể chậm hơn chuỗi. Địa chỉ hợp đồng có thể đại diện cho việc lưu giữ token.',
@@ -221,7 +174,6 @@ export const vi: Messages = {
   ruleTrust: 'Không có quyền ghi đè của quản trị viên',
   ruleTrustCopy:
     'Quản trị viên đấu giá không thể hủy lô, đổi quy tắc hay chuyển hướng tiền. Quyền nâng cấp trò chơi và quản lý siêu dữ liệu NFT hiện có vẫn là những yếu tố phụ thuộc riêng biệt.',
-  auctionTerms: 'Đọc điều khoản đấu giá',
   terms: 'Điều khoản đấu giá',
   privacy: 'Quyền riêng tư',
   status: 'Trạng thái hợp đồng',
@@ -242,10 +194,8 @@ export const vi: Messages = {
   privacyCopy:
     'Phòng trưng bày không dùng công cụ theo dõi quảng cáo hay tài khoản người dùng. Trình duyệt yêu cầu tác phẩm và dữ liệu blockchain công khai từ máy chủ phương tiện và nhà cung cấp RPC đã cấu hình; các dịch vụ đó có thể thấy địa chỉ mạng của bạn. Ví đã kết nối chỉ được dùng cho những hành động bạn yêu cầu. Tùy chọn chuyển động được lưu cục bộ trong trình duyệt.',
   notFound: 'Tác phẩm này không có ở đây.',
-  returnGallery: 'Về phòng trưng bày',
   errorTitle: 'Phòng trưng bày cần một chút thời gian.',
   retry: 'Thử lại',
-  footerNote: 'Ba thiên thể. Khả năng vô hạn.',
   openProtocol: 'Ghé thăm giao thức',
   connect: 'Kết nối ví',
   disconnect: 'Ngắt kết nối',
@@ -297,10 +247,282 @@ export const vi: Messages = {
   browseLots: 'Xem tác phẩm đấu giá',
   chainClock: 'Thời gian được kiểm tra theo khối mới nhất.',
   mediaPreview: 'Bản xem trên web',
+  arriving: 'Đang tải',
+  sit: 'Ngắm',
+  again: 'Xem lại',
+  excerpt: 'Trích đoạn',
+  pauseAmbientMotion: 'Tạm dừng chuyển động nền',
+  markLabel: 'Ba thiên thể, một quỹ đạo — Cosmic Signature',
   preserved: 'Tuyển tập đã lưu',
   next: 'Tiếp',
   previous: 'Trước',
   leadingWallet: 'Ví đang trả giá cao nhất',
   reviewChanged:
     'Dữ liệu trả giá đã thay đổi. Hãy đóng phần xem lại này và kiểm tra số tiền mới nhất.',
+
+  // Đầu trang, các bảng và phím
+  statement: 'Tuyên ngôn',
+  index: 'Mục lục',
+  indexSheet: 'Mục lục bộ sưu tập',
+  closeIndex: 'Đóng mục lục',
+  keys: 'Phím',
+  keysSheet: 'Phím tắt',
+  keyPlay: 'Phát hoặc tạm dừng phim',
+  keyNeighbours: 'Tác phẩm trước và sau',
+  keyExpressions: 'Mực và Ánh sáng; giữ để xem thoáng',
+  keyFilm: 'Mở phim trong phòng xem',
+  keySit: 'Ngồi: để giao diện mờ đi',
+  keyStudy: 'Xem kỹ bản in ở kích cỡ đầy đủ',
+  keyIndex: 'Mở mục lục',
+  keyJump: 'Gõ một số rồi nhấn Enter để đến tác phẩm đó',
+  keyHelp: 'Hiện các phím này',
+  workNumber: 'Số tác phẩm',
+
+  // Thứ tự và bộ lọc
+  ordering: 'Thứ tự',
+  orderNumber: 'Số',
+  orderCycle: 'Chu kỳ',
+  orderSpectrum: 'Quang phổ',
+  filters: 'Bộ lọc',
+  clearFilters: 'Xóa bộ lọc',
+  unmeasured: 'Chưa đo',
+  spectrumWall: 'Bộ sưu tập dọc theo quang phổ',
+  spectrumNote:
+    'Mỗi bản in Ánh sáng được treo trên nền đen theo bước sóng chủ đạo đã công bố, từ 380 đến 700 nm.',
+  worksCount: '{count} tác phẩm',
+  oneWork: '1 tác phẩm',
+  imprintedOn: 'khắc dấu {date}',
+  underlay: 'Lớp nền',
+  wildcard: 'Wildcard',
+  allocation: 'Phân bổ',
+  theCollection: 'Bộ sưu tập',
+  collectionControls: 'Điều khiển bộ sưu tập',
+
+  // Bản in và Lật trang
+  showLight: 'Hiện biểu đạt Ánh sáng',
+  showInk: 'Hiện biểu đạt Mực',
+  noInkPublished: 'chưa công bố biểu đạt Mực',
+  previousWork: 'Tác phẩm trước',
+  nextWork: 'Tác phẩm sau',
+  nextByWavelength: 'Kế tiếp theo bước sóng',
+  nmRedder: 'đỏ hơn {n} nm',
+  nmBluer: 'xanh hơn {n} nm',
+  collect: 'Sưu tầm',
+
+  // Mục ghi và bảng thuật ngữ
+  entry: 'Mục ghi',
+  selectionLine: 'Một trong {total} quỹ đạo ứng viên. Số {index} đã được chọn.',
+  bordaNote:
+    'Kiểm Borda · trọng số hỗn độn {chaos} · trọng số cân bằng {equilibrium} · thẩm mỹ {aesthetic} · điểm {score}',
+  threeBodyOrbit: 'Quỹ đạo ba vật thể.',
+  inkMedium: 'Mực: mực tàu được chất lưu mô phỏng đưa lên nền giấy kozo.',
+  lightMedium: 'Ánh sáng: những dải quỹ đạo phát sáng trên nền đen.',
+  filmsWord: 'phim',
+  spectralSweep: 'quét quang phổ',
+  mintedTo: 'Đúc cho',
+  heldBy: 'đang giữ bởi',
+  recordAsOf: 'Bản ghi Arbitrum tính đến {date}',
+  seedShort: 'Hạt giống',
+  wavelength: 'Bước sóng chủ đạo',
+  bodyHues: 'Sắc độ các vật thể',
+  masses: 'Khối lượng',
+  eccentricity: 'Độ lệch tâm',
+  selection: 'Tuyển chọn',
+  glossary: 'Bảng thuật ngữ',
+  glossarySignature:
+    'Một Signature là một token: một hạt giống, một quỹ đạo được ghi lại, mọi bản kết xuất đã công bố của quỹ đạo ấy.',
+  glossaryExpression:
+    'Một biểu đạt là một lần kết xuất có chủ ý của quỹ đạo ấy. Ánh sáng và Mực là hai biểu đạt, ngang hàng nhau.',
+  glossaryUnderlay: 'Lớp nền là cấu trúc phụ được vẽ bên dưới cấu trúc chính, với độ mờ đã nêu.',
+  glossarySpectralClass:
+    'Lớp quang phổ theo thang sao, từ O xanh nhất đến M đỏ nhất, đọc từ bước sóng chủ đạo của bảng màu.',
+  glossaryChaos: 'Hỗn độn, từ 0 đến 100, đo mức độ nhạy của quỹ đạo với điều kiện ban đầu.',
+  glossarySyzygies:
+    'Một syzygy là khoảnh khắc ba vật thể thẳng hàng. Số không nghĩa là điều đó chưa từng xảy ra.',
+  glossaryBorda:
+    'Một trăm nghìn quỹ đạo ứng viên được mô phỏng và xếp hạng bằng kiểm Borda; số đã công bố là quỹ đạo nó chọn.',
+  glossaryWavelength:
+    'Bước sóng chủ đạo là sắc độ của màu neo trong bảng màu, đo bằng nanomét ánh sáng khả kiến.',
+  glossaryMasses: 'Ba khối lượng định mức mỗi vật thể hút hai vật thể còn lại mạnh đến đâu.',
+  glossaryEccentricity: 'Độ lệch tâm đo mức hình elip trôi dạt lệch khỏi hình tròn.',
+  verifyOnChain: 'Xác minh trên chuỗi',
+  honestyRecord: 'Bản ghi được đọc từ bộ chỉ mục Arbitrum và có thể chậm hơn chuỗi vài khối.',
+  honestyMedia:
+    'Tệp phương tiện thuộc về nhà phát hành; mã băm được ghi ở đây và được đối chiếu ở mọi nơi có bản sao cục bộ.',
+
+  // Tuyên ngôn
+  shapeOfMotion: 'Hình dáng của chuyển động.',
+  statementLine:
+    'Mỗi tác phẩm là một quỹ đạo ba vật thể được ghi lại, kết xuất hai lần, thành ánh sáng và thành mực. Cả hai là cùng một token.',
+  statementSigned: 'Cosmic Signature · Tháng 10 năm 2026',
+  livingCollection: 'Một bộ sưu tập sống gồm những quỹ đạo được ghi lại',
+  cyclesSpan: 'Chu kỳ {first} đến chu kỳ {last}',
+  since: 'từ {date}',
+  statement1:
+    'Một Signature là một token. Phía sau nó là một hạt giống, một quỹ đạo ba vật thể được ghi lại, và mọi bản kết xuất của quỹ đạo ấy mà chúng tôi đã công bố. Không gì được vẽ bằng tay, và không gì được vẽ hai lần.',
+  statement2:
+    'Mỗi quỹ đạo được kết xuất hai lần, thành Ánh sáng và thành Mực. Trong Ánh sáng, ba vật thể để lại những dải sáng trên nền đen. Trong Mực, cùng chuyển động ấy đưa mực tàu qua một chất lưu mô phỏng lên nền giấy kozo. Đó là hai biểu đạt của một tác phẩm, ngang hàng nhau; không bên nào là bản gốc của bên kia.',
+  statement3:
+    'Chúng tôi chọn ba vật thể vì ba là con số nhỏ nhất mà lực hấp dẫn không thể tiên đoán trọn vẹn. Hai vật thể xoay mãi trong một hình khép kín. Ba vật thể thì ứng tác. Đường đi của chúng được định đến chữ số cuối cùng mà vẫn bất ngờ, và đó là phẩm chất chúng tôi muốn mỗi tác phẩm mang theo.',
+  statement4:
+    'Với mỗi tác phẩm, một trăm nghìn quỹ đạo ứng viên được mô phỏng và chấm điểm theo hỗn độn, cân bằng và hình thể. Một kiểm Borda xếp hạng chúng, và một quỹ đạo được chọn. Số của ứng viên được chọn được công bố trong bản ghi của tác phẩm, bên cạnh những trọng số đã chọn nó.',
+  statement5:
+    'Các tác phẩm được khắc dấu theo chu kỳ. Mỗi vòng thành công của trò chơi Cosmic Signature kết thúc bằng việc đúc token mới trên Arbitrum, và hạt giống của chúng được cố định trong chính giao dịch ấy. Chu kỳ 0 đã mở bộ sưu tập vào tháng 6 năm 2026. Bộ sưu tập lớn dần theo mỗi chu kỳ và không bao giờ sửa lại những gì đã công bố.',
+  statement6:
+    'Mọi thứ hiển thị ở đây là bản kết xuất được ghi lại, không phải mô phỏng trực tiếp. Mỗi bản in được tái hiện từ các tệp đã công bố, khớp từng mã băm, và mỗi phép đo trên những trang này, một bước sóng, một chỉ số hỗn độn, một số lần syzygy, đều là của nhà phát hành.',
+
+  // Lời cuối sách
+  colophon: 'Lời cuối sách',
+  colophonPlates:
+    'Các bản in được tái hiện từ tệp WebP dẫn xuất đã công bố của bản gốc 16 bit, 3.456 × 2.234 px.',
+  colophonFilms: 'Phim là dẫn xuất H.264 từ các bản kết xuất ember-v4 60 fps.',
+  colophonType: 'Sắp chữ bằng Literata và IBM Plex Mono.',
+
+  // Quy trình, chia chương lại
+  chapterChoice: 'Sự lựa chọn',
+  chapterChoiceCopy: 'Một trăm nghìn quỹ đạo ứng viên được chấm điểm; một quỹ đạo được chọn.',
+  chapterSpectrum: 'Quang phổ',
+  playSweep: 'Phát bản quét',
+  sweepCopy:
+    'Bản quét quang phổ mười giây đã công bố đưa bảng màu của tác phẩm đi qua ánh sáng khả kiến, từ 380 đến 700 nm.',
+
+  // Trạng thái lặng
+  nextDoor: '{work} ở ngay phòng bên.',
+  throughSpectrum: 'Xuyên qua quang phổ',
+
+  // The sale
+  saleTitle: 'Phiên {n}',
+  saleSubtitle: 'Tám tác phẩm mới · Chu kỳ {cycle}',
+  conditionsOfSale: 'Điều kiện bán',
+  // The entry's copy affordance and footnotes
+  copyAddress: 'Sao chép',
+  copied: 'Đã sao chép',
+  footnote: 'Chú thích {n}',
+
+  // ── Phase 2 ─ each fork appends its keys beneath its own line, in every locale, and nowhere else.
+  // Fork R · the room, the loupe, the gatefold, the Expansion
+  detail: 'Chi tiết',
+  wholePlate: 'Toàn bộ bản in',
+  detailWindow: 'Chi tiết {n}',
+  detailOf: 'Chi tiết bản in {n} ({scale}) · x {x} / y {y}',
+  scaleReadout: '1 px màn hình = {ratio} px tác phẩm',
+  scaleNative: '1:1',
+  filmPosition: 'Vị trí trong phim',
+  timeOf: '{current} trên {total}',
+  elapsed: 'đã qua {time}',
+  slowRoom: 'Phòng chậm',
+  studyWaits: 'Với kết nối này, bản nghiên cứu dài chờ một bản mã nhẹ hơn; ảnh tĩnh tạm thay thế.',
+  playAnyway: 'Vẫn phát',
+  durationSeconds: '{n} giây',
+  roomKeys: 'Phím trong phòng xem',
+  keyScrub: 'Lùi và tiến một giây; giữ Shift để mười giây',
+  keyDetail: 'Chi tiết: một điểm ảnh tác phẩm trên một điểm ảnh màn hình',
+  keyWhole: 'Toàn bộ bản in',
+  loupeKeys: 'Phím mũi tên dời khung xem; + và − phóng to thu nhỏ; W trở về toàn bộ bản in',
+  gatefold: 'Trang gấp',
+  gatefoldCaption: 'Bản in {n}, bằng mực và bằng ánh sáng. Một quỹ đạo.',
+  gatefoldSpread: 'Trải ra',
+  gatefoldSeam: 'Đường nối',
+  gatefoldSeamLabel: 'Vị trí đường nối giữa mực và ánh sáng',
+  // ·
+  // ·
+  // Fork S · the sale catalogue, the bid sheet, the activity sheet
+  lotNumeral: 'Lô {n}',
+  orderOfSale: 'Thứ tự đấu giá',
+  lotAvailable: 'Có thể bắt đầu',
+  openingMinimum: 'mức khởi điểm',
+  lotEligibleFrom: 'được đấu giá từ',
+  lotCloses: 'kết thúc',
+  lotLateBids: 'giá trả vào phút chót kéo dài thêm 10 phút',
+  lotWonBy: 'thuộc về',
+  lotDeliveredWord: 'đã giao',
+  lotAwaitingDelivery: 'chờ giao',
+  inYourZone: '{time} theo giờ của bạn',
+  mediaNotPublished: 'Tư liệu · chưa công bố',
+  collectThisWork: 'Sưu tầm tác phẩm này',
+  bidSheet: 'Phiếu trả giá',
+  sheetHandle: 'Đóng phiếu',
+  yourActivity: 'Hoạt động của bạn',
+  activityIntro:
+    'Các giá đang dẫn đầu, khoản hoàn lại và tác phẩm bạn đang giữ trong phiên này, đọc từ chuỗi. Không có giao dịch nào được gửi từ đây.',
+  activityAddress: 'Địa chỉ ví',
+  activityLookUp: 'Tra cứu',
+  activityUseWallet: 'Dùng ví của tôi',
+  activityLeading: 'Giá đang dẫn đầu',
+  activityCommitted: 'Đã cam kết',
+  activityRefundable: 'Khoản hoàn lại',
+  activityWon: 'Đã thắng, chờ giao',
+  activityHeld: 'Tác phẩm của phiên này bạn đang giữ',
+  activityNone: 'Không có',
+  activityUnavailable: 'Không đọc được hoạt động. Hãy thử lại.',
+  activityFor: 'Hoạt động của {address}',
+  bidHistory: 'Lịch sử trả giá',
+  historyNone: 'Chưa có giá nào.',
+  bidHistoryUnavailable: 'Lịch sử không khả dụng',
+  historyPartial: 'Các giá sớm hơn có thể không hiển thị.',
+  historyDeliveredTo: 'Đã giao đến {address}',
+  readingRecord: 'Đang đọc hồ sơ…',
+  historyStale: 'Không đọc được các giá mới nhất; danh sách này có thể chưa cập nhật.',
+  // ·
+  // ·
+  // Fork M · the settling plates, the eye-line hang, the phone rung
+  settling: 'Lắng đọng',
+  filmInRoom: 'Phim trọn vẹn mở trong phòng thưởng lãm',
+  // ·
+  // ·
+  // Fork E · exhibitions, trails, sharing images, Verify a download
+  exhibitions: 'Triển lãm',
+  exhibitionsIntro:
+    'Những phòng treo và lối đi xuyên qua bộ sưu tập. Mỗi triển lãm đều ghi ngày và ký tên, và mỗi lối đi nêu rõ phép đo đã công bố mà nó đi theo.',
+  hang: 'Phòng treo',
+  trail: 'Lối đi',
+  hungBy: 'Người treo: {curator}',
+  hangTitle: 'Một phòng treo: 023, 031, 035',
+  hangNote:
+    'Ba tác phẩm, treo thành một phòng. Hai mươi ba nhẹ nhõm: trong Ánh sáng là những dải đỏ, xanh dương và xanh lục, trong Mực là một cụm đặc với những xoáy nhạt. Ba mươi mốt trải khắp tờ giấy, tím, ô liu và hồng nhường chỗ cho một trường mực chạm đến mép. Ba mươi lăm nghiêng về góc trên bên phải, vàng chanh và tím theo đường chéo. Chọn một tác phẩm, nó lớn lên tại chỗ; hai tác phẩm còn lại sắp lại quanh nó. Không gì bị cắt xén hay nhuộm màu: mỗi bản in là bức ảnh tĩnh đã công bố trên nền màu tự đo của chính nó.',
+  theRule: 'Quy tắc',
+  theWorks: 'Các tác phẩm',
+  trailLongCurve: 'Đường cong dài',
+  trailLongCurveRule:
+    'Những tác phẩm có độ lệch tâm quỹ đạo đã công bố từ 0,48 trở lên: những quỹ đạo kéo dài nhất của bộ sưu tập.',
+  trailLongCurveNote:
+    'Độ lệch tâm đo mức hình elip trôi của quỹ đạo rời xa hình tròn. Khi lối đi này được treo, bộ sưu tập trải từ 0,40 đến 0,50, nên đây là những đường cong dài nhất của nó. Trong Ánh sáng, các dải kéo giãn và mỏng dần ở đầu xa của mỗi vòng; trong Mực, chất lưu bị kéo thành những nét dài, không vội. Chúng được treo theo thứ tự, từ kéo dài nhất trở xuống.',
+  trailAlmostStill: 'Gần như tĩnh lặng',
+  trailAlmostStillRule:
+    'Những tác phẩm có độ hỗn độn đã công bố từ 16 trở xuống, trên thang 100: những quỹ đạo êm ả nhất.',
+  trailAlmostStillNote:
+    'Độ hỗn độn đo mức quỹ đạo phụ thuộc nhạy cảm vào nơi nó bắt đầu. Những quỹ đạo này gần như không phụ thuộc. Dải Ánh sáng của chúng nằm sát và lặp lại; Mực của chúng lắng gần như đúng nơi được đặt, và tờ giấy giữ lấy vân của mình. Lối đi bắt đầu với hai quỹ đạo lặng nhất, ở mức 13, và kết thúc nơi phần giữa của bộ sưu tập bắt đầu.',
+  trailTurbulence: 'Nhiễu động',
+  trailTurbulenceRule:
+    'Những tác phẩm có độ hỗn độn đã công bố từ 24 trở lên, trên thang 100: những quỹ đạo bị xáo trộn nhất.',
+  trailTurbulenceNote:
+    'Ở đầu kia của cùng một phép đo, những quỹ đạo này nhạy cảm nhất với điểm khởi đầu. Các dải cắt nhau và quay ngược; mực bị cuốn xa nhất khỏi nơi các thiên thể đi qua. Sáu mươi chín, ở mức 28, là quỹ đạo nhiễu động nhất được ghi nhận khi lối đi này được treo.',
+  trailLightBecomingTrace: 'Ánh sáng thành dấu vết',
+  trailLightBecomingTraceRule:
+    'Những tác phẩm có số giao cắt bím đã công bố từ 50 trở lên: những dải quỹ đạo cắt nhau thường xuyên nhất.',
+  trailLightBecomingTraceNote:
+    'Mỗi lần một dải vượt qua dải khác, nhà phát hành tính một giao cắt. Nơi có nhiều giao cắt, bản in Ánh sáng là một tấm dệt, và trong Mực những giao cắt ấy trở thành nếp gấp trong một dấu vết duy nhất. Mười một, với 97, là tấm dệt dày nhất của bộ sưu tập khi lối đi này được treo; lối đi theo số đếm đi xuống tới năm mươi.',
+  measureEccentricity: 'độ lệch tâm {value}',
+  measureChaos: 'hỗn độn {value} / 100',
+  measureCrossings: '{value} giao cắt',
+  cycleNote:
+    'Mọi tác phẩm của một chu kỳ được khắc trong một giao dịch khi chu kỳ khép lại. Chu kỳ là chương của bộ sưu tập, và trang này giữ nó như khi được treo.',
+  results: 'Kết quả',
+  resultsPartial: 'Một số kết quả không đọc được.',
+  allExhibitions: 'Tất cả triển lãm',
+  otherExhibitions: 'Triển lãm khác',
+  verifyDownload: 'Xác minh tệp đã tải',
+  verifyIntro:
+    'Chọn một tệp bạn đã tải từ các liên kết phía trên. SHA-256 của tệp được tính tại đây, trong trình duyệt của bạn, và so với các mã băm đã công bố; tệp không bao giờ rời khỏi thiết bị của bạn.',
+  verifyChoose: 'Chọn tệp',
+  verifyReading: 'Đang đọc {name}…',
+  verifyMatches: 'Trùng với {file}',
+  verifyNoMatch: 'Không trùng với tệp đã công bố nào của tác phẩm này',
+  verifyTooLarge:
+    'Tệp này quá lớn để xác minh trong trình duyệt. Hãy chạy lệnh bên dưới và so kết quả với các mã băm đã công bố.',
+  verifyFailed: 'Không đọc được tệp.',
+  publishedHashes: 'Mã băm đã công bố',
+  sharingCollection: 'Bộ sưu tập · {count} tác phẩm',
+  // ·
+  // ·
 };

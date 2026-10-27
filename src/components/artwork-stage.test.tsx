@@ -8,6 +8,7 @@ import { ArtworkStage, useArtworkExpression } from './artwork-stage';
 const state = vi.hoisted(() => ({
   paused: false,
   reducedMotion: false,
+  theatre: 'playing' as 'playing' | 'hushed',
   transition: vi.fn(),
   addTransitionType: vi.fn(),
 }));
@@ -41,6 +42,7 @@ beforeEach(() => {
   supportsDecode = true;
   state.paused = false;
   state.reducedMotion = false;
+  state.theatre = 'playing';
   state.transition.mockClear();
   state.addTransitionType.mockClear();
   vi.useFakeTimers();
@@ -308,6 +310,16 @@ describe('expression preparation', () => {
     },
   );
 
+  it('crosses instantly while the theatre is hushed, even if the hush began mid-preparation', async () => {
+    const { result, rerender } = renderHook(() => useArtworkExpression({ media }));
+    act(() => result.current.selectExpression('light'));
+    state.theatre = 'hushed';
+    rerender();
+    await ready();
+    expect(result.current.expression).toBe('light');
+    expect(state.addTransitionType).not.toHaveBeenCalled();
+  });
+
   it('honors a motion preference changed while preparation is still pending', async () => {
     const { result, rerender } = renderHook(() => useArtworkExpression({ media }));
     act(() => result.current.selectExpression('light'));
@@ -374,10 +386,11 @@ describe('cinematic artwork stage', () => {
     );
   });
 
-  it.each(['paused', 'reducedMotion', 'disabled'] as const)(
+  it.each(['paused', 'reducedMotion', 'hushed', 'disabled'] as const)(
     'has no cinematic updates when %s',
     (preference) => {
-      if (preference !== 'disabled') state[preference] = true;
+      if (preference === 'hushed') state.theatre = 'hushed';
+      else if (preference !== 'disabled') state[preference] = true;
       render(
         <ArtworkStage artworkId={31} expression="ink" disabled={preference === 'disabled'}>
           <span>Work</span>

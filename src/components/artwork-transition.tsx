@@ -20,16 +20,19 @@ export function ArtworkTransition({
   interpretationId,
   role,
   disabled = false,
+  className = '',
   children,
 }: {
   artworkId: number;
   interpretationId: string;
   role: 'preview' | 'detail';
   disabled?: boolean;
+  className?: string;
   children: ReactNode;
 }) {
-  const { paused, reducedMotion } = useMotion();
-  const enabled = !disabled && !paused && !reducedMotion;
+  const { paused, reducedMotion, theatre } = useMotion();
+  // A hushed theatre (bid review) walks between card and plate without the morph.
+  const enabled = !disabled && !paused && !reducedMotion && theatre !== 'hushed';
 
   return (
     <ViewTransition
@@ -38,7 +41,7 @@ export function ArtworkTransition({
       share={enabled ? 'cosmic-art-shared' : 'none'}
       enter={enabled && role === 'detail' ? 'cosmic-art-arrival' : 'none'}
     >
-      <div className={styles.surface}>{children}</div>
+      <div className={`${styles.surface} ${className}`.trim()}>{children}</div>
     </ViewTransition>
   );
 }

@@ -1,0 +1,43 @@
+.colophon {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+  gap: 36px var(--gutter);
+  padding: 54px var(--gutter) 45px;
+  border-top: 1px solid var(--rule);
+  background: var(--ground);
+  color: var(--type);
+}
+.lines {
+  display: grid;
+  gap: 9px;
+  align-content: start;
+  max-width: 36em;
+}
+.lines > :global(.brand) {
+  margin-bottom: 18px;
+}
+.lines p {
+  font-size: var(--fs-control);
+  line-height: 1.6;
+  color: var(--muted);
+}
+.rows {
+  display: grid;
+  align-content: start;
+}
+.rows a {
+  display: flex;
+  align-items: center;
+  min-height: 44px;
+  font-size: var(--fs-control);
+  border-bottom: 1px solid var(--rule);
+}
+.rows a:last-child {
+  border-bottom: 0;
+}
+@media (max-width: 767px) {
+  .colophon {
+    grid-template-columns: minmax(0, 1fr);
+    padding-block: 45px 36px;
+  }
+}

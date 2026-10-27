@@ -14,7 +14,7 @@ export default async function Terms({ params }: { params: Promise<{ locale: stri
   if (!isLocale(locale)) notFound();
   const t = messages(locale);
   return (
-    <main id="main" className="section-wrap legal-page">
+    <main id="main" className="type-page legal-page">
       <div className="page-heading">
         <p className="eyebrow">{t.terms}</p>
         <h1>{t.trustTitle}</h1>

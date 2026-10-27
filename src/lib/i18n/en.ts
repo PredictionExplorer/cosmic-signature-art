@@ -1,8 +1,6 @@
 export const en = {
-  auctionExhibition: 'Art in motion. An invitation to collect.',
   auctionExhibitionCopy:
     'Each cycle brings eight new works to the existing collection. Explore their movement, study their details, and make a direct offer in ETH.',
-  auctionEditorial: 'From the permanent collection',
   auctionEditorialNote:
     'This featured work introduces the collection. Auction lots are listed separately.',
   auctionRoom: 'The auction room',
@@ -12,9 +10,7 @@ export const en = {
   auctionViewRecord: 'Artwork & provenance',
   auctionDuration: '48 hours from the first bid',
   auctionSoftClose: 'Late bids leave 10 minutes',
-  auctionWaitingCopy: 'The first bid starts the clock. Larger bids are always welcome.',
   auctionBrowseArt: 'Explore the art while we prepare',
-  bidPanelLoading: 'Reading the auction contract…',
   auctionNoFee: 'No buyer premium',
   contractStatusLabel: 'Auction status',
   openingBid: 'Opening bid',
@@ -33,19 +29,11 @@ export const en = {
   extendedStudy: 'Extended study',
   anchoringActive: 'Held in protocol custody',
   anchoringParticipant: 'Anchoring participant',
-  collectionIntro: 'A living collection.',
-  collectionCopy:
-    'Follow a trace, study a still, or stay with the movement. Every work belongs to the same evolving collection.',
   catalogue: 'All works',
-  atlasView: 'The moving Atlas',
-  catalogueNote: 'New works enter the catalogue as they are indexed.',
-  clearSearch: 'Clear search',
   provenanceTitle: 'The life of a work.',
-  provenanceIntro: 'A generative identity. A history recorded on Arbitrum.',
   origin: 'Origin',
   created: 'Created',
   originalRecipient: 'Original recipient',
-  currentName: 'Current name',
   identity: 'Generative identity',
   ownershipHistory: 'Custody history',
   namingHistory: 'Naming history',
@@ -67,8 +55,6 @@ export const en = {
   earlierEvents: 'Earlier events',
   latestEvents: 'Latest events',
   sources: 'Files & expressions',
-  sourcesCopy: 'Explore the published files and the records behind this work.',
-  originalStill: 'Published still',
   masterFile: 'Master file',
   originalFilm: 'Published film',
   metadataRecord: 'Token metadata',
@@ -76,14 +62,9 @@ export const en = {
   indexedRecord: 'Indexed record',
   dimensions: 'Dimensions',
   duration: 'Duration',
-  onChain: 'Arbitrum · ERC-721',
   preservedRecord: 'This is a preserved record. Live details may be temporarily unavailable.',
   recordLoading: 'Opening the work’s history…',
-  allExpressions: 'Expressions of one work',
-  expressionRecordCopy: 'Different ways to see the same motion, held together by one token.',
   noMediaFiles: 'Published media files are not available yet.',
-  composition: 'The composition',
-  compositionCopy: 'Characteristics described in the published artwork metadata.',
   structure: 'Structure',
   palette: 'Palette',
   spectralClass: 'Spectral class',
@@ -99,51 +80,32 @@ export const en = {
   partialRecords: 'Some work records could not be read. Available works are shown.',
   mediaRecordUnavailable: 'Some media details are temporarily unavailable.',
   collection: 'Collection',
-  exhibitions: 'Exhibitions',
-  process: 'The process',
+  process: 'Process',
   auctions: 'Auctions',
   pauseMotion: 'Pause motion',
-  resumeMotion: 'Resume motion',
   language: 'Language',
+  siteNavigation: 'Main',
   skip: 'Skip to artwork',
-  passage: 'The Passage',
   shape: 'The shape',
   ofMotion: 'of motion.',
-  threeBodies: 'Three bodies. A field of ink.',
-  heroCopy: 'Gravity sets the rhythm.\nInk carries the movement.',
-  enterAtlas: 'Enter the moving atlas',
   ink: 'Ink',
   light: 'Light',
   film: 'Film',
   still: 'Still',
   signature: 'Signature',
-  anotherExpression: 'Another expression',
-  crossLight: 'Cross into Light',
-  crossInk: 'Return to Ink',
   oneMotion: 'One motion. Many lives.',
   beginning: 'From the beginning',
-  studyStill: 'Study the still',
   choreography: 'The choreography continues',
   follow: 'Follow what',
-  movesYou: 'moves you.',
   intro:
     'An orbit becomes a current. A current leaves a trace. Each Cosmic Signature begins with three bodies in motion, then finds another life in ink.',
-  exploreProcess: 'Discover the process',
   selectedWorks: 'Selected works',
-  viewCollection: 'View the collection',
-  eightWorks: 'Eight works.',
-  continuingStory: 'One continuing story.',
   auctionIntro:
     'With each Performance Cycle, eight new works join the same Cosmic Signature collection. Their final auction payments return to the protocol’s existing reserve.',
-  exploreAuctions: 'Explore the auctions',
-  atlas: 'The Atlas',
   editorial: 'An editorial constellation',
   departure: 'Your point of departure',
   enterWork: 'Enter this work',
-  rehang: 'Rehang the constellation',
-  chooseWork: 'Choose a work. Let the view gather around it.',
   current: 'A different kind of current.',
-  allWorks: 'The permanent collection',
   search: 'Find a work by number or name',
   searchPlaceholder: 'Token number or name',
   find: 'Find work',
@@ -154,25 +116,17 @@ export const en = {
   lightOnly: 'Light · Ink not yet indexed',
   backAtlas: 'Back to the collection',
   ways: 'Ways of seeing',
-  compare: 'See both expressions',
-  closeCompare: 'Single expression',
   completeFilm: 'The complete film',
-  enlarge: 'Open full artwork viewer',
+  enlarge: 'Study',
   close: 'Close',
   pause: 'Pause',
   play: 'Play',
   restart: 'Restart',
-  seek: 'Film position',
   fullScreen: 'Fullscreen',
-  workRecord: 'The work’s record',
-  workCopy:
-    'Three bodies trace a choreography. Their motion carries the pigment. What remains is a memory of movement.',
   echo: 'Every motion has an echo.',
-  sameWork: 'The same choreography, held in light',
   seed: 'Generative seed',
-  cycle: 'Performance Cycle',
+  cycle: 'Cycle',
   token: 'Token',
-  collectionContract: 'Collection contract',
   indexedOwner: 'Indexed custodian',
   indexedNote:
     'Ownership is indexed and may lag the chain. A contract address may represent custody.',
@@ -217,7 +171,6 @@ export const en = {
   ruleTrust: 'No administrator overrides',
   ruleTrustCopy:
     'No auction administrator can cancel a lot, change its rules or redirect its funds. Existing game upgrades and NFT metadata powers remain separate dependencies.',
-  auctionTerms: 'Read the auction terms',
   terms: 'Auction terms',
   privacy: 'Privacy',
   status: 'Contract status',
@@ -238,10 +191,8 @@ export const en = {
   privacyCopy:
     'The gallery uses no advertising trackers or user accounts. Your browser requests artwork and public blockchain data from the configured media host and RPC provider; those services can see your network address. A connected wallet is used only for actions you request. Motion preferences are stored locally in your browser.',
   notFound: 'This work is not here.',
-  returnGallery: 'Return to the gallery',
   errorTitle: 'The gallery needs a moment.',
   retry: 'Try again',
-  footerNote: 'Three bodies. Infinite possibility.',
   openProtocol: 'Visit the protocol',
   connect: 'Connect wallet',
   disconnect: 'Disconnect',
@@ -293,10 +244,284 @@ export const en = {
   browseLots: 'Browse auction works',
   chainClock: 'Times are checked against the latest block.',
   mediaPreview: 'Web preview',
+  arriving: 'Arriving',
+  sit: 'Sit',
+  again: 'Again',
+  excerpt: 'Excerpt',
+  pauseAmbientMotion: 'Pause ambient motion',
+  markLabel: 'Three bodies, one orbit — Cosmic Signature',
   preserved: 'Preserved selection',
   next: 'Next',
   previous: 'Previous',
   leadingWallet: 'Leading wallet',
   reviewChanged: 'Bid data changed. Close this review and check the latest amount.',
+
+  // The running head, the sheets and the keys
+  statement: 'Statement',
+  index: 'Index',
+  indexSheet: 'Index of the collection',
+  closeIndex: 'Close the index',
+  keys: 'Keys',
+  keysSheet: 'Keyboard shortcuts',
+  keyPlay: 'Play or pause the film',
+  keyNeighbours: 'Previous and next work',
+  keyExpressions: 'Ink and Light; hold to peek',
+  keyFilm: 'Open the film in the viewing room',
+  keySit: 'Sit: let the chrome fade',
+  keyStudy: 'Study the plate at full size',
+  keyIndex: 'Open the index',
+  keyJump: 'Type a number, then Enter, to go to that work',
+  keyHelp: 'Show these keys',
+  workNumber: 'Work number',
+
+  // Orderings and filters
+  ordering: 'Ordering',
+  orderNumber: 'Number',
+  orderCycle: 'Cycle',
+  orderSpectrum: 'Spectrum',
+  filters: 'Filters',
+  clearFilters: 'Clear filters',
+  unmeasured: 'Unmeasured',
+  spectrumWall: 'The collection along the spectrum',
+  spectrumNote:
+    'Every Light plate hung on black by its published dominant wavelength, 380 to 700 nm.',
+  worksCount: '{count} works',
+  oneWork: '1 work',
+  imprintedOn: 'imprinted {date}',
+  underlay: 'Underlay',
+  wildcard: 'Wildcard',
+  allocation: 'Allocation',
+  theCollection: 'The collection',
+  collectionControls: 'Collection controls',
+
+  // The plate and the Turn
+  showLight: 'Show the Light expression',
+  showInk: 'Show the Ink expression',
+  noInkPublished: 'no Ink expression published',
+  previousWork: 'Previous work',
+  nextWork: 'Next work',
+  nextByWavelength: 'Next by wavelength',
+  nmRedder: '{n} nm redder',
+  nmBluer: '{n} nm bluer',
+  collect: 'Collect',
+
+  // The entry and the glossary
+  entry: 'Entry',
+  selectionLine: 'One of {total} candidate orbits. Number {index} was chosen.',
+  bordaNote:
+    'Borda count · chaos weight {chaos} · equilibrium weight {equilibrium} · aesthetic {aesthetic} · score {score}',
+  threeBodyOrbit: 'Three-body orbit.',
+  inkMedium: 'Ink: sumi carried by simulated fluid on a kozo ground.',
+  lightMedium: 'Light: luminous orbit ribbons on black.',
+  filmsWord: 'films',
+  spectralSweep: 'spectral sweep',
+  mintedTo: 'Minted to',
+  heldBy: 'held by',
+  recordAsOf: 'Arbitrum record as of {date}',
+  seedShort: 'Seed',
+  wavelength: 'Dominant wavelength',
+  bodyHues: 'Body hues',
+  masses: 'Masses',
+  eccentricity: 'Eccentricity',
+  selection: 'Selection',
+  glossary: 'Glossary',
+  glossarySignature:
+    'A Signature is one token: one seed, one recorded orbit, every published rendering of it.',
+  glossaryExpression:
+    'An expression is one authored rendering of that orbit. Light and Ink are two, of equal standing.',
+  glossaryUnderlay:
+    'The underlay is the secondary structure drawn beneath the primary one, at the stated opacity.',
+  glossarySpectralClass:
+    'The spectral class follows the stellar scale, from O, the bluest, to M, the reddest, read from the palette’s dominant wavelength.',
+  glossaryChaos:
+    'Chaos, from 0 to 100, measures how sensitively the orbit depended on its starting conditions.',
+  glossarySyzygies:
+    'A syzygy is a moment when the three bodies fall into one line. Zero means they never did.',
+  glossaryBorda:
+    'One hundred thousand candidate orbits were simulated and ranked by a Borda count; the published number is the one it chose.',
+  glossaryWavelength:
+    'The dominant wavelength is the hue of the palette’s anchor, measured in nanometres of visible light.',
+  glossaryMasses: 'The three masses set how strongly each body pulls on the other two.',
+  glossaryEccentricity: 'Eccentricity measures how far the drift ellipse departs from a circle.',
+  verifyOnChain: 'Verify on chain',
+  honestyRecord:
+    'The record is read from the Arbitrum indexer and may lag the chain by a few blocks.',
+  honestyMedia:
+    'Media files are the publisher’s; their hashes are recorded here and checked wherever a local copy is kept.',
+
+  // The statement
+  shapeOfMotion: 'The shape of motion.',
+  statementLine:
+    'Each work is one recorded three-body orbit, rendered twice, as light and as ink. Both are the same token.',
+  statementSigned: 'Cosmic Signature · October 2026',
+  livingCollection: 'A living collection of recorded orbits',
+  cyclesSpan: 'Cycle {first} to Cycle {last}',
+  since: 'since {date}',
+  statement1:
+    'A Signature is one token. Behind it stand one seed, one recorded orbit of three bodies, and every rendering we have published of that orbit. Nothing is drawn by hand, and nothing is drawn twice.',
+  statement2:
+    'Each orbit is rendered twice, as Light and as Ink. In Light the three bodies leave luminous ribbons on black. In Ink the same motion carries sumi through a simulated fluid onto a kozo ground. They are two expressions of one work, of equal standing; neither is the original of the other.',
+  statement3:
+    'We chose three bodies because three is the smallest number gravity cannot fully predict. Two bodies circle forever in a closed figure. Three improvise. Their paths are determined to the last decimal and still surprising, and that is the quality we wanted every work to carry.',
+  statement4:
+    'For every work, one hundred thousand candidate orbits are simulated and scored for chaos, balance and form. A Borda count ranks them, and one is chosen. The number of the chosen candidate is published in the work’s record beside the weights that chose it.',
+  statement5:
+    'Works are imprinted in cycles. Each successful round of the Cosmic Signature game ends by minting new tokens on Arbitrum, and their seeds are fixed in that one transaction. Cycle 0 opened the collection in June 2026. The collection grows with every cycle and never revises what it has published.',
+  statement6:
+    'Everything shown here is a recorded rendering, not a live simulation. Every plate is reproduced from the published files, hash for hash, and every measurement on these pages, a wavelength, a chaos index, a count of syzygies, is the publisher’s own.',
+
+  // The colophon
+  colophon: 'Colophon',
+  colophonPlates:
+    'Plates are reproduced from the published WebP derivatives of 16-bit masters, 3,456 × 2,234 px.',
+  colophonFilms: 'Films are H.264 derivatives of 60 fps ember-v4 renders.',
+  colophonType: 'Set in Literata and IBM Plex Mono.',
+
+  // The process, re-chaptered
+  chapterChoice: 'The choice',
+  chapterChoiceCopy: 'One hundred thousand candidate orbits are scored; one is chosen.',
+  chapterSpectrum: 'The spectrum',
+  playSweep: 'Play the sweep',
+  sweepCopy:
+    'The published ten-second spectral sweep carries the work’s palette through visible light, 380 to 700 nm.',
+
+  // Quiet states
+  nextDoor: '{work} is next door.',
+  throughSpectrum: 'Through the spectrum',
+
+  // The sale
+  saleTitle: 'Sale {n}',
+  saleSubtitle: 'Eight new works · Cycle {cycle}',
+  conditionsOfSale: 'Conditions of sale',
+  // The entry's copy affordance and footnotes
+  copyAddress: 'Copy',
+  copied: 'Copied',
+  footnote: 'Note {n}',
+
+  // ── Phase 2 ─ each fork appends its keys beneath its own line, in every locale, and nowhere else.
+  // Fork R · the room, the loupe, the gatefold, the Expansion
+  detail: 'Detail',
+  wholePlate: 'Whole plate',
+  detailWindow: 'Detail {n}',
+  detailOf: 'Detail of Plate {n} ({scale}) · x {x} / y {y}',
+  scaleReadout: '1 screen px = {ratio} artwork px',
+  scaleNative: '1:1',
+  filmPosition: 'Film position',
+  timeOf: '{current} of {total}',
+  elapsed: '{time} elapsed',
+  slowRoom: 'Slow room',
+  studyWaits: 'On this connection the long study waits for a lighter encode; the still stands in.',
+  playAnyway: 'Play it anyway',
+  durationSeconds: '{n} s',
+  roomKeys: 'Keys in the room',
+  keyScrub: 'Back and forward one second; with Shift, ten',
+  keyDetail: 'Detail: one artwork pixel per screen pixel',
+  keyWhole: 'Whole plate',
+  loupeKeys: 'Arrow keys move the window; + and − zoom; W returns to the whole plate',
+  gatefold: 'Gatefold',
+  gatefoldCaption: 'Plate {n}, in ink and in light. One orbit.',
+  gatefoldSpread: 'Spread',
+  gatefoldSeam: 'Seam',
+  gatefoldSeamLabel: 'Where the seam falls between ink and light',
+  // ·
+  // ·
+  // Fork S · the sale catalogue, the bid sheet, the activity sheet
+  lotNumeral: 'Lot {n}',
+  orderOfSale: 'Order of sale',
+  lotAvailable: 'Available to start',
+  openingMinimum: 'opening minimum',
+  lotEligibleFrom: 'bidding eligible from',
+  lotCloses: 'closes',
+  lotLateBids: 'late bids leave 10 minutes',
+  lotWonBy: 'won by',
+  lotDeliveredWord: 'delivered',
+  lotAwaitingDelivery: 'awaiting delivery',
+  inYourZone: '{time} in your zone',
+  mediaNotPublished: 'Media · not yet published',
+  collectThisWork: 'Collect this work',
+  bidSheet: 'The bid sheet',
+  sheetHandle: 'Close the sheet',
+  yourActivity: 'Your activity',
+  activityIntro:
+    'Leading bids, refundable credit and works held in this sale, read from the chain. Nothing here sends a transaction.',
+  activityAddress: 'Wallet address',
+  activityLookUp: 'Look up',
+  activityUseWallet: 'Use my wallet',
+  activityLeading: 'Leading bids',
+  activityCommitted: 'Committed',
+  activityRefundable: 'Refundable credit',
+  activityWon: 'Won, awaiting delivery',
+  activityHeld: 'Works held from this sale',
+  activityNone: 'None',
+  activityUnavailable: 'Activity could not be read. Try again.',
+  activityFor: 'Activity of {address}',
+  bidHistory: 'Bid history',
+  historyNone: 'No bids yet.',
+  bidHistoryUnavailable: 'History unavailable',
+  historyPartial: 'Earlier bids may be unavailable.',
+  historyDeliveredTo: 'Delivered to {address}',
+  readingRecord: 'Reading the record…',
+  historyStale: 'The latest bids could not be read; this list may be behind.',
+  // ·
+  // ·
+  // Fork M · the settling plates, the eye-line hang, the phone rung
+  settling: 'Settling',
+  filmInRoom: 'The complete film opens in the room',
+  // ·
+  // ·
+  // Fork E · exhibitions, trails, sharing images, Verify a download
+  exhibitions: 'Exhibitions',
+  exhibitionsIntro:
+    'Hangs and trails through the collection. Each is dated and signed, and each trail states the published measurement it follows.',
+  hang: 'Hang',
+  trail: 'Trail',
+  hungBy: 'Hung by {curator}',
+  hangTitle: 'A hang: 023, 031, 035',
+  hangNote:
+    'Three works, hung as one room. Twenty-three is airy: ribbons of red, blue and green in Light, a dense cluster with pale eddies in Ink. Thirty-one spreads across the whole sheet, violet, olive and rose giving way to a sumi field that reaches the edge. Thirty-five leans into its upper right, lime and violet on a diagonal. Choose one and it grows in place; the other two re-form around it. Nothing is cropped or tinted: each plate is the published still on its own measured ground.',
+  theRule: 'The rule',
+  theWorks: 'The works',
+  trailLongCurve: 'The Long Curve',
+  trailLongCurveRule:
+    'Works whose published orbital eccentricity is 0.48 or above: the most elongated orbits in the collection.',
+  trailLongCurveNote:
+    'Eccentricity measures how far an orbit’s drift ellipse departs from a circle. When this trail was hung the collection ran from 0.40 to 0.50, so these are its longest curves. In Light the ribbons stretch and thin at the far end of each pass; in Ink the fluid is pulled into long, unhurried strokes. They hang in order, from the most elongated down.',
+  trailAlmostStill: 'Almost Still',
+  trailAlmostStillRule: 'Works whose published chaos is 16 or below, of 100: the calmest orbits.',
+  trailAlmostStillNote:
+    'Chaos measures how sensitively an orbit depended on where it began. These barely did. Their Light ribbons lie close and repeat; their Ink settles almost where it was laid, and the sheet keeps its grain. The trail begins with the two quietest orbits, at 13, and ends where the collection’s middle begins.',
+  trailTurbulence: 'Turbulence',
+  trailTurbulenceRule:
+    'Works whose published chaos is 24 or above, of 100: the most disturbed orbits.',
+  trailTurbulenceNote:
+    'At the other end of the same measure, these orbits were the most sensitive to their beginnings. The ribbons cross and double back; the ink is carried furthest from where the bodies passed. Sixty-nine, at 28, was the most turbulent orbit recorded when this trail was hung.',
+  trailLightBecomingTrace: 'Light Becoming Trace',
+  trailLightBecomingTraceRule:
+    'Works whose published braid crossings number 50 or more: the orbit ribbons that cross one another most often.',
+  trailLightBecomingTraceNote:
+    'Each time one ribbon passes over another, the publisher counts a crossing. Where there are many, the Light plate is a weave, and in Ink the same crossings become folds in a single trace. Eleven, with 97, was the densest weave in the collection when this trail was hung; the trail follows the count down to fifty.',
+  measureEccentricity: 'eccentricity {value}',
+  measureChaos: 'chaos {value} / 100',
+  measureCrossings: '{value} crossings',
+  cycleNote:
+    'Every work of a cycle is imprinted in one transaction at the cycle’s close. The cycle is the collection’s chapter, and this page keeps it as it was hung.',
+  results: 'Results',
+  resultsPartial: 'Some results could not be read.',
+  allExhibitions: 'All exhibitions',
+  otherExhibitions: 'Other exhibitions',
+  verifyDownload: 'Verify a download',
+  verifyIntro:
+    'Choose a file you downloaded from the links above. Its SHA-256 is computed here, in your browser, and compared with the published hashes; the file never leaves your device.',
+  verifyChoose: 'Choose a file',
+  verifyReading: 'Reading {name}…',
+  verifyMatches: 'Matches {file}',
+  verifyNoMatch: 'Matches no published file of this work',
+  verifyTooLarge:
+    'This file is too large to verify in the browser. Run the command below and compare the result with the published hashes.',
+  verifyFailed: 'The file could not be read.',
+  publishedHashes: 'Published hashes',
+  sharingCollection: 'Collection · {count} works',
+  // ·
+  // ·
 } as const;
 export type Messages = { [K in keyof typeof en]: string };
