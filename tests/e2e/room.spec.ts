@@ -126,7 +126,9 @@ test('a long study opens the Slow room: no native controls, the one-pixel transp
   await artworkReady(page);
   const dialog = await openRoom(page);
   const frame = page.locator(frameSelector).first();
-  await dialog.getByRole('button', { name: new RegExp(`^${t.longStudy} · \\d+ s$`) }).click();
+  await dialog
+    .getByRole('button', { name: new RegExp(`^${t.longStudy} · \\d+ s(?: · .+)?$`) })
+    .click();
   await expect(frame).toHaveAttribute('data-slow', '');
   const film = dialog.locator('video');
   await expect(film).toHaveAttribute('src', /ember_medium\.mp4$/);

@@ -18,7 +18,12 @@ const light = archive.find((work) => work.id === 31)!.media.find((media) => medi
 const ink = archive.find((work) => work.id === 31)!.media.find((media) => media.id === 'ink')!;
 // Fault injection is limited to this real work's authenticated delivery locations.
 const isLightStill = (url: URL) => url.pathname === light.still || url.href === light.sourceUrl;
-const isInkStill = (url: URL) => url.pathname === ink.still || url.href === ink.sourceUrl;
+// The still arrives as the published file or as one of its ladder rungs, whichever the plate's
+// width asks for; holding any of them holds the still.
+const isInkStill = (url: URL) =>
+  url.pathname === ink.still ||
+  url.href === ink.sourceUrl ||
+  /^\/art\/stills\/31-ink-\d+-[a-f0-9]{16}\.webp$/.test(url.pathname);
 // Only a complete published original counts; the hash-verified local film plays inline.
 const originalFilm = (url: string) => /\/videos\/web\/[^/]+\.mp4(?:\?|$)/.test(url);
 
@@ -534,7 +539,8 @@ test('full films are explicit, on the room’s own transport, and only the selec
     [t.extendedStudy, 'ember_slow'],
   ] as const) {
     const oldFilm = await film.elementHandle();
-    await dialog.getByRole('button', { name: new RegExp(`^${label} · \\d+ s$`) }).click();
+    // The word states the study's length and, when the manifest gives it, its size.
+    await dialog.getByRole('button', { name: new RegExp(`^${label} · \\d+ s(?: · .+)?$`) }).click();
     await expect(dialog.locator('video[src]')).toHaveCount(1);
     await expect(film).toHaveAttribute('src', new RegExp(`/videos/web/${suffix}\\.mp4$`));
     await expect(frame).toHaveAttribute('data-slow', '');
