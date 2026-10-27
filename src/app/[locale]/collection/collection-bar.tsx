@@ -1,6 +1,6 @@
 'use client';
 import Link from 'next/link';
-import { openSheet } from '@/components/sheets-store';
+import { openSheet, useOpenSheet } from '@/components/sheets-store';
 import type { Messages } from '@/lib/i18n/en';
 import styles from './collection.module.css';
 
@@ -25,9 +25,16 @@ export function CollectionBar({
   previousHref?: string;
   nextHref?: string;
 }) {
+  const sheet = useOpenSheet();
   return (
     <nav className={styles.bar} aria-label={t.collectionControls}>
-      <button type="button" onClick={() => openSheet('index')} aria-haspopup="dialog">
+      <button
+        type="button"
+        onClick={() => openSheet('index')}
+        aria-haspopup="dialog"
+        aria-expanded={sheet === 'index'}
+        aria-controls="index-sheet"
+      >
         {t.index}
       </button>
       {orderings.map((ordering) => (

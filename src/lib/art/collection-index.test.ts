@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import data from './collection-index.json';
 import {
   collectionIndex,
+  compactPreviewUrl,
   compactWorks,
   cycles,
   indexedAssetUrl,
@@ -104,14 +105,24 @@ describe('collection index', () => {
     const [compact] = compactWorks(parseCollectionIndex(index([work(4, { wavelengthNm: 500 })])));
     expect(compact).toEqual({
       id: 4,
+      seed: seed(5),
       cycle: 2,
       mintedAt: '2026-03-01T00:00:00.000Z',
       wavelengthNm: 500,
-      inkPreview: undefined,
-      lightPreview: `https://a1.cosmicsignature.com/images/new/cosmicsignature/${seed(5)}/images/web/preview.webp`,
+      previews: { light: 'images/web/preview.webp' },
       traits: {},
     });
+    // The client rebuilds the URL from the seed; a missing preview or a malformed seed yields none.
+    expect(compactPreviewUrl(compact, 'light')).toBe(
+      `https://a1.cosmicsignature.com/images/new/cosmicsignature/${seed(5)}/images/web/preview.webp`,
+    );
+    expect(compactPreviewUrl(compact, 'ink')).toBeUndefined();
+    expect(
+      compactPreviewUrl({ id: 1, seed: 'bad', previews: { ink: 'x' } }, 'ink'),
+    ).toBeUndefined();
     expect(compactWorks().length).toBe(collectionIndex.total);
+    // The compact view carries the seed once, never an absolute URL.
+    expect(JSON.stringify(compactWorks())).not.toContain('https://');
   });
 
   it('narrows the collection by cycle and exact trait values, newest first', () => {

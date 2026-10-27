@@ -36,7 +36,19 @@ export function SpectrumWall({
   const preview = (work: IndexedWork) =>
     indexedAssetUrl(work, work.media.light?.preview?.path ?? work.media.light?.still?.path);
   return (
-    <section className={styles.spectrum} aria-labelledby="spectrum-title" data-spectrum-wall>
+    <section
+      className={styles.spectrum}
+      aria-labelledby="spectrum-title"
+      data-spectrum-wall
+      style={
+        {
+          '--wall-height': `${height}cqw`,
+          '--hang-width': `${HANG_WIDTH}cqw`,
+          '--hang-height': `${HANG_HEIGHT}cqw`,
+          '--hang-gap': `${HANG_GAP}cqw`,
+        } as CSSProperties
+      }
+    >
       <header className={styles.spectrumHead}>
         <h2 id="spectrum-title" className="small-caps">
           {t.spectrumWall}
@@ -55,17 +67,7 @@ export function SpectrumWall({
           </span>
         ))}
       </div>
-      <ol
-        className={styles.wall}
-        style={
-          {
-            '--wall-height': `${height}cqw`,
-            '--hang-width': `${HANG_WIDTH}cqw`,
-            '--hang-height': `${HANG_HEIGHT}cqw`,
-            '--hang-gap': `${HANG_GAP}cqw`,
-          } as CSSProperties
-        }
-      >
+      <ol className={styles.wall}>
         {groups.map((group) => (
           <li
             key={group.nm}

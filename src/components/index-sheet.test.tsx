@@ -86,11 +86,15 @@ describe('the index helpers', () => {
 
   it('builds collection links that keep the view and change one thing', () => {
     const current = new URLSearchParams('order=cycle&expression=light&fate=Ejection&offset=18&q=x');
+    // Choosing an ordering leaves a search behind, as the page's own orderings do.
     expect(collectionHref('en', current, { order: 'spectrum' })).toBe(
-      '/collection?order=spectrum&expression=light&fate=Ejection&q=x',
+      '/collection?order=spectrum&expression=light&fate=Ejection',
     );
     expect(collectionHref('ja', current, { order: 'number', expression: 'ink' })).toBe(
-      '/ja/collection?fate=Ejection&q=x',
+      '/ja/collection?fate=Ejection',
+    );
+    expect(collectionHref('en', current, { order: 'number', q: 'moon' })).toBe(
+      '/collection?expression=light&fate=Ejection&q=moon',
     );
     expect(collectionHref('en', current, { fate: null, structure: 'Time Chords' })).toBe(
       '/collection?order=cycle&expression=light&q=x&structure=Time+Chords',

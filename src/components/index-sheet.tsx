@@ -10,7 +10,13 @@ import {
   type FocusEvent,
   type MouseEvent,
 } from 'react';
-import { TRAIT_KEYS, type CompactWork, type TraitKey } from '@/lib/art/collection-index';
+import {
+  compactPreviewUrl,
+  TRAIT_KEYS,
+  type CompactWork,
+  type Expression,
+  type TraitKey,
+} from '@/lib/art/collection-traits';
 import { workFolio, workNumber } from '@/lib/art/number';
 import { fill } from '@/lib/i18n/format';
 import type { Messages } from '@/lib/i18n/en';
@@ -28,7 +34,7 @@ import { PreviewImage } from './preview-image';
 import { closeSheet, useOpenSheet } from './sheets-store';
 import styles from './index-sheet.module.css';
 
-export type Expression = 'ink' | 'light';
+export type { Expression };
 /** The session remembers the chosen expression beside the motion preference; a new visit opens on Ink. */
 export const EXPRESSION_KEY = 'cosmic-art-expression-v1';
 const TRAIT_LABEL: Record<TraitKey, keyof Messages> = {
@@ -106,6 +112,8 @@ export function collectionHref(
   const next = new URLSearchParams();
   for (const key of ['order', 'expression', 'cycle', ...TRAIT_KEYS, 'q'])
     if (current.get(key)) next.set(key, current.get(key)!);
+  // A search is a view of the number ordering; choosing an ordering leaves it, as the page does.
+  if ('order' in changes && !('q' in changes)) next.delete('q');
   for (const [key, value] of Object.entries(changes)) {
     if (value === null || value === '' || value === 'number' || value === 'ink') next.delete(key);
     else next.set(key, value);
@@ -213,7 +221,7 @@ function SheetBody({
     if (constrained) return;
     let cancelled = false;
     const sources = works
-      .map((work) => (expression === 'light' ? work.lightPreview : work.inkPreview))
+      .map((work) => compactPreviewUrl(work, expression))
       .filter((source): source is string => !!source);
     // Idle time where the browser offers it, a quiet pause elsewhere; each returns its cancel.
     const schedule = (callback: () => void): (() => void) => {
@@ -248,10 +256,10 @@ function SheetBody({
   const activeWork = active === null ? undefined : byId.get(active);
   const wallSource = activeWork
     ? expression === 'light'
-      ? activeWork.lightPreview
-      : (activeWork.inkPreview ?? activeWork.lightPreview)
+      ? compactPreviewUrl(activeWork, 'light')
+      : (compactPreviewUrl(activeWork, 'ink') ?? compactPreviewUrl(activeWork, 'light'))
     : undefined;
-  const wallMaterial = activeWork && !activeWork.inkPreview ? 'light' : expression;
+  const wallMaterial = activeWork && !activeWork.previews?.ink ? 'light' : expression;
   const workHref = (id: number) =>
     localizedPath(locale, `/art/${id}${expression === 'light' ? '?expression=light' : ''}`);
   const date = (iso?: string) =>

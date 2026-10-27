@@ -53,8 +53,15 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
   return metadata(locale, '/collection', t.collection, t.statementLine);
 }
 
+/** The first value of a repeated key, as URLSearchParams.get and the room script read it. */
 function one(value: string | string[] | undefined): string | undefined {
-  return typeof value === 'string' ? value : undefined;
+  return Array.isArray(value) ? value[0] : value;
+}
+/** A search is at most a hundred printable characters; anything else is simply no search. */
+function readQuery(value?: string): string | undefined {
+  const trimmed = value?.trim();
+  if (!trimmed || /[\p{Cc}\p{Cf}]/u.test(trimmed)) return undefined;
+  return Array.from(trimmed).slice(0, 100).join('');
 }
 function readOrder(value?: string): Order {
   return value === 'cycle' || value === 'spectrum' ? value : 'number';
@@ -111,7 +118,7 @@ export default async function Collection({
   const rawOffset = Number(one(search.offset) ?? 0);
   const offset =
     Number.isSafeInteger(rawOffset) && rawOffset >= 0 && rawOffset <= 1_000_000 ? rawOffset : 0;
-  const query = one(search.q)?.slice(0, 100) || undefined;
+  const query = readQuery(one(search.q));
   const order = readOrder(one(search.order));
   const expression = readExpression(one(search.expression));
   const filter = readFilter(search);

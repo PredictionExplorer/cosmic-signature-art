@@ -181,6 +181,21 @@ test('the Spectrum wall hangs every Light preview on black along the nanometre r
         expect(apart).toBe(true);
       }
     expect(boxes.some((box) => Number(box.n) > 1)).toBe(true);
+    // The rule's ticks sit on the columns they label: 380 nm on the first, 700 nm on the last.
+    const columns = wall.locator('li[data-count]');
+    const ticks = wall.locator('div[aria-hidden="true"] > span').filter({ hasText: /^(380|700)$/ });
+    const centre = async (index: number) => {
+      const box = (await columns.nth(index).boundingBox())!;
+      return box.x + box.width / 2;
+    };
+    const tickX = async (label: string) => {
+      const box = (await ticks.filter({ hasText: label }).first().boundingBox())!;
+      return box.x + box.width / 2;
+    };
+    expect(Math.abs((await tickX('380')) - (await centre(0)))).toBeLessThanOrEqual(2);
+    expect(
+      Math.abs((await tickX('700')) - (await centre((await columns.count()) - 1))),
+    ).toBeLessThanOrEqual(2);
   }
   await expect(page.getByText(t.unmeasured)).toHaveCount(0);
   await noHorizontalOverflow(page);
@@ -327,9 +342,13 @@ test('on a phone the collection carries a bottom bar and the Index sheet is the 
     'href',
     '/collection?offset=18#works',
   );
-  await bar.getByRole('button', { name: t.index }).click();
+  const indexButton = bar.getByRole('button', { name: t.index });
+  await expect(indexButton).toHaveAttribute('aria-expanded', 'false');
+  await expect(indexButton).toHaveAttribute('aria-controls', 'index-sheet');
+  await indexButton.click();
   const sheet = page.getByRole('dialog', { name: t.indexSheet });
   await expect(sheet).toBeVisible();
+  await expect(indexButton).toHaveAttribute('aria-expanded', 'true');
   const menu = sheet.getByRole('navigation', { name: t.siteNavigation });
   await expect(menu.getByRole('link')).toHaveText([
     t.auctions,
@@ -345,4 +364,38 @@ test('on a phone the collection carries a bottom bar and the Index sheet is the 
     8,
   );
   await noHorizontalOverflow(page);
+});
+
+test('an unprintable search is no search, a repeated key reads once, and an ordering leaves the search', async ({
+  page,
+  isMobile,
+}) => {
+  // A tab in the query is not a search: the page is the number ordering, not the error page.
+  await page.goto('/collection?q=a%09b', { waitUntil: 'domcontentloaded' });
+  await pauseAmbientMotion(page);
+  await expect(page.getByRole('heading', { level: 1 })).toContainText('071');
+  await expect(page.getByText(t.errorTitle)).toHaveCount(0);
+  await collectionLoaded(page);
+  await expect(page.locator('#works .work-card')).toHaveCount(18);
+  // A repeated key counts once, so the page and the room agree.
+  await page.goto('/collection?expression=light&expression=light', {
+    waitUntil: 'domcontentloaded',
+  });
+  await expect(page.getByRole('main')).toHaveAttribute('data-expression', 'light');
+  await expect(page.locator('html')).toHaveAttribute('data-room', 'night');
+  // Choosing an ordering from the Index sheet leaves a search behind, as the page's own words do.
+  await page.goto('/collection?q=0', { waitUntil: 'domcontentloaded' });
+  await pauseAmbientMotion(page);
+  await (
+    isMobile
+      ? page.getByRole('navigation', { name: t.collectionControls })
+      : page.locator('.site-header')
+  )
+    .getByRole('button', { name: t.index, exact: true })
+    .click();
+  const sheet = page.getByRole('dialog', { name: t.indexSheet });
+  await expect(sheet).toBeVisible();
+  await expect(
+    sheet.getByRole('navigation', { name: t.ordering }).getByRole('link', { name: t.orderCycle }),
+  ).toHaveAttribute('href', '/collection?order=cycle');
 });

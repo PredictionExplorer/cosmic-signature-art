@@ -1,6 +1,10 @@
 import { z } from 'zod';
 import data from './collection-index.json';
 import { seedPackageUrl } from './constants';
+import { TRAIT_KEYS, type CompactWork, type TraitKey, type WorkFilter } from './collection-traits';
+
+export { TRAIT_KEYS, compactPreviewUrl } from './collection-traits';
+export type { CompactWork, Expression, TraitKey, WorkFilter } from './collection-traits';
 
 /**
  * The build-time index of every published record (scripts/build-collection-index.mjs):
@@ -92,19 +96,6 @@ export interface CycleSummary {
   mintedAt?: string;
   ids: number[];
 }
-/** What a client view needs to hang a numeral with the work behind it; nothing more. */
-export interface CompactWork {
-  id: number;
-  cycle?: number;
-  mintedAt?: string;
-  wavelengthNm?: number;
-  /** Absolute URLs of the publisher's 640 px previews. */
-  inkPreview?: string;
-  lightPreview?: string;
-  /** The published text traits, so the Index sheet can offer real filter chips. */
-  traits?: IndexedWork['traits'];
-}
-
 /** Only a well-formed, duplicate-free index is kept; a malformed one is an empty collection. */
 export function parseCollectionIndex(raw: unknown): CollectionIndex {
   const parsed = indexSchema.safeParse(raw);
@@ -176,31 +167,22 @@ export function spectralNeighbour(
   return { work: neighbour, deltaNm: Math.abs(neighbour.wavelengthNm! - work.wavelengthNm) };
 }
 
+/** The seed travels once; the client rebuilds each preview URL from it and the manifest path. */
 export function compactWorks(index: CollectionIndex = collectionIndex): CompactWork[] {
-  return index.works.map((work) => ({
-    id: work.id,
-    cycle: work.cycle,
-    mintedAt: work.mintedAt,
-    wavelengthNm: work.wavelengthNm,
-    inkPreview: indexedAssetUrl(work, work.media.ink?.preview?.path),
-    lightPreview: indexedAssetUrl(work, work.media.light?.preview?.path),
-    traits: work.traits,
-  }));
-}
-
-/** The six published text traits the collection can be narrowed by, in label order. */
-export const TRAIT_KEYS = [
-  'structure',
-  'underlay',
-  'palette',
-  'spectralClass',
-  'massBalance',
-  'fate',
-] as const;
-export type TraitKey = (typeof TRAIT_KEYS)[number];
-export interface WorkFilter {
-  cycle?: number;
-  traits?: Partial<Record<TraitKey, string>>;
+  return index.works.map((work) => {
+    const previews: CompactWork['previews'] = {};
+    if (work.media.ink?.preview?.path) previews.ink = work.media.ink.preview.path;
+    if (work.media.light?.preview?.path) previews.light = work.media.light.preview.path;
+    return {
+      id: work.id,
+      seed: work.seed,
+      cycle: work.cycle,
+      mintedAt: work.mintedAt,
+      wavelengthNm: work.wavelengthNm,
+      previews,
+      traits: work.traits,
+    };
+  });
 }
 
 /** Every value a trait takes across the index, sorted, so chips are never invented. */
