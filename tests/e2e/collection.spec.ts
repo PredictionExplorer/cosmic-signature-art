@@ -39,6 +39,21 @@ test('the first screen of the collection is a plate in the sequence’s rhythm, 
     const plate = await rows.first().locator('.art-media').boundingBox();
     const viewport = page.viewportSize()!;
     expect(Math.abs(plate!.height - (viewport.height - 152))).toBeLessThanOrEqual(2);
+    // The row of two is a screen of wall, and both sheets hang their measured centres on one eye line.
+    const spread = rows.nth(1);
+    const band = (await spread.boundingBox())!;
+    expect(band.height).toBeGreaterThanOrEqual(viewport.height - 154);
+    const eyes = await spread.locator('.work-card').evaluateAll((cards) =>
+      cards.map((card) => {
+        const centre = parseFloat(getComputedStyle(card).getPropertyValue('--centre-y')) || 0.5;
+        const sheet = card.querySelector('.art-media')!.getBoundingClientRect();
+        const row = card.parentElement!.getBoundingClientRect();
+        return { eye: sheet.top + centre * sheet.height - row.top, band: row.height };
+      }),
+    );
+    expect(eyes).toHaveLength(2);
+    expect(Math.abs(eyes[0].eye - eyes[1].eye)).toBeLessThanOrEqual(2);
+    expect(Math.abs(eyes[0].eye - eyes[0].band / 2)).toBeLessThanOrEqual(2);
   }
   // Rows of three are stills only; they never take the lease.
   await expect(rows.nth(2).locator('[data-preview-available="true"]')).toHaveCount(0);

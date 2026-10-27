@@ -3,7 +3,7 @@ import { Activity, StrictMode } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { getCuratedArtwork } from '@/lib/art/catalog';
 import type { ArtInterpretation } from '@/lib/art/types';
-import { ArtworkMedia } from './artwork-media';
+import { ArtworkMedia, PLATE_SIZES } from './artwork-media';
 
 const motion = vi.hoisted(() => ({ paused: false, theatre: 'playing' as 'playing' | 'hushed' }));
 vi.mock('./motion-provider', () => ({ useMotion: () => motion }));
@@ -410,12 +410,167 @@ describe('artwork media delivery', () => {
     expect(onProgress).toHaveBeenLastCalledWith(30, 30);
     expect(video).toHaveClass('has-frame');
     vi.mocked(HTMLMediaElement.prototype.play).mockClear();
+    // The last frame is the still: held for --t-hold, then the film fades into the still beneath.
+    act(() => vi.advanceTimersByTime(1_199));
+    expect(video).toHaveClass('has-frame');
+    expect(video).toHaveClass('has-ended');
+    act(() => vi.advanceTimersByTime(1));
+    expect(video).not.toHaveClass('has-frame');
     act(() => vi.advanceTimersByTime(60_000));
     expect(video.currentTime).toBe(30);
     expect(player(container)).toBe(video);
     act(() => VisibilityObserver.instances[0].setVisible(false));
     enterViewport();
     expect(HTMLMediaElement.prototype.play).not.toHaveBeenCalled();
+  });
+
+  it('reports a clip’s time in the film it was cut from and seeks by film time', () => {
+    const onProgress = vi.fn();
+    const settling = ink(31).settlingFilm!;
+    const { container } = render(
+      <ArtworkMedia
+        media={{ ...ink(31), films: [settling] }}
+        alt="Signature 31"
+        startAt={25}
+        onProgress={onProgress}
+      />,
+    );
+    enterViewport();
+    const video = player(container);
+    expect(video).toHaveAttribute('src', settling.src);
+    Object.defineProperty(video, 'duration', { configurable: true, value: 8 });
+    fireEvent.loadedMetadata(video);
+    expect(video.currentTime).toBeCloseTo(25 - settling.startSeconds!, 3);
+    video.currentTime = 1;
+    fireEvent.timeUpdate(video);
+    expect(onProgress).toHaveBeenLastCalledWith(
+      settling.startSeconds! + 1,
+      settling.startSeconds! + 8,
+    );
+  });
+
+  it('hands the opening clip over to the complete film at the same frame', () => {
+    const onProgress = vi.fn();
+    const onEnded = vi.fn();
+    const onHandover = vi.fn();
+    const opening = ink(31).openingFilm!;
+    const complete = ink(31).films[0];
+    const { container } = render(
+      <ArtworkMedia
+        media={{ ...ink(31), films: [opening, complete] }}
+        alt="Signature 31"
+        onProgress={onProgress}
+        onEnded={onEnded}
+        onHandover={onHandover}
+      />,
+    );
+    enterViewport();
+    const clip = player(container);
+    expect(clip).toHaveAttribute('src', opening.src);
+    const box = container.querySelector('.art-media')!;
+    expect(box).toHaveAttribute('data-handover', 'opening');
+    Object.defineProperty(clip, 'duration', { configurable: true, value: 10 });
+    fireEvent.playing(clip);
+    clip.currentTime = 1;
+    fireEvent.timeUpdate(clip);
+    // The clock states the complete film's length from the first frame.
+    expect(onProgress).toHaveBeenLastCalledWith(1, complete.durationSeconds);
+    expect(container.querySelectorAll('video')).toHaveLength(1);
+    clip.currentTime = 2.5;
+    fireEvent.timeUpdate(clip);
+    const relay = container.querySelector<HTMLVideoElement>('video[data-relay]')!;
+    expect(relay).toHaveAttribute('src', complete.src);
+    expect(relay).toHaveAttribute('preload', 'auto');
+    expect(relay).not.toHaveClass('has-frame');
+    // Nothing buffered past the cue: the clip keeps the plate.
+    fireEvent.canPlay(relay);
+    expect(box).toHaveAttribute('data-handover', 'opening');
+    Object.defineProperty(relay, 'duration', { configurable: true, value: 30 });
+    Object.defineProperty(relay, 'readyState', { configurable: true, value: 4 });
+    Object.defineProperty(relay, 'buffered', {
+      configurable: true,
+      value: { length: 1, start: () => 0, end: () => 30 },
+    });
+    vi.mocked(HTMLMediaElement.prototype.play).mockClear();
+    fireEvent.canPlay(relay);
+    expect(relay.currentTime).toBeCloseTo(2.5 + 2 / 60, 3);
+    expect(HTMLMediaElement.prototype.play).toHaveBeenCalledOnce();
+    vi.mocked(HTMLMediaElement.prototype.pause).mockClear();
+    fireEvent.playing(relay);
+    expect(box).toHaveAttribute('data-handover', 'film');
+    expect(relay).toHaveClass('has-frame');
+    // The clip has handed over: only the complete film remains on the plate.
+    expect(container.querySelectorAll('video')).toHaveLength(1);
+    expect(clip.isConnected).toBe(false);
+    expect(HTMLMediaElement.prototype.pause).toHaveBeenCalled();
+    expect(onHandover).not.toHaveBeenCalled();
+    relay.currentTime = 12;
+    fireEvent.timeUpdate(relay);
+    expect(onProgress).toHaveBeenLastCalledWith(12, 30);
+    relay.currentTime = 30;
+    fireEvent.ended(relay);
+    expect(onEnded).toHaveBeenCalledOnce();
+  });
+
+  it('holds the opening clip’s last frame as arriving until the complete film can take over', () => {
+    const onEnded = vi.fn();
+    const onHandover = vi.fn();
+    const opening = ink(31).openingFilm!;
+    const complete = ink(31).films[0];
+    const { container } = render(
+      <ArtworkMedia
+        media={{ ...ink(31), films: [opening, complete] }}
+        alt="Signature 31"
+        onEnded={onEnded}
+        onHandover={onHandover}
+      />,
+    );
+    enterViewport();
+    const clip = player(container);
+    Object.defineProperty(clip, 'duration', { configurable: true, value: 10 });
+    fireEvent.playing(clip);
+    clip.currentTime = 10;
+    fireEvent.ended(clip);
+    expect(onEnded).not.toHaveBeenCalled();
+    expect(onHandover).toHaveBeenLastCalledWith(true);
+    expect(clip).toHaveClass('has-frame');
+    const box = container.querySelector('.art-media')!;
+    expect(box).toHaveAttribute('data-handover', 'waiting');
+    const relay = container.querySelector<HTMLVideoElement>('video[data-relay]')!;
+    Object.defineProperty(relay, 'duration', { configurable: true, value: 30 });
+    Object.defineProperty(relay, 'readyState', { configurable: true, value: 4 });
+    Object.defineProperty(relay, 'buffered', {
+      configurable: true,
+      value: { length: 1, start: () => 0, end: () => 30 },
+    });
+    fireEvent.canPlayThrough(relay);
+    expect(relay.currentTime).toBe(10);
+    fireEvent.playing(relay);
+    expect(onHandover).toHaveBeenLastCalledWith(false);
+    expect(box).toHaveAttribute('data-handover', 'film');
+  });
+
+  it('serves the still ladder as a srcset sized to the plate, and the 1280 rung alone on a constrained connection', () => {
+    const { unmount } = render(<ArtworkMedia media={ink(31)} alt="Signature 31" />);
+    const still = screen.getByRole('img') as HTMLImageElement;
+    expect(still.getAttribute('srcset')).toMatch(
+      /^\/art\/stills\/31-ink-1280-[a-f0-9]{16}\.webp 1280w, \/art\/stills\/31-ink-1920-[a-f0-9]{16}\.webp 1920w, \/art\/31-ink\.webp 3456w$/,
+    );
+    expect(still).toHaveAttribute('sizes', PLATE_SIZES);
+    expect(imagePath()).toBe('/art/31-ink.webp');
+    unmount();
+    Object.defineProperty(navigator, 'connection', {
+      configurable: true,
+      value: Object.assign(new EventTarget(), { saveData: true }),
+    });
+    try {
+      render(<ArtworkMedia media={ink(31)} alt="Signature 31" />);
+      const rung = screen.getByRole('img') as HTMLImageElement;
+      expect(new URL(rung.src).pathname).toMatch(/^\/art\/stills\/31-ink-1280-[a-f0-9]{16}\.webp$/);
+      expect(rung).not.toHaveAttribute('srcset');
+    } finally {
+      Reflect.deleteProperty(navigator, 'connection');
+    }
   });
 
   it('replays forward from the first frame only on an explicit request', () => {

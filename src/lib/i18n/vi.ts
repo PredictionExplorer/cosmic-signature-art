@@ -407,6 +407,8 @@ export const vi: Messages = {
   // ·
   // ·
   // Fork M · the settling plates, the eye-line hang, the phone rung
+  settling: 'Lắng đọng',
+  filmInRoom: 'Phim trọn vẹn mở trong phòng thưởng lãm',
   // ·
   // ·
   // Fork E · exhibitions, trails, sharing images, Verify a download

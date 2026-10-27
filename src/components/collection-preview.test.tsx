@@ -198,6 +198,37 @@ describe('collection film presentation', () => {
     expect(onEnded).toHaveBeenCalledOnce();
   });
 
+  it('plays the film it is handed, says which, and serves the ladder when sized', () => {
+    const settling = {
+      ...archivedInk.films[0],
+      id: 'settling',
+      src: '/art/clips/31-ink-settling.mp4',
+      durationSeconds: 8,
+      startSeconds: 22.033333,
+    };
+    const { container } = render(
+      <CollectionPreview
+        media={ink}
+        alt="Signature 31"
+        active
+        film={settling}
+        sizes="46vw"
+        onFailure={vi.fn()}
+      />,
+    );
+    expect(container.querySelector('video')).toHaveAttribute('src', settling.src);
+    expect(container.querySelector('[data-collection-preview]')).toHaveAttribute(
+      'data-film',
+      'settling',
+    );
+    const image = screen.getByRole('img') as HTMLImageElement;
+    expect(image.getAttribute('srcset')).toContain('/art/31-ink-640.webp 640w');
+    expect(image.getAttribute('srcset')).toContain('/art/stills/31-ink-1280-');
+    expect(image.getAttribute('srcset')).toContain('/art/31-ink.webp 3456w');
+    expect(image).toHaveAttribute('sizes', '46vw');
+    expect(excerptRange(settling)).toBe('00:22–00:30');
+  });
+
   it('describes an excerpt by its true place in the source film', () => {
     expect(excerptRange({ ...ink.previewFilm!, startSeconds: 6, durationSeconds: 8 })).toBe(
       '00:06–00:14',

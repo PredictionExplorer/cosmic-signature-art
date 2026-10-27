@@ -2,6 +2,11 @@ import { expect, test, type Locator, type Page } from '@playwright/test';
 
 const previewSelector = '#works [data-collection-preview]';
 const filmSelector = `${previewSelector} video[src]`;
+/** On a desk the lease plays the settling clip, the film's own ending; a phone's budget keeps the 8 s excerpt. */
+const leaseFilm = (isMobile: boolean, id = '[0-9]+') =>
+  isMobile
+    ? new RegExp(`/art/previews/${id}-[a-f0-9]+\\.mp4$`)
+    : new RegExp(`/art/clips/${id}-ink-settling-[a-f0-9]{16}\\.mp4$`);
 
 async function collectionReady(page: Page, path = '/collection?q=31') {
   await page.goto(path, { waitUntil: 'domcontentloaded' });
@@ -42,6 +47,7 @@ async function settleFrames(page: Page) {
 
 test('the collection plays the genuine Ink film in place without replacing the token image', async ({
   page,
+  isMobile,
 }) => {
   await collectionReady(page);
   const work = page.locator('#works a[data-preview-id="31"]');
@@ -53,7 +59,7 @@ test('the collection plays the genuine Ink film in place without replacing the t
   await work.scrollIntoViewIfNeeded();
   await work.focus();
   const film = work.locator('video[src]');
-  await expect(film).toHaveAttribute('src', /\/art\/previews\/31-[a-f0-9]+\.mp4$/);
+  await expect(film).toHaveAttribute('src', leaseFilm(isMobile, '31'));
   await expect
     .poll(() =>
       film.evaluate((element) => {
@@ -73,7 +79,8 @@ test('the collection plays the genuine Ink film in place without replacing the t
   });
   expect(delivery.seconds).toBeGreaterThanOrEqual(7.9);
   expect(delivery.seconds).toBeLessThanOrEqual(8.1);
-  expect(delivery.width).toBeLessThanOrEqual(640);
+  // Chromium reports the 1280 × 828 clip as 1281 wide from its display aspect ratio.
+  expect(delivery.width).toBeLessThanOrEqual(isMobile ? 640 : 1282);
   expect(delivery.height).toBeGreaterThan(0);
   // The image remains the accessible artwork; the decorative film adds no duplicate label.
   await expect(film).toHaveAttribute('aria-hidden', 'true');
@@ -92,6 +99,7 @@ test('the first collection plate paints from the publisher’s own preview', asy
 
 test('focus and scrolling transfer the single film budget across the catalogue', async ({
   page,
+  isMobile,
 }) => {
   const cards = await collectionReady(page, '/collection');
   await allowMotion(page);
@@ -148,7 +156,7 @@ test('focus and scrolling transfer the single film budget across the catalogue',
   expect(budget.leases.length).toBeGreaterThanOrEqual(2);
   for (const { source, id } of budget.leases) {
     expect(id).toMatch(/^\d+$/);
-    expect(source).toMatch(new RegExp(`/art/previews/${id}-[a-f0-9]+\\.mp4$`));
+    expect(source).toMatch(leaseFilm(isMobile, id!));
   }
   expect(previous).not.toBe(await second.getAttribute('data-preview-id'));
 });
@@ -256,7 +264,7 @@ test('an unavailable preview leaves the authentic image and usable artwork link'
   page,
 }) => {
   let rejectedRequests = 0;
-  await page.route(/\/previews\/31-[a-f0-9]+\.mp4(?:\?|$)/, async (route) => {
+  await page.route(/\/(?:previews|clips)\/31-[a-z0-9-]+\.mp4(?:\?|$)/, async (route) => {
     rejectedRequests += 1;
     await route.abort('failed');
   });

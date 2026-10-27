@@ -6,14 +6,29 @@ import {
   useRef,
   useState,
   type CSSProperties,
+  type ReactNode,
 } from 'react';
 import { preload } from 'react-dom';
 import { useMotion } from './motion-provider';
+import { useMediaPolicy } from './media-policy';
 import { getPlateGround } from '@/lib/art/plate-records';
-import type { ArtInterpretation } from '@/lib/art/types';
+import type { ArtFilm, ArtInterpretation, StillRung } from '@/lib/art/types';
 
 /** The settled still is held as an object before any film may begin (--t-hold). */
 export const HOLD_MS = 1200;
+/** The home's handover: the complete film is fetched this far into the opening clip. */
+export const RELAY_PREFETCH_S = 2;
+/** The relay is cued two frames ahead of the clip so its first presented frame is in step. */
+export const RELAY_LEAD_S = 2 / 60;
+/** The relay must hold this much film beyond the cue before it may take over. */
+export const RELAY_BUFFER_S = 2;
+/**
+ * The plate's layout width for the still ladder: 100 vw on a phone, and on a desk the plate
+ * fitted by height to the room (100svh − head − strip) in the work's own proportion.
+ */
+export const PLATE_SIZES = '(max-width: 767px) 100vw, min(100vw, calc((100svh - 104px) * 1.547))';
+/** On a constrained connection the resting still is this rung, never the 3,456 px file. */
+const CONSTRAINED_RUNG_PX = 1280;
 
 type ArtworkMediaProps = {
   media?: ArtInterpretation;
@@ -32,6 +47,7 @@ type ArtworkMediaProps = {
    * never makes the plate arrive again.
    */
   ambient?: boolean;
+  /** Film time to resume at: where the frame sits in the complete film, not in a clip. */
   startAt?: number;
   restart?: number;
   playRequest?: number;
@@ -39,12 +55,17 @@ type ArtworkMediaProps = {
   previewSrc?: string;
   /** The work's identity, so its measured ground can letterbox the plate. */
   artworkId?: number;
+  /** The still's layout width for the ladder's srcset; the plate's by default. */
+  sizes?: string;
+  /** Film time and the complete film's length. */
   onProgress?: (time: number, duration: number) => void;
   onPlaybackChange?: (playing: boolean) => void;
   /** The full still has decoded over the preview (or is the only layer). */
   onSettled?: () => void;
   /** The film reached its final frame, which is the still. Nothing rewinds. */
   onEnded?: () => void;
+  /** The opening clip has ended before the complete film could take over; the plate holds. */
+  onHandover?: (waiting: boolean) => void;
   onFailure?: () => void;
 };
 
@@ -59,11 +80,51 @@ function settleImage(image: HTMLImageElement, settle: () => void) {
   else settle();
 }
 
+/** The still ladder as a srcset: the rungs, then the published still at its native width. */
+export function stillSourceSet(media?: ArtInterpretation): string | undefined {
+  if (!media?.still || !media.rungs?.length) return undefined;
+  return [
+    ...media.rungs.map((rung) => `${rung.src} ${rung.width}w`),
+    `${media.still} ${media.width ?? 3456}w`,
+  ].join(', ');
+}
+
+/** The smallest rung at least as wide as `width`, or the widest when none is. */
+function rungFor(rungs: StillRung[] | undefined, width: number): StillRung | undefined {
+  if (!rungs?.length) return undefined;
+  return rungs.find((rung) => rung.width >= width) ?? rungs[rungs.length - 1];
+}
+
+/** Where a player's frame sits in the complete film: a clip carries its own start. */
+export function filmTime(film: ArtFilm | undefined, playerTime: number): number {
+  return (film?.startSeconds ?? 0) + playerTime;
+}
+/** The complete film's length as the plate's clock states it; an opening clip reports the film it opens. */
+export function filmLength(
+  film: ArtFilm | undefined,
+  playerDuration: number,
+  relay?: ArtFilm,
+): number {
+  if (relay) return relay.durationSeconds ?? playerDuration;
+  return filmTime(film, Number.isFinite(playerDuration) ? playerDuration : 0);
+}
+
+function buffered(player: HTMLVideoElement, from: number, to: number): boolean {
+  const ranges = player.buffered;
+  for (let index = 0; index < ranges.length; index += 1)
+    if (ranges.start(index) <= from + 0.01 && ranges.end(index) >= to) return true;
+  return false;
+}
+
 /**
  * The arrival ladder: the publisher's own 640 px preview paints the whole plate on the
  * work's ground at first paint; the full still fades over it only once it has decoded.
  * Original proportions and colors are preserved. Only visible films acquire a src, and a
- * finished film holds its last frame, which is the still, until a visitor asks again.
+ * finished film holds its last frame, which is the still, then fades into it.
+ *
+ * The home's opening clip hands over to the complete film: the film is fetched from
+ * RELAY_PREFETCH_S into the clip, cued two frames ahead at the clip's own time, and shown
+ * on its first presented frame; a clip that ends first holds its last frame as `arriving`.
  */
 function ArtworkMediaSession({
   media,
@@ -79,35 +140,51 @@ function ArtworkMediaSession({
   playRequest = 0,
   previewSrc,
   artworkId,
+  sizes,
   onProgress,
   onPlaybackChange,
   onSettled,
   onEnded,
+  onHandover,
   onFailure,
 }: ArtworkMediaProps) {
   const { paused, theatre } = useMotion();
+  const { constrained } = useMediaPolicy();
   const hushed = theatre === 'hushed';
   const container = useRef<HTMLDivElement>(null);
   const video = useRef<HTMLVideoElement>(null);
-  // Declared before the player ref: its cleanup clears a stale frame when a player leaves.
+  const relayVideo = useRef<HTMLVideoElement>(null);
+  // Declared before the player refs: their cleanups clear a stale frame when a player leaves.
   const [hasFrame, setHasFrame] = useState(false);
-  const attachVideo = useCallback((player: HTMLVideoElement | null) => {
-    video.current = player;
-    if (!player) return;
+  const [relayFrame, setRelayFrame] = useState(false);
+  const releasePlayer = (
+    ref: { current: HTMLVideoElement | null },
+    player: HTMLVideoElement,
+    clearFrame: () => void,
+  ) => {
+    ref.current = player;
     return () => {
       player.pause();
-      if (video.current === player) video.current = null;
+      if (ref.current === player) ref.current = null;
       // React also detaches refs during Strict Mode replay and Activity hiding. Wait
       // until the commit finishes so only genuinely removed players release bytes
       // and their decoder; a reused or merely hidden node keeps its playback position.
       queueMicrotask(() => {
-        if (player.isConnected || video.current === player) return;
+        if (player.isConnected || ref.current === player) return;
         player.removeAttribute('src');
         player.load();
         // A player that returns later must not show a stale frame over the still.
-        setHasFrame(false);
+        clearFrame();
       });
     };
+  };
+  const attachVideo = useCallback((player: HTMLVideoElement | null) => {
+    if (!player) return;
+    return releasePlayer(video, player, () => setHasFrame(false));
+  }, []);
+  const attachRelay = useCallback((player: HTMLVideoElement | null) => {
+    if (!player) return;
+    return releasePlayer(relayVideo, player, () => setRelayFrame(false));
   }, []);
   const [visible, setVisible] = useState(false);
   const [pageVisible, setPageVisible] = useState(true);
@@ -118,10 +195,25 @@ function ArtworkMediaSession({
   const [previewFailed, setPreviewFailed] = useState(false);
   const [imageFailed, setImageFailed] = useState(false);
   const [settled, setSettled] = useState(false);
+  /** The film has ended: its last frame is held, then fades into the still beneath. */
+  const [resting, setResting] = useState(false);
   const ended = useRef(false);
   const held = useRef(false);
+  const restTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const previousRequest = useRef({ restart, playRequest });
   const film = media?.films[0];
+  /** The complete film an opening clip hands over to. */
+  const relayFilm = film?.id === 'opening' ? media?.films[1] : undefined;
+  const [relay, setRelay] = useState<'idle' | 'loading' | 'live'>('idle');
+  const [waiting, setWaiting] = useState(false);
+  /** Set the moment the relay takes over, before React has re-rendered. */
+  const live = useRef(false);
+  const relayCued = useRef(false);
+  const relayFailed = useRef(false);
+  /** The opening clip has ended; it never replays on its own. */
+  const clipDone = useRef(false);
+  /** Film time a remounted plate resumes at, when the clip cannot show it and the relay must. */
+  const resumeAt = useRef<number | undefined>(undefined);
   const cardSource =
     thumbnail && !thumbnailFailed ? (media?.thumbnail ?? media?.still) : media?.still;
   const preview =
@@ -137,15 +229,25 @@ function ArtworkMediaSession({
     artworkId !== undefined && media
       ? getPlateGround(artworkId, media.id, media.stillSha256)
       : undefined;
+  // The still ladder: a constrained connection rests on the 1280 rung alone; any other picks
+  // its rung from the plate's layout width, and the 3,456 px file only when the screen asks.
+  const constrainedRung = constrained ? rungFor(media?.rungs, CONSTRAINED_RUNG_PX) : undefined;
+  const stillSrc = constrainedRung?.src ?? media?.still;
+  const stillSet = constrained ? undefined : stillSourceSet(media);
+  const stillSizes = stillSet ? (sizes ?? PLATE_SIZES) : undefined;
   if (priority && preview && !preview.startsWith('data:')) {
     preload(preview, { as: 'image', fetchPriority: 'high' });
   }
   const shouldPlay = visible && pageVisible && !paused && !hushed && !still && !failed && ambient;
   const reportPlayback = useEffectEvent((playing: boolean) => onPlaybackChange?.(playing));
-  const reportProgress = useEffectEvent((time: number, duration: number) =>
-    onProgress?.(time, duration),
-  );
   const reportSettled = useEffectEvent(() => onSettled?.());
+  /** A replay begins at the film's first frame; the clock is told so before any frame shows. */
+  const reportRestart = useEffectEvent((player: HTMLVideoElement) =>
+    onProgress?.(
+      filmTime(relay === 'live' ? relayFilm : film, 0),
+      filmLength(film, Number.isFinite(player.duration) ? player.duration : 0, relayFilm),
+    ),
+  );
   const settle = useCallback(() => setSettled(true), []);
   const attachStill = useCallback(
     (image: HTMLImageElement | null) => {
@@ -171,8 +273,82 @@ function ArtworkMediaSession({
       document.removeEventListener('visibilitychange', visibility);
     };
   }, []);
+  useEffect(() => () => clearTimeout(restTimer.current), []);
+
+  /** The relay takes over once it holds the film from the cue onward. */
+  function tryRelay() {
+    const opening = video.current;
+    const second = relayVideo.current;
+    if (!relayFilm || !opening || !second || relay !== 'loading' || relayCued.current) return;
+    const at = clipDone.current
+      ? (resumeAt.current ??
+        (Number.isFinite(opening.duration) ? opening.duration : opening.currentTime))
+      : opening.currentTime + RELAY_LEAD_S;
+    const need = Math.min(
+      at + RELAY_BUFFER_S,
+      Number.isFinite(second.duration) ? second.duration : Infinity,
+    );
+    if (second.readyState < HTMLMediaElement.HAVE_FUTURE_DATA || !buffered(second, at, need))
+      return;
+    relayCued.current = true;
+    second.currentTime = at;
+    void second.play().catch(() => {
+      relayCued.current = false;
+    });
+  }
+  const relayFromEffect = useEffectEvent(() => tryRelay());
+  /** The relay's first presented frame: the clip pauses beneath it in the same instant. */
+  function goLive() {
+    if (!relayCued.current || live.current) return;
+    live.current = true;
+    resumeAt.current = undefined;
+    setRelay('live');
+    setRelayFrame(true);
+    setHasPlayed(true);
+    held.current = true;
+    video.current?.pause();
+    if (clipDone.current) {
+      clipDone.current = false;
+      setWaiting(false);
+      onHandover?.(false);
+    }
+    onPlaybackChange?.(true);
+  }
+  function fail() {
+    setFailure({ restart, playRequest });
+    setHasFrame(false);
+    setRelayFrame(false);
+    setHasPlayed(false);
+    ended.current = false;
+    clipDone.current = false;
+    live.current = false;
+    relayCued.current = false;
+    setRelay('idle');
+    if (waiting) {
+      setWaiting(false);
+      onHandover?.(false);
+    }
+    onPlaybackChange?.(false);
+    onFailure?.();
+  }
+  /** A film has reached its last frame, which is the still: hold it, then fade into the still. */
+  function finish(player: HTMLVideoElement, current: ArtFilm | undefined) {
+    ended.current = true;
+    const duration = player.duration;
+    if (Number.isFinite(duration))
+      onProgress?.(filmTime(current, duration), filmLength(current, duration, relayFilm));
+    onPlaybackChange?.(false);
+    setResting(true);
+    clearTimeout(restTimer.current);
+    restTimer.current = setTimeout(() => {
+      setHasFrame(false);
+      setRelayFrame(false);
+    }, HOLD_MS);
+    onEnded?.();
+  }
+
   useEffect(() => {
-    const player = video.current;
+    const player = relay === 'live' ? relayVideo.current : video.current;
     const restartRequested = restart !== previousRequest.current.restart;
     const playRequested = playRequest !== previousRequest.current.playRequest;
     previousRequest.current = { restart, playRequest };
@@ -188,13 +364,20 @@ function ArtworkMediaSession({
     if (restartRequested || (playRequested && ended.current)) {
       player.currentTime = 0;
       ended.current = false;
-      reportProgress(0, Number.isFinite(player.duration) ? player.duration : 0);
+      clipDone.current = false;
+      resumeAt.current = undefined;
+      clearTimeout(restTimer.current);
+      setResting(false);
+      reportRestart(player);
     }
     // An explicit request is intent; it never waits out the hold.
     if (restartRequested || playRequested) held.current = true;
     if (shouldPlay) {
       if (ended.current) {
         // The final frame is the still. It rests until someone asks again.
+      } else if (clipDone.current && relay !== 'live') {
+        // The opening clip has ended; its last frame holds until the complete film arrives.
+        relayFromEffect();
       } else if (hold && !held.current) {
         if (layered && !settled) return;
         timer = setTimeout(() => {
@@ -208,16 +391,22 @@ function ArtworkMediaSession({
       player.pause();
       if (timer) clearTimeout(timer);
     };
-  }, [shouldPlay, hold, layered, settled, restart, playRequest]);
+  }, [shouldPlay, hold, layered, settled, restart, playRequest, relay]);
+
   const loading = eager || priority ? 'eager' : 'lazy';
   const style = ground ? ({ '--plate-ground': ground.tone } as CSSProperties) : undefined;
-  let image: React.ReactNode;
+  let image: ReactNode;
   if (thumbnail) {
+    const ladder = !!sizes && cardSource === media?.thumbnail && !!stillSet;
     image =
       cardSource && !imageFailed ? (
         <img
           className="art-still is-settled"
           src={cardSource}
+          srcSet={
+            ladder ? `${cardSource} ${media?.thumbnailWidth ?? 640}w, ${stillSet}` : undefined
+          }
+          sizes={ladder ? sizes : undefined}
           alt={alt}
           width={media?.thumbnailWidth ?? media?.width ?? 3456}
           height={media?.thumbnailHeight ?? media?.height ?? 2234}
@@ -250,7 +439,9 @@ function ArtworkMediaSession({
         <img
           ref={attachStill}
           className={settled ? 'art-still is-settled' : 'art-still'}
-          src={media?.still}
+          src={stillSrc}
+          srcSet={stillSet}
+          sizes={stillSizes}
           alt={alt}
           width={media?.width ?? 3456}
           height={media?.height ?? 2234}
@@ -283,7 +474,9 @@ function ArtworkMediaSession({
       media?.still && !imageFailed ? (
         <img
           className="art-still is-settled"
-          src={media.still}
+          src={stillSrc}
+          srcSet={stillSet}
+          sizes={stillSizes}
           alt={alt}
           width={media.width ?? 3456}
           height={media.height ?? 2234}
@@ -297,6 +490,9 @@ function ArtworkMediaSession({
         />
       ) : null;
   }
+  const mounted = ambient && film && !failed && (shouldPlay || hasPlayed);
+  const videoClass = (frame: boolean) =>
+    [frame && !still ? 'has-frame' : '', resting ? 'has-ended' : ''].filter(Boolean).join(' ');
   return (
     <div
       ref={container}
@@ -304,6 +500,15 @@ function ArtworkMediaSession({
       data-material={media?.id ?? 'ink'}
       data-arrival={arrival}
       data-edge={ground?.edge ? 'true' : undefined}
+      data-handover={
+        relayFilm && mounted
+          ? relay === 'live'
+            ? 'film'
+            : waiting
+              ? 'waiting'
+              : 'opening'
+          : undefined
+      }
       style={style}
     >
       {image ?? (
@@ -311,7 +516,7 @@ function ArtworkMediaSession({
           <span />
         </div>
       )}
-      {ambient && film && !failed && (shouldPlay || hasPlayed) ? (
+      {mounted && relay !== 'live' ? (
         <video
           ref={attachVideo}
           src={film.src}
@@ -319,44 +524,127 @@ function ArtworkMediaSession({
           playsInline
           preload="metadata"
           aria-hidden="true"
-          className={hasFrame && !still ? 'has-frame' : ''}
+          className={videoClass(hasFrame)}
           onLoadedMetadata={(event) => {
-            event.currentTarget.currentTime = Math.min(
-              restart > 0 ? 0 : Math.max(0, startAt),
-              Math.max(0, event.currentTarget.duration - 1),
-            );
+            const player = event.currentTarget;
+            const at = Math.max(0, startAt - (film.startSeconds ?? 0));
+            if (relayFilm && restart === 0 && at >= player.duration - 1) {
+              // The plate resumes past the clip: the complete film carries on from there.
+              player.currentTime = Math.max(0, player.duration - 1);
+              clipDone.current = true;
+              resumeAt.current = startAt;
+              setRelay('loading');
+              return;
+            }
+            player.currentTime = Math.min(restart > 0 ? 0 : at, Math.max(0, player.duration - 1));
           }}
           onPlaying={() => {
+            if (live.current) return;
             setHasFrame(true);
             setHasPlayed(true);
             held.current = true;
             onPlaybackChange?.(true);
           }}
-          onPause={() => onPlaybackChange?.(false)}
+          onPause={() => {
+            if (!live.current) onPlaybackChange?.(false);
+          }}
           onTimeUpdate={(event) => {
+            if (live.current) return;
             const player = event.currentTarget;
-            onProgress?.(player.currentTime, player.duration);
+            onProgress?.(
+              filmTime(film, player.currentTime),
+              filmLength(film, player.duration, relayFilm),
+            );
             // A frame that advanced is playback, whether or not an engine announced it.
             if (!player.paused && !player.ended) {
               setHasFrame(true);
               held.current = true;
               onPlaybackChange?.(true);
             }
+            if (relayFilm) {
+              if (relay === 'idle' && player.currentTime >= RELAY_PREFETCH_S) setRelay('loading');
+              else tryRelay();
+            }
+          }}
+          onError={fail}
+          onEnded={(event) => {
+            if (live.current) return;
+            if (relayFilm) {
+              if (relayFailed.current) {
+                fail();
+                return;
+              }
+              // The clip has ended before the film arrived: hold its last frame, say arriving.
+              clipDone.current = true;
+              setWaiting(true);
+              onHandover?.(true);
+              onPlaybackChange?.(false);
+              if (relay === 'idle') setRelay('loading');
+              else tryRelay();
+              return;
+            }
+            finish(event.currentTarget, film);
+          }}
+        />
+      ) : null}
+      {mounted && relayFilm && relay !== 'idle' ? (
+        <video
+          ref={attachRelay}
+          src={relayFilm.src}
+          muted
+          playsInline
+          preload="auto"
+          aria-hidden="true"
+          data-relay=""
+          className={videoClass(relayFrame)}
+          onLoadedMetadata={(event) => {
+            if (!live.current) {
+              tryRelay();
+              return;
+            }
+            // A live relay that returns (the room closed, the policy changed) resumes where the plate was.
+            const player = event.currentTarget;
+            player.currentTime = Math.min(
+              restart > 0 ? 0 : Math.max(0, startAt),
+              Math.max(0, player.duration - 1),
+            );
+          }}
+          onProgress={tryRelay}
+          onCanPlay={tryRelay}
+          onCanPlayThrough={tryRelay}
+          onPlaying={(event) => {
+            if (live.current) {
+              setRelayFrame(true);
+              onPlaybackChange?.(true);
+              return;
+            }
+            const player = event.currentTarget;
+            if (typeof player.requestVideoFrameCallback === 'function')
+              player.requestVideoFrameCallback(() => goLive());
+            else goLive();
+          }}
+          onPause={() => {
+            if (live.current) onPlaybackChange?.(false);
+          }}
+          onTimeUpdate={(event) => {
+            if (!live.current) {
+              goLive();
+              return;
+            }
+            const player = event.currentTarget;
+            onProgress?.(player.currentTime, filmLength(relayFilm, player.duration));
+            if (!player.paused && !player.ended) {
+              setRelayFrame(true);
+              onPlaybackChange?.(true);
+            }
           }}
           onError={() => {
-            setFailure({ restart, playRequest });
-            setHasFrame(false);
-            setHasPlayed(false);
-            ended.current = false;
-            onPlaybackChange?.(false);
-            onFailure?.();
+            relayFailed.current = true;
+            // A film that cannot arrive fails the plate only once the clip has nothing left to show.
+            if (live.current || clipDone.current) fail();
           }}
           onEnded={(event) => {
-            ended.current = true;
-            const duration = event.currentTarget.duration;
-            if (Number.isFinite(duration)) onProgress?.(duration, duration);
-            onPlaybackChange?.(false);
-            onEnded?.();
+            if (live.current) finish(event.currentTarget, relayFilm);
           }}
         />
       ) : null}

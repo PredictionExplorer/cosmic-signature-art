@@ -406,6 +406,8 @@ export const uk: Messages = {
   // ·
   // ·
   // Fork M · the settling plates, the eye-line hang, the phone rung
+  settling: 'Осідання',
+  filmInRoom: 'Повний фільм відкривається в залі',
   // ·
   // ·
   // Fork E · exhibitions, trails, sharing images, Verify a download

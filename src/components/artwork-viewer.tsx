@@ -13,7 +13,7 @@ import {
 } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { getInterpretation, type Artwork } from '@/lib/art/types';
+import { getInterpretation, type ArtInterpretation, type Artwork } from '@/lib/art/types';
 import { workNumber } from '@/lib/art/number';
 import type { Messages } from '@/lib/i18n/en';
 import { localizedPath, type Locale } from '@/lib/i18n/routing';
@@ -244,6 +244,7 @@ function ArtworkViewerSession({
         setRested(false);
         setSit(false);
         setStill(false);
+        setHandoverWaiting(false);
         if (home) setResolvedOverride(null);
       },
       onReady: (target, commit) => {
@@ -298,9 +299,17 @@ function ArtworkViewerSession({
 
   const media = getInterpretation(artwork, expression);
   const settled = settledLayers.includes(expression);
-  // Only a hash-verified local delivery plays inline, from frame 0. The 640 excerpt is a
-  // browsing preview; a complete published original waits for the room.
-  const inlineFilm = media?.films.find((film) => film.delivery === 'local-preview');
+  // Only a hash-verified local delivery plays on the plate: the complete 1280 film where it
+  // is held, otherwise the settling clip, the film's own final eight seconds, which ends on
+  // the still. The 640 excerpt is a browsing preview; a complete published original waits
+  // for the room.
+  const plateFilm = (item?: ArtInterpretation) =>
+    item?.films.find((film) => film.delivery === 'local-preview') ?? item?.settlingFilm;
+  const inlineFilm = plateFilm(media);
+  const settlingPlate = inlineFilm?.id === 'settling';
+  // The home opens on the opening clip and hands over to the complete film at the same frame.
+  const openingFilm = home && !settlingPlate ? media?.openingFilm : undefined;
+  const [handoverWaiting, setHandoverWaiting] = useState(false);
   const ambientFilm = !room && (!policy.constrained || explicitFilm);
   const wingMode: WingMode = instant ? 'hard' : 'scroll';
   useRoomSeam({ enabled: true, expression, mode: wingMode, wingRef, fallbackRef });
@@ -391,10 +400,15 @@ function ArtworkViewerSession({
     setTime((value) => ({ ...value, current: 0 }));
     if (paused) toggle();
   }
-  function togglePlay() {
+  /**
+   * The strip's Film word and Space. A settling plate's inline film is only the ending; its
+   * `Film` is the complete film, which opens in the room.
+   */
+  function togglePlay(trigger: HTMLElement | null = null) {
     if (!inlineFilm) return;
     if (showAgain) again();
     else if (playing && !paused && !still) setStill(true);
+    else if (settlingPlate) openRoom(true, trigger);
     else requestFilm();
   }
   function sitDown() {
@@ -599,7 +613,7 @@ function ArtworkViewerSession({
     };
   }, [dusk, home]);
 
-  const filmState = !settled ? 'arriving' : playing ? 'film' : 'still';
+  const filmState = !settled || handoverWaiting ? 'arriving' : playing ? 'film' : 'still';
   const stateWord = t[filmState];
 
   /** The strip's right-hand words for one layer; only the committed layer's are live. */
@@ -628,7 +642,13 @@ function ArtworkViewerSession({
         </>
       );
     const filmWord = inlineFilm ? (
-      <button type="button" className={styles.word} onClick={togglePlay} data-film-word>
+      <button
+        type="button"
+        className={styles.word}
+        onClick={(event) => togglePlay(event.currentTarget)}
+        title={settlingPlate && idle && !showAgain ? t.filmInRoom : undefined}
+        data-film-word
+      >
         {showAgain ? t.again : idle ? t.film : t.still}
       </button>
     ) : null;
@@ -691,9 +711,11 @@ function ArtworkViewerSession({
       item.thumbnail === getInterpretation(initial, id)?.thumbnail
         ? inlinePreviews?.[id]
         : undefined;
-    const ambient = current
-      ? { ...item, films: inlineFilm ? [inlineFilm] : [] }
-      : { ...item, films: [] };
+    // The committed layer's films: the opening clip and the complete film it hands over to on
+    // the home, otherwise the plate's one inline film; the twin carries none.
+    const films =
+      current && inlineFilm ? (openingFilm ? [openingFilm, inlineFilm] : [inlineFilm]) : [];
+    const ambient = { ...item, films };
     return (
       <TurnLayer key={id} expression={id} current={current}>
         <Plate
@@ -727,6 +749,7 @@ function ArtworkViewerSession({
               restart={current ? restart : 0}
               playRequest={current ? playRequest : 0}
               onPlaybackChange={current ? setPlaying : undefined}
+              onHandover={current ? setHandoverWaiting : undefined}
               onProgress={
                 current ? (now, duration) => setTime({ current: now, duration }) : undefined
               }

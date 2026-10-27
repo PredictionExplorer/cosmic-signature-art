@@ -1,10 +1,10 @@
 'use client';
 
-import Image from 'next/image';
 import { useEffect, useEffectEvent, useRef, useState, type CSSProperties } from 'react';
 import type { ArtFilm, ArtInterpretation } from '@/lib/art/types';
 import { getPlateGround } from '@/lib/art/plate-records';
 import type { PreviewFailure } from './collection-motion';
+import { stillSourceSet } from './artwork-media';
 
 /** The last frame rests this long before the excerpt fades back to its still (--t-hold). */
 const HOLD_MS = 1200;
@@ -18,6 +18,10 @@ type CollectionPreviewProps = {
   eager?: boolean;
   /** The work's identity, so its measured ground can letterbox the card. */
   artworkId?: number;
+  /** The film the lease plays on this card; the verified excerpt when none is named. */
+  film?: ArtFilm;
+  /** The card's layout width, so the still ladder can serve its rung instead of the 640 preview. */
+  sizes?: string;
   onFailure: (reason: PreviewFailure) => void;
   /** The excerpt has finished and faded to the still; the lease may move on. */
   onEnded?: () => void;
@@ -43,7 +47,7 @@ export function excerptRange(film?: ArtFilm): string | undefined {
 
 /** A canonical still is always present; only the grid's selected Ink film has a video source. */
 export function CollectionPreview(props: CollectionPreviewProps) {
-  const identity = `${props.media?.id}:${props.media?.still}:${props.media?.thumbnail}:${getCollectionPreviewFilm(props.media)?.src}`;
+  const identity = `${props.media?.id}:${props.media?.still}:${props.media?.thumbnail}:${(props.film ?? getCollectionPreviewFilm(props.media))?.src}`;
   return <PreviewSession key={identity} {...props} />;
 }
 
@@ -53,6 +57,8 @@ function PreviewSession({
   active,
   eager,
   artworkId,
+  film: namedFilm,
+  sizes,
   onFailure,
   onEnded,
 }: CollectionPreviewProps) {
@@ -60,7 +66,9 @@ function PreviewSession({
   const [imageFailed, setImageFailed] = useState(false);
   const [filmFailed, setFilmFailed] = useState(false);
   const imageSource = thumbnailFailed ? media?.still : (media?.thumbnail ?? media?.still);
-  const film = getCollectionPreviewFilm(media);
+  const film = namedFilm ?? getCollectionPreviewFilm(media);
+  // The ladder serves a sheet its rung; the 640 preview stays the smallest candidate.
+  const ladder = sizes && imageSource === media?.thumbnail ? stillSourceSet(media) : undefined;
   const ground =
     artworkId !== undefined && media
       ? getPlateGround(artworkId, media.id, media.stillSha256)
@@ -72,13 +80,16 @@ function PreviewSession({
       className="art-media"
       data-material={media?.id ?? 'ink'}
       data-collection-preview
+      data-film={film?.id}
       data-edge={ground?.edge ? 'true' : undefined}
       style={style}
     >
       {imageSource && !imageFailed ? (
-        <Image
+        <img
           className="art-still is-settled"
           src={imageSource}
+          srcSet={ladder ? `${imageSource} ${media?.thumbnailWidth ?? 640}w, ${ladder}` : undefined}
+          sizes={ladder ? sizes : undefined}
           alt={alt}
           width={
             (imageSource === media?.thumbnail ? media?.thumbnailWidth : undefined) ??
@@ -90,8 +101,8 @@ function PreviewSession({
             media?.height ??
             2234
           }
-          unoptimized
-          loading={eager ? 'eager' : undefined}
+          decoding="async"
+          loading={eager ? 'eager' : 'lazy'}
           onError={() => {
             if (imageSource !== media?.still && media?.still) setThumbnailFailed(true);
             else setImageFailed(true);

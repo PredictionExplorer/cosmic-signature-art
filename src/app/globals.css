@@ -901,3 +901,9 @@ dialog.sheet::backdrop {
     transition: none !important;
   }
 }
+
+/* ── Phase 2 · Fork M ── */
+/* A film that has ended holds its last frame, which is the still, then fades into it over --t-focus. */
+.art-media video.has-ended {
+  transition-duration: var(--t-focus);
+}

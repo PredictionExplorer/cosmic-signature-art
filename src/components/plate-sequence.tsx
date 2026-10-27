@@ -1,7 +1,12 @@
 'use client';
 import Link from 'next/link';
-import { Fragment, useMemo, useState, type CSSProperties } from 'react';
-import { getInterpretation, type Artwork } from '@/lib/art/types';
+import { Fragment, useMemo, useState, useSyncExternalStore, type CSSProperties } from 'react';
+import {
+  getInterpretation,
+  type ArtFilm,
+  type ArtInterpretation,
+  type Artwork,
+} from '@/lib/art/types';
 import { workFolio, workNumber } from '@/lib/art/number';
 import { getPlateGround } from '@/lib/art/plate-records';
 import type { CycleSummary } from '@/lib/art/collection-index';
@@ -12,7 +17,48 @@ import { ArtworkMedia } from './artwork-media';
 import { useCollectionMotion } from './collection-motion';
 import { CollectionPreview, excerptRange, getCollectionPreviewFilm } from './collection-preview';
 import { ArtworkTransition } from './artwork-transition';
+import { PLATE_SIZES } from './artwork-media';
 import styles from './plate-sequence.module.css';
+
+/** A phone's wall: the plate is 100 vw and the rhythm is full, two halves, full. */
+const COMPACT_QUERY = '(max-width: 767px)';
+const compactQuery = () =>
+  typeof window.matchMedia === 'function' ? window.matchMedia(COMPACT_QUERY) : undefined;
+function subscribeCompact(listener: () => void) {
+  const query = compactQuery();
+  query?.addEventListener('change', listener);
+  return () => query?.removeEventListener('change', listener);
+}
+const compactOnServer = () => false;
+/** Whether the wall is a phone's; false on the server and wherever media queries are absent. */
+export function useCompactWall(): boolean {
+  return useSyncExternalStore(
+    subscribeCompact,
+    () => compactQuery()?.matches ?? false,
+    compactOnServer,
+  );
+}
+
+/**
+ * What a card plays under the lease: on a desk the settling clip, the film's own final eight
+ * seconds, which ends on the still; on a phone's budget the 8 s excerpt. Only Ink moves in the
+ * sequence, and never without a hash-verified clip.
+ */
+export function sequenceFilm(
+  media: ArtInterpretation | undefined,
+  compact: boolean,
+): ArtFilm | undefined {
+  if (!media || media.id !== 'ink') return undefined;
+  const excerpt = getCollectionPreviewFilm(media);
+  return compact ? excerpt : (media.settlingFilm ?? excerpt);
+}
+
+/** The still ladder's layout width for each shape of the rhythm. */
+const SIZES: Record<Shape, string> = {
+  1: PLATE_SIZES,
+  2: '(max-width: 767px) 50vw, 46vw',
+  3: '(max-width: 767px) 50vw, 30vw',
+};
 
 /**
  * The hang of a page of eighteen: one full-bleed plate, a spread of two, three stills, full
@@ -119,18 +165,19 @@ export function PlateSequence({
   rhythm?: readonly Shape[];
 }) {
   const [intentId, setIntentId] = useState<number | null>(null);
+  const compact = useCompactWall();
   const rows = useMemo(() => sequenceRows(works, rhythm, chapters), [works, rhythm, chapters]);
-  // Only verified compact Ink excerpts may move, and never in a row of three stills.
+  // Only a verified Ink clip may move, and never in a row of three stills.
   const previewIds = useMemo(
     () =>
       rows.flatMap((row) =>
         row.shape === 3
           ? []
           : row.works
-              .filter((work) => getCollectionPreviewFilm(getInterpretation(work, 'ink')))
+              .filter((work) => sequenceFilm(getInterpretation(work, 'ink'), compact))
               .map((work) => work.id),
       ),
-    [rows],
+    [rows, compact],
   );
   const { gridRef, activeId, intent, clearIntent, fail, rest } = useCollectionMotion({
     enabled: animated && expression === 'ink',
@@ -191,16 +238,26 @@ export function PlateSequence({
                   locale,
                   `/art/${work.id}${media && media.id !== 'ink' ? `?expression=${encodeURIComponent(media.id)}` : ''}`,
                 );
-                const film = getCollectionPreviewFilm(media);
+                const film = sequenceFilm(media, compact);
                 const live = animated && row.shape !== 3;
                 const active = live && activeId === work.id;
                 const eager = eagerFirstRow && index < 2;
+                // The eye line: a sheet in a row of two or three hangs so its measured centre
+                // sits on the band's line; the full plate already fills its band.
+                const centre =
+                  row.shape !== 1 && media
+                    ? getPlateGround(work.id, media.id, media.stillSha256)?.centre.y
+                    : undefined;
+                const hang =
+                  centre !== undefined ? ({ '--centre-y': centre } as CSSProperties) : undefined;
                 const plate = live ? (
                   <CollectionPreview
                     key={`${work.id}-${media?.id}`}
                     media={media}
                     alt={alt}
                     artworkId={work.id}
+                    film={film}
+                    sizes={SIZES[row.shape]}
                     eager={eager}
                     active={active}
                     onFailure={(reason) => fail(work.id, reason)}
@@ -212,6 +269,7 @@ export function PlateSequence({
                     media={media}
                     alt={alt}
                     artworkId={work.id}
+                    sizes={SIZES[row.shape]}
                     still
                     thumbnail
                     eager={eager}
@@ -222,6 +280,7 @@ export function PlateSequence({
                     key={work.id}
                     className={`work-card ${styles.card}`}
                     href={href}
+                    style={hang}
                     prefetch={live ? active || intentId === work.id : undefined}
                     aria-label={alt}
                     data-preview-id={work.id}
@@ -255,7 +314,9 @@ export function PlateSequence({
                       </span>
                       <span className={styles.label}>
                         {label}
-                        {active ? ` · ${t.excerpt} ${excerptRange(film) ?? ''}`.trimEnd() : ''}
+                        {active && film
+                          ? ` · ${film.id === 'settling' ? t.settling : t.excerpt} ${excerptRange(film) ?? ''}`.trimEnd()
+                          : ''}
                       </span>
                     </span>
                   </Link>

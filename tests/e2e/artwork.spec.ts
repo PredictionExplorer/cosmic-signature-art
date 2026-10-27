@@ -105,3 +105,50 @@ test('language switching preserves the current artwork route', async ({ page, is
     `№ 031 · ${catalogs.ja.ink}`,
   );
 });
+
+test('a work without a local film wakes into its settling clip, keeps the film’s own clock, and fades into its still', async ({
+  page,
+}, testInfo) => {
+  test.skip(
+    testInfo.project.name.includes('reduced-motion'),
+    'No ambient film under reduced motion; the settling plate is proved in the unit suite.',
+  );
+  await page.goto('/art/40');
+  const toggle = page.locator('button.motion-toggle');
+  await expect(toggle).toHaveAttribute('aria-pressed', /true|false/);
+  if ((await toggle.getAttribute('aria-pressed')) === 'true') await toggle.click();
+  const plate = page.locator(current);
+  const film = plate.locator('video');
+  // The plate's film is the settling clip: the film's final eight seconds, which end on the still.
+  await expect(film).toHaveAttribute('src', /\/art\/clips\/40-ink-settling-[a-f0-9]{16}\.mp4$/, {
+    timeout: 15_000,
+  });
+  await expect
+    .poll(
+      () =>
+        film.evaluate((element) => {
+          const video = element as HTMLVideoElement;
+          return !video.paused && video.currentTime > 0;
+        }),
+      { timeout: 20_000 },
+    )
+    .toBe(true);
+  await expect(plate.locator('[data-film-state]')).toHaveAttribute('data-film-state', 'film');
+  // The clock is the film's own: the clip runs from 00:22 to 00:30.
+  await expect(plate.locator('.strip')).toContainText(/00:2[2-9] \/ 00:30/);
+  await expect(plate.locator('[data-film-state]')).toHaveAttribute('data-film-state', 'still', {
+    timeout: 15_000,
+  });
+  // The last frame is the still: held, then faded into the still beneath, so nothing jumps.
+  await expect(film).toHaveClass(/has-ended/);
+  await expect(film).not.toHaveClass(/has-frame/, { timeout: 5000 });
+  // Film is the complete film, which opens in the room.
+  const word = plate.getByRole('button', { name: 'Film', exact: true });
+  await expect(word).toHaveAttribute('title', catalogs.en.filmInRoom);
+  await word.click();
+  const dialog = page.getByRole('dialog');
+  await expect(dialog).toBeVisible();
+  await expect(dialog.locator('video')).toHaveAttribute('src', /\/videos\/web\/ember\.mp4$/);
+  await page.keyboard.press('Escape');
+  await expect(dialog).not.toBeVisible();
+});

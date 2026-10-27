@@ -2,9 +2,10 @@ import type { ReactNode } from 'react';
 import { fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { getCuratedArtwork } from '@/lib/art/catalog';
+import { getPlateGround } from '@/lib/art/plate-records';
 import type { Artwork } from '@/lib/art/types';
 import { en } from '@/lib/i18n/en';
-import { PlateSequence, RHYTHM, sequenceRows } from './plate-sequence';
+import { PlateSequence, RHYTHM, sequenceFilm, sequenceRows } from './plate-sequence';
 
 const coordinator = vi.hoisted(() => ({
   use: vi.fn(),
@@ -37,6 +38,16 @@ function clone(id: number, cycle: number, withPreview = true): Artwork {
               startSeconds: 6,
             }
           : undefined,
+      settlingFilm:
+        withPreview && media.id === 'ink'
+          ? {
+              ...media.films[0],
+              id: 'settling',
+              src: `/art/clips/${id}-ink-settling.mp4`,
+              durationSeconds: 8,
+              startSeconds: 22.033333,
+            }
+          : undefined,
     })),
   };
 }
@@ -57,9 +68,19 @@ const works: Artwork[] = [31, 23, 35].map((id) => {
                 startSeconds: 6,
               }
             : undefined,
+        // Only 031 keeps its verified settling clip; the others hang still.
+        settlingFilm: id === 31 && media.id === 'ink' ? media.settlingFilm : undefined,
       })),
   };
 });
+/** A phone's wall, or a desk's, for the sequence's media query. */
+function wall(compact: boolean) {
+  vi.stubGlobal('matchMedia', (query: string) => ({
+    matches: compact && query.includes('767'),
+    addEventListener() {},
+    removeEventListener() {},
+  }));
+}
 const cycles = [
   { cycle: 1, count: 24, mintedAt: '2026-08-11T23:38:26.000Z', ids: [] },
   { cycle: 2, count: 24, mintedAt: '2026-10-05T10:14:37.000Z', ids: [] },
@@ -193,7 +214,29 @@ describe('the plate sequence', () => {
     expect(card(31)).not.toHaveAttribute('role', 'button');
   });
 
-  it('labels a moving excerpt by its true place in the film, never as the work’s film', () => {
+  it('plays the settling clip on a desk, labelled by its true place in the film, never as the work’s film', () => {
+    coordinator.use.mockReturnValue({
+      gridRef: { current: null },
+      activeId: 31,
+      intent: coordinator.intent,
+      clearIntent: coordinator.clearIntent,
+      fail: coordinator.fail,
+      rest: coordinator.rest,
+    });
+    const { container } = render(<PlateSequence works={works} locale="en" t={en} animated />);
+    expect(card(31)).toHaveAttribute('data-motion', 'active');
+    expect(card(31)).toHaveTextContent(`${en.settling} 00:22–00:30`);
+    expect(card(31)).not.toHaveTextContent(en.excerpt);
+    expect(card(31)).not.toHaveTextContent(en.mediaPreview);
+    expect(container.querySelector('[data-collection-preview][data-film]')).toHaveAttribute(
+      'data-film',
+      'settling',
+    );
+    expect(card(23)).not.toHaveTextContent(en.settling);
+  });
+
+  it('plays the eight-second excerpt on a phone’s wall and leaves a clip-only work still there', () => {
+    wall(true);
     coordinator.use.mockReturnValue({
       gridRef: { current: null },
       activeId: 31,
@@ -203,10 +246,31 @@ describe('the plate sequence', () => {
       rest: coordinator.rest,
     });
     render(<PlateSequence works={works} locale="en" t={en} animated />);
-    expect(card(31)).toHaveAttribute('data-motion', 'active');
     expect(card(31)).toHaveTextContent(`${en.excerpt} 00:06–00:14`);
-    expect(card(31)).not.toHaveTextContent(en.mediaPreview);
-    expect(card(23)).not.toHaveTextContent(en.excerpt);
+    const ink = getCuratedArtwork(31)!.media.find((media) => media.id === 'ink')!;
+    expect(sequenceFilm({ ...ink, previewFilm: undefined }, true)).toBeUndefined();
+    expect(sequenceFilm({ ...ink, previewFilm: undefined }, false)?.id).toBe('settling');
+    expect(sequenceFilm({ ...ink, settlingFilm: undefined }, false)?.id).toBe('catalogue');
+    expect(
+      sequenceFilm(
+        getCuratedArtwork(31)!.media.find((m) => m.id === 'light'),
+        false,
+      ),
+    ).toBeUndefined();
+  });
+
+  it('hangs a row of two on the eye line from each sheet’s measured centre, and the full plate as it is', () => {
+    const page = [31, 35, 23].map((id) => ({ ...getCuratedArtwork(id)!, cycle: 1 }));
+    render(<PlateSequence works={page} locale="en" t={en} rhythm={[2, 1]} />);
+    for (const id of [31, 35]) {
+      const ink = getCuratedArtwork(id)!.media.find((media) => media.id === 'ink')!;
+      const centre = getPlateGround(id, 'ink', ink.stillSha256)!.centre.y;
+      expect(card(id).getAttribute('style')).toContain(`--centre-y: ${centre}`);
+    }
+    expect(card(23)).not.toHaveAttribute('style');
+    // The ladder serves each shape its rung: the spread's sheets at 46 vw, the plate at the room's width.
+    expect(card(31).querySelector('img')).toHaveAttribute('sizes', '(max-width: 767px) 50vw, 46vw');
+    expect(card(23).querySelector('img')?.getAttribute('sizes')).toContain('100svh');
   });
 
   it('opens each cycle with a strip that reads the cycle, its count and its date', () => {

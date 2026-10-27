@@ -405,6 +405,8 @@ export const ja: Messages = {
   // ·
   // ·
   // Fork M · the settling plates, the eye-line hang, the phone rung
+  settling: '沈着',
+  filmInRoom: '全編は鑑賞室で開きます',
   // ·
   // ·
   // Fork E · exhibitions, trails, sharing images, Verify a download

@@ -83,6 +83,7 @@ export function SpreadPlates({
                   media={media}
                   alt={alt}
                   artworkId={work.id}
+                  sizes="(max-width: 767px) 100vw, 46vw"
                   active={active}
                   onFailure={(reason) => fail(work.id, reason)}
                   onEnded={() => rest(work.id)}

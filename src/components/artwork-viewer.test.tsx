@@ -2,6 +2,8 @@ import { act, cleanup, fireEvent, render, screen, within } from '@testing-librar
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { ArtworkViewer } from './artwork-viewer';
 import { getCuratedArtwork } from '@/lib/art/catalog';
+import { artworkFromIndex } from '@/lib/art/collection-cards';
+import { indexedWork } from '@/lib/art/collection-index';
 import { withCollectionPreviews } from '@/lib/art/collection-previews';
 import type { Artwork } from '@/lib/art/types';
 import { en } from '@/lib/i18n/en';
@@ -130,6 +132,31 @@ async function settle() {
     for (const image of document.querySelectorAll<HTMLImageElement>('img.art-still'))
       fireEvent.load(image);
   });
+}
+/** The home's handover: the opening clip plays, the complete film is cued and takes over. */
+async function handover() {
+  const opening = player() as HTMLVideoElement;
+  expect(opening).toHaveAttribute(
+    'src',
+    expect.stringMatching(/\/art\/clips\/31-ink-opening-[a-f0-9]{16}\.mp4$/),
+  );
+  Object.defineProperty(opening, 'duration', { configurable: true, value: 10 });
+  fireEvent.playing(opening);
+  Object.defineProperty(opening, 'currentTime', { configurable: true, value: 2.5, writable: true });
+  fireEvent.timeUpdate(opening);
+  const relay = document.querySelector<HTMLVideoElement>(
+    '[data-layer-state="current"] video[data-relay]',
+  )!;
+  expect(relay).toHaveAttribute('src', expect.stringMatching(/\/art\/31-ink-preview\.mp4$/));
+  Object.defineProperty(relay, 'duration', { configurable: true, value: 30 });
+  Object.defineProperty(relay, 'readyState', { configurable: true, value: 4 });
+  Object.defineProperty(relay, 'buffered', {
+    configurable: true,
+    value: { length: 1, start: () => 0, end: () => 30 },
+  });
+  fireEvent.canPlay(relay);
+  fireEvent.playing(relay);
+  return relay;
 }
 
 describe('the plate and its strip', () => {
@@ -519,10 +546,13 @@ describe('the home', () => {
     await act(async () => {
       vi.advanceTimersByTime(1200);
     });
-    const video = player()!;
-    Object.defineProperty(video, 'duration', { configurable: true, value: 30 });
-    fireEvent.playing(video);
-    fireEvent.ended(video);
+    // The arrival film is the opening clip; the complete film takes over at the same frame.
+    const film = await handover();
+    expect(container.querySelector('[data-layer-state="current"] .art-media')).toHaveAttribute(
+      'data-handover',
+      'film',
+    );
+    fireEvent.ended(film);
     expect(sessionStorage.getItem('cosmic-art-home-film-v1')).toBe('resolved');
     await act(async () => {
       vi.advanceTimersByTime(6000);
@@ -541,10 +571,7 @@ describe('the home', () => {
     await act(async () => {
       vi.advanceTimersByTime(1200);
     });
-    const video = player()!;
-    Object.defineProperty(video, 'duration', { configurable: true, value: 30 });
-    fireEvent.playing(video);
-    fireEvent.ended(video);
+    fireEvent.ended(await handover());
     await act(async () => {
       vi.advanceTimersByTime(6000);
     });
@@ -561,6 +588,75 @@ describe('the home', () => {
     await dropSeam();
     expect(stage()).toHaveAttribute('data-expression', 'ink');
     expect(root().hasAttribute('data-turning')).toBe(false);
+  });
+});
+
+describe('the settling plate', () => {
+  const indexed = artworkFromIndex(indexedWork(40)!);
+  const inkClip = indexed.media.find((item) => item.id === 'ink')!.settlingFilm!;
+
+  it('wakes a work without a local film into its settling clip, keeps the film’s own clock, and fades into the still', async () => {
+    const { container } = renderViewer({ artwork: indexed, traits: undefined });
+    await settle();
+    await act(async () => {
+      vi.advanceTimersByTime(1250);
+    });
+    const video = player()!;
+    expect(inkClip.src).toMatch(/^\/art\/clips\/40-ink-settling-[a-f0-9]{16}\.mp4$/);
+    expect(video).toHaveAttribute('src', inkClip.src);
+    Object.defineProperty(video, 'duration', { configurable: true, value: 8 });
+    Object.defineProperty(video, 'currentTime', { configurable: true, value: 3, writable: true });
+    fireEvent.playing(video);
+    fireEvent.timeUpdate(video);
+    // The clock is the film's own: the clip is its last eight seconds.
+    expect(container.querySelector('[data-film-state]')).toHaveAttribute('data-film-state', 'film');
+    expect(
+      within(document.querySelector<HTMLElement>('[data-layer-state="current"]')!).getByText(
+        '00:25 / 00:30',
+      ),
+    ).toBeInTheDocument();
+    expect(word(en.still)).toBeInTheDocument();
+    fireEvent.ended(video);
+    expect(container.querySelector('[data-film-state]')).toHaveAttribute(
+      'data-film-state',
+      'still',
+    );
+    // The last frame is the still: it is held for --t-hold, then fades into the still beneath.
+    expect(video).toHaveClass('has-frame');
+    expect(video).toHaveClass('has-ended');
+    await act(async () => {
+      vi.advanceTimersByTime(1200);
+    });
+    expect(video).not.toHaveClass('has-frame');
+    expect(word(en.film)).toHaveAttribute('title', en.filmInRoom);
+    await act(async () => {
+      vi.advanceTimersByTime(8000);
+    });
+    expect(word(en.again)).toBeInTheDocument();
+  });
+
+  it('Film on a settling plate is the complete film, and opens it in the room', () => {
+    renderViewer({ artwork: indexed, traits: undefined, initialStill: true });
+    const film = word(en.film);
+    expect(film).toHaveAttribute('title', en.filmInRoom);
+    fireEvent.click(film);
+    const dialog = screen.getByRole('dialog');
+    expect(dialog.querySelector('video')).toHaveAttribute(
+      'src',
+      expect.stringMatching(/\/videos\/web\/ember\.mp4$/),
+    );
+  });
+
+  it('the Light plate wakes into its own settling clip', async () => {
+    renderViewer({ artwork: indexed, traits: undefined, initialExpression: 'light' });
+    await settle();
+    await act(async () => {
+      vi.advanceTimersByTime(1250);
+    });
+    expect(player()).toHaveAttribute(
+      'src',
+      expect.stringMatching(/\/art\/clips\/40-light-settling-[a-f0-9]{16}\.mp4$/),
+    );
   });
 });
 

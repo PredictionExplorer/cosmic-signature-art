@@ -401,6 +401,8 @@ export const ko: Messages = {
   // ·
   // ·
   // Fork M · the settling plates, the eye-line hang, the phone rung
+  settling: '안착',
+  filmInRoom: '전체 영상은 감상실에서 열립니다',
   // ·
   // ·
   // Fork E · exhibitions, trails, sharing images, Verify a download

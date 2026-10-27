@@ -383,6 +383,8 @@ export const zh: Messages = {
   // ·
   // ·
   // Fork M · the settling plates, the eye-line hang, the phone rung
+  settling: '落定',
+  filmInRoom: '完整影片在观览室中开启',
   // ·
   // ·
   // Fork E · exhibitions, trails, sharing images, Verify a download
