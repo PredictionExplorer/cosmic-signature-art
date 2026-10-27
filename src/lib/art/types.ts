@@ -29,6 +29,16 @@ export interface ArtFilm {
   delivery: 'original-web' | 'local-preview';
 }
 
+/** A detail window of the published still, in its pixels: one of the loupe's first views. */
+export interface PlateDetail {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  /** The share of the expression's weight (ink darkness, or light) inside this window. */
+  share: number;
+}
+
 /** One rung of the still ladder: a hash-recorded local derivative of the published still. */
 export interface StillRung {
   src: string;
@@ -63,6 +73,8 @@ export interface ArtInterpretation {
   openingFilm?: ArtFilm;
   /** Smaller rungs of the published still, cut from its 16-bit master, ascending by width. */
   rungs?: StillRung[];
+  /** The still's heaviest windows, measured offline and bound to its hash; at most three. */
+  detail?: PlateDetail[];
   source: MediaSource;
   /** A manifest advertises an asset; it does not prove continued availability. */
   availability: 'local-copy' | 'advertised' | 'unverified';

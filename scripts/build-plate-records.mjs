@@ -26,6 +26,7 @@ import { decodeRaw, luminance } from './lib/raster.mjs';
 const USAGE = 'Usage: node scripts/build-plate-records.mjs [tokenId ...]';
 const indexPath = fileURLToPath(new URL('../src/lib/art/collection-index.json', import.meta.url));
 const registryPath = fileURLToPath(new URL('../src/lib/art/plate-records.json', import.meta.url));
+const groundsPath = fileURLToPath(new URL('../src/lib/art/plate-grounds.json', import.meta.url));
 export const SCHEMA_VERSION = 2;
 const STILL_ROLES = { ink: 'images/web/ember_full.webp', light: 'images/web/full.webp' };
 
@@ -258,6 +259,28 @@ export function serializeRegistry({ measuredOn, records }) {
   return `${JSON.stringify({ schemaVersion: SCHEMA_VERSION, measuredOn, records }, null, 2)}\n`;
 }
 
+/**
+ * The client's projection of the records: what every plate needs to hang (tone, edge, centre),
+ * keyed to the still hash, without the seeds or the detail windows the server attaches to a
+ * work's own media. About a third of the full file compressed.
+ */
+export function serializeGrounds({ measuredOn, records }) {
+  const lean = (ground) =>
+    ground && {
+      stillSha256: ground.stillSha256,
+      tone: ground.tone,
+      edge: ground.edge,
+      centre: ground.centre,
+    };
+  const grounds = records.map(({ id, ink, light }) => {
+    const entry = { id };
+    if (ink) entry.ink = lean(ink);
+    if (light) entry.light = lean(light);
+    return entry;
+  });
+  return `${JSON.stringify({ schemaVersion: SCHEMA_VERSION, measuredOn, grounds }, null, 2)}\n`;
+}
+
 async function measureWork(work) {
   const grounds = {};
   for (const expression of ['ink', 'light']) {
@@ -323,6 +346,7 @@ async function main() {
       new Date().toISOString().slice(0, 10),
     );
     await writeAtomically(registryPath, serializeRegistry({ measuredOn, records }));
+    await writeAtomically(groundsPath, serializeGrounds({ measuredOn, records }));
     log(`${records.length} plate records; measured on ${measuredOn}.`);
   });
 }

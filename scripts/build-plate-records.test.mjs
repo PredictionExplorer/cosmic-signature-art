@@ -15,6 +15,7 @@ import {
   mergeRecords,
   plateRecord,
   reachesEdge,
+  serializeGrounds,
   serializeRegistry,
 } from './build-plate-records.mjs';
 
@@ -217,4 +218,14 @@ test('records keep a stable shape, merge by id and keep their date when nothing 
   const serialized = JSON.parse(serializeRegistry({ measuredOn: '2026-10-27', records: merged }));
   assert.equal(serialized.schemaVersion, SCHEMA_VERSION);
   assert.equal(SCHEMA_VERSION, 2);
+  const grounds = JSON.parse(serializeGrounds({ measuredOn: '2026-10-27', records: merged }));
+  assert.equal(grounds.schemaVersion, SCHEMA_VERSION);
+  assert.equal(grounds.measuredOn, '2026-10-27');
+  assert.deepEqual(grounds.grounds, [
+    {
+      id: 31,
+      ink: { stillSha256: 'a'.repeat(64), tone: '#f0eade', edge: false, centre: weight.centre },
+    },
+    { id: 35 },
+  ]);
 });
