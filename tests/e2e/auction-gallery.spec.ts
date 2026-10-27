@@ -102,6 +102,10 @@ test('auction pages keep restored motion preferences and the original work ident
   await expect(stage).toHaveAttribute('data-expression', 'light');
   await expect(page.locator('html')).not.toHaveAttribute('data-turning', /./);
   await expect(page.locator(`${current} img.art-still`)).toHaveAttribute('alt', '№ 031 · Light');
+  // The Light plate lends the head its night, type and all, though the route's room is paper.
+  await expect(page.locator('html')).toHaveAttribute('data-room', 'paper');
+  await expect(page.locator('.site-header')).toHaveCSS('background-color', 'rgb(0, 0, 0)');
+  await expect(page.locator('.site-header')).toHaveCSS('color', 'rgb(241, 235, 223)');
   await page.locator(current).getByRole('button', { name: /^Ink$/ }).click();
   await expect(stage).toHaveAttribute('data-expression', 'ink');
   await expect(page).toHaveTitle(/№ 031 · Auctions/);

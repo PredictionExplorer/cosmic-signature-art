@@ -29,6 +29,8 @@ export const TAP_MS = 300;
 export const DRAG_COMMIT = 0.4;
 /** Horizontal travel before a touch becomes a drag rather than a scroll. */
 const DRAG_THRESHOLD_PX = 8;
+/** A click the browser synthesises this soon after a drag ended is the drag, not a choice. */
+const DRAG_CLICK_MS = 500;
 
 export type TurnMode = 'time' | 'drag' | 'dusk';
 export type Expression = 'ink' | 'light';
@@ -62,6 +64,10 @@ export class SeamController {
   private timers = new Set<ReturnType<typeof setTimeout>>();
   /** Travels still waiting for their timer; a newer travel resolves them false. */
   private waiting = new Set<() => void>();
+  /** The travel in flight, so a second request for the same target inherits its remaining time. */
+  private flight: { target: number; endsAt: number } | null = null;
+  /** The seam is dropped a chrome beat after the commit, so the head's overlay outlasts its fade. */
+  private ending: ReturnType<typeof setTimeout> | null = null;
   constructor(private readonly root: () => HTMLElement = () => document.documentElement) {}
 
   /** The seam as a number from 0 to 100, or null while no Turn is in progress. */
@@ -74,11 +80,17 @@ export class SeamController {
     return (this.root().getAttribute('data-turning') as TurnMode | null) || null;
   }
 
+  /** The ground the seam travels toward; the running head's overlay takes it. */
+  get turnTo(): Room | null {
+    return (this.root().getAttribute('data-turn-to') as Room | null) || null;
+  }
+
   /** A finger takes the seam: no transition, every move paints at once. */
-  begin(mode: TurnMode, start: number) {
+  begin(mode: TurnMode, start: number, to: Room = start > 50 ? 'night' : 'paper') {
     this.cancel();
     const element = this.root();
     element.setAttribute('data-turning', mode);
+    element.setAttribute('data-turn-to', to);
     if (this.seam === null) element.style.setProperty('--seam', `${clamp(start)}%`);
   }
 
@@ -102,6 +114,12 @@ export class SeamController {
     }: { mode?: TurnMode; breath?: boolean; halfway?: () => void; from?: number } = {},
   ): Promise<boolean> {
     const element = this.root();
+    // A request for the target already in flight inherits what is left of that travel, so a
+    // tap that follows a held key completes the seam instead of snapping it.
+    const inherited =
+      this.flight && this.flight.target === target
+        ? Math.max(0, this.flight.endsAt - Date.now())
+        : null;
     this.cancel();
     const id = this.token;
     return new Promise((resolve) => {
@@ -115,18 +133,20 @@ export class SeamController {
         if (id !== this.token) return settle(false);
         const start = this.seam ?? from ?? (target === 0 ? 100 : 0);
         element.setAttribute('data-turning', mode);
+        element.setAttribute('data-turn-to', target === 0 ? 'night' : 'paper');
         element.style.setProperty('--seam', `${clamp(start)}%`);
         // Flush so the transition starts from `start` rather than from the previous frame.
         void getComputedStyle(element).getPropertyValue('--seam');
         element.style.setProperty('--seam', `${clamp(target)}%`);
         const duration =
           start === target
-            ? 0
+            ? (inherited ?? 0)
             : tokenMs(
                 element,
                 mode === 'dusk' ? '--t-dusk' : '--t-turn',
                 mode === 'dusk' ? 4000 : 900,
               );
+        this.flight = { target, endsAt: Date.now() + duration };
         if (halfway) {
           this.timers.add(
             setTimeout(() => {
@@ -145,17 +165,32 @@ export class SeamController {
     });
   }
 
-  /** The committed expression is painted: drop the seam so the layers follow data-expression. */
+  /**
+   * The committed expression is painted: drop the seam so the layers follow data-expression.
+   * The attributes outlast the commit by one chrome beat (--t-chrome): the running head's
+   * base fades to its new ground under the overlay, never in front of the visitor.
+   */
   end() {
     this.cancel();
     const element = this.root();
-    element.removeAttribute('data-turning');
-    element.style.removeProperty('--seam');
+    const drop = () => {
+      this.ending = null;
+      element.removeAttribute('data-turning');
+      element.removeAttribute('data-turn-to');
+      element.style.removeProperty('--seam');
+    };
+    if (!element.hasAttribute('data-turning')) return drop();
+    this.ending = setTimeout(drop, tokenMs(element, '--t-chrome', 270));
   }
 
   /** Supersede any travel in flight without touching the painted seam. */
   cancel() {
     this.token += 1;
+    this.flight = null;
+    if (this.ending) {
+      clearTimeout(this.ending);
+      this.ending = null;
+    }
     this.clearTimers();
     const waiting = [...this.waiting];
     this.waiting.clear();
@@ -247,8 +282,11 @@ export function Turn({
     pointerId: number;
     startX: number;
     startY: number;
+    /** Where the seam rested when the finger took it; the seam moves relative to it. */
+    startSeam: number;
     active: boolean;
   } | null>(null);
+  const lastDragEnd = useRef(0);
   const [dragging, setDragging] = useState(false);
   const report = useEffectEvent((value: boolean) => onDragChange?.(value));
   useEffect(() => {
@@ -258,10 +296,16 @@ export function Turn({
   const other: Expression = expression === 'light' ? 'ink' : 'light';
   const rest = () => restSeam?.() ?? seamFor(expression);
 
-  function seamAt(clientX: number) {
+  /** The seam carried from where it rested by the finger's travel across the plate. */
+  function seamAt(state: { startX: number; startSeam: number }, clientX: number) {
     const rect = node.current?.getBoundingClientRect();
-    if (!rect || rect.width === 0) return rest();
-    return clamp(((clientX - rect.left) / rect.width) * 100);
+    if (!rect || rect.width === 0) return state.startSeam;
+    return clamp(state.startSeam + ((clientX - state.startX) / rect.width) * 100);
+  }
+  function springBack() {
+    void seam.animateTo(rest(), { mode: 'time', breath: false }).then((done) => {
+      if (done) seam.end();
+    });
   }
 
   function down(event: ReactPointerEvent<HTMLDivElement>) {
@@ -270,6 +314,7 @@ export function Turn({
       pointerId: event.pointerId,
       startX: event.clientX,
       startY: event.clientY,
+      startSeam: rest(),
       active: false,
     };
   }
@@ -286,11 +331,12 @@ export function Turn({
         return;
       }
       state.active = true;
-      seam.begin('drag', rest());
+      state.startSeam = rest();
+      seam.begin('drag', state.startSeam, other === 'light' ? 'night' : 'paper');
       node.current?.setPointerCapture(event.pointerId);
       setDragging(true);
     }
-    seam.set(seamAt(event.clientX));
+    seam.set(seamAt(state, event.clientX));
   }
   function up(event: ReactPointerEvent<HTMLDivElement>) {
     const state = drag.current;
@@ -298,14 +344,21 @@ export function Turn({
     drag.current = null;
     if (!state.active) return;
     setDragging(false);
-    const position = seamAt(event.clientX);
-    const travelled = expression === 'ink' ? (100 - position) / 100 : position / 100;
+    lastDragEnd.current = Date.now();
+    const position = seamAt(state, event.clientX);
+    const travelled = Math.abs(position - state.startSeam) / 100;
     if (travelled >= DRAG_COMMIT) onCommit(other);
-    else {
-      void seam.animateTo(rest(), { mode: 'time', breath: false }).then((done) => {
-        if (done) seam.end();
-      });
-    }
+    else springBack();
+  }
+  /** An interrupted touch (the browser took it for a scroll) never turns the plate. */
+  function cancelDrag(event: ReactPointerEvent<HTMLDivElement>) {
+    const state = drag.current;
+    if (!state || state.pointerId !== event.pointerId) return;
+    drag.current = null;
+    if (!state.active) return;
+    setDragging(false);
+    lastDragEnd.current = Date.now();
+    springBack();
   }
 
   return (
@@ -317,10 +370,11 @@ export function Turn({
       onPointerDown={down}
       onPointerMove={move}
       onPointerUp={up}
-      onPointerCancel={up}
+      onPointerCancel={cancelDrag}
       onClickCapture={(event) => {
-        // The click a browser synthesises after a drag is the drag, not a choice.
-        if (dragging) {
+        // The click a browser synthesises after a drag is the drag, not a choice. The state
+        // has already cleared by then, so the moment the drag ended is what decides.
+        if (dragging || Date.now() - lastDragEnd.current < DRAG_CLICK_MS) {
           event.preventDefault();
           event.stopPropagation();
         }
@@ -344,7 +398,7 @@ export function TurnLayer({
   const night = expression === 'light';
   return (
     <div
-      className={`${styles.layer} ${night ? `${styles.night} turn-night` : styles.paper}`}
+      className={`${styles.layer} ${night ? `${styles.night} turn-night` : ''}`}
       data-layer={expression}
       data-layer-state={current ? 'current' : 'twin'}
       data-ground={night ? 'night' : 'paper'}

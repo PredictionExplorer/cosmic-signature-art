@@ -189,6 +189,8 @@ function ArtworkViewerSession({
   } | null>(null);
   const returnFocusRef = useRef<HTMLElement | null>(null);
   const swallowClick = useRef<ReturnType<typeof setTimeout> | null>(null);
+  /** A held I or L: the seam is out on a peek and returns on release. */
+  const peek = useRef<{ to: Expression; at: number } | null>(null);
   const [seam] = useState(() => new SeamController());
   const wingRef = useRef<HTMLElement>(null);
   const fallbackRef = useRef<HTMLDivElement>(null);
@@ -321,6 +323,19 @@ function ArtworkViewerSession({
   }
   const targetSeam = (to: string) => (to === 'light' ? 0 : inkSeam());
   const restSeam = () => targetSeam(expression);
+  // A seam left at the finger or the key whose twin failed to decode returns to rest.
+  const returnFailedSeam = useEffectEvent(() => {
+    if (seam.seam === null) return;
+    peek.current = null;
+    void seam.animateTo(restSeam(), { mode: 'time', breath: false }).then((done) => {
+      if (!done) return;
+      seam.end();
+      setTurning(null);
+    });
+  });
+  useEffect(() => {
+    if (failedExpression) returnFailedSeam();
+  }, [failedExpression]);
 
   const label = (id: string) =>
     id === 'ink'
@@ -329,7 +344,6 @@ function ArtworkViewerSession({
         ? t.light
         : (artwork.media.find((item) => item.id === id)?.label ?? id);
 
-  const peek = useRef<{ to: Expression; at: number } | null>(null);
   function openRoom(film: boolean, trigger: HTMLElement | null) {
     returnFocusRef.current = trigger;
     cancelPending();
@@ -385,13 +399,18 @@ function ArtworkViewerSession({
   function sitDown() {
     sitAt.current = Date.now();
     setSit(true);
-    document.documentElement.setAttribute('data-sit', '');
   }
   function stand() {
     setSit(false);
-    document.documentElement.removeAttribute('data-sit');
   }
-  useEffect(() => () => document.documentElement.removeAttribute('data-sit'), []);
+  // The running head fades with the strip (globals.css reads <html data-sit>). The attribute
+  // mirrors the state, so a rest, a Turn or the room standing up returns the head as well.
+  useEffect(() => {
+    const element = document.documentElement;
+    if (sit) element.setAttribute('data-sit', '');
+    else element.removeAttribute('data-sit');
+    return () => element.removeAttribute('data-sit');
+  }, [sit]);
   function wake() {
     if (!sit || Date.now() - sitAt.current < SIT_GRACE_MS) return;
     stand();
@@ -429,11 +448,11 @@ function ArtworkViewerSession({
     setTurning({ to, mode: 'peek' });
     void seam.animateTo(targetSeam(to), { mode: 'time', from: restSeam() });
   }
-  function peekEnd(to: Expression) {
+  function peekEnd(to: Expression, { lost = false }: { lost?: boolean } = {}) {
     const state = peek.current;
     if (!state || state.to !== to) return;
     peek.current = null;
-    if (Date.now() - state.at < TAP_MS) {
+    if (!lost && Date.now() - state.at < TAP_MS) {
       selectExpression(to);
       return;
     }
@@ -488,14 +507,26 @@ function ArtworkViewerSession({
     if (event.key === 'l' || event.key === 'L') peekEnd('light');
     if (event.key === 'i' || event.key === 'I') peekEnd('ink');
   });
+  // The window losing focus or the tab hiding swallows the keyup: the peek returns on its own.
+  const onKeyLost = useEffectEvent(() => {
+    if (peek.current) peekEnd(peek.current.to, { lost: true });
+  });
   useEffect(() => {
     const down = (event: KeyboardEvent) => onKeyDown(event);
     const up = (event: KeyboardEvent) => onKeyUp(event);
+    const lost = () => onKeyLost();
+    const hidden = () => {
+      if (document.visibilityState === 'hidden') onKeyLost();
+    };
     window.addEventListener('keydown', down);
     window.addEventListener('keyup', up);
+    window.addEventListener('blur', lost);
+    document.addEventListener('visibilitychange', hidden);
     return () => {
       window.removeEventListener('keydown', down);
       window.removeEventListener('keyup', up);
+      window.removeEventListener('blur', lost);
+      document.removeEventListener('visibilitychange', hidden);
     };
   }, []);
 
@@ -525,10 +556,13 @@ function ArtworkViewerSession({
     const wingNode = wingRef.current;
     const stage = wingNode?.firstElementChild as HTMLElement | null;
     if (wingNode && stage && wingMode === 'scroll' && scrollTimelinesSupported()) {
+      const head =
+        parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--head')) || 48;
       const top =
         wingNode.getBoundingClientRect().top +
         window.scrollY +
-        (wingNode.offsetHeight - stage.offsetHeight);
+        (wingNode.offsetHeight - stage.offsetHeight) -
+        head;
       window.scrollTo({ top, behavior: 'instant' as ScrollBehavior });
     }
     selectExpression('light');

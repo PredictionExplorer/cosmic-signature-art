@@ -132,7 +132,7 @@ html:is(:lang(zh), :lang(ja), :lang(ko)) :is(h1, h2, h3, .display, .hanging-nume
   line-height: 1.25;
   text-transform: none;
 }
-html:is(:lang(zh), :lang(ja), :lang(ko)) :is(.eyebrow, .small-caps, .brand-name) {
+html:is(:lang(zh), :lang(ja), :lang(ko)) :is(.eyebrow, .small-caps) {
   letter-spacing: 0;
   text-transform: none;
   font-variant-caps: normal;
@@ -415,11 +415,22 @@ html {
   top: 0;
   z-index: 20;
   height: var(--head);
-  background: var(--plate-tone, var(--ground));
+  background: var(--ground);
   color: var(--type);
   transition:
     background-color var(--t-chrome) var(--ease-settle),
     color var(--t-chrome) var(--ease-settle);
+}
+/* A paper room takes the sheet's own tone while an Ink plate dominates, and the night, type
+   and all, while a Light plate does. A night room is the night whatever lies under the seam:
+   the wing has drawn the night over the Ink plate, so the head does not keep its paper. */
+html[data-room='paper'] .site-header {
+  background: var(--plate-tone, var(--ground));
+}
+html[data-room='paper'][data-plate-material='night'] .site-header {
+  --ground: var(--night);
+  --type: var(--night-type);
+  --muted: #b8b5ad;
 }
 .head-row {
   display: flex;
@@ -629,6 +640,8 @@ html[data-turning='dusk'] .head-overlay {
   position: relative;
   height: var(--plate-height);
   display: grid;
+  /* One definite row: a wrapper's 100 % height resolves against the plate, never its content. */
+  grid-template-rows: minmax(0, 1fr);
   place-items: center;
   background: var(--plate-ground, var(--ground));
   overflow: hidden;

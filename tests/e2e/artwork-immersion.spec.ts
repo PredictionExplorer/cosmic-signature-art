@@ -299,6 +299,9 @@ test('the night wing is drawn by the hand where the browser can, and is a hard e
     await expect.poll(() => seamInset(page), { timeout: 3000 }).toBeLessThan(1);
     await expect(page.locator('html')).toHaveAttribute('data-room', 'night');
     await expect(page.locator(pageStage)).toHaveAttribute('data-expression', 'ink');
+    // The head is the night too: the Ink plate still under the hand lends it no paper.
+    await expect(page.locator('.site-header')).toHaveCSS('background-color', 'rgb(0, 0, 0)');
+    await expect(page.locator('.site-header')).toHaveCSS('color', 'rgb(241, 235, 223)');
     await page.evaluate(() => window.scrollTo({ top: 0, behavior: 'instant' }));
     await expect.poll(() => seamInset(page), { timeout: 3000 }).toBe(100);
     await expect(page.locator('html')).toHaveAttribute('data-room', 'paper');

@@ -153,6 +153,14 @@
   transition: none;
 }
 @media (max-width: 767px) {
+  /* The phone's art screen is still a screen: the 100 vw plate at its top, the strip beneath,
+     the sheet's own tone to the fold. The night wing keeps a whole screen to draw across, so
+     its two-screen travel and the view() range agree as they do on a desk. The lot page's
+     plate stays compact above the sale. */
+  .gallery [data-plate-ground],
+  .home [data-plate-ground] {
+    min-height: calc(var(--plate-height) + var(--strip));
+  }
   .neighbours {
     grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
     gap: 12px;

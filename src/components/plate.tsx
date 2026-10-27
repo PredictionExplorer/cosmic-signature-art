@@ -48,9 +48,9 @@ export function Plate({
     if (!node || !current || typeof IntersectionObserver === 'undefined') return;
     const observer = new IntersectionObserver(
       ([entry]) =>
-        setPlateTone(
-          entry.isIntersecting && entry.intersectionRatio >= 0.5 ? (tone ?? null) : null,
-        ),
+        entry.isIntersecting && entry.intersectionRatio >= 0.5 && tone
+          ? setPlateTone(tone, night ? 'night' : 'paper')
+          : setPlateTone(null),
       { threshold: [0, 0.5] },
     );
     observer.observe(node);
@@ -58,7 +58,7 @@ export function Plate({
       observer.disconnect();
       setPlateTone(null);
     };
-  }, [current, tone]);
+  }, [current, tone, night]);
 
   const style = ground
     ? ({ '--plate-ground': ground.tone } as CSSProperties)

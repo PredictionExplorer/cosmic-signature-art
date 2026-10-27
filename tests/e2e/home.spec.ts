@@ -202,5 +202,18 @@ test('Sit fades the strip and the time line; any input brings them back', async 
   await page.mouse.move(200, 200);
   await page.mouse.move(260, 240);
   await expect(page.locator('.home .viewing-room')).not.toHaveAttribute('data-sit', /.*/);
+  await expect(page.locator('html')).not.toHaveAttribute('data-sit', /.*/);
   await expect(plate.locator('.strip')).toHaveCSS('opacity', '1', { timeout: 5000 });
+  // Sit, then a Turn: the commit stands every piece of chrome up again, the running head included.
+  await page.keyboard.press('s');
+  await expect(page.locator('html')).toHaveAttribute('data-sit', '');
+  await expect(page.locator('.site-header')).toHaveCSS('opacity', '0', { timeout: 5000 });
+  await page.keyboard.down('l');
+  await page.keyboard.up('l');
+  await expect(page.locator('.home .viewing-room')).toHaveAttribute('data-expression', 'light', {
+    timeout: 5000,
+  });
+  await expect(page.locator('html')).not.toHaveAttribute('data-sit', /.*/);
+  await expect(page.locator('.site-header')).toHaveCSS('opacity', '1', { timeout: 5000 });
+  await expect(page.locator('.site-header')).toHaveCSS('pointer-events', 'auto');
 });

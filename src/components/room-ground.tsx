@@ -37,12 +37,20 @@ export function useRoom(room: Room | null) {
 
 /**
  * While a plate dominates the viewport the running head may take the sheet's own tone, so
- * the head and the letterbox read as one wall. Null returns the head to the room's ground.
+ * the head and the letterbox read as one wall. The plate's material rides along on
+ * <html data-plate-material>, so the head's type follows the tone it stands on and not the
+ * room's: a Light plate on a paper route reads in the night's type. Null returns the head
+ * to the room's ground.
  */
-export function setPlateTone(tone: string | null) {
-  const root = document.documentElement.style;
-  if (tone && /^#[0-9a-f]{6}$/i.test(tone)) root.setProperty('--plate-tone', tone);
-  else root.removeProperty('--plate-tone');
+export function setPlateTone(tone: string | null, material: Room = 'paper') {
+  const root = document.documentElement;
+  if (tone && /^#[0-9a-f]{6}$/i.test(tone)) {
+    root.style.setProperty('--plate-tone', tone);
+    root.setAttribute('data-plate-material', material);
+  } else {
+    root.style.removeProperty('--plate-tone');
+    root.removeAttribute('data-plate-material');
+  }
 }
 
 /**

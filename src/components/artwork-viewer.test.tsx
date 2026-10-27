@@ -33,6 +33,14 @@ async function travel() {
     vi.advanceTimersByTime(950);
   });
   await act(async () => {});
+  await dropSeam();
+}
+/** The seam outlasts a commit by one chrome beat (--t-chrome) so the head's overlay covers its fade. */
+async function dropSeam() {
+  await act(async () => {
+    vi.advanceTimersByTime(300);
+  });
+  await act(async () => {});
 }
 
 beforeEach(() => {
@@ -184,6 +192,10 @@ describe('the Turn', () => {
     expect(stage()).toHaveAttribute('data-expression', 'light');
     expect(layer('light')).toHaveAttribute('data-layer-state', 'current');
     expect(layer('ink')).toHaveAttribute('inert');
+    // The committed seam stays one chrome beat so the head's base can fade under the overlay.
+    expect(root().getAttribute('data-turning')).toBe('time');
+    expect(root().getAttribute('data-turn-to')).toBe('night');
+    await dropSeam();
     expect(root().hasAttribute('data-turning')).toBe(false);
     expect(root().style.getPropertyValue('--seam')).toBe('');
     expect(sessionStorage.getItem(EXPRESSION_KEY)).toBe('light');
@@ -235,6 +247,7 @@ describe('the Turn', () => {
       vi.advanceTimersByTime(950);
     });
     await act(async () => {});
+    await dropSeam();
     expect(root().hasAttribute('data-turning')).toBe(false);
     expect(stage()).toHaveAttribute('data-expression', 'ink');
     // A tap: down and up inside the tap window completes the Turn.
@@ -245,6 +258,76 @@ describe('the Turn', () => {
     fireEvent.keyUp(window, { key: 'l' });
     await travel();
     expect(stage()).toHaveAttribute('data-expression', 'light');
+  });
+
+  it('a peek whose keyup is lost returns when the window blurs', async () => {
+    renderViewer();
+    fireEvent.keyDown(window, { key: 'L' });
+    await act(async () => {
+      vi.advanceTimersByTime(BREATH_MS + 1000);
+    });
+    expect(root().style.getPropertyValue('--seam')).toBe('0%');
+    fireEvent.blur(window);
+    expect(root().style.getPropertyValue('--seam')).toBe('100%');
+    await act(async () => {
+      vi.advanceTimersByTime(950);
+    });
+    await act(async () => {});
+    await dropSeam();
+    expect(stage()).toHaveAttribute('data-expression', 'ink');
+    expect(root().hasAttribute('data-turning')).toBe(false);
+    // The key may be pressed again: the lost peek left nothing behind.
+    fireEvent.keyDown(window, { key: 'L' });
+    await act(async () => {
+      vi.advanceTimersByTime(BREATH_MS);
+    });
+    expect(root().style.getPropertyValue('--seam')).toBe('0%');
+    fireEvent.keyUp(window, { key: 'L' });
+  });
+
+  it('a drag whose twin cannot be decoded springs the seam back to rest', async () => {
+    Object.defineProperty(HTMLImageElement.prototype, 'decode', {
+      configurable: true,
+      value: vi.fn().mockRejectedValue(new Error('undecodable')),
+    });
+    vi.spyOn(HTMLElement.prototype, 'getBoundingClientRect').mockReturnValue({
+      left: 0,
+      top: 0,
+      right: 1000,
+      bottom: 600,
+      width: 1000,
+      height: 600,
+      x: 0,
+      y: 0,
+      toJSON: () => ({}),
+    } as DOMRect);
+    Object.defineProperty(Element.prototype, 'setPointerCapture', {
+      configurable: true,
+      value: vi.fn(),
+    });
+    renderViewer();
+    const turn = layer('ink').closest<HTMLElement>('[data-expression]')!;
+    const touch = (clientX: number) => ({
+      pointerId: 1,
+      pointerType: 'touch',
+      isPrimary: true,
+      clientX,
+      clientY: 300,
+    });
+    fireEvent.pointerDown(turn, touch(900));
+    fireEvent.pointerMove(turn, touch(300));
+    fireEvent.pointerUp(turn, touch(300));
+    expect(root().getAttribute('data-turning')).toBe('drag');
+    await act(async () => {});
+    expect(screen.getByText(en.expressionFailed)).toBeInTheDocument();
+    await act(async () => {
+      vi.advanceTimersByTime(950);
+    });
+    await act(async () => {});
+    await dropSeam();
+    expect(root().hasAttribute('data-turning')).toBe(false);
+    expect(root().style.getPropertyValue('--seam')).toBe('');
+    expect(stage()).toHaveAttribute('data-expression', 'ink');
   });
 
   it('follows the session’s remembered expression when the URL names none, and never for a work with one expression', async () => {
@@ -322,6 +405,34 @@ describe('the film, the rest and Sit', () => {
     expect(root()).not.toHaveAttribute('data-sit');
     fireEvent.click(study);
     expect(screen.queryByRole('dialog')).toBeNull();
+  });
+});
+
+describe('the chrome after Sit', () => {
+  it('the rest after the film and a Turn both stand the chrome up, running head included', async () => {
+    const { container } = renderViewer();
+    await settle();
+    await act(async () => {
+      vi.advanceTimersByTime(1300);
+    });
+    const video = player()!;
+    Object.defineProperty(video, 'duration', { configurable: true, value: 30 });
+    fireEvent.playing(video);
+    fireEvent.click(word(en.sit));
+    expect(root()).toHaveAttribute('data-sit');
+    fireEvent.ended(video);
+    await act(async () => {
+      vi.advanceTimersByTime(8000);
+    });
+    expect(container.querySelector('section')).not.toHaveAttribute('data-sit');
+    expect(root()).not.toHaveAttribute('data-sit');
+    // Sitting again, then turning: the commit stands the chrome up as well.
+    fireEvent.keyDown(window, { key: 's' });
+    expect(root()).toHaveAttribute('data-sit');
+    fireEvent.click(word(en.light));
+    await travel();
+    expect(stage()).toHaveAttribute('data-expression', 'light');
+    expect(root()).not.toHaveAttribute('data-sit');
   });
 });
 
@@ -447,6 +558,7 @@ describe('the home', () => {
       vi.advanceTimersByTime(5000);
     });
     await act(async () => {});
+    await dropSeam();
     expect(stage()).toHaveAttribute('data-expression', 'ink');
     expect(root().hasAttribute('data-turning')).toBe(false);
   });

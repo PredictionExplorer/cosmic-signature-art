@@ -77,7 +77,7 @@ describe('the plate', () => {
       </Plate>,
     );
     intersect(1);
-    expect(setPlateTone).toHaveBeenLastCalledWith('#efe9dd');
+    expect(setPlateTone).toHaveBeenLastCalledWith('#efe9dd', 'paper');
     intersect(0.2);
     expect(setPlateTone).toHaveBeenLastCalledWith(null);
     rerender(
@@ -86,7 +86,8 @@ describe('the plate', () => {
       </Plate>,
     );
     intersect(1);
-    expect(setPlateTone).toHaveBeenLastCalledWith('#000000');
+    // The Light plate lends the night with its type, so the head never sets paper type on black.
+    expect(setPlateTone).toHaveBeenLastCalledWith('#000000', 'night');
     unmount();
     expect(setPlateTone).toHaveBeenLastCalledWith(null);
     setPlateTone.mockClear();

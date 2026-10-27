@@ -15,6 +15,18 @@ test('the plate, the room and the keys preserve identity; Escape returns focus',
   await artworkImageSource(plate.locator('img.art-still'), 31, 'ink', true);
   // The strip: the folio, the label from the published traits, and the words.
   await expect(plate.locator('.hanging-numeral')).toHaveText('031');
+  // The work is never cropped: the media box fits the plate by height on a desk, and on a phone
+  // the plate itself is 100 vw by the work's own proportion, the first pixel under the masthead.
+  const plateBox = (await plate.locator('.plate').boundingBox())!;
+  const mediaBox = (await plate.locator('.art-media').boundingBox())!;
+  expect(mediaBox.height).toBeLessThanOrEqual(plateBox.height + 1);
+  expect(mediaBox.width).toBeLessThanOrEqual(plateBox.width + 1);
+  expect(Math.abs(mediaBox.width / mediaBox.height - 3456 / 2234)).toBeLessThan(0.02);
+  if (isMobile) {
+    const viewport = page.viewportSize()!;
+    expect(Math.abs(plateBox.width - viewport.width)).toBeLessThanOrEqual(1);
+    expect(Math.abs(plateBox.height - (viewport.width * 2234) / 3456)).toBeLessThanOrEqual(2);
+  }
   // The label line yields to the words on a phone; the numeral and the words remain.
   if (!isMobile)
     await expect(plate.getByText('Orbit Ribbons · Harmonic Weave · Ink')).toBeVisible();

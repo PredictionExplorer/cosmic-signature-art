@@ -21,15 +21,13 @@
   display: grid;
   place-items: center;
 }
-.plate > * > :global(.art-media),
-.plate > :global(.art-media) {
-  height: 100%;
-  width: auto;
+/* The media box follows the work: as wide as the room allows, never taller than the plate, so
+   the hairline (globals.css) rings the work and not the letterbox. */
+.screen .plate > * > :global(.art-media),
+.screen .plate > :global(.art-media) {
+  width: min(100%, calc(var(--plate-height) * 3456 / 2234));
+  height: auto;
   max-width: 100%;
-}
-.plate[data-edge='true'] > * > :global(.art-media),
-.plate[data-edge='true'] > :global(.art-media) {
-  box-shadow: 0 0 0 1px color-mix(in srgb, var(--type) 10%, transparent);
 }
 .strip {
   position: relative;
@@ -63,6 +61,16 @@
   color: var(--type);
 }
 @media (max-width: 767px) {
+  /* The plate is the first pixel under the masthead: 100 vw, letterboxed in its own tone. */
+  .screen .plate {
+    height: auto;
+    aspect-ratio: 3456 / 2234;
+  }
+  .screen .plate > * > :global(.art-media),
+  .screen .plate > :global(.art-media) {
+    width: 100%;
+    height: auto;
+  }
   .centre {
     display: none;
   }

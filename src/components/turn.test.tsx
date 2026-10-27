@@ -46,9 +46,31 @@ describe('the seam', () => {
     expect(halfway).toHaveBeenCalledOnce();
     await act(async () => vi.advanceTimersByTime(500));
     await expect(travel).resolves.toBe(true);
+    expect(root().getAttribute('data-turn-to')).toBe('night');
     seam.end();
+    // The seam outlasts the commit by one chrome beat, so the head's overlay covers its fade.
+    expect(root().getAttribute('data-turning')).toBe('time');
+    await act(async () => vi.advanceTimersByTime(300));
     expect(root().hasAttribute('data-turning')).toBe(false);
+    expect(root().hasAttribute('data-turn-to')).toBe(false);
     expect(root().style.getPropertyValue('--seam')).toBe('');
+  });
+
+  it('a second request for the target already in flight inherits what is left of the travel', async () => {
+    const seam = new SeamController();
+    const first = seam.animateTo(0, { breath: false });
+    await act(async () => vi.advanceTimersByTime(400));
+    // A tap after a held key: the seam completes in its own time instead of snapping.
+    const second = seam.animateTo(0, { breath: false });
+    await expect(first).resolves.toBe(false);
+    let settled = false;
+    void second.then(() => {
+      settled = true;
+    });
+    await act(async () => vi.advanceTimersByTime(100));
+    expect(settled).toBe(false);
+    await act(async () => vi.advanceTimersByTime(500));
+    await expect(second).resolves.toBe(true);
   });
 
   it('a newer travel supersedes an older one, which then resolves false without committing', async () => {
@@ -128,6 +150,13 @@ function forgetExpressionCache() {
   if (kept) sessionStorage.setItem(EXPRESSION_KEY, kept);
 }
 
+/** A spring-back travels (--t-turn), resolves, then drops the seam a chrome beat later. */
+async function springBack() {
+  await act(async () => vi.advanceTimersByTime(1000));
+  await act(async () => {});
+  await act(async () => vi.advanceTimersByTime(300));
+}
+
 describe('drag-to-Turn', () => {
   function layout() {
     vi.spyOn(HTMLElement.prototype, 'getBoundingClientRect').mockReturnValue({
@@ -174,12 +203,18 @@ describe('drag-to-Turn', () => {
     expect(seam.mode).toBeNull();
     fireEvent.pointerMove(turn, touch(700));
     expect(seam.mode).toBe('drag');
-    expect(seam.seam).toBe(70);
+    expect(root().getAttribute('data-turn-to')).toBe('night');
+    // The seam moves by the finger's travel from where it rested, never to the finger itself.
+    expect(seam.seam).toBe(80);
     expect(turn).toHaveAttribute('data-dragging');
     fireEvent.pointerMove(turn, touch(500));
-    expect(seam.seam).toBe(50);
+    expect(seam.seam).toBe(60);
     fireEvent.pointerUp(turn, touch(500));
     expect(onCommit).toHaveBeenCalledWith('light');
+    // The click a browser synthesises right after the drag is not a choice.
+    const click = new MouseEvent('click', { bubbles: true, cancelable: true });
+    turn.dispatchEvent(click);
+    expect(click.defaultPrevented).toBe(true);
     expect(screen.getByText('night').closest('[data-layer]')).toHaveAttribute('inert');
     expect(screen.getByText('paper').closest('[data-layer]')).not.toHaveAttribute('inert');
   });
@@ -201,7 +236,15 @@ describe('drag-to-Turn', () => {
     fireEvent.pointerUp(turn, touch(800));
     expect(onCommit).not.toHaveBeenCalled();
     expect(seam.mode).toBe('time');
-    await act(async () => vi.advanceTimersByTime(1000));
+    await springBack();
+    expect(seam.mode).toBeNull();
+    // A touch that starts in the left third moves the seam by its travel: a nudge never commits.
+    fireEvent.pointerDown(turn, touch(300));
+    fireEvent.pointerMove(turn, touch(100));
+    expect(seam.seam).toBe(80);
+    fireEvent.pointerUp(turn, touch(100));
+    expect(onCommit).not.toHaveBeenCalled();
+    await springBack();
     expect(seam.mode).toBeNull();
     // Rightward from Ink reveals nothing: the scroll keeps the gesture.
     fireEvent.pointerDown(turn, touch(200));
@@ -209,6 +252,31 @@ describe('drag-to-Turn', () => {
     expect(seam.mode).toBeNull();
     fireEvent.pointerUp(turn, touch(400));
     expect(onCommit).not.toHaveBeenCalled();
+  });
+
+  it('an interrupted touch springs back and never commits', async () => {
+    layout();
+    const seam = new SeamController();
+    const onCommit = vi.fn();
+    render(
+      <Turn expression="ink" seam={seam} canTurn onCommit={onCommit}>
+        <TurnLayer expression="ink" current>
+          <p>paper</p>
+        </TurnLayer>
+      </Turn>,
+    );
+    const turn = screen.getByText('paper').closest('[data-expression]')!;
+    fireEvent.pointerDown(turn, touch(900));
+    fireEvent.pointerMove(turn, touch(300));
+    expect(seam.seam).toBe(40);
+    // The browser took the touch for a scroll: Chromium reports the cancel at x = 0.
+    fireEvent.pointerCancel(turn, touch(0));
+    expect(onCommit).not.toHaveBeenCalled();
+    expect(turn).not.toHaveAttribute('data-dragging');
+    expect(seam.mode).toBe('time');
+    await springBack();
+    expect(seam.mode).toBeNull();
+    expect(seam.seam).toBeNull();
   });
 
   it('answers only a primary touch while the Turn is allowed', () => {
