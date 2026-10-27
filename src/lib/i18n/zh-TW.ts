@@ -3,7 +3,7 @@ import type { Messages } from './en';
 export const zhTW: Messages = {
   auctionExhibitionCopy:
     '每個週期都會為現有系列帶來八件新作品。欣賞流動之美，細讀作品，以 ETH 直接出價。',
-  auctionEditorialNote: '這件精選作品帶您認識本系列。拍品另行列出。',
+  auctionEditorialNote: '這件精選作品帶你認識本系列。拍品另行列出。',
   auctionRoom: '拍賣展廳',
   auctionBeforeBid: '出價之前',
   auctionAtAGlance: '拍賣概覽',
@@ -387,7 +387,7 @@ export const zhTW: Messages = {
   timeOf: '{current} / {total}',
   elapsed: '已播放 {time}',
   slowRoom: '慢室',
-  studyWaits: '目前網路下，長篇研究等待更輕的編碼；先以靜幀代之。',
+  studyWaits: '目前網路下，長時研究等待更輕的編碼；先以靜幀代之。',
   playAnyway: '仍然播放',
   durationSeconds: '{n} 秒',
   roomKeys: '展室中的按鍵',
@@ -413,20 +413,20 @@ export const zhTW: Messages = {
   lotWonBy: '得標者',
   lotDeliveredWord: '已交付',
   lotAwaitingDelivery: '待交付',
-  inYourZone: '您所在時區 {time}',
+  inYourZone: '你所在時區 {time}',
   mediaNotPublished: '媒體 · 尚未發布',
   collectThisWork: '收藏此作品',
   bidSheet: '出價單',
   sheetHandle: '關閉出價單',
-  yourActivity: '您的活動',
+  yourActivity: '你的活動',
   activityIntro:
-    '從鏈上讀取您在本場拍賣中的領先出價、可退還的押金與持有的作品。此處不會發送任何交易。',
+    '從鏈上讀取你在本場拍賣中的領先出價、可退還的餘額與持有的作品。此處不會發送任何交易。',
   activityAddress: '錢包地址',
   activityLookUp: '查詢',
   activityUseWallet: '使用我的錢包',
   activityLeading: '領先出價',
   activityCommitted: '已承諾',
-  activityRefundable: '可退還押金',
+  activityRefundable: '可退還餘額',
   activityWon: '已得標，待交付',
   activityHeld: '持有的本場作品',
   activityNone: '無',
@@ -437,6 +437,8 @@ export const zhTW: Messages = {
   bidHistoryUnavailable: '記錄暫不可用',
   historyPartial: '更早的出價可能無法顯示。',
   historyDeliveredTo: '已交付至 {address}',
+  readingRecord: '正在讀取記錄…',
+  historyStale: '最新出價無法讀取；此清單可能滯後。',
   // ·
   // ·
   // Fork M · the settling plates, the eye-line hang, the phone rung
@@ -483,7 +485,7 @@ export const zhTW: Messages = {
   otherExhibitions: '其他展覽',
   verifyDownload: '驗證下載檔案',
   verifyIntro:
-    '選擇一個您從上方連結下載的檔案。它的 SHA-256 將在您的瀏覽器中就地計算，並與已發布的雜湊值比對；檔案絕不會離開您的裝置。',
+    '選擇一個你從上方連結下載的檔案。它的 SHA-256 將在你的瀏覽器中就地計算，並與已發布的雜湊值比對；檔案絕不會離開你的裝置。',
   verifyChoose: '選擇檔案',
   verifyReading: '正在讀取 {name}…',
   verifyMatches: '與 {file} 相符',

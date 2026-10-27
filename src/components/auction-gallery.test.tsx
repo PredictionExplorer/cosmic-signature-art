@@ -35,6 +35,7 @@ vi.mock('@/lib/auction/client', () => mocked);
 vi.mock('@/lib/auction/activity', () => ({ readActivity: vi.fn() }));
 
 import AuctionGallery from './auction-gallery';
+import { HOLD_MS } from './artwork-media';
 import { stubDialog } from '../../tests/dialog-support';
 import { en } from '@/lib/i18n/en';
 import { MINIMUM_BID } from '@/lib/auction/rules';
@@ -155,9 +156,47 @@ describe('the catalogue keeps financial access independent of media', () => {
       expect(article).toHaveAttribute('data-expression', index % 2 ? 'light' : 'ink');
     });
     expect(screen.getAllByText('Available to start · opening minimum 0.00001 ETH')).toHaveLength(8);
-    // Media readiness is stated separately from the chain phase.
-    expect(screen.getAllByText(en.mediaNotPublished)).toHaveLength(8);
+    // The venue could not read the media; it says so, and never that none was published.
+    expect(await screen.findAllByText(en.mediaUnavailable)).toHaveLength(8);
+    expect(screen.queryByText(en.mediaNotPublished)).toBeNull();
     expect(screen.getByRole('navigation', { name: en.orderOfSale })).toHaveTextContent('№ 072');
+  });
+
+  it('says nothing while a record is pending, "not yet published" only from the publisher, and "unavailable" otherwise', async () => {
+    const ids = [72, 73, 74, 75];
+    mocked.readBatch.mockResolvedValue({
+      count: 1n,
+      ids,
+      blockTime: 110n,
+      lots: ids.map((tokenId) => ({ tokenId, lot })),
+    });
+    const record = (id: number, notice?: string) => ({
+      status: 'found',
+      source: 'live',
+      artwork: { id, title: `Signature ${id}`, media: [] },
+      ...(notice ? { notice } : {}),
+    });
+    const fetch = vi.fn((url: string) => {
+      if (url.endsWith('/72')) return new Promise<Response>(() => {});
+      if (url.endsWith('/73')) return Promise.resolve(Response.json(record(73)));
+      if (url.endsWith('/74'))
+        return Promise.resolve(
+          Response.json({ status: 'unavailable', artwork: null }, { status: 503 }),
+        );
+      return Promise.resolve(Response.json(record(75, 'media-unavailable')));
+    });
+    vi.stubGlobal('fetch', fetch);
+    render(<AuctionGallery locale="en" t={en} />);
+    await waitFor(() => expect(fetch).toHaveBeenCalledTimes(4));
+    const article = (n: number, id: number) =>
+      screen.getByRole('article', { name: lotName(n, id) });
+    await waitFor(() =>
+      expect(within(article(2, 73)).getByText(en.mediaNotPublished)).toBeInTheDocument(),
+    );
+    expect(within(article(3, 74)).getByText(en.mediaUnavailable)).toBeInTheDocument();
+    expect(within(article(4, 75)).getByText(en.mediaUnavailable)).toBeInTheDocument();
+    expect(within(article(1, 72)).queryByText(en.mediaNotPublished)).toBeNull();
+    expect(within(article(1, 72)).queryByText(en.mediaUnavailable)).toBeNull();
   });
 
   it('keeps a failed media page from erasing a settled result or inventing a price', async () => {
@@ -391,12 +430,52 @@ describe('the lots as plates', () => {
     });
     expect(video.getAttribute('src')).toMatch(/^\/art\/clips\/31-ink-settling-[a-f0-9]{16}\.mp4$/);
     expect(document.querySelectorAll('video')).toHaveLength(1);
+    // The clip's last frame is held and faded into the still before the lease moves on.
+    vi.useFakeTimers();
     fireEvent.ended(video);
+    expect(coordinator.rest).not.toHaveBeenCalled();
+    act(() => {
+      vi.advanceTimersByTime(HOLD_MS + 699);
+    });
+    expect(coordinator.rest).not.toHaveBeenCalled();
+    act(() => {
+      vi.advanceTimersByTime(1);
+    });
     expect(coordinator.rest).toHaveBeenCalledWith(31);
+    vi.useRealTimers();
     fireEvent.pointerEnter(screen.getByRole('article', { name: lotName(2, 23) }), {
       pointerType: 'mouse',
     });
     expect(coordinator.intent).toHaveBeenCalledWith(23, 'pointer', 'mouse');
+  });
+
+  it('asks a rested lot to play again from the start when the lease names it anew', async () => {
+    showPlates();
+    activeId = 31;
+    const view = render(<AuctionGallery locale="en" t={en} curated={curated} />);
+    const first = await screen.findByRole('article', { name: lotName(1, 31) });
+    act(() => VisibilityObserver.instances.forEach((observer) => observer.setVisible(true)));
+    const video = await waitFor(() => {
+      const element = first.querySelector('video');
+      expect(element).not.toBeNull();
+      return element!;
+    });
+    vi.useFakeTimers();
+    fireEvent.ended(video);
+    act(() => {
+      vi.advanceTimersByTime(HOLD_MS + 700);
+    });
+    vi.useRealTimers();
+    // The lease moves on, then names the rested lot again: it is asked to play from frame 0.
+    // (The lots are memoised; a fresh catalog object stands in for the lease's own re-render.)
+    activeId = 23;
+    view.rerender(<AuctionGallery locale="en" t={{ ...en }} curated={curated} />);
+    expect(first).toHaveAttribute('data-motion', 'still');
+    const play = vi.spyOn(HTMLMediaElement.prototype, 'play').mockResolvedValue(undefined);
+    activeId = 31;
+    view.rerender(<AuctionGallery locale="en" t={{ ...en }} curated={curated} />);
+    await waitFor(() => expect(play).toHaveBeenCalled());
+    expect((first.querySelector('video') as HTMLVideoElement).currentTime).toBe(0);
   });
 
   it("Sit fades the lot's chrome and the running head until the next input after the press", async () => {

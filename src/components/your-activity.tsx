@@ -2,7 +2,7 @@
 import Link from 'next/link';
 import { useEffect, useRef, useState, type FormEvent, type RefObject } from 'react';
 import { isAddress, type Address, type EIP1193Provider } from 'viem';
-import { readActivity, type Activity } from '@/lib/auction/activity';
+import { readActivity, type Activity, type ActivityScope } from '@/lib/auction/activity';
 import { compactAddress, formatEth } from '@/lib/auction/catalogue';
 import { workNumber } from '@/lib/art/number';
 import { fill } from '@/lib/i18n/format';
@@ -25,15 +25,15 @@ export function YourActivity({
   returnFocusRef,
   t,
   locale,
-  page = 0,
+  scope,
 }: {
   open: boolean;
   onClose: () => void;
   returnFocusRef?: RefObject<HTMLElement | null>;
   t: Messages;
   locale: Locale;
-  /** The batch the sale currently shows; activity is read against the same lots. */
-  page?: number;
+  /** The lots the view is read against: the sale's current page, or the batch of this lot. */
+  scope: ActivityScope;
 }) {
   const [address, setAddress] = useState('');
   const [providers, setProviders] = useState<ProviderDetail[]>([]);
@@ -66,7 +66,7 @@ export function YourActivity({
     reading.current = true;
     setStatus('reading');
     try {
-      const value = await readActivity(account, page);
+      const value = await readActivity(account, scope);
       setActivity(value);
       setStatus('ready');
     } catch {
@@ -219,7 +219,7 @@ export function YourActivity({
         </section>
       ) : status === 'reading' ? (
         <p className={styles.quiet} aria-busy="true">
-          {t.refresh}…
+          {t.readingRecord}
         </p>
       ) : null}
     </AuctionSheet>

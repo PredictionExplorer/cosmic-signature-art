@@ -461,6 +461,8 @@ export const vi: Messages = {
   bidHistoryUnavailable: 'Lịch sử không khả dụng',
   historyPartial: 'Các giá sớm hơn có thể không hiển thị.',
   historyDeliveredTo: 'Đã giao đến {address}',
+  readingRecord: 'Đang đọc hồ sơ…',
+  historyStale: 'Không đọc được các giá mới nhất; danh sách này có thể chưa cập nhật.',
   // ·
   // ·
   // Fork M · the settling plates, the eye-line hang, the phone rung

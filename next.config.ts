@@ -1,5 +1,7 @@
 import type { NextConfig } from 'next';
 const nextConfig: NextConfig = {
+  // A second server in the same checkout (the configured-sale e2e) builds into its own directory.
+  distDir: process.env.NEXT_DIST_DIR || '.next',
   poweredByHeader: false,
   reactStrictMode: true,
   images: { remotePatterns: [{ protocol: 'https', hostname: 'a1.cosmicsignature.com' }] },

@@ -1,58 +1,59 @@
+/* The availability note stands on the ground between two hairlines, on the 9 px rhythm. */
 .availability {
-  padding: 28px;
-  border: 1px solid var(--rule);
-  background: #eee7da;
+  padding: 27px 0;
+  border-top: 1px solid var(--rule);
+  border-bottom: 1px solid var(--rule);
 }
 .availability h2 {
-  font-size: clamp(31px, 3vw, 42px);
-  line-height: 1.08;
-  margin: 20px 0 18px;
+  font-size: var(--fs-subtitle);
+  line-height: 1.15;
+  margin: 18px 0;
 }
 .availability > p:not(:global(.eyebrow)) {
-  font-size: 16px;
-  color: #59594f;
-  line-height: 1.85;
+  font-size: var(--fs-reading);
+  color: var(--muted);
+  line-height: 1.6;
 }
 .summary {
-  padding-top: 26px;
-  margin-top: 26px;
+  padding-top: 27px;
+  margin-top: 27px;
   border-top: 1px solid var(--rule);
 }
 .summary dl {
   margin: 18px 0;
 }
 .summary dl > div {
-  padding: 15px 0;
+  padding: 18px 0;
   border-bottom: 1px solid var(--rule);
 }
 .summary dt {
-  color: #59594f;
-  font-size: 12px;
-  line-height: 1.7;
+  color: var(--muted);
+  font-size: var(--fs-folio);
+  line-height: 1.5;
 }
 .summary dd {
-  margin: 8px 0 0;
-  font-size: 15px;
-  line-height: 1.65;
+  margin: 9px 0 0;
+  font-size: var(--fs-control);
+  line-height: 1.6;
 }
 .summary dl > div:first-child dd {
-  font: 34px/1.1 var(--font-mono);
+  font: 36px/1 var(--font-mono);
   font-variant-numeric: tabular-nums lining-nums;
 }
 .summary dd span {
-  font: 12px var(--font-mono);
+  font: var(--fs-folio) var(--font-mono);
   margin-left: 6px;
 }
 .summary > p:not(:global(.eyebrow)) {
-  font-size: 12px;
-  line-height: 1.8;
-  color: #59594f;
+  font-size: var(--fs-control);
+  line-height: 1.6;
+  color: var(--muted);
 }
 .summary > a {
-  margin-top: 20px;
+  margin-top: 18px;
 }
 @media (max-width: 540px) {
   .availability {
-    padding: 24px;
+    padding: 18px 0;
   }
 }

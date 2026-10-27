@@ -65,7 +65,12 @@ const history: History = {
   toBlock: 777n,
 };
 
-beforeEach(() => mocks.readBidHistory.mockReset());
+beforeEach(() => {
+  mocks.readBidHistory.mockReset();
+  vi.spyOn(Intl.DateTimeFormat.prototype, 'resolvedOptions').mockReturnValue({
+    timeZone: 'UTC',
+  } as Intl.ResolvedDateTimeFormatOptions);
+});
 afterEach(() => vi.restoreAllMocks());
 
 describe('the bid history', () => {
@@ -111,6 +116,30 @@ describe('the bid history', () => {
       />,
     );
     expect(await screen.findByText(en.historyPartial)).toBeVisible();
+  });
+
+  it("says the list may be behind when a refresh fails after a read, and reads in the visitor's zone", async () => {
+    vi.spyOn(Intl.DateTimeFormat.prototype, 'resolvedOptions').mockReturnValue({
+      timeZone: 'Europe/Kyiv',
+    } as Intl.ResolvedDateTimeFormatOptions);
+    mocks.readBidHistory.mockResolvedValue(history);
+    const view = render(<BidHistory tokenId={31} t={en} locale="en" snapshot={snapshot()} />);
+    expect(
+      await screen.findByText('0.42 ETH · 0x6308…1F7C · Nov 10, 14:00 UTC (16:00 in your zone)'),
+    ).toBeVisible();
+    expect(screen.queryByRole('status')).toBeNull();
+    mocks.readBidHistory.mockRejectedValue(new Error('rate limited'));
+    view.rerender(
+      <BidHistory
+        tokenId={31}
+        t={en}
+        locale="en"
+        snapshot={snapshot({ highestBid: parseEther('1') })}
+      />,
+    );
+    expect(await screen.findByRole('status')).toHaveTextContent(en.historyStale);
+    // The bids already read stay on the page, marked as possibly behind, never dropped.
+    expect(screen.getByText(/0x6308…1F7C/)).toBeVisible();
   });
 
   it('shows the delivery once the record says so and reads again when the record changes', async () => {

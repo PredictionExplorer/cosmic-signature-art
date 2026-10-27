@@ -24,15 +24,47 @@ export type Activity = {
 export type ActivityClient = {
   readContract: typeof publicClient.readContract;
 };
+/** The lots the view is read against: the sale's page of eight, or the batch a token belongs to. */
+export type ActivityScope = { page: number } | { tokenId: number };
+/** A sale is one batch of eight registered tokens. */
+export const BATCH_SIZE = 8;
+/** Batches are walked newest first; a token outside this many is not a lot the venue shows. */
+export const MAX_BATCHES_WALKED = 64;
+
+/**
+ * The page (newest batch first, as readBatch counts) whose eight tokens include `tokenId`.
+ * Read from the contract's own batch registry; a token no registered batch holds is not a lot.
+ */
+export async function batchForToken(
+  tokenId: number,
+  client: ActivityClient = publicClient,
+): Promise<number> {
+  if (!Number.isSafeInteger(tokenId) || tokenId < 0) throw new RangeError('Invalid token ID');
+  if (!auctionAddress) throw new AuctionConfigurationError('Missing auction address');
+  const base = { address: auctionAddress, abi: auctionAbi } as const;
+  const count = await client.readContract({ ...base, functionName: 'registeredBatchCount' });
+  const walked = count < BigInt(MAX_BATCHES_WALKED) ? Number(count) : MAX_BATCHES_WALKED;
+  for (let page = 0; page < walked; page += 1) {
+    const first = await client.readContract({
+      ...base,
+      functionName: 'firstNftIdByBatchIndex',
+      args: [count - 1n - BigInt(page)],
+    });
+    if (first <= BigInt(tokenId) && BigInt(tokenId) < first + BigInt(BATCH_SIZE)) return page;
+  }
+  throw new Error('UnknownAuction: the token belongs to no registered batch');
+}
 
 export async function readActivity(
   account: Address,
-  page = 0,
+  scope: ActivityScope,
   client: ActivityClient = publicClient,
   batch: typeof readBatch = readBatch,
 ): Promise<Activity> {
   if (!isAddress(account)) throw new RangeError('Invalid account');
   if (!auctionAddress) throw new AuctionConfigurationError('Missing auction address');
+  const page = 'page' in scope ? scope.page : await batchForToken(scope.tokenId, client);
+  if (!Number.isSafeInteger(page) || page < 0) throw new RangeError('Invalid batch page');
   const result = await batch(page);
   const [refundable, owners] = await Promise.all([
     client.readContract({

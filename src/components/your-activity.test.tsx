@@ -29,7 +29,7 @@ const activity: Activity = {
 function Sheet({ open = true }: { open?: boolean }) {
   return (
     <MotionProvider>
-      <YourActivity open={open} onClose={() => {}} t={en} locale="en" page={0} />
+      <YourActivity open={open} onClose={() => {}} t={en} locale="en" scope={{ page: 0 }} />
     </MotionProvider>
   );
 }
@@ -51,7 +51,7 @@ describe('your activity', () => {
     await user.type(screen.getByLabelText(en.activityAddress), account);
     await user.click(screen.getByRole('button', { name: en.activityLookUp }));
     expect(await screen.findByText('Activity of 0x2222…2222')).toBeVisible();
-    expect(mocks.readActivity).toHaveBeenCalledWith(account, 0);
+    expect(mocks.readActivity).toHaveBeenCalledWith(account, { page: 0 });
     const facts = screen.getByRole('region', { name: 'Activity of 0x2222…2222' });
     expect(facts).toHaveTextContent('№ 064 · 0.4 ETH');
     expect(facts).toHaveTextContent('Committed0.4 ETH');

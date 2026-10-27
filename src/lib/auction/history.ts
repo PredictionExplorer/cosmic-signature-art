@@ -74,17 +74,37 @@ export function historyRange({ latestBlock, blockTime, since }: HistoryRange) {
   return { fromBlock, toBlock: latestBlock, capped: wanted > cap && fromBlock > 0n };
 }
 
-/** Windows of BLOCK_WINDOW blocks, newest first, covering [fromBlock, toBlock]. */
+/**
+ * Windows of BLOCK_WINDOW blocks, newest first, reaching at least [fromBlock, toBlock]. Their
+ * edges sit on multiples of BLOCK_WINDOW, so every window but the newest is the same whole span
+ * on every read and its logs can be kept; the newest, which still grows, is read afresh. The
+ * oldest may begin before fromBlock: a few more blocks of a filtered read cost nothing.
+ */
 export function windows(fromBlock: bigint, toBlock: bigint): Array<[bigint, bigint]> {
   const result: Array<[bigint, bigint]> = [];
   let end = toBlock;
   while (end >= fromBlock && result.length < MAX_WINDOWS) {
-    const start = end - BLOCK_WINDOW + 1n > fromBlock ? end - BLOCK_WINDOW + 1n : fromBlock;
+    const start = (end / BLOCK_WINDOW) * BLOCK_WINDOW;
     result.push([start, end]);
     if (start === 0n) break;
     end = start - 1n;
   }
   return result;
+}
+
+/**
+ * Logs of a window that lies wholly in the past never change, so a lot revisited, or a lot
+ * whose price alone changed, reuses them: only the newest, still-growing window is read again.
+ * Bounded; the oldest entries leave first.
+ */
+const LOG_CACHE_LIMIT = 256;
+const logCache = new Map<string, { bids: unknown[]; deliveries: unknown[] }>();
+export function clearHistoryCache() {
+  logCache.clear();
+}
+function remember(key: string, value: { bids: unknown[]; deliveries: unknown[] }) {
+  if (logCache.size >= LOG_CACHE_LIMIT) logCache.delete(logCache.keys().next().value as string);
+  logCache.set(key, value);
 }
 
 export type RawLog = {
@@ -181,25 +201,31 @@ export async function readBidHistory(
   let complete = !capped;
   let windowsRead = 0;
   for (const [start, end] of windows(fromBlock, toBlock)) {
+    // A window that ends before the latest block is settled history; the newest one is not.
+    const key = end < toBlock ? `${contract}:${tokenId}:${start}:${end}` : null;
     try {
-      const [bids, deliveries] = await Promise.all([
-        client.getLogs({
-          address: contract,
-          event: bidEvent,
-          args: { nftId: BigInt(tokenId) },
-          fromBlock: start,
-          toBlock: end,
-          strict: true,
-        }),
-        client.getLogs({
-          address: contract,
-          event: deliveredEvent,
-          args: { nftId: BigInt(tokenId) },
-          fromBlock: start,
-          toBlock: end,
-          strict: true,
-        }),
-      ]);
+      const kept = key ? logCache.get(key) : undefined;
+      const [bids, deliveries] = kept
+        ? [kept.bids, kept.deliveries]
+        : await Promise.all([
+            client.getLogs({
+              address: contract,
+              event: bidEvent,
+              args: { nftId: BigInt(tokenId) },
+              fromBlock: start,
+              toBlock: end,
+              strict: true,
+            }),
+            client.getLogs({
+              address: contract,
+              event: deliveredEvent,
+              args: { nftId: BigInt(tokenId) },
+              fromBlock: start,
+              toBlock: end,
+              strict: true,
+            }),
+          ]);
+      if (key && !kept) remember(key, { bids, deliveries });
       windowsRead += 1;
       for (const log of bids) {
         const entry = validBid(log as unknown as RawLog, tokenId, contract);

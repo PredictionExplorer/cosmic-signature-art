@@ -434,7 +434,7 @@ export const ko: Messages = {
   lotAwaitingDelivery: '전달 대기',
   inYourZone: '내 시간대 {time}',
   mediaNotPublished: '미디어 · 아직 공개되지 않음',
-  collectThisWork: '이 작품 수집하기',
+  collectThisWork: '이 작품 소장하기',
   bidSheet: '입찰 시트',
   sheetHandle: '시트 닫기',
   yourActivity: '내 활동',
@@ -456,6 +456,8 @@ export const ko: Messages = {
   bidHistoryUnavailable: '기록을 불러올 수 없음',
   historyPartial: '이전 입찰은 표시되지 않을 수 있습니다.',
   historyDeliveredTo: '{address}로 전달됨',
+  readingRecord: '기록을 읽는 중…',
+  historyStale: '최신 입찰을 읽지 못했습니다. 이 목록은 뒤처져 있을 수 있습니다.',
   // ·
   // ·
   // Fork M · the settling plates, the eye-line hang, the phone rung

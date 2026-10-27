@@ -9,7 +9,7 @@ vi.mock('./config', () => ({
   expectedCodeHash: undefined,
 }));
 
-import { readActivity, type ActivityClient } from './activity';
+import { BATCH_SIZE, batchForToken, readActivity, type ActivityClient } from './activity';
 import type { AuctionRecord } from './rules';
 import { NFT_ADDRESS } from '../site';
 
@@ -53,10 +53,15 @@ const batch = vi.fn(async () => ({
     },
   ],
 }));
+/** Three registered batches of eight: 48–55, 56–63 and the newest, 64–71. */
+const batchFirsts = [48n, 56n, 64n];
 function client(owners: Record<number, string | Error>) {
   const readContract = vi.fn(
     async (request: { functionName: string; address: string; args: unknown[] }) => {
       if (request.functionName === 'refundCredits') return parseEther('0.25');
+      if (request.functionName === 'registeredBatchCount') return BigInt(batchFirsts.length);
+      if (request.functionName === 'firstNftIdByBatchIndex')
+        return batchFirsts[Number(request.args[0])];
       expect(request.address).toBe(NFT_ADDRESS);
       const owner = owners[Number(request.args[0])];
       if (owner instanceof Error) throw owner;
@@ -69,7 +74,7 @@ function client(owners: Record<number, string | Error>) {
 describe('readActivity', () => {
   it('reads what the collector leads, has won, holds and may retrieve, without writing', async () => {
     const fake = client({ 64: other, 65: other, 66: other, 67: account });
-    const activity = await readActivity(account, 0, fake, batch);
+    const activity = await readActivity(account, { page: 0 }, fake, batch);
     expect(activity.leading).toEqual([{ tokenId: 64, amount: parseEther('0.4') }]);
     expect(activity.won).toEqual([
       { tokenId: 66, amount: parseEther('2'), delivered: false },
@@ -85,8 +90,32 @@ describe('readActivity', () => {
 
   it('treats an unreadable owner as not held and refuses a malformed account', async () => {
     const fake = client({ 64: new Error('burned'), 65: other, 66: other, 67: other });
-    const activity = await readActivity(account, 0, fake, batch);
+    const activity = await readActivity(account, { page: 0 }, fake, batch);
     expect(activity.held).toEqual([]);
-    await expect(readActivity('0x12' as `0x${string}`, 0, fake, batch)).rejects.toThrow(RangeError);
+    await expect(readActivity('0x12' as `0x${string}`, { page: 0 }, fake, batch)).rejects.toThrow(
+      RangeError,
+    );
+  });
+});
+
+describe('batchForToken', () => {
+  it("finds the page of the batch that holds the token, newest first, from the contract's registry", async () => {
+    const fake = client({});
+    expect(BATCH_SIZE).toBe(8);
+    expect(await batchForToken(71, fake)).toBe(0);
+    expect(await batchForToken(64, fake)).toBe(0);
+    expect(await batchForToken(63, fake)).toBe(1);
+    expect(await batchForToken(48, fake)).toBe(2);
+    await expect(batchForToken(47, fake)).rejects.toThrow(/UnknownAuction/);
+    await expect(batchForToken(-1, fake)).rejects.toThrow(RangeError);
+  });
+
+  it("reads a lot's activity against its own batch, not the newest", async () => {
+    const fake = client({ 64: other, 65: other, 66: other, 67: account });
+    const activity = await readActivity(account, { tokenId: 50 }, fake, batch);
+    expect(batch).toHaveBeenLastCalledWith(2);
+    expect(activity.ids).toEqual([64, 65, 66, 67]);
+    await readActivity(account, { tokenId: 66 }, fake, batch);
+    expect(batch).toHaveBeenLastCalledWith(0);
   });
 });

@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { parseEther } from 'viem';
 
 vi.mock('./config', () => ({
@@ -13,6 +13,7 @@ import {
   BLOCK_WINDOW,
   MAX_ENTRIES,
   MAX_WINDOWS,
+  clearHistoryCache,
   historyRange,
   orderEntries,
   readBidHistory,
@@ -69,12 +70,18 @@ describe('the history range', () => {
     expect(() => historyRange({ latestBlock: -1n, blockTime: 1n, since: 0n })).toThrow();
   });
 
-  it('pages the span newest first in bounded windows', () => {
+  it('pages the span newest first in bounded windows whose edges sit on the window size', () => {
     expect(windows(0n, 150_000n)).toEqual([
-      [50_001n, 150_000n],
-      [0n, 50_000n],
+      [100_000n, 150_000n],
+      [0n, 99_999n],
     ]);
-    expect(windows(100n, 100n)).toEqual([[100n, 100n]]);
+    // The oldest window is a whole span too, so a read that moved on by a few blocks reuses it.
+    expect(windows(250_000n, 450_000n)).toEqual([
+      [400_000n, 450_000n],
+      [300_000n, 399_999n],
+      [200_000n, 299_999n],
+    ]);
+    expect(windows(100n, 100n)).toEqual([[0n, 100n]]);
     expect(windows(0n, BLOCK_WINDOW * 40n)).toHaveLength(MAX_WINDOWS);
   });
 });
@@ -158,6 +165,7 @@ describe('readBidHistory', () => {
     };
   }
   const range = { latestBlock: 250_000n, blockTime: 1_000n, since: 900n };
+  beforeEach(() => clearHistoryCache());
 
   it('reads bids and the delivery across windows, newest first, with block timestamps', async () => {
     const fake = client(({ fromBlock, event }) =>
@@ -182,10 +190,12 @@ describe('readBidHistory', () => {
     expect(history.entries.map((entry) => entry.kind)).toEqual(['delivered', 'bid', 'bid']);
     expect(history.entries[0].timestamp).toBe(420_000n);
     expect(history.entries[2]).toMatchObject({ bidder: other, timestamp: 240_000n });
-    // Two windows, each read for bids and deliveries, all within the span.
+    // Two windows, each read for bids and deliveries, none past the latest block and none
+    // starting earlier than the whole aligned span that holds the range's first block.
     expect(fake.getLogs).toHaveBeenCalledTimes(4);
+    const floor = (history.fromBlock / BLOCK_WINDOW) * BLOCK_WINDOW;
     for (const [request] of fake.getLogs.mock.calls) {
-      expect(request.fromBlock).toBeGreaterThanOrEqual(history.fromBlock);
+      expect(request.fromBlock).toBeGreaterThanOrEqual(floor);
       expect(request.toBlock).toBeLessThanOrEqual(history.toBlock);
     }
   });
@@ -214,6 +224,26 @@ describe('readBidHistory', () => {
     const history = await readBidHistory(31, range, fake);
     expect(history.entries).toHaveLength(1);
     expect(history.complete).toBe(false);
+  });
+
+  it('keeps the settled windows between reads and re-reads only the newest', async () => {
+    const fake = client(({ event, fromBlock }) =>
+      event.name === 'AuctionBidPlaced' && fromBlock < 200_000n
+        ? [bidLog({ blockNumber: 199_000n })]
+        : [],
+    );
+    const first = await readBidHistory(31, range, fake);
+    expect(first.entries).toHaveLength(1);
+    expect(fake.getLogs).toHaveBeenCalledTimes(4);
+    // A price-only refresh moves the latest block a little; the older window is already known.
+    const again = await readBidHistory(31, { ...range, latestBlock: 250_010n }, fake);
+    expect(again.entries).toHaveLength(1);
+    expect(fake.getLogs).toHaveBeenCalledTimes(6);
+    for (const [request] of fake.getLogs.mock.calls.slice(4))
+      expect(request.fromBlock).toBe(200_000n);
+    clearHistoryCache();
+    await readBidHistory(31, range, fake);
+    expect(fake.getLogs).toHaveBeenCalledTimes(10);
   });
 
   it('leaves a timestamp null when its block cannot be read', async () => {

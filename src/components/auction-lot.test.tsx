@@ -1,16 +1,20 @@
-import { act, fireEvent, render, screen } from '@testing-library/react';
+import { act, fireEvent, render, screen, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { parseEther } from 'viem';
 import { en } from '@/lib/i18n/en';
 import type { Snapshot } from '@/lib/auction/client';
 
-const mocks = vi.hoisted(() => ({ readAuction: vi.fn(), readBidHistory: vi.fn() }));
+const mocks = vi.hoisted(() => ({
+  readAuction: vi.fn(),
+  readBidHistory: vi.fn(),
+  readActivity: vi.fn(),
+}));
 vi.mock('@/lib/auction/client', async (importOriginal) => ({
   ...(await importOriginal<typeof import('@/lib/auction/client')>()),
   readAuction: mocks.readAuction,
 }));
 vi.mock('@/lib/auction/history', () => ({ readBidHistory: mocks.readBidHistory }));
-vi.mock('@/lib/auction/activity', () => ({ readActivity: vi.fn() }));
+vi.mock('@/lib/auction/activity', () => ({ readActivity: mocks.readActivity }));
 vi.mock('@/lib/auction/config', () => ({
   auctionAddress: '0x1111111111111111111111111111111111111111',
   auctionConfigured: true,
@@ -108,6 +112,26 @@ describe('the lot strip', () => {
     });
     expect(screen.getByRole('dialog', { name: en.yourActivity })).toHaveAttribute('open');
     expect(document.querySelector('.site')).toHaveAttribute('data-theatre', 'playing');
+    // The sheet reads the collector's view against this lot's own batch, whichever page it is on.
+    mocks.readActivity.mockResolvedValue({
+      account: bidder,
+      blockTime: 5_000n,
+      ids: [31],
+      leading: [],
+      won: [],
+      held: [],
+      committed: 0n,
+      refundable: 0n,
+    });
+    const sheet = screen.getByRole('dialog', { name: en.yourActivity });
+    const typed = bidder.toLowerCase();
+    fireEvent.change(within(sheet).getByLabelText(en.activityAddress), {
+      target: { value: typed },
+    });
+    await act(async () => {
+      fireEvent.click(within(sheet).getByRole('button', { name: en.activityLookUp }));
+    });
+    expect(mocks.readActivity).toHaveBeenCalledWith(typed, { tokenId: 31 });
   });
 
   it('reports a configuration mismatch and an unavailable read in the chain line', async () => {

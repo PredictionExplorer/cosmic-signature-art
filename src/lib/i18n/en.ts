@@ -460,6 +460,8 @@ export const en = {
   bidHistoryUnavailable: 'History unavailable',
   historyPartial: 'Earlier bids may be unavailable.',
   historyDeliveredTo: 'Delivered to {address}',
+  readingRecord: 'Reading the record…',
+  historyStale: 'The latest bids could not be read; this list may be behind.',
   // ·
   // ·
   // Fork M · the settling plates, the eye-line hang, the phone rung

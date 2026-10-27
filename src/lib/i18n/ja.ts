@@ -459,6 +459,8 @@ export const ja: Messages = {
   bidHistoryUnavailable: '入札履歴を取得できません',
   historyPartial: 'それ以前の入札は表示されない場合があります。',
   historyDeliveredTo: '{address} へ引き渡し',
+  readingRecord: '記録を読み込んでいます…',
+  historyStale: '最新の入札を読み取れませんでした。この一覧は遅れている可能性があります。',
   // ·
   // ·
   // Fork M · the settling plates, the eye-line hang, the phone rung

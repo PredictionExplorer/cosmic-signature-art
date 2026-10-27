@@ -28,6 +28,7 @@ export default tseslint.config(
   {
     ignores: [
       '.next/**',
+      '.next-*/**',
       'concepts/**',
       'coverage/**',
       'playwright-report/**',

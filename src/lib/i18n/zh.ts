@@ -3,7 +3,7 @@ import type { Messages } from './en';
 export const zh: Messages = {
   auctionExhibitionCopy:
     '每个周期都会为现有系列带来八件新作品。欣赏流动之美，细读作品，以 ETH 直接出价。',
-  auctionEditorialNote: '这件精选作品带您认识本系列。拍品另行列出。',
+  auctionEditorialNote: '这件精选作品带你认识本系列。拍品另行列出。',
   auctionRoom: '拍卖展厅',
   auctionBeforeBid: '出价之前',
   auctionAtAGlance: '拍卖概览',
@@ -387,7 +387,7 @@ export const zh: Messages = {
   timeOf: '{current} / {total}',
   elapsed: '已播放 {time}',
   slowRoom: '慢室',
-  studyWaits: '当前网络下，长篇研究等待更轻的编码；先以静帧代之。',
+  studyWaits: '当前网络下，长时研究等待更轻的编码；先以静帧代之。',
   playAnyway: '仍然播放',
   durationSeconds: '{n} 秒',
   roomKeys: '展室中的按键',
@@ -413,20 +413,20 @@ export const zh: Messages = {
   lotWonBy: '得标者',
   lotDeliveredWord: '已交付',
   lotAwaitingDelivery: '待交付',
-  inYourZone: '您所在时区 {time}',
+  inYourZone: '你所在时区 {time}',
   mediaNotPublished: '媒体 · 尚未发布',
   collectThisWork: '收藏此作品',
   bidSheet: '出价单',
   sheetHandle: '关闭出价单',
-  yourActivity: '您的活动',
+  yourActivity: '你的活动',
   activityIntro:
-    '从链上读取您在本场拍卖中的领先出价、可退还的押金与持有的作品。此处不会发送任何交易。',
+    '从链上读取你在本场拍卖中的领先出价、可退还的余额与持有的作品。此处不会发送任何交易。',
   activityAddress: '钱包地址',
   activityLookUp: '查询',
   activityUseWallet: '使用我的钱包',
   activityLeading: '领先出价',
   activityCommitted: '已承诺',
-  activityRefundable: '可退还押金',
+  activityRefundable: '可退还余额',
   activityWon: '已得标，待交付',
   activityHeld: '持有的本场作品',
   activityNone: '无',
@@ -437,6 +437,8 @@ export const zh: Messages = {
   bidHistoryUnavailable: '记录暂不可用',
   historyPartial: '更早的出价可能无法显示。',
   historyDeliveredTo: '已交付至 {address}',
+  readingRecord: '正在读取记录…',
+  historyStale: '最新出价无法读取；此列表可能滞后。',
   // ·
   // ·
   // Fork M · the settling plates, the eye-line hang, the phone rung
@@ -483,7 +485,7 @@ export const zh: Messages = {
   otherExhibitions: '其他展览',
   verifyDownload: '校验下载文件',
   verifyIntro:
-    '选择一个您从上方链接下载的文件。它的 SHA-256 将在您的浏览器中就地计算，并与已发布的哈希值比对；文件绝不会离开您的设备。',
+    '选择一个你从上方链接下载的文件。它的 SHA-256 将在你的浏览器中就地计算，并与已发布的哈希值比对；文件绝不会离开你的设备。',
   verifyChoose: '选择文件',
   verifyReading: '正在读取 {name}…',
   verifyMatches: '与 {file} 相符',

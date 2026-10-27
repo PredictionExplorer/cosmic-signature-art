@@ -141,6 +141,9 @@
   gap: 6px;
 }
 .facts a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
   text-decoration: underline;
   text-decoration-thickness: 1px;
   text-underline-offset: 0.3em;

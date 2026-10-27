@@ -460,6 +460,8 @@ export const uk: Messages = {
   bidHistoryUnavailable: 'Історія недоступна',
   historyPartial: 'Ранніші ставки можуть бути недоступні.',
   historyDeliveredTo: 'Доставлено на {address}',
+  readingRecord: 'Читаємо запис…',
+  historyStale: 'Останні ставки не вдалося прочитати; цей список може відставати.',
   // ·
   // ·
   // Fork M · the settling plates, the eye-line hang, the phone rung

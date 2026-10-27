@@ -15,7 +15,7 @@ import { fill } from '@/lib/i18n/format';
 import type { Messages } from '@/lib/i18n/en';
 import { localizedPath, type Locale } from '@/lib/i18n/routing';
 import { useCollectionMotion } from './collection-motion';
-import { ArtworkMedia } from './artwork-media';
+import { ArtworkMedia, HOLD_MS } from './artwork-media';
 import { ArtworkTransition } from './artwork-transition';
 import { Plate } from './plate';
 import { setPlateTone } from './room-ground';
@@ -26,6 +26,14 @@ import styles from './auction-gallery.module.css';
 const SIT_GRACE_MS = 600;
 /** A record older than this is not shown as a price; the freshness clock below is the venue's one besides the contract's countdown. */
 const STALE_MS = 25000;
+/** A finished clip holds its last frame for --t-hold and fades to the still before the lease moves on. */
+const REEL_MS = 700;
+/**
+ * What the venue could learn about a lot's media: the publisher's record was read and advertises
+ * none (`unpublished`), or the read itself failed, timed out or found the indexer away
+ * (`unavailable`). A lot whose read is still pending says nothing.
+ */
+type MediaState = 'unpublished' | 'unavailable';
 
 type Batch = Awaited<ReturnType<typeof readBatch>>;
 type AuctionGalleryProps = {
@@ -54,11 +62,15 @@ export default function AuctionGallery({ locale, t, traits, curated }: AuctionGa
   const [failedPage, setFailedPage] = useState<number | null>(null);
   const [now, setNow] = useState(0);
   const [works, setWorks] = useState<Record<number, Artwork>>({});
+  const [mediaNotes, setMediaNotes] = useState<{ key: string; states: Record<number, MediaState> }>(
+    { key: '', states: {} },
+  );
   const [activity, setActivity] = useState(false);
   const activityTrigger = useRef<HTMLButtonElement>(null);
   const result = snapshot?.page === page ? snapshot.value : null;
   const unavailable = failedPage === page || !!(result && now - snapshot!.fetchedAt > STALE_MS);
   const mediaIds = result?.ids.join(',') ?? '';
+  const mediaStates = mediaNotes.key === mediaIds ? mediaNotes.states : {};
 
   useEffect(() => {
     let live = true;
@@ -101,6 +113,14 @@ export default function AuctionGallery({ locale, t, traits, curated }: AuctionGa
     let live = true;
     const abort = new AbortController();
     const ids = mediaIds.split(',').map(Number);
+    // What a read taught about a lot's media, kept for this page of lots alone.
+    const note = (id: number, state: MediaState) => {
+      if (!live) return;
+      setMediaNotes((previous) => ({
+        key: mediaIds,
+        states: { ...(previous.key === mediaIds ? previous.states : {}), [id]: state },
+      }));
+    };
     async function loadMedia() {
       // Media has its own lifecycle: polling prices must not restart these requests.
       // Missing pictures never remove a lot or delay a financial refresh.
@@ -111,20 +131,35 @@ export default function AuctionGallery({ locale, t, traits, curated }: AuctionGa
               const response = await fetch(`/api/art/${id}`, {
                 signal: AbortSignal.any([abort.signal, AbortSignal.timeout(15000)]),
               });
-              if (!response.ok) return;
+              if (!response.ok) {
+                note(id, 'unavailable');
+                return;
+              }
               const data: ArtworkResult = await response.json();
-              if (
-                live &&
+              if (!live) return;
+              const record =
                 data.status === 'found' &&
                 data.artwork?.id === id &&
                 Array.isArray(data.artwork.media) &&
                 data.artwork.media.every(
                   (media) => media && typeof media.id === 'string' && Array.isArray(media.films),
                 )
-              )
-                setWorks((previous) => ({ ...previous, [id]: data.artwork! }));
+                  ? data.artwork
+                  : null;
+              if (!record) {
+                note(id, 'unavailable');
+                return;
+              }
+              if (record.media.some((media) => media.still || media.films.length)) {
+                setWorks((previous) => ({ ...previous, [id]: record }));
+                return;
+              }
+              // The record was read: either its manifest could not be, or it advertises nothing.
+              note(id, data.notice === 'media-unavailable' ? 'unavailable' : 'unpublished');
             } catch {
-              /* The lot link and on-chain bidding remain available without media. */
+              // The lot link and on-chain bidding remain available without media; the venue
+              // says only that it could not read the media, never that none was published.
+              note(id, 'unavailable');
             }
           }),
         );
@@ -184,7 +219,7 @@ export default function AuctionGallery({ locale, t, traits, curated }: AuctionGa
       ) : null}
       {!result && !unavailable ? (
         <p className={`notice ${styles.notice}`} aria-busy="true">
-          {t.refresh}…
+          {t.readingRecord}
         </p>
       ) : result ? (
         <>
@@ -194,6 +229,7 @@ export default function AuctionGallery({ locale, t, traits, curated }: AuctionGa
           <Lots
             result={result}
             works={works}
+            mediaStates={mediaStates}
             curated={curated}
             traits={traits}
             locale={locale}
@@ -208,7 +244,7 @@ export default function AuctionGallery({ locale, t, traits, curated }: AuctionGa
         returnFocusRef={activityTrigger}
         locale={locale}
         t={t}
-        page={page}
+        scope={{ page }}
       />
     </section>
   );
@@ -228,6 +264,7 @@ function lotTone(id: number, media: Artwork['media'][number] | undefined) {
 const Lots = memo(function Lots({
   result,
   works,
+  mediaStates,
   curated,
   traits,
   locale,
@@ -236,6 +273,7 @@ const Lots = memo(function Lots({
 }: {
   result: Batch;
   works: Record<number, Artwork>;
+  mediaStates: Record<number, MediaState>;
   curated?: Record<number, Artwork>;
   traits?: LotTraitsById;
   locale: Locale;
@@ -274,6 +312,36 @@ const Lots = memo(function Lots({
     enabled: true,
     ids: settlingIds,
   });
+  // A lot whose clip has ended rests until the lease names it again; then it is asked to play
+  // from the start, as the collection's previews are. The ask must coincide with the lease.
+  const endedIds = useRef(new Set<number>());
+  const [requests, setRequests] = useState<Record<number, number>>({});
+  useEffect(() => {
+    if (activeId === null || !endedIds.current.has(activeId)) return;
+    endedIds.current.delete(activeId);
+    setRequests((previous) => ({ ...previous, [activeId]: (previous[activeId] ?? 0) + 1 }));
+  }, [activeId]);
+  // A finished clip keeps its last frame through the hold and the fade before the lease moves on.
+  const releases = useRef(new Map<number, ReturnType<typeof setTimeout>>());
+  useEffect(() => {
+    const timers = releases.current;
+    return () => {
+      for (const timer of timers.values()) clearTimeout(timer);
+      timers.clear();
+    };
+  }, []);
+  function release(id: number) {
+    endedIds.current.add(id);
+    const pending = releases.current.get(id);
+    if (pending) clearTimeout(pending);
+    releases.current.set(
+      id,
+      setTimeout(() => {
+        releases.current.delete(id);
+        rest(id);
+      }, HOLD_MS + REEL_MS),
+    );
+  }
 
   // The running head borrows the ground of whichever lot's band sits beneath it.
   useEffect(() => {
@@ -366,7 +434,8 @@ const Lots = memo(function Lots({
             priority={index === 0}
             hold
             ambient={active}
-            onEnded={() => rest(id)}
+            playRequest={requests[id] ?? 0}
+            onEnded={() => release(id)}
             onFailure={() => fail(id, 'media')}
             onPlaybackChange={(playing) =>
               setPlayingId((previous) => (playing ? id : previous === id ? null : previous))
@@ -436,7 +505,7 @@ const Lots = memo(function Lots({
             </div>
             <div className={styles.entry}>
               <p className={styles.entryText}>
-                <Link href={href} className={styles.entryLink}>
+                <Link href={href} className={styles.entryLink} prefetch={active || intentId === id}>
                   {workNumber(id)}
                 </Link>
                 {traits?.[id]?.cycle !== undefined ? ` · ${t.cycle} ${traits[id].cycle}` : ''}
@@ -449,7 +518,11 @@ const Lots = memo(function Lots({
                     {state.line}
                   </p>
                 ) : null}
-                {!media ? <p className={styles.chain}>{t.mediaNotPublished}</p> : null}
+                {!media && mediaStates[id] ? (
+                  <p className={styles.chain}>
+                    {mediaStates[id] === 'unpublished' ? t.mediaNotPublished : t.mediaUnavailable}
+                  </p>
+                ) : null}
               </div>
             </div>
           </article>

@@ -95,7 +95,7 @@ export function AuctionLot({
   return (
     <div id="lot-actions" className={styles.lot} data-keys-suppressed="">
       <p className={styles.chain} data-phase={state?.phase}>
-        {state ? state.line : (problem ?? (stale ? t.liveUnavailable : `${t.refresh}…`))}
+        {state ? state.line : (problem ?? (stale ? t.liveUnavailable : t.readingRecord))}
       </p>
       <div className={styles.actions}>
         <button
@@ -131,6 +131,7 @@ export function AuctionLot({
         returnFocusRef={activity}
         t={t}
         locale={locale}
+        scope={{ tokenId }}
       />
     </div>
   );
