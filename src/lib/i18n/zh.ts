@@ -394,6 +394,7 @@ export const zh: Messages = {
   keyScrub: '前后一秒；按住 Shift 为十秒',
   keyDetail: '细部：一画面像素对一屏幕像素',
   keyWhole: '整幅',
+  loupeKeys: '方向键移动视窗；+ 和 − 缩放；W 回到整幅',
   gatefold: '对开页',
   gatefoldCaption: '第 {n} 幅，以墨，以光。同一轨道。',
   gatefoldSpread: '展开',

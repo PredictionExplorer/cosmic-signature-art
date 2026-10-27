@@ -6,6 +6,10 @@ import type { Artwork } from '@/lib/art/types';
 import { en } from '@/lib/i18n/en';
 import { ArtworkRoom } from './artwork-room';
 
+// The room reads the venue's motion state; the tests begin where the context default does.
+const motion = { paused: true, reducedMotion: true, theatre: 'playing' as const, toggle: () => {} };
+vi.mock('./motion-provider', () => ({ useMotion: () => motion }));
+
 const preserved = getCuratedArtwork(31)!;
 const windows = [
   { x: 960, y: 320, width: 1152, height: 736, share: 0.427 },
@@ -317,10 +321,37 @@ describe('immersive artwork room', () => {
     const { room } = openRoom();
     const still = within(room).getByRole('img');
     const ink = artwork.media.find((media) => media.id === 'ink')!;
-    if (ink.rungs?.length) {
-      expect(still.getAttribute('srcset')).toContain(`${ink.rungs[0].src} ${ink.rungs[0].width}w`);
-      expect(still.getAttribute('srcset')).toContain(`${ink.still} 3456w`);
-    } else expect(still).not.toHaveAttribute('srcset');
+    expect(ink.rungs?.length).toBeGreaterThan(0);
+    expect(still.getAttribute('srcset')).toContain(`${ink.rungs![0].src} ${ink.rungs![0].width}w`);
+    expect(still.getAttribute('srcset')).toContain(`${ink.still} 3456w`);
+  });
+
+  it('keeps the strip up under reduced motion or Pause, and rests it only when motion is allowed', () => {
+    vi.useFakeTimers();
+    try {
+      // The venue's default here is reduced motion: the chrome never leaves.
+      const { room, unmount } = openRoom();
+      const frame = room.querySelector('[data-material]') as HTMLElement;
+      act(() => {
+        vi.advanceTimersByTime(3000);
+      });
+      expect(frame).not.toHaveAttribute('data-idle');
+      unmount();
+      motion.reducedMotion = false;
+      motion.paused = false;
+      const second = openRoom();
+      const moving = second.room.querySelector('[data-material]') as HTMLElement;
+      act(() => {
+        vi.advanceTimersByTime(3000);
+      });
+      expect(moving).toHaveAttribute('data-idle', '');
+      fireEvent.pointerMove(moving);
+      expect(moving).not.toHaveAttribute('data-idle');
+    } finally {
+      motion.reducedMotion = true;
+      motion.paused = true;
+      vi.useRealTimers();
+    }
   });
 
   it('preserves independent scroll-axis declarations without restoring unrelated stale styles', () => {
@@ -608,7 +639,7 @@ describe('immersive artwork room', () => {
     expect(frame).toHaveAttribute('data-loupe');
     const loupe = within(room).getByRole('group', { name: `№ 031 · Ink · ${en.detail}` });
     expect(loupe).toHaveAttribute('data-loupe');
-    expect(within(loupe).getByRole('img')).toHaveAttribute('width', '3456');
+    expect(loupe.querySelector('img')).toHaveAttribute('width', '3456');
     expect(room.querySelector('video')).toBeNull();
     const views = within(room).getByRole('group', { name: en.detail });
     expect(within(views).getByRole('button', { name: en.wholePlate })).toBeInTheDocument();

@@ -3,6 +3,7 @@ import {
   useCallback,
   useEffect,
   useEffectEvent,
+  useId,
   useLayoutEffect,
   useMemo,
   useRef,
@@ -118,6 +119,7 @@ export function Loupe({
   windows,
   initialWindow = 0,
   label,
+  description,
   onView,
 }: {
   media: ArtInterpretation;
@@ -126,8 +128,11 @@ export function Loupe({
   /** Index into `windows`, or -1 for the whole plate. */
   initialWindow?: number;
   label: string;
+  /** How the keys move the window; read with the name, once. */
+  description?: string;
   onView?: (view: LoupeView) => void;
 }) {
+  const descriptionId = useId();
   const art = useMemo(
     () => ({ width: media.width ?? ART_WIDTH, height: media.height ?? ART_HEIGHT }),
     [media.width, media.height],
@@ -145,7 +150,14 @@ export function Loupe({
   const [dpr, setDpr] = useState(1);
   const [fullReady, setFullReady] = useState(false);
   const fit = fitScale(size, art);
-  const native = nativeScale(fit, dpr);
+  // Narrow viewports paint the 1280 rung first; the full still takes its place once decoded.
+  const rung = rungFor(media.rungs, 1280);
+  const rungFirst = !!rung && size.width > 0 && size.width < RUNG_FIRST_BELOW_PX;
+  const rungShown = rungFirst && !fullReady && !!rung;
+  // While the rung stands in, native is the rung's own pixel, never a magnified one.
+  const native = rungShown
+    ? Math.max(fit, (1 / Math.max(1, dpr)) * (rung.width / art.width))
+    : nativeScale(fit, dpr);
   if (openedFor !== initialWindow) {
     // A newly chosen window re-opens the loupe there; derived state resets in render.
     setOpenedFor(initialWindow);
@@ -170,10 +182,7 @@ export function Loupe({
   } | null>(null);
   const inertia = useRef<number | null>(null);
   const lastTap = useRef(0);
-  // Narrow viewports paint the 1280 rung first; the full still takes its place once decoded.
-  const rung = rungFor(media.rungs, 1280);
-  const rungFirst = !!rung && size.width > 0 && size.width < RUNG_FIRST_BELOW_PX;
-  const source = !size.width ? undefined : rungFirst && !fullReady && rung ? rung.src : media.still;
+  const source = !size.width ? undefined : rungShown ? rung.src : media.still;
 
   // The viewport's own size, kept current; jsdom has no ResizeObserver and reports 0.
   useLayoutEffect(() => {
@@ -200,6 +209,8 @@ export function Loupe({
     full.decoding = 'async';
     full.src = media.still;
     const settle = () => {
+      // A window the visitor has not touched deepens to the still's own pixel, which is what
+      // Detail asked for; a pose the hand has moved stays where the hand left it.
       if (live) setFullReady(true);
     };
     if (typeof full.decode === 'function') void full.decode().then(settle, () => {});
@@ -219,12 +230,35 @@ export function Loupe({
     () => (pose.scale ? viewOf(pose, size, art, dpr) : null),
     [pose, size, art, dpr],
   );
-  const report = useEffectEvent((current: LoupeView | null) => {
-    if (current) onView?.(current);
+  // The strip hears about the view once per frame at most; the compositor moves the image itself.
+  const latestView = useRef<LoupeView | null>(null);
+  const scheduled = useRef(false);
+  const frame = useRef<number | null>(null);
+  const report = useEffectEvent(() => {
+    scheduled.current = false;
+    if (latestView.current) onView?.(latestView.current);
   });
   useEffect(() => {
-    report(view);
+    latestView.current = view;
+    if (scheduled.current) return;
+    scheduled.current = true;
+    frame.current = requestAnimationFrame(() => report());
   }, [view]);
+  useEffect(
+    () => () => {
+      if (frame.current !== null) cancelAnimationFrame(frame.current);
+      scheduled.current = false;
+    },
+    [],
+  );
+  // The wheel is the loupe's: a trackpad pinch (ctrl+wheel) must not zoom the page as well.
+  useEffect(() => {
+    const node = viewport.current;
+    if (!node) return;
+    const consume = (event: WheelEvent) => event.preventDefault();
+    node.addEventListener('wheel', consume, { passive: false });
+    return () => node.removeEventListener('wheel', consume);
+  }, []);
 
   const stopInertia = useCallback(() => {
     if (inertia.current !== null) cancelAnimationFrame(inertia.current);
@@ -371,7 +405,9 @@ export function Loupe({
   const scaleState = !pose.scale
     ? undefined
     : pose.scale >= native - 1e-6
-      ? 'native'
+      ? rungShown
+        ? 'rung'
+        : 'native'
       : pose.scale <= fit + 1e-6
         ? 'fit'
         : 'between';
@@ -381,6 +417,7 @@ export function Loupe({
       className={styles.viewport}
       role="group"
       aria-label={label}
+      aria-describedby={description ? descriptionId : undefined}
       tabIndex={0}
       data-loupe
       data-scale={scaleState}
@@ -391,11 +428,16 @@ export function Loupe({
       onWheel={onWheel}
       onKeyDown={onKeyDown}
     >
+      {description ? (
+        <span id={descriptionId} className={styles.hidden}>
+          {description}
+        </span>
+      ) : null}
       {source ? (
         <img
           className={styles.image}
           src={source}
-          alt={label}
+          alt=""
           width={art.width}
           height={art.height}
           decoding="async"

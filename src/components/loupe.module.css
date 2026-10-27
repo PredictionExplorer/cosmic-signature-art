@@ -13,9 +13,18 @@
 .viewport:active {
   cursor: grabbing;
 }
+/* The ring is drawn inside the canvas, which clips everything outside it. */
 .viewport:focus-visible {
   outline: 1px solid currentColor;
   outline-offset: -1px;
+}
+.hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
 }
 .image {
   position: absolute;

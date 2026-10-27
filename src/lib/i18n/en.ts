@@ -417,6 +417,7 @@ export const en = {
   keyScrub: 'Back and forward one second; with Shift, ten',
   keyDetail: 'Detail: one artwork pixel per screen pixel',
   keyWhole: 'Whole plate',
+  loupeKeys: 'Arrow keys move the window; + and − zoom; W returns to the whole plate',
   gatefold: 'Gatefold',
   gatefoldCaption: 'Plate {n}, in ink and in light. One orbit.',
   gatefoldSpread: 'Spread',

@@ -418,6 +418,7 @@ export const vi: Messages = {
   keyScrub: 'Lùi và tiến một giây; giữ Shift để mười giây',
   keyDetail: 'Chi tiết: một điểm ảnh tác phẩm trên một điểm ảnh màn hình',
   keyWhole: 'Toàn bộ bản in',
+  loupeKeys: 'Phím mũi tên dời khung xem; + và − phóng to thu nhỏ; W trở về toàn bộ bản in',
   gatefold: 'Trang gấp',
   gatefoldCaption: 'Bản in {n}, bằng mực và bằng ánh sáng. Một quỹ đạo.',
   gatefoldSpread: 'Trải ra',

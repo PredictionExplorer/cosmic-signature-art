@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { act, render, screen } from '@testing-library/react';
 import { getCuratedArtwork } from '@/lib/art/catalog';
 import {
   Loupe,
@@ -11,6 +11,7 @@ import {
   poseFor,
   viewOf,
   zoomAbout,
+  type LoupeView,
 } from './loupe';
 import { rungFor } from '@/lib/art/types';
 
@@ -84,22 +85,76 @@ describe('the loupe', () => {
     render(<Loupe media={ink} windows={windows} label="№ 031 · Ink · Detail" />);
     const group = screen.getByRole('group', { name: '№ 031 · Ink · Detail' });
     expect(group).toHaveAttribute('tabindex', '0');
-    const image = screen.getByRole('img', { name: '№ 031 · Ink · Detail' });
+    // The group carries the name once; the image beneath it is unnamed.
+    const image = group.querySelector('img')!;
+    expect(image).toHaveAttribute('alt', '');
     expect(image).toHaveAttribute('width', '3456');
     expect(image).toHaveAttribute('src', expect.stringMatching(/\.webp$/));
     expect(image.style.transform).toMatch(/^translate\(.*\) scale\(.*\)$/);
   });
 
-  it('paints the 1280 rung first on a narrow viewport when the ladder has one', () => {
+  it('paints the 1280 rung first on a narrow viewport, at the rung’s own pixel, then swaps in the still', async () => {
     const wide = window.innerWidth;
     Object.defineProperty(window, 'innerWidth', { configurable: true, value: 390 });
+    // The full still decodes off screen; a resolved decode is the moment it takes over.
+    let settle!: () => void;
+    const decoded = new Promise<void>((resolve) => {
+      settle = resolve;
+    });
+    const NativeImage = window.Image;
+    // jsdom's Image constructor hands back a plain element, so a stand-in carries decode().
+    class DecodingImage {
+      decoding = '';
+      src = '';
+      onload: (() => void) | null = null;
+      decode() {
+        return decoded;
+      }
+    }
+    Object.defineProperty(window, 'Image', { configurable: true, value: DecodingImage });
     try {
-      render(<Loupe media={ink} windows={[]} initialWindow={-1} label="Detail" />);
-      const image = screen.getByRole('img', { name: 'Detail' });
-      if (ink.rungs?.length) expect(image).toHaveAttribute('src', ink.rungs[0].src);
-      else expect(image).toHaveAttribute('src', ink.still);
+      expect(ink.rungs?.length).toBeGreaterThan(0);
+      const views: LoupeView[] = [];
+      render(
+        <Loupe
+          media={ink}
+          windows={[]}
+          initialWindow={-1}
+          label="Detail"
+          onView={(view) => views.push(view)}
+        />,
+      );
+      const group = screen.getByRole('group', { name: 'Detail' });
+      const image = group.querySelector('img')!;
+      expect(image).toHaveAttribute('src', ink.rungs![0].src);
+      // While the rung stands in, native is the rung's pixel: the readout never claims 1:1.
+      expect(group).not.toHaveAttribute('data-scale', 'native');
+      await act(async () => {
+        settle();
+        await decoded;
+      });
+      expect(image).toHaveAttribute('src', ink.still);
     } finally {
+      Object.defineProperty(window, 'Image', { configurable: true, value: NativeImage });
       Object.defineProperty(window, 'innerWidth', { configurable: true, value: wide });
     }
+  });
+
+  it('describes its keys once and keeps the wheel from the page', () => {
+    render(
+      <Loupe media={ink} windows={windows} label="Detail" description="Arrows move the window" />,
+    );
+    const group = screen.getByRole('group', { name: 'Detail' });
+    expect(group).toHaveAccessibleDescription('Arrows move the window');
+    expect(group.querySelector('img')).toHaveAttribute('alt', '');
+    // A trackpad pinch arrives as ctrl+wheel; the loupe consumes it so the page does not zoom.
+    const wheel = new WheelEvent('wheel', {
+      deltaY: -40,
+      ctrlKey: true,
+      cancelable: true,
+      bubbles: true,
+    });
+    group.dispatchEvent(wheel);
+    expect(wheel.defaultPrevented).toBe(true);
   });
 });

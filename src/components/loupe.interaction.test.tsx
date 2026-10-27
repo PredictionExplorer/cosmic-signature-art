@@ -63,7 +63,7 @@ function renderLoupe(initialWindow = 0) {
     />,
   );
   const group = screen.getByRole('group', { name: 'Detail' });
-  const image = screen.getByRole('img', { name: 'Detail' });
+  const image = group.querySelector('img') as HTMLElement;
   return { group, image, views };
 }
 

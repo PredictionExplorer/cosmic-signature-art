@@ -101,10 +101,12 @@ export function ArtworkGatefold({
         </div>
       </div>
       {view === 'spread' ? (
-        // A scroll region the keyboard can reach: focus it and the arrows turn the spread.
+        // A scroll region the keyboard can reach: focus it and the arrows turn the spread, and
+        // the venue's own arrows (the neighbours) fall silent while they do.
         <div
           className={styles.spread}
           data-gatefold-spread
+          data-keys-suppressed=""
           role="group"
           aria-label={t.gatefoldSpread}
           tabIndex={0}
@@ -166,7 +168,6 @@ export function ArtworkGatefold({
               className={`${styles.still} ${styles.layer}`}
             />
           </div>
-          <div className={styles.seamLine} aria-hidden="true" />
           <input
             className={styles.seamInput}
             type="range"

@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { fireEvent, render, screen, within } from '@testing-library/react';
 import { getCuratedArtwork } from '@/lib/art/catalog';
 import { en } from '@/lib/i18n/en';
@@ -48,6 +48,42 @@ describe('the gatefold', () => {
     expect(within(frame).getAllByRole('img')).toHaveLength(2);
     fireEvent.click(screen.getByRole('button', { name: en.gatefoldSpread }));
     expect(container.querySelector('[data-gatefold-spread]')).not.toBeNull();
+  });
+
+  it('lets the hand draw the seam across the frame, and leaves the range to itself', () => {
+    const { container } = render(
+      <ArtworkGatefold artwork={work} expression="ink" t={en} locale="en" />,
+    );
+    fireEvent.click(screen.getByRole('button', { name: en.gatefoldSeam }));
+    const frame = container.querySelector('[data-gatefold-seam]') as HTMLElement;
+    vi.spyOn(frame, 'getBoundingClientRect').mockReturnValue({
+      left: 0,
+      width: 1000,
+      top: 0,
+      height: 646,
+      right: 1000,
+      bottom: 646,
+      x: 0,
+      y: 0,
+      toJSON() {},
+    } as DOMRect);
+    fireEvent.pointerDown(frame, { clientX: 300, pointerType: 'mouse', button: 0 });
+    expect(frame.style.getPropertyValue('--gatefold-seam')).toBe('30%');
+    fireEvent.pointerMove(frame, { clientX: 1200 });
+    expect(frame.style.getPropertyValue('--gatefold-seam')).toBe('100%');
+    fireEvent.pointerUp(frame);
+    fireEvent.pointerMove(frame, { clientX: 500 });
+    expect(frame.style.getPropertyValue('--gatefold-seam')).toBe('100%');
+    // A press on the range itself is the range's, not the frame's.
+    const seam = screen.getByRole('slider', { name: en.gatefoldSeamLabel });
+    fireEvent.pointerDown(seam, { clientX: 100, pointerType: 'mouse', button: 0 });
+    expect(frame.style.getPropertyValue('--gatefold-seam')).toBe('100%');
+    // The spread keeps the venue's keys quiet while it has focus; no seam line is painted.
+    fireEvent.click(screen.getByRole('button', { name: en.gatefoldSpread }));
+    expect(container.querySelector('[data-gatefold-spread]')).toHaveAttribute(
+      'data-keys-suppressed',
+      '',
+    );
   });
 
   it('renders nothing for a work without both stills, and lists the rungs before the still', () => {

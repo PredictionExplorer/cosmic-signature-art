@@ -3,8 +3,10 @@
 import {
   useCallback,
   useEffect,
+  useMemo,
   useRef,
   useState,
+  useSyncExternalStore,
   type ChangeEvent,
   type CSSProperties,
   type KeyboardEvent as ReactKeyboardEvent,
@@ -258,6 +260,52 @@ function RoomFilm({
   );
 }
 
+/** The loupe's view, held outside React state so a pan re-renders the readout alone. */
+function createViewStore() {
+  let value: LoupeView | null = null;
+  const listeners = new Set<() => void>();
+  return {
+    set(view: LoupeView | null) {
+      value = view;
+      listeners.forEach((listener) => listener());
+    },
+    subscribe(listener: () => void) {
+      listeners.add(listener);
+      return () => {
+        listeners.delete(listener);
+      };
+    },
+    get: () => value,
+  };
+}
+type ViewStore = ReturnType<typeof createViewStore>;
+const noView = () => null;
+
+/** "Detail of Plate 031 (1:1) · x 1,420–2,340 / y 580–1,175", from the loupe's latest view. */
+function DetailReadout({
+  store,
+  folio,
+  t,
+  numbers,
+}: {
+  store: ViewStore;
+  folio: string;
+  t: Messages;
+  numbers: Intl.NumberFormat;
+}) {
+  const view = useSyncExternalStore(store.subscribe, store.get, noView);
+  if (!view) return null;
+  return fill(t.detailOf, {
+    n: folio,
+    scale:
+      view.ratio <= 1.05
+        ? t.scaleNative
+        : fill(t.scaleReadout, { ratio: numbers.format(view.ratio) }),
+    x: `${numbers.format(view.x0)}–${numbers.format(view.x1)}`,
+    y: `${numbers.format(view.y0)}–${numbers.format(view.y1)}`,
+  });
+}
+
 /** The painted rectangle of a media element; its box is sized to its own proportion. */
 function paintedRect(element: Element) {
   const bounds = element.getBoundingClientRect();
@@ -301,7 +349,7 @@ export function ArtworkRoom({
   const [playing, setPlaying] = useState(false);
   const [allowedStudies, setAllowedStudies] = useState<string[]>([]);
   const [loupe, setLoupe] = useState<{ window: number } | null>(null);
-  const [view, setView] = useState<LoupeView | null>(null);
+  const [views] = useState(createViewStore);
   const [hint, setHint] = useState(false);
   const [fullscreen, setFullscreen] = useState(false);
   const [fullscreenPending, setFullscreenPending] = useState(false);
@@ -330,7 +378,7 @@ export function ArtworkRoom({
   const studyHeld = !!film && isStudy(film) && constrained && !allowedStudies.includes(film.id);
   const filmShown = showFilm && !!film && !loupe && !studyHeld && filmStatus !== 'failed';
   const slow = filmShown && isStudy(film);
-  const numbers = new Intl.NumberFormat(locale);
+  const numbers = useMemo(() => new Intl.NumberFormat(locale), [locale]);
 
   /* Open and close: the Expansion. */
   const expand = useCallback((direction: 'open' | 'close') => {
@@ -456,10 +504,12 @@ export function ArtworkRoom({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [returnFocusRef]);
 
-  // The edge strip rests after a quiet spell; any pointer, touch or key brings it back.
+  // The edge strip rests after a quiet spell; any pointer, touch or key brings it back. Under
+  // reduced motion or Pause the chrome stays, as everywhere in the venue; only the Slow room
+  // lets it rest, so a long study can be watched without it.
   useEffect(() => {
     const room = frame.current;
-    if (!room) return;
+    if (!room || (instant && !slow)) return;
     let timer: ReturnType<typeof setTimeout> | undefined;
     const rest = () => {
       if (timer) clearTimeout(timer);
@@ -474,7 +524,7 @@ export function ArtworkRoom({
       for (const name of ['pointermove', 'pointerdown', 'touchstart', 'keydown'] as const)
         room.removeEventListener(name, rest);
     };
-  }, []);
+  }, [instant, slow]);
 
   const toggleFullscreen = async () => {
     const room = frame.current;
@@ -506,7 +556,7 @@ export function ArtworkRoom({
   function showStill() {
     setShowFilm(false);
     setLoupe(null);
-    setView(null);
+    views.set(null);
   }
   function pickFilm(id: string) {
     if (!media) return;
@@ -514,7 +564,7 @@ export function ArtworkRoom({
     setFilmStatus('loading');
     setShowFilm(true);
     setLoupe(null);
-    setView(null);
+    views.set(null);
   }
   function retryFilm() {
     setFilmStatus('loading');
@@ -527,7 +577,7 @@ export function ArtworkRoom({
   }
   function closeLoupe() {
     setLoupe(null);
-    setView(null);
+    views.set(null);
   }
   function togglePlay() {
     const node = player.current;
@@ -589,18 +639,6 @@ export function ArtworkRoom({
     }
   }
 
-  const detailLabel =
-    loupe && view
-      ? fill(t.detailOf, {
-          n: workFolio(artwork.id),
-          scale:
-            view.ratio <= 1.05
-              ? t.scaleNative
-              : fill(t.scaleReadout, { ratio: numbers.format(view.ratio) }),
-          x: `${numbers.format(view.x0)}–${numbers.format(view.x1)}`,
-          y: `${numbers.format(view.y0)}–${numbers.format(view.y1)}`,
-        })
-      : null;
   const status = pendingExpression
     ? t.preparingExpression
     : expressionFailed
@@ -615,11 +653,9 @@ export function ArtworkRoom({
               ? t.studyWaits
               : filmShown && filmStatus === 'loading'
                 ? t.loadingFilm
-                : detailLabel
-                  ? detailLabel
-                  : slow
-                    ? `${t.slowRoom} · ${fill(t.elapsed, { time: clock(time.current) })}`
-                    : '';
+                : slow
+                  ? `${t.slowRoom} · ${fill(t.elapsed, { time: clock(time.current) })}`
+                  : '';
   const retryStill = media?.still && stillFailed === media.still && !showFilm;
   const retryFilmOffer = showFilm && filmStatus === 'failed' && !studyHeld;
   const hintRows: [string, string][] = [
@@ -658,7 +694,7 @@ export function ArtworkRoom({
         ref={frame}
         className={styles.room}
         data-material={media?.id}
-        data-idle={idle ? '' : undefined}
+        data-idle={idle && (!instant || slow) ? '' : undefined}
         data-slow={slow ? '' : undefined}
         data-loupe={loupe ? '' : undefined}
         style={{ '--room-surface': tone } as CSSProperties}
@@ -674,7 +710,8 @@ export function ArtworkRoom({
                   windows={windows}
                   initialWindow={loupe.window}
                   label={`${label} · ${t.detail}`}
-                  onView={setView}
+                  description={t.loupeKeys}
+                  onView={views.set}
                 />
               ) : filmShown ? (
                 <RoomFilm
@@ -798,10 +835,21 @@ export function ArtworkRoom({
           </div>
           <div
             className={styles.notice}
-            role={status ? 'status' : undefined}
-            aria-live={detailLabel ? 'off' : 'polite'}
+            role={status || loupe ? 'status' : undefined}
+            aria-live={loupe ? 'off' : 'polite'}
           >
-            <span className={styles.statusText}>{status}</span>
+            <span className={styles.statusText}>
+              {loupe && stillShown ? (
+                <DetailReadout
+                  store={views}
+                  folio={workFolio(artwork.id)}
+                  t={t}
+                  numbers={numbers}
+                />
+              ) : (
+                status
+              )}
+            </span>
             {retryStill ? (
               <button
                 type="button"

@@ -413,6 +413,7 @@ export const ko: Messages = {
   keyScrub: '앞뒤로 1초, Shift와 함께 10초',
   keyDetail: '세부: 화면 1픽셀에 작품 1픽셀',
   keyWhole: '전체 도판',
+  loupeKeys: '화살표 키로 창을 옮기고, + 와 − 로 확대·축소하며, W 로 전체 도판으로 돌아갑니다',
   gatefold: '게이트폴드',
   gatefoldCaption: '도판 {n}, 먹으로 그리고 빛으로. 하나의 궤도.',
   gatefoldSpread: '펼침',

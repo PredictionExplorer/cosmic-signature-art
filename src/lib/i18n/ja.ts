@@ -416,6 +416,7 @@ export const ja: Messages = {
   keyScrub: '前後に 1 秒、Shift を押せば 10 秒',
   keyDetail: '細部：画面 1 ピクセルに作品 1 ピクセル',
   keyWhole: '図版全体',
+  loupeKeys: '矢印キーで窓を動かし、+ と − で拡大縮小、W で図版全体に戻ります',
   gatefold: '観音開き',
   gatefoldCaption: '図版 {n}、墨で、光で。ひとつの軌道。',
   gatefoldSpread: '見開き',

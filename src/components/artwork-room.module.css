@@ -11,7 +11,7 @@
   padding: 0;
   border: 0;
   background: transparent;
-  color: #f1ebdf;
+  color: var(--night-type);
   overscroll-behavior: contain;
 }
 /* The ground inside the room is the material; the native backdrop stays clear so the plate
@@ -20,11 +20,11 @@
   background: transparent;
 }
 .room {
-  --room-surface: #f1ebdf;
-  --room-ink: #22231f;
-  /* Muted words must still read at 15 px on the darkest measured sheet (#e2ddd2): 5.1:1. */
+  --room-surface: var(--paper);
+  --room-ink: var(--paper-type);
+  /* Muted words carry only sizes and status; they still read at 12 px on the darkest measured sheet (#e2ddd2): 5.1:1. */
   --room-muted: #5a5a51;
-  --room-line: color-mix(in srgb, #22231f 24%, transparent);
+  --room-line: color-mix(in srgb, var(--paper-type) 24%, transparent);
   position: relative;
   display: grid;
   grid-template-rows: minmax(0, 1fr) auto;
@@ -35,9 +35,9 @@
   transition: color var(--t-expand) var(--ease-settle);
 }
 .room[data-material='light'] {
-  --room-ink: #f1ebdf;
+  --room-ink: var(--night-type);
   --room-muted: #b8b5ad;
-  --room-line: color-mix(in srgb, #f1ebdf 24%, transparent);
+  --room-line: color-mix(in srgb, var(--night-type) 24%, transparent);
 }
 .room:fullscreen {
   height: 100vh;
@@ -131,11 +131,12 @@
 .actions {
   justify-content: flex-end;
 }
+/* The work's number stays in the room's ink, on every screen; it is the room's name. */
 .number {
   font-family: var(--font-mono);
   font-size: var(--fs-control);
   font-variant-numeric: tabular-nums lining-nums;
-  color: var(--room-muted);
+  color: var(--room-ink);
 }
 .strip button,
 .notice button {
@@ -149,7 +150,7 @@
   padding: 0;
   border: 0;
   background: transparent;
-  color: var(--room-muted);
+  color: var(--room-ink);
   cursor: pointer;
   font-size: var(--fs-control);
   line-height: 1.2;
@@ -161,12 +162,7 @@
     color var(--t-blink) var(--ease-settle),
     text-decoration-color var(--t-blink) var(--ease-settle);
 }
-.strip button:hover,
-.notice button,
-.strip button[aria-pressed='true'],
-.actions button {
-  color: var(--room-ink);
-}
+/* Words are the room's ink; the hairline beneath marks the chosen one and the one under the hand. */
 .strip button:hover,
 .notice button,
 .strip button[aria-pressed='true'] {
@@ -181,17 +177,20 @@
   cursor: default;
   opacity: 0.6;
 }
+/* The loupe draws its own ring inside its clipped canvas (loupe.module.css). */
 .room button:focus-visible,
 .room input:focus-visible,
-.room [tabindex]:focus-visible {
+.room [tabindex]:not([data-loupe]):focus-visible {
   outline: 1px solid currentColor;
   outline-offset: 3px;
 }
+/* Sizes and lengths are the muted words; the film's name stays in ink. */
 .meta {
   font-family: var(--font-mono);
   font-size: var(--fs-folio);
   font-variant-numeric: tabular-nums lining-nums;
   white-space: nowrap;
+  color: var(--room-muted);
 }
 /* Status lives on the strip's second line, never over the work. */
 .notice {
@@ -209,10 +208,6 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-}
-.notice button {
-  min-height: 27px;
-  font-size: var(--fs-folio);
 }
 .hint {
   position: absolute;
@@ -252,12 +247,12 @@
   color: var(--room-muted);
   pointer-events: none;
 }
-/* The transport: one pixel at the viewport's bottom edge; the hand finds a taller grip. */
+/* The transport: one pixel at the viewport's bottom edge; the hand finds a 44 px grip above it. */
 .transport {
   position: absolute;
-  inset: auto 0 0 0;
+  inset: auto 0 env(safe-area-inset-bottom, 0px) 0;
   width: 100%;
-  height: 24px;
+  height: 44px;
   margin: 0;
   appearance: none;
   -webkit-appearance: none;
@@ -267,7 +262,7 @@
 /* The line: the ink of the elapsed part, the hairline of what remains. */
 .transport::-webkit-slider-runnable-track {
   height: 1px;
-  margin-top: 23px;
+  margin-top: 43px;
   background: linear-gradient(
     to right,
     var(--room-ink) var(--progress, 0%),
@@ -330,28 +325,21 @@
   .identity {
     gap: 12px;
   }
+  /* Every word keeps its 44 px box; the boxes themselves space the words. */
   .strip button {
-    min-width: 0;
-    padding-inline: 3px;
-  }
-  .number {
-    font-size: var(--fs-folio);
+    min-width: 44px;
+    padding-inline: 0;
   }
   .sources {
     grid-column: 1 / -1;
     grid-row: 2;
     justify-content: flex-start;
-    gap: 0 12px;
+    gap: 0;
   }
   .hint {
     right: max(var(--gutter), env(safe-area-inset-right));
     left: max(var(--gutter), env(safe-area-inset-left));
     bottom: calc(2 * var(--strip) + 36px);
-  }
-}
-@media (max-height: 480px) and (min-width: 768px) {
-  .number {
-    display: none;
   }
 }
 @media (prefers-reduced-motion: reduce) {
