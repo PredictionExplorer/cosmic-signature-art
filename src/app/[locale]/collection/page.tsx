@@ -50,7 +50,8 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
   const { locale } = await params;
   if (!isLocale(locale)) return {};
   const t = messages(locale);
-  return metadata(locale, '/collection', t.collection, t.statementLine);
+  // The collection's card is drawn beside this route (opengraph-image.tsx), not configured here.
+  return metadata(locale, '/collection', t.collection, t.statementLine, null);
 }
 
 /** The first value of a repeated key, as URLSearchParams.get and the room script read it. */

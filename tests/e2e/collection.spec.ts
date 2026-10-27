@@ -368,6 +368,7 @@ test('on a phone the collection carries a bottom bar and the Index sheet is the 
   await expect(menu.getByRole('link')).toHaveText([
     t.auctions,
     t.collection,
+    t.exhibitions,
     t.process,
     t.statement,
   ]);

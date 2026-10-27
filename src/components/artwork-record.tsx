@@ -4,6 +4,7 @@ import type { Messages } from '@/lib/i18n/en';
 import type { Locale } from '@/lib/i18n/routing';
 import { indexedAssetUrl, indexedWork, type IndexedWork } from '@/lib/art/collection-index';
 import { CopyButton } from './copy-button';
+import { VerifyDownload, type VerifiableFile } from './verify-download';
 import styles from './artwork-record.module.css';
 
 export function RecordRow({ label, children }: { label: string; children: ReactNode }) {
@@ -160,6 +161,20 @@ export function ArtworkSources({
   const expressionName = (media: ArtInterpretation) =>
     media.id === 'ink' ? t.ink : media.id === 'light' ? t.light : media.label;
   const line = (parts: (string | undefined)[]) => parts.filter(Boolean).join(' · ');
+  /** The manifest path of a published file, "videos/web/ember.mp4", from its seed-package URL. */
+  const manifestPath = (url?: string) => {
+    if (!url || !work.seed) return undefined;
+    const marker = `/${work.seed}/`;
+    const at = url.indexOf(marker);
+    return at === -1 ? undefined : url.slice(at + marker.length);
+  };
+  const copy = { label: t.copyAddress, copied: t.copied };
+  /** The published hash of a film: its source's, or its own only when it is the published file. */
+  const filmHash = (film: ArtFilm, indexedHash?: string) =>
+    film.sourceSha256 ??
+    (film.delivery === 'original-web' ? film.sha256 : undefined) ??
+    indexedHash;
+  const verifiable: VerifiableFile[] = [];
   return (
     <section className={styles.sources} aria-labelledby="sources-title">
       <h2 id="sources-title" className={styles.sectionTitle}>
@@ -168,15 +183,16 @@ export function ArtworkSources({
       <div className={styles.editions}>
         {work.media.map((media) => {
           const facts = indexedMedia(work, media);
-          const stillBytes =
-            sameSeed && sameAsset(indexed, facts?.still?.path, media.sourceUrl)
-              ? facts?.still?.bytes
-              : undefined;
-          const stillHash =
-            media.stillSha256 ??
-            (sameSeed && sameAsset(indexed, facts?.still?.path, media.sourceUrl)
-              ? facts?.still?.sha256
-              : undefined);
+          const stillKnown = sameSeed && sameAsset(indexed, facts?.still?.path, media.sourceUrl);
+          const stillBytes = stillKnown ? facts?.still?.bytes : undefined;
+          const stillHash = media.stillSha256 ?? (stillKnown ? facts?.still?.sha256 : undefined);
+          const stillPath = manifestPath(media.sourceUrl);
+          if (stillHash && stillPath)
+            verifiable.push({
+              label: `${expressionName(media)} · ${t.still}`,
+              path: stillPath,
+              sha256: stillHash,
+            });
           return (
             <article className={styles.edition} key={media.id}>
               <h3>{expressionName(media)}</h3>
@@ -195,6 +211,9 @@ export function ArtworkSources({
                       ])}{' '}
                       ↗
                     </a>
+                    {stillHash ? (
+                      <CopyButton className={styles.copy} value={stillHash} {...copy} />
+                    ) : null}
                   </li>
                 ) : null}
                 {media.master ? (
@@ -208,8 +227,14 @@ export function ArtworkSources({
                   const indexedFilm = facts?.films[indexFilmIds[film.id] ?? film.id];
                   const href = film.sourceUrl ?? film.src;
                   const known = sameSeed && sameAsset(indexed, indexedFilm?.path, href);
-                  const hash =
-                    film.sourceSha256 ?? film.sha256 ?? (known ? indexedFilm?.sha256 : undefined);
+                  const hash = filmHash(film, known ? indexedFilm?.sha256 : undefined);
+                  const path = manifestPath(href);
+                  if (hash && path)
+                    verifiable.push({
+                      label: `${expressionName(media)} · ${sentenceCase(filmLabel(film, t), locale)}`,
+                      path,
+                      sha256: hash,
+                    });
                   return (
                     <li key={film.variantKey}>
                       <a href={href} target="_blank" rel="noreferrer">
@@ -218,6 +243,9 @@ export function ArtworkSources({
                           film.durationSeconds
                             ? `${number.format(Math.round(film.durationSeconds))} s`
                             : undefined,
+                          known && indexedFilm?.width && indexedFilm?.height
+                            ? `${number.format(indexedFilm.width)} × ${number.format(indexedFilm.height)} px`
+                            : undefined,
                           known && indexedFilm?.bytes
                             ? formatBytes(indexedFilm.bytes, locale)
                             : undefined,
@@ -225,6 +253,7 @@ export function ArtworkSources({
                         ])}{' '}
                         ↗
                       </a>
+                      {hash ? <CopyButton className={styles.copy} value={hash} {...copy} /> : null}
                     </li>
                   );
                 })}
@@ -234,6 +263,7 @@ export function ArtworkSources({
         })}
         {!work.media.length ? <p className={styles.note}>{t.noMediaFiles}</p> : null}
       </div>
+      {verifiable.length ? <VerifyDownload files={verifiable} t={t} /> : null}
       <ul className={styles.records}>
         {work.provenance.metadataUrl ? (
           <li>

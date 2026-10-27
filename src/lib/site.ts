@@ -26,6 +26,11 @@ export function deploymentUrl(env: Record<string, string | undefined>): string {
 export const DEPLOYMENT_URL = deploymentUrl(process.env);
 export const NFT_ADDRESS = '0xbb84Be3500A63581d3F2d5AC3bdF8685AAedad25' as const;
 export const GAME_ADDRESS = '0x6a714Ae7B5b6eA520F6BCA23d2E609C4Fd5863F2' as const;
+/**
+ * A page's metadata. `image` undefined is the venue's still of 023; an object is that page's
+ * own; null names no image here at all, so the sharing card drawn beside the route (an
+ * opengraph-image.tsx) stands: Next adds a file-based card only where the page set none.
+ */
 export function metadata(
   locale: Locale,
   path: string,
@@ -40,6 +45,7 @@ export function metadata(
       : image;
   // A relative image resolves against the serving deployment, never a domain that may not resolve.
   const preview = chosen ? { ...chosen, url: new URL(chosen.url, DEPLOYMENT_URL).href } : null;
+  const images = preview ? { images: [preview] } : {};
   return {
     title,
     description,
@@ -55,13 +61,13 @@ export function metadata(
       url,
       type: 'website',
       siteName: 'Cosmic Signature',
-      images: preview ? [preview] : [],
+      ...images,
     },
     twitter: {
-      card: preview ? 'summary_large_image' : 'summary',
+      card: 'summary_large_image',
       title,
       description,
-      images: preview ? [preview] : [],
+      ...images,
     },
   };
 }

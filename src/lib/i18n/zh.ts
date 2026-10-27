@@ -422,6 +422,54 @@ export const zh: Messages = {
   // ·
   // ·
   // Fork E · exhibitions, trails, sharing images, Verify a download
+  exhibitions: '展览',
+  exhibitionsIntro:
+    '穿行于藏品之间的陈列与小径。每一场都标注日期并署名，每一条小径都写明它所依据的已发布测量值。',
+  hang: '陈列',
+  trail: '小径',
+  hungBy: '由{curator}陈列',
+  hangTitle: '一场陈列：023、031、035',
+  hangNote:
+    '三件作品，陈列为一间展室。二十三号轻盈：光中是红、蓝、绿的丝带，墨中是带有浅色漩涡的致密墨团。三十一号铺满整张纸，紫、橄榄与玫瑰色让位于直抵纸边的墨色场域。三十五号倚向右上，青柠与紫色沿对角线展开。选择其一，它便就地生长；另外两件随之重新排布。没有裁切，没有调色：每一幅版面都是已发布的静帧，置于自身测得的底色之上。',
+  theRule: '规则',
+  theWorks: '作品',
+  trailLongCurve: '长弧',
+  trailLongCurveRule: '已发布的轨道偏心率不低于 0.48 的作品：藏品中最拉长的轨道。',
+  trailLongCurveNote:
+    '偏心率衡量轨道的漂移椭圆偏离圆形的程度。这条小径陈列之时，藏品的偏心率介于 0.40 与 0.50 之间，所以这些是它最长的弧线。在光中，丝带在每一程的尽头拉伸变细；在墨中，流体被拉成悠长而不急促的笔画。它们按偏心率从高到低依次陈列。',
+  trailAlmostStill: '近乎静止',
+  trailAlmostStillRule: '已发布的混沌值不高于 16（满分 100）的作品：最平静的轨道。',
+  trailAlmostStillNote:
+    '混沌值衡量轨道对起点的敏感程度。这些轨道几乎不受其影响。它们的光丝带紧贴而重复；它们的墨几乎就停在落下的地方，纸张保留着自身的纹理。小径从两条最安静的轨道开始，混沌值为 13，并在藏品的中段开始处结束。',
+  trailTurbulence: '湍流',
+  trailTurbulenceRule: '已发布的混沌值不低于 24（满分 100）的作品：最受扰动的轨道。',
+  trailTurbulenceNote:
+    '在同一测量值的另一端，这些轨道对起点最为敏感。丝带交错折返；墨被带到离天体经过之处最远的地方。六十九号的混沌值为 28，是这条小径陈列时记录到的最湍急的轨道。',
+  trailLightBecomingTrace: '光化为迹',
+  trailLightBecomingTraceRule: '已发布的辫状交叉数不少于 50 的作品：轨道丝带彼此交叉最频繁者。',
+  trailLightBecomingTraceNote:
+    '每当一条丝带越过另一条，发布者便计一次交叉。交叉多处，光的版面便成为一张织物；而在墨中，同样的交叉化作一道笔迹中的褶痕。十一号有 97 次交叉，是这条小径陈列时藏品中最密的织物；小径沿着计数一路下行至五十。',
+  measureEccentricity: '偏心率 {value}',
+  measureChaos: '混沌 {value} / 100',
+  measureCrossings: '{value} 次交叉',
+  cycleNote:
+    '一个周期的全部作品在周期结束时以一笔交易压印。周期是藏品的章节，本页按其陈列之貌保留。',
+  results: '结果',
+  settledAt: '已结算 · {eth} ETH',
+  allExhibitions: '全部展览',
+  otherExhibitions: '其他展览',
+  verifyDownload: '校验下载文件',
+  verifyIntro:
+    '选择一个您从上方链接下载的文件。它的 SHA-256 将在您的浏览器中就地计算，并与已发布的哈希值比对；文件绝不会离开您的设备。',
+  verifyChoose: '选择文件',
+  verifyReading: '正在读取 {name}…',
+  verifyMatches: '与 {file} 相符',
+  verifyNoMatch: '与此作品的任何已发布文件均不相符',
+  verifyTooLarge:
+    '此文件过大，无法在浏览器中校验。请运行下面的命令，并将结果与已发布的哈希值比对。',
+  verifyFailed: '无法读取该文件。',
+  publishedHashes: '已发布的哈希值',
+  sharingCollection: '藏品 · {count} 件作品',
   // ·
   // ·
 };

@@ -445,6 +445,57 @@ export const en = {
   // ·
   // ·
   // Fork E · exhibitions, trails, sharing images, Verify a download
+  exhibitions: 'Exhibitions',
+  exhibitionsIntro:
+    'Hangs and trails through the collection. Each is dated and signed, and each trail states the published measurement it follows.',
+  hang: 'Hang',
+  trail: 'Trail',
+  hungBy: 'Hung by {curator}',
+  hangTitle: 'A hang: 023, 031, 035',
+  hangNote:
+    'Three works, hung as one room. Twenty-three is airy: ribbons of red, blue and green in Light, a dense cluster with pale eddies in Ink. Thirty-one spreads across the whole sheet, violet, olive and rose giving way to a sumi field that reaches the edge. Thirty-five leans into its upper right, lime and violet on a diagonal. Choose one and it grows in place; the other two re-form around it. Nothing is cropped or tinted: each plate is the published still on its own measured ground.',
+  theRule: 'The rule',
+  theWorks: 'The works',
+  trailLongCurve: 'The Long Curve',
+  trailLongCurveRule:
+    'Works whose published orbital eccentricity is 0.48 or above: the most elongated orbits in the collection.',
+  trailLongCurveNote:
+    'Eccentricity measures how far an orbit’s drift ellipse departs from a circle. When this trail was hung the collection ran from 0.40 to 0.50, so these are its longest curves. In Light the ribbons stretch and thin at the far end of each pass; in Ink the fluid is pulled into long, unhurried strokes. They hang in order, from the most elongated down.',
+  trailAlmostStill: 'Almost Still',
+  trailAlmostStillRule: 'Works whose published chaos is 16 or below, of 100: the calmest orbits.',
+  trailAlmostStillNote:
+    'Chaos measures how sensitively an orbit depended on where it began. These barely did. Their Light ribbons lie close and repeat; their Ink settles almost where it was laid, and the sheet keeps its grain. The trail begins with the two quietest orbits, at 13, and ends where the collection’s middle begins.',
+  trailTurbulence: 'Turbulence',
+  trailTurbulenceRule:
+    'Works whose published chaos is 24 or above, of 100: the most disturbed orbits.',
+  trailTurbulenceNote:
+    'At the other end of the same measure, these orbits were the most sensitive to their beginnings. The ribbons cross and double back; the ink is carried furthest from where the bodies passed. Sixty-nine, at 28, was the most turbulent orbit recorded when this trail was hung.',
+  trailLightBecomingTrace: 'Light Becoming Trace',
+  trailLightBecomingTraceRule:
+    'Works whose published braid crossings number 50 or more: the orbit ribbons that cross one another most often.',
+  trailLightBecomingTraceNote:
+    'Each time one ribbon passes over another, the publisher counts a crossing. Where there are many, the Light plate is a weave, and in Ink the same crossings become folds in a single trace. Eleven, with 97, was the densest weave in the collection when this trail was hung; the trail follows the count down to fifty.',
+  measureEccentricity: 'eccentricity {value}',
+  measureChaos: 'chaos {value} / 100',
+  measureCrossings: '{value} crossings',
+  cycleNote:
+    'Every work of a cycle is imprinted in one transaction at the cycle’s close. The cycle is the collection’s chapter, and this page keeps it as it was hung.',
+  results: 'Results',
+  settledAt: 'Settled · {eth} ETH',
+  allExhibitions: 'All exhibitions',
+  otherExhibitions: 'Other exhibitions',
+  verifyDownload: 'Verify a download',
+  verifyIntro:
+    'Choose a file you downloaded from the links above. Its SHA-256 is computed here, in your browser, and compared with the published hashes; the file never leaves your device.',
+  verifyChoose: 'Choose a file',
+  verifyReading: 'Reading {name}…',
+  verifyMatches: 'Matches {file}',
+  verifyNoMatch: 'Matches no published file of this work',
+  verifyTooLarge:
+    'This file is too large to verify in the browser. Run the command below and compare the result with the published hashes.',
+  verifyFailed: 'The file could not be read.',
+  publishedHashes: 'Published hashes',
+  sharingCollection: 'Collection · {count} works',
   // ·
   // ·
 } as const;

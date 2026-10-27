@@ -38,13 +38,15 @@ export async function generateMetadata({
   const tokenId = parseArtworkId(id);
   if (tokenId === null) return {};
   const t = messages(locale);
-  const { artwork } = await getArtwork(tokenId);
+  // The work's card is drawn beside this route (opengraph-image.tsx) from its own rung; the
+  // configured still stands only for a work the index does not know.
+  const { artwork } = indexedWork(tokenId) ? { artwork: null } : await getArtwork(tokenId);
   return metadata(
     locale,
     `/art/${tokenId}`,
     workNumber(tokenId),
     indexedWork(tokenId)?.description ?? t.statementLine,
-    artworkSharingImage(artwork, `${workNumber(tokenId)} · ${t.ink}`),
+    indexedWork(tokenId) ? null : artworkSharingImage(artwork, `${workNumber(tokenId)} · ${t.ink}`),
   );
 }
 

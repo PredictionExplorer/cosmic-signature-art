@@ -15,7 +15,7 @@ import { Colophon } from '@/components/colophon';
 import { IndexSheet } from '@/components/index-sheet';
 import { KeySheet } from '@/components/key-sheet';
 import { KeyboardVocabulary } from '@/components/keys';
-import { SITE_URL } from '@/lib/site';
+import { DEPLOYMENT_URL } from '@/lib/site';
 import '@fontsource-variable/literata/opsz.css';
 import '@fontsource-variable/literata/opsz-italic.css';
 import '@fontsource/ibm-plex-mono/400.css';
@@ -29,7 +29,9 @@ export const viewport: Viewport = {
   viewportFit: 'cover',
 };
 export const metadata: Metadata = {
-  metadataBase: new URL(SITE_URL),
+  // File-based images and icons resolve against the serving deployment, so a crawler can
+  // fetch them while cosmic.art's DNS is pending; canonical links are absolute on SITE_URL.
+  metadataBase: new URL(DEPLOYMENT_URL),
   title: { default: 'Cosmic Signature — The shape of motion', template: '%s · Cosmic Signature' },
   description: 'A living collection of recorded three-body orbits, rendered as light and as ink.',
 };

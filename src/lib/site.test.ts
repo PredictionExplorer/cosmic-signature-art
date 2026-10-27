@@ -79,9 +79,11 @@ describe('page metadata', () => {
     });
     const images = absolute.openGraph?.images as { url: string }[];
     expect(images[0].url).toBe('https://a1.cosmicsignature.com/x/full.webp');
+    // No configured image names none at all, so a card drawn beside the route can stand.
     const none = metadata('en', '/privacy', 'T', 'D', null);
-    expect(none.openGraph?.images).toEqual([]);
-    expect((none.twitter as { card: string }).card).toBe('summary');
+    expect(none.openGraph).not.toHaveProperty('images');
+    expect(none.twitter).not.toHaveProperty('images');
+    expect((none.twitter as { card: string }).card).toBe('summary_large_image');
   });
 });
 

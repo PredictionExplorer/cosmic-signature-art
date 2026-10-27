@@ -54,12 +54,14 @@ describe('running head', () => {
     const links = within(nav).getAllByRole('link');
     expect(links.map((link) => link.textContent)).toEqual([
       en.collection,
+      en.exhibitions,
       en.auctions,
       en.process,
       en.statement,
     ]);
     expect(links.map((link) => link.getAttribute('href'))).toEqual([
       '/collection',
+      '/exhibitions',
       '/auctions',
       '/process',
       '/statement',
@@ -105,8 +107,8 @@ describe('running head', () => {
     expect(overlay).toHaveAttribute('aria-hidden', 'true');
     expect(overlay).toHaveAttribute('inert');
     expect(screen.getAllByRole('button', { name: en.index })).toHaveLength(1);
-    // The skip link, the wordmark and the four words; the overlay adds no anchor at all.
-    expect(screen.getAllByRole('link')).toHaveLength(6);
+    // The skip link, the wordmark and the five words; the overlay adds no anchor at all.
+    expect(screen.getAllByRole('link')).toHaveLength(7);
     expect(overlay.querySelectorAll('a')).toHaveLength(0);
   });
 

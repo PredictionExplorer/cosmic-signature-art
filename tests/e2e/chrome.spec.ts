@@ -22,6 +22,7 @@ test('the running head carries the one vocabulary, the Index word and the langua
   } else {
     await expect(nav.getByRole('link')).toHaveText([
       t.collection,
+      t.exhibitions,
       t.auctions,
       t.process,
       t.statement,
@@ -70,6 +71,7 @@ test('the colophon states the record date and keeps the one outward arrow', asyn
   const rows = footer.getByRole('navigation', { name: t.colophon }).getByRole('link');
   await expect(rows).toHaveText([
     t.collection,
+    t.exhibitions,
     t.auctions,
     t.process,
     t.statement,

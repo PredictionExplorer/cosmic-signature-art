@@ -74,6 +74,16 @@ test('an artwork is typed as a catalogue entry from the publisher’s record, wi
     'https://a1.cosmicsignature.com/metadata/31',
   );
   for (const link of await sources.getByRole('link').all()) await expect(link).toContainText('↗');
+  // Verify a download: the published hashes in full, and a chosen file hashed in the browser.
+  const download = sources.locator('details', { hasText: t.verifyDownload });
+  await download.locator('summary').click();
+  await expect(download.getByText(`${t.ink} · ${t.film} · videos/web/ember.mp4`)).toBeVisible();
+  await expect(download.locator('code').first()).toHaveText(/^[0-9a-f]{64}$/);
+  await download
+    .getByLabel(t.verifyChoose)
+    .setInputFiles({ name: 'not-the-film.mp4', mimeType: 'video/mp4', buffer: Buffer.from('x') });
+  await expect(download.getByRole('status')).toContainText(t.verifyNoMatch);
+  await expect(download.getByRole('status')).toContainText(/sha256 [0-9a-f]{64}/);
   await noHorizontalOverflow(page);
 });
 

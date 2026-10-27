@@ -440,6 +440,55 @@ export const ko: Messages = {
   // ·
   // ·
   // Fork E · exhibitions, trails, sharing images, Verify a download
+  exhibitions: '전시',
+  exhibitionsIntro:
+    '컬렉션을 가로지르는 전시와 산책길. 각 전시에는 날짜와 서명이 있고, 각 산책길은 그것이 따르는 공개된 측정값을 밝힙니다.',
+  hang: '전시',
+  trail: '산책길',
+  hungBy: '{curator} 기획',
+  hangTitle: '한 번의 전시: 023, 031, 035',
+  hangNote:
+    '세 작품을 하나의 방으로 걸었습니다. 23번은 가볍습니다. 빛에서는 붉고 푸르고 초록인 리본, 먹에서는 옅은 소용돌이를 품은 짙은 덩이입니다. 31번은 종이 전체로 퍼져, 보라와 올리브와 장미색이 가장자리까지 닿는 먹의 장으로 이어집니다. 35번은 오른쪽 위로 기울어, 라임과 보라가 대각선으로 놓입니다. 하나를 고르면 그 자리에서 커지고, 다른 둘은 그 주위로 다시 자리를 잡습니다. 자르거나 색을 입힌 것은 없습니다. 각 판은 공개된 정지 화상이며, 스스로 측정된 바탕 위에 놓입니다.',
+  theRule: '규칙',
+  theWorks: '작품',
+  trailLongCurve: '긴 곡선',
+  trailLongCurveRule: '공개된 궤도 이심률이 0.48 이상인 작품: 컬렉션에서 가장 길게 늘어난 궤도.',
+  trailLongCurveNote:
+    '이심률은 궤도의 표류 타원이 원에서 얼마나 벗어났는지를 측정합니다. 이 산책길을 걸었을 때 컬렉션은 0.40에서 0.50 사이에 있었으니, 이것들이 가장 긴 곡선입니다. 빛에서는 리본이 매 궤적의 먼 끝에서 늘어나며 가늘어지고, 먹에서는 유체가 길고 서두르지 않는 획으로 당겨집니다. 가장 길게 늘어난 것부터 차례로 걸었습니다.',
+  trailAlmostStill: '거의 고요한',
+  trailAlmostStillRule: '공개된 카오스 값이 100 중 16 이하인 작품: 가장 잔잔한 궤도.',
+  trailAlmostStillNote:
+    '카오스 값은 궤도가 출발점에 얼마나 민감하게 의존했는지를 측정합니다. 이 궤도들은 거의 그렇지 않았습니다. 빛의 리본은 가까이 놓여 되풀이되고, 먹은 놓인 자리에 거의 그대로 가라앉아 종이는 결을 지킵니다. 산책길은 카오스 값 13의 가장 조용한 두 궤도에서 시작해 컬렉션의 중간이 시작되는 곳에서 끝납니다.',
+  trailTurbulence: '난류',
+  trailTurbulenceRule: '공개된 카오스 값이 100 중 24 이상인 작품: 가장 크게 교란된 궤도.',
+  trailTurbulenceNote:
+    '같은 측정값의 반대편 끝에서, 이 궤도들은 출발점에 가장 민감했습니다. 리본은 서로 가로지르고 되돌아오며, 먹은 천체가 지나간 자리에서 가장 멀리 실려 갑니다. 69번은 카오스 값 28로, 이 산책길을 걸었을 때 기록된 가장 난류적인 궤도였습니다.',
+  trailLightBecomingTrace: '빛이 자취가 되다',
+  trailLightBecomingTraceRule:
+    '공개된 브레이드 교차 수가 50 이상인 작품: 궤도 리본이 서로 가장 자주 교차하는 작품.',
+  trailLightBecomingTraceNote:
+    '한 리본이 다른 리본 위를 지날 때마다 발행자는 교차 하나를 셉니다. 교차가 많은 곳에서 빛의 판은 하나의 직물이 되고, 먹에서는 같은 교차들이 한 줄기 자취의 접힘이 됩니다. 11번은 97회로, 이 산책길을 걸었을 때 컬렉션에서 가장 촘촘한 직물이었습니다. 산책길은 그 수를 따라 50까지 내려갑니다.',
+  measureEccentricity: '이심률 {value}',
+  measureChaos: '카오스 {value} / 100',
+  measureCrossings: '교차 {value}회',
+  cycleNote:
+    '한 사이클의 모든 작품은 사이클이 끝날 때 하나의 거래로 각인됩니다. 사이클은 컬렉션의 장이며, 이 페이지는 걸린 그대로를 간직합니다.',
+  results: '결과',
+  settledAt: '정산 완료 · {eth} ETH',
+  allExhibitions: '모든 전시',
+  otherExhibitions: '다른 전시',
+  verifyDownload: '다운로드 검증',
+  verifyIntro:
+    '위 링크에서 내려받은 파일을 선택하세요. 파일의 SHA-256은 여기, 브라우저 안에서 계산되어 공개된 해시와 비교됩니다. 파일은 기기를 떠나지 않습니다.',
+  verifyChoose: '파일 선택',
+  verifyReading: '{name} 읽는 중…',
+  verifyMatches: '{file}과 일치',
+  verifyNoMatch: '이 작품의 공개된 파일 중 일치하는 것이 없습니다',
+  verifyTooLarge:
+    '이 파일은 브라우저에서 검증하기에 너무 큽니다. 아래 명령을 실행하고 결과를 공개된 해시와 비교하세요.',
+  verifyFailed: '파일을 읽을 수 없습니다.',
+  publishedHashes: '공개된 해시',
+  sharingCollection: '컬렉션 · 작품 {count}점',
   // ·
   // ·
 };

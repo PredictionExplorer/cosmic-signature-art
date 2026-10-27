@@ -73,6 +73,26 @@ describe('published artwork files', () => {
     );
     // Every link in this section leaves the venue and says so.
     for (const link of within(section).getAllByRole('link')) expect(link).toHaveTextContent('↗');
+    // Every hash has one word to copy it in full, and the published hashes can be checked against a download.
+    expect(
+      within(inkFiles).getByRole('button', { name: `${en.copyAddress} ${ink.stillSha256}` }),
+    ).toBeInTheDocument();
+    expect(
+      within(inkFiles).getByRole('button', {
+        name: `${en.copyAddress} ${facts.films.main.sha256}`,
+      }),
+    ).toBeInTheDocument();
+    const verify = within(section).getByText(en.verifyDownload).closest('details')!;
+    expect(
+      within(verify).getByText(`${en.ink} · ${en.film} · videos/web/ember.mp4`),
+    ).toBeInTheDocument();
+    expect(
+      within(verify).getByText(`${en.ink} · ${en.still} · images/web/ember_full.webp`),
+    ).toBeInTheDocument();
+    expect(
+      within(verify).getByText(facts.films.main.sha256!, { selector: 'code' }),
+    ).toBeInTheDocument();
+    expect(within(verify).queryByText(/Master file/)).not.toBeInTheDocument();
   });
 
   it('never borrows the index’s sizes for a different seed', () => {

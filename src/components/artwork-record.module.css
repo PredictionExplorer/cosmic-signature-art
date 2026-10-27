@@ -190,6 +190,17 @@
   border-bottom: 1px solid var(--rule);
   overflow-wrap: anywhere;
 }
+/* A file with a hash carries one word to copy it, on the same hairline as its link. */
+.edition li {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  border-bottom: 1px solid var(--rule);
+}
+.edition li a {
+  flex: 1;
+  border-bottom: 0;
+}
 .records {
   margin-top: 27px;
   display: flex;

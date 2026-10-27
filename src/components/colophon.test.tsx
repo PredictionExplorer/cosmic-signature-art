@@ -11,6 +11,7 @@ describe('colophon', () => {
     const links = within(nav).getAllByRole('link');
     expect(links.map((link) => link.textContent)).toEqual([
       en.collection,
+      en.exhibitions,
       en.auctions,
       en.process,
       en.statement,

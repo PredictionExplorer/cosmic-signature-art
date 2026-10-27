@@ -446,6 +446,58 @@ export const vi: Messages = {
   // ·
   // ·
   // Fork E · exhibitions, trails, sharing images, Verify a download
+  exhibitions: 'Triển lãm',
+  exhibitionsIntro:
+    'Những phòng treo và lối đi xuyên qua bộ sưu tập. Mỗi triển lãm đều ghi ngày và ký tên, và mỗi lối đi nêu rõ phép đo đã công bố mà nó đi theo.',
+  hang: 'Phòng treo',
+  trail: 'Lối đi',
+  hungBy: 'Treo bởi {curator}',
+  hangTitle: 'Một phòng treo: 023, 031, 035',
+  hangNote:
+    'Ba tác phẩm, treo thành một phòng. Hai mươi ba nhẹ nhõm: trong Ánh sáng là những dải đỏ, xanh dương và xanh lục, trong Mực là một cụm đặc với những xoáy nhạt. Ba mươi mốt trải khắp tờ giấy, tím, ô liu và hồng nhường chỗ cho một trường mực chạm đến mép. Ba mươi lăm nghiêng về góc trên bên phải, vàng chanh và tím theo đường chéo. Chọn một tác phẩm, nó lớn lên tại chỗ; hai tác phẩm còn lại sắp lại quanh nó. Không gì bị cắt xén hay nhuộm màu: mỗi bản in là bức ảnh tĩnh đã công bố trên nền màu tự đo của chính nó.',
+  theRule: 'Quy tắc',
+  theWorks: 'Các tác phẩm',
+  trailLongCurve: 'Đường cong dài',
+  trailLongCurveRule:
+    'Những tác phẩm có độ lệch tâm quỹ đạo đã công bố từ 0,48 trở lên: những quỹ đạo kéo dài nhất của bộ sưu tập.',
+  trailLongCurveNote:
+    'Độ lệch tâm đo mức hình elip trôi của quỹ đạo rời xa hình tròn. Khi lối đi này được treo, bộ sưu tập trải từ 0,40 đến 0,50, nên đây là những đường cong dài nhất của nó. Trong Ánh sáng, các dải kéo giãn và mỏng dần ở đầu xa của mỗi vòng; trong Mực, chất lưu bị kéo thành những nét dài, không vội. Chúng được treo theo thứ tự, từ kéo dài nhất trở xuống.',
+  trailAlmostStill: 'Gần như tĩnh lặng',
+  trailAlmostStillRule:
+    'Những tác phẩm có độ hỗn độn đã công bố từ 16 trở xuống, trên thang 100: những quỹ đạo êm ả nhất.',
+  trailAlmostStillNote:
+    'Độ hỗn độn đo mức quỹ đạo phụ thuộc nhạy cảm vào nơi nó bắt đầu. Những quỹ đạo này gần như không phụ thuộc. Dải Ánh sáng của chúng nằm sát và lặp lại; Mực của chúng lắng gần như đúng nơi được đặt, và tờ giấy giữ lấy vân của mình. Lối đi bắt đầu với hai quỹ đạo lặng nhất, ở mức 13, và kết thúc nơi phần giữa của bộ sưu tập bắt đầu.',
+  trailTurbulence: 'Nhiễu động',
+  trailTurbulenceRule:
+    'Những tác phẩm có độ hỗn độn đã công bố từ 24 trở lên, trên thang 100: những quỹ đạo bị xáo trộn nhất.',
+  trailTurbulenceNote:
+    'Ở đầu kia của cùng một phép đo, những quỹ đạo này nhạy cảm nhất với điểm khởi đầu. Các dải cắt nhau và quay ngược; mực bị cuốn xa nhất khỏi nơi các thiên thể đi qua. Sáu mươi chín, ở mức 28, là quỹ đạo nhiễu động nhất được ghi nhận khi lối đi này được treo.',
+  trailLightBecomingTrace: 'Ánh sáng thành dấu vết',
+  trailLightBecomingTraceRule:
+    'Những tác phẩm có số giao cắt bím đã công bố từ 50 trở lên: những dải quỹ đạo cắt nhau thường xuyên nhất.',
+  trailLightBecomingTraceNote:
+    'Mỗi lần một dải vượt qua dải khác, nhà phát hành tính một giao cắt. Nơi có nhiều giao cắt, bản in Ánh sáng là một tấm dệt, và trong Mực những giao cắt ấy trở thành nếp gấp trong một dấu vết duy nhất. Mười một, với 97, là tấm dệt dày nhất của bộ sưu tập khi lối đi này được treo; lối đi theo số đếm đi xuống tới năm mươi.',
+  measureEccentricity: 'độ lệch tâm {value}',
+  measureChaos: 'hỗn độn {value} / 100',
+  measureCrossings: '{value} giao cắt',
+  cycleNote:
+    'Mọi tác phẩm của một chu kỳ được khắc trong một giao dịch khi chu kỳ khép lại. Chu kỳ là chương của bộ sưu tập, và trang này giữ nó như khi được treo.',
+  results: 'Kết quả',
+  settledAt: 'Đã quyết toán · {eth} ETH',
+  allExhibitions: 'Tất cả triển lãm',
+  otherExhibitions: 'Triển lãm khác',
+  verifyDownload: 'Xác minh tệp đã tải',
+  verifyIntro:
+    'Chọn một tệp bạn đã tải từ các liên kết phía trên. SHA-256 của tệp được tính tại đây, trong trình duyệt của bạn, và so với các mã băm đã công bố; tệp không bao giờ rời khỏi thiết bị của bạn.',
+  verifyChoose: 'Chọn tệp',
+  verifyReading: 'Đang đọc {name}…',
+  verifyMatches: 'Trùng với {file}',
+  verifyNoMatch: 'Không trùng với tệp đã công bố nào của tác phẩm này',
+  verifyTooLarge:
+    'Tệp này quá lớn để xác minh trong trình duyệt. Hãy chạy lệnh bên dưới và so kết quả với các mã băm đã công bố.',
+  verifyFailed: 'Không đọc được tệp.',
+  publishedHashes: 'Mã băm đã công bố',
+  sharingCollection: 'Bộ sưu tập · {count} tác phẩm',
   // ·
   // ·
 };

@@ -422,6 +422,54 @@ export const zhTW: Messages = {
   // ·
   // ·
   // Fork E · exhibitions, trails, sharing images, Verify a download
+  exhibitions: '展覽',
+  exhibitionsIntro:
+    '穿行於典藏之間的陳列與小徑。每一場都標註日期並署名，每一條小徑都寫明它所依據的已發布測量值。',
+  hang: '陳列',
+  trail: '小徑',
+  hungBy: '由{curator}陳列',
+  hangTitle: '一場陳列：023、031、035',
+  hangNote:
+    '三件作品，陳列為一間展室。二十三號輕盈：光中是紅、藍、綠的絲帶，墨中是帶有淺色漩渦的緻密墨團。三十一號鋪滿整張紙，紫、橄欖與玫瑰色讓位於直抵紙邊的墨色場域。三十五號倚向右上，青檸與紫色沿對角線展開。選擇其一，它便就地生長；另外兩件隨之重新排布。沒有裁切，沒有調色：每一幅版面都是已發布的靜幀，置於自身測得的底色之上。',
+  theRule: '規則',
+  theWorks: '作品',
+  trailLongCurve: '長弧',
+  trailLongCurveRule: '已發布的軌道偏心率不低於 0.48 的作品：典藏中最拉長的軌道。',
+  trailLongCurveNote:
+    '偏心率衡量軌道的漂移橢圓偏離圓形的程度。這條小徑陳列之時，典藏的偏心率介於 0.40 與 0.50 之間，所以這些是它最長的弧線。在光中，絲帶在每一程的盡頭拉伸變細；在墨中，流體被拉成悠長而不急促的筆畫。它們按偏心率從高到低依次陳列。',
+  trailAlmostStill: '近乎靜止',
+  trailAlmostStillRule: '已發布的混沌值不高於 16（滿分 100）的作品：最平靜的軌道。',
+  trailAlmostStillNote:
+    '混沌值衡量軌道對起點的敏感程度。這些軌道幾乎不受其影響。它們的光絲帶緊貼而重複；它們的墨幾乎就停在落下的地方，紙張保留著自身的紋理。小徑從兩條最安靜的軌道開始，混沌值為 13，並在典藏的中段開始處結束。',
+  trailTurbulence: '湍流',
+  trailTurbulenceRule: '已發布的混沌值不低於 24（滿分 100）的作品：最受擾動的軌道。',
+  trailTurbulenceNote:
+    '在同一測量值的另一端，這些軌道對起點最為敏感。絲帶交錯折返；墨被帶到離天體經過之處最遠的地方。六十九號的混沌值為 28，是這條小徑陳列時記錄到的最湍急的軌道。',
+  trailLightBecomingTrace: '光化為跡',
+  trailLightBecomingTraceRule: '已發布的辮狀交叉數不少於 50 的作品：軌道絲帶彼此交叉最頻繁者。',
+  trailLightBecomingTraceNote:
+    '每當一條絲帶越過另一條，發布者便計一次交叉。交叉多處，光的版面便成為一張織物；而在墨中，同樣的交叉化作一道筆跡中的褶痕。十一號有 97 次交叉，是這條小徑陳列時典藏中最密的織物；小徑沿著計數一路下行至五十。',
+  measureEccentricity: '偏心率 {value}',
+  measureChaos: '混沌 {value} / 100',
+  measureCrossings: '{value} 次交叉',
+  cycleNote:
+    '一個週期的全部作品在週期結束時以一筆交易壓印。週期是典藏的章節，本頁按其陳列之貌保留。',
+  results: '結果',
+  settledAt: '已結算 · {eth} ETH',
+  allExhibitions: '全部展覽',
+  otherExhibitions: '其他展覽',
+  verifyDownload: '驗證下載檔案',
+  verifyIntro:
+    '選擇一個您從上方連結下載的檔案。它的 SHA-256 將在您的瀏覽器中就地計算，並與已發布的雜湊值比對；檔案絕不會離開您的裝置。',
+  verifyChoose: '選擇檔案',
+  verifyReading: '正在讀取 {name}…',
+  verifyMatches: '與 {file} 相符',
+  verifyNoMatch: '與此作品的任何已發布檔案均不相符',
+  verifyTooLarge:
+    '此檔案過大，無法在瀏覽器中驗證。請執行下面的指令，並將結果與已發布的雜湊值比對。',
+  verifyFailed: '無法讀取該檔案。',
+  publishedHashes: '已發布的雜湊值',
+  sharingCollection: '典藏 · {count} 件作品',
   // ·
   // ·
 };
