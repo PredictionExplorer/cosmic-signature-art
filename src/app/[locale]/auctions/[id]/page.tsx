@@ -13,8 +13,9 @@ import { workNumber } from '@/lib/art/number';
 import { metadata } from '@/lib/site';
 import { auctionConfigured } from '@/lib/auction/config';
 import { AuctionPanel } from '@/components/auction-panel';
+import { AuctionLot } from '@/components/auction-lot';
 import { ArtworkViewer } from '@/components/artwork-viewer';
-import { AuctionAvailability, AuctionSummary } from '@/components/auction-summary';
+import { AuctionAvailability } from '@/components/auction-summary';
 import { AuctionRules } from '@/components/auction-rules';
 import { artworkViewParams, type ArtworkViewQuery } from '@/lib/art/view';
 import styles from '../auction-pages.module.css';
@@ -39,9 +40,10 @@ export async function generateMetadata({
   );
 }
 /**
- * The lot page is the artwork page with the bid rail beneath its plate. Nothing in the
- * panel changes; while a collector reviews a bid the theatre hushes, and the keys that move
- * the venue are silent inside the rail.
+ * The lot page is the artwork page with the lot strip beneath its plate: the chain's one
+ * line, `Collect this work`, which opens the bid sheet, `Your activity`, and the bid history.
+ * Nothing in the panel changes; while a collector reviews a bid the theatre hushes, and the
+ * keys that move the venue are silent inside the strip and the sheets.
  */
 export default async function AuctionWork({
   params,
@@ -60,7 +62,7 @@ export default async function AuctionWork({
   const indexed = indexedWork(tokenId);
   // A curated work paints at once from the registry while its live record streams, as on the
   // artwork page; any other token waits for the publisher, and one it reports as not found is
-  // not a lot: no rail, no canonical record.
+  // not a lot: no strip, no canonical record.
   const registry = getCuratedArtwork(tokenId);
   const opening = initialExpression ?? (indexed?.media.ink || !indexed ? 'ink' : 'light');
   const curated = registry?.media.some((item) => item.id === opening && item.still)
@@ -97,25 +99,27 @@ export default async function AuctionWork({
       ) : (
         <p className="notice section-wrap">{t.mediaUnavailable}</p>
       )}
-      <section className={styles.lotLayout} aria-label={t.auctionRoom}>
-        <aside id="lot-actions" className={styles.bidRail} data-keys-suppressed="">
+      <section className={styles.lotStrip} aria-label={t.auctionRoom}>
+        <div className={styles.lotIdentity}>
           <h1 className={`eyebrow ${styles.lotKicker}`}>
             {t.auctionKicker} · {workNumber(tokenId)}
           </h1>
-          {auctionConfigured ? (
-            <>
-              <AuctionPanel locale={locale} tokenId={tokenId} t={t} />
-              <AuctionSummary locale={locale} t={t} />
-            </>
-          ) : (
-            <AuctionAvailability locale={locale} t={t} />
-          )}
-        </aside>
-        <div className={styles.lotRecord}>
           <Link className="text-link" href={localizedPath(locale, `/art/${tokenId}#record`)}>
             {t.auctionViewRecord}
           </Link>
         </div>
+        {auctionConfigured ? (
+          <AuctionLot
+            tokenId={tokenId}
+            t={t}
+            locale={locale}
+            panel={<AuctionPanel locale={locale} tokenId={tokenId} t={t} />}
+          />
+        ) : (
+          <aside id="lot-actions" className={styles.bidRail} data-keys-suppressed="">
+            <AuctionAvailability locale={locale} t={t} />
+          </aside>
+        )}
       </section>
       <section className={`${styles.rules} section-wrap`} aria-labelledby="rules-title">
         <header className={styles.rulesHeading}>

@@ -6,6 +6,10 @@ import { fill } from '@/lib/i18n/format';
 import { metadata } from '@/lib/site';
 import { auctionConfigured } from '@/lib/auction/config';
 import { comingCycle } from '@/lib/auction/sale';
+import type { LotTraitsById } from '@/lib/auction/catalogue';
+import { collectionIndex } from '@/lib/art/collection-index';
+import { curatedArtworks } from '@/lib/art/catalog';
+import type { Artwork } from '@/lib/art/types';
 import { AuctionRules } from '@/components/auction-rules';
 import { AuctionLaunch } from '@/components/auction-launch';
 import styles from './sale.module.css';
@@ -15,6 +19,26 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
   if (!isLocale(locale)) return {};
   const t = messages(locale);
   return metadata(locale, '/auctions', t.auctions, t.auctionIntro);
+}
+
+/** The words the index lends each lot's entry line: structure, underlay, fate and cycle. */
+function lotTraits(): LotTraitsById {
+  return Object.fromEntries(
+    collectionIndex.works.map((work) => [
+      work.id,
+      {
+        structure: work.traits.structure,
+        underlay: work.traits.underlay,
+        fate: work.traits.fate,
+        cycle: work.cycle,
+      },
+    ]),
+  );
+}
+
+/** The curated archive by token, so a lot paints from local files before its record arrives. */
+function curatedById(): Record<number, Artwork> {
+  return Object.fromEntries(curatedArtworks.map((work) => [work.id, work]));
 }
 
 /**
@@ -48,8 +72,14 @@ export default async function Auctions({ params }: { params: Promise<{ locale: s
           {auctionConfigured ? t.browseLots : t.conditionsOfSale}
         </a>
       </section>
-      <div id="auction-catalogue" className={styles.catalogue}>
-        <AuctionLaunch locale={locale} t={t} cycle={comingCycle()} />
+      <div id="auction-catalogue" className={auctionConfigured ? styles.lots : styles.catalogue}>
+        <AuctionLaunch
+          locale={locale}
+          t={t}
+          cycle={comingCycle()}
+          traits={auctionConfigured ? lotTraits() : undefined}
+          curated={auctionConfigured ? curatedById() : undefined}
+        />
       </div>
       <section id="conditions" className={styles.conditions} aria-labelledby="rules-title">
         <header className={styles.conditionsHead}>

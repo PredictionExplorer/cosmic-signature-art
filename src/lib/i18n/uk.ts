@@ -403,6 +403,40 @@ export const uk: Messages = {
   // ·
   // ·
   // Fork S · the sale catalogue, the bid sheet, the activity sheet
+  lotNumeral: 'Лот {n}',
+  orderOfSale: 'Порядок продажу',
+  lotAvailable: 'Можна розпочати',
+  openingMinimum: 'стартовий мінімум',
+  lotEligibleFrom: 'торги відкриваються з',
+  lotCloses: 'закривається',
+  lotLateBids: 'пізні ставки залишають 10 хвилин',
+  lotWonBy: 'виграв',
+  lotDeliveredWord: 'доставлено',
+  lotAwaitingDelivery: 'очікує доставки',
+  inYourZone: '{time} у вашому часовому поясі',
+  mediaNotPublished: 'Медіа · ще не опубліковано',
+  collectThisWork: 'Придбати цю роботу',
+  bidSheet: 'Аркуш ставки',
+  sheetHandle: 'Закрити аркуш',
+  yourActivity: 'Ваша активність',
+  activityIntro:
+    'Провідні ставки, кредит до повернення та роботи цього продажу, які ви тримаєте, прочитані з блокчейну. Тут не надсилається жодна транзакція.',
+  activityAddress: 'Адреса гаманця',
+  activityLookUp: 'Переглянути',
+  activityUseWallet: 'Мій гаманець',
+  activityLeading: 'Провідні ставки',
+  activityCommitted: 'Зарезервовано',
+  activityRefundable: 'Кредит до повернення',
+  activityWon: 'Виграно, очікує доставки',
+  activityHeld: 'Роботи цього продажу у вас',
+  activityNone: 'Немає',
+  activityUnavailable: 'Активність не вдалося прочитати. Спробуйте ще раз.',
+  activityFor: 'Активність {address}',
+  bidHistory: 'Історія ставок',
+  historyNone: 'Ставок ще немає.',
+  bidHistoryUnavailable: 'Історія недоступна',
+  historyPartial: 'Ранніші ставки можуть бути недоступні.',
+  historyDeliveredTo: 'Доставлено на {address}',
   // ·
   // ·
   // Fork M · the settling plates, the eye-line hang, the phone rung

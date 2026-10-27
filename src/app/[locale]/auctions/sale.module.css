@@ -44,6 +44,10 @@
   padding-inline: var(--gutter);
   scroll-margin-top: var(--head);
 }
+/* The lots run full-bleed, each in its own ground; the gutter lives inside their strips. */
+.lots {
+  scroll-margin-top: var(--head);
+}
 .conditions {
   padding: calc(var(--baseline) * 8) var(--gutter) calc(var(--baseline) * 10);
   border-top: 1px solid var(--rule);

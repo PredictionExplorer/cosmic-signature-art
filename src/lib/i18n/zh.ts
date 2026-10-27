@@ -380,6 +380,40 @@ export const zh: Messages = {
   // ·
   // ·
   // Fork S · the sale catalogue, the bid sheet, the activity sheet
+  lotNumeral: '拍品 {n}',
+  orderOfSale: '拍卖顺序',
+  lotAvailable: '可开始竞拍',
+  openingMinimum: '起拍底价',
+  lotEligibleFrom: '竞拍资格始于',
+  lotCloses: '截止',
+  lotLateBids: '最后十分钟内的出价将延长十分钟',
+  lotWonBy: '得标者',
+  lotDeliveredWord: '已交付',
+  lotAwaitingDelivery: '待交付',
+  inYourZone: '您所在时区 {time}',
+  mediaNotPublished: '媒体 · 尚未发布',
+  collectThisWork: '收藏此作品',
+  bidSheet: '出价单',
+  sheetHandle: '关闭出价单',
+  yourActivity: '您的活动',
+  activityIntro:
+    '从链上读取您在本场拍卖中的领先出价、可退还的押金与持有的作品。此处不会发送任何交易。',
+  activityAddress: '钱包地址',
+  activityLookUp: '查询',
+  activityUseWallet: '使用我的钱包',
+  activityLeading: '领先出价',
+  activityCommitted: '已承诺',
+  activityRefundable: '可退还押金',
+  activityWon: '已得标，待交付',
+  activityHeld: '持有的本场作品',
+  activityNone: '无',
+  activityUnavailable: '无法读取活动记录。请重试。',
+  activityFor: '{address} 的活动',
+  bidHistory: '出价记录',
+  historyNone: '尚无出价。',
+  bidHistoryUnavailable: '记录暂不可用',
+  historyPartial: '更早的出价可能无法显示。',
+  historyDeliveredTo: '已交付至 {address}',
   // ·
   // ·
   // Fork M · the settling plates, the eye-line hang, the phone rung

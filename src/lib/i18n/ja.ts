@@ -402,6 +402,40 @@ export const ja: Messages = {
   // ·
   // ·
   // Fork S · the sale catalogue, the bid sheet, the activity sheet
+  lotNumeral: 'ロット {n}',
+  orderOfSale: '出品順',
+  lotAvailable: '開始可能',
+  openingMinimum: '最低開始価格',
+  lotEligibleFrom: '入札受付開始',
+  lotCloses: '終了',
+  lotLateBids: '終了前10分の入札は10分延長します',
+  lotWonBy: '落札者',
+  lotDeliveredWord: '引き渡し済み',
+  lotAwaitingDelivery: '引き渡し待ち',
+  inYourZone: 'お住まいの時間帯で {time}',
+  mediaNotPublished: 'メディア · 未公開',
+  collectThisWork: 'この作品を収蔵する',
+  bidSheet: '入札シート',
+  sheetHandle: 'シートを閉じる',
+  yourActivity: 'ご自身の活動',
+  activityIntro:
+    'このセールでの最高入札、返金可能なクレジット、保有作品をチェーンから読み取ります。ここからトランザクションは送信されません。',
+  activityAddress: 'ウォレットアドレス',
+  activityLookUp: '照会',
+  activityUseWallet: '自分のウォレットを使う',
+  activityLeading: '最高入札中',
+  activityCommitted: '拘束中の金額',
+  activityRefundable: '返金可能なクレジット',
+  activityWon: '落札、引き渡し待ち',
+  activityHeld: '保有するこのセールの作品',
+  activityNone: 'なし',
+  activityUnavailable: '活動を読み取れませんでした。もう一度お試しください。',
+  activityFor: '{address} の活動',
+  bidHistory: '入札履歴',
+  historyNone: 'まだ入札はありません。',
+  bidHistoryUnavailable: '入札履歴を取得できません',
+  historyPartial: 'それ以前の入札は表示されない場合があります。',
+  historyDeliveredTo: '{address} へ引き渡し',
   // ·
   // ·
   // Fork M · the settling plates, the eye-line hang, the phone rung

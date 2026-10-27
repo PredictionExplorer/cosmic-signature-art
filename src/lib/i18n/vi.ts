@@ -404,6 +404,40 @@ export const vi: Messages = {
   // ·
   // ·
   // Fork S · the sale catalogue, the bid sheet, the activity sheet
+  lotNumeral: 'Lô {n}',
+  orderOfSale: 'Thứ tự đấu giá',
+  lotAvailable: 'Có thể bắt đầu',
+  openingMinimum: 'mức khởi điểm',
+  lotEligibleFrom: 'được đấu giá từ',
+  lotCloses: 'kết thúc',
+  lotLateBids: 'giá trả vào phút chót kéo dài thêm 10 phút',
+  lotWonBy: 'thuộc về',
+  lotDeliveredWord: 'đã giao',
+  lotAwaitingDelivery: 'chờ giao',
+  inYourZone: '{time} theo giờ của bạn',
+  mediaNotPublished: 'Tư liệu · chưa công bố',
+  collectThisWork: 'Sưu tầm tác phẩm này',
+  bidSheet: 'Phiếu trả giá',
+  sheetHandle: 'Đóng phiếu',
+  yourActivity: 'Hoạt động của bạn',
+  activityIntro:
+    'Các giá đang dẫn đầu, khoản hoàn lại và tác phẩm bạn đang giữ trong phiên này, đọc từ chuỗi. Không có giao dịch nào được gửi từ đây.',
+  activityAddress: 'Địa chỉ ví',
+  activityLookUp: 'Tra cứu',
+  activityUseWallet: 'Dùng ví của tôi',
+  activityLeading: 'Giá đang dẫn đầu',
+  activityCommitted: 'Đã cam kết',
+  activityRefundable: 'Khoản hoàn lại',
+  activityWon: 'Đã thắng, chờ giao',
+  activityHeld: 'Tác phẩm của phiên này bạn đang giữ',
+  activityNone: 'Không có',
+  activityUnavailable: 'Không đọc được hoạt động. Hãy thử lại.',
+  activityFor: 'Hoạt động của {address}',
+  bidHistory: 'Lịch sử trả giá',
+  historyNone: 'Chưa có giá nào.',
+  bidHistoryUnavailable: 'Lịch sử không khả dụng',
+  historyPartial: 'Các giá sớm hơn có thể không hiển thị.',
+  historyDeliveredTo: 'Đã giao đến {address}',
   // ·
   // ·
   // Fork M · the settling plates, the eye-line hang, the phone rung

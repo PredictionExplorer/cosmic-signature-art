@@ -24,11 +24,8 @@ const importPattern = new RegExp(
   `from\\s+['"](?:@/lib/art|\\.{1,2}(?:/lib/art)?)/(${SERVER_ONLY_MODULES.join('|')})['"]`,
 );
 const src = join(process.cwd(), 'src');
-/**
- * Client components that still import the catalog for a fallback plate. Phase 2 moves that
- * read to the sale's server page; the list then goes.
- */
-const PENDING = ['src/components/auction-gallery.tsx'];
+/** No client component is excused: the sale's page hands its catalogue the curated works. */
+const PENDING: string[] = [];
 
 function sources(directory: string): string[] {
   const found: string[] = [];

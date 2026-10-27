@@ -23,11 +23,11 @@
   font-size: var(--fs-chapter);
   margin-top: 18px;
 }
-/* The lot page: the plate first, then the bid rail and the way to the record. */
+/* The lot page: the plate first, then the lot strip, with the way to the record at its left. */
 .lotPage {
   padding-bottom: 0;
 }
-.lotLayout {
+.lotStrip {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(320px, 420px);
   gap: 36px var(--gutter);
@@ -35,29 +35,23 @@
   padding: 36px var(--gutter) 54px;
   border-top: 1px solid var(--rule);
 }
+.lotIdentity {
+  display: grid;
+  gap: 18px;
+  justify-items: start;
+  align-content: start;
+}
 .bidRail {
   min-width: 0;
-  grid-column: 2;
   display: grid;
   gap: 18px;
 }
 .lotKicker {
   color: var(--muted);
 }
-.lotRecord {
-  grid-column: 1;
-  grid-row: 1;
-  display: flex;
-  align-items: start;
-}
 @media (max-width: 1000px) {
-  .lotLayout {
+  .lotStrip {
     grid-template-columns: minmax(0, 1fr);
-  }
-  .bidRail,
-  .lotRecord {
-    grid-column: 1;
-    grid-row: auto;
   }
 }
 @media (max-width: 700px) {

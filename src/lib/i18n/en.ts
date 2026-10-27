@@ -403,6 +403,40 @@ export const en = {
   // ·
   // ·
   // Fork S · the sale catalogue, the bid sheet, the activity sheet
+  lotNumeral: 'Lot {n}',
+  orderOfSale: 'Order of sale',
+  lotAvailable: 'Available to start',
+  openingMinimum: 'opening minimum',
+  lotEligibleFrom: 'bidding eligible from',
+  lotCloses: 'closes',
+  lotLateBids: 'late bids leave 10 minutes',
+  lotWonBy: 'won by',
+  lotDeliveredWord: 'delivered',
+  lotAwaitingDelivery: 'awaiting delivery',
+  inYourZone: '{time} in your zone',
+  mediaNotPublished: 'Media · not yet published',
+  collectThisWork: 'Collect this work',
+  bidSheet: 'The bid sheet',
+  sheetHandle: 'Close the sheet',
+  yourActivity: 'Your activity',
+  activityIntro:
+    'Leading bids, refundable credit and works held in this sale, read from the chain. Nothing here sends a transaction.',
+  activityAddress: 'Wallet address',
+  activityLookUp: 'Look up',
+  activityUseWallet: 'Use my wallet',
+  activityLeading: 'Leading bids',
+  activityCommitted: 'Committed',
+  activityRefundable: 'Refundable credit',
+  activityWon: 'Won, awaiting delivery',
+  activityHeld: 'Works held from this sale',
+  activityNone: 'None',
+  activityUnavailable: 'Activity could not be read. Try again.',
+  activityFor: 'Activity of {address}',
+  bidHistory: 'Bid history',
+  historyNone: 'No bids yet.',
+  bidHistoryUnavailable: 'History unavailable',
+  historyPartial: 'Earlier bids may be unavailable.',
+  historyDeliveredTo: 'Delivered to {address}',
   // ·
   // ·
   // Fork M · the settling plates, the eye-line hang, the phone rung

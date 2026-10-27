@@ -17,6 +17,8 @@ export const fixture = {
   refund: 0n,
   delivered: false,
   forwarded: false,
+  historyFailure: false,
+  historyPartial: false,
   walletChain: '0xa4b1',
   calls: [] as Submission[],
   providerMethods: [] as string[],

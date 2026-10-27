@@ -398,6 +398,40 @@ export const ko: Messages = {
   // ·
   // ·
   // Fork S · the sale catalogue, the bid sheet, the activity sheet
+  lotNumeral: '로트 {n}',
+  orderOfSale: '경매 순서',
+  lotAvailable: '시작 가능',
+  openingMinimum: '최저 시작가',
+  lotEligibleFrom: '입찰 가능 시작',
+  lotCloses: '마감',
+  lotLateBids: '마지막 10분 내 입찰은 10분을 연장합니다',
+  lotWonBy: '낙찰자',
+  lotDeliveredWord: '전달 완료',
+  lotAwaitingDelivery: '전달 대기',
+  inYourZone: '내 시간대 {time}',
+  mediaNotPublished: '미디어 · 아직 공개되지 않음',
+  collectThisWork: '이 작품 수집하기',
+  bidSheet: '입찰 시트',
+  sheetHandle: '시트 닫기',
+  yourActivity: '내 활동',
+  activityIntro:
+    '이번 경매에서의 선두 입찰, 환급 가능 크레딧, 보유 작품을 체인에서 읽어 옵니다. 여기서는 어떤 트랜잭션도 보내지 않습니다.',
+  activityAddress: '지갑 주소',
+  activityLookUp: '조회',
+  activityUseWallet: '내 지갑 사용',
+  activityLeading: '선두 입찰',
+  activityCommitted: '약정 금액',
+  activityRefundable: '환급 가능 크레딧',
+  activityWon: '낙찰, 전달 대기',
+  activityHeld: '보유한 이번 경매 작품',
+  activityNone: '없음',
+  activityUnavailable: '활동을 읽을 수 없습니다. 다시 시도하세요.',
+  activityFor: '{address}의 활동',
+  bidHistory: '입찰 기록',
+  historyNone: '아직 입찰이 없습니다.',
+  bidHistoryUnavailable: '기록을 불러올 수 없음',
+  historyPartial: '이전 입찰은 표시되지 않을 수 있습니다.',
+  historyDeliveredTo: '{address}로 전달됨',
   // ·
   // ·
   // Fork M · the settling plates, the eye-line hang, the phone rung
