@@ -909,7 +909,7 @@ function ArtworkViewerSession({
             {t.mediaUnavailable}
           </p>
         ) : null}
-        {wing && light?.still && ink?.still ? (
+        {presentation === 'gallery' && wing && light?.still && ink?.still ? (
           <ArtworkGatefold artwork={artwork} expression={expression} t={t} locale={locale} />
         ) : null}
         {neighbours ? (
@@ -931,6 +931,8 @@ function ArtworkViewerSession({
           expressionFailed={!!failedExpression}
           onExpressionChange={selectExpression}
           initialFilm={room === 'film'}
+          startAt={time.current}
+          locale={locale}
           onClose={closeRoom}
           returnFocusRef={returnFocusRef}
         />

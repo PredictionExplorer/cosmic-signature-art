@@ -19,7 +19,7 @@ import {
 } from '@/lib/art/types';
 import { getPlateGround } from '@/lib/art/plate-records';
 import { workFolio, workNumber } from '@/lib/art/number';
-import { fill } from '@/lib/i18n/format';
+import { fill, formatBytes } from '@/lib/i18n/format';
 import type { Messages } from '@/lib/i18n/en';
 import type { Locale } from '@/lib/i18n/routing';
 import { ArtworkStage } from './artwork-stage';
@@ -768,6 +768,7 @@ export function ArtworkRoom({
                         {' · '}
                         <span className={styles.meta}>
                           {fill(t.durationSeconds, { n: Math.round(item.durationSeconds) })}
+                          {item.bytes ? ` · ${formatBytes(item.bytes, locale)}` : ''}
                         </span>
                       </>
                     ) : null}

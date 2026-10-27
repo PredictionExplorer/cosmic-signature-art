@@ -15,6 +15,8 @@ export interface ArtFilm {
   /** Original published source when src is a local delivery derivative. */
   sourceUrl?: string;
   durationSeconds?: number;
+  /** The published file's size, as the manifest states it; a derivative carries its own. */
+  bytes?: number;
   /** Where an excerpt begins inside its source film, in source seconds. */
   startSeconds?: number;
   /** The source's frame rate, carried by the frame-exact plate clips. */

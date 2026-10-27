@@ -42,6 +42,7 @@ export function artworkFromIndex(work: IndexedWork): Artwork {
           src,
           sourceUrl: src,
           durationSeconds: file.durationSeconds,
+          bytes: file.bytes,
           poster: stillUrl,
           sha256: file.sha256,
           sourceSha256: file.sha256,

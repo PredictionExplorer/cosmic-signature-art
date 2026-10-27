@@ -11,6 +11,7 @@ const assetSchema = z.object({
   width: z.number().int().positive().max(100_000).optional(),
   height: z.number().int().positive().max(100_000).optional(),
   duration_seconds: z.number().positive().max(86_400).optional(),
+  bytes: z.number().int().positive().optional(),
   sha256: z
     .string()
     .regex(/^[a-f0-9]{64}$/i)
@@ -94,6 +95,7 @@ export function parseMediaManifest(raw: unknown, artwork: Artwork): ArtInterpret
           src: url(file)!,
           sourceUrl: url(file),
           durationSeconds: file.duration_seconds,
+          bytes: file.bytes,
           poster: url(still),
           sha256: file.sha256?.toLowerCase(),
           sourceSha256: file.sha256?.toLowerCase(),

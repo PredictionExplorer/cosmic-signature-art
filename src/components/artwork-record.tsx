@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import type { ArtFilm, ArtInterpretation, Artwork } from '@/lib/art/types';
 import type { Messages } from '@/lib/i18n/en';
+import { formatBytes } from '@/lib/i18n/format';
 import type { Locale } from '@/lib/i18n/routing';
 import { indexedAssetUrl, indexedWork, type IndexedWork } from '@/lib/art/collection-index';
 import { CopyButton } from './copy-button';
@@ -75,21 +76,6 @@ export function recordTime(value: Date, locale: Locale) {
 
 export function shortHash(hash: string) {
   return `${hash.slice(0, 4)}…${hash.slice(-4)}`;
-}
-
-function formatBytes(bytes: number, locale: Locale) {
-  const megabytes = bytes / 1_000_000;
-  return megabytes >= 1
-    ? new Intl.NumberFormat(locale, {
-        style: 'unit',
-        unit: 'megabyte',
-        maximumFractionDigits: 1,
-      }).format(megabytes)
-    : new Intl.NumberFormat(locale, {
-        style: 'unit',
-        unit: 'kilobyte',
-        maximumFractionDigits: 0,
-      }).format(bytes / 1000);
 }
 
 function fileFormat(url?: string) {
