@@ -108,6 +108,7 @@ test('language switching preserves the current artwork route', async ({ page, is
 
 test('a work without a local film wakes into its settling clip, keeps the film’s own clock, and fades into its still', async ({
   page,
+  isMobile,
 }, testInfo) => {
   test.skip(
     testInfo.project.name.includes('reduced-motion'),
@@ -119,6 +120,36 @@ test('a work without a local film wakes into its settling clip, keeps the film�
   if ((await toggle.getAttribute('aria-pressed')) === 'true') await toggle.click();
   const plate = page.locator(current);
   const film = plate.locator('video');
+  if (isMobile) {
+    // A phone's plate rests with the eight-second excerpt as its one ambient motion, labelled;
+    // the settling clip answers the word alone, never unbidden over a phone's connection.
+    await expect(film).toHaveAttribute('src', /\/art\/previews\/40-[a-f0-9]{16}\.mp4$/, {
+      timeout: 15_000,
+    });
+    await expect
+      .poll(
+        () =>
+          film.evaluate((element) => {
+            const video = element as HTMLVideoElement;
+            return !video.paused && video.currentTime > 0;
+          }),
+        { timeout: 20_000 },
+      )
+      .toBe(true);
+    await expect(plate.locator('[data-film-state]')).toHaveText(/excerpt 00:06–00:14/i);
+    await expect(plate.locator('.strip')).not.toContainText(/00:\d\d \/ 00:\d\d/);
+    await plate.getByRole('button', { name: 'Still', exact: true }).click();
+    const word = plate.getByRole('button', { name: 'Film', exact: true });
+    await expect(word).not.toHaveAttribute('title');
+    await word.click();
+    await expect(plate.locator('video')).toHaveAttribute(
+      'src',
+      /\/art\/clips\/40-ink-settling-[a-f0-9]{16}\.mp4$/,
+      { timeout: 15_000 },
+    );
+    await expect(page.getByRole('dialog')).toHaveCount(0);
+    return;
+  }
   // The plate's film is the settling clip: the film's final eight seconds, which end on the still.
   await expect(film).toHaveAttribute('src', /\/art\/clips\/40-ink-settling-[a-f0-9]{16}\.mp4$/, {
     timeout: 15_000,

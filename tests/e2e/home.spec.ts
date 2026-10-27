@@ -116,6 +116,7 @@ test("the home paints the day's work from an inline preview before the full stil
 
 test('Ink and Light preserve token identity and genuine media; motion is controllable', async ({
   page,
+  isMobile,
 }, testInfo) => {
   await page.goto('/');
   const reduced = testInfo.project.name.includes('reduced-motion');
@@ -127,11 +128,12 @@ test('Ink and Light preserve token identity and genuine media; motion is control
     await expect(films).toHaveCount(0);
     await toggle.click();
   }
-  // The arrival film is the opening clip, the first ten seconds at 1280 px.
-  await expect(film).toHaveAttribute(
-    'src',
-    new RegExp(`/art/clips/${today}-ink-opening-[a-f0-9]{16}\\.mp4$`),
-  );
+  // A phone's home rests with the eight-second excerpt as its ambient motion, labelled, and
+  // fetches neither the opening clip nor the complete film behind it unbidden.
+  const arrival = isMobile
+    ? new RegExp(`/art/previews/${today}-[a-f0-9]{16}\\.mp4$`)
+    : new RegExp(`/art/clips/${today}-ink-opening-[a-f0-9]{16}\\.mp4$`);
+  await expect(film).toHaveAttribute('src', arrival);
   await expect
     .poll(() => film.evaluate((element) => (element as HTMLVideoElement).readyState), {
       timeout: 15_000,
@@ -143,16 +145,21 @@ test('Ink and Light preserve token identity and genuine media; motion is control
     })
     .toBe(false);
   await expect(film).toHaveClass(/has-frame/);
-  await expect(page.locator('.time-line')).toBeVisible();
-  // The complete film is fetched behind the clip and takes over at the same frame.
-  await expect(page.locator(`${current} .art-media`)).toHaveAttribute('data-handover', 'film', {
-    timeout: 30_000,
-  });
-  const relay = page.locator(`${current} video[data-relay]`);
-  await expect(relay).toHaveAttribute('src', new RegExp(`/art/${today}-ink-preview\\.mp4$`));
-  await expect(relay).toHaveClass(/has-frame/);
-  // The clip has handed over: only the complete film remains on the plate.
-  await expect(page.locator(`${current} video:not([data-relay])`)).toHaveCount(0);
+  if (isMobile) {
+    await expect(page.locator(`${current} [data-film-state]`)).toHaveText(/excerpt 00:06–00:14/i);
+    await expect(page.locator(`${current} video[data-relay]`)).toHaveCount(0);
+  } else {
+    await expect(page.locator('.time-line')).toBeVisible();
+    // The complete film is fetched behind the clip and takes over at the same frame.
+    await expect(page.locator(`${current} .art-media`)).toHaveAttribute('data-handover', 'film', {
+      timeout: 30_000,
+    });
+    const relay = page.locator(`${current} video[data-relay]`);
+    await expect(relay).toHaveAttribute('src', new RegExp(`/art/${today}-ink-preview\\.mp4$`));
+    await expect(relay).toHaveClass(/has-frame/);
+    // The clip has handed over: only the complete film remains on the plate.
+    await expect(page.locator(`${current} video:not([data-relay])`)).toHaveCount(0);
+  }
   if (!reduced) {
     // The Turn: Light arrives from the right; the strip's words follow the ground.
     await page
@@ -196,10 +203,7 @@ test('Ink and Light preserve token identity and genuine media; motion is control
   await artworkImageSource(page.locator(`${current} img.art-still`), today, 'ink');
   await expect(page.locator(`${current} video`)).toHaveCount(0);
   await toggle.click();
-  await expect(page.locator(`${current} video`).first()).toHaveAttribute(
-    'src',
-    new RegExp(`/art/clips/${today}-ink-opening-[a-f0-9]{16}\\.mp4$`),
-  );
+  await expect(page.locator(`${current} video`).first()).toHaveAttribute('src', arrival);
   await pauseAmbientMotion(page);
   await page.reload();
   await expect(page.locator('button.motion-toggle')).toHaveAttribute('aria-pressed', 'true');

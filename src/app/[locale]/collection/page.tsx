@@ -20,6 +20,7 @@ import {
   type WorkFilter,
 } from '@/lib/art/collection-index';
 import { artworkFromIndex } from '@/lib/art/collection-cards';
+import { artworkForView } from '@/lib/art/view-media';
 import { workFolio } from '@/lib/art/number';
 import { PlateSequence } from '@/components/plate-sequence';
 import { CollectionRoom } from './collection-room';
@@ -293,7 +294,7 @@ export default async function Collection({
             </Suspense>
           ) : works.length ? (
             <PlateSequence
-              works={works.map(artworkFromIndex)}
+              works={works.map((work) => artworkForView(artworkFromIndex(work), 'card'))}
               locale={locale}
               t={t}
               expression={expression}
@@ -363,7 +364,7 @@ async function SearchResults({
       ) : null}
       {result.items.length ? (
         <PlateSequence
-          works={result.items}
+          works={result.items.map((work) => artworkForView(work, 'card'))}
           locale={locale}
           t={t}
           expression={expression}

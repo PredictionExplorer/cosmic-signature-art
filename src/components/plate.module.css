@@ -2,7 +2,8 @@
 .screen {
   --ground: var(--paper);
   --type: var(--paper-type);
-  --muted: #68685e;
+  /* Muted words on a sheet's own tone: 5.1:1 on the darkest kozo measured (#e2ddd2). */
+  --muted: #5a5a51;
   background: var(--plate-ground, var(--ground));
   color: var(--type);
 }

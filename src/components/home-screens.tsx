@@ -4,7 +4,7 @@ import { localizedPath, type Locale } from '@/lib/i18n/routing';
 import { fill } from '@/lib/i18n/format';
 import { getCuratedArtwork } from '@/lib/art/catalog';
 import { collectionIndex, cycles, indexedAssetUrl, indexedWork } from '@/lib/art/collection-index';
-import { withCollectionPreviews } from '@/lib/art/collection-previews';
+import { artworkForView } from '@/lib/art/view-media';
 import { workFolio, workNumber } from '@/lib/art/number';
 import { SpreadPlates } from './home-spread-plates';
 import styles from './home-screens.module.css';
@@ -53,7 +53,7 @@ export function HomeStatement({ locale, t }: { locale: Locale; t: Messages }) {
 export function HomeSpread({ locale, t }: { locale: Locale; t: Messages }) {
   const works = [31, 35].flatMap((id) => {
     const work = getCuratedArtwork(id);
-    return work ? [{ ...work, media: withCollectionPreviews(work, work.media) }] : [];
+    return work ? [artworkForView(work, 'card')] : [];
   });
   return <SpreadPlates works={works} locale={locale} t={t} />;
 }

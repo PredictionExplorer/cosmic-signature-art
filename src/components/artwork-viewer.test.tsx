@@ -591,9 +591,157 @@ describe('the home', () => {
   });
 });
 
+describe('the home’s arrival', () => {
+  it('reads arriving while the opening clip has ended before the complete film can take over, then film', async () => {
+    const { container } = renderViewer({ presentation: 'home' });
+    await settle();
+    await act(async () => {
+      vi.advanceTimersByTime(1200);
+    });
+    const opening = player() as HTMLVideoElement;
+    Object.defineProperty(opening, 'duration', { configurable: true, value: 10 });
+    fireEvent.playing(opening);
+    Object.defineProperty(opening, 'currentTime', {
+      configurable: true,
+      value: 10,
+      writable: true,
+    });
+    // Nothing of the complete film is buffered yet: the clip's last frame holds, and the strip says so.
+    fireEvent.ended(opening);
+    const state = container.querySelector('[data-layer-state="current"] [data-film-state]')!;
+    expect(state).toHaveAttribute('data-film-state', 'arriving');
+    expect(state).toHaveTextContent(en.arriving);
+    expect(container.querySelector('[data-layer-state="current"] .art-media')).toHaveAttribute(
+      'data-handover',
+      'waiting',
+    );
+    expect(screen.queryByRole('button', { name: en.again })).toBeNull();
+    // The film arrives: it takes over at the clip's own time and the strip reads film again.
+    const relay = document.querySelector<HTMLVideoElement>(
+      '[data-layer-state="current"] video[data-relay]',
+    )!;
+    Object.defineProperty(relay, 'duration', { configurable: true, value: 30 });
+    Object.defineProperty(relay, 'readyState', { configurable: true, value: 4 });
+    Object.defineProperty(relay, 'buffered', {
+      configurable: true,
+      value: { length: 1, start: () => 0, end: () => 30 },
+    });
+    fireEvent.canPlayThrough(relay);
+    expect(relay.currentTime).toBe(10);
+    fireEvent.playing(relay);
+    expect(state).toHaveAttribute('data-film-state', 'film');
+    expect(state).toHaveTextContent(en.film);
+  });
+});
+
+describe('a phone’s plate', () => {
+  function phone() {
+    vi.stubGlobal('matchMedia', (query: string) => ({
+      matches: query.includes('767'),
+      addEventListener() {},
+      removeEventListener() {},
+    }));
+  }
+  const indexed = artworkFromIndex(indexedWork(40)!);
+  const excerpt = indexed.media.find((item) => item.id === 'ink')!.previewFilm!;
+  const inkClip = indexed.media.find((item) => item.id === 'ink')!.settlingFilm!;
+
+  it('rests on the still with the eight-second excerpt as its ambient motion, labelled, and plays the film on the word', async () => {
+    phone();
+    const { container } = renderViewer({ artwork: indexed, traits: undefined });
+    await settle();
+    await act(async () => {
+      vi.advanceTimersByTime(1250);
+    });
+    // The ambient film is the excerpt, never the settling clip, and the strip names it.
+    const video = player()!;
+    expect(video).toHaveAttribute('src', excerpt.src);
+    Object.defineProperty(video, 'duration', { configurable: true, value: 8 });
+    Object.defineProperty(video, 'currentTime', { configurable: true, value: 2, writable: true });
+    fireEvent.playing(video);
+    fireEvent.timeUpdate(video);
+    const state = container.querySelector('[data-layer-state="current"] [data-film-state]')!;
+    expect(state).toHaveAttribute('data-film-state', 'film');
+    expect(state).toHaveTextContent(`${en.excerpt} 00:06–00:14`);
+    expect(container.querySelector('[data-layer-state="current"] .time-line')).toBeNull();
+    expect(
+      within(document.querySelector<HTMLElement>('[data-layer-state="current"]')!).queryByText(
+        /00:0\d \/ 00:14/,
+      ),
+    ).toBeNull();
+    fireEvent.ended(video);
+    await act(async () => {
+      vi.advanceTimersByTime(9500);
+    });
+    // After the excerpt rests the word is Film, not Again: the plate's own film plays on the word.
+    expect(screen.queryByRole('button', { name: en.again })).toBeNull();
+    const film = word(en.film);
+    expect(film).not.toHaveAttribute('title');
+    fireEvent.click(film);
+    expect(screen.queryByRole('dialog')).toBeNull();
+    expect(player()).toHaveAttribute('src', inkClip.src);
+  });
+
+  it('opens the home on the excerpt, never the opening clip and its relay', async () => {
+    phone();
+    const { container } = renderViewer({ presentation: 'home' });
+    await settle();
+    await act(async () => {
+      vi.advanceTimersByTime(1250);
+    });
+    expect(player()).toHaveAttribute('src', expect.stringMatching(/\/art\/previews\/31-/));
+    expect(container.querySelector('video[data-relay]')).toBeNull();
+    expect(container.querySelector('[data-layer-state="current"] .art-media')).not.toHaveAttribute(
+      'data-handover',
+    );
+  });
+});
+
 describe('the settling plate', () => {
   const indexed = artworkFromIndex(indexedWork(40)!);
   const inkClip = indexed.media.find((item) => item.id === 'ink')!.settlingFilm!;
+
+  it('carries the film’s time into the room while the plate is mid-film, and nothing once it has resolved', async () => {
+    renderViewer({ artwork: indexed, traits: undefined });
+    await settle();
+    await act(async () => {
+      vi.advanceTimersByTime(1250);
+    });
+    const video = player()!;
+    Object.defineProperty(video, 'duration', { configurable: true, value: 8 });
+    Object.defineProperty(video, 'currentTime', { configurable: true, value: 3, writable: true });
+    fireEvent.playing(video);
+    fireEvent.timeUpdate(video);
+    // Still, then Film: the room opens on the complete film at the plate's own time, 00:25.
+    fireEvent.click(word(en.still));
+    fireEvent.click(word(en.film));
+    const roomVideo = screen.getByRole('dialog').querySelector('video')!;
+    Object.defineProperty(roomVideo, 'duration', { configurable: true, value: 30 });
+    fireEvent.loadedMetadata(roomVideo);
+    expect(roomVideo.currentTime).toBeCloseTo(inkClip.startSeconds! + 3, 3);
+  });
+
+  it('opens the room from the first frame once the plate has resolved into its still', async () => {
+    renderViewer({ artwork: indexed, traits: undefined });
+    await settle();
+    await act(async () => {
+      vi.advanceTimersByTime(1250);
+    });
+    const video = player()!;
+    Object.defineProperty(video, 'duration', { configurable: true, value: 8 });
+    Object.defineProperty(video, 'currentTime', { configurable: true, value: 8, writable: true });
+    fireEvent.playing(video);
+    fireEvent.timeUpdate(video);
+    fireEvent.ended(video);
+    await act(async () => {
+      vi.advanceTimersByTime(1200);
+    });
+    fireEvent.click(word(en.film));
+    const roomVideo = screen.getByRole('dialog').querySelector('video')!;
+    Object.defineProperty(roomVideo, 'duration', { configurable: true, value: 30 });
+    fireEvent.loadedMetadata(roomVideo);
+    expect(roomVideo.currentTime).toBe(0);
+  });
 
   it('wakes a work without a local film into its settling clip, keeps the film’s own clock, and fades into the still', async () => {
     const { container } = renderViewer({ artwork: indexed, traits: undefined });

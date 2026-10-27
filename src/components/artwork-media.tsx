@@ -5,6 +5,7 @@ import {
   useEffectEvent,
   useRef,
   useState,
+  useSyncExternalStore,
   type CSSProperties,
   type ReactNode,
 } from 'react';
@@ -14,7 +15,7 @@ import { useMediaPolicy } from './media-policy';
 import { getPlateGround } from '@/lib/art/plate-records';
 import type { ArtFilm, ArtInterpretation } from '@/lib/art/types';
 import { ART_HEIGHT, ART_WIDTH } from '@/lib/art/constants';
-import { rungFor, stillSourceSet } from '@/lib/art/types';
+import { stillSourceSet } from '@/lib/art/types';
 
 /** The settled still is held as an object before any film may begin (--t-hold). */
 export const HOLD_MS = 1200;
@@ -31,6 +32,24 @@ export const RELAY_BUFFER_S = 2;
 export const PLATE_SIZES = '(max-width: 767px) 100vw, min(100vw, calc((100svh - 104px) * 1.547))';
 /** On a constrained connection the resting still is this rung, never the 3,456 px file. */
 const CONSTRAINED_RUNG_PX = 1280;
+/**
+ * The ladder cut to what a constrained connection may fetch: the rungs no wider than the cap,
+ * as a srcset. The `src` stays the published still, so the markup the server sends is the
+ * markup the client hydrates; only the candidates narrow, once the client knows its connection.
+ */
+export function cappedSourceSet(media?: ArtInterpretation, cap = CONSTRAINED_RUNG_PX) {
+  const rungs = (media?.rungs ?? []).filter((rung) => rung.width <= cap);
+  return rungs.length ? rungs.map((rung) => `${rung.src} ${rung.width}w`).join(', ') : undefined;
+}
+const noSubscription = () => () => {};
+/** False while the server's markup is being hydrated, true from the first client render after. */
+function useHydrated() {
+  return useSyncExternalStore(
+    noSubscription,
+    () => true,
+    () => false,
+  );
+}
 
 type ArtworkMediaProps = {
   media?: ArtInterpretation;
@@ -218,11 +237,14 @@ function ArtworkMediaSession({
     artworkId !== undefined && media
       ? getPlateGround(artworkId, media.id, media.stillSha256)
       : undefined;
-  // The still ladder: a constrained connection rests on the 1280 rung alone; any other picks
-  // its rung from the plate's layout width, and the 3,456 px file only when the screen asks.
-  const constrainedRung = constrained ? rungFor(media?.rungs, CONSTRAINED_RUNG_PX) : undefined;
-  const stillSrc = constrainedRung?.src ?? media?.still;
-  const stillSet = constrained ? undefined : stillSourceSet(media);
+  // The still ladder: any connection picks its rung from the plate's layout width, and the
+  // 3,456 px file only when the screen asks; a constrained one is offered the 1280 rung alone.
+  // The cap applies only once the client knows its connection, so the hero still is fetched
+  // once: the server's markup and the hydrating client's are the same.
+  const hydrated = useHydrated();
+  const capped = hydrated && constrained;
+  const stillSrc = media?.still;
+  const stillSet = capped ? cappedSourceSet(media) : stillSourceSet(media);
   const stillSizes = stillSet ? (sizes ?? PLATE_SIZES) : undefined;
   if (priority && preview && !preview.startsWith('data:')) {
     preload(preview, { as: 'image', fetchPriority: 'high' });
@@ -312,6 +334,8 @@ function ArtworkMediaSession({
     clipDone.current = false;
     live.current = false;
     relayCued.current = false;
+    // A relay that failed once is tried afresh the next time the plate is asked to play.
+    relayFailed.current = false;
     setRelay('idle');
     if (waiting) {
       setWaiting(false);
@@ -337,7 +361,10 @@ function ArtworkMediaSession({
   }
 
   useEffect(() => {
-    const player = relay === 'live' ? relayVideo.current : video.current;
+    // The player is chosen as the effect runs, from the ref that tracks the handover, so the
+    // relay's own state changes (the prefetch cue at two seconds, the takeover) never pause
+    // and replay the clip beneath them.
+    const player = live.current ? relayVideo.current : video.current;
     const restartRequested = restart !== previousRequest.current.restart;
     const playRequested = playRequest !== previousRequest.current.playRequest;
     previousRequest.current = { restart, playRequest };
@@ -354,6 +381,7 @@ function ArtworkMediaSession({
       player.currentTime = 0;
       ended.current = false;
       clipDone.current = false;
+      relayFailed.current = false;
       resumeAt.current = undefined;
       clearTimeout(restTimer.current);
       setResting(false);
@@ -364,7 +392,7 @@ function ArtworkMediaSession({
     if (shouldPlay) {
       if (ended.current) {
         // The final frame is the still. It rests until someone asks again.
-      } else if (clipDone.current && relay !== 'live') {
+      } else if (clipDone.current && !live.current) {
         // The opening clip has ended; its last frame holds until the complete film arrives.
         relayFromEffect();
       } else if (hold && !held.current) {
@@ -380,7 +408,7 @@ function ArtworkMediaSession({
       player.pause();
       if (timer) clearTimeout(timer);
     };
-  }, [shouldPlay, hold, layered, settled, restart, playRequest, relay]);
+  }, [shouldPlay, hold, layered, settled, restart, playRequest]);
 
   const loading = eager || priority ? 'eager' : 'lazy';
   const style = ground ? ({ '--plate-ground': ground.tone } as CSSProperties) : undefined;

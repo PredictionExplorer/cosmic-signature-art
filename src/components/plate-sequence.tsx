@@ -1,6 +1,7 @@
 'use client';
 import Link from 'next/link';
-import { Fragment, useMemo, useState, useSyncExternalStore, type CSSProperties } from 'react';
+import { Fragment, useMemo, useState, type CSSProperties } from 'react';
+import { useCompactWall } from './compact-wall';
 import {
   getInterpretation,
   type ArtFilm,
@@ -20,23 +21,24 @@ import { ArtworkTransition } from './artwork-transition';
 import { PLATE_SIZES } from './artwork-media';
 import styles from './plate-sequence.module.css';
 
-/** A phone's wall: the plate is 100 vw and the rhythm is full, two halves, full. */
-const COMPACT_QUERY = '(max-width: 767px)';
-const compactQuery = () =>
-  typeof window.matchMedia === 'function' ? window.matchMedia(COMPACT_QUERY) : undefined;
-function subscribeCompact(listener: () => void) {
-  const query = compactQuery();
-  query?.addEventListener('change', listener);
-  return () => query?.removeEventListener('change', listener);
-}
-const compactOnServer = () => false;
-/** Whether the wall is a phone's; false on the server and wherever media queries are absent. */
-export function useCompactWall(): boolean {
-  return useSyncExternalStore(
-    subscribeCompact,
-    () => compactQuery()?.matches ?? false,
-    compactOnServer,
-  );
+export { useCompactWall } from './compact-wall';
+
+/** The caption beneath a sheet in a row of two or three: 44 px, and the 9 px it rises from. */
+export const SHEET_CAPTION_PX = 53;
+/**
+ * The eye line, as the stylesheet hangs it (plate-sequence.module.css): a sheet's top margin
+ * puts its measured centre at `eye` of the band, clamped so the sheet never leaves the top
+ * and its caption never leaves the bottom. When the band cannot hold the sheet and its
+ * caption at all, the sheet hangs from the top, as CSS clamp() resolves a crossed range.
+ */
+export function hangOffset(
+  centreY: number,
+  bandHeight: number,
+  sheetHeight: number,
+  eye = 0.5,
+): number {
+  const upper = bandHeight - sheetHeight - SHEET_CAPTION_PX;
+  return Math.max(0, Math.min(upper, bandHeight * eye - centreY * sheetHeight));
 }
 
 /**
@@ -221,6 +223,7 @@ export function PlateSequence({
             <div
               className={styles.row}
               data-shape={row.shape}
+              data-material={plateMedia?.id}
               style={ground ? ({ '--plate-ground': ground } as CSSProperties) : undefined}
             >
               {row.works.map((work, offset) => {

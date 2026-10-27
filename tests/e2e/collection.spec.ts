@@ -55,6 +55,32 @@ test('the first screen of the collection is a plate in the sequence’s rhythm, 
     expect(Math.abs(eyes[0].eye - eyes[1].eye)).toBeLessThanOrEqual(2);
     expect(Math.abs(eyes[0].eye - eyes[0].band / 2)).toBeLessThanOrEqual(2);
   }
+  if (!isMobile) {
+    // A short screen clamps the hang: no sheet leaves the top of its band and no caption leaves
+    // the bottom, exactly as the pure offset (plate-sequence.tsx) resolves it.
+    await page.setViewportSize({ width: 1440, height: 700 });
+    const hung = await page.locator('#works [data-shape="2"] .work-card').evaluateAll((cards) =>
+      cards.map((card) => {
+        const style = getComputedStyle(card);
+        const centre = parseFloat(style.getPropertyValue('--centre-y')) || 0.5;
+        const band = card.parentElement!.getBoundingClientRect().height;
+        const sheet = card.querySelector('.art-media')!.getBoundingClientRect().height;
+        return { centre, band, sheet, margin: parseFloat(style.marginTop) };
+      }),
+    );
+    expect(hung.length).toBeGreaterThanOrEqual(2);
+    const caption = 53;
+    let clamped = 0;
+    for (const { centre, band, sheet, margin } of hung) {
+      const raw = band / 2 - centre * sheet;
+      const expected = Math.max(0, Math.min(band - sheet - caption, raw));
+      expect(Math.abs(margin - expected)).toBeLessThanOrEqual(1);
+      if (Math.abs(raw - expected) > 1) clamped += 1;
+    }
+    // The first page's spreads hold at least one sheet the short band has to clamp.
+    expect(clamped).toBeGreaterThan(0);
+    await page.setViewportSize({ width: 1440, height: 1000 });
+  }
   // Rows of three are stills only; they never take the lease.
   await expect(rows.nth(2).locator('[data-preview-available="true"]')).toHaveCount(0);
   await expect(rows.nth(2).locator('[data-collection-preview]')).toHaveCount(0);

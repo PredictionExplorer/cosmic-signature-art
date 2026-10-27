@@ -32,10 +32,17 @@
     calc(var(--plate-height) - var(--sheet-h) - 53px)
   );
 }
-/* The full-bleed plate: the whole band is the sheet's own tone (or the field's black). */
+/* The full-bleed plate: the whole band is the sheet's own tone (or the field's black), and the
+   words on it read against that tone: a darker muted on kozo, the night's type on the field. */
 .row[data-shape='1'] {
+  --muted: #5a5a51;
   grid-template-columns: minmax(0, 1fr);
   background: var(--plate-ground, var(--ground));
+}
+.row[data-shape='1'][data-material='light'] {
+  --type: var(--night-type);
+  --muted: #b8b5ad;
+  color: var(--type);
 }
 .row[data-shape='2'] {
   grid-template-columns: repeat(2, 46vw);

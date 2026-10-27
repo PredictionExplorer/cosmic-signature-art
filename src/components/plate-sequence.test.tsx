@@ -5,7 +5,14 @@ import { getCuratedArtwork } from '@/lib/art/catalog';
 import { getPlateGround } from '@/lib/art/plate-records';
 import type { Artwork } from '@/lib/art/types';
 import { en } from '@/lib/i18n/en';
-import { PlateSequence, RHYTHM, sequenceFilm, sequenceRows } from './plate-sequence';
+import {
+  PlateSequence,
+  RHYTHM,
+  SHEET_CAPTION_PX,
+  hangOffset,
+  sequenceFilm,
+  sequenceRows,
+} from './plate-sequence';
 
 const coordinator = vi.hoisted(() => ({
   use: vi.fn(),
@@ -271,6 +278,33 @@ describe('the plate sequence', () => {
     // The ladder serves each shape its rung: the spread's sheets at 46 vw, the plate at the room's width.
     expect(card(31).querySelector('img')).toHaveAttribute('sizes', '(max-width: 767px) 50vw, 46vw');
     expect(card(23).querySelector('img')?.getAttribute('sizes')).toContain('100svh');
+  });
+
+  it('hangs a sheet so its centre sits on the eye line, and clamps it inside the band', () => {
+    // Centred: a 428 px sheet whose centre is halfway hangs 234 px down an 896 px band.
+    expect(hangOffset(0.5, 896, 428)).toBeCloseTo(896 / 2 - 0.5 * 428, 6);
+    // Clamped at the top: a centre low in a tall sheet would hang the sheet above the band.
+    expect(hangOffset(0.95, 600, 428)).toBe(0);
+    // Clamped at the bottom: a centre high in the sheet would push its caption out of the band.
+    expect(hangOffset(0.05, 600, 428)).toBe(600 - 428 - SHEET_CAPTION_PX);
+    // A band too short for sheet and caption hangs the sheet from the top, as CSS clamp() does.
+    expect(hangOffset(0.5, 400, 428)).toBe(0);
+    expect(SHEET_CAPTION_PX).toBe(53);
+  });
+
+  it('flips a full-bleed Light row to the night’s type and marks each row’s material', () => {
+    const page = [31, 35, 23].map((id) => ({ ...getCuratedArtwork(id)!, cycle: 1 }));
+    const { container } = render(
+      <PlateSequence works={page} locale="en" t={en} rhythm={[1, 2]} expression="light" />,
+    );
+    const rows = container.querySelectorAll('[data-shape]');
+    expect(rows[0]).toHaveAttribute('data-material', 'light');
+    expect(rows[0]).toHaveStyle({ '--plate-ground': '#000000' });
+    const inkRows = render(<PlateSequence works={page} locale="en" t={en} rhythm={[1, 2]} />);
+    expect(inkRows.container.querySelector('[data-shape="1"]')).toHaveAttribute(
+      'data-material',
+      'ink',
+    );
   });
 
   it('opens each cycle with a strip that reads the cycle, its count and its date', () => {

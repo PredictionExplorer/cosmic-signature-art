@@ -3,7 +3,8 @@ import { Activity, StrictMode } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { getCuratedArtwork } from '@/lib/art/catalog';
 import type { ArtInterpretation } from '@/lib/art/types';
-import { ArtworkMedia, PLATE_SIZES } from './artwork-media';
+import { renderToString } from 'react-dom/server';
+import { ArtworkMedia, PLATE_SIZES, cappedSourceSet } from './artwork-media';
 
 const motion = vi.hoisted(() => ({ paused: false, theatre: 'playing' as 'playing' | 'hushed' }));
 vi.mock('./motion-provider', () => ({ useMotion: () => motion }));
@@ -566,11 +567,109 @@ describe('artwork media delivery', () => {
     try {
       render(<ArtworkMedia media={ink(31)} alt="Signature 31" />);
       const rung = screen.getByRole('img') as HTMLImageElement;
-      expect(new URL(rung.src).pathname).toMatch(/^\/art\/stills\/31-ink-1280-[a-f0-9]{16}\.webp$/);
-      expect(rung).not.toHaveAttribute('srcset');
+      // The src is the published still on every connection, so the server's markup is the
+      // client's; a constrained connection is offered the 1280 rung as its only candidate.
+      expect(new URL(rung.src).pathname).toBe('/art/31-ink.webp');
+      expect(rung.getAttribute('srcset')).toMatch(
+        /^\/art\/stills\/31-ink-1280-[a-f0-9]{16}\.webp 1280w$/,
+      );
+      expect(rung).toHaveAttribute('sizes', PLATE_SIZES);
     } finally {
       Reflect.deleteProperty(navigator, 'connection');
     }
+  });
+
+  it('keeps the still’s markup the same on the server and on the client, whatever the connection', () => {
+    Object.defineProperty(navigator, 'connection', {
+      configurable: true,
+      value: Object.assign(new EventTarget(), { saveData: true }),
+    });
+    try {
+      const server = renderToString(<ArtworkMedia media={ink(31)} alt="Signature 31" />);
+      const serverStill = /<img[^>]*class="art-still[^"]*"[^>]*>/.exec(server)?.[0] ?? '';
+      expect(serverStill).toContain('src="/art/31-ink.webp"');
+      expect(serverStill).toMatch(/srcSet="[^"]*1920w, \/art\/31-ink\.webp 3456w"/);
+      const { container } = render(<ArtworkMedia media={ink(31)} alt="Signature 31" />);
+      const still = container.querySelector<HTMLImageElement>('img.art-still')!;
+      expect(new URL(still.src).pathname).toBe('/art/31-ink.webp');
+      // Only the candidates narrow once the client knows the connection; the src never moves.
+      expect(still.getAttribute('srcset')).toMatch(/1280w$/);
+      expect(cappedSourceSet(ink(31))).toMatch(
+        /^\/art\/stills\/31-ink-1280-[a-f0-9]{16}\.webp 1280w$/,
+      );
+      expect(cappedSourceSet({ ...ink(31), rungs: undefined })).toBeUndefined();
+    } finally {
+      Reflect.deleteProperty(navigator, 'connection');
+    }
+  });
+
+  it('cues the complete film behind the opening clip without pausing the clip', () => {
+    const onPlaybackChange = vi.fn();
+    const opening = ink(31).openingFilm!;
+    const complete = ink(31).films[0];
+    const { container } = render(
+      <ArtworkMedia
+        media={{ ...ink(31), films: [opening, complete] }}
+        alt="Signature 31"
+        onPlaybackChange={onPlaybackChange}
+      />,
+    );
+    enterViewport();
+    const clip = player(container);
+    Object.defineProperty(clip, 'duration', { configurable: true, value: 10 });
+    fireEvent.playing(clip);
+    vi.mocked(HTMLMediaElement.prototype.pause).mockClear();
+    onPlaybackChange.mockClear();
+    clip.currentTime = 2.5;
+    fireEvent.timeUpdate(clip);
+    expect(container.querySelector('video[data-relay]')).not.toBeNull();
+    // The relay's arrival is the relay's own business: the clip beneath it was not paused.
+    expect(HTMLMediaElement.prototype.pause).not.toHaveBeenCalled();
+    expect(onPlaybackChange).not.toHaveBeenCalledWith(false);
+  });
+
+  it('tries a failed relay afresh after the plate is asked to play again', () => {
+    const onFailure = vi.fn();
+    const onHandover = vi.fn();
+    const opening = ink(31).openingFilm!;
+    const complete = ink(31).films[0];
+    const { container, rerender } = render(
+      <ArtworkMedia
+        media={{ ...ink(31), films: [opening, complete] }}
+        alt="Signature 31"
+        onFailure={onFailure}
+        onHandover={onHandover}
+      />,
+    );
+    enterViewport();
+    const clip = player(container);
+    Object.defineProperty(clip, 'duration', { configurable: true, value: 10 });
+    fireEvent.playing(clip);
+    clip.currentTime = 2.5;
+    fireEvent.timeUpdate(clip);
+    const relay = container.querySelector<HTMLVideoElement>('video[data-relay]')!;
+    fireEvent.error(relay);
+    clip.currentTime = 10;
+    fireEvent.ended(clip);
+    // The film could not arrive and the clip has nothing left: the plate fails once.
+    expect(onFailure).toHaveBeenCalledOnce();
+    rerender(
+      <ArtworkMedia
+        media={{ ...ink(31), films: [opening, complete] }}
+        alt="Signature 31"
+        onFailure={onFailure}
+        onHandover={onHandover}
+        restart={1}
+      />,
+    );
+    const again = player(container);
+    Object.defineProperty(again, 'duration', { configurable: true, value: 10 });
+    fireEvent.playing(again);
+    again.currentTime = 10;
+    fireEvent.ended(again);
+    // The earlier failure is forgotten: the clip holds as arriving while the film is tried again.
+    expect(onFailure).toHaveBeenCalledOnce();
+    expect(onHandover).toHaveBeenLastCalledWith(true);
   });
 
   it('replays forward from the first frame only on an explicit request', () => {

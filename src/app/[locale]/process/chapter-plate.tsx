@@ -1,8 +1,9 @@
 'use client';
-import { useEffect, useRef, useState, type CSSProperties, type MouseEvent } from 'react';
+import { useEffect, useState, type CSSProperties } from 'react';
 import { ArtworkMedia } from '@/components/artwork-media';
 import { useMediaPolicy } from '@/components/media-policy';
 import { useMotion } from '@/components/motion-provider';
+import { useSit } from '@/components/sit';
 import { getPlateGround } from '@/lib/art/plate-records';
 import { workNumber } from '@/lib/art/number';
 import type { ArtInterpretation } from '@/lib/art/types';
@@ -11,10 +12,6 @@ import styles from './process.module.css';
 
 /** After a film resolves into its still, nothing moves for --t-rest; then "Again". */
 const REST_MS = 8000;
-/** Input right after pressing Sit is the press itself, not a request for the chrome back. */
-const SIT_GRACE_MS = 600;
-/** The click a browser synthesises after a waking tap arrives well within this window. */
-const SWALLOW_MS = 500;
 
 function clock(seconds: number) {
   const whole = Math.max(0, Math.floor(seconds));
@@ -49,23 +46,15 @@ export function ChapterPlate({
   const [ended, setEnded] = useState(false);
   const [rested, setRested] = useState(false);
   const [time, setTime] = useState({ current: 0, duration: 0 });
-  const [sit, setSit] = useState(false);
-  const sitAt = useRef(0);
-  const swallow = useRef<ReturnType<typeof setTimeout> | null>(null);
-  useEffect(
-    () => () => {
-      if (swallow.current) clearTimeout(swallow.current);
-    },
-    [],
-  );
+  const { sit, sitDown, stand, wake, wakeByPress, swallowWakingClick } = useSit();
   useEffect(() => {
     if (!ended) return;
     const timer = setTimeout(() => {
       setRested(true);
-      setSit(false);
+      stand();
     }, REST_MS);
     return () => clearTimeout(timer);
-  }, [ended]);
+  }, [ended, stand]);
   const film = media?.films[0];
   const ambient = !policy.constrained || explicit;
   const ground = media ? getPlateGround(artworkId, media.id, media.stillSha256) : undefined;
@@ -89,31 +78,6 @@ export function ChapterPlate({
     setRestart((value) => value + 1);
     if (paused) toggle();
   }
-  function sitDown() {
-    sitAt.current = Date.now();
-    setSit(true);
-  }
-  function sitting() {
-    return sit && Date.now() - sitAt.current >= SIT_GRACE_MS;
-  }
-  function wake() {
-    if (sitting()) setSit(false);
-  }
-  function wakeByPress() {
-    if (!sitting()) return;
-    setSit(false);
-    if (swallow.current) clearTimeout(swallow.current);
-    swallow.current = setTimeout(() => {
-      swallow.current = null;
-    }, SWALLOW_MS);
-  }
-  function swallowClick(event: MouseEvent<HTMLElement>) {
-    if (!swallow.current) return;
-    clearTimeout(swallow.current);
-    swallow.current = null;
-    event.preventDefault();
-    event.stopPropagation();
-  }
   const style = ground ? ({ '--plate-ground': ground.tone } as CSSProperties) : undefined;
   return (
     <div
@@ -126,7 +90,7 @@ export function ChapterPlate({
       onFocus={wake}
       onPointerDown={wakeByPress}
       onTouchStart={wakeByPress}
-      onClickCapture={swallowClick}
+      onClickCapture={swallowWakingClick}
     >
       <div className="plate">
         <ArtworkMedia

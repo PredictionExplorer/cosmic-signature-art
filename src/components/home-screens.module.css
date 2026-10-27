@@ -56,6 +56,8 @@
   overflow-x: clip;
 }
 .leaf {
+  /* The leaf's strip reads on the sheet's own tone: 5.1:1 on the darkest kozo measured. */
+  --muted: #5a5a51;
   position: relative;
   display: grid;
   grid-template-rows: auto var(--strip);

@@ -8,7 +8,6 @@ import {
   useRef,
   useState,
   useSyncExternalStore,
-  type MouseEvent,
   type ReactNode,
 } from 'react';
 import Link from 'next/link';
@@ -46,16 +45,15 @@ import { inField } from './keys';
 import { useOpenSheet } from './sheets-store';
 import { ArtworkNeighbours, neighbourHref, type Neighbours } from './artwork-neighbours';
 import { ArtworkGatefold } from './artwork-gatefold';
+import { useSit } from './sit';
+import { useCompactWall } from './compact-wall';
+import { excerptRange } from './collection-preview';
 import styles from './artwork-viewer.module.css';
 
 /** After a film resolves into its still, nothing moves for --t-rest; then "Again". */
 const REST_MS = 8000;
 /** The home rests a little less (--t-rest-dusk), because the Dusk may follow. */
 const REST_HOME_MS = 6000;
-/** Input right after pressing Sit is the press itself, not a request for the chrome back. */
-const SIT_GRACE_MS = 600;
-/** The click a browser synthesises after a waking tap arrives well within this window. */
-const SWALLOW_MS = 500;
 /** Once the home's arrival film has resolved in this session, the home opens on the still. */
 const HOME_RESOLVED_KEY = 'cosmic-art-home-film-v1';
 
@@ -180,8 +178,7 @@ function ArtworkViewerSession({
   const [attempts, setAttempts] = useState<Record<string, number>>({});
   const [ended, setEnded] = useState(false);
   const [rested, setRested] = useState(false);
-  const [sit, setSit] = useState(false);
-  const sitAt = useRef(0);
+  const { sit, sitDown, stand, wake, wakeByPress, swallowWakingClick } = useSit({ mirror: true });
   const [time, setTime] = useState({ current: 0, duration: 0 });
   const [failed, setFailed] = useState(false);
   const [turning, setTurning] = useState<{
@@ -189,7 +186,6 @@ function ArtworkViewerSession({
     mode: 'time' | 'peek' | 'drag' | 'dusk';
   } | null>(null);
   const returnFocusRef = useRef<HTMLElement | null>(null);
-  const swallowClick = useRef<ReturnType<typeof setTimeout> | null>(null);
   /** A held I or L: the seam is out on a peek and returns on release. */
   const peek = useRef<{ to: Expression; at: number } | null>(null);
   const [seam] = useState(() => new SeamController());
@@ -206,18 +202,10 @@ function ArtworkViewerSession({
   const homeResolved = home && (resolvedOverride ?? (ended ? false : resolvedBefore));
   const restedNow = rested || (home && resolvedOverride === null && !ended && resolvedBefore);
   const idle = paused || still || homeResolved || !playing;
-  // Again is offered once the film has resolved and rested, or when this visit already saw it resolve.
-  const showAgain = restedNow && (ended || homeResolved);
   // The Dusk controller is created once; each firing performs the latest render's Dusk.
   const [duskController] = useState(() => new DuskController());
 
-  useEffect(
-    () => () => {
-      if (swallowClick.current) clearTimeout(swallowClick.current);
-      seam.end();
-    },
-    [seam],
-  );
+  useEffect(() => () => seam.end(), [seam]);
 
   const ink = getInterpretation(artwork, 'ink');
   const light = getInterpretation(artwork, 'light');
@@ -242,7 +230,7 @@ function ArtworkViewerSession({
         setPlayRequest(0);
         setEnded(false);
         setRested(false);
-        setSit(false);
+        stand();
         setStill(false);
         setHandoverWaiting(false);
         if (home) setResolvedOverride(null);
@@ -292,10 +280,10 @@ function ArtworkViewerSession({
     if (!ended) return;
     const timer = setTimeout(() => {
       setRested(true);
-      setSit(false);
+      stand();
     }, restMs);
     return () => clearTimeout(timer);
-  }, [ended, restMs]);
+  }, [ended, restMs, stand]);
 
   const media = getInterpretation(artwork, expression);
   const settled = settledLayers.includes(expression);
@@ -307,8 +295,17 @@ function ArtworkViewerSession({
     item?.films.find((film) => film.delivery === 'local-preview') ?? item?.settlingFilm;
   const inlineFilm = plateFilm(media);
   const settlingPlate = inlineFilm?.id === 'settling';
+  // A phone's budget (vision §4): the plate rests on its still, the eight-second excerpt is its
+  // one ambient motion, labelled as such, and the plate's film answers the word alone; it is
+  // never fetched unbidden over a phone's connection.
+  const compact = useCompactWall();
+  const excerpt = compact && !explicitFilm ? media?.previewFilm : undefined;
+  const ambientSource = compact && !explicitFilm ? excerpt : inlineFilm;
+  // Again is offered once the film has resolved and rested, or when this visit already saw it
+  // resolve; an excerpt that rested offers the film instead.
+  const showAgain = restedNow && (ended || homeResolved) && !excerpt;
   // The home opens on the opening clip and hands over to the complete film at the same frame.
-  const openingFilm = home && !settlingPlate ? media?.openingFilm : undefined;
+  const openingFilm = home && !compact && !settlingPlate ? media?.openingFilm : undefined;
   const [handoverWaiting, setHandoverWaiting] = useState(false);
   const ambientFilm = !room && (!policy.constrained || explicitFilm);
   const wingMode: WingMode = instant ? 'hard' : 'scroll';
@@ -364,7 +361,7 @@ function ArtworkViewerSession({
     setPlayRequest(0);
     setRoom(film ? 'film' : 'still');
     setPlaying(false);
-    setSit(false);
+    stand();
   }
   function closeRoom() {
     cancelPending();
@@ -408,44 +405,15 @@ function ArtworkViewerSession({
     if (!inlineFilm) return;
     if (showAgain) again();
     else if (playing && !paused && !still) setStill(true);
-    else if (settlingPlate) openRoom(true, trigger);
+    else if (compact && !explicitFilm) {
+      // The phone's excerpt gives way to the plate's own film, from its first frame.
+      setTime({ current: 0, duration: 0 });
+      requestFilm();
+    } else if (settlingPlate) openRoom(true, trigger);
     else requestFilm();
   }
-  function sitDown() {
-    sitAt.current = Date.now();
-    setSit(true);
-  }
-  function stand() {
-    setSit(false);
-  }
-  // The running head fades with the strip (globals.css reads <html data-sit>). The attribute
-  // mirrors the state, so a rest, a Turn or the room standing up returns the head as well.
-  useEffect(() => {
-    const element = document.documentElement;
-    if (sit) element.setAttribute('data-sit', '');
-    else element.removeAttribute('data-sit');
-    return () => element.removeAttribute('data-sit');
-  }, [sit]);
-  function wake() {
-    if (!sit || Date.now() - sitAt.current < SIT_GRACE_MS) return;
-    stand();
-  }
-  function wakeByPress() {
-    if (!sit || Date.now() - sitAt.current < SIT_GRACE_MS) return;
-    stand();
-    // The press only brings the chrome back; the click that follows it is not a choice.
-    if (swallowClick.current) clearTimeout(swallowClick.current);
-    swallowClick.current = setTimeout(() => {
-      swallowClick.current = null;
-    }, SWALLOW_MS);
-  }
-  function swallowWakingClick(event: MouseEvent) {
-    if (!swallowClick.current) return;
-    clearTimeout(swallowClick.current);
-    swallowClick.current = null;
-    event.preventDefault();
-    event.stopPropagation();
-  }
+  // The running head fades with the strip (<html data-sit>, mirrored by useSit); a rest, a
+  // Turn or the room standing up returns the head as well.
 
   /* The Turn's three drivers: the word (and a tap of I/L), a held key, and the finger. */
   const canTurn = hasBoth && !room;
@@ -614,7 +582,10 @@ function ArtworkViewerSession({
   }, [dusk, home]);
 
   const filmState = !settled || handoverWaiting ? 'arriving' : playing ? 'film' : 'still';
-  const stateWord = t[filmState];
+  const stateWord =
+    filmState === 'film' && excerpt
+      ? `${t.excerpt} ${excerptRange(excerpt) ?? ''}`.trimEnd()
+      : t[filmState];
 
   /** The strip's right-hand words for one layer; only the committed layer's are live. */
   function words(layer: Expression): ReactNode {
@@ -646,7 +617,7 @@ function ArtworkViewerSession({
         type="button"
         className={styles.word}
         onClick={(event) => togglePlay(event.currentTarget)}
-        title={settlingPlate && idle && !showAgain ? t.filmInRoom : undefined}
+        title={settlingPlate && !compact && idle && !showAgain ? t.filmInRoom : undefined}
         data-film-word
       >
         {showAgain ? t.again : idle ? t.film : t.still}
@@ -671,7 +642,7 @@ function ArtworkViewerSession({
             {t.enlarge}
           </button>
         ) : null}
-        {inlineFilm && time.duration ? (
+        {inlineFilm && time.duration && !excerpt ? (
           <span className={styles.clock}>
             {clock(time.current)} / {clock(time.duration)}
           </span>
@@ -714,7 +685,11 @@ function ArtworkViewerSession({
     // The committed layer's films: the opening clip and the complete film it hands over to on
     // the home, otherwise the plate's one inline film; the twin carries none.
     const films =
-      current && inlineFilm ? (openingFilm ? [openingFilm, inlineFilm] : [inlineFilm]) : [];
+      current && ambientSource
+        ? openingFilm
+          ? [openingFilm, ambientSource]
+          : [ambientSource]
+        : [];
     const ambient = { ...item, films };
     return (
       <TurnLayer key={id} expression={id} current={current}>
@@ -740,7 +715,7 @@ function ArtworkViewerSession({
               alt={`${workNumber(artwork.id)} · ${label(id)}`}
               priority={current}
               eager
-              hold
+              hold={!explicitFilm}
               ambient={current && ambientFilm}
               artworkId={artwork.id}
               previewSrc={previewSrc}
