@@ -377,6 +377,28 @@ export const zhTW: Messages = {
 
   // ── Phase 2 ─ each fork appends its keys beneath its own line, in every locale, and nowhere else.
   // Fork R · the room, the loupe, the gatefold, the Expansion
+  detail: '細部',
+  wholePlate: '整幅',
+  detailWindow: '細部 {n}',
+  detailOf: '第 {n} 幅細部（{scale}）· x {x} / y {y}',
+  scaleReadout: '1 螢幕像素 = {ratio} 畫面像素',
+  scaleNative: '1:1',
+  filmPosition: '影片進度',
+  timeOf: '{current} / {total}',
+  elapsed: '已播放 {time}',
+  slowRoom: '慢室',
+  studyWaits: '目前網路下，長篇研究等待更輕的編碼；先以靜幀代之。',
+  playAnyway: '仍然播放',
+  durationSeconds: '{n} 秒',
+  roomKeys: '展室中的按鍵',
+  keyScrub: '前後一秒；按住 Shift 為十秒',
+  keyDetail: '細部：一畫面像素對一螢幕像素',
+  keyWhole: '整幅',
+  gatefold: '對開頁',
+  gatefoldCaption: '第 {n} 幅，以墨，以光。同一軌道。',
+  gatefoldSpread: '展開',
+  gatefoldSeam: '接縫',
+  gatefoldSeamLabel: '墨與光之間接縫的位置',
   // ·
   // ·
   // Fork S · the sale catalogue, the bid sheet, the activity sheet

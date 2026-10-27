@@ -377,6 +377,28 @@ export const zh: Messages = {
 
   // ── Phase 2 ─ each fork appends its keys beneath its own line, in every locale, and nowhere else.
   // Fork R · the room, the loupe, the gatefold, the Expansion
+  detail: '细部',
+  wholePlate: '整幅',
+  detailWindow: '细部 {n}',
+  detailOf: '第 {n} 幅细部（{scale}）· x {x} / y {y}',
+  scaleReadout: '1 屏幕像素 = {ratio} 画面像素',
+  scaleNative: '1:1',
+  filmPosition: '影片进度',
+  timeOf: '{current} / {total}',
+  elapsed: '已播放 {time}',
+  slowRoom: '慢室',
+  studyWaits: '当前网络下，长篇研究等待更轻的编码；先以静帧代之。',
+  playAnyway: '仍然播放',
+  durationSeconds: '{n} 秒',
+  roomKeys: '展室中的按键',
+  keyScrub: '前后一秒；按住 Shift 为十秒',
+  keyDetail: '细部：一画面像素对一屏幕像素',
+  keyWhole: '整幅',
+  gatefold: '对开页',
+  gatefoldCaption: '第 {n} 幅，以墨，以光。同一轨道。',
+  gatefoldSpread: '展开',
+  gatefoldSeam: '接缝',
+  gatefoldSeamLabel: '墨与光之间接缝的位置',
   // ·
   // ·
   // Fork S · the sale catalogue, the bid sheet, the activity sheet

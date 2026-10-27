@@ -400,6 +400,28 @@ export const en = {
 
   // ── Phase 2 ─ each fork appends its keys beneath its own line, in every locale, and nowhere else.
   // Fork R · the room, the loupe, the gatefold, the Expansion
+  detail: 'Detail',
+  wholePlate: 'Whole plate',
+  detailWindow: 'Detail {n}',
+  detailOf: 'Detail of Plate {n} ({scale}) · x {x} / y {y}',
+  scaleReadout: '1 screen px = {ratio} artwork px',
+  scaleNative: '1:1',
+  filmPosition: 'Film position',
+  timeOf: '{current} of {total}',
+  elapsed: '{time} elapsed',
+  slowRoom: 'Slow room',
+  studyWaits: 'On this connection the long study waits for a lighter encode; the still stands in.',
+  playAnyway: 'Play it anyway',
+  durationSeconds: '{n} s',
+  roomKeys: 'Keys in the room',
+  keyScrub: 'Back and forward one second; with Shift, ten',
+  keyDetail: 'Detail: one artwork pixel per screen pixel',
+  keyWhole: 'Whole plate',
+  gatefold: 'Gatefold',
+  gatefoldCaption: 'Plate {n}, in ink and in light. One orbit.',
+  gatefoldSpread: 'Spread',
+  gatefoldSeam: 'Seam',
+  gatefoldSeamLabel: 'Where the seam falls between ink and light',
   // ·
   // ·
   // Fork S · the sale catalogue, the bid sheet, the activity sheet

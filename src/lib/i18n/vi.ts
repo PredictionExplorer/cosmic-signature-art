@@ -401,6 +401,28 @@ export const vi: Messages = {
 
   // ── Phase 2 ─ each fork appends its keys beneath its own line, in every locale, and nowhere else.
   // Fork R · the room, the loupe, the gatefold, the Expansion
+  detail: 'Chi tiết',
+  wholePlate: 'Toàn bộ bản in',
+  detailWindow: 'Chi tiết {n}',
+  detailOf: 'Chi tiết bản in {n} ({scale}) · x {x} / y {y}',
+  scaleReadout: '1 px màn hình = {ratio} px tác phẩm',
+  scaleNative: '1:1',
+  filmPosition: 'Vị trí trong phim',
+  timeOf: '{current} trên {total}',
+  elapsed: 'đã qua {time}',
+  slowRoom: 'Phòng chậm',
+  studyWaits: 'Với kết nối này, bản nghiên cứu dài chờ một bản mã nhẹ hơn; ảnh tĩnh tạm thay thế.',
+  playAnyway: 'Vẫn phát',
+  durationSeconds: '{n} giây',
+  roomKeys: 'Phím trong phòng xem',
+  keyScrub: 'Lùi và tiến một giây; giữ Shift để mười giây',
+  keyDetail: 'Chi tiết: một điểm ảnh tác phẩm trên một điểm ảnh màn hình',
+  keyWhole: 'Toàn bộ bản in',
+  gatefold: 'Trang gấp',
+  gatefoldCaption: 'Bản in {n}, bằng mực và bằng ánh sáng. Một quỹ đạo.',
+  gatefoldSpread: 'Trải ra',
+  gatefoldSeam: 'Đường nối',
+  gatefoldSeamLabel: 'Vị trí đường nối giữa mực và ánh sáng',
   // ·
   // ·
   // Fork S · the sale catalogue, the bid sheet, the activity sheet

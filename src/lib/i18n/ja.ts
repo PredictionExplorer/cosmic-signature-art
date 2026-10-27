@@ -399,6 +399,28 @@ export const ja: Messages = {
 
   // ── Phase 2 ─ each fork appends its keys beneath its own line, in every locale, and nowhere else.
   // Fork R · the room, the loupe, the gatefold, the Expansion
+  detail: '細部',
+  wholePlate: '図版全体',
+  detailWindow: '細部 {n}',
+  detailOf: '図版 {n} の細部（{scale}）· x {x} / y {y}',
+  scaleReadout: '画面 1px = 作品 {ratio}px',
+  scaleNative: '1:1',
+  filmPosition: 'フィルムの位置',
+  timeOf: '{total} のうち {current}',
+  elapsed: '{time} 経過',
+  slowRoom: 'スローの間',
+  studyWaits: 'この回線では長い習作は軽い符号化を待ちます。いまは静止画が代わります。',
+  playAnyway: 'それでも再生',
+  durationSeconds: '{n} 秒',
+  roomKeys: '展示室のキー',
+  keyScrub: '前後に 1 秒、Shift を押せば 10 秒',
+  keyDetail: '細部：画面 1 ピクセルに作品 1 ピクセル',
+  keyWhole: '図版全体',
+  gatefold: '観音開き',
+  gatefoldCaption: '図版 {n}、墨で、光で。ひとつの軌道。',
+  gatefoldSpread: '見開き',
+  gatefoldSeam: '継ぎ目',
+  gatefoldSeamLabel: '墨と光の継ぎ目の位置',
   // ·
   // ·
   // Fork S · the sale catalogue, the bid sheet, the activity sheet

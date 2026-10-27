@@ -400,6 +400,28 @@ export const uk: Messages = {
 
   // ── Phase 2 ─ each fork appends its keys beneath its own line, in every locale, and nowhere else.
   // Fork R · the room, the loupe, the gatefold, the Expansion
+  detail: 'Деталь',
+  wholePlate: 'Уся плита',
+  detailWindow: 'Деталь {n}',
+  detailOf: 'Деталь плити {n} ({scale}) · x {x} / y {y}',
+  scaleReadout: '1 піксель екрана = {ratio} пікселів твору',
+  scaleNative: '1:1',
+  filmPosition: 'Позиція у фільмі',
+  timeOf: '{current} з {total}',
+  elapsed: 'минуло {time}',
+  slowRoom: 'Повільна зала',
+  studyWaits: 'На цьому з’єднанні довга студія чекає на легше кодування; поки що стоїть кадр.',
+  playAnyway: 'Усе одно відтворити',
+  durationSeconds: '{n} с',
+  roomKeys: 'Клавіші в залі',
+  keyScrub: 'Назад і вперед на секунду; із Shift — на десять',
+  keyDetail: 'Деталь: один піксель твору на піксель екрана',
+  keyWhole: 'Уся плита',
+  gatefold: 'Розгортка',
+  gatefoldCaption: 'Плита {n}, тушшю і світлом. Одна орбіта.',
+  gatefoldSpread: 'Розворот',
+  gatefoldSeam: 'Шов',
+  gatefoldSeamLabel: 'Де пролягає шов між тушшю і світлом',
   // ·
   // ·
   // Fork S · the sale catalogue, the bid sheet, the activity sheet

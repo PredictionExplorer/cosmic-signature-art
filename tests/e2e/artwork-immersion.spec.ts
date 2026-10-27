@@ -50,6 +50,9 @@ async function artworkReady(page: Page, path = '/art/31?view=still') {
     'aria-pressed',
     String(paused),
   );
+  // Under a still preference the server and the client agree on the toggle, so it cannot
+  // prove hydration; the keys' marker is set only once the client's listeners are attached.
+  await expect(page.locator('html')).toHaveAttribute('data-keys', 'ready');
   return page.getByRole('region', { name: t.ways, exact: true });
 }
 
@@ -501,7 +504,7 @@ test('Study opens a contained still, releases ambient playback and restores focu
   await expect(page.locator(roomSelector)).toHaveCount(0);
 });
 
-test('full films are explicit, native-controlled and only the selected version is attached', async ({
+test('full films are explicit, on the room’s own transport, and only the selected version is attached', async ({
   page,
 }) => {
   const originals: string[] = [];
@@ -514,23 +517,27 @@ test('full films are explicit, native-controlled and only the selected version i
   await page.keyboard.press('f');
   const dialog = page.getByRole('dialog');
   const film = dialog.locator('video');
-  await expect(film).toHaveAttribute('controls', '');
   await expect(film).toHaveAttribute('playsinline', '');
+  // The room drives the film from its own one-pixel transport, never the native controls.
+  await expect(film).not.toHaveAttribute('controls');
+  await expect(dialog.getByRole('slider', { name: t.filmPosition, exact: true })).toBeVisible();
   await expect(film).toHaveAttribute(
     'src',
     /(?:\/art\/31-ink-preview\.mp4|\/videos\/web\/ember\.mp4)$/,
   );
   expect(originals.every((url) => !/ember_(medium|slow)/.test(url))).toBe(true);
-  const versions = dialog.getByRole('combobox', { name: t.completeFilm, exact: true });
-  await expect(versions).toBeVisible();
+  const frame = page.locator(`${roomSelector} > div`).first();
+  await expect(frame).not.toHaveAttribute('data-slow', '');
+  // The long studies are words on the strip, each with its length; they open the Slow room.
   for (const [label, suffix] of [
     [t.longStudy, 'ember_medium'],
     [t.extendedStudy, 'ember_slow'],
   ] as const) {
     const oldFilm = await film.elementHandle();
-    await versions.selectOption({ label });
+    await dialog.getByRole('button', { name: new RegExp(`^${label} · \\d+ s$`) }).click();
     await expect(dialog.locator('video[src]')).toHaveCount(1);
     await expect(film).toHaveAttribute('src', new RegExp(`/videos/web/${suffix}\\.mp4$`));
+    await expect(frame).toHaveAttribute('data-slow', '');
     expect(await oldFilm!.evaluate((element) => (element as HTMLVideoElement).paused)).toBe(true);
     expect(await oldFilm!.getAttribute('src')).toBeNull();
     await oldFilm!.dispose();
@@ -659,6 +666,17 @@ test('the viewing room remains accessible and translated in every gallery langua
     await expect(
       dialog.getByRole('button', { name: messages.close, exact: true }),
     ).toBeInViewport();
+    // The Expansion fades the ground in; contrast is judged on the settled room.
+    await page.waitForFunction(
+      () =>
+        !document
+          .getAnimations()
+          .some((animation) =>
+            (animation.effect as KeyframeEffect | null)?.target?.closest(
+              '[data-testid="artwork-room"]',
+            ),
+          ),
+    );
     const results = await new AxeBuilder({ page })
       .withTags(['wcag2a', 'wcag2aa', 'wcag21aa'])
       .analyze();

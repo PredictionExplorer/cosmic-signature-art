@@ -395,6 +395,29 @@ export const ko: Messages = {
 
   // ── Phase 2 ─ each fork appends its keys beneath its own line, in every locale, and nowhere else.
   // Fork R · the room, the loupe, the gatefold, the Expansion
+  detail: '세부',
+  wholePlate: '전체 도판',
+  detailWindow: '세부 {n}',
+  detailOf: '도판 {n}의 세부 ({scale}) · x {x} / y {y}',
+  scaleReadout: '화면 1px = 작품 {ratio}px',
+  scaleNative: '1:1',
+  filmPosition: '필름 위치',
+  timeOf: '{total} 중 {current}',
+  elapsed: '{time} 경과',
+  slowRoom: '느린 방',
+  studyWaits:
+    '이 연결에서는 긴 연구가 더 가벼운 인코딩을 기다립니다. 그동안 정지 화면이 대신합니다.',
+  playAnyway: '그래도 재생',
+  durationSeconds: '{n}초',
+  roomKeys: '관람실의 키',
+  keyScrub: '앞뒤로 1초, Shift와 함께 10초',
+  keyDetail: '세부: 화면 1픽셀에 작품 1픽셀',
+  keyWhole: '전체 도판',
+  gatefold: '게이트폴드',
+  gatefoldCaption: '도판 {n}, 먹으로 그리고 빛으로. 하나의 궤도.',
+  gatefoldSpread: '펼침',
+  gatefoldSeam: '이음선',
+  gatefoldSeamLabel: '먹과 빛 사이 이음선의 위치',
   // ·
   // ·
   // Fork S · the sale catalogue, the bid sheet, the activity sheet

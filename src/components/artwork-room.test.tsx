@@ -7,12 +7,17 @@ import { en } from '@/lib/i18n/en';
 import { ArtworkRoom } from './artwork-room';
 
 const preserved = getCuratedArtwork(31)!;
+const windows = [
+  { x: 960, y: 320, width: 1152, height: 736, share: 0.427 },
+  { x: 1376, y: 960, width: 1152, height: 736, share: 0.237 },
+];
 const artwork: Artwork = {
   ...preserved,
   media: preserved.media.map((media) =>
     media.id === 'ink'
       ? {
           ...media,
+          detail: windows,
           films: [
             {
               ...media.films[0],
@@ -20,13 +25,27 @@ const artwork: Artwork = {
               src: '/complete-ink.mp4',
               variantKey: '31:ink:normal',
             },
-            { ...media.films[0], id: 'medium', src: '/long-ink.mp4', variantKey: '31:ink:medium' },
-            { ...media.films[0], id: 'slow', src: '/slow-ink.mp4', variantKey: '31:ink:slow' },
+            {
+              ...media.films[0],
+              id: 'medium',
+              src: '/long-ink.mp4',
+              durationSeconds: 115.8,
+              variantKey: '31:ink:medium',
+            },
+            {
+              ...media.films[0],
+              id: 'slow',
+              src: '/slow-ink.mp4',
+              durationSeconds: 289.5,
+              variantKey: '31:ink:slow',
+            },
           ],
         }
       : media,
   ),
 };
+const longStudy = new RegExp(`^${en.longStudy}`);
+const extendedStudy = new RegExp(`^${en.extendedStudy}`);
 
 let fullscreenElement: Element | null;
 let visibility: DocumentVisibilityState;
@@ -84,16 +103,19 @@ afterEach(() => {
   Reflect.deleteProperty(HTMLElement.prototype, 'requestFullscreen');
   Reflect.deleteProperty(HTMLDialogElement.prototype, 'showModal');
   Reflect.deleteProperty(HTMLDialogElement.prototype, 'close');
+  Reflect.deleteProperty(navigator, 'connection');
 });
 
 function Harness({
   initialFilm = false,
   work = artwork,
   returnPointerFocus = false,
+  startAt,
 }: {
   initialFilm?: boolean;
   work?: Artwork;
   returnPointerFocus?: boolean;
+  startAt?: number;
 }) {
   const [open, setOpen] = useState(false);
   const [expression, setExpression] = useState('ink');
@@ -115,6 +137,7 @@ function Harness({
           expression={expression}
           onExpressionChange={setExpression}
           initialFilm={initialFilm}
+          startAt={startAt}
           returnFocusRef={returnPointerFocus ? opener : undefined}
           onClose={() => setOpen(false)}
         />
@@ -123,12 +146,19 @@ function Harness({
   );
 }
 
-function openRoom(initialFilm = false) {
-  const view = render(<Harness initialFilm={initialFilm} />);
+function openRoom(initialFilm = false, props: { startAt?: number } = {}) {
+  const view = render(<Harness initialFilm={initialFilm} {...props} />);
   const opener = screen.getByRole('button', { name: 'Enter room' });
   opener.focus();
   fireEvent.click(opener);
   return { ...view, opener, room: screen.getByRole('dialog') };
+}
+
+function constrainConnection() {
+  Object.defineProperty(navigator, 'connection', {
+    configurable: true,
+    value: { saveData: true, addEventListener() {}, removeEventListener() {} },
+  });
 }
 
 describe('immersive artwork room', () => {
@@ -261,6 +291,15 @@ describe('immersive artwork room', () => {
     expect(document.documentElement.style.overflow).toBe('clip');
   });
 
+  it('fills the room with the sheet’s own tone for Ink and black for Light', () => {
+    const { room } = openRoom();
+    const frame = room.firstElementChild as HTMLElement;
+    expect(frame.style.getPropertyValue('--room-surface')).toBe('#efe9dd');
+    fireEvent.click(within(room).getByRole('button', { name: en.light }));
+    expect(frame.style.getPropertyValue('--room-surface')).toBe('#000000');
+    expect(room).toHaveAttribute('data-material', 'light');
+  });
+
   it('loads no complete film for an enlarged still, including after changing expression', () => {
     const { room } = openRoom();
     expect(room.querySelector('video')).toBeNull();
@@ -272,6 +311,16 @@ describe('immersive artwork room', () => {
       'src',
       expect.stringMatching(/\/art\/31-light\.webp$/),
     );
+  });
+
+  it('lets a phone rest on the ladder’s rungs: the still carries a srcset of them', () => {
+    const { room } = openRoom();
+    const still = within(room).getByRole('img');
+    const ink = artwork.media.find((media) => media.id === 'ink')!;
+    if (ink.rungs?.length) {
+      expect(still.getAttribute('srcset')).toContain(`${ink.rungs[0].src} ${ink.rungs[0].width}w`);
+      expect(still.getAttribute('srcset')).toContain(`${ink.still} 3456w`);
+    } else expect(still).not.toHaveAttribute('srcset');
   });
 
   it('preserves independent scroll-axis declarations without restoring unrelated stale styles', () => {
@@ -302,7 +351,7 @@ describe('immersive artwork room', () => {
     expect(within(room).queryByText(en.mediaUnavailable)).toBeNull();
   });
 
-  it('only starts a complete film after Film is chosen', () => {
+  it('only starts a complete film after Film is chosen, and says so on the strip', () => {
     const { room } = openRoom();
     fireEvent.click(within(room).getByRole('button', { name: en.film }));
     expect(room.querySelector('video')).toHaveAttribute('src', '/complete-ink.mp4');
@@ -312,26 +361,42 @@ describe('immersive artwork room', () => {
     expect(within(room).queryByText(en.loadingFilm)).toBeNull();
   });
 
-  it('supports explicit complete-film entry and never substitutes the browsing derivative', () => {
+  it('plays a complete film on the room’s own transport, never the native controls', () => {
     const { room } = openRoom(true);
     const video = room.querySelector('video')!;
     expect(video).toHaveAttribute('src', '/complete-ink.mp4');
-    expect(video).toHaveAttribute('controls');
+    expect(video).not.toHaveAttribute('controls');
     expect(video).toHaveAttribute('playsinline');
     expect(video).toHaveAttribute('preload', 'metadata');
     expect(video.src).not.toContain('preview');
+    const transport = within(room).getByRole('slider', { name: en.filmPosition });
+    Object.defineProperty(video, 'duration', { configurable: true, value: 30 });
+    video.currentTime = 12;
+    fireEvent.timeUpdate(video);
+    expect(transport).toHaveAttribute('aria-valuetext', '00:12 of 00:30');
+    expect(transport).toHaveValue('12');
+    fireEvent.change(transport, { target: { value: '20' } });
+    expect(video.currentTime).toBe(20);
   });
 
-  it('exposes every published film variant and releases the previous decoder on change', () => {
+  it('lists every published film as a word with its length and releases the previous decoder on change', () => {
     const { room } = openRoom(true);
     const normal = room.querySelector('video')!;
-    const variants = within(room).getByRole('combobox', { name: en.completeFilm });
-    expect(within(variants).getAllByRole('option')).toHaveLength(3);
-    fireEvent.change(variants, { target: { value: 'slow' } });
+    const sources = within(room).getByRole('group', { name: en.sources });
+    expect(
+      within(sources)
+        .getAllByRole('button')
+        .map((button) => button.textContent),
+    ).toEqual([en.still, en.film, `${en.longStudy} · 116 s`, `${en.extendedStudy} · 290 s`]);
+    fireEvent.click(within(sources).getByRole('button', { name: extendedStudy }));
     expect(room.querySelector('video')).toHaveAttribute('src', '/slow-ink.mp4');
     expect(normal).not.toHaveAttribute('src');
     expect(vi.mocked(HTMLMediaElement.prototype.pause).mock.contexts).toContain(normal);
     expect(vi.mocked(HTMLMediaElement.prototype.load).mock.contexts).toContain(normal);
+    expect(within(sources).getByRole('button', { name: extendedStudy })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    );
   });
 
   it('remembers a film position through still viewing, without keeping a video mounted', () => {
@@ -348,17 +413,31 @@ describe('immersive artwork room', () => {
     expect(resumed.currentTime).toBe(17.5);
   });
 
+  it('continues the plate’s time into the room, once, and only for the same film', () => {
+    const { room } = openRoom(true, { startAt: 12.5 });
+    const video = room.querySelector('video')!;
+    Object.defineProperty(video, 'duration', { value: 30 });
+    fireEvent.loadedMetadata(video);
+    expect(video.currentTime).toBe(12.5);
+    const sources = within(room).getByRole('group', { name: en.sources });
+    fireEvent.click(within(sources).getByRole('button', { name: longStudy }));
+    const study = room.querySelector('video')!;
+    Object.defineProperty(study, 'duration', { value: 115.8 });
+    fireEvent.loadedMetadata(study);
+    expect(study.currentTime).toBe(0);
+  });
+
   it('keeps playheads separate between normal and longer films', () => {
     const { room } = openRoom(true);
     room.querySelector('video')!.currentTime = 17;
-    const variants = within(room).getByRole('combobox', { name: en.completeFilm });
-    fireEvent.change(variants, { target: { value: 'medium' } });
+    const sources = within(room).getByRole('group', { name: en.sources });
+    fireEvent.click(within(sources).getByRole('button', { name: longStudy }));
     const longer = room.querySelector('video')!;
     Object.defineProperty(longer, 'duration', { value: 300 });
     fireEvent.loadedMetadata(longer);
     expect(longer.currentTime).toBe(0);
     longer.currentTime = 143;
-    fireEvent.change(variants, { target: { value: 'normal' } });
+    fireEvent.click(within(sources).getByRole('button', { name: en.film }));
     const restored = room.querySelector('video')!;
     Object.defineProperty(restored, 'duration', { value: 30 });
     fireEvent.loadedMetadata(restored);
@@ -436,14 +515,153 @@ describe('immersive artwork room', () => {
     );
   });
 
-  it('keeps native controls available when the browser declines playback', async () => {
+  it('keeps the transport available when the browser declines playback', async () => {
     vi.mocked(HTMLMediaElement.prototype.play).mockRejectedValue(
       new DOMException('Denied', 'NotAllowedError'),
     );
     const { room } = openRoom(true);
     await act(async () => {});
-    expect(room.querySelector('video')).toHaveAttribute('controls');
+    expect(room.querySelector('video')).not.toHaveAttribute('controls');
+    expect(within(room).getByRole('slider', { name: en.filmPosition })).toBeInTheDocument();
     expect(screen.queryByText(en.mediaUnavailable)).toBeNull();
+  });
+
+  it('answers Space, the arrows, F, I and L, and is silent in a field', () => {
+    const { room } = openRoom(true);
+    const video = room.querySelector('video')!;
+    Object.defineProperty(video, 'duration', { configurable: true, value: 30 });
+    Object.defineProperty(video, 'paused', { configurable: true, value: false });
+    video.currentTime = 10;
+    fireEvent.keyDown(room, { key: 'ArrowRight' });
+    expect(video.currentTime).toBe(11);
+    fireEvent.keyDown(room, { key: 'ArrowRight', shiftKey: true });
+    expect(video.currentTime).toBe(21);
+    fireEvent.keyDown(room, { key: 'ArrowLeft' });
+    expect(video.currentTime).toBe(20);
+    vi.mocked(HTMLMediaElement.prototype.pause).mockClear();
+    fireEvent.keyDown(room, { key: ' ' });
+    expect(HTMLMediaElement.prototype.pause).toHaveBeenCalledOnce();
+    Object.defineProperty(video, 'paused', { configurable: true, value: true });
+    vi.mocked(HTMLMediaElement.prototype.play).mockClear();
+    fireEvent.keyDown(room, { key: ' ' });
+    expect(HTMLMediaElement.prototype.play).toHaveBeenCalledOnce();
+    // A key inside the transport belongs to the transport.
+    const transport = within(room).getByRole('slider', { name: en.filmPosition });
+    fireEvent.keyDown(transport, { key: 'ArrowRight' });
+    expect(video.currentTime).toBe(20);
+    fireEvent.keyDown(room, { key: 'l' });
+    expect(room).toHaveAttribute('data-material', 'light');
+    fireEvent.keyDown(room, { key: 'i' });
+    expect(room).toHaveAttribute('data-material', 'ink');
+    fireEvent.click(within(room).getByRole('button', { name: en.still }));
+    expect(room.querySelector('video')).toBeNull();
+    fireEvent.keyDown(room, { key: 'f' });
+    expect(room.querySelector('video')).toHaveAttribute('src', '/complete-ink.mp4');
+  });
+
+  it('names the Slow room while a long study plays, with its elapsed clock in minutes and seconds', () => {
+    const { room } = openRoom(true);
+    const frame = room.firstElementChild as HTMLElement;
+    expect(frame).not.toHaveAttribute('data-slow');
+    const sources = within(room).getByRole('group', { name: en.sources });
+    fireEvent.click(within(sources).getByRole('button', { name: longStudy }));
+    expect(frame).toHaveAttribute('data-slow');
+    const study = room.querySelector('video')!;
+    Object.defineProperty(study, 'duration', { configurable: true, value: 115.8 });
+    fireEvent.canPlay(study);
+    study.currentTime = 75;
+    fireEvent.timeUpdate(study);
+    expect(within(room).getByRole('status')).toHaveTextContent(
+      `${en.slowRoom} · 01:15 ${en.elapsed.replace('{time} ', '')}`,
+    );
+    expect(within(room).getByRole('slider', { name: en.filmPosition })).toHaveAttribute(
+      'aria-valuetext',
+      '01:15 of 01:55',
+    );
+    fireEvent.click(within(sources).getByRole('button', { name: en.film }));
+    expect(frame).not.toHaveAttribute('data-slow');
+  });
+
+  it('holds a long study for an explicit word on a constrained connection; the still stands in', () => {
+    constrainConnection();
+    const { room } = openRoom();
+    const sources = within(room).getByRole('group', { name: en.sources });
+    fireEvent.click(within(sources).getByRole('button', { name: longStudy }));
+    expect(room.querySelector('video')).toBeNull();
+    expect(within(room).getByRole('img')).toHaveAttribute(
+      'src',
+      expect.stringMatching(/\/art\/31-ink\.webp$/),
+    );
+    expect(within(room).getByRole('status')).toHaveTextContent(en.studyWaits);
+    expect(HTMLMediaElement.prototype.play).not.toHaveBeenCalled();
+    fireEvent.click(within(room).getByRole('button', { name: /^Play it anyway/ }));
+    expect(room.querySelector('video')).toHaveAttribute('src', '/long-ink.mp4');
+    // The normal film is never held: it is the work's own thirty seconds.
+    fireEvent.click(within(sources).getByRole('button', { name: en.film }));
+    expect(room.querySelector('video')).toHaveAttribute('src', '/complete-ink.mp4');
+  });
+
+  it('opens the loupe on the first detail window and returns to the whole plate', () => {
+    const { room } = openRoom();
+    const frame = room.firstElementChild as HTMLElement;
+    fireEvent.click(within(room).getByRole('button', { name: en.detail }));
+    expect(frame).toHaveAttribute('data-loupe');
+    const loupe = within(room).getByRole('group', { name: `№ 031 · Ink · ${en.detail}` });
+    expect(loupe).toHaveAttribute('data-loupe');
+    expect(within(loupe).getByRole('img')).toHaveAttribute('width', '3456');
+    expect(room.querySelector('video')).toBeNull();
+    const views = within(room).getByRole('group', { name: en.detail });
+    expect(within(views).getByRole('button', { name: en.wholePlate })).toBeInTheDocument();
+    const second = within(views).getByRole('button', { name: 'Detail 2' });
+    expect(within(views).getByRole('button', { name: 'Detail 1' })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    );
+    fireEvent.click(second);
+    expect(second).toHaveAttribute('aria-pressed', 'true');
+    fireEvent.click(within(views).getByRole('button', { name: en.wholePlate }));
+    expect(frame).not.toHaveAttribute('data-loupe');
+    expect(within(room).getByRole('img')).toHaveAttribute(
+      'src',
+      expect.stringMatching(/\/art\/31-ink\.webp$/),
+    );
+    // Z toggles the loupe; W is always the whole plate.
+    fireEvent.keyDown(room, { key: 'z' });
+    expect(frame).toHaveAttribute('data-loupe');
+    fireEvent.keyDown(room, { key: 'w' });
+    expect(frame).not.toHaveAttribute('data-loupe');
+    fireEvent.keyDown(room, { key: 'Z' });
+    expect(frame).toHaveAttribute('data-loupe');
+    fireEvent.keyDown(room, { key: 'Z' });
+    expect(frame).not.toHaveAttribute('data-loupe');
+  });
+
+  it('leaves the loupe for a film on F and offers no loupe without a still', () => {
+    const { room } = openRoom();
+    fireEvent.click(within(room).getByRole('button', { name: en.detail }));
+    // The strip's centre belongs to the loupe while it is open; the key still reaches the film.
+    expect(within(room).queryByRole('button', { name: en.film })).toBeNull();
+    fireEvent.keyDown(room, { key: 'f' });
+    expect(room.firstElementChild).not.toHaveAttribute('data-loupe');
+    expect(room.querySelector('video')).toHaveAttribute('src', '/complete-ink.mp4');
+    fireEvent.click(within(room).getByRole('button', { name: en.still }));
+    fireEvent.error(within(room).getByRole('img'));
+    expect(within(room).getByRole('button', { name: en.detail })).toBeDisabled();
+  });
+
+  it('shows the room’s keys on ? and lets Escape close the hint before the room', () => {
+    const { room } = openRoom();
+    fireEvent.keyDown(room, { key: '?' });
+    const hint = within(room).getByLabelText(en.roomKeys);
+    expect(hint).toHaveTextContent(en.keyScrub);
+    expect(hint).toHaveTextContent(en.keyDetail);
+    const cancel = new Event('cancel', { cancelable: true });
+    fireEvent(room, cancel);
+    expect(cancel.defaultPrevented).toBe(true);
+    expect(within(room).queryByLabelText(en.roomKeys)).toBeNull();
+    expect(screen.getByRole('dialog')).toBeInTheDocument();
+    fireEvent(room, new Event('cancel', { cancelable: true }));
+    expect(screen.queryByRole('dialog')).toBeNull();
   });
 
   it('handles Escape through native cancellation and prevents double-close', () => {
