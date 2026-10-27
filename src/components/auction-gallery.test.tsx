@@ -222,8 +222,13 @@ describe('the catalogue keeps financial access independent of media', () => {
       vi.fn().mockResolvedValue(Response.json({ artwork: null }, { status: 503 })),
     );
     render(<AuctionGallery locale="uk" t={en} />);
+    // The failed media read settles on its own clock; the chain line must not wait on it.
     expect(
-      await screen.findByText('Settled · 0.00003 ETH · won by 0x6308…1F7C · awaiting delivery'),
+      await screen.findByText(
+        'Settled · 0.00003 ETH · won by 0x6308…1F7C · awaiting delivery',
+        {},
+        { timeout: 5000 },
+      ),
     ).toBeVisible();
     expect(screen.getByRole('link', { name: en.collect })).toHaveAttribute(
       'href',

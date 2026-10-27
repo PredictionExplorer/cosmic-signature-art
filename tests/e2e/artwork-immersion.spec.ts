@@ -462,7 +462,11 @@ test('Study opens a contained still, releases ambient playback and restores focu
   });
   await artworkReady(page, '/art/31');
   const inline = page.locator(`${current} video`);
-  await expect(inline).toHaveAttribute('src', /\/art\/31-ink-preview\.mp4$/);
+  // A desk plays the local 1280 film; a compact wall rests on the eight-second excerpt.
+  await expect(inline).toHaveAttribute(
+    'src',
+    /(?:\/art\/31-ink-preview\.mp4|\/art\/previews\/31-[a-f0-9]{16}\.mp4)$/,
+  );
   await expect
     .poll(() => inline.evaluate((element) => !(element as HTMLVideoElement).paused), {
       timeout: 10_000,

@@ -68,11 +68,18 @@ test('the room is the work’s own material, with every word on one edge strip t
   // No native controls, no select, no header: the strip is the chrome.
   await expect(dialog.locator('select, header')).toHaveCount(0);
   // The strip rests after the quiet spell and returns on movement; it never leaves the DOM.
-  await expect(frame).toHaveAttribute('data-idle', '', { timeout: 6000 });
-  await expect(dialog.getByRole('button', { name: t.close, exact: true })).toBeAttached();
-  await page.mouse.move(300, 300);
-  await page.mouse.move(320, 310);
-  await expect(frame).not.toHaveAttribute('data-idle', '');
+  // Under reduced motion nothing fades on its own: the strip stays.
+  const reduced = await page.evaluate(() => matchMedia('(prefers-reduced-motion: reduce)').matches);
+  if (reduced) {
+    await page.waitForTimeout(3000);
+    await expect(frame).not.toHaveAttribute('data-idle', '');
+  } else {
+    await expect(frame).toHaveAttribute('data-idle', '', { timeout: 6000 });
+    await expect(dialog.getByRole('button', { name: t.close, exact: true })).toBeAttached();
+    await page.mouse.move(300, 300);
+    await page.mouse.move(320, 310);
+    await expect(frame).not.toHaveAttribute('data-idle', '');
+  }
   await dialog.getByRole('button', { name: t.light, exact: true }).click();
   await expect(frame).toHaveAttribute('data-material', 'light');
   expect(await frame.evaluate((element) => element.style.getPropertyValue('--room-surface'))).toBe(
