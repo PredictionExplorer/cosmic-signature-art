@@ -71,3 +71,28 @@ weight. `getPlateGround(id, expression, stillSha256)` returns nothing for any ot
 - The home's pool is no longer a hand-written list. `DAY_WORK_POOL` is derived from the works
   whose complete 1280 px film is held locally and whose opening clip is published, so it
   widens by itself when those derivatives are cut for more works.
+
+## Where the registries are read
+
+The registries weigh more than a page should carry (the clips 26 KB, the ladder 36 KB, the
+full plate records 14.5 KB, all compressed), so they are read on the server and handed to the
+client as a work's own media: `withLocalDerivatives` attaches `previewFilm`, `settlingFilm`,
+`openingFilm`, `rungs` and `detail` on the live, indexed and curated paths. The one file a
+client component reads is `plate-grounds.json` (7.7 KB compressed): tone, edge and centre per
+still, through `getPlateGround`. `src/lib/art/client-boundary.test.ts` fails the suite when a
+`'use client'` file imports a registry-bearing module.
+
+## Measured, 27 October 2026
+
+|                       | Count  | Size on disk | Of note                                                         |
+| --------------------- | ------ | ------------ | --------------------------------------------------------------- |
+| Settling clips, Ink   | 72     | 257 MB       | 1.5–7.5 MB each at CRF 26; still match 2.4–3.7 mean, 0 % over   |
+| Settling clips, Light | 72     | 20 MB        | under 400 KB each at CRF 22; still match 0.4–0.9 mean           |
+| Opening clips         | 6      | 5 MB         | 023, 031, 035 in both expressions                               |
+| Still ladder          | 288    | 46 MB        | master match 0.3–1.6 mean; published match 0.6–2.4 mean         |
+| Plate records         | 72 × 2 | —            | kozo tones #e2ddd2–#f1ebdf, all warm; three detail windows each |
+
+The settling clips run a quarter over the plan's ~220 MB because the sumi sheets are encoded
+at constant quality rather than a fixed bitrate; the six densest exceed 6 MB. Reruns verify and
+keep every unchanged file, so the pipelines are idempotent; a changed source hash rebuilds only
+its own derivatives and removes the orphan.
