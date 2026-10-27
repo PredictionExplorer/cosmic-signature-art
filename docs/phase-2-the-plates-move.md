@@ -101,6 +101,24 @@ its second view and the caption "Plate 031, in ink and in light. One orbit."
 - The muted strip words in the room use #5a5a51, which keeps 5.1:1 on the darkest measured
   sheet; the lighter Phase 1 grey fell short on 031's tone.
 
+## The review
+
+An adversarial review ran over the whole Phase 2 diff: eight reviewers (correctness, honesty,
+design, accessibility, internationalisation, performance, tests, coherence) raised 114
+findings and three independent skeptics tried to refute each; 70 were upheld by at least
+two. The upheld findings were fixed in the commits that follow the integration, with these
+exceptions, recorded here rather than left silent:
+
+- Verify a download hashes on the main thread with the whole file in memory and refuses files
+  above 256 MB (it prints the `shasum` command instead). A streaming hash in a worker needs a
+  SHA-256 implementation the browser's WebCrypto does not offer for streams; the venue adds no
+  dependency for it in this phase.
+- No Lighthouse step was added to CI for the lot page with the sheet open; the budgets remain
+  the Phase 0 measurements, checked by hand.
+- The Sit ritual and the expression-word and clock helpers are implemented more than once
+  (the viewer, the process chapter plate, the sale); they are consolidated after this phase's
+  merge rather than across four workstreams at once.
+
 ## Open for the owner (vision §8)
 
 1. A named curator for the hangs and trails; `CURATOR` and the `hungBy` strings change together.
