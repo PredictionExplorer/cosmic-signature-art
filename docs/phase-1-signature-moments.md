@@ -76,8 +76,9 @@ read of all 72 published records behind the orderings, the Index and the entries
 2. The Dusk: built, flagged off; naive-viewer testing decides whether it ships on.
 3. "A hang: 023, 031, 035" and the editorial trails wait for a named curator (Phase 2).
 
-## Phase 2 starts here
+## Phase 2
 
 Settling clips and the still ladder, the eye-line hang, the gatefold, the chrome-less room
 rebuilt around keys and the Slow room, the zero-pixel loupe, the sale as a full catalogue
-with hush, per-work OG images.
+with hush, the exhibitions and the sharing cards: see
+[phase-2-the-plates-move.md](phase-2-the-plates-move.md).
