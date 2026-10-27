@@ -16,3 +16,13 @@ public/fonts/cjk/
 # The index builder's lock and temporary file (scripts/build-collection-index.mjs)
 src/lib/art/collection-index.json.lock
 src/lib/art/collection-index.json.*.tmp
+
+# Verified copies of published assets the derivative pipelines read (scripts/lib/origin.mjs)
+.cache/
+
+# Registry locks and temporaries of the derivative pipelines
+src/lib/art/*.json.lock
+src/lib/art/*.json.*.tmp
+public/art/clips/.partial-*
+public/art/stills/.partial-*
+public/art/previews/.partial-*

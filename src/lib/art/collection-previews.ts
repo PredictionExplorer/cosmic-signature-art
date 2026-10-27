@@ -79,7 +79,7 @@ export function createCollectionPreviewLookup(raw: unknown) {
 
 const lookup = createCollectionPreviewLookup(registry);
 export function withCollectionPreviews(
-  work: Artwork,
+  work: Pick<Artwork, 'id' | 'seed'>,
   media: ArtInterpretation[],
 ): ArtInterpretation[] {
   return media.map((interpretation) => lookup(work, interpretation));

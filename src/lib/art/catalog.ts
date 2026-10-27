@@ -2,6 +2,7 @@ import records from './curated-records.json';
 import mediaRecords from './curated-media.json';
 import { ART_API_ORIGIN, seedPackageUrl } from './constants';
 import type { Artwork, ArtInterpretation } from './types';
+import { withLocalDerivatives } from './derivatives';
 
 /** Hash-verified local derivatives of one published expression. */
 export interface CuratedMediaEntry {
@@ -65,7 +66,7 @@ export const curatedArtworks: Artwork[] = curatedMedia.map(({ id, media }) => {
     seed,
     cycle: record.cycle,
     mintedAt: record.mintedAt,
-    media: interpretations,
+    media: withLocalDerivatives({ id, seed }, interpretations),
     provenance: {
       source: 'curated-fallback',
       recordUrl: `${ART_API_ORIGIN}/api/cosmicgame/cst/info/${id}`,

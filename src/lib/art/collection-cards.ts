@@ -1,5 +1,5 @@
 import { collectionIndex, indexedAssetUrl, type IndexedWork } from './collection-index';
-import { withCollectionPreviews } from './collection-previews';
+import { withLocalDerivatives } from './derivatives';
 import { ART_API_ORIGIN, seedPackageUrl } from './constants';
 import { preferVerifiedLocalDelivery } from './media';
 import type { ArtFilm, ArtInterpretation, Artwork } from './types';
@@ -7,8 +7,9 @@ import type { ArtFilm, ArtInterpretation, Artwork } from './types';
 /**
  * A card built from the build-time index alone, so a page of the collection renders without
  * waiting on eighteen manifest reads. The media are the publisher's own URLs and hashes as the
- * manifest advertised them; the hash-verified local excerpt and the curated local stills attach
- * through the same checks the live path uses, so a stale snapshot can never paint the wrong file.
+ * manifest advertised them; the hash-verified local derivatives (excerpt, plate clips, still
+ * ladder) and the curated local stills attach through the same checks the live path uses, so a
+ * stale snapshot can never paint the wrong file.
  */
 const filmDefinitions = {
   light: [
@@ -89,8 +90,7 @@ export function artworkFromIndex(work: IndexedWork): Artwork {
       ink: media.some((item) => item.id === 'ink') ? 'known' : 'not-advertised',
     },
   };
-  const withPreviews = withCollectionPreviews(artwork, media);
-  const delivered = preferVerifiedLocalDelivery(artwork, withPreviews);
+  const delivered = preferVerifiedLocalDelivery(artwork, withLocalDerivatives(artwork, media));
   return {
     ...artwork,
     media: delivered,

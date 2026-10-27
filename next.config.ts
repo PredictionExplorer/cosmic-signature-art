@@ -8,7 +8,7 @@ const nextConfig: NextConfig = {
       {
         // Hash-named and identity-named artwork derivatives never change in place.
         // The artwork pages (/art/31) are routes, not files, and stay out of this rule.
-        source: '/art/:file((?:previews/)?[^/]+\\.(?:webp|mp4))',
+        source: '/art/:file((?:previews/|clips/|stills/)?[^/]+\\.(?:webp|mp4))',
         headers: [{ key: 'Cache-Control', value: 'public, max-age=31536000, immutable' }],
       },
       {

@@ -3,7 +3,11 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { getCuratedArtwork } from '@/lib/art/catalog';
 import { CollectionPreview, excerptRange, getCollectionPreviewFilm } from './collection-preview';
 
-const archivedInk = getCuratedArtwork(31)!.media.find((media) => media.id === 'ink')!;
+// The curated archive carries its verified excerpt; this fixture is the same Ink without one.
+const archivedInk = {
+  ...getCuratedArtwork(31)!.media.find((media) => media.id === 'ink')!,
+  previewFilm: undefined,
+};
 const ink = {
   ...archivedInk,
   previewFilm: { ...archivedInk.films[0], src: '/art/previews/31-ink.mp4', durationSeconds: 8 },

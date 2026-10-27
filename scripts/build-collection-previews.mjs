@@ -1,253 +1,34 @@
-import { createHash, randomUUID } from 'node:crypto';
-import { createReadStream } from 'node:fs';
+import { randomUUID } from 'node:crypto';
 import { mkdir, open, readFile, rename, rm, stat, writeFile } from 'node:fs/promises';
-import { createServer } from 'node:http';
-import { spawn } from 'node:child_process';
-import { once } from 'node:events';
 import { fileURLToPath } from 'node:url';
 import { resolve } from 'node:path';
-import { setTimeout, clearTimeout } from 'node:timers';
 import { log, error } from 'node:console';
+import {
+  ORIGIN as origin,
+  SHA256 as shaPattern,
+  collection,
+  command,
+  hashFile as hash,
+  json,
+  parseRequestedIds as parseIds,
+  rangeRelay,
+  uniqueAsset,
+} from './lib/origin.mjs';
 
-const { fetch, AbortController, AbortSignal, Buffer } = globalThis;
-const origin = 'https://a1.cosmicsignature.com';
+/**
+ * The catalogue excerpts: eight seconds of each published Ink film at 640 px, 30 fps, for
+ * hover, focus and the phone's ambient motion. Cut over the bounded range relay that
+ * scripts/lib/origin.mjs shares with the plate clips and the still ladder.
+ */
+export { sourceByteLimit, validateSourceRange } from './lib/origin.mjs';
 const outputDirectory = fileURLToPath(new URL('../public/art/previews/', import.meta.url));
 const registryPath = fileURLToPath(
   new URL('../src/lib/art/collection-previews.json', import.meta.url),
 );
 const lockPath = `${registryPath}.lock`;
-const maxJsonBytes = 2 * 1024 * 1024;
 const maxOutputBytes = 2 * 1024 * 1024;
-const shaPattern = /^[a-f0-9]{64}$/;
-const seedPattern = /^0x[a-f0-9]{64}$/;
 export function parseRequestedIds(arguments_) {
-  return arguments_.map((argument) => {
-    if (!/^\d+$/.test(argument) || !Number.isSafeInteger(Number(argument)))
-      throw new Error('Usage: node scripts/build-collection-previews.mjs [tokenId ...]');
-    return Number(argument);
-  });
-}
-
-export function sourceByteLimit(expectedBytes) {
-  if (!Number.isSafeInteger(expectedBytes) || expectedBytes <= 0)
-    throw new Error('Invalid original byte size');
-  return Math.min(96 * 1024 * 1024, Math.floor(expectedBytes * 0.9));
-}
-
-export function validateSourceRange({
-  status,
-  contentRange,
-  requestRange,
-  expectedBytes,
-  etag,
-  expectedEtag,
-}) {
-  const requested = /^bytes=(\d+)-(\d*)$/.exec(requestRange ?? '');
-  const received = /^bytes (\d+)-(\d+)\/(\d+)$/.exec(contentRange ?? '');
-  if (!requested || !received) throw new Error('Malformed source byte range');
-  const [, start, end, total] = received.map(Number);
-  const requestedStart = Number(requested[1]);
-  const requestedEnd = requested[2] ? Number(requested[2]) : expectedBytes - 1;
-  if (
-    status !== 206 ||
-    ![start, end, total, requestedStart, requestedEnd, expectedBytes].every(Number.isSafeInteger) ||
-    total !== expectedBytes ||
-    start !== requestedStart ||
-    end < start ||
-    end >= total ||
-    requestedEnd < requestedStart ||
-    end !== Math.min(requestedEnd, expectedBytes - 1) ||
-    (expectedEtag && etag !== expectedEtag)
-  )
-    throw new Error('Source range or object validator changed during generation');
-  return { start, end, total, length: end - start + 1 };
-}
-
-async function json(path) {
-  const response = await fetch(`${origin}${path}`, {
-    redirect: 'error',
-    signal: AbortSignal.timeout(15_000),
-  });
-  if (!response.ok || Number(response.headers.get('content-length')) > maxJsonBytes) {
-    await response.body?.cancel();
-    throw new Error(`Invalid JSON response: ${path}`);
-  }
-  const chunks = [];
-  let size = 0;
-  for await (const chunk of response.body) {
-    size += chunk.length;
-    if (size > maxJsonBytes) throw new Error(`Oversized JSON: ${path}`);
-    chunks.push(chunk);
-  }
-  return JSON.parse(Buffer.concat(chunks).toString('utf8'));
-}
-
-async function collection() {
-  const records = new Map();
-  for (let offset = 0; offset < 10_000; offset += 18) {
-    const page = await json(`/api/cosmicgame/cst/list/all/${offset}/18`);
-    if (page.status !== 1 || page.error || !Array.isArray(page.CosmicSignatureTokenList))
-      throw new Error('Collection index is unavailable');
-    for (const row of page.CosmicSignatureTokenList) {
-      const seed = `0x${typeof row.Seed === 'string' ? row.Seed.replace(/^0x/i, '').toLowerCase() : ''}`;
-      if (!Number.isSafeInteger(row.TokenId) || row.TokenId < 0 || !seedPattern.test(seed))
-        throw new Error('Malformed token identity');
-      if (records.has(row.TokenId))
-        throw new Error('Collection changed during pagination; rerun to obtain a consistent list');
-      records.set(row.TokenId, { id: row.TokenId, seed });
-    }
-    if (page.CosmicSignatureTokenList.length < 18) return [...records.values()];
-  }
-  throw new Error('Collection exceeds the ingestion safety limit');
-}
-
-function uniqueAsset(manifest, role, path, kind) {
-  const candidates = manifest.assets.filter((asset) => asset.role === role);
-  if (candidates.length === 0) return null;
-  if (candidates.length !== 1) throw new Error(`Duplicate manifest role: ${role}`);
-  const asset = candidates[0];
-  if (
-    asset.path !== path ||
-    asset.kind !== kind ||
-    !shaPattern.test(asset.sha256) ||
-    !Number.isSafeInteger(asset.bytes) ||
-    asset.bytes <= 0 ||
-    !Number.isSafeInteger(asset.width) ||
-    !Number.isSafeInteger(asset.height) ||
-    asset.width <= 0 ||
-    asset.height <= 0 ||
-    asset.width > 8192 ||
-    asset.height > 8192
-  )
-    throw new Error(`Malformed manifest asset: ${role}`);
-  return asset;
-}
-
-function command(program, arguments_, timeout = 120_000) {
-  return new Promise((resolve, reject) => {
-    const child = spawn(program, arguments_, { stdio: ['ignore', 'pipe', 'pipe'] });
-    let stdout = '';
-    let stderr = '';
-    const timer = setTimeout(() => child.kill('SIGKILL'), timeout);
-    child.stdout.on('data', (chunk) => (stdout = `${stdout}${chunk}`.slice(-128_000)));
-    child.stderr.on('data', (chunk) => (stderr = `${stderr}${chunk}`.slice(-128_000)));
-    child.once('error', (failure) => {
-      clearTimeout(timer);
-      reject(failure);
-    });
-    child.once('close', (code, signal) => {
-      clearTimeout(timer);
-      if (code === 0) resolve(stdout);
-      else reject(new Error(`${program} failed (${signal ?? code}): ${stderr.slice(-4000)}`));
-    });
-  });
-}
-
-async function hash(path) {
-  const digest = createHash('sha256');
-  for await (const chunk of createReadStream(path)) digest.update(chunk);
-  return digest.digest('hex');
-}
-
-/**
- * Fixed-origin range relay: FFmpeg cannot follow upstream redirects or fetch a whole original.
- * A token's aggregate bytes are capped, and every request must match the probed object size.
- */
-async function rangeRelay(sourceUrl, expectedBytes) {
-  const probe = await fetch(sourceUrl, {
-    headers: { range: 'bytes=0-0', 'accept-encoding': 'identity' },
-    redirect: 'error',
-    signal: AbortSignal.timeout(15_000),
-  });
-  const etag = probe.headers.get('etag');
-  const modified = probe.headers.get('last-modified');
-  try {
-    validateSourceRange({
-      status: probe.status,
-      contentRange: probe.headers.get('content-range'),
-      requestRange: 'bytes=0-0',
-      expectedBytes,
-    });
-  } catch {
-    await probe.body?.cancel();
-    throw new Error('Source must support bounded byte ranges with its advertised size');
-  }
-  await probe.body?.cancel();
-  const limit = sourceByteLimit(expectedBytes);
-  let bytesRead = 0;
-  let failure;
-  const controllers = new Set();
-  const server = createServer(async (request, response) => {
-    const range = request.headers.range;
-    if (
-      request.url !== '/source.mp4' ||
-      request.method !== 'GET' ||
-      !/^bytes=\d+-\d*$/.test(range ?? '')
-    ) {
-      response.writeHead(400).end();
-      return;
-    }
-    const controller = new AbortController();
-    controllers.add(controller);
-    response.once('close', () => controller.abort());
-    try {
-      const headers = { range, 'accept-encoding': 'identity' };
-      if (etag && !etag.startsWith('W/')) headers['if-match'] = etag;
-      else if (modified) headers['if-unmodified-since'] = modified;
-      const upstream = await fetch(sourceUrl, {
-        headers,
-        redirect: 'error',
-        signal: AbortSignal.any([controller.signal, AbortSignal.timeout(30_000)]),
-      });
-      const contentRange = upstream.headers.get('content-range') ?? '';
-      let validatedRange;
-      try {
-        validatedRange = validateSourceRange({
-          status: upstream.status,
-          contentRange,
-          requestRange: range,
-          expectedBytes,
-          etag: upstream.headers.get('etag'),
-          expectedEtag: etag,
-        });
-      } catch (cause) {
-        await upstream.body?.cancel();
-        throw cause;
-      }
-      response.writeHead(206, {
-        'content-type': 'video/mp4',
-        'accept-ranges': 'bytes',
-        'content-range': contentRange,
-        'content-length': validatedRange.length,
-      });
-      for await (const chunk of upstream.body) {
-        bytesRead += chunk.length;
-        if (bytesRead > limit) throw new Error(`Source excerpt exceeded ${limit} bytes`);
-        if (!response.write(chunk)) await once(response, 'drain', { signal: controller.signal });
-      }
-      response.end();
-    } catch (cause) {
-      if (!controller.signal.aborted) failure = cause;
-      controller.abort();
-      response.destroy();
-    } finally {
-      controllers.delete(controller);
-    }
-  });
-  server.listen(0, '127.0.0.1');
-  await once(server, 'listening');
-  return {
-    url: `http://127.0.0.1:${server.address().port}/source.mp4`,
-    result: () => {
-      if (failure) throw failure;
-      return bytesRead;
-    },
-    async close() {
-      for (const controller of controllers) controller.abort();
-      server.closeAllConnections();
-      await new Promise((resolve) => server.close(resolve));
-    },
-  };
+  return parseIds(arguments_, 'Usage: node scripts/build-collection-previews.mjs [tokenId ...]');
 }
 
 async function generate(record, existing) {

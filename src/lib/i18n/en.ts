@@ -397,5 +397,19 @@ export const en = {
   copyAddress: 'Copy',
   copied: 'Copied',
   footnote: 'Note {n}',
+
+  // ── Phase 2 ─ each fork appends its keys beneath its own line, in every locale, and nowhere else.
+  // Fork R · the room, the loupe, the gatefold, the Expansion
+  // ·
+  // ·
+  // Fork S · the sale catalogue, the bid sheet, the activity sheet
+  // ·
+  // ·
+  // Fork M · the settling plates, the eye-line hang, the phone rung
+  // ·
+  // ·
+  // Fork E · exhibitions, trails, sharing images, Verify a download
+  // ·
+  // ·
 } as const;
 export type Messages = { [K in keyof typeof en]: string };

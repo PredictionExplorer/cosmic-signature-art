@@ -45,6 +45,7 @@ import { DUSK_CANCEL_EVENTS, DuskController } from './dusk';
 import { inField } from './keys';
 import { useOpenSheet } from './sheets-store';
 import { ArtworkNeighbours, neighbourHref, type Neighbours } from './artwork-neighbours';
+import { ArtworkGatefold } from './artwork-gatefold';
 import styles from './artwork-viewer.module.css';
 
 /** After a film resolves into its still, nothing moves for --t-rest; then "Again". */
@@ -884,6 +885,9 @@ function ArtworkViewerSession({
           <p className={styles.status} role="status">
             {t.mediaUnavailable}
           </p>
+        ) : null}
+        {wing && light?.still && ink?.still ? (
+          <ArtworkGatefold artwork={artwork} expression={expression} t={t} locale={locale} />
         ) : null}
         {neighbours ? (
           <ArtworkNeighbours
