@@ -36,7 +36,9 @@ export function ArtworkTransition({
 
   return (
     <ViewTransition
-      name={artworkIdentity(artworkId, interpretationId)}
+      // An inactive or decorative copy must not reserve the shared surface's name. React
+      // still detects duplicate named boundaries even when every animation is set to none.
+      name={disabled ? undefined : artworkIdentity(artworkId, interpretationId)}
       default="none"
       share={enabled ? 'cosmic-art-shared' : 'none'}
       enter={enabled && role === 'detail' ? 'cosmic-art-arrival' : 'none'}

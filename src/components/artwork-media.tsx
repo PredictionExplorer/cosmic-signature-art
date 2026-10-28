@@ -172,13 +172,14 @@ function ArtworkMediaSession({
   ) => {
     ref.current = player;
     return () => {
-      player.pause();
       if (ref.current === player) ref.current = null;
       // React also detaches refs during Strict Mode replay and Activity hiding. Wait
-      // until the commit finishes so only genuinely removed players release bytes
-      // and their decoder; a reused or merely hidden node keeps its playback position.
+      // until the commit finishes: a replayed ref must not pause an explicit play request
+      // that just began. Hidden players pause in place; removed players also release bytes.
       queueMicrotask(() => {
-        if (player.isConnected || ref.current === player) return;
+        if (ref.current === player) return;
+        player.pause();
+        if (player.isConnected) return;
         player.removeAttribute('src');
         player.load();
         // A player that returns later must not show a stale frame over the still.

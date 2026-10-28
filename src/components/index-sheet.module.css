@@ -184,7 +184,10 @@
   color: var(--muted);
 }
 .pocket {
-  display: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 24px;
+  border-bottom: 1px solid var(--rule);
 }
 @media (max-width: 767px) {
   .sheet {
@@ -202,12 +205,6 @@
   }
   .lower {
     max-height: 60dvh;
-  }
-  .pocket {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0 24px;
-    border-bottom: 1px solid var(--rule);
   }
   .pocket a {
     font-size: var(--fs-subtitle);

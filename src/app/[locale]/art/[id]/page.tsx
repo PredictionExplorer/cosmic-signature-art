@@ -19,10 +19,8 @@ import { parseArtworkId } from '@/lib/art/validation';
 import { workNumber } from '@/lib/art/number';
 import type { Artwork, ArtworkResult } from '@/lib/art/types';
 import { artworkSharingImage } from '@/lib/art/sharing';
-import { auctionConfigured } from '@/lib/auction/config';
 import { ArtworkViewer } from '@/components/artwork-viewer';
 import type { Neighbour, Neighbours } from '@/components/artwork-neighbours';
-import { AuctionPanel } from '@/components/auction-panel';
 import type { HistoryQuery } from '@/components/artwork-history';
 import { ArtworkEntry } from '@/components/artwork-entry';
 import recordStyles from '@/components/artwork-record.module.css';
@@ -71,7 +69,7 @@ function neighbour(id: number | undefined): Neighbour | undefined {
   return { id, preview: ink ?? light, expression: ink ? 'ink' : 'light' };
 }
 
-/** Beat 9: the works either side by number, the next star by wavelength, and the sale. */
+/** The works either side by number and the next star by wavelength. */
 export function neighboursFor(tokenId: number): Neighbours {
   const ids = collectionIndex.works.map((work) => work.id);
   const before = ids.filter((id) => id < tokenId).at(-1);
@@ -89,7 +87,6 @@ export function neighboursFor(tokenId: number): Neighbours {
           direction: redder ? 'redder' : 'bluer',
         }
       : undefined,
-    lot: auctionConfigured,
   };
 }
 
@@ -167,9 +164,6 @@ export default async function ArtworkPage({
         traits={{ structure: indexed?.traits.structure, underlay: indexed?.traits.underlay }}
         neighbours={neighboursFor(tokenId)}
       />
-      <div className="section-wrap" data-keys-suppressed="">
-        <AuctionPanel locale={locale} tokenId={work.id} t={t} />
-      </div>
       <div className="section-wrap">
         {settled ? (
           <ArtworkEntry result={settled} fallback={work} locale={locale} t={t} query={query} />

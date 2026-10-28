@@ -28,7 +28,6 @@ export function Colophon({ locale, t }: { locale: Locale; t: Messages }) {
         {(
           [
             ...NAVIGATION.map((path) => [path, t[NAVIGATION_LABEL[path]]] as const),
-            ['/terms', t.terms],
             ['/privacy', t.privacy],
           ] as const
         ).map(([path, label]) => (

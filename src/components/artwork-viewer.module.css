@@ -24,6 +24,8 @@
   display: inline-flex;
   align-items: center;
   min-height: 44px;
+  min-width: 44px;
+  justify-content: center;
   font-size: var(--fs-control);
   color: var(--type);
   text-decoration: underline;
@@ -52,6 +54,9 @@
 .state {
   font-variant-caps: all-small-caps;
   letter-spacing: 0.08em;
+  flex-basis: 100%;
+  text-align: end;
+  line-height: 1.5;
 }
 /* The home's one line, italic at 15 px, signed. */
 .line {
@@ -152,14 +157,37 @@
 :global(.motion-paused) .step {
   transition: none;
 }
-@media (max-width: 767px) {
-  /* The phone's art screen is still a screen: the 100 vw plate at its top, the strip beneath,
-     the sheet's own tone to the fold. The night wing keeps a whole screen to draw across, so
-     its two-screen travel and the view() range agree as they do on a desk. The lot page's
-     plate stays compact above the sale. */
+/* On portrait tablets the plate and its label form one composition, centred together.
+   The full-height stage keeps the scroll-driven Ink/Light passage on its existing rhythm. */
+@media (min-width: 768px) and (orientation: portrait) {
   .gallery [data-plate-ground],
   .home [data-plate-ground] {
+    display: grid;
+    align-content: center;
     min-height: calc(var(--plate-height) + var(--strip));
+  }
+  .gallery [data-plate-ground] > :global(.plate),
+  .home [data-plate-ground] > :global(.plate) {
+    height: min(var(--plate-height), calc(100vw * 2234 / 3456));
+  }
+  .gallery :global(.strip),
+  .home :global(.strip) {
+    padding-block: 9px;
+  }
+}
+@media (max-width: 767px) {
+  /* A compact plate, its label, and a measured pause. The two materials stay in the natural
+     page flow instead of reserving a nearly empty viewport under each image. */
+  .gallery [data-plate-ground],
+  .home [data-plate-ground] {
+    min-height: 0;
+    padding-block: 27px;
+  }
+  .wordsRow {
+    gap: 0 9px;
+  }
+  .state {
+    padding-bottom: 9px;
   }
   .neighbours {
     grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);

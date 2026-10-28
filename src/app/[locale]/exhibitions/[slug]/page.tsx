@@ -9,7 +9,6 @@ import { artworkFromIndex } from '@/lib/art/collection-cards';
 import { workNumber } from '@/lib/art/number';
 import { getInterpretation } from '@/lib/art/types';
 import { artworkSharingImage } from '@/lib/art/sharing';
-import { auctionConfigured } from '@/lib/auction/config';
 import { PlateSequence } from '@/components/plate-sequence';
 import { Hang } from '@/components/hang';
 import {
@@ -22,7 +21,6 @@ import {
   exhibitions,
   formatMeasure,
 } from '@/lib/exhibitions/exhibitions';
-import { CycleResults } from '../cycle-results';
 import styles from '../exhibitions.module.css';
 
 type Params = Promise<{ locale: string; slug: string }>;
@@ -126,7 +124,6 @@ export default async function ExhibitionPage({ params }: { params: Params }) {
           </ol>
         </section>
       ) : null}
-      {item.kind === 'cycle' && auctionConfigured ? <CycleResults ids={ids} t={t} /> : null}
       <nav className={styles.others} aria-label={t.otherExhibitions}>
         {others.map((other) => (
           <Link key={other.slug} href={localizedPath(locale, `/exhibitions/${other.slug}`)}>

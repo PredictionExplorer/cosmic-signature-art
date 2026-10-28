@@ -532,7 +532,7 @@ html[data-turning='dusk'] .head-overlay {
 .head-words {
   display: flex;
   align-items: center;
-  gap: 24px;
+  gap: 27px;
   margin-left: auto;
 }
 .head-words a,
@@ -557,7 +557,6 @@ html[data-turning='dusk'] .head-overlay {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
   min-width: 44px;
   min-height: 44px;
   font-size: var(--fs-control);
@@ -612,21 +611,26 @@ html[data-turning='dusk'] .head-overlay {
   text-decoration: underline;
   text-underline-offset: 0.3em;
 }
-@media (max-width: 767px) {
+/* Portrait tablets use the same quiet directory entry as phones, without crowding the mark. */
+@media (max-width: 1023px) {
   .head-row {
-    gap: 12px;
+    gap: 18px;
   }
+  .head-words {
+    gap: 18px;
+  }
+  .head-words > nav,
+  .head-words > .head-nav {
+    display: none;
+  }
+}
+@media (max-width: 767px) {
+  .head-row,
   .head-words {
     gap: 12px;
   }
-  /* On phones the head carries the wordmark, the motion control and Index; the words live in the sheet. */
-  .head-words > nav,
-  .head-words > .head-nav,
+  /* The Index also carries every language on phones. */
   .head-words > .language-menu {
-    display: none;
-  }
-  .motion-toggle span,
-  .motion-word span {
     display: none;
   }
 }
@@ -906,20 +910,4 @@ dialog.sheet::backdrop {
 /* A film that has ended holds its last frame, which is the still, then fades into it over --t-focus. */
 .art-media video.has-ended {
   transition-duration: var(--t-focus);
-}
-
-/* ── Phase 2 · Fork E ── */
-/*
-  Five words in the head. Between the phone and the desk the motion word is its glyph alone
-  (the control keeps its name) and the words close up, so a tablet in portrait still carries
-  Collection · Exhibitions · Auctions · Process · Statement, Index and the language on one row.
-*/
-@media (min-width: 768px) and (max-width: 1099px) {
-  .head-words {
-    gap: 12px;
-  }
-  .motion-toggle span,
-  .motion-word span {
-    display: none;
-  }
 }

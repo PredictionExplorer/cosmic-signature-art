@@ -216,6 +216,7 @@ test('Sit fades the strip and the time line; any input brings them back', async 
   await page.goto('/');
   const plate = page.locator(current);
   await expect(plate.locator('video')).toHaveClass(/has-frame/, { timeout: 15_000 });
+  await plate.getByRole('button', { name: catalogs.en.ways, exact: true }).click();
   await plate.getByRole('button', { name: 'Sit', exact: true }).click();
   await expect(page.locator('.home .viewing-room')).toHaveAttribute('data-sit', '');
   await expect(page.locator('html')).toHaveAttribute('data-sit', '');

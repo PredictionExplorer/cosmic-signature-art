@@ -27,7 +27,7 @@ import {
   unlocalizedPath,
   type Locale,
 } from '@/lib/i18n/routing';
-import { NAVIGATION_LABEL, POCKET_NAVIGATION } from '@/lib/navigation';
+import { NAVIGATION, NAVIGATION_LABEL } from '@/lib/navigation';
 import { useMediaPolicy } from './media-policy';
 import { useMotion } from './motion-provider';
 import { PreviewImage } from './preview-image';
@@ -354,7 +354,7 @@ function SheetBody({
       </div>
       <div className={styles.lower}>
         <nav className={styles.pocket} aria-label={t.siteNavigation}>
-          {POCKET_NAVIGATION.map((path) => (
+          {NAVIGATION.map((path) => (
             <Link
               key={path}
               href={localizedPath(locale, path)}

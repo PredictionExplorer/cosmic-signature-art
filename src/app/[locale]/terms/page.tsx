@@ -7,7 +7,10 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
   const { locale } = await params;
   if (!isLocale(locale)) return {};
   const t = messages(locale);
-  return metadata(locale, '/terms', t.terms, t.trustIntro);
+  return {
+    ...metadata(locale, '/terms', t.terms, t.trustIntro),
+    robots: { index: false, follow: false },
+  };
 }
 export default async function Terms({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;

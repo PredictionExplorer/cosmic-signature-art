@@ -214,6 +214,29 @@ describe('artwork media delivery', () => {
     expect(HTMLMediaElement.prototype.load).not.toHaveBeenCalled();
   });
 
+  it('keeps an explicit play request running when Strict Mode replays the newly mounted video ref', async () => {
+    const view = (still: boolean) => (
+      <StrictMode>
+        <ArtworkMedia
+          media={ink(31)}
+          alt="Signature 31"
+          still={still}
+          playRequest={still ? 0 : 1}
+        />
+      </StrictMode>
+    );
+    const { container, rerender } = render(view(true));
+    act(() => VisibilityObserver.instances.at(-1)!.setVisible(true));
+    expect(container.querySelector('video')).toBeNull();
+    rerender(view(false));
+    await act(async () => {});
+    expect(player(container)).toHaveAttribute('src', '/art/31-ink-preview.mp4');
+    const plays = vi.mocked(HTMLMediaElement.prototype.play).mock.invocationCallOrder;
+    const pauses = vi.mocked(HTMLMediaElement.prototype.pause).mock.invocationCallOrder;
+    expect(plays.length).toBeGreaterThan(0);
+    expect(plays.at(-1)).toBeGreaterThan(pauses.at(-1) ?? 0);
+  });
+
   it('preserves a connected player when React temporarily hides its Activity', async () => {
     const view = (hidden: boolean) => (
       <Activity mode={hidden ? 'hidden' : 'visible'}>

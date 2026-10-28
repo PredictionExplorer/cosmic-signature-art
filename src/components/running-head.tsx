@@ -11,7 +11,7 @@ import {
   unlocalizedPath,
   type Locale,
 } from '@/lib/i18n/routing';
-import { NAVIGATION, NAVIGATION_LABEL } from '@/lib/navigation';
+import { PRIMARY_NAVIGATION, NAVIGATION_LABEL } from '@/lib/navigation';
 import type { Messages } from '@/lib/i18n/en';
 
 /** The wordmark is typeset in Literata small caps; the mark is one static derivation. */
@@ -175,8 +175,8 @@ function PauseGlyph({ paused }: { paused: boolean }) {
 }
 
 /**
- * The running head: 48 px, opaque in the current ground, carrying the four words, Index and
- * the language. A second, inert copy in the other ground is clipped at the seam while the
+ * The running head: 48 px, opaque in the current ground, carrying the two primary rooms,
+ * Index, motion and language. A second, inert copy in the other ground is clipped at the seam while the
  * Turn travels (globals.css reads <html data-turning> and --seam), so the head inverts with it.
  */
 export function RunningHead({ locale, t }: { locale: Locale; t: Messages }) {
@@ -197,7 +197,7 @@ export function RunningHead({ locale, t }: { locale: Locale; t: Messages }) {
           </Link>
           <div className="head-words">
             <nav aria-label={t.siteNavigation} className="contents">
-              {NAVIGATION.map((path) => (
+              {PRIMARY_NAVIGATION.map((path) => (
                 <Link key={path} href={localizedPath(locale, path)} aria-current={current(path)}>
                   {t[NAVIGATION_LABEL[path]]}
                 </Link>
@@ -219,9 +219,9 @@ export function RunningHead({ locale, t }: { locale: Locale; t: Messages }) {
               onClick={toggle}
               aria-pressed={paused}
               aria-label={t.pauseAmbientMotion}
+              title={t.pauseAmbientMotion}
             >
               <PauseGlyph paused={paused} />
-              <span aria-hidden="true">{t.pauseAmbientMotion}</span>
             </button>
             <LanguageMenu locale={locale} pathname={pathname} t={t} />
           </div>
@@ -233,7 +233,7 @@ export function RunningHead({ locale, t }: { locale: Locale; t: Messages }) {
             </span>
             <div className="head-words">
               <span className="head-nav contents">
-                {NAVIGATION.map((path) => (
+                {PRIMARY_NAVIGATION.map((path) => (
                   <span key={path} className="head-word" data-current={current(path)}>
                     {t[NAVIGATION_LABEL[path]]}
                   </span>
@@ -242,7 +242,6 @@ export function RunningHead({ locale, t }: { locale: Locale; t: Messages }) {
               <span className="head-word">{t.index}</span>
               <span className="motion-word">
                 <PauseGlyph paused={paused} />
-                <span>{t.pauseAmbientMotion}</span>
               </span>
               <span className="language-menu">
                 <span className="language-trigger">{locale.toUpperCase()}</span>

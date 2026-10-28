@@ -22,6 +22,7 @@ import { useMediaPolicy } from './media-policy';
 import { ArtworkTransition } from './artwork-transition';
 import { ArtworkStage, useArtworkExpression } from './artwork-stage';
 import { ArtworkRoom } from './artwork-room';
+import { ArtworkOptions } from './artwork-options';
 import { Plate } from './plate';
 import {
   SeamController,
@@ -302,7 +303,9 @@ function ArtworkViewerSession({
   const openingFilm = home && !compact && !settlingPlate ? media?.openingFilm : undefined;
   const [handoverWaiting, setHandoverWaiting] = useState(false);
   const ambientFilm = !room && (!policy.constrained || explicitFilm);
-  const wingMode: WingMode = instant ? 'hard' : 'scroll';
+  // A phone reads two compact plates in the page's natural flow. The material button still
+  // performs the Turn; a sticky, viewport-long wing would leave the small plate stranded.
+  const wingMode: WingMode = instant || compact ? 'hard' : 'scroll';
   useRoomSeam({ enabled: true, expression, mode: wingMode, wingRef, fallbackRef });
 
   /** Where the seam rests for Ink: 100 % on a plate, or wherever the hand has drawn the night. */
@@ -365,7 +368,8 @@ function ArtworkViewerSession({
     );
     if (study && returnFocusRef.current && !study.isSameNode(returnFocusRef.current)) {
       const previous = returnFocusRef.current;
-      if (previous.closest('[data-layer-state="twin"]')) returnFocusRef.current = study;
+      if (!previous.isConnected || previous.closest('[data-layer-state="twin"]'))
+        returnFocusRef.current = study;
     }
     setRoom(null);
   }
@@ -445,6 +449,14 @@ function ArtworkViewerSession({
   const onKeyDown = useEffectEvent((event: KeyboardEvent) => {
     if (event.defaultPrevented || event.metaKey || event.ctrlKey || event.altKey) return;
     if (inField(event.target) || sheet || room || document.querySelector('dialog[open]')) return;
+    // Space belongs to the focused control; the page-wide playback shortcut is for the
+    // artwork itself. Other viewing shortcuts remain available after a dialog restores focus.
+    if (
+      event.key === ' ' &&
+      event.target instanceof Element &&
+      event.target.closest('button, a[href], summary')
+    )
+      return;
     switch (event.key) {
       case ' ':
         if (!inlineFilm) return;
@@ -621,27 +633,27 @@ function ArtworkViewerSession({
       <>
         {turnWord}
         {filmWord}
-        {inlineFilm && !showAgain ? (
-          <button type="button" className={styles.word} onClick={sitDown} aria-pressed={sit}>
-            {t.sit}
-          </button>
+        {!home || (inlineFilm && !showAgain) ? (
+          <ArtworkOptions
+            key={`${layer}:${current}`}
+            t={t}
+            onStudy={!home ? (trigger) => openRoom(false, trigger) : undefined}
+            onSit={inlineFilm && !showAgain ? sitDown : undefined}
+            readout={
+              inlineFilm && time.duration && !excerpt ? (
+                <span className={styles.clock}>
+                  {clock(time.current)} / {clock(time.duration)}
+                </span>
+              ) : undefined
+            }
+          />
         ) : null}
-        {!home ? (
-          <button
-            type="button"
-            className={styles.word}
-            onClick={(event) => openRoom(false, event.currentTarget)}
-            data-study
-          >
-            {t.enlarge}
-          </button>
-        ) : null}
-        {inlineFilm && time.duration && !excerpt ? (
-          <span className={styles.clock}>
-            {clock(time.current)} / {clock(time.duration)}
-          </span>
-        ) : null}
-        <span className={styles.state} data-film-state={filmState}>
+        <span
+          className={
+            filmState === 'arriving' || (filmState === 'film' && excerpt) ? styles.state : 'sr-only'
+          }
+          data-film-state={filmState}
+        >
           {stateWord}
         </span>
       </>
@@ -700,7 +712,7 @@ function ArtworkViewerSession({
             artworkId={artwork.id}
             interpretationId={id}
             role="detail"
-            disabled={!current || !!room}
+            disabled={home || !current || !!room}
             className={styles.surface}
           >
             <ArtworkMedia

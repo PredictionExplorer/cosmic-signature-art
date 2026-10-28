@@ -63,8 +63,8 @@ export function wingProgress(rect: DOMRect, stageHeight: number, head: number): 
 }
 
 /**
- * Which ground stands at the viewport's centre line. Pure, so the seam observer can be
- * tested with plain rectangles.
+ * Which ground stands at the viewing line. Compact plates use their own centre rather than
+ * letting the next plate, already visible lower on a tall phone, recolour the running head.
  */
 export function roomAtCentre({
   expression,
@@ -86,7 +86,7 @@ export function roomAtCentre({
   viewportHeight: number;
 }): Room | null {
   if (!wing) return null;
-  const centre = viewportHeight / 2;
+  const centre = Math.min(viewportHeight / 2, head + stageHeight / 2);
   if (wing.bottom <= centre || wing.top >= centre) return null;
   if (expression === 'light') return 'night';
   if (mode === 'scroll' && scrollDriven)

@@ -19,6 +19,25 @@ const head = 48;
 const stageHeight = viewportHeight - head;
 
 describe('the night wing', () => {
+  it('keeps the phone masthead on Ink until the compact Light plate reaches the viewing line', () => {
+    const phone = {
+      expression: 'ink',
+      mode: 'hard' as const,
+      scrollDriven: false,
+      stageHeight: 350,
+      head: 56,
+      viewportHeight: 844,
+    };
+    // Both plates fit partly on screen: the viewport midpoint already intersects Light,
+    // but the first plate is still the visitor's primary view beneath the masthead.
+    expect(roomAtCentre({ ...phone, wing: rect(56, 700), fallback: rect(406, 350) })).toBe('paper');
+    expect(roomAtCentre({ ...phone, wing: rect(-134, 700), fallback: rect(216, 350) })).toBe(
+      'night',
+    );
+    // Once the compact wing has passed the viewing line, the route owns the ground again.
+    expect(roomAtCentre({ ...phone, wing: rect(-500, 700), fallback: rect(-150, 350) })).toBeNull();
+  });
+
   it('measures how far the hand has drawn the night across a two-screen wing', () => {
     const wing = (top: number) => rect(top, 2 * stageHeight);
     expect(wingProgress(wing(head), stageHeight, head)).toBe(0);

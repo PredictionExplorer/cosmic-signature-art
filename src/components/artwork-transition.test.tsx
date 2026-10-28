@@ -151,7 +151,25 @@ describe('artwork transition boundaries', () => {
       </ArtworkTransition>,
     );
     expect(transitionProps()).toMatchObject({ default: 'none', share: 'none', enter: 'none' });
+    expect(transitionProps().name).toBeUndefined();
     expect(screen.getByText('Two distinct artworks remain fully visible')).toBeVisible();
+  });
+
+  it('reserves the shared name only for the active copy when an artwork appears twice', () => {
+    render(
+      <>
+        <ArtworkTransition artworkId={35} interpretationId="ink" role="detail" disabled>
+          <span>Home presentation</span>
+        </ArtworkTransition>
+        <ArtworkTransition artworkId={35} interpretationId="ink" role="preview">
+          <a href="/art/35">Selected work</a>
+        </ArtworkTransition>
+      </>,
+    );
+    const boundaries = state.transition.mock.calls.map(([props]) => props as ViewTransitionProps);
+    expect(boundaries.map(({ name }) => name).filter(Boolean)).toEqual(['cs-art-35-2x-32-2z']);
+    expect(screen.getByText('Home presentation')).toBeVisible();
+    expect(screen.getByRole('link', { name: 'Selected work' })).toHaveAttribute('href', '/art/35');
   });
 
   it('renders complete server markup without requesting animation', () => {

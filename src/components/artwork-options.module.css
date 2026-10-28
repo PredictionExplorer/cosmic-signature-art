@@ -1,0 +1,48 @@
+.options {
+  position: relative;
+  flex: none;
+}
+.options .trigger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 44px;
+  min-height: 44px;
+  color: var(--type);
+}
+.trigger svg {
+  transition: opacity var(--t-blink) var(--ease-settle);
+}
+.trigger:hover svg,
+.trigger[aria-expanded='true'] svg {
+  opacity: 0.6;
+}
+.panel {
+  position: absolute;
+  z-index: 5;
+  right: 0;
+  bottom: calc(100% + 9px);
+  display: grid;
+  min-width: 144px;
+  max-width: calc(100vw - 2 * var(--gutter));
+  padding: 9px 18px;
+  border: 1px solid var(--rule);
+  background: var(--plate-ground, var(--ground));
+  color: var(--type);
+}
+.panel button {
+  width: 100%;
+  justify-content: flex-start;
+  text-align: start;
+  white-space: normal;
+}
+.readout {
+  padding-block: 9px;
+  border-top: 1px solid var(--rule);
+  white-space: nowrap;
+}
+@media (prefers-reduced-motion: reduce) {
+  .trigger svg {
+    transition: none;
+  }
+}

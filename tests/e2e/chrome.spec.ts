@@ -4,11 +4,29 @@ import { noHorizontalOverflow } from './helpers';
 
 const t = catalogs.en;
 
-test('the running head carries the one vocabulary, the Index word and the language, at 48 px', async ({
+test('public browsing hides auctions while their direct URL remains available', async ({
+  page,
+}) => {
+  await page.goto('/');
+  await expect(page.locator('a[href*="/auctions"], a[href$="/terms"]')).toHaveCount(0);
+  await page.locator('.site-header').getByRole('button', { name: t.index, exact: true }).click();
+  const directory = page.getByRole('dialog', { name: t.indexSheet });
+  await expect(directory).toBeVisible();
+  const navigation = directory.getByRole('navigation', { name: t.siteNavigation });
+  await expect(navigation.getByRole('link', { name: t.process, exact: true })).toBeVisible();
+  await expect(navigation.getByRole('link', { name: t.statement, exact: true })).toBeVisible();
+  await expect(directory.locator('a[href*="/auctions"]')).toHaveCount(0);
+
+  await page.goto('/auctions');
+  await expect(page.locator('#auction-title')).toBeVisible();
+  await expect(page.locator('meta[name="robots"]')).toHaveAttribute('content', /noindex/);
+});
+
+test('the running head keeps two viewing rooms, Index, motion and language', async ({
   page,
   isMobile,
 }) => {
-  await page.goto('/auctions');
+  await page.goto('/collection');
   const head = page.locator('.site-header');
   await expect(head).toHaveCSS('height', isMobile ? '56px' : '48px');
   const nav = head.getByRole('navigation', { name: t.siteNavigation });
@@ -20,14 +38,8 @@ test('the running head carries the one vocabulary, the Index word and the langua
     await expect(nav.getByRole('link', { name: t.collection })).toBeHidden();
     await expect(head.getByRole('button', { name: `${t.language}: EN` })).toBeHidden();
   } else {
-    await expect(nav.getByRole('link')).toHaveText([
-      t.collection,
-      t.exhibitions,
-      t.auctions,
-      t.process,
-      t.statement,
-    ]);
-    await expect(nav.getByRole('link', { name: t.auctions })).toHaveAttribute(
+    await expect(nav.getByRole('link')).toHaveText([t.collection, t.exhibitions]);
+    await expect(nav.getByRole('link', { name: t.collection })).toHaveAttribute(
       'aria-current',
       'page',
     );
@@ -72,10 +84,8 @@ test('the colophon states the record date and keeps the one outward arrow', asyn
   await expect(rows).toHaveText([
     t.collection,
     t.exhibitions,
-    t.auctions,
     t.process,
     t.statement,
-    t.terms,
     t.privacy,
     `${t.openProtocol} ↗`,
   ]);

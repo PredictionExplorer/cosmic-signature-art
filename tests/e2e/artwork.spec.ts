@@ -30,6 +30,9 @@ test('the plate, the room and the keys preserve identity; Escape returns focus',
   // The label line yields to the words on a phone; the numeral and the words remain.
   if (!isMobile)
     await expect(plate.getByText('Orbit Ribbons · Harmonic Weave · Ink')).toBeVisible();
+  const options = plate.getByRole('button', { name: catalogs.en.ways, exact: true });
+  await expect(plate.getByRole('button', { name: 'Study', exact: true })).toHaveCount(0);
+  await options.click();
   const study = plate.getByRole('button', { name: 'Study', exact: true });
   await study.focus();
   await study.press('Enter');
@@ -40,7 +43,8 @@ test('the plate, the room and the keys preserve identity; Escape returns focus',
   await expect(dialog.locator('video')).toHaveCount(0);
   await page.keyboard.press('Escape');
   await expect(dialog).not.toBeVisible();
-  await expect(study).toBeFocused();
+  await expect(options).toBeFocused();
+  await expect(options).toHaveAttribute('aria-expanded', 'false');
   // F opens the film in the room; Z the still.
   await page.keyboard.press('f');
   await expect(dialog).toBeVisible();
@@ -166,6 +170,7 @@ test('a work without a local film wakes into its settling clip, keeps the film�
     .toBe(true);
   await expect(plate.locator('[data-film-state]')).toHaveAttribute('data-film-state', 'film');
   // The clock is the film's own: the clip runs from 00:22 to 00:30.
+  await plate.getByRole('button', { name: catalogs.en.ways, exact: true }).click();
   await expect(plate.locator('.strip')).toContainText(/00:2[2-9] \/ 00:30/);
   await expect(plate.locator('[data-film-state]')).toHaveAttribute('data-film-state', 'still', {
     timeout: 15_000,

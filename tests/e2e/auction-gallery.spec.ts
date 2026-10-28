@@ -66,6 +66,8 @@ for (const locale of locales) {
     await expect(page.locator('#lot-actions')).toHaveAttribute('data-keys-suppressed', '');
     await noOverflow(page);
     expect((await new AxeBuilder({ page }).analyze()).violations).toEqual([]);
+    const options = page.locator(current).getByRole('button', { name: t.ways, exact: true });
+    await options.click();
     const study = page.locator(current).getByRole('button', { name: t.enlarge, exact: true });
     await study.click();
     const room = page.getByRole('dialog', {
@@ -80,7 +82,7 @@ for (const locale of locales) {
     );
     await room.getByRole('button', { name: t.close, exact: true }).click();
     await expect(room).not.toBeVisible();
-    await expect(study).toBeFocused();
+    await expect(options).toBeFocused();
   });
 }
 

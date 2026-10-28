@@ -36,6 +36,7 @@ async function artworkReady(page: Page, path = '/art/31?view=still') {
 }
 
 async function openRoom(page: Page) {
+  await page.locator(current).getByRole('button', { name: t.ways, exact: true }).click();
   await page.locator(current).getByRole('button', { name: t.enlarge, exact: true }).click();
   const dialog = page.getByRole('dialog');
   await expect(dialog).toBeVisible();
@@ -160,6 +161,7 @@ test('the Expansion grows the work from its plate when motion is allowed, and sw
 }) => {
   await page.emulateMedia({ reducedMotion: 'no-preference' });
   await artworkReady(page);
+  await page.locator(current).getByRole('button', { name: t.ways, exact: true }).click();
   await page.locator(current).getByRole('button', { name: t.enlarge, exact: true }).click();
   const animated = await page.evaluate(() =>
     document
@@ -176,6 +178,7 @@ test('the Expansion grows the work from its plate when motion is allowed, and sw
   await expect(page.getByRole('dialog')).not.toBeVisible();
   await page.emulateMedia({ reducedMotion: 'reduce' });
   await artworkReady(page);
+  await page.locator(current).getByRole('button', { name: t.ways, exact: true }).click();
   await page.locator(current).getByRole('button', { name: t.enlarge, exact: true }).click();
   await expect(page.getByRole('dialog')).toBeVisible();
   expect(

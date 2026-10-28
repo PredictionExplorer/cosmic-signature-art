@@ -236,7 +236,7 @@ describe('the Index of numbers', () => {
     expect(screen.getByTestId('sheet')).toHaveTextContent('none');
   });
 
-  it('is the pocket menu too: Auctions first, the pause control and every language', () => {
+  it('keeps the full public directory, the pause control and every language in Index', () => {
     renderSheet();
     act(() => openSheet('index'));
     const menu = screen.getByRole('navigation', { name: en.siteNavigation });
@@ -244,7 +244,7 @@ describe('the Index of numbers', () => {
       within(menu)
         .getAllByRole('link')
         .map((link) => link.textContent),
-    ).toEqual([en.auctions, en.collection, en.exhibitions, en.process, en.statement]);
+    ).toEqual([en.collection, en.exhibitions, en.process, en.statement]);
     expect(within(menu).getByRole('link', { name: en.collection })).toHaveAttribute(
       'aria-current',
       'page',

@@ -392,7 +392,6 @@ test('on a phone the collection carries a bottom bar and the Index sheet is the 
   await expect(indexButton).toHaveAttribute('aria-expanded', 'true');
   const menu = sheet.getByRole('navigation', { name: t.siteNavigation });
   await expect(menu.getByRole('link')).toHaveText([
-    t.auctions,
     t.collection,
     t.exhibitions,
     t.process,

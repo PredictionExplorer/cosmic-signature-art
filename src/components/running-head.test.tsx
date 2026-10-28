@@ -48,34 +48,22 @@ afterEach(() => {
 });
 
 describe('running head', () => {
-  it('lists the one navigation vocabulary in order, Statement included, with no outward arrow', () => {
+  it('keeps only the two primary viewing rooms in the running head', () => {
     renderHead();
     const nav = screen.getByRole('navigation', { name: en.siteNavigation });
     const links = within(nav).getAllByRole('link');
-    expect(links.map((link) => link.textContent)).toEqual([
-      en.collection,
-      en.exhibitions,
-      en.auctions,
-      en.process,
-      en.statement,
-    ]);
-    expect(links.map((link) => link.getAttribute('href'))).toEqual([
-      '/collection',
-      '/exhibitions',
-      '/auctions',
-      '/process',
-      '/statement',
-    ]);
+    expect(links.map((link) => link.textContent)).toEqual([en.collection, en.exhibitions]);
+    expect(links.map((link) => link.getAttribute('href'))).toEqual(['/collection', '/exhibitions']);
     expect(nav.querySelector('svg')).toBeNull();
     expect(links[0]).toHaveAttribute('aria-current', 'page');
     expect(links[1]).not.toHaveAttribute('aria-current');
   });
 
   it('marks nested routes as current without matching unrelated prefixes', () => {
-    pathname = '/auctions/31';
+    pathname = '/exhibitions/a-hang';
     renderHead();
     const nav = screen.getByRole('navigation', { name: en.siteNavigation });
-    expect(within(nav).getByRole('link', { name: en.auctions })).toHaveAttribute(
+    expect(within(nav).getByRole('link', { name: en.exhibitions })).toHaveAttribute(
       'aria-current',
       'page',
     );
@@ -107,8 +95,8 @@ describe('running head', () => {
     expect(overlay).toHaveAttribute('aria-hidden', 'true');
     expect(overlay).toHaveAttribute('inert');
     expect(screen.getAllByRole('button', { name: en.index })).toHaveLength(1);
-    // The skip link, the wordmark and the five words; the overlay adds no anchor at all.
-    expect(screen.getAllByRole('link')).toHaveLength(7);
+    // The skip link, the wordmark and the two rooms; the overlay adds no anchor at all.
+    expect(screen.getAllByRole('link')).toHaveLength(4);
     expect(overlay.querySelectorAll('a')).toHaveLength(0);
   });
 
@@ -116,6 +104,8 @@ describe('running head', () => {
     renderHead();
     const toggle = screen.getByRole('button', { name: en.pauseAmbientMotion });
     expect(toggle).toHaveClass('motion-toggle');
+    expect(toggle).toHaveAttribute('title', en.pauseAmbientMotion);
+    expect(toggle).toHaveTextContent('');
     expect(toggle).toHaveAttribute('aria-pressed', 'false');
     fireEvent.click(toggle);
     expect(toggle).toHaveAttribute('aria-pressed', 'true');

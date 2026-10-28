@@ -174,7 +174,11 @@ describe('the plate and its strip', () => {
     expect(
       within(layer('ink') as HTMLElement).getByText('Orbit Ribbons · Harmonic Weave · Ink'),
     ).toBeVisible();
-    for (const name of [en.light, en.film, en.sit, en.enlarge]) expect(word(name)).toBeVisible();
+    for (const name of [en.light, en.film, en.ways]) expect(word(name)).toBeVisible();
+    expect(screen.queryByRole('button', { name: en.sit })).toBeNull();
+    expect(screen.queryByRole('button', { name: en.enlarge })).toBeNull();
+    fireEvent.click(word(en.ways));
+    for (const name of [en.sit, en.enlarge]) expect(word(name)).toBeVisible();
     expect(word(en.light)).toHaveAttribute('title', en.showLight);
     expect(
       document.querySelector('[data-layer-state="current"] [data-film-state]'),
@@ -418,7 +422,10 @@ describe('the film, the rest and Sit', () => {
   it('Sit fades the strip and the head until the visitor moves, swallowing the waking click', async () => {
     const { container } = renderViewer();
     const section = container.querySelector('section')!;
+    const options = word(en.ways);
+    fireEvent.click(options);
     fireEvent.click(word(en.sit));
+    expect(options).toHaveAttribute('aria-expanded', 'false');
     expect(section).toHaveAttribute('data-sit');
     expect(root()).toHaveAttribute('data-sit');
     fireEvent.pointerMove(section);
@@ -426,11 +433,11 @@ describe('the film, the rest and Sit', () => {
     await act(async () => {
       vi.advanceTimersByTime(700);
     });
-    const study = word(en.enlarge);
-    fireEvent.pointerDown(study);
+    fireEvent.pointerDown(options);
     expect(section).not.toHaveAttribute('data-sit');
     expect(root()).not.toHaveAttribute('data-sit');
-    fireEvent.click(study);
+    fireEvent.click(options);
+    expect(options).toHaveAttribute('aria-expanded', 'false');
     expect(screen.queryByRole('dialog')).toBeNull();
   });
 });
@@ -445,6 +452,7 @@ describe('the chrome after Sit', () => {
     const video = player()!;
     Object.defineProperty(video, 'duration', { configurable: true, value: 30 });
     fireEvent.playing(video);
+    fireEvent.click(word(en.ways));
     fireEvent.click(word(en.sit));
     expect(root()).toHaveAttribute('data-sit');
     fireEvent.ended(video);
@@ -466,6 +474,8 @@ describe('the chrome after Sit', () => {
 describe('the room and the keys', () => {
   it('Study opens the room on the still, silences the plate keys, and returns focus', () => {
     renderViewer();
+    const options = word(en.ways);
+    fireEvent.click(options);
     const study = word(en.enlarge);
     study.focus();
     fireEvent.click(study);
@@ -476,7 +486,8 @@ describe('the room and the keys', () => {
     expect(root().hasAttribute('data-turning')).toBe(false);
     fireEvent.click(within(dialog).getByRole('button', { name: en.close }));
     expect(screen.queryByRole('dialog')).toBeNull();
-    expect(study).toHaveFocus();
+    expect(options).toHaveFocus();
+    expect(options).toHaveAttribute('aria-expanded', 'false');
   });
 
   it('answers Space, the arrows and F, and is silent in a field or under a sheet', async () => {
@@ -758,6 +769,7 @@ describe('the settling plate', () => {
     fireEvent.timeUpdate(video);
     // The clock is the film's own: the clip is its last eight seconds.
     expect(container.querySelector('[data-film-state]')).toHaveAttribute('data-film-state', 'film');
+    fireEvent.click(word(en.ways));
     expect(
       within(document.querySelector<HTMLElement>('[data-layer-state="current"]')!).getByText(
         '00:25 / 00:30',

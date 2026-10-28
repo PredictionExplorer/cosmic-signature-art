@@ -291,8 +291,11 @@ test('the night wing is drawn by the hand where the browser can, and is a hard e
   await page.emulateMedia({ reducedMotion: 'no-preference' });
   await artworkReady(page);
   const wing = page.locator('[data-night-wing]:visible');
-  await expect(wing).toHaveAttribute('data-mode', 'scroll');
-  const scrollDriven = await page.evaluate(() => CSS.supports('animation-timeline: view()'));
+  await expect(wing).toHaveAttribute('data-mode', /^(scroll|hard)$/);
+  const scrollDriven = await wing.evaluate(
+    (element) =>
+      element.getAttribute('data-mode') === 'scroll' && CSS.supports('animation-timeline: view()'),
+  );
   const { top, height, stage } = await wing.evaluate((element) => ({
     top: element.getBoundingClientRect().top + window.scrollY,
     height: element.getBoundingClientRect().height,
@@ -318,8 +321,11 @@ test('the night wing is drawn by the hand where the browser can, and is a hard e
     const fallback = wing.locator('> div').nth(1);
     await expect(fallback).toBeVisible();
     await expect(fallback.locator('img.art-still')).toHaveAttribute('alt', '№ 031 · Light');
-    await fallback.scrollIntoViewIfNeeded();
-    await page.evaluate(() => window.scrollBy({ top: 10, behavior: 'instant' }));
+    // Compact phones already show both materials. Bring Light to the viewing line rather
+    // than relying on an offscreen, full-height fallback to trigger a scroll.
+    await fallback.evaluate((element) =>
+      element.scrollIntoView({ block: 'start', behavior: 'instant' }),
+    );
     await expect(page.locator('html')).toHaveAttribute('data-room', 'night');
     await page.evaluate(() => window.scrollTo({ top: 0, behavior: 'instant' }));
     await expect(page.locator('html')).toHaveAttribute('data-room', 'paper');
@@ -473,6 +479,8 @@ test('Study opens a contained still, releases ambient playback and restores focu
     })
     .toBe(true);
   const overflowBefore = await page.evaluate(() => document.body.style.overflow);
+  const options = page.locator(current).getByRole('button', { name: t.ways, exact: true });
+  await options.click();
   const open = page.locator(current).getByRole('button', { name: t.enlarge, exact: true });
   await open.focus();
   await open.press('Enter');
@@ -508,7 +516,7 @@ test('Study opens a contained still, releases ambient playback and restores focu
   expect(originals).toEqual([]);
   await page.keyboard.press('Escape');
   await expect(dialog).not.toBeVisible();
-  await expect(open).toBeFocused();
+  await expect(options).toBeFocused();
   await expect.poll(() => page.evaluate(() => document.body.style.overflow)).toBe(overflowBefore);
   await expect(page.locator(roomSelector)).toHaveCount(0);
 });
@@ -583,6 +591,7 @@ test('a rejected native fullscreen request preserves the complete viewing room',
   const errors: string[] = [];
   page.on('pageerror', (error) => errors.push(error.message));
   await artworkReady(page);
+  await page.locator(current).getByRole('button', { name: t.ways, exact: true }).click();
   await page.locator(current).getByRole('button', { name: t.enlarge, exact: true }).click();
   const dialog = page.getByRole('dialog');
   await dialog.getByRole('button', { name: t.fullScreen, exact: true }).click();
@@ -601,6 +610,7 @@ test('a rejected native fullscreen request preserves the complete viewing room',
 
 test('native fullscreen enters when supported and returns to the same work', async ({ page }) => {
   await artworkReady(page);
+  await page.locator(current).getByRole('button', { name: t.ways, exact: true }).click();
   await page.locator(current).getByRole('button', { name: t.enlarge, exact: true }).click();
   const dialog = page.getByRole('dialog');
   const enter = dialog.getByRole('button', { name: t.fullScreen, exact: true });
@@ -629,6 +639,8 @@ test('expression changes in the room stay contained, commit to the plate, and ke
   page,
 }) => {
   await artworkReady(page);
+  const options = page.locator(current).getByRole('button', { name: t.ways, exact: true });
+  await options.click();
   const open = page.locator(current).getByRole('button', { name: t.enlarge, exact: true });
   await open.click();
   const dialog = page.getByRole('dialog');
@@ -654,7 +666,7 @@ test('expression changes in the room stay contained, commit to the plate, and ke
   }
   await page.keyboard.press('Escape');
   await expect(dialog).not.toBeVisible();
-  await expect(open).toBeFocused();
+  await expect(options).toBeFocused();
   await expect(page.locator(pageStage)).toHaveAttribute('data-expression', 'light');
   await expect(page.locator('html')).not.toHaveAttribute('data-turning', /./);
   await noOverflow(page);
@@ -667,6 +679,8 @@ test('the viewing room remains accessible and translated in every gallery langua
   for (const locale of locales) {
     const messages = catalogs[locale];
     await page.goto(`${localizedPath(locale, '/art/31')}?view=still`);
+    const options = page.locator(current).getByRole('button', { name: messages.ways, exact: true });
+    await options.click();
     const open = page.locator(current).getByRole('button', { name: messages.enlarge, exact: true });
     await expect(open).toBeVisible();
     await open.click();
@@ -700,6 +714,6 @@ test('the viewing room remains accessible and translated in every gallery langua
     ).toEqual([]);
     await noOverflow(page);
     await page.keyboard.press('Escape');
-    await expect(open).toBeFocused();
+    await expect(options).toBeFocused();
   }
 });

@@ -12,10 +12,8 @@ describe('colophon', () => {
     expect(links.map((link) => link.textContent)).toEqual([
       en.collection,
       en.exhibitions,
-      en.auctions,
       en.process,
       en.statement,
-      en.terms,
       en.privacy,
       `${en.openProtocol} ↗`,
     ]);
