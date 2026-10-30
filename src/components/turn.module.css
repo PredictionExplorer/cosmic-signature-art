@@ -29,6 +29,20 @@
 :global(html[data-turning='dusk']) .turn .night {
   transition: clip-path var(--t-dusk) var(--ease-dusk);
 }
+/* The crossing in the order the work was made keeps the work's pace, set per travel. */
+:global(html[data-turning='time'][data-crossing='arrival']) .turn .night {
+  transition-duration: var(--t-crossing, var(--t-cross));
+}
+/* The canvas lies over the plate and its walls only while a crossing is painted on it. */
+.crossing {
+  position: absolute;
+  z-index: 2;
+  display: none;
+  pointer-events: none;
+}
+.crossing[data-active] {
+  display: block;
+}
 /* A finger paints every frame itself. */
 :global(html[data-turning='drag']) .turn .night {
   transition: none;

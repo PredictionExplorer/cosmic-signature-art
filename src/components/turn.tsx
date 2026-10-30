@@ -7,8 +7,10 @@ import {
   useSyncExternalStore,
   type PointerEvent as ReactPointerEvent,
   type ReactNode,
+  type RefObject,
 } from 'react';
 import { ROOM_COLORS, type Room } from '@/lib/room';
+import { parseEasing } from '@/lib/crossing/timing';
 import styles from './turn.module.css';
 
 /*
@@ -69,6 +71,17 @@ export class SeamController {
   private flight: { target: number; endsAt: number } | null = null;
   /** The seam is dropped a chrome beat after the commit, so the head's overlay outlasts its fade. */
   private ending: ReturnType<typeof setTimeout> | null = null;
+  /**
+   * The travel the CSS is animating, so a canvas can paint where the seam is on any frame:
+   * the same start, target, duration and curve the transition was given.
+   */
+  private travel: {
+    from: number;
+    to: number;
+    startedAt: number;
+    duration: number;
+    easing: (x: number) => number;
+  } | null = null;
   constructor(private readonly root: () => HTMLElement = () => document.documentElement) {}
 
   /** The seam as a number from 0 to 100, or null while no Turn is in progress. */
@@ -86,6 +99,15 @@ export class SeamController {
     return (this.root().getAttribute('data-turn-to') as Room | null) || null;
   }
 
+  /** Where the seam is now: mid-travel, where the transition has carried it; otherwise as set. */
+  current(now = performance.now()): number | null {
+    const travel = this.travel;
+    if (!travel) return this.seam;
+    const progress =
+      travel.duration > 0 ? Math.min(1, (now - travel.startedAt) / travel.duration) : 1;
+    return travel.from + (travel.to - travel.from) * travel.easing(progress);
+  }
+
   /** A finger takes the seam: no transition, every move paints at once. */
   begin(mode: TurnMode, start: number, to: Room = start > 50 ? 'night' : 'paper') {
     this.cancel();
@@ -96,6 +118,7 @@ export class SeamController {
   }
 
   set(value: number) {
+    this.travel = null;
     this.root().style.setProperty('--seam', `${clamp(value)}%`);
   }
 
@@ -121,6 +144,7 @@ export class SeamController {
       this.flight && this.flight.target === target
         ? Math.max(0, this.flight.endsAt - Date.now())
         : null;
+    const inheritedTravel = inherited !== null ? this.travel : null;
     this.cancel();
     const id = this.token;
     return new Promise((resolve) => {
@@ -139,15 +163,33 @@ export class SeamController {
         // Flush so the transition starts from `start` rather than from the previous frame.
         void getComputedStyle(element).getPropertyValue('--seam');
         element.style.setProperty('--seam', `${clamp(target)}%`);
+        // The crossing in the order the work was made keeps the work's pace: the whole order in
+        // --t-cross, a spring-back or the rest of a drag in its share of it.
+        const crossing = element.getAttribute('data-crossing') === 'arrival';
         const duration =
           start === target
             ? (inherited ?? 0)
-            : tokenMs(
-                element,
-                mode === 'dusk' ? '--t-dusk' : '--t-turn',
-                mode === 'dusk' ? 4000 : 900,
-              );
+            : mode === 'dusk'
+              ? tokenMs(element, '--t-dusk', 4000)
+              : crossing
+                ? (tokenMs(element, '--t-cross', 2000) * Math.abs(target - start)) / 100
+                : tokenMs(element, '--t-turn', 900);
+        if (crossing) element.style.setProperty('--t-crossing', `${Math.round(duration)}ms`);
         this.flight = { target, endsAt: Date.now() + duration };
+        this.travel =
+          start === target && inheritedTravel
+            ? inheritedTravel
+            : {
+                from: start,
+                to: target,
+                startedAt: performance.now(),
+                duration,
+                easing: parseEasing(
+                  getComputedStyle(element).getPropertyValue(
+                    mode === 'dusk' ? '--ease-dusk' : '--ease-turn',
+                  ),
+                ),
+              };
         if (halfway) {
           this.timers.add(
             setTimeout(() => {
@@ -179,6 +221,7 @@ export class SeamController {
       element.removeAttribute('data-turning');
       element.removeAttribute('data-turn-to');
       element.style.removeProperty('--seam');
+      element.style.removeProperty('--t-crossing');
     };
     if (!element.hasAttribute('data-turning')) return drop();
     this.ending = setTimeout(drop, tokenMs(element, '--t-chrome', 270));
@@ -188,6 +231,7 @@ export class SeamController {
   cancel() {
     this.token += 1;
     this.flight = null;
+    this.travel = null;
     if (this.ending) {
       clearTimeout(this.ending);
       this.ending = null;
@@ -261,6 +305,7 @@ export function Turn({
   seam,
   canTurn,
   restSeam,
+  crossing,
   onCommit,
   onDragChange,
   children,
@@ -272,6 +317,8 @@ export function Turn({
   canTurn: boolean;
   /** Where the seam rests for the committed expression; inside the wing the scroll decides. */
   restSeam?: () => number;
+  /** The canvas a crossing in the work's own order paints over the plate, where one is bound. */
+  crossing?: RefObject<HTMLCanvasElement | null>;
   /** The finger carried the seam far enough: decode and commit the other expression. */
   onCommit: (to: Expression) => void;
   onDragChange?: (dragging: boolean) => void;
@@ -382,6 +429,7 @@ export function Turn({
       }}
     >
       {children}
+      {crossing ? <canvas ref={crossing} className={styles.crossing} aria-hidden="true" /> : null}
     </div>
   );
 }

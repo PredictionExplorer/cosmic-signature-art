@@ -4,6 +4,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { getCuratedArtwork } from '@/lib/art/catalog';
 import type { Artwork } from '@/lib/art/types';
 import { en } from '@/lib/i18n/en';
+import { fill } from '@/lib/i18n/format';
 import { ArtworkRoom } from './artwork-room';
 
 // The room reads the venue's motion state; the tests begin where the context default does.
@@ -678,6 +679,80 @@ describe('immersive artwork room', () => {
     fireEvent.click(within(room).getByRole('button', { name: en.still }));
     fireEvent.error(within(room).getByRole('img'));
     expect(within(room).getByRole('button', { name: en.detail })).toBeDisabled();
+  });
+
+  it('offers the When lens in the still’s place, labelled analysis, and steps it aside', () => {
+    const { room } = openRoom();
+    const lens = within(room).getByRole('button', { name: en.whenLens });
+    expect(lens).toHaveAttribute('aria-pressed', 'false');
+    fireEvent.click(lens);
+    expect(lens).toHaveAttribute('aria-pressed', 'true');
+    const drawn = within(room).getByRole('img', {
+      name: fill(en.whenAlt, { plate: '№ 031 · Ink', caption: en.whenInk }),
+    });
+    expect(drawn.tagName).toBe('CANVAS');
+    expect(drawn).toHaveAttribute('data-room-media');
+    expect(within(room).getByRole('status')).toHaveTextContent(
+      `${en.whenInk} · ${en.analysisNotWork}`,
+    );
+    // Light keeps the lens and reads its own order.
+    fireEvent.keyDown(room, { key: 'l' });
+    expect(within(room).getByRole('status')).toHaveTextContent(en.whenLight);
+    fireEvent.keyDown(room, { key: 'i' });
+    // The loupe and the film each take the lens's place; T and the word bring it back.
+    fireEvent.keyDown(room, { key: 'z' });
+    expect(lens).toHaveAttribute('aria-pressed', 'false');
+    expect(room.querySelector('canvas')).toBeNull();
+    fireEvent.keyDown(room, { key: 't' });
+    expect(lens).toHaveAttribute('aria-pressed', 'true');
+    expect(room.firstElementChild).not.toHaveAttribute('data-loupe');
+    fireEvent.keyDown(room, { key: 'f' });
+    expect(lens).toHaveAttribute('aria-pressed', 'false');
+    expect(room.querySelector('video')).toHaveAttribute('src', '/complete-ink.mp4');
+    fireEvent.click(lens);
+    expect(room.querySelector('video')).toBeNull();
+    fireEvent.click(within(room).getByRole('button', { name: en.still }));
+    expect(lens).toHaveAttribute('aria-pressed', 'false');
+    fireEvent.keyDown(room, { key: '?' });
+    expect(within(room).getByLabelText(en.roomKeys)).toHaveTextContent(en.keyWhen);
+  });
+
+  it('rests the When word and says so when the lens cannot be painted', async () => {
+    // Every image this page asks for fails, as on a connection that drops the map.
+    class Unreadable {
+      decoding = '';
+      onload: (() => void) | null = null;
+      onerror: (() => void) | null = null;
+      set src(_value: string) {
+        queueMicrotask(() => this.onerror?.());
+      }
+    }
+    vi.stubGlobal('Image', Unreadable);
+    try {
+      const { room } = openRoom();
+      const lens = within(room).getByRole('button', { name: en.whenLens });
+      fireEvent.click(lens);
+      await act(async () => {});
+      expect(lens).toBeDisabled();
+      expect(lens).toHaveAttribute('aria-pressed', 'false');
+      expect(within(room).getByRole('status')).toHaveTextContent(en.whenUnavailable);
+      expect(room.querySelector('canvas')).toBeNull();
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
+  it('offers no When lens where no arrival map is bound', () => {
+    const work = {
+      ...artwork,
+      media: artwork.media.map((media) => ({ ...media, arrival: undefined })),
+    };
+    render(<Harness work={work} />);
+    fireEvent.click(screen.getByRole('button', { name: 'Enter room' }));
+    const room = screen.getByRole('dialog');
+    expect(within(room).queryByRole('button', { name: en.whenLens })).toBeNull();
+    fireEvent.keyDown(room, { key: 't' });
+    expect(room.querySelector('canvas')).toBeNull();
   });
 
   it('shows the room’s keys on ? and lets Escape close the hint before the room', () => {

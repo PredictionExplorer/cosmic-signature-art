@@ -29,6 +29,7 @@
   --t-focus: 500ms;
   --t-reel: 700ms;
   --t-turn: 900ms;
+  --t-cross: 2000ms;
   --t-walk: 480ms;
   --t-expand: 650ms;
   --t-hold: 1200ms;
@@ -476,6 +477,9 @@ html[data-turning][data-turn-to='paper'] .head-overlay {
 }
 html[data-turning='time'] .head-overlay {
   transition: clip-path var(--t-turn) var(--ease-turn);
+}
+html[data-turning='time'][data-crossing='arrival'] .head-overlay {
+  transition-duration: var(--t-crossing, var(--t-cross));
 }
 html[data-turning='dusk'] .head-overlay {
   transition: clip-path var(--t-dusk) var(--ease-dusk);

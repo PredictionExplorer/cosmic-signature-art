@@ -1,0 +1,108 @@
+# Third Physics, Phase B — the crossing, in the order it was made
+
+Phase B of [Third Physics](third-physics.md) changes how a work turns between its two expressions. This note records what was built, how the maps are made, how it is proved, what it settled, and what it leaves for later.
+
+## What shipped
+
+**The crossing.** Pressing `Light` no longer wipes night across the plate from the right. Night spreads in the order the work's Light film drew it: for № 031 it opens in the orbit's core, the ribbons arrive along their own paths, and the walls darken last. Pressing `Ink` brings the paper back in the order the Ink film's sumi came to rest.
+- Every pixel on the plate is a pixel of one of the two published stills, untouched, except across the soft edge of the front, where the two are mixed as it passes. The edge is 0.035 of the work's order either side, about a tenth of a second at any one pixel. The order is the films'; nothing else is new.
+- Beyond the plate each wall turns at the time of the nearest edge of the work, plus a short travel, so the room follows the work.
+- The running head above the plate and the label strip below it are walls too. Each of their columns turns when the same front reaches it: a clip-path polygon is recomputed from the same map in the frame the plate is painted.
+- The crossing runs on the Turn's own clock and curve. The whole order takes two seconds (`--t-cross`) instead of the seam's 0.9. A spring-back, or the rest of a drag, takes its share of those two seconds.
+- It answers every driver of the Turn:
+  - the word `Light` or `Ink` and the keys;
+  - holding `L` to peek;
+  - a finger drawn across the plate;
+  - the Dusk;
+  - the scroll into the night wing.
+- When the plate's own film is playing, the crossing starts from the frame on view rather than the still, so nothing jumps.
+- The straight seam remains:
+  - where WebGL is unavailable;
+  - where a map or a readable still is missing;
+  - before the crossing is prepared (a Turn waits at most 0.4 s for it);
+  - in the gatefold, whose seam is a comparison rather than a Turn.
+- Under reduced motion, Pause or the auction hush the Turn is one frame, and nothing is prepared.
+
+**The When lens**, in the viewing room beside `Detail`, and on `T`.
+- It shows the still with each mark coloured by when its film reached it: blue first, then rose, then pale gold last, on a near-black ground. The ramp runs from the first mark to the last.
+- The room's strip labels it "When each mark was drawn" (Light) or "When each mark came to rest" (Ink), then "Analysis, not the work", beside the ramp's legend. Its accessible name says the same.
+- It is never a sharing card and never part of a URL.
+- It is painted once per still on a 2D canvas, from the work's 1920 or 1280 rung and its map, in about 130 ms. A browser that cannot paint it says so, and the still stands in.
+
+**The parts**, all in the repository:
+
+| Part | Where |
+|---|---|
+| The maps' build | `scripts/build-arrival-maps.mjs` (`npm run art:arrival`), tested by `build-arrival-maps.test.mjs` |
+| The maps | `public/art/arrival/<id>-<expression>-<sha16>.webp`: 144 files, 2.5 MB in all |
+| The registry | `src/lib/art/arrival-maps.json`, bound to each expression by `arrival-maps.ts` (server only) through `withLocalDerivatives` |
+| The clock: CSS curves, the seam-to-order mapping, the end past the farthest wall | `src/lib/crossing/timing.ts` |
+| The front beyond the plate, for the head and the strip | `src/lib/crossing/front.ts` |
+| The lens's arithmetic and stated ramp | `src/lib/crossing/when.ts` |
+| The crossing: the WebGL pass and the viewer's hook | `src/components/arrival-crossing.ts` |
+| The seam on any frame | `SeamController.current()` in `turn.tsx`; the `--t-cross` token in `globals.css` |
+| The lens | `src/components/when-lens.tsx`, in `artwork-room.tsx` |
+| The words | 9 keys in each of the eight locales |
+
+## How the maps are made
+
+- **Read whole, once.** Each published film is read in full through the verified cache (`.cache/art`, 6.6 GB, never committed; approved 30 October 2026). It is decoded at 576 × 372, 30 frames a second, in grey: 901 frames per film.
+- **When each mark arrived.**
+  - Light is a long exposure. A pixel's mark arrives the first time it reaches half its final brightness, and stays. Pixels that end dimmer than 14 levels are ground.
+  - Ink is carried by a current. A pixel's mark has arrived once it stays within 10 levels of its final value.
+- **The ground and the shape.**
+  - The bare ground takes the time of its nearest mark, plus 0.35 of the film per frame diagonal. The distance is a 5 × 5 Euclidean chamfer, so a knight's step costs √5 and the fronts stay round.
+  - The field is then softened, half the mark's own time and half its neighbourhood's, with three box passes of radius 4. It is normalised to 0–255.
+- **Kept small.** Each map is a lossless WebP, content-addressed. The median is 16 KB for Light and 18 KB for Ink; the largest is 60 KB (№ 032 Light). № 031's two maps are about 15 KB each.
+- **Bound or dropped.** A map binds to an expression only if the seed, the still's hash and the hash of the film it was measured from all agree. The local archive keeps some stills without their films; there the still's hash alone vouches for the map.
+- **Rebuilt in minutes.** On 30 October 2026 all 144 maps were measured from the cache in about 3.5 minutes, two films at a time.
+  - Unchanged sources are reused by hash.
+  - Changed parameters re-measure every map; a partial run refuses them.
+  - A full run removes the files the registry no longer names.
+
+## How it is proved
+
+- **Unit.**
+  - The map builder, in seven Node tests: the Light and Ink rules, the round chamfer, the softening, the 0–255 span, the registry merge and the removal of orphans.
+  - The binder, the clock, the front beyond the plate, the lens's arithmetic, the seam's position on any frame, and the hook's fallback without WebGL.
+  - The room's lens: its place, its label, its key, and its failure.
+  - The whole suite passes: 884 tests, 92.9 % of lines, with the coverage thresholds held.
+- **Every frame is the two stills.** `tests/e2e/crossing.spec.ts` captures the plate many times during a crossing on № 031, № 023 and № 035, in both directions.
+  - Every captured pixel lies between the Ink still and the Light still, channel by channel. Fewer than 4 % may fall outside, and those are resampling.
+  - Some frame shows both stills, untouched, side by side, each on more than 5 % of the pixels where they differ.
+  - The head's and the strip's clips were driven by the front.
+  - Afterwards the canvas rests and the seam's own rules return.
+- **Fidelity.** On its first frame the canvas differs from the page's own still by 0.4–1.0 levels on average, in Chromium and WebKit.
+- **The other paths.**
+  - Reduced motion turns in one frame and prepares nothing.
+  - Without WebGL the straight seam is the Turn. The immersion spec's seam tests now hide WebGL, so they test the fallback on purpose.
+  - The lens lies within 1.5 px of the still it replaces, labelled, on a dark ground.
+- **Every local engine.** The full browser suite passes in Chromium and WebKit, on desktop, phone and reduced motion; the run of record is below. Firefox runs on CI. Where a browser offers no WebGL, the crossing tests skip with that reason and the fallback test stands.
+
+## What it settled
+
+- **The edge stays soft.** A front one device pixel wide was tried, so that no pixel would be a mix. With eight-bit maps it shows the quantisation as stair-steps along slow fronts. A crisp front would need sixteen-bit maps, carried in two channels. The plan's `smoothstep(p ± ε)` hides the steps, so the mix across the front is stated rather than avoided.
+- **The canvas is faithful enough to take over the plate.** It samples the sharpest readable still the page already shows, or the work's own rung, with no visible change when it appears.
+- **The head and the strip follow the front.** Their edges are hard, as the straight seam's always were. The plate's front is soft.
+
+## Found on the way
+
+- **The room cropped its still.** At 1440 × 1000 the still was 14 px taller than its space and was cut under the strip: a percentage `max-height` in an `auto` grid row never resolves. The still and the film now sit in one definite cell, as the page's plate already did, and the work is whole.
+- **The room's status line moved the work.** It grew 3 px whenever it carried text. It now holds its line when empty.
+- **A long status widened the room on a phone.** It pushed the room past the viewport. The room's single column is now `minmax(0, 1fr)`.
+- **The phone strip had no room for another word.** Once the room kept to the viewport, `When` made the actions overlap `Ink` and `Light`; the Ukrainian and Vietnamese lot tests caught it. On a phone the actions now wrap within their part of the first row, beside an identity that keeps its natural width. Every strip word is reachable in all eight locales.
+- **The curated archive keeps № 031's Light still without its film.** The binder now lets the still vouch where no film is advertised. Where a film is advertised, its hash must still agree.
+
+## Limits, and what is next
+
+- The plate's front is soft and the head's and strip's are hard. A soft head would need a mask that tracks text, which clip-path cannot do.
+- The page's wall between the plate and the night wing is not part of the Turn. It takes the room's ground when the Turn commits, as before.
+- Wavelength, the second lens, is not built. The published spectral sweep and bins are its material.
+- Phase C, the indexes (All the light and the Orrery), is next.
+
+## Run of record
+
+Built 29–30 October 2026 on `claude/third-physics-phase-b`.
+- Type-check, lint, format, the script tests (45) and font coverage pass.
+- The unit suite passes: 884 tests.
+- The full browser suite passes in the six local projects: 1,113 passed, 33 skipped by design, none failed, in 11.8 minutes.

@@ -139,7 +139,7 @@ Each invention is given with what the visitor meets, why only this art can have 
 - ship each work's chosen initial state in the registry, so motion starts at once while the full derivation verifies in the background;
 - run a CI job that re-derives all 72 works in Node, Chromium, WebKit and Firefox and fails on any bit of difference.
 
-### 5.2 The crossing, in the order it was made *(built for 031)*
+### 5.2 The crossing, in the order it was made *(built for every work)*
 
 **The visitor meets** this when pressing `Light`. Night does not wipe across the plate: it blooms out of the orbit's core, where the film first drew. The ribbons arrive along their own paths, and the room's walls darken last as the front leaves the sheet. The running head and label invert letter by letter as the front crosses them. Pressing `Ink` brings the paper back in the order the sumi came to rest.
 
@@ -300,7 +300,7 @@ Each phase ships behind a flag, on its own branch, with the existing seven-proje
 - Text equivalents for screen readers ("Three bodies of masses 130.7, 251.0 and 125.0 … closest approach 80.2 at step 255,842, 7.7 s into the film").
 - Settled first: the profile-offset question (§7.6) and the step ↔ film map.
 
-**Phase B — the crossing (3–4 weeks).**
+**Phase B — the crossing (3–4 weeks).** *Built 29–30 October 2026; see [third-physics-phase-b.md](third-physics-phase-b.md).*
 - `scripts/build-arrival-maps.mjs` for 72 Light films (about 4 MB each) and 71 Ink films. It decodes the published films once at reduced resolution. The 96 MB originals stream through the existing relay, about 7 GB read once, and only the maps are kept.
 - The WebGL crossing replaces the straight seam in all four places.
 - The When lens in the room.
