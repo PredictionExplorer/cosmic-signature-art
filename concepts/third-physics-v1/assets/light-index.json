@@ -1,0 +1,509 @@
+{
+ "source": "public/art/stills (1280 rungs cut from the 16-bit masters, see docs/plate-derivatives.md)",
+ "works": [
+  {
+   "id": 0,
+   "still": "public/art/stills/0-light-1280-b14c25f379798d9c.webp",
+   "cycle": 0,
+   "wavelengthNm": 564,
+   "structure": "Time Chords"
+  },
+  {
+   "id": 1,
+   "still": "public/art/stills/1-light-1280-8ac880f8df9a680b.webp",
+   "cycle": 0,
+   "wavelengthNm": 476,
+   "structure": "Orbit Ribbons"
+  },
+  {
+   "id": 2,
+   "still": "public/art/stills/2-light-1280-02f88e1bf3bb5f7f.webp",
+   "cycle": 0,
+   "wavelengthNm": 482,
+   "structure": "Orbit Ribbons"
+  },
+  {
+   "id": 3,
+   "still": "public/art/stills/3-light-1280-bdd7b16d823c1367.webp",
+   "cycle": 0,
+   "wavelengthNm": 560,
+   "structure": "Harmonic Weave"
+  },
+  {
+   "id": 4,
+   "still": "public/art/stills/4-light-1280-b6c7a36eec6a3a72.webp",
+   "cycle": 0,
+   "wavelengthNm": 482,
+   "structure": "Time Chords"
+  },
+  {
+   "id": 5,
+   "still": "public/art/stills/5-light-1280-50733a849bbebd65.webp",
+   "cycle": 0,
+   "wavelengthNm": 476,
+   "structure": "Orbit Ribbons"
+  },
+  {
+   "id": 6,
+   "still": "public/art/stills/6-light-1280-890b203409fd7f49.webp",
+   "cycle": 0,
+   "wavelengthNm": 380,
+   "structure": "Orbit Ribbons"
+  },
+  {
+   "id": 7,
+   "still": "public/art/stills/7-light-1280-6df1d5760a316be4.webp",
+   "cycle": 0,
+   "wavelengthNm": 564,
+   "structure": "Time Chords"
+  },
+  {
+   "id": 8,
+   "still": "public/art/stills/8-light-1280-04224bcd3a56cc2f.webp",
+   "cycle": 0,
+   "wavelengthNm": 616,
+   "structure": "Time Chords"
+  },
+  {
+   "id": 9,
+   "still": "public/art/stills/9-light-1280-bf8486f4d4281fd8.webp",
+   "cycle": 0,
+   "wavelengthNm": 568,
+   "structure": "Time Chords"
+  },
+  {
+   "id": 10,
+   "still": "public/art/stills/10-light-1280-8dfb3da5a0bc45d3.webp",
+   "cycle": 0,
+   "wavelengthNm": 572,
+   "structure": "Orbit Ribbons"
+  },
+  {
+   "id": 11,
+   "still": "public/art/stills/11-light-1280-f2c078d1aa4249dd.webp",
+   "cycle": 0,
+   "wavelengthNm": 574,
+   "structure": "Orbit Ribbons"
+  },
+  {
+   "id": 12,
+   "still": "public/art/stills/12-light-1280-d2c0b65731813932.webp",
+   "cycle": 0,
+   "wavelengthNm": 584,
+   "structure": "Orbit Ribbons"
+  },
+  {
+   "id": 13,
+   "still": "public/art/stills/13-light-1280-b385030bdb725bc2.webp",
+   "cycle": 0,
+   "wavelengthNm": 380,
+   "structure": "Harmonic Weave"
+  },
+  {
+   "id": 14,
+   "still": "public/art/stills/14-light-1280-0fce264eba7602a4.webp",
+   "cycle": 0,
+   "wavelengthNm": 448,
+   "structure": "Time Chords"
+  },
+  {
+   "id": 15,
+   "still": "public/art/stills/15-light-1280-a07c67d1d98f2d69.webp",
+   "cycle": 0,
+   "wavelengthNm": 380,
+   "structure": "Time Chords"
+  },
+  {
+   "id": 16,
+   "still": "public/art/stills/16-light-1280-7a33cca4583c81c0.webp",
+   "cycle": 0,
+   "wavelengthNm": 700,
+   "structure": "Orbit Ribbons"
+  },
+  {
+   "id": 17,
+   "still": "public/art/stills/17-light-1280-3ef8aaac6865cb92.webp",
+   "cycle": 0,
+   "wavelengthNm": 592,
+   "structure": "Orbit Ribbons"
+  },
+  {
+   "id": 18,
+   "still": "public/art/stills/18-light-1280-b60fad2ae35caec4.webp",
+   "cycle": 0,
+   "wavelengthNm": 380,
+   "structure": "Orbit Ribbons"
+  },
+  {
+   "id": 19,
+   "still": "public/art/stills/19-light-1280-758a2030dc2e02af.webp",
+   "cycle": 0,
+   "wavelengthNm": 476,
+   "structure": "Tangent Caustics"
+  },
+  {
+   "id": 20,
+   "still": "public/art/stills/20-light-1280-10ec446777fdbfcd.webp",
+   "cycle": 0,
+   "wavelengthNm": 606,
+   "structure": "Time Chords"
+  },
+  {
+   "id": 21,
+   "still": "public/art/stills/21-light-1280-7305e98f51d2b1e5.webp",
+   "cycle": 0,
+   "wavelengthNm": 380,
+   "structure": "Time Chords"
+  },
+  {
+   "id": 22,
+   "still": "public/art/stills/22-light-1280-9eff6e605d79a9b9.webp",
+   "cycle": 0,
+   "wavelengthNm": 700,
+   "structure": "Time Chords"
+  },
+  {
+   "id": 23,
+   "still": "public/art/stills/23-light-1280-5ea50de36b4e7c36.webp",
+   "cycle": 0,
+   "wavelengthNm": 546,
+   "structure": "Orbit Ribbons"
+  },
+  {
+   "id": 24,
+   "still": "public/art/stills/24-light-1280-51aa8325e5a40ca4.webp",
+   "cycle": 1,
+   "wavelengthNm": 484,
+   "structure": "Orbit Ribbons"
+  },
+  {
+   "id": 25,
+   "still": "public/art/stills/25-light-1280-50878730fd95df17.webp",
+   "cycle": 1,
+   "wavelengthNm": 576,
+   "structure": "Orbit Ribbons"
+  },
+  {
+   "id": 26,
+   "still": "public/art/stills/26-light-1280-3b37c2c9b9756920.webp",
+   "cycle": 1,
+   "wavelengthNm": 500,
+   "structure": "Orbit Ribbons"
+  },
+  {
+   "id": 27,
+   "still": "public/art/stills/27-light-1280-84109a8c140eafc6.webp",
+   "cycle": 1,
+   "wavelengthNm": 380,
+   "structure": "Time Chords"
+  },
+  {
+   "id": 28,
+   "still": "public/art/stills/28-light-1280-a5278a09cec7a425.webp",
+   "cycle": 1,
+   "wavelengthNm": 472,
+   "structure": "Time Chords"
+  },
+  {
+   "id": 29,
+   "still": "public/art/stills/29-light-1280-aaee8203b3406f6f.webp",
+   "cycle": 1,
+   "wavelengthNm": 566,
+   "structure": "Orbit Ribbons"
+  },
+  {
+   "id": 30,
+   "still": "public/art/stills/30-light-1280-3418a6761cf0b62f.webp",
+   "cycle": 1,
+   "wavelengthNm": 578,
+   "structure": "Tangent Caustics"
+  },
+  {
+   "id": 31,
+   "still": "public/art/stills/31-light-1280-18dcfff2778f195a.webp",
+   "cycle": 1,
+   "wavelengthNm": 632,
+   "structure": "Orbit Ribbons"
+  },
+  {
+   "id": 32,
+   "still": "public/art/stills/32-light-1280-878f6663ba804bb1.webp",
+   "cycle": 1,
+   "wavelengthNm": 700,
+   "structure": "Stipple Constellation"
+  },
+  {
+   "id": 33,
+   "still": "public/art/stills/33-light-1280-a39f63850dc8ae96.webp",
+   "cycle": 1,
+   "wavelengthNm": 438,
+   "structure": "Orbit Ribbons"
+  },
+  {
+   "id": 34,
+   "still": "public/art/stills/34-light-1280-5b10df1da6a55bfc.webp",
+   "cycle": 1,
+   "wavelengthNm": 612,
+   "structure": "Time Chords"
+  },
+  {
+   "id": 35,
+   "still": "public/art/stills/35-light-1280-ee7b6723da9b026c.webp",
+   "cycle": 1,
+   "wavelengthNm": 700,
+   "structure": "Time Chords"
+  },
+  {
+   "id": 36,
+   "still": "public/art/stills/36-light-1280-98feb09f947b36f1.webp",
+   "cycle": 1,
+   "wavelengthNm": 700,
+   "structure": "Time Chords"
+  },
+  {
+   "id": 37,
+   "still": "public/art/stills/37-light-1280-09a0cc868ca6208c.webp",
+   "cycle": 1,
+   "wavelengthNm": 380,
+   "structure": "Time Chords"
+  },
+  {
+   "id": 38,
+   "still": "public/art/stills/38-light-1280-04a9966693c7cbc3.webp",
+   "cycle": 1,
+   "wavelengthNm": 568,
+   "structure": "Time Chords"
+  },
+  {
+   "id": 39,
+   "still": "public/art/stills/39-light-1280-bd513ea3e5c8d7eb.webp",
+   "cycle": 1,
+   "wavelengthNm": 482,
+   "structure": "Orbit Ribbons"
+  },
+  {
+   "id": 40,
+   "still": "public/art/stills/40-light-1280-7f1ac66963953678.webp",
+   "cycle": 1,
+   "wavelengthNm": 600,
+   "structure": "Time Chords"
+  },
+  {
+   "id": 41,
+   "still": "public/art/stills/41-light-1280-8116d31f94f5a4d0.webp",
+   "cycle": 1,
+   "wavelengthNm": 556,
+   "structure": "Orbit Ribbons"
+  },
+  {
+   "id": 42,
+   "still": "public/art/stills/42-light-1280-b13bda3bb44a02f0.webp",
+   "cycle": 1,
+   "wavelengthNm": 700,
+   "structure": "Orbit Ribbons"
+  },
+  {
+   "id": 43,
+   "still": "public/art/stills/43-light-1280-1856d111394701eb.webp",
+   "cycle": 1,
+   "wavelengthNm": 488,
+   "structure": "Time Chords"
+  },
+  {
+   "id": 44,
+   "still": "public/art/stills/44-light-1280-e756d74aa9b9977c.webp",
+   "cycle": 1,
+   "wavelengthNm": 572,
+   "structure": "Time Chords"
+  },
+  {
+   "id": 45,
+   "still": "public/art/stills/45-light-1280-083959d7ce41fce5.webp",
+   "cycle": 1,
+   "wavelengthNm": 646,
+   "structure": "Orbit Ribbons"
+  },
+  {
+   "id": 46,
+   "still": "public/art/stills/46-light-1280-9574667b9b7340fe.webp",
+   "cycle": 1,
+   "wavelengthNm": 562,
+   "structure": "Time Chords"
+  },
+  {
+   "id": 47,
+   "still": "public/art/stills/47-light-1280-10d0f8fb31e0211f.webp",
+   "cycle": 1,
+   "wavelengthNm": 448,
+   "structure": "Orbit Ribbons"
+  },
+  {
+   "id": 48,
+   "still": "public/art/stills/48-light-1280-4cd284553b2eb976.webp",
+   "cycle": 2,
+   "wavelengthNm": 380,
+   "structure": "Time Chords"
+  },
+  {
+   "id": 49,
+   "still": "public/art/stills/49-light-1280-eca5cf58666aa95e.webp",
+   "cycle": 2,
+   "wavelengthNm": 450,
+   "structure": "Time Chords"
+  },
+  {
+   "id": 50,
+   "still": "public/art/stills/50-light-1280-becd7afcc702b0a5.webp",
+   "cycle": 2,
+   "wavelengthNm": 542,
+   "structure": "Orbit Ribbons"
+  },
+  {
+   "id": 51,
+   "still": "public/art/stills/51-light-1280-53ad15d79680ca86.webp",
+   "cycle": 2,
+   "wavelengthNm": 592,
+   "structure": "Time Chords"
+  },
+  {
+   "id": 52,
+   "still": "public/art/stills/52-light-1280-93163faa753f5ed9.webp",
+   "cycle": 2,
+   "wavelengthNm": 700,
+   "structure": "Orbit Ribbons"
+  },
+  {
+   "id": 53,
+   "still": "public/art/stills/53-light-1280-1ef332c7b5048404.webp",
+   "cycle": 2,
+   "wavelengthNm": 700,
+   "structure": "Time Chords"
+  },
+  {
+   "id": 54,
+   "still": "public/art/stills/54-light-1280-2d682844bd53e635.webp",
+   "cycle": 2,
+   "wavelengthNm": 462,
+   "structure": "Orbit Ribbons"
+  },
+  {
+   "id": 55,
+   "still": "public/art/stills/55-light-1280-6811380133ad3946.webp",
+   "cycle": 2,
+   "wavelengthNm": 380,
+   "structure": "Tangent Caustics"
+  },
+  {
+   "id": 56,
+   "still": "public/art/stills/56-light-1280-42a4fcf9c13a905d.webp",
+   "cycle": 2,
+   "wavelengthNm": 480,
+   "structure": "Time Chords"
+  },
+  {
+   "id": 57,
+   "still": "public/art/stills/57-light-1280-fa7646ede2a58bd7.webp",
+   "cycle": 2,
+   "wavelengthNm": 488,
+   "structure": "Orbit Ribbons"
+  },
+  {
+   "id": 58,
+   "still": "public/art/stills/58-light-1280-f4b7ed81d1b31e7c.webp",
+   "cycle": 2,
+   "wavelengthNm": 700,
+   "structure": "Time Chords"
+  },
+  {
+   "id": 59,
+   "still": "public/art/stills/59-light-1280-357316c10e0ac9f4.webp",
+   "cycle": 2,
+   "wavelengthNm": 380,
+   "structure": "Tangent Caustics"
+  },
+  {
+   "id": 60,
+   "still": "public/art/stills/60-light-1280-ec1d4356951e2ea5.webp",
+   "cycle": 2,
+   "wavelengthNm": 380,
+   "structure": "Time Chords"
+  },
+  {
+   "id": 61,
+   "still": "public/art/stills/61-light-1280-f5acc127b27340f4.webp",
+   "cycle": 2,
+   "wavelengthNm": 588,
+   "structure": "Time Chords"
+  },
+  {
+   "id": 62,
+   "still": "public/art/stills/62-light-1280-a232264d1d024dff.webp",
+   "cycle": 2,
+   "wavelengthNm": 380,
+   "structure": "Time Chords"
+  },
+  {
+   "id": 63,
+   "still": "public/art/stills/63-light-1280-a4c3a534e6b07285.webp",
+   "cycle": 2,
+   "wavelengthNm": 700,
+   "structure": "Time Chords"
+  },
+  {
+   "id": 64,
+   "still": "public/art/stills/64-light-1280-42c9baa6d1ec900d.webp",
+   "cycle": 2,
+   "wavelengthNm": 446,
+   "structure": "Orbit Ribbons"
+  },
+  {
+   "id": 65,
+   "still": "public/art/stills/65-light-1280-405793c204761b91.webp",
+   "cycle": 2,
+   "wavelengthNm": 584,
+   "structure": "Orbit Ribbons"
+  },
+  {
+   "id": 66,
+   "still": "public/art/stills/66-light-1280-71834d50f883e238.webp",
+   "cycle": 2,
+   "wavelengthNm": 380,
+   "structure": "Time Chords"
+  },
+  {
+   "id": 67,
+   "still": "public/art/stills/67-light-1280-00fa20354e364e14.webp",
+   "cycle": 2,
+   "wavelengthNm": 462,
+   "structure": "Orbit Ribbons"
+  },
+  {
+   "id": 68,
+   "still": "public/art/stills/68-light-1280-be2bb3b883dcb573.webp",
+   "cycle": 2,
+   "wavelengthNm": 586,
+   "structure": "Orbit Ribbons"
+  },
+  {
+   "id": 69,
+   "still": "public/art/stills/69-light-1280-6173df6a0e85c95b.webp",
+   "cycle": 2,
+   "wavelengthNm": 562,
+   "structure": "Orbit Ribbons"
+  },
+  {
+   "id": 70,
+   "still": "public/art/stills/70-light-1280-d451eb5dfecfb5b2.webp",
+   "cycle": 2,
+   "wavelengthNm": 638,
+   "structure": "Orbit Ribbons"
+  },
+  {
+   "id": 71,
+   "still": "public/art/stills/71-light-1280-a286392e9ae01b72.webp",
+   "cycle": 2,
+   "wavelengthNm": 682,
+   "structure": "Orbit Ribbons"
+  }
+ ]
+}

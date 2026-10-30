@@ -1,0 +1,223 @@
+/*
+  The orbit, re-performed: a screen of night beneath the plate. The drawing is the orbit in
+  light, the score under it runs the length of the Light film, and the record stands to the
+  right as a table of exact values, each checked against the derivation made in this browser.
+  The section carries its own ground, so it reads as night on a paper route.
+*/
+.orbit {
+  --type: var(--night-type);
+  --muted: #b8b5ad;
+  --rule: color-mix(in srgb, var(--night-type) 24%, transparent);
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(300px, 0.5fr);
+  grid-template-areas:
+    'head record'
+    'figure record'
+    'score record';
+  grid-template-rows: auto 1fr auto;
+  column-gap: clamp(24px, 3vw, 54px);
+  min-height: 100svh;
+  padding: 45px var(--gutter) 27px;
+  background: var(--night);
+  color: var(--night-type);
+  scroll-margin-top: var(--head);
+}
+@supports not (color: color-mix(in srgb, red, blue)) {
+  .orbit {
+    --rule: rgba(241, 235, 223, 0.24);
+  }
+}
+.head {
+  grid-area: head;
+}
+.title {
+  margin: 0;
+  font-size: var(--fs-chapter);
+  font-weight: 300;
+  line-height: 1.05;
+  letter-spacing: -0.01em;
+  text-wrap: balance;
+}
+.line {
+  margin: 9px 0 0;
+  max-width: 34em;
+  font-size: var(--fs-reading);
+  font-style: italic;
+  color: var(--muted);
+}
+.figure {
+  grid-area: figure;
+  display: flex;
+  flex-direction: column;
+  margin: 18px 0 0;
+  min-height: 0;
+}
+.stage {
+  position: relative;
+  flex: 1;
+  min-height: min(52svh, 600px);
+}
+.layer {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+.caption {
+  max-width: 40em;
+  margin-top: 9px;
+  font-size: var(--fs-control);
+  line-height: 1.5;
+  color: var(--muted);
+}
+.score {
+  grid-area: score;
+  margin-top: 18px;
+}
+.events {
+  display: block;
+  width: 100%;
+  height: 54px;
+}
+.readoutRow {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 24px;
+  min-height: 44px;
+  border-top: 1px solid var(--rule);
+}
+/* Two lines, always: the clock and the progress change length as they run, and a readout that
+   grew or shrank would move everything beneath the section. */
+.readout {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  overflow: hidden;
+  height: 45px;
+  margin: 0;
+  padding-top: 9px;
+  font-family: var(--font-mono);
+  font-size: var(--fs-folio);
+  line-height: 18px;
+  font-variant-numeric: tabular-nums lining-nums;
+  color: var(--muted);
+}
+.again {
+  min-height: 44px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  font-size: var(--fs-control);
+  cursor: pointer;
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 5px;
+  transition: text-decoration-thickness var(--t-blink) var(--ease-settle);
+}
+.again:hover,
+.again:active,
+.again:focus-visible {
+  text-decoration-thickness: 2px;
+}
+.record {
+  grid-area: record;
+  align-self: end;
+  padding-top: 18px;
+}
+.proof {
+  width: 100%;
+  border-collapse: collapse;
+  font-variant-numeric: tabular-nums lining-nums;
+}
+.tableCaption {
+  padding-bottom: 9px;
+  text-align: left;
+  font-family: var(--font-mono);
+  font-size: var(--fs-folio);
+  color: var(--muted);
+}
+.proof th,
+.proof td {
+  padding: 6px 0;
+  border-top: 1px solid var(--rule);
+  text-align: left;
+  vertical-align: baseline;
+  font-family: var(--font-mono);
+  font-size: var(--fs-folio);
+  font-weight: 400;
+}
+.proof th[scope='row'] {
+  padding-right: 12px;
+  color: var(--muted);
+  white-space: nowrap;
+}
+.proof td span {
+  display: block;
+  overflow-wrap: anywhere;
+}
+.word {
+  line-height: 1.6;
+}
+.derivedValue {
+  font-style: italic;
+}
+.proof td.check {
+  padding-left: 12px;
+  text-align: right;
+  font-family: var(--font-book);
+  font-size: var(--fs-control);
+  font-variant-caps: all-small-caps;
+  letter-spacing: 0.06em;
+  white-space: nowrap;
+}
+.proof tr[data-exact='false'] td.check {
+  font-style: italic;
+}
+/* The summary arrives with the derivation; its room is kept from the start. */
+.summary {
+  min-height: 4.5em;
+  margin: 18px 0 0;
+  font-size: var(--fs-control);
+  line-height: 1.5;
+}
+.note {
+  margin: 18px 0 0;
+  font-size: var(--fs-control);
+  line-height: 1.5;
+  color: var(--muted);
+}
+.visuallyHidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+@media (max-width: 860px) {
+  .orbit {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas:
+      'head'
+      'figure'
+      'score'
+      'record';
+    grid-template-rows: auto auto auto auto;
+    padding-top: 36px;
+  }
+  .stage {
+    flex: none;
+    min-height: 0;
+    aspect-ratio: 1;
+  }
+  .record {
+    padding-top: 27px;
+  }
+  .summary {
+    min-height: 6em;
+  }
+}

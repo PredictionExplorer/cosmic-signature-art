@@ -94,5 +94,6 @@ Activation requires the exact reviewed immutable address, chain and runtime hash
 - [Contract architecture](docs/contract-architecture-and-auction-rules.md): design and trust boundaries.
 - [Ecosystem plan](docs/ecosystem-and-delivery-plan.md): issuance, reserve economics and operations.
 - [Art direction](docs/art-direction-exploration.md): Passage/Atlas rationale and earlier concepts.
+- [Third Physics](docs/third-physics.md): the direction after Two Grounds, with its working study in `concepts/third-physics-v1`. [Phase A](docs/third-physics-phase-a.md) re-derives every work's orbit in the browser and checks it against the published record (`npm run art:orbits` rebuilds the registry).
 
 The Go repository and renderer are not modified by this implementation. Their suggested additions are documented here. Publishing this website does not deploy, activate, or upgrade its auction or game contracts.

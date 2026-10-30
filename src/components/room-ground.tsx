@@ -35,14 +35,38 @@ export function useRoom(room: Room | null) {
   }, [room]);
 }
 
+/** The screen that lent the head its current ground, when it was not a plate. */
+let lender: object | null = null;
+
 /**
  * While a plate dominates the viewport the running head may take the sheet's own tone, so
  * the head and the letterbox read as one wall. The plate's material rides along on
  * <html data-plate-material>, so the head's type follows the tone it stands on and not the
  * room's: a Light plate on a paper route reads in the night's type. Null returns the head
- * to the room's ground.
+ * to the room's ground, unless a screen that is not a plate has lent the head its ground.
  */
 export function setPlateTone(tone: string | null, material: Room = 'paper') {
+  if (!tone && lender) return;
+  lender = null;
+  applyPlateTone(tone, material);
+}
+
+/**
+ * A screen that is not a plate (the orbit) lends the head its ground while it dominates, and
+ * only it can return it: a plate leaving the viewing line in the same frame, in either order,
+ * cannot take the ground back from under it.
+ */
+export function lendPlateTone(holder: object, tone: string, material: Room) {
+  lender = holder;
+  applyPlateTone(tone, material);
+}
+export function returnPlateTone(holder: object) {
+  if (lender !== holder) return;
+  lender = null;
+  applyPlateTone(null, 'paper');
+}
+
+function applyPlateTone(tone: string | null, material: Room) {
   const root = document.documentElement;
   if (tone && /^#[0-9a-f]{6}$/i.test(tone)) {
     root.style.setProperty('--plate-tone', tone);

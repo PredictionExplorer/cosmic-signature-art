@@ -14,6 +14,7 @@ const SERVER_ONLY_MODULES = [
   'collection-previews',
   'derivatives',
   'media',
+  'orbit-records',
   'plate-clips',
   'plate-details',
   'server',

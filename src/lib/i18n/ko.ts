@@ -515,6 +515,43 @@ export const ko: Messages = {
   verifyFailed: '파일을 읽을 수 없습니다.',
   publishedHashes: '공개된 해시',
   sharingCollection: '컬렉션 · 작품 {count}점',
+  // The orbit, re-performed (src/components/orbit-score.tsx)
+  orbitTitle: '다시 계산한 궤도',
+  orbitLine: '이 브라우저에서 시드로부터 도출한 뒤, 공개된 기록과 대조했습니다.',
+  orbitCaption:
+    '질량이 각각 {m1}, {m2}, {m3}인 세 천체를 가장 넓게 펼쳐지는 평면 위에 빛 영상의 속도로 그렸습니다. {step}번째 단계에서 천체 {pair} 사이의 거리가 {distance}로 가장 짧아지며, 이는 영상의 {seconds}초 지점입니다.',
+  orbitWaiting: '이곳에 이르면 궤도를 이 자리에서 도출합니다.',
+  orbitUnavailable:
+    '이 브라우저에서는 궤도를 도출할 수 없었습니다. 기록은 공개된 그대로, 대조하지 않은 채 보여 줍니다.',
+  orbitProgressBeginnings: '시드를 읽는 중 · 후보 {done} / {total}',
+  orbitProgressWarmUp: '후보 {index} 운동 시작 · 예열 단계 {done} / {total}',
+  orbitProgressWindow: '기록 구간 · 단계 {done} / {total}',
+  orbitProgressBraid: '교차를 따라가는 중 · 단계 {done} / {total}',
+  orbitPlaying: '단계 {step} / {total} · 빛 영상 {clock}',
+  orbitClosestNow: '최근접 · 천체 {pair}, 거리 {distance}',
+  orbitDerived:
+    '여기에서 {seconds}초 동안 시드 {seed}에서 도출: 후보 {total}개 중 {index}번, 이어서 {steps}단계.',
+  orbitAllExact: '모든 측정값이 공개된 기록과 마지막 비트까지 일치합니다.',
+  orbitSomeDiffer: '측정값 {total}개 중 {count}개가 공개된 기록과 다릅니다.',
+  orbitTableCaption: '공개된 기록, 여기에서 대조',
+  orbitMeasurement: '측정 항목',
+  orbitValue: '값',
+  orbitCheck: '대조',
+  orbitMass: '천체 {n}의 질량',
+  orbitEnergy: '총에너지',
+  orbitMomentum: '각운동량',
+  orbitClosest: '최근접 거리',
+  orbitClosestWhere: '최근접 위치',
+  orbitBodiesAt: '천체 {pair} · {step}번째 단계',
+  orbitSyzygies: '천체 정렬',
+  orbitBraidCrossings: '브레이드 교차 수',
+  orbitBraidWord: '브레이드 단어',
+  orbitExact: '정확',
+  orbitDiffers: '다름',
+  orbitPending: '대조 중',
+  orbitDerivedValue: '여기: {value}',
+  orbitNote:
+    '영상과 정지 이미지는 작품을 기록한 렌더링입니다. 이 그림은 그 아래의 궤도로, 생성기 고유의 순서에 따라 브라우저에서 계산했습니다. 그 순서는 난수 흐름, {index}번 후보의 선택, 그리고 4차 요시다 적분기의 {steps}단계입니다.',
   // ·
   // ·
 };

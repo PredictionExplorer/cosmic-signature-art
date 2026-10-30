@@ -15,7 +15,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
-    "test:scripts": "node --test 'scripts/**/*.test.mjs'",
+    "test:scripts": "node --experimental-strip-types --test 'scripts/**/*.test.mjs'",
     "art:previews": "node scripts/build-collection-previews.mjs",
     "art:plates": "node scripts/build-plate-records.mjs",
     "art:clips": "node scripts/build-plate-clips.mjs",
@@ -32,7 +32,8 @@
     "prebuild": "npm run fonts",
     "fonts": "node scripts/build-font-subsets.mjs",
     "test:fonts": "node scripts/check-font-coverage.mjs",
-    "art:index": "node scripts/build-collection-index.mjs"
+    "art:index": "node scripts/build-collection-index.mjs",
+    "art:orbits": "node --experimental-strip-types scripts/build-orbit-records.mjs"
   },
   "dependencies": {
     "@fontsource-variable/literata": "^5.3.0",

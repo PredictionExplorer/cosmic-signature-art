@@ -495,6 +495,42 @@ export const zh: Messages = {
   verifyFailed: '无法读取该文件。',
   publishedHashes: '已发布的哈希值',
   sharingCollection: '藏品 · {count} 件作品',
+  // The orbit, re-performed (src/components/orbit-score.tsx)
+  orbitTitle: '轨道，重新演算',
+  orbitLine: '在这个浏览器中由它的种子推导，再与已发布的记录核对。',
+  orbitCaption:
+    '三个天体，质量分别为 {m1}、{m2} 和 {m3}，在它们展开最广的平面上，以光的影片的节奏绘出。天体 {pair} 在第 {step} 步最为接近，相距 {distance}，即影片第 {seconds} 秒。',
+  orbitWaiting: '当你来到这里，轨道便在此推导。',
+  orbitUnavailable: '这个浏览器无法推导轨道。记录按已发布的原样显示，未经核对。',
+  orbitProgressBeginnings: '读取种子 · 候选 {done} / {total}',
+  orbitProgressWarmUp: '候选 {index} 开始运动 · 预热第 {done} / {total} 步',
+  orbitProgressWindow: '记录区间 · 第 {done} / {total} 步',
+  orbitProgressBraid: '追踪交叉 · 第 {done} / {total} 步',
+  orbitPlaying: '第 {step} / {total} 步 · 光的影片 {clock}',
+  orbitClosestNow: '最近点 · 天体 {pair}，相距 {distance}',
+  orbitDerived:
+    '在此用时 {seconds} 秒，由种子 {seed} 推导：{total} 条候选中的第 {index} 号，再计算 {steps} 步。',
+  orbitAllExact: '每一项测量都与已发布的记录一致，精确到最后一位。',
+  orbitSomeDiffer: '{total} 项测量中有 {count} 项与已发布的记录不同。',
+  orbitTableCaption: '已发布的记录，在此核对',
+  orbitMeasurement: '测量',
+  orbitValue: '数值',
+  orbitCheck: '核对',
+  orbitMass: '天体 {n} 的质量',
+  orbitEnergy: '总能量',
+  orbitMomentum: '角动量',
+  orbitClosest: '最近距离',
+  orbitClosestWhere: '最近点位置',
+  orbitBodiesAt: '天体 {pair} · 第 {step} 步',
+  orbitSyzygies: '天体连珠',
+  orbitBraidCrossings: '辫子交叉数',
+  orbitBraidWord: '辫子词',
+  orbitExact: '精确',
+  orbitDiffers: '不同',
+  orbitPending: '核对中',
+  orbitDerivedValue: '此处：{value}',
+  orbitNote:
+    '影片与静态图像是作品的记录渲染。这幅图是它们之下的轨道，由你的浏览器按生成器自己的顺序计算：它的随机流、第 {index} 号候选的选择，以及四阶 Yoshida 积分器的 {steps} 步。',
   // ·
   // ·
 };

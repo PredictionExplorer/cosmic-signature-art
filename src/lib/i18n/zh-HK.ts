@@ -495,6 +495,42 @@ export const zhHK: Messages = {
   verifyFailed: '無法讀取該檔案。',
   publishedHashes: '已發佈的雜湊值',
   sharingCollection: '館藏 · {count} 件作品',
+  // The orbit, re-performed (src/components/orbit-score.tsx)
+  orbitTitle: '軌道，重新演算',
+  orbitLine: '在這個瀏覽器中由它的種子推導，再與已發佈的紀錄核對。',
+  orbitCaption:
+    '三個天體，質量分別為 {m1}、{m2} 和 {m3}，在它們展開最廣的平面上，以光的影片的節奏繪出。天體 {pair} 在第 {step} 步最為接近，相距 {distance}，即影片第 {seconds} 秒。',
+  orbitWaiting: '當你來到這裏，軌道便在此推導。',
+  orbitUnavailable: '這個瀏覽器無法推導軌道。紀錄按已發佈的原樣顯示，未經核對。',
+  orbitProgressBeginnings: '讀取種子 · 候選 {done} / {total}',
+  orbitProgressWarmUp: '候選 {index} 開始運動 · 預熱第 {done} / {total} 步',
+  orbitProgressWindow: '紀錄區間 · 第 {done} / {total} 步',
+  orbitProgressBraid: '追蹤交叉 · 第 {done} / {total} 步',
+  orbitPlaying: '第 {step} / {total} 步 · 光的影片 {clock}',
+  orbitClosestNow: '最近點 · 天體 {pair}，相距 {distance}',
+  orbitDerived:
+    '在此用時 {seconds} 秒，由種子 {seed} 推導：{total} 條候選中的第 {index} 號，再計算 {steps} 步。',
+  orbitAllExact: '每一項測量都與已發佈的紀錄一致，精確到最後一位。',
+  orbitSomeDiffer: '{total} 項測量中有 {count} 項與已發佈的紀錄不同。',
+  orbitTableCaption: '已發佈的紀錄，在此核對',
+  orbitMeasurement: '測量',
+  orbitValue: '數值',
+  orbitCheck: '核對',
+  orbitMass: '天體 {n} 的質量',
+  orbitEnergy: '總能量',
+  orbitMomentum: '角動量',
+  orbitClosest: '最近距離',
+  orbitClosestWhere: '最近點位置',
+  orbitBodiesAt: '天體 {pair} · 第 {step} 步',
+  orbitSyzygies: '天體連珠',
+  orbitBraidCrossings: '辮子交叉數',
+  orbitBraidWord: '辮子詞',
+  orbitExact: '精確',
+  orbitDiffers: '不同',
+  orbitPending: '核對中',
+  orbitDerivedValue: '此處：{value}',
+  orbitNote:
+    '影片與靜態影像是作品的紀錄渲染。這幅圖是它們之下的軌道，由你的瀏覽器按生成器自己的次序計算：它的隨機流、第 {index} 號候選的選擇，以及四階 Yoshida 積分器的 {steps} 步。',
   // ·
   // ·
 };

@@ -1,0 +1,144 @@
+{
+  "schema_version": "1.0.0",
+  "seed": "0x4a0d5b57e13cf40c56cddb4ee2c10f50ab7aff755e24c61a687855663713f5b5",
+  "pipeline_version": "1.0.0",
+  "generated_at": "2026-09-26T02:38:04.868688220-05:00",
+  "attributes": [
+    {
+      "trait_type": "Structure",
+      "value": "Orbit Ribbons"
+    },
+    {
+      "trait_type": "Underlay",
+      "value": "Harmonic Weave"
+    },
+    {
+      "trait_type": "Wildcard",
+      "value": "Yes"
+    },
+    {
+      "trait_type": "Palette",
+      "value": "Rose Mono"
+    },
+    {
+      "trait_type": "Spectral Class",
+      "value": "M"
+    },
+    {
+      "trait_type": "Mass Balance",
+      "value": "Heavy Primary"
+    },
+    {
+      "trait_type": "Fate",
+      "value": "Eternal Dance"
+    },
+    {
+      "trait_type": "Chaos",
+      "display_type": "number",
+      "value": 13,
+      "max_value": 100
+    },
+    {
+      "trait_type": "Syzygies",
+      "display_type": "number",
+      "value": 0
+    }
+  ],
+  "description_art": "Three bodies trace orbit ribbons in Rose Mono tones over a harmonic weave underlay. Chaos 13/100 across 0 syzygies; spectral class M; fate: eternal dance.",
+  "simulation": {
+    "masses": [
+      130.67371638058603,
+      250.9920858730805,
+      124.96327743951707
+    ],
+    "total_energy": -2142.8907060284882,
+    "angular_momentum": 45072.95196766655,
+    "chaos_raw": 177270.7811962798,
+    "chaos_cv": 407.17066357312075,
+    "chaos_index": 13,
+    "equilateralness": 0.581043833200501,
+    "closest_approach": {
+      "distance": 80.20379580764032,
+      "pair": [
+        0,
+        2
+      ],
+      "step": 255842
+    },
+    "syzygy_count": 0,
+    "braid": {
+      "word": "s2' s1' s1' s2' s1 s2' s1' s2 s1' s2' s1 s2' s1' s2 s1' s2' s2' s1' s2 s2 s1' s2' s1 s2' s1'",
+      "crossings": 25,
+      "truncated": false
+    },
+    "fate": {
+      "outcome": "eternal_dance",
+      "horizon_steps": 8000000
+    },
+    "integrator": "yoshida4",
+    "dt": 0.001,
+    "steps": 1000000,
+    "warmup_steps": 1000000,
+    "escape_threshold": -0.3
+  },
+  "generation": {
+    "visual_profile": "cosmic_signature",
+    "structure": {
+      "primary": "Orbit Ribbons",
+      "underlay": {
+        "vocabulary": "Harmonic Weave",
+        "alpha": 0.29
+      },
+      "stack_label": "orbit_ribbons+harmonic_weave@0.29",
+      "preferred_stack_label": "triangle_web+time_chords@0.12"
+    },
+    "projection": "position",
+    "symmetry": "none",
+    "wildcard": true,
+    "finishes": {
+      "prism": false,
+      "prism_strength": 0.0,
+      "diffraction_spikes": false,
+      "stardust": false,
+      "stardust_count": 0,
+      "halation_strength": 0.17687705179656732
+    },
+    "palette": {
+      "fingerprint": "h019.1_d010.0_s+0.07_c0.67x0.31_l0.68w0.15_f3.42a19.4",
+      "gate": "gate3",
+      "family": "Rose Mono",
+      "anchor_deg": 19.113011836576632,
+      "dispersion_deg": 10.043703785544817,
+      "body_base_hues_deg": [
+        19.21141290942327,
+        22.54815743077184,
+        9.168090395189965
+      ],
+      "dominant_body": 0,
+      "spectral_class": "M",
+      "dominant_wavelength_nm": 632.0
+    },
+    "borda": {
+      "chaos_weight": 1.0,
+      "equil_weight": 5.8428991616199575,
+      "weights_randomized": true,
+      "selected_index": 77741,
+      "total_candidates": 100000,
+      "retry_count": 0,
+      "aesthetic_score": 1.0,
+      "selection_score": 1.075
+    },
+    "drift": {
+      "enabled": true,
+      "mode": "elliptical",
+      "scale": 0.8907799580148502,
+      "arc_fraction": 0.10951291578983965,
+      "orbit_eccentricity": 0.4007290776873997,
+      "randomized": true
+    },
+    "resolution": {
+      "width": 3456,
+      "height": 2234
+    }
+  }
+}
