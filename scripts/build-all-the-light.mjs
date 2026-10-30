@@ -39,7 +39,7 @@ export const PARAMETERS = Object.freeze({
   /** How much light a full-white still adds before the shoulder: 0.42, as in the study. */
   exposure: 0.42,
   widths: [1280, 1920],
-  /** The naming grid: cells across and down, each the brightest of its block of the 1280 rung. */
+  /** The naming grid: cells across and down, each the mean of its block's brightest channel. */
   grid: [128, 83],
   /** Lossy WebP for the skies; the grid is lossless. */
   quality: 90,
@@ -123,6 +123,22 @@ export function lightRungs(ladder, id) {
   return rungs;
 }
 
+/**
+ * The works the sky holds: every indexed work whose Light still the ladder holds at every width,
+ * in filling order. A cycle minted before its stills are published waits, and does not stop the
+ * sky the published works make.
+ */
+export function skyWorks(indexWorks, ladder) {
+  const works = [];
+  const waiting = [];
+  for (const work of fillingOrder(indexWorks)) {
+    const rungs = lightRungs(ladder, work.id);
+    if (rungs) works.push({ work, rungs });
+    else waiting.push(work.id);
+  }
+  return { works, waiting };
+}
+
 /** Files the registry no longer names, left by an earlier build. */
 export function orphans(files, registry) {
   const referenced = new Set(
@@ -169,19 +185,16 @@ async function main() {
     const ladder = JSON.parse(await readFile(ladderPath, 'utf8'));
     const index = JSON.parse(await readFile(indexPath, 'utf8'));
     const previous = await readRegistry(registryPath, SCHEMA_VERSION, 'works');
-    const order = fillingOrder(index.works);
-    const works = order.map((work) => {
-      const rungs = lightRungs(ladder, work.id);
-      if (!rungs) throw new Error(`Signature ${work.id} has no Light rung at every width`);
-      return { work, rungs };
-    });
+    const { works, waiting } = skyWorks(index.works, ladder);
+    if (!works.length) throw new Error('No indexed work has a Light still at every width');
+    if (waiting.length) log(`Waiting for their Light stills: ${waiting.join(', ')}`);
     // Every rung is read from disk and checked against the ladder's hash before it adds light.
     for (const { rungs } of works)
       for (const rung of Object.values(rungs)) {
         const actual = await hashFile(resolve(publicRoot, `.${rung.src}`));
         if (actual !== rung.sha256) throw new Error(`${rung.src} does not match its hash`);
       }
-    const cycles = [...new Set(order.map((work) => work.cycle))];
+    const cycles = [...new Set(works.map(({ work }) => work.cycle))];
     const skies = [];
     let grid = null;
     const [columns, rows] = PARAMETERS.grid;

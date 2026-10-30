@@ -54,9 +54,13 @@ export async function overWorkers(
   const run = () =>
     new Promise((resolve, reject) => {
       const worker = new Worker(script);
+      let finished = false;
       const next = () => {
         const item = queue.shift();
-        if (!item) return worker.terminate().then(() => resolve());
+        if (!item) {
+          finished = true;
+          return worker.terminate().then(() => resolve());
+        }
         worker.postMessage(message(item));
       };
       worker.on('message', (result) => {
@@ -65,6 +69,12 @@ export async function overWorkers(
         next();
       });
       worker.on('error', reject);
+      // A worker that ends before its queue does (a crash with no error to report) would leave
+      // the build waiting for ever, with its registry locked.
+      worker.on('exit', (code) => {
+        if (!finished)
+          reject(new Error(`An orbit worker stopped (${code}) before its work was done`));
+      });
       next();
     });
   await Promise.all(Array.from({ length: Math.max(1, Math.min(width, items.length)) }, run));

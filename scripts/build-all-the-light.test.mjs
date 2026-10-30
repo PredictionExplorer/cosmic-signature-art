@@ -13,6 +13,7 @@ import {
   linearToSrgb,
   orphans,
   serializeRegistry,
+  skyWorks,
 } from './build-all-the-light.mjs';
 
 const read = async (path) => JSON.parse(await readFile(new URL(path, import.meta.url), 'utf8'));
@@ -67,6 +68,13 @@ test('the sky fills cycle by cycle, by number within a cycle, from rungs at ever
   const ladder = { rungs: [rung(2, 1280), rung(2, 1920), rung(7, 1280), rung(7, 1920, 'ink')] };
   assert.deepEqual(Object.keys(lightRungs(ladder, 2)), ['1280', '1920']);
   assert.equal(lightRungs(ladder, 7), null);
+  // A work whose Light still is not yet published waits; the published ones still make a sky.
+  const { works: held, waiting } = skyWorks(works, ladder);
+  assert.deepEqual(
+    held.map(({ work }) => work.id),
+    [2],
+  );
+  assert.deepEqual(waiting, [7, 9]);
 });
 
 test('the registry serializes stably and names the files a rebuild keeps', async () => {
@@ -92,7 +100,7 @@ test('the committed sky is built from the ladder’s own rungs, and every file i
   const index = await read('../src/lib/art/collection-index.json');
   assert.deepEqual(
     registry.works.map((work) => work.id),
-    fillingOrder(index.works).map((work) => work.id),
+    skyWorks(index.works, ladder).works.map(({ work }) => work.id),
   );
   for (const work of registry.works) {
     const rungs = lightRungs(ladder, work.id);
