@@ -709,6 +709,9 @@ describe('immersive artwork room', () => {
     fireEvent.keyDown(room, { key: 't' });
     expect(lens).toHaveAttribute('aria-pressed', 'true');
     expect(room.firstElementChild).not.toHaveAttribute('data-loupe');
+    // A held T paints the lens once; its repeats change nothing.
+    fireEvent.keyDown(room, { key: 't', repeat: true });
+    expect(lens).toHaveAttribute('aria-pressed', 'true');
     fireEvent.keyDown(room, { key: 'f' });
     expect(lens).toHaveAttribute('aria-pressed', 'false');
     expect(room.querySelector('video')).toHaveAttribute('src', '/complete-ink.mp4');
@@ -734,12 +737,23 @@ describe('immersive artwork room', () => {
     try {
       const { room } = openRoom();
       const lens = within(room).getByRole('button', { name: en.whenLens });
+      lens.focus();
       fireEvent.click(lens);
       await act(async () => {});
-      expect(lens).toBeDisabled();
+      // The word rests but keeps the focus the visitor gave it.
+      expect(lens).toHaveAttribute('aria-disabled', 'true');
+      expect(lens).not.toBeDisabled();
+      expect(lens).toHaveFocus();
       expect(lens).toHaveAttribute('aria-pressed', 'false');
       expect(within(room).getByRole('status')).toHaveTextContent(en.whenUnavailable);
       expect(room.querySelector('canvas')).toBeNull();
+      // Neither the word nor T disturbs a film that plays after it.
+      fireEvent.keyDown(room, { key: 'f' });
+      expect(room.querySelector('video')).toHaveAttribute('src', '/complete-ink.mp4');
+      fireEvent.click(lens);
+      fireEvent.keyDown(room, { key: 't' });
+      expect(room.querySelector('video')).toHaveAttribute('src', '/complete-ink.mp4');
+      expect(lens).toHaveAttribute('aria-pressed', 'false');
     } finally {
       vi.unstubAllGlobals();
     }

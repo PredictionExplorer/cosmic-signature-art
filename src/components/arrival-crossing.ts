@@ -27,7 +27,8 @@ void main() {
 const FRAGMENT = `
 precision highp float;
 varying vec2 vUv;
-uniform sampler2D uInk, uLight, uMapI, uMapL;
+uniform sampler2D uInk, uLight, uMapI, uMapL, uFrame;
+uniform vec2 uFrameFor;
 uniform vec4 uArt;
 uniform vec2 uCanvas;
 uniform vec3 uPaper;
@@ -58,8 +59,10 @@ void main() {
   vec2 qc = clamp(q, 0.0, 1.0);
   float inside = step(0.0, q.x) * step(0.0, q.y) * step(q.x, 1.0) * step(q.y, 1.0);
   float away = length((q - qc) * uArt.zw * uCanvas) / (uArt.w * uCanvas.y);
-  vec3 ink = mix(uPaper, texture2D(uInk, qc).rgb, inside);
-  vec3 light = texture2D(uLight, qc).rgb * inside;
+  // The film the outgoing layer is playing stands in for its still: x for Ink, y for Light.
+  vec3 frame = texture2D(uFrame, qc).rgb;
+  vec3 ink = mix(uPaper, mix(texture2D(uInk, qc).rgb, frame, uFrameFor.x), inside);
+  vec3 light = mix(texture2D(uLight, qc).rgb, frame, uFrameFor.y) * inside;
   float m;
   if (uTowardNight > 0.5) {
     m = 1.0 - front(edgeTime(uMapL, qc, away) + uSpread * away);
@@ -69,14 +72,51 @@ void main() {
   gl_FragColor = vec4(mix(ink, light, m), 1.0);
 }`;
 
-type Source = TexImageSource;
+type Still = ImageBitmap | HTMLImageElement;
 type Rect = { x: number; y: number; width: number; height: number };
+/** How the crossing reads the picture: the order it follows, and the layer it leaves. */
+type Reading = { toward: 'night' | 'paper'; leaving: Expression };
+const UNIFORMS = [
+  'uInk',
+  'uLight',
+  'uMapI',
+  'uMapL',
+  'uFrame',
+  'uFrameFor',
+  'uArt',
+  'uCanvas',
+  'uPaper',
+  'uReveal',
+  'uTowardNight',
+  'uEdge',
+  'uSpread',
+] as const;
+type Uniform = (typeof UNIFORMS)[number];
+/** Texture units, in the order the samplers are bound. */
+const UNITS = { ink: 0, light: 1, mapI: 2, mapL: 3, frame: 4 } as const;
 
 function load(src: string): Promise<HTMLImageElement> {
   const image = new Image();
   image.decoding = 'async';
   image.src = src;
   return image.decode().then(() => image);
+}
+
+/**
+ * The still's pixels as they are now: a bitmap where the browser makes one, so a page image
+ * that changes its source while the maps arrive cannot change what is uploaded.
+ */
+async function snapshot(image: HTMLImageElement): Promise<Still> {
+  if (typeof createImageBitmap !== 'function') return image;
+  try {
+    return await createImageBitmap(image);
+  } catch {
+    return image;
+  }
+}
+
+function close(still: Still) {
+  if ('close' in still) still.close();
 }
 
 /** A decoded image this canvas may read: same origin, so the context is never tainted. */
@@ -114,16 +154,12 @@ export function rgb(color: string): [number, number, number] {
 export class ArrivalCrossing {
   private gl: WebGLRenderingContext | null = null;
   private program: WebGLProgram | null = null;
-  private textures: Record<'ink' | 'light' | 'mapI' | 'mapL', WebGLTexture | null> = {
-    ink: null,
-    light: null,
-    mapI: null,
-    mapL: null,
-  };
-  private stills: Record<Expression, Source | null> = { ink: null, light: null };
+  private buffer: WebGLBuffer | null = null;
+  private uniforms: Partial<Record<Uniform, WebGLUniformLocation | null>> = {};
+  private textures: Partial<Record<keyof typeof UNITS, WebGLTexture | null>> = {};
   /** The maps on the CPU, for the running head and the strip. */
   private fields: Record<Expression, Field | null> = { ink: null, light: null };
-  private ends = { night: 1, paper: 1 };
+  private end = 1;
   private spread = 0;
   private art: Rect = { x: 0, y: 0, width: 1, height: 1 };
   /** This frame's layout in viewport pixels: the work, and the bands beside the plate. */
@@ -131,19 +167,49 @@ export class ArrivalCrossing {
   /** Elements whose clip-path the front has taken, given back when the crossing rests. */
   private clipped = new Set<HTMLElement>();
   private preparing: Promise<boolean> | null = null;
+  /** Each preparation's number: one overtaken by a lost context or a newer one builds nothing. */
+  private attempt = 0;
+  private disposed = false;
   ready = false;
 
+  private readonly canvas: HTMLCanvasElement;
+  private readonly container: () => HTMLElement | null;
+  private readonly head: () => HTMLElement | null;
+  private readonly onLost: () => void;
+  private readonly lost = (event: Event) => {
+    // The browser took the context back: stand down now, and be prepared again on its return.
+    event.preventDefault();
+    this.attempt += 1;
+    this.ready = false;
+    this.preparing = null;
+    this.release();
+    this.onLost();
+  };
+  /** A preparation tried while the context was lost failed for that reason alone. */
+  private readonly restored = () => {
+    this.preparing = null;
+  };
+
   constructor(
-    private readonly canvas: HTMLCanvasElement,
-    private readonly container: () => HTMLElement | null,
-    private readonly head: () => HTMLElement | null = () =>
-      document.querySelector<HTMLElement>('.head-overlay'),
-  ) {}
+    canvas: HTMLCanvasElement,
+    container: () => HTMLElement | null,
+    {
+      head = () => document.querySelector<HTMLElement>('.head-overlay'),
+      onLost = () => {},
+    }: { head?: () => HTMLElement | null; onLost?: () => void } = {},
+  ) {
+    this.canvas = canvas;
+    this.container = container;
+    this.head = head;
+    this.onLost = onLost;
+    canvas.addEventListener('webglcontextlost', this.lost);
+    canvas.addEventListener('webglcontextrestored', this.restored);
+  }
 
   /**
-   * Load both maps and a readable copy of both stills, and compile the program. Resolves false
-   * when this browser cannot cross this way (no WebGL, a map or still missing), in which case
-   * the straight seam stands.
+   * Load both maps and both stills, and compile the program. Resolves false when this browser
+   * cannot cross this way (no WebGL, a lost context, a map or still missing), in which case the
+   * straight seam stands.
    */
   prepare(ink: ArtInterpretation, light: ArtInterpretation): Promise<boolean> {
     this.preparing ??= this.load(ink, light).catch(() => false);
@@ -151,7 +217,8 @@ export class ArrivalCrossing {
   }
 
   private async load(ink: ArtInterpretation, light: ArtInterpretation): Promise<boolean> {
-    if (!ink.arrival || !light.arrival) return false;
+    if (!ink.arrival || !light.arrival || this.disposed) return false;
+    const attempt = ++this.attempt;
     // The drawing buffer is kept: a repaint that comes without a new frame (a snapshot, a
     // print, an engine that paints the canvas outside its compositor) shows the last frame
     // painted, never a cleared one.
@@ -161,7 +228,7 @@ export class ArrivalCrossing {
       premultipliedAlpha: false,
       preserveDrawingBuffer: true,
     });
-    if (!gl) return false;
+    if (!gl || gl.isContextLost()) return false;
     const container = this.container();
     const wide = Math.min(2, window.devicePixelRatio || 1) * (container?.clientWidth ?? 1280);
     const still = async (interpretation: ArtInterpretation) => {
@@ -174,17 +241,51 @@ export class ArrivalCrossing {
       ]
         .filter(readable)
         .sort((a, b) => b.naturalWidth - a.naturalWidth)[0];
-      if (shown && shown.naturalWidth >= Math.min(1280, wide)) return shown;
+      if (shown && shown.naturalWidth >= Math.min(1280, wide)) return snapshot(shown);
       const rung = rungFor(interpretation.rungs, Math.min(1920, wide));
       if (!rung) throw new Error('no readable still');
       return load(rung.src);
     };
+    const stills = [still(ink), still(light)] as const;
     const [inkStill, lightStill, mapI, mapL] = await Promise.all([
-      still(ink),
-      still(light),
+      ...stills,
       load(ink.arrival.src),
       load(light.arrival.src),
-    ]);
+    ]).catch((failure: unknown) => {
+      // A still that did arrive is let go with the rest.
+      for (const pending of stills) void pending.then(close, () => {});
+      throw failure;
+    });
+    try {
+      // Disposed, lost or overtaken while the images came: nothing is built for no one.
+      if (this.disposed || attempt !== this.attempt || gl.isContextLost()) return false;
+      if (!this.build(gl)) return false;
+      this.textures = {
+        ink: this.texture(UNITS.ink, inkStill, false),
+        light: this.texture(UNITS.light, lightStill, false),
+        mapI: this.texture(UNITS.mapI, mapI, true),
+        mapL: this.texture(UNITS.mapL, mapL, true),
+        frame: this.texture(UNITS.frame, null, false),
+      };
+      this.fields = { ink: readField(mapI), light: readField(mapL) };
+      gl.uniform1i(this.uniforms.uInk ?? null, UNITS.ink);
+      gl.uniform1i(this.uniforms.uLight ?? null, UNITS.light);
+      gl.uniform1i(this.uniforms.uMapI ?? null, UNITS.mapI);
+      gl.uniform1i(this.uniforms.uMapL ?? null, UNITS.mapL);
+      gl.uniform1i(this.uniforms.uFrame ?? null, UNITS.frame);
+      gl.uniform1f(this.uniforms.uEdge ?? null, FRONT_EDGE);
+      this.spread = spreadPerPlate(light.arrival.spread, light.arrival.width, light.arrival.height);
+      this.ready = true;
+      return true;
+    } finally {
+      // Uploaded once: the textures are the crossing's own copies from here on.
+      close(inkStill);
+      close(lightStill);
+    }
+  }
+
+  /** Compile and link the program, with its one quad; false when this context refuses it. */
+  private build(gl: WebGLRenderingContext): boolean {
     const program = gl.createProgram();
     if (!program) return false;
     for (const [type, source] of [
@@ -195,11 +296,20 @@ export class ArrivalCrossing {
       if (!shader) return false;
       gl.shaderSource(shader, source);
       gl.compileShader(shader);
-      if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) return false;
+      const compiled = gl.getShaderParameter(shader, gl.COMPILE_STATUS);
       gl.attachShader(program, shader);
+      // The program keeps the compiled code; the shader object itself is no longer needed.
+      gl.deleteShader(shader);
+      if (!compiled) {
+        gl.deleteProgram(program);
+        return false;
+      }
     }
     gl.linkProgram(program);
-    if (!gl.getProgramParameter(program, gl.LINK_STATUS)) return false;
+    if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
+      gl.deleteProgram(program);
+      return false;
+    }
     gl.useProgram(program);
     const buffer = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
@@ -209,22 +319,16 @@ export class ArrivalCrossing {
     gl.vertexAttribPointer(position, 2, gl.FLOAT, false, 0, 0);
     this.gl = gl;
     this.program = program;
-    this.stills = { ink: inkStill, light: lightStill };
-    this.textures.ink = this.texture(0, inkStill, false);
-    this.textures.light = this.texture(1, lightStill, false);
-    this.textures.mapI = this.texture(2, mapI, true);
-    this.textures.mapL = this.texture(3, mapL, true);
-    this.fields = { ink: readField(mapI), light: readField(mapL) };
-    (['uInk', 'uLight', 'uMapI', 'uMapL'] as const).forEach((name, unit) =>
-      gl.uniform1i(gl.getUniformLocation(program, name), unit),
+    this.buffer = buffer;
+    // Looked up once: every frame sets its values by these locations.
+    this.uniforms = Object.fromEntries(
+      UNIFORMS.map((name) => [name, gl.getUniformLocation(program, name)]),
     );
-    gl.uniform1f(gl.getUniformLocation(program, 'uEdge'), FRONT_EDGE);
-    this.spread = spreadPerPlate(light.arrival.spread, light.arrival.width, light.arrival.height);
-    this.ready = true;
     return true;
   }
 
-  private texture(unit: number, source: Source, data: boolean) {
+  /** A texture on its unit: an image, or (for the film frame) one black pixel until a frame. */
+  private texture(unit: number, source: TexImageSource | null, data: boolean) {
     const gl = this.gl!;
     const texture = gl.createTexture();
     gl.activeTexture(gl.TEXTURE0 + unit);
@@ -233,7 +337,19 @@ export class ArrivalCrossing {
       gl.UNPACK_COLORSPACE_CONVERSION_WEBGL,
       data ? gl.NONE : gl.BROWSER_DEFAULT_WEBGL,
     );
-    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, source);
+    if (source) gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, source);
+    else
+      gl.texImage2D(
+        gl.TEXTURE_2D,
+        0,
+        gl.RGBA,
+        1,
+        1,
+        0,
+        gl.RGBA,
+        gl.UNSIGNED_BYTE,
+        new Uint8Array([0, 0, 0, 255]),
+      );
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
@@ -248,8 +364,7 @@ export class ArrivalCrossing {
   private measure(): boolean {
     const container = this.container();
     const gl = this.gl;
-    const program = this.program;
-    if (!container || !gl || !program) return false;
+    if (!container || !gl) return false;
     const plate = container.querySelector<HTMLElement>('[data-layer="ink"] .plate');
     const media = plate?.querySelector<HTMLElement>('.art-media');
     if (!plate || !media) return false;
@@ -277,13 +392,13 @@ export class ArrivalCrossing {
       width: work.width * ratio,
       height: work.height * ratio,
     };
-    // The bands beside the plate: the running head's overlay shows only while a Turn travels.
-    const overlay = document.documentElement.hasAttribute('data-turning') ? this.head() : null;
     const band = (element?: Element | null) => {
-      const box = element?.getBoundingClientRect();
-      return box && box.width >= 1 && box.height >= 1 ? box : null;
+      const rect = element?.getBoundingClientRect();
+      return rect && rect.width >= 1 && rect.height >= 1 ? rect : null;
     };
-    const head = band(overlay);
+    // The running head is measured by the header its overlay fills, shown or not, so the head
+    // counts the same in the wing as in a Turn and nothing jumps when a Turn begins there.
+    const head = band(this.head()?.closest('.site-header'));
     const strip = band(container.querySelector('[data-layer="ink"] .strip'));
     this.view = { work, head, strip };
     // The reveal ends past the farthest wall, the running head and the strip included.
@@ -291,7 +406,7 @@ export class ArrivalCrossing {
     const bottom = Math.max(wall.bottom, strip?.bottom ?? wall.bottom);
     const left = Math.min(wall.left, head?.left ?? wall.left, strip?.left ?? wall.left);
     const right = Math.max(wall.right, head?.right ?? wall.right, strip?.right ?? wall.right);
-    const end = revealEnd(
+    this.end = revealEnd(
       {
         x: (left - wall.left) * ratio,
         y: (top - wall.top) * ratio,
@@ -301,54 +416,62 @@ export class ArrivalCrossing {
       this.art,
       this.spread,
     );
-    this.ends = { night: end, paper: end };
     const screen = plate.closest<HTMLElement>('[data-plate-ground]') ?? plate;
     const [r, g, b] = rgb(getComputedStyle(screen).backgroundColor);
-    gl.uniform3f(gl.getUniformLocation(program, 'uPaper'), r, g, b);
+    const { uniforms } = this;
+    gl.uniform3f(uniforms.uPaper ?? null, r, g, b);
     gl.uniform4f(
-      gl.getUniformLocation(program, 'uArt'),
+      uniforms.uArt ?? null,
       this.art.x / width,
       this.art.y / height,
       this.art.width / width,
       this.art.height / height,
     );
-    gl.uniform2f(gl.getUniformLocation(program, 'uCanvas'), width, height);
-    gl.uniform1f(gl.getUniformLocation(program, 'uSpread'), this.spread);
+    gl.uniform2f(uniforms.uCanvas ?? null, width, height);
+    gl.uniform1f(uniforms.uSpread ?? null, this.spread);
     return true;
   }
 
-  /** The film the outgoing layer is showing, when it is a frame rather than the still. */
-  private liveFrame(expression: Expression): HTMLVideoElement | null {
+  /**
+   * The frame the outgoing layer's film is showing, uploaded to the frame texture; false when
+   * that layer shows its still (or a frame this canvas may not read).
+   */
+  private frame(expression: Expression): boolean {
+    const gl = this.gl;
     const video = this.container()?.querySelector<HTMLVideoElement>(
       `[data-layer="${expression}"] .art-media video`,
     );
-    if (!video || video.readyState < 2 || video.ended || video.currentTime === 0) return null;
-    return getComputedStyle(video).opacity === '0' ? null : video;
+    if (!gl || !video || video.readyState < 2 || video.ended || video.currentTime === 0)
+      return false;
+    if (getComputedStyle(video).opacity === '0') return false;
+    try {
+      gl.activeTexture(gl.TEXTURE0 + UNITS.frame);
+      gl.bindTexture(gl.TEXTURE_2D, this.textures.frame ?? null);
+      gl.pixelStorei(gl.UNPACK_COLORSPACE_CONVERSION_WEBGL, gl.BROWSER_DEFAULT_WEBGL);
+      gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, video);
+      return true;
+    } catch {
+      return false;
+    }
   }
 
   /**
-   * Paint the crossing at a seam position: toward night the Light film's order leads, toward
-   * paper the Ink film's.
+   * Paint the crossing at a seam position. Toward night Light arrives in the Light film's
+   * order; toward paper Ink arrives in the Ink film's. False when it cannot be painted, so the
+   * straight seam shows.
    */
-  render(seam: number, toward: 'night' | 'paper') {
+  render(seam: number, { toward, leaving }: Reading) {
     const gl = this.gl;
-    const program = this.program;
-    if (!this.ready || !gl || !program || !this.measure()) return false;
-    const leaving: Expression = toward === 'night' ? 'ink' : 'light';
-    const live = this.liveFrame(leaving);
-    if (live) {
-      try {
-        gl.activeTexture(gl.TEXTURE0 + (leaving === 'ink' ? 0 : 1));
-        gl.bindTexture(gl.TEXTURE_2D, this.textures[leaving]);
-        gl.pixelStorei(gl.UNPACK_COLORSPACE_CONVERSION_WEBGL, gl.BROWSER_DEFAULT_WEBGL);
-        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, live);
-      } catch {
-        /* A frame the canvas may not read stays the still. */
-      }
-    }
-    const reveal = revealAt(seam, toward, this.ends[toward]);
-    gl.uniform1f(gl.getUniformLocation(program, 'uReveal'), reveal);
-    gl.uniform1f(gl.getUniformLocation(program, 'uTowardNight'), toward === 'night' ? 1 : 0);
+    if (!this.ready || !gl || gl.isContextLost() || !this.measure()) return false;
+    const film = this.frame(leaving);
+    gl.uniform2f(
+      this.uniforms.uFrameFor ?? null,
+      film && leaving === 'ink' ? 1 : 0,
+      film && leaving === 'light' ? 1 : 0,
+    );
+    const reveal = revealAt(seam, toward, this.end);
+    gl.uniform1f(this.uniforms.uReveal ?? null, reveal);
+    gl.uniform1f(this.uniforms.uTowardNight ?? null, toward === 'night' ? 1 : 0);
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
     this.fronts(reveal, toward);
     return true;
@@ -358,7 +481,7 @@ export class ArrivalCrossing {
    * The strip and the running head, column by column, in the same frame as the plate. Toward
    * night the front brings Light, so Light lies on the side it has passed; toward paper it
    * brings Ink, so Light lies on the side it has yet to reach. The night layer shows Light;
-   * the head's overlay shows its own ground, whichever that is.
+   * the head's overlay shows its own ground, whichever that is, and only while a Turn travels.
    */
   private fronts(reveal: number, toward: 'night' | 'paper') {
     const field = this.fields[toward === 'night' ? 'light' : 'ink'];
@@ -385,9 +508,10 @@ export class ArrivalCrossing {
     };
     clip(container.querySelector<HTMLElement>('[data-layer="light"]'), view.strip, light);
     const root = document.documentElement;
+    if (!root.hasAttribute('data-turning')) return;
     const to = root.getAttribute('data-turn-to');
     const overlayNight = to ? to === 'night' : root.getAttribute('data-room') === 'paper';
-    clip(view.head && this.head(), view.head, overlayNight ? light : ink);
+    clip(this.head(), view.head, overlayNight ? light : ink);
   }
 
   /** The running head and the strip go back to the seam's own rules. */
@@ -399,35 +523,39 @@ export class ArrivalCrossing {
     this.clipped.clear();
   }
 
-  /** After a crossing the still textures return, ready for the next one. */
-  settle() {
-    const gl = this.gl;
-    if (!gl || !this.ready) return;
-    (['ink', 'light'] as const).forEach((expression, unit) => {
-      const still = this.stills[expression];
-      if (!still) return;
-      gl.activeTexture(gl.TEXTURE0 + unit);
-      gl.bindTexture(gl.TEXTURE_2D, this.textures[expression]);
-      gl.pixelStorei(gl.UNPACK_COLORSPACE_CONVERSION_WEBGL, gl.BROWSER_DEFAULT_WEBGL);
-      gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, still);
-    });
-  }
-
+  /**
+   * Release everything this instance made, but keep the context: the canvas outlives the
+   * instance, and a context lost on purpose would stay lost for the next one.
+   */
   dispose() {
+    this.disposed = true;
+    this.ready = false;
     this.release();
-    this.gl?.getExtension('WEBGL_lose_context')?.loseContext();
+    this.canvas.removeEventListener('webglcontextlost', this.lost);
+    this.canvas.removeEventListener('webglcontextrestored', this.restored);
+    const gl = this.gl;
+    if (gl && !gl.isContextLost()) {
+      for (const texture of Object.values(this.textures)) if (texture) gl.deleteTexture(texture);
+      if (this.buffer) gl.deleteBuffer(this.buffer);
+      if (this.program) gl.deleteProgram(this.program);
+    }
     this.gl = null;
     this.program = null;
-    this.ready = false;
+    this.buffer = null;
+    this.textures = {};
   }
 }
 
 /**
  * The crossing for one viewer. Prepared at idle once the plate has settled; while it is ready,
- * <html data-crossing="arrival"> lets the seam take the crossing's longer token. Paints every
- * frame of a Turn (time, peek, finger, Dusk) at the seam's own position, and inside the night
- * wing wherever the hand has drawn the night. The map is the one of the expression not shown:
- * a Turn and its spring-back retrace one order, so nothing jumps when a finger changes its mind.
+ * <html data-crossing="arrival"> lets the seam take the crossing's longer token.
+ *
+ * Each Turn is the crossing's only if it was ready when the Turn began, and it is read once,
+ * then: the order it follows and the layer it leaves hold until the Turn ends, so a reversal,
+ * a spring-back or the commit itself never switches pictures mid-way. The order is that of the
+ * expression arriving: Light's toward the night, Ink's toward the paper, except where Ink rests
+ * partly under the night wing, which is drawn in Light's order and so retraced in it. Between
+ * Turns, inside the wing, the crossing paints wherever the hand has drawn the night.
  */
 export function useArrivalCrossing({
   seam,
@@ -443,55 +571,88 @@ export function useArrivalCrossing({
   expression: string;
   /** Both maps are bound and crossings travel (not reduced, paused or hushed). */
   enabled: boolean;
-  /** Where the hand has drawn the night in the wing, or null outside it. */
+  /** Where Ink rests inside the night wing (wherever the hand has drawn the night), else null. */
   wingSeam: () => number | null;
 }) {
   const canvas = useRef<HTMLCanvasElement>(null);
   const crossing = useRef<ArrivalCrossing | null>(null);
-  const toward = useEffectEvent((): 'night' | 'paper' =>
-    expression === 'light' ? 'paper' : 'night',
-  );
-  const drawn = useEffectEvent(() => wingSeam());
+  /** Ink's rest inside the wing while the night is partly drawn there; null otherwise. */
+  const partial = useEffectEvent(() => {
+    const value = wingSeam();
+    return value !== null && value > 0 && value < 100 ? value : null;
+  });
+  const reading = useEffectEvent((): Reading => {
+    const leaving: Expression = expression === 'light' ? 'light' : 'ink';
+    return { toward: leaving === 'ink' || partial() !== null ? 'night' : 'paper', leaving };
+  });
+  /** Between Turns: the wing's night over Ink, the only seam that rests partway. */
+  const resting = useEffectEvent(() => (expression === 'light' ? null : partial()));
 
   useEffect(() => {
     const node = canvas.current;
     if (!enabled || !node || !ink?.arrival || !light?.arrival) return;
-    const instance = new ArrivalCrossing(node, () => node.parentElement);
-    crossing.current = instance;
     const root = document.documentElement;
     let cancelled = false;
-    const start = () => {
-      void instance.prepare(ink, light).then((ok) => {
-        if (!cancelled && ok) root.setAttribute('data-crossing', 'arrival');
-      });
-    };
-    const idle =
-      typeof requestIdleCallback === 'function'
-        ? requestIdleCallback(start, { timeout: 1500 })
-        : window.setTimeout(start, 400);
     let frame = 0;
+    let turning = root.hasAttribute('data-turning');
+    /** The Turn in flight as the crossing reads it; null while it is the straight seam's. */
+    let turn: Reading | null = null;
     const hide = () => {
       node.removeAttribute('data-active');
       instance.release();
     };
+    const instance = new ArrivalCrossing(node, () => node.parentElement, {
+      onLost: () => {
+        root.removeAttribute('data-crossing');
+        turn = null;
+        hide();
+      },
+    });
+    crossing.current = instance;
     const paint = () => {
       frame = 0;
       if (!instance.ready) return hide();
-      const turning = root.hasAttribute('data-turning');
-      const value = turning ? seam.current() : drawn();
-      if (value === null || (!turning && (value <= 0 || value >= 100))) return hide();
-      if (instance.render(value, toward())) node.setAttribute('data-active', '');
+      const value = turning ? turn && seam.current() : resting();
+      const shown = value !== null && instance.render(value, turn ?? reading());
+      if (shown) node.setAttribute('data-active', '');
       else hide();
-      if (turning) frame = requestAnimationFrame(paint);
+      if (turn) frame = requestAnimationFrame(paint);
     };
     const schedule = () => {
       if (!frame) frame = requestAnimationFrame(paint);
     };
+    const start = () => {
+      void instance.prepare(ink, light).then((ok) => {
+        if (cancelled || !ok) return;
+        root.setAttribute('data-crossing', 'arrival');
+        // Ready inside the wing: draw the night the hand has already drawn.
+        schedule();
+      });
+    };
+    // Whichever scheduler took the idle start is the one that may cancel it. Each is called
+    // bare: a browser refuses either with any other receiver than the window.
+    let cancelIdle: () => void;
+    if (typeof requestIdleCallback === 'function') {
+      const handle = requestIdleCallback(start, { timeout: 1500 });
+      cancelIdle = () => cancelIdleCallback(handle);
+    } else {
+      const handle = window.setTimeout(start, 400);
+      cancelIdle = () => window.clearTimeout(handle);
+    }
+    const restored = () => {
+      if (!cancelled) start();
+    };
+    node.addEventListener('webglcontextrestored', restored);
     const watch = new MutationObserver(() => {
-      if (root.hasAttribute('data-turning')) return schedule();
-      // The Turn has ended: the seam's own rules take the head and the strip back at once.
-      instance.release();
-      instance.settle();
+      const now = root.hasAttribute('data-turning');
+      if (now === turning) return;
+      turning = now;
+      // A Turn begins: the crossing's if it is ready now, read once. A Turn ends: the seam's
+      // own rules take the head and the strip back at once.
+      turn = now && instance.ready ? reading() : null;
+      if (!now) instance.release();
+      cancelAnimationFrame(frame);
+      frame = 0;
       schedule();
     });
     watch.observe(root, { attributes: true, attributeFilter: ['data-turning'] });
@@ -499,17 +660,16 @@ export function useArrivalCrossing({
     window.addEventListener('resize', schedule);
     return () => {
       cancelled = true;
-      if (typeof cancelIdleCallback === 'function' && typeof idle === 'number')
-        cancelIdleCallback(idle);
-      window.clearTimeout(idle as number);
+      cancelIdle();
       cancelAnimationFrame(frame);
       watch.disconnect();
+      node.removeEventListener('webglcontextrestored', restored);
       window.removeEventListener('scroll', schedule);
       window.removeEventListener('resize', schedule);
       root.removeAttribute('data-crossing');
       hide();
       instance.dispose();
-      crossing.current = null;
+      if (crossing.current === instance) crossing.current = null;
     };
   }, [enabled, ink, light, seam]);
 
@@ -519,7 +679,9 @@ export function useArrivalCrossing({
     if (!instance || instance.ready || !ink || !light) return Promise.resolve();
     return Promise.race([
       instance.prepare(ink, light).then((ok) => {
-        if (ok) document.documentElement.setAttribute('data-crossing', 'arrival');
+        // Only the instance still in place may mark the page: a disposed one may still resolve.
+        if (ok && crossing.current === instance)
+          document.documentElement.setAttribute('data-crossing', 'arrival');
       }),
       new Promise<void>((resolve) => setTimeout(resolve, within)),
     ]);

@@ -1,6 +1,8 @@
+import { readFileSync } from 'node:fs';
 import { expect, test, type Page } from '@playwright/test';
 import sharp from 'sharp';
 import { catalogs } from '../../src/lib/i18n/messages';
+import { pauseAmbientMotion, playAmbientMotion } from './helpers';
 
 /*
   The crossing in the order the work was made (docs/third-physics-phase-b.md). Every frame of
@@ -12,6 +14,24 @@ import { catalogs } from '../../src/lib/i18n/messages';
 const t = catalogs.en;
 const pageStage = '[data-artwork-stage="page"]:visible';
 const current = `${pageStage} [data-layer-state="current"]`;
+const arrivalMaps = JSON.parse(
+  readFileSync(new URL('../../src/lib/art/arrival-maps.json', import.meta.url), 'utf8'),
+) as { maps: { id: number; expression: 'ink' | 'light'; src: string }[] };
+
+/** The crossing runs here, unless this project proves the still Turn or has no WebGL. */
+async function crossingOffered(page: Page) {
+  test.skip(
+    test.info().project.name.endsWith('reduced-motion'),
+    'The reduced-motion projects prove the one-frame Turn below.',
+  );
+  test.skip(
+    !(await page.evaluate(() => !!document.createElement('canvas').getContext('webgl'))),
+    'This browser offers no WebGL; the straight seam is its Turn, proved below.',
+  );
+  await expect(page.locator('html')).toHaveAttribute('data-crossing', 'arrival', {
+    timeout: 15_000,
+  });
+}
 
 async function workReady(page: Page, id: number) {
   await page.goto(`/art/${id}?view=still`, { waitUntil: 'domcontentloaded' });
@@ -69,6 +89,101 @@ async function pixels(png: Buffer): Promise<Pixels> {
 }
 
 /**
+ * A screenshot at an eighth of its size. The page re-rasterises a still's finest lines as its
+ * decode settles, which moves single pixels along every edge; averaged, those vanish, while
+ * any region of the night that stayed behind does not.
+ */
+async function coarse(png: Buffer): Promise<Pixels> {
+  const { width = 8 } = await sharp(png).metadata();
+  return pixels(
+    await sharp(png)
+      .resize(Math.max(1, Math.round(width / 8)))
+      .png()
+      .toBuffer(),
+  );
+}
+
+/** A work's arrival map at the size its work is painted: one 0–255 time per pixel. */
+async function arrivalMap(id: number, expression: 'ink' | 'light', width: number, height: number) {
+  const entry = arrivalMaps.maps.find((map) => map.id === id && map.expression === expression)!;
+  const path = new URL(`../../public${entry.src}`, import.meta.url);
+  return sharp(readFileSync(path))
+    .extractChannel(0)
+    .resize(width, height, { kernel: 'linear', fit: 'fill' })
+    .raw()
+    .toBuffer();
+}
+
+/** The work's own box inside a screenshot of the plate, in the screenshot's pixels. */
+async function workBox(page: Page, clip: { x: number; y: number; width: number }, frame: Pixels) {
+  const media = (await page.locator(`${current} .art-media`).boundingBox())!;
+  const scale = frame.width / clip.width;
+  return {
+    x: Math.round((media.x - clip.x) * scale),
+    y: Math.round((media.y - clip.y) * scale),
+    width: Math.round(media.width * scale),
+    height: Math.round(media.height * scale),
+  };
+}
+
+/**
+ * Whether a frame follows the arriving expression's map. Among the pixels where the stills
+ * clearly differ and the frame shows one of them untouched, those already showing the arriving
+ * still must lie earlier in the map's order than those still showing the departing one. A
+ * straight wipe, the other expression's map or a reversed reveal all fail this.
+ */
+function followsMap(
+  frame: Pixels,
+  from: Pixels,
+  to: Pixels,
+  map: Buffer,
+  box: { x: number; y: number; width: number; height: number },
+  tolerance = 24,
+) {
+  const arrived: number[] = [];
+  const waiting: number[] = [];
+  for (let y = 0; y < box.height; y++) {
+    for (let x = 0; x < box.width; x++) {
+      const i = ((box.y + y) * frame.width + box.x + x) * 3;
+      let apart = 0;
+      let toFrom = 0;
+      let toTo = 0;
+      for (let c = 0; c < 3; c++) {
+        apart = Math.max(apart, Math.abs(from.data[i + c] - to.data[i + c]));
+        toFrom = Math.max(toFrom, Math.abs(frame.data[i + c] - from.data[i + c]));
+        toTo = Math.max(toTo, Math.abs(frame.data[i + c] - to.data[i + c]));
+      }
+      if (apart < 96) continue;
+      const time = map[y * box.width + x];
+      if (toTo <= tolerance) arrived.push(time);
+      else if (toFrom <= tolerance) waiting.push(time);
+    }
+  }
+  const at = (values: number[], share: number) =>
+    values.sort((a, b) => a - b)[Math.floor(share * (values.length - 1))];
+  return {
+    arrived: arrived.length,
+    waiting: waiting.length,
+    latestArrived: at(arrived, 0.9),
+    earliestWaiting: at(waiting, 0.1),
+  };
+}
+
+/** The share of the plate's pixels that no longer show the Ink still. */
+function changed(frame: Pixels, ink: Pixels, tolerance = 24) {
+  let moved = 0;
+  for (let i = 0; i < frame.data.length; i += 3) {
+    for (let c = 0; c < 3; c++) {
+      if (Math.abs(frame.data[i + c] - ink.data[i + c]) > tolerance) {
+        moved += 1;
+        break;
+      }
+    }
+  }
+  return moved / (frame.data.length / 3);
+}
+
+/**
  * How a frame is made of the two stills. `outside` is the share of pixels that lie outside
  * the span between the two stills in any channel, which neither still nor any mix of them can
  * paint; `ink` and `light` are the shares, among the pixels where the stills clearly differ,
@@ -110,20 +225,12 @@ for (const id of [31, 23, 35]) {
   test(`№ ${String(id).padStart(3, '0')} crosses in its own order, from its two stills and nothing else`, async ({
     page,
   }) => {
-    test.skip(
-      test.info().project.name.endsWith('reduced-motion'),
-      'The reduced-motion projects prove the one-frame Turn below.',
-    );
+    // Two slowed crossings, sampled frame by frame, on runners whose screenshots are slow.
+    test.slow();
     await watchCanvas(page);
     await page.emulateMedia({ reducedMotion: 'no-preference' });
     await workReady(page, id);
-    test.skip(
-      !(await page.evaluate(() => !!document.createElement('canvas').getContext('webgl'))),
-      'This browser offers no WebGL; the straight seam is its Turn, proved below.',
-    );
-    await expect(page.locator('html')).toHaveAttribute('data-crossing', 'arrival', {
-      timeout: 15_000,
-    });
+    await crossingOffered(page);
     const stage = page.locator(pageStage);
     const plate = page.locator(`${current} .plate`);
     const clip = (await plate.boundingBox())!;
@@ -151,7 +258,7 @@ for (const id of [31, 23, 35]) {
     ).toBe('');
     const lightStill = await shot();
 
-    const made = frames.map((frame) => composition(frame, inkStill, lightStill));
+    const made = frames.map((frame) => ({ frame, ...composition(frame, inkStill, lightStill) }));
     // No frame paints anything but the two stills and their mix.
     for (const frame of made) expect(frame.outside).toBeLessThan(0.04);
     // Some frame shows both stills at once, untouched, side by side.
@@ -165,14 +272,87 @@ for (const id of [31, 23, 35]) {
     expect(seen.headFront).toBeGreaterThan(0);
     expect(seen.stripFront).toBeGreaterThan(0);
 
+    // Mid-way, Light stands where its film drew first, Ink where it has yet to.
+    const box = await workBox(page, clip, inkStill);
+    const lightMap = await arrivalMap(id, 'light', box.width, box.height);
+    const toNight = followsMap(mixed.frame, inkStill, lightStill, lightMap, box);
+    expect(toNight.arrived).toBeGreaterThan(200);
+    expect(toNight.waiting).toBeGreaterThan(200);
+    expect(toNight.latestArrived).toBeLessThanOrEqual(toNight.earliestWaiting + 16);
+
     // And back to Ink, in the order the current came to rest, at the work's own pace.
-    await slow.evaluate((node) => (node as HTMLElement).remove());
+    const back: Pixels[] = [];
     await page.locator(`${current} [data-turn="ink"]`).click();
-    await expect(stage).toHaveAttribute('data-expression', 'ink', { timeout: 6000 });
+    const returning = Date.now();
+    while (Date.now() - returning < 6300) back.push(await shot());
+    await expect(stage).toHaveAttribute('data-expression', 'ink', { timeout: 9000 });
     await expect(page.locator('html')).not.toHaveAttribute('data-turning', /./);
     await expect(page.locator(`${pageStage} canvas[data-active]`)).toHaveCount(0);
+    await slow.evaluate((node) => (node as HTMLElement).remove());
+    const returned = back
+      .map((frame) => ({ frame, ...composition(frame, inkStill, lightStill) }))
+      .reduce((best, frame) =>
+        Math.min(frame.ink, frame.light) > Math.min(best.ink, best.light) ? frame : best,
+      );
+    for (const frame of back)
+      expect(composition(frame, inkStill, lightStill).outside).toBeLessThan(0.04);
+    const inkMap = await arrivalMap(id, 'ink', box.width, box.height);
+    const toPaper = followsMap(returned.frame, lightStill, inkStill, inkMap, box);
+    expect(toPaper.arrived).toBeGreaterThan(200);
+    expect(toPaper.waiting).toBeGreaterThan(200);
+    expect(toPaper.latestArrived).toBeLessThanOrEqual(toPaper.earliestWaiting + 16);
   });
 }
+
+test('a peek released mid-way returns from where it is, never from the far side', async ({
+  page,
+}) => {
+  test.slow();
+  await page.emulateMedia({ reducedMotion: 'no-preference' });
+  await workReady(page, 31);
+  await crossingOffered(page);
+  const clip = (await page.locator(`${current} .plate`).boundingBox())!;
+  const shot = async () => coarse(await page.screenshot({ clip }));
+  const ink = await shot();
+  // Slowed to twelve seconds, so a runner's slow screenshots still see the release itself.
+  await page.addStyleTag({ content: ':root { --t-cross: 12000ms; }' });
+  // Hold L a while: the night comes in its own order, part of the way along the eased curve.
+  await page.keyboard.down('l');
+  await expect(page.locator('html')).toHaveAttribute('data-turning', 'time');
+  await page.waitForTimeout(4000);
+  const held = changed(await shot(), ink);
+  expect(held).toBeGreaterThan(0.02);
+  await page.keyboard.up('l');
+  const after: number[] = [];
+  const released = Date.now();
+  while (Date.now() - released < 3000) after.push(changed(await shot(), ink));
+  // The first frame after the key is let go is near where the night was, not the far side,
+  // and from there the night only recedes.
+  expect(after[0]).toBeLessThan(held + 0.3);
+  for (let i = 1; i < after.length; i++) expect(after[i]).toBeLessThanOrEqual(after[i - 1] + 0.03);
+  await expect(page.locator('html')).not.toHaveAttribute('data-turning', /./, { timeout: 12_000 });
+  await expect(page.locator(`${pageStage} canvas[data-active]`)).toHaveCount(0);
+  expect(changed(await shot(), ink)).toBeLessThan(0.01);
+  await expect(page.locator(pageStage)).toHaveAttribute('data-expression', 'ink');
+});
+
+test('the crossing comes back after Pause and Play', async ({ page }) => {
+  await watchCanvas(page);
+  await page.emulateMedia({ reducedMotion: 'no-preference' });
+  await workReady(page, 31);
+  await crossingOffered(page);
+  await pauseAmbientMotion(page);
+  await expect(page.locator('html')).not.toHaveAttribute('data-crossing', /./);
+  await playAmbientMotion(page);
+  await expect(page.locator('html')).toHaveAttribute('data-crossing', 'arrival', {
+    timeout: 15_000,
+  });
+  await page.locator(`${current} [data-turn="light"]`).click();
+  await expect(page.locator(pageStage)).toHaveAttribute('data-expression', 'light', {
+    timeout: 6000,
+  });
+  expect((await crossingState(page)).painted).toBeGreaterThan(5);
+});
 
 test('under a still preference the Turn is one frame, and nothing is prepared for a crossing', async ({
   page,

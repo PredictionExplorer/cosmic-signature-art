@@ -366,6 +366,8 @@ export function ArtworkRoom({
   // A lens that could not be painted is said once, beside the still that stands in for it.
   const whenUnavailable =
     whenOffered && whenFailed === media?.arrival?.src && stillShown && !filmShown && !loupe;
+  // A lens that cannot be painted keeps its word, and its focus, but does nothing.
+  const whenBlocked = !stillShown || whenFailed === media?.arrival?.src;
   const numbers = useMemo(() => new Intl.NumberFormat(locale), [locale]);
 
   /* Open and close: the Expansion. */
@@ -559,7 +561,7 @@ export function ArtworkRoom({
   /** The When lens takes the still's place; the film and the loupe step aside. */
   function toggleWhen() {
     if (whenShown) return setWhen(false);
-    if (!whenOffered || !stillShown) return;
+    if (!whenOffered || whenBlocked) return;
     setShowFilm(false);
     setLoupe(null);
     views.set(null);
@@ -634,7 +636,8 @@ export function ArtworkRoom({
       event.preventDefault();
       closeLoupe();
     } else if (key === 't' || key === 'T') {
-      if (!whenOffered) return;
+      // A held key paints the lens once, not on every repeat.
+      if (!whenOffered || event.repeat) return;
       event.preventDefault();
       toggleWhen();
     } else if (key === '?') {
@@ -831,7 +834,7 @@ export function ArtworkRoom({
                   type="button"
                   onClick={toggleWhen}
                   aria-pressed={whenShown}
-                  disabled={!stillShown || whenFailed === media?.arrival?.src}
+                  aria-disabled={whenBlocked || undefined}
                 >
                   {t.whenLens}
                 </button>

@@ -63,26 +63,30 @@ Phase B of [Third Physics](third-physics.md) changes how a work turns between it
 ## How it is proved
 
 - **Unit.**
-  - The map builder, in seven Node tests: the Light and Ink rules, the round chamfer, the softening, the 0–255 span, the registry merge and the removal of orphans.
-  - The binder, the clock, the front beyond the plate, the lens's arithmetic, the seam's position on any frame, and the hook's fallback without WebGL.
-  - The room's lens: its place, its label, its key, and its failure.
-  - The whole suite passes: 884 tests, 92.9 % of lines, with the coverage thresholds held.
+  - The map builder, in nine Node tests: the Light and Ink rules, the round chamfer, the softening, the 0–255 span, the registry merge, the removal of orphans, and a decoder that is missing, stalls or is abandoned.
+  - The binder, the clock, the front beyond the plate, the lens's arithmetic, and the seam's position on any frame, including across a reversal, a breath and a finger taking it mid-way.
+  - The hook, against a WebGL context that records what it is asked: the fallback without WebGL, a return after Pause, a lost and restored context, the decision each Turn makes when it begins, the wing's order, a Turn that asks after its viewer has left, and the idle start's cancellation, called as a browser demands.
+  - The room's lens: its place, its label, its key, its failure, and its focus.
+  - The whole suite passes: 894 tests, with the coverage thresholds held.
 - **Every frame is the two stills.** `tests/e2e/crossing.spec.ts` captures the plate many times during a crossing on № 031, № 023 and № 035, in both directions.
   - Every captured pixel lies between the Ink still and the Light still, channel by channel. Fewer than 4 % may fall outside, and those are resampling.
   - Some frame shows both stills, untouched, side by side, each on more than 5 % of the pixels where they differ.
+  - That frame follows the arriving expression's map. Among the pixels showing one still untouched, those already showing the arriving still lie earlier in its order than those still showing the departing one: the 90th percentile of the first within 16 levels of the 10th percentile of the second. A straight wipe, the other expression's map or a reversed reveal all fail this.
   - The head's and the strip's clips were driven by the front.
   - Afterwards the canvas rests and the seam's own rules return.
 - **Fidelity.** On its first frame the canvas differs from the page's own still by 0.4–1.0 levels on average, in Chromium and WebKit.
 - **The other paths.**
   - Reduced motion turns in one frame and prepares nothing.
   - Without WebGL the straight seam is the Turn. The immersion spec's seam tests now hide WebGL, so they test the fallback on purpose.
+  - A peek held for a third of a slowed crossing and let go returns from where it is: the first frame after the release is near the night already drawn, and from there the night only recedes, until the Ink still is whole again.
+  - Pause, then Play, brings the crossing back, and the next Turn is painted by it.
   - The lens lies within 1.5 px of the still it replaces, labelled, on a dark ground.
 - **Every local engine.** The full browser suite passes in Chromium and WebKit, on desktop, phone and reduced motion; the run of record is below. Firefox runs on CI. Where a browser offers no WebGL, the crossing tests skip with that reason and the fallback test stands.
 
 ## What it settled
 
 - **The edge stays soft.** A front one device pixel wide was tried, so that no pixel would be a mix. With eight-bit maps it shows the quantisation as stair-steps along slow fronts. A crisp front would need sixteen-bit maps, carried in two channels. The plan's `smoothstep(p ± ε)` hides the steps, so the mix across the front is stated rather than avoided.
-- **The canvas is faithful enough to take over the plate.** It samples the sharpest readable still the page already shows, or the work's own rung, with no visible change when it appears.
+- **The canvas is faithful enough to take over the plate.** It samples the sharpest readable still the page already shows, or the work's own rung, with no visible change when it appears. Each still is snapshotted and uploaded once, when the crossing is prepared; a film frame has its own texture, so nothing is re-read from the page afterwards.
 - **The canvas keeps its drawing buffer.** On CI's Linux WebKit, screenshots taken mid-crossing disagreed with both stills in 7–15 % of pixels, while the run's screen recording showed the crossing correctly. The likely cause is a snapshot that paints the WebGL canvas from a buffer already cleared after compositing. The crossing now keeps its buffer, so any repaint shows the last frame painted.
 - **The head and the strip follow the front.** Their edges are hard, as the straight seam's always were. The plate's front is soft.
 
@@ -94,6 +98,19 @@ Phase B of [Third Physics](third-physics.md) changes how a work turns between it
 - **The phone strip had no room for another word.** Once the room kept to the viewport, `When` made the actions overlap `Ink` and `Light`; the Ukrainian and Vietnamese lot tests caught it. On a phone the actions now wrap within their part of the first row, beside an identity that keeps its natural width. Every strip word is reachable in all eight locales.
 - **The curated archive keeps № 031's Light still without its film.** The binder now lets the still vouch where no film is advertised. Where a film is advertised, its hash must still agree.
 
+## What the review found
+
+An independent review of the branch, before merge, found one blocker and seven smaller problems, all in the runtime around the canvas. Each is fixed, and each fix has a test that fails on the old code.
+
+- **A reversal jumped to the far side.** A new travel started from the old travel's target, which `--seam` already named, not from where the transition had carried the seam. The straight seam hid this, because CSS picks up from where it is; the canvas paints the controller's position, and did not. Letting go of a held `L` mid-way showed the whole night for a frame, then took two full seconds to come back; the browser test sees 99.8 % of the plate jump. Every new travel, finger or end now starts from the position on view, and its share of the order is measured from there.
+- **Pause switched the crossing off for the rest of the visit.** Disposing lost the WebGL context on purpose, and the canvas outlives the hook, so every later preparation found a lost context. Disposing now deletes what the crossing made and keeps the context.
+- **A real context loss was ignored.** The plate then snapped at the commit. The crossing now stands down at once, asks for the context back, and prepares again when it returns.
+- **A Turn waiting for the crossing could outlive its page.** The 0.4 s wait now carries the request and the seam's generation, and is dropped if anything took the seam meanwhile (another request, the room, a key, the page left). The Turn reads as turning from the press. A crossing prepared for a viewer that has gone marks nothing.
+- **The wing's return ended on a different picture.** A return to an Ink that rests partly under the wing's night now retraces Light's order, the order the wing is drawn in. Each Turn's order and the layer it leaves are read once, when it begins, and held to its end, so neither a reversal nor the commit switches pictures. A Turn that began before the crossing was ready stays the straight seam's.
+- **The stills were re-uploaded from the page after every Turn.** That cost two full uploads, and a page image that had since switched to the remote original would have thrown. Film frames now have their own texture, so the stills are never re-read.
+- **The map builder ran ffmpeg without safeguards.** A missing ffmpeg crashed the build with the registry locked, and a stalled decode would hang it. It now listens for errors, kills a decode that runs past its time, and reads only a local MP4 (`-nostdin`, the `file` protocol, a forced container).
+- **Smaller.** The idle start is cancelled by the scheduler that set it. The first version of that fix called the cancel through an object, which every browser refuses with "Illegal invocation" when a viewer unmounts; jsdom does not check, so the unit test now does, and the browser tests caught it first. The `When` word keeps its focus when the lens cannot be painted, and `T` then does nothing and ignores key repeats. Uniform locations are looked up once.
+
 ## Limits, and what is next
 
 - The plate's front is soft and the head's and strip's are hard. A soft head would need a mask that tracks text, which clip-path cannot do.
@@ -103,7 +120,7 @@ Phase B of [Third Physics](third-physics.md) changes how a work turns between it
 
 ## Run of record
 
-Built 29–30 October 2026 on `claude/third-physics-phase-b`.
-- Type-check, lint, format, the script tests (45) and font coverage pass.
-- The unit suite passes: 884 tests.
-- The full browser suite passes in the six local projects: 1,113 passed, 33 skipped by design, none failed, in 11.8 minutes.
+Built 29–30 October 2026 on `claude/third-physics-phase-b` and merged on 30 October (PR #3). The review's fixes followed on `claude/third-physics-phase-b-review`.
+- Type-check, lint, format, the script tests (47) and font coverage pass.
+- The unit suite passes: 894 tests, 92.9 % of statements, with the coverage thresholds held.
+- The full browser suite passes in the six local projects, against a production build: 1,121 passed, 37 skipped by design, none failed, in 13.3 minutes.

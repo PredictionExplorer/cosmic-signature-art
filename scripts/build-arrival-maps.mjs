@@ -5,6 +5,7 @@ import { log, error } from 'node:console';
 import { mkdir, readFile, readdir, rm, stat, writeFile } from 'node:fs/promises';
 import { dirname, resolve } from 'node:path';
 import { performance } from 'node:perf_hooks';
+import { clearTimeout, setTimeout } from 'node:timers';
 import { fileURLToPath } from 'node:url';
 import { format } from 'prettier';
 import sharp from 'sharp';
@@ -246,30 +247,55 @@ export function figureShare(figure) {
 
 // ───────────────────────── Decoding ─────────────────────────
 
-/** Grey frames of a film at the map's size, streamed from ffmpeg one whole frame at a time. */
-export async function eachFrame(path, onFrame, { parameters = PARAMETERS, fromEnd } = {}) {
+/**
+ * Grey frames of a film at the map's size, streamed from ffmpeg one whole frame at a time.
+ * Only a local MP4 is read: no other protocol, no guessed container, no terminal. A missing
+ * ffmpeg, a failed decode or one stalled past `timeout` rejects, so the registry's lock is
+ * always let go.
+ */
+export async function eachFrame(
+  path,
+  onFrame,
+  { parameters = PARAMETERS, fromEnd, timeout = 600_000, program = 'ffmpeg' } = {},
+) {
   const { width, height, fps } = parameters;
   const size = width * height;
-  const input = fromEnd ? ['-sseof', String(-fromEnd), '-i', path] : ['-i', path];
+  const seek = fromEnd ? ['-sseof', String(-fromEnd)] : [];
+  const input = ['-protocol_whitelist', 'file', '-f', 'mov', ...seek, '-i', path];
   const filter = `${fromEnd ? '' : `fps=${fps},`}scale=${width}:${height}:flags=area,format=gray`;
-  const ffmpeg = spawn('ffmpeg', ['-v', 'error', ...input, '-vf', filter, '-f', 'rawvideo', '-'], {
-    stdio: ['ignore', 'pipe', 'pipe'],
+  const ffmpeg = spawn(
+    program,
+    ['-nostdin', '-v', 'error', ...input, '-vf', filter, '-f', 'rawvideo', '-'],
+    { stdio: ['ignore', 'pipe', 'pipe'] },
+  );
+  // Both ends are listened for before the first read: a spawn that fails emits only 'error'.
+  const exit = new Promise((resolveExit, rejectExit) => {
+    ffmpeg.once('error', rejectExit);
+    ffmpeg.once('close', (code, signal) => resolveExit({ code, signal }));
   });
+  exit.catch(() => {});
+  const timer = setTimeout(() => ffmpeg.kill('SIGKILL'), timeout);
   let stderr = '';
   ffmpeg.stderr.on('data', (chunk) => (stderr = `${stderr}${chunk}`.slice(-4000)));
   let pending = Buffer.alloc(0);
   let frames = 0;
-  for await (const chunk of ffmpeg.stdout) {
-    pending = pending.length ? Buffer.concat([pending, chunk]) : chunk;
-    while (pending.length >= size) {
-      onFrame(new Uint8Array(pending.buffer, pending.byteOffset, size), frames);
-      frames += 1;
-      pending = pending.subarray(size);
+  try {
+    for await (const chunk of ffmpeg.stdout) {
+      pending = pending.length ? Buffer.concat([pending, chunk]) : chunk;
+      while (pending.length >= size) {
+        onFrame(new Uint8Array(pending.buffer, pending.byteOffset, size), frames);
+        frames += 1;
+        pending = pending.subarray(size);
+      }
     }
+    const { code, signal } = await exit;
+    if (code !== 0) throw new Error(`ffmpeg failed (${signal ?? code}) on ${path}: ${stderr}`);
+    return frames;
+  } finally {
+    clearTimeout(timer);
+    // A reader that stopped early (a measure that threw) leaves no decoder behind.
+    if (ffmpeg.exitCode === null && ffmpeg.signalCode === null) ffmpeg.kill('SIGKILL');
   }
-  const code = await new Promise((resolveCode) => ffmpeg.once('close', resolveCode));
-  if (code !== 0) throw new Error(`ffmpeg failed (${code}) on ${path}: ${stderr}`);
-  return frames;
 }
 
 /** The film's own last frame: decode the final second and keep the last whole frame. */

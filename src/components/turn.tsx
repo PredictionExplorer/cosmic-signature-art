@@ -90,6 +90,11 @@ export class SeamController {
     return value ? parseFloat(value) : null;
   }
 
+  /** Which travel is in charge: every newer travel, finger, `end()` or `cancel()` moves it on. */
+  get generation(): number {
+    return this.token;
+  }
+
   get mode(): TurnMode | null {
     return (this.root().getAttribute('data-turning') as TurnMode | null) || null;
   }
@@ -110,7 +115,7 @@ export class SeamController {
 
   /** A finger takes the seam: no transition, every move paints at once. */
   begin(mode: TurnMode, start: number, to: Room = start > 50 ? 'night' : 'paper') {
-    this.cancel();
+    this.hold();
     const element = this.root();
     element.setAttribute('data-turning', mode);
     element.setAttribute('data-turn-to', to);
@@ -145,7 +150,8 @@ export class SeamController {
         ? Math.max(0, this.flight.endsAt - Date.now())
         : null;
     const inheritedTravel = inherited !== null ? this.travel : null;
-    this.cancel();
+    if (inheritedTravel) this.cancel();
+    else this.hold();
     const id = this.token;
     return new Promise((resolve) => {
       const supersede = () => resolve(false);
@@ -214,7 +220,7 @@ export class SeamController {
    * base fades to its new ground under the overlay, never in front of the visitor.
    */
   end() {
-    this.cancel();
+    this.hold();
     const element = this.root();
     const drop = () => {
       this.ending = null;
@@ -225,6 +231,17 @@ export class SeamController {
     };
     if (!element.hasAttribute('data-turning')) return drop();
     this.ending = setTimeout(drop, tokenMs(element, '--t-chrome', 270));
+  }
+
+  /**
+   * Supersede the travel in flight where it is now. The transition has carried the seam part
+   * of the way to its target, and `--seam` already names that target; it is set back to the
+   * position the visitor sees, so whatever follows (a reversal, a finger, the end) starts there.
+   */
+  private hold() {
+    const here = this.travel ? this.current() : null;
+    this.cancel();
+    if (here !== null) this.root().style.setProperty('--seam', `${clamp(here)}%`);
   }
 
   /** Supersede any travel in flight without touching the painted seam. */

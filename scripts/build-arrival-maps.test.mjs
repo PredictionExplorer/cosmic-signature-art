@@ -7,6 +7,7 @@ import {
   createInkMeasure,
   createLightMeasure,
   decideMeasuredOn,
+  eachFrame,
   figureShare,
   mergeMaps,
   modeTone,
@@ -155,5 +156,36 @@ test('the registry merges by work and expression, keeps its date and serializes 
       second,
     ),
     [`31-ink-${'9'.repeat(16)}.webp`],
+  );
+});
+
+test('a decoder that is missing or stalls rejects instead of crashing or hanging the build', async () => {
+  await assert.rejects(
+    eachFrame('/nowhere.mp4', () => {}, { program: 'cosmic-no-such-decoder' }),
+    /ENOENT/,
+  );
+  // `yes` never ends on its own: the kill timer stops it, and the read rejects.
+  let frames = 0;
+  await assert.rejects(
+    eachFrame('/nowhere.mp4', () => (frames += 1), {
+      parameters: small,
+      program: 'yes',
+      timeout: 200,
+    }),
+    /failed \(SIGKILL\)/,
+  );
+  assert.ok(frames > 0);
+});
+
+test('a reader that throws leaves no decoder running', async () => {
+  await assert.rejects(
+    eachFrame(
+      '/nowhere.mp4',
+      () => {
+        throw new Error('measure failed');
+      },
+      { parameters: small, program: 'yes', timeout: 60_000 },
+    ),
+    /measure failed/,
   );
 });
