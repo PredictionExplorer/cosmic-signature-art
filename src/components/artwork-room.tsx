@@ -70,6 +70,11 @@ type ArtworkRoomProps = {
   expressionFailed?: boolean;
   /** Safari pointer clicks need not focus the launcher; capture the explicit opener. */
   returnFocusRef?: RefObject<HTMLElement | null>;
+  /**
+   * The derived views (the When lens) may be offered. They are analysis, never the work, so a
+   * sale surface passes false and the room shows the work alone.
+   */
+  derivedViews?: boolean;
   onClose: () => void;
 };
 
@@ -294,6 +299,7 @@ export function ArtworkRoom({
   pendingExpression,
   expressionFailed = false,
   returnFocusRef,
+  derivedViews = true,
   onClose,
 }: ArtworkRoomProps) {
   const dialog = useRef<HTMLDialogElement>(null);
@@ -353,7 +359,7 @@ export function ArtworkRoom({
   const filmShown = showFilm && !!film && !loupe && !studyHeld && filmStatus !== 'failed';
   const slow = filmShown && isStudy(film);
   // The When lens needs the still, its rung and the arrival map bound to them.
-  const whenOffered = !!media?.arrival && !!media.rungs?.length;
+  const whenOffered = derivedViews && !!media?.arrival && !!media.rungs?.length;
   const whenShown =
     when && whenOffered && stillShown && !loupe && !filmShown && whenFailed !== media?.arrival?.src;
   const whenCaption = media?.id === 'light' ? t.whenLight : t.whenInk;

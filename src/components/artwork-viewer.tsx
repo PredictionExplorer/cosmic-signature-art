@@ -933,6 +933,7 @@ function ArtworkViewerSession({
           locale={locale}
           onClose={closeRoom}
           returnFocusRef={returnFocusRef}
+          derivedViews={presentation !== 'auction'}
         />
       ) : null}
     </>

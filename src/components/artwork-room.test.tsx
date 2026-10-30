@@ -116,11 +116,13 @@ function Harness({
   work = artwork,
   returnPointerFocus = false,
   startAt,
+  derivedViews,
 }: {
   initialFilm?: boolean;
   work?: Artwork;
   returnPointerFocus?: boolean;
   startAt?: number;
+  derivedViews?: boolean;
 }) {
   const [open, setOpen] = useState(false);
   const [expression, setExpression] = useState('ink');
@@ -144,6 +146,7 @@ function Harness({
           initialFilm={initialFilm}
           startAt={startAt}
           returnFocusRef={returnPointerFocus ? opener : undefined}
+          derivedViews={derivedViews}
           onClose={() => setOpen(false)}
         />
       ) : null}
@@ -740,6 +743,17 @@ describe('immersive artwork room', () => {
     } finally {
       vi.unstubAllGlobals();
     }
+  });
+
+  it('never offers the When lens on a sale surface, by word or by key', () => {
+    render(<Harness derivedViews={false} />);
+    fireEvent.click(screen.getByRole('button', { name: 'Enter room' }));
+    const room = screen.getByRole('dialog');
+    expect(within(room).queryByRole('button', { name: en.whenLens })).toBeNull();
+    fireEvent.keyDown(room, { key: 't' });
+    expect(room.querySelector('canvas')).toBeNull();
+    fireEvent.keyDown(room, { key: '?' });
+    expect(within(room).getByLabelText(en.roomKeys)).not.toHaveTextContent(en.keyWhen);
   });
 
   it('offers no When lens where no arrival map is bound', () => {
