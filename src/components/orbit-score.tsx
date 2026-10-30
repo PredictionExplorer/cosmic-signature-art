@@ -394,9 +394,17 @@ export function OrbitScore({
   const differing = comparisons?.filter((row) => !row.exact) ?? [];
 
   const progress = state.phase === 'deriving' ? state.progress : null;
-  const status =
+  const playingLine = (step: number, seconds: number) =>
+    fill(t.orbitPlaying, {
+      step: number.format(step),
+      total: number.format(steps),
+      clock: clock(seconds),
+    });
+  // The line under the drawing says what is happening now; the summary has a slot of its own,
+  // so a line that changes length never moves the page beneath the section.
+  const progressLine =
     state.phase === 'failed'
-      ? t.orbitUnavailable
+      ? ''
       : state.phase === 'waiting'
         ? t.orbitWaiting
         : state.phase === 'deriving'
@@ -425,22 +433,30 @@ export function OrbitScore({
                       done: 0,
                       total: number.format(orbit.generation.selectedIndex),
                     })
-          : `${fill(t.orbitDerived, {
-              seconds: oneDecimal.format(state.seconds),
-              seed: seedShort(orbit.generation.seed),
-              index: number.format(orbit.generation.selectedIndex),
-              total: number.format(
-                orbit.generation.candidatesPerAttempt * (orbit.generation.retryCount + 1),
-              ),
-              steps: number.format(orbit.generation.warmupSteps + steps),
-            })} ${
-              differing.length
-                ? fill(t.orbitSomeDiffer, {
-                    count: differing.length,
-                    total: comparisons?.length ?? 0,
-                  })
-                : t.orbitAllExact
-            }`;
+          : finished
+            ? playingLine(steps, film)
+            : playingLine(0, 0);
+  const summary =
+    state.phase === 'failed'
+      ? t.orbitUnavailable
+      : state.phase === 'derived'
+        ? `${fill(t.orbitDerived, {
+            seconds: oneDecimal.format(state.seconds),
+            seed: seedShort(orbit.generation.seed),
+            index: number.format(orbit.generation.selectedIndex),
+            total: number.format(
+              orbit.generation.candidatesPerAttempt * (orbit.generation.retryCount + 1),
+            ),
+            steps: number.format(orbit.generation.warmupSteps + steps),
+          })} ${
+            differing.length
+              ? fill(t.orbitSomeDiffer, {
+                  count: differing.length,
+                  total: comparisons?.length ?? 0,
+                })
+              : t.orbitAllExact
+          }`
+        : null;
 
   return (
     <section
@@ -466,7 +482,7 @@ export function OrbitScore({
       <div className={styles.score}>
         <canvas ref={events} className={styles.events} aria-hidden="true" />
         <div className={styles.readoutRow}>
-          <p className={styles.readout}>{(still ? null : readout) ?? status}</p>
+          <p className={styles.readout}>{(still ? null : readout) ?? progressLine}</p>
           {finished && !still && state.phase === 'derived' ? (
             <button
               type="button"
@@ -516,7 +532,7 @@ export function OrbitScore({
           </tbody>
         </table>
         <p className={styles.summary} role="status">
-          {state.phase === 'derived' || state.phase === 'failed' ? status : null}
+          {summary}
         </p>
         <p className={styles.note}>
           {fill(t.orbitNote, {

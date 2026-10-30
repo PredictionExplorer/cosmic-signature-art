@@ -87,11 +87,20 @@
   min-height: 44px;
   border-top: 1px solid var(--rule);
 }
+/* Two lines, always: the clock and the progress change length as they run, and a readout that
+   grew or shrank would move everything beneath the section. */
 .readout {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  overflow: hidden;
+  height: 45px;
   margin: 0;
   padding-top: 9px;
   font-family: var(--font-mono);
   font-size: var(--fs-folio);
+  line-height: 18px;
   font-variant-numeric: tabular-nums lining-nums;
   color: var(--muted);
 }
@@ -168,13 +177,12 @@
 .proof tr[data-exact='false'] td.check {
   font-style: italic;
 }
+/* The summary arrives with the derivation; its room is kept from the start. */
 .summary {
+  min-height: 4.5em;
   margin: 18px 0 0;
   font-size: var(--fs-control);
   line-height: 1.5;
-}
-.summary:empty {
-  display: none;
 }
 .note {
   margin: 18px 0 0;
@@ -208,5 +216,8 @@
   }
   .record {
     padding-top: 27px;
+  }
+  .summary {
+    min-height: 6em;
   }
 }
