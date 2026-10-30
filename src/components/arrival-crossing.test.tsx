@@ -51,12 +51,13 @@ function Viewer({
 }
 
 /**
- * A WebGL context that records what the crossing asks of it (the last value of each float
- * uniform by name), and that the test can lose and restore.
+ * A WebGL context that records what the crossing asks of it (the last value of each float and
+ * float-pair uniform by name), and that the test can lose and restore.
  */
 function fakeWebGL() {
   const calls: string[] = [];
   const floats = new Map<string, number>();
+  const pairs = new Map<string, [number, number]>();
   let lost = false;
   const methods: Record<string, (...args: never[]) => unknown> = {
     isContextLost: () => lost,
@@ -66,6 +67,9 @@ function fakeWebGL() {
     getUniformLocation: (_program: unknown, name: string) => ({ name }),
     uniform1f: (location: { name: string } | null, value: number) => {
       if (location) floats.set(location.name, value);
+    },
+    uniform2f: (location: { name: string } | null, x: number, y: number) => {
+      if (location) pairs.set(location.name, [x, y]);
     },
   };
   const gl = new Proxy(methods, {
@@ -80,6 +84,7 @@ function fakeWebGL() {
     gl,
     calls,
     floats,
+    pairs,
     lose: () => (lost = true),
     restore: () => (lost = false),
   };
@@ -294,6 +299,36 @@ describe('the crossing in the order the work was made', () => {
     rerender(<Viewer enabled expression="ink" wing={100} />);
     paint();
     expect(webgl.floats.get('uTowardNight')).toBe(0);
+  });
+
+  it('lays the outgoing film over its still as the page does, at the film’s own opacity', async () => {
+    const webgl = withWebGL();
+    const { container } = render(<Viewer enabled />);
+    // The Ink film, a few seconds along, which the page fades in over the still and out again.
+    const film = document.createElement('video');
+    Object.defineProperties(film, {
+      readyState: { value: HTMLMediaElement.HAVE_ENOUGH_DATA },
+      currentTime: { value: 3.2 },
+      ended: { value: false, configurable: true },
+    });
+    container.querySelector('[data-layer="ink"] .art-media')!.append(film);
+    await prepared();
+    await turn(30);
+    const shown = () => webgl.pairs.get('uFrameFor');
+    film.style.opacity = '0';
+    paint();
+    expect(shown()).toEqual([0, 0]);
+    // A film that begins to fade in mid-Turn comes in as gradually as it does on the page.
+    film.style.opacity = '0.4';
+    paint();
+    expect(shown()).toEqual([0.4, 0]);
+    film.style.opacity = '1';
+    paint();
+    expect(shown()).toEqual([1, 0]);
+    // A film that has ended rests on its last frame, which is the still.
+    Object.defineProperty(film, 'ended', { value: true });
+    paint();
+    expect(shown()).toEqual([0, 0]);
   });
 
   it('a Turn that asked after the viewer left marks nothing and builds nothing', async () => {

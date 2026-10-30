@@ -59,7 +59,8 @@ void main() {
   vec2 qc = clamp(q, 0.0, 1.0);
   float inside = step(0.0, q.x) * step(0.0, q.y) * step(q.x, 1.0) * step(q.y, 1.0);
   float away = length((q - qc) * uArt.zw * uCanvas) / (uArt.w * uCanvas.y);
-  // The film the outgoing layer is playing stands in for its still: x for Ink, y for Light.
+  // The film the outgoing layer is playing lies over its still as the page lays it, at the
+  // film's own opacity: x for Ink, y for Light.
   vec3 frame = texture2D(uFrame, qc).rgb;
   vec3 ink = mix(uPaper, mix(texture2D(uInk, qc).rgb, frame, uFrameFor.x), inside);
   vec3 light = mix(texture2D(uLight, qc).rgb, frame, uFrameFor.y) * inside;
@@ -433,25 +434,28 @@ export class ArrivalCrossing {
   }
 
   /**
-   * The frame the outgoing layer's film is showing, uploaded to the frame texture; false when
-   * that layer shows its still (or a frame this canvas may not read).
+   * The frame the outgoing layer's film is showing, uploaded to the frame texture, and how much
+   * of the layer it is: the film's own opacity, since the page fades a film in over its still
+   * and out again. A film that begins to fade in mid-Turn then comes in as gradually on the
+   * canvas as on the page. Zero where the layer shows its still (or a frame this canvas may not
+   * read).
    */
-  private frame(expression: Expression): boolean {
+  private frame(expression: Expression): number {
     const gl = this.gl;
     const video = this.container()?.querySelector<HTMLVideoElement>(
       `[data-layer="${expression}"] .art-media video`,
     );
-    if (!gl || !video || video.readyState < 2 || video.ended || video.currentTime === 0)
-      return false;
-    if (getComputedStyle(video).opacity === '0') return false;
+    if (!gl || !video || video.readyState < 2 || video.ended || video.currentTime === 0) return 0;
+    const shown = Number(getComputedStyle(video).opacity);
+    if (!(shown > 0)) return 0;
     try {
       gl.activeTexture(gl.TEXTURE0 + UNITS.frame);
       gl.bindTexture(gl.TEXTURE_2D, this.textures.frame ?? null);
       gl.pixelStorei(gl.UNPACK_COLORSPACE_CONVERSION_WEBGL, gl.BROWSER_DEFAULT_WEBGL);
       gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, video);
-      return true;
+      return Math.min(1, shown);
     } catch {
-      return false;
+      return 0;
     }
   }
 
@@ -466,8 +470,8 @@ export class ArrivalCrossing {
     const film = this.frame(leaving);
     gl.uniform2f(
       this.uniforms.uFrameFor ?? null,
-      film && leaving === 'ink' ? 1 : 0,
-      film && leaving === 'light' ? 1 : 0,
+      leaving === 'ink' ? film : 0,
+      leaving === 'light' ? film : 0,
     );
     const reveal = revealAt(seam, toward, this.end);
     gl.uniform1f(this.uniforms.uReveal ?? null, reveal);
