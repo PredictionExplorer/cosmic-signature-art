@@ -1,5 +1,9 @@
 import assert from 'node:assert/strict';
+import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { test } from 'node:test';
+import { setTimeout as wait } from 'node:timers/promises';
 import {
   PARAMETERS,
   arrivalMap,
@@ -159,33 +163,66 @@ test('the registry merges by work and expression, keeps its date and serializes 
   );
 });
 
+/**
+ * Run `use` with a decoder that never ends: a script that ignores ffmpeg's arguments, notes its
+ * process id and becomes `yes`. Not `yes` itself, since GNU's takes `-nostdin` for an option and
+ * quits at once. Resolves to the decoder's process id.
+ */
+async function endlessDecoder(use) {
+  const directory = await mkdtemp(join(tmpdir(), 'arrival-'));
+  const program = join(directory, 'decoder');
+  try {
+    await writeFile(program, '#!/bin/sh\necho $$ > "$0.pid"\nexec yes\n', { mode: 0o755 });
+    await use(program);
+    return Number(await readFile(`${program}.pid`, 'utf8'));
+  } finally {
+    await rm(directory, { recursive: true, force: true });
+  }
+}
+
+/** Whether a process has gone, killed and reaped, within five seconds. */
+async function ended(pid) {
+  const deadline = Date.now() + 5_000;
+  while (Date.now() < deadline) {
+    try {
+      process.kill(pid, 0);
+    } catch (error) {
+      if (error.code === 'ESRCH') return true;
+      throw error;
+    }
+    await wait(10);
+  }
+  return false;
+}
+
 test('a decoder that is missing or stalls rejects instead of crashing or hanging the build', async () => {
   await assert.rejects(
     eachFrame('/nowhere.mp4', () => {}, { program: 'cosmic-no-such-decoder' }),
     /ENOENT/,
   );
-  // `yes` never ends on its own: the kill timer stops it, and the read rejects.
+  // A decoder that never ends on its own: the kill timer stops it, and the read rejects.
   let frames = 0;
-  await assert.rejects(
-    eachFrame('/nowhere.mp4', () => (frames += 1), {
-      parameters: small,
-      program: 'yes',
-      timeout: 200,
-    }),
-    /failed \(SIGKILL\)/,
+  await endlessDecoder((program) =>
+    assert.rejects(
+      eachFrame('/nowhere.mp4', () => (frames += 1), { parameters: small, program, timeout: 200 }),
+      /failed \(SIGKILL\)/,
+    ),
   );
   assert.ok(frames > 0);
 });
 
 test('a reader that throws leaves no decoder running', async () => {
-  await assert.rejects(
-    eachFrame(
-      '/nowhere.mp4',
-      () => {
-        throw new Error('measure failed');
-      },
-      { parameters: small, program: 'yes', timeout: 60_000 },
+  const decoder = await endlessDecoder((program) =>
+    assert.rejects(
+      eachFrame(
+        '/nowhere.mp4',
+        () => {
+          throw new Error('measure failed');
+        },
+        { parameters: small, program, timeout: 60_000 },
+      ),
+      /measure failed/,
     ),
-    /measure failed/,
   );
+  assert.ok(await ended(decoder));
 });
