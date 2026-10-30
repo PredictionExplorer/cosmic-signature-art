@@ -149,6 +149,7 @@ function derivation(): Rederivation {
       positions: Float32Array.from({ length: count * 9 }, (_, i) => Math.sin(i) * 100),
       separations: Float32Array.from({ length: count * 3 }, (_, i) => 10 + i),
     },
+    windowStart: { positions: new Float64Array(9), velocities: new Float64Array(9) },
     milliseconds: { beginnings: 1, orbit: 1 },
   };
 }

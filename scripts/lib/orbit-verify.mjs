@@ -39,16 +39,25 @@ export function publishedOf(record) {
   };
 }
 
-export async function verifyOrbits(records, { width = availableParallelism(), onResult } = {}) {
-  const queue = [...records];
+/**
+ * Share `items` across worker threads running `script`, one message per item, and return the
+ * replies in id order. A worker replies to each message once, with an `id`.
+ */
+export async function overWorkers(
+  items,
+  script,
+  message,
+  { width = availableParallelism(), onResult } = {},
+) {
+  const queue = [...items];
   const results = [];
   const run = () =>
     new Promise((resolve, reject) => {
-      const worker = new Worker(new URL('./orbit-verify-worker.mjs', import.meta.url));
+      const worker = new Worker(script);
       const next = () => {
-        const record = queue.shift();
-        if (!record) return worker.terminate().then(() => resolve());
-        worker.postMessage(record);
+        const item = queue.shift();
+        if (!item) return worker.terminate().then(() => resolve());
+        worker.postMessage(message(item));
       };
       worker.on('message', (result) => {
         results.push(result);
@@ -58,6 +67,15 @@ export async function verifyOrbits(records, { width = availableParallelism(), on
       worker.on('error', reject);
       next();
     });
-  await Promise.all(Array.from({ length: Math.max(1, Math.min(width, records.length)) }, run));
+  await Promise.all(Array.from({ length: Math.max(1, Math.min(width, items.length)) }, run));
   return results.sort((a, b) => a.id - b.id);
+}
+
+export function verifyOrbits(records, options) {
+  return overWorkers(
+    records,
+    new URL('./orbit-verify-worker.mjs', import.meta.url),
+    (record) => record,
+    options,
+  );
 }

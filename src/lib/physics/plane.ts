@@ -3,7 +3,7 @@
  * every sampled position, found by Jacobi rotations. The drawing is the orbit seen square-on
  * to that plane, which is a choice of view, not of data; the samples are untouched.
  */
-type Vector = [number, number, number];
+export type Vector = [number, number, number];
 
 function leadingAxes(covariance: number[][]): [Vector, Vector] {
   const a = covariance.map((row) => row.slice());
@@ -54,6 +54,9 @@ export interface Plane {
   u: Float32Array;
   v: Float32Array;
   bounds: { u0: number; u1: number; v0: number; v1: number };
+  /** The centre of every sample and the two axes, so live positions project the same way. */
+  mean: Vector;
+  axes: [Vector, Vector];
 }
 
 /** Project `count` samples of three bodies (x, y, z each) onto their plane of greatest extent. */
@@ -85,5 +88,5 @@ export function principalPlane(positions: Float32Array, count: number): Plane {
     bounds.v0 = Math.min(bounds.v0, v[i]);
     bounds.v1 = Math.max(bounds.v1, v[i]);
   }
-  return { u, v, bounds };
+  return { u, v, bounds, mean: [mean[0], mean[1], mean[2]], axes: [e1, e2] };
 }

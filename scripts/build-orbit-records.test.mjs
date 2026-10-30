@@ -125,6 +125,8 @@ test('refuses a trait file it cannot vouch for', () => {
 test('writes each double as the shortest decimal that parses back to it', () => {
   assert.equal(decimal(124.96327743951707), '124.96327743951707');
   assert.equal(decimal(-0.001), '-0.001');
+  assert.equal(decimal(-0), '-0');
+  assert.ok(Object.is(Number(decimal(-0)), -0));
   assert.equal(Number(decimal(1 / 3)), 1 / 3);
 });
 

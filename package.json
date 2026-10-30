@@ -34,6 +34,7 @@
     "test:fonts": "node scripts/check-font-coverage.mjs",
     "art:index": "node scripts/build-collection-index.mjs",
     "art:orbits": "node --experimental-strip-types scripts/build-orbit-records.mjs",
+    "art:windows": "node --experimental-strip-types scripts/build-orbit-windows.mjs",
     "art:arrival": "node scripts/build-arrival-maps.mjs"
   },
   "dependencies": {

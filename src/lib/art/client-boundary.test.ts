@@ -16,6 +16,7 @@ const SERVER_ONLY_MODULES = [
   'derivatives',
   'media',
   'orbit-records',
+  'orbit-windows',
   'plate-clips',
   'plate-details',
   'server',
