@@ -541,6 +541,33 @@ export const zh: Messages = {
   analysisNotWork: '分析，而非作品',
   keyWhen: '时刻：按每一笔在影片中出现的时刻着色',
   whenUnavailable: '此浏览器无法绘制时刻视图，改为显示静态图像。',
+  // The indexes: the Orrery and All the light (src/components/orrery.tsx, all-the-light.tsx)
+  orrery: '轨道仪',
+  orreryTitle: '轨道仪',
+  orreryLine: '收藏中的每一条轨道，都由各自的种子同时演出，按光的影片的节奏。',
+  orreryNote:
+    '每条轨道都从其记录区间的第一步开始；这一状态由种子重新推导，并在与记录核对后才保留。运动着的并非回放，而是这个浏览器在观看时即时计算的结果。指向或聚焦一件作品，即可看到它自己的光的静态图像。',
+  orreryStill: '运动已暂停，因此每条轨道都完整地描绘一次。',
+  orreryFallback: '此浏览器无法在这里演出轨道，改为显示每件作品的光的静态图像。',
+  orreryCell: '{work} · 它的轨道，正在演出',
+  orreryCycle: '周期 {cycle} · {date}',
+  allTheLight: '全部的光',
+  allTheLightLine: '收藏中的每一幅光的静态图像，像光那样相加：{count} 条轨道的一次曝光。',
+  allTheLightNote:
+    '这是派生的视图，而非作品：已发布的光的静态图像在线性光中相加，没有一幅被修改，也从不出售。指向光中，即可说出经过那里的轨道之名；选择其一，即可单独看到它未经改动的静态图像。',
+  allTheLightAlt:
+    '全部的光：{count} 件作品的光的静态图像相加而成，轨道密集处为白色，边缘留有颜色。这是派生的视图，而非作品。',
+  allTheLightPoint: '指向任意一处，即可说出经过那里的轨道之名。',
+  allTheLightThrough: '经过此点 · {works}',
+  allTheLightNone: '没有轨道经过这里。',
+  allTheLightAlone: '单独的 {work}，即它未经改动的静态图像',
+  allTheLightReturn: '回到全部的光',
+  allTheLightVisit: '前往 {work}',
+  allTheLightShowAlone: '单独显示 {work}',
+  allTheLightCycles: '按周期的天空',
+  allTheLightSky: '天空：{span} · {count} 件作品',
+  allTheLightReplay: '按周期重放',
+  allTheLightOrbits: '这片光中的轨道',
   // ·
   // ·
 };

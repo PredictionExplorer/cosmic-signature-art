@@ -1,0 +1,131 @@
+/*
+  The Orrery: a night of small long exposures, hung by cycle, each orbit drawn in light at the
+  pace of its film with its numeral beneath. The page carries its own ground, as the work page's
+  orbit section does, so it reads as night whatever the route around it.
+*/
+.orrery {
+  --type: var(--night-type);
+  --muted: #b8b5ad;
+  --rule: color-mix(in srgb, var(--night-type) 24%, transparent);
+  min-height: 100svh;
+  padding: 45px var(--gutter) 72px;
+  background: var(--night);
+  color: var(--night-type);
+}
+@supports not (color: color-mix(in srgb, red, blue)) {
+  .orrery {
+    --rule: rgba(241, 235, 223, 0.24);
+  }
+}
+.head {
+  max-width: 44em;
+}
+.title {
+  margin: 0;
+  font-size: var(--fs-chapter);
+  font-weight: 300;
+  line-height: 1.05;
+  letter-spacing: -0.01em;
+  text-wrap: balance;
+}
+.line {
+  margin: 9px 0 0;
+  font-size: var(--fs-reading);
+  font-style: italic;
+  color: var(--muted);
+}
+.note {
+  margin: 18px 0 0;
+  max-width: 44em;
+  font-size: var(--fs-reading);
+  line-height: 1.55;
+  color: var(--muted);
+}
+/* The state line keeps its height empty, so a paused page does not move the wall. */
+.state {
+  min-height: 1lh;
+  margin: 9px 0 0;
+  font-size: var(--fs-folio);
+  color: var(--muted);
+}
+.cycle {
+  margin-top: 45px;
+  padding-top: 18px;
+  border-top: 1px solid var(--rule);
+}
+.heading {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: var(--fs-folio);
+  font-weight: 400;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+}
+.cells {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 27px 18px;
+  margin: 18px 0 0;
+  padding: 0;
+  list-style: none;
+}
+.link {
+  display: block;
+  color: inherit;
+  text-decoration: none;
+}
+.link:focus-visible {
+  outline: 1px solid var(--night-type);
+  outline-offset: 4px;
+}
+/* The cell is the work's own proportion; the canvas and the still fill it. */
+.stage {
+  position: relative;
+  display: block;
+  aspect-ratio: 3456 / 2234;
+  overflow: hidden;
+  background: var(--night);
+}
+.canvas,
+.plate {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+.plate {
+  object-fit: contain;
+  opacity: 0;
+  transition: opacity var(--t-chrome) var(--ease-settle);
+}
+.link:hover .plate,
+.link:focus-visible .plate,
+.orrery[data-mode='plates'] .plate {
+  opacity: 1;
+}
+.numeral {
+  display: block;
+  margin-top: 9px;
+  font-family: var(--font-mono);
+  font-size: var(--fs-folio);
+  font-variant-numeric: tabular-nums lining-nums;
+  color: var(--muted);
+}
+.link:hover .numeral,
+.link:focus-visible .numeral {
+  color: var(--night-type);
+}
+@media (max-width: 767px) {
+  .cells {
+    grid-template-columns: repeat(auto-fill, minmax(104px, 1fr));
+    gap: 18px 12px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .plate {
+    transition: none;
+  }
+}
+:global(.motion-paused) .plate {
+  transition: none;
+}

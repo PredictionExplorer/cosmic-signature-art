@@ -566,6 +566,36 @@ export const ja: Messages = {
   analysisNotWork: '作品ではなく分析',
   keyWhen: '時刻：映像のなかで現れた時刻で、それぞれの部分を色分け',
   whenUnavailable: 'このブラウザでは時刻の図を描けませんでした。静止画を表示しています。',
+  // The indexes: the Orrery and All the light (src/components/orrery.tsx, all-the-light.tsx)
+  orrery: 'オーラリー',
+  orreryTitle: 'オーラリー',
+  orreryLine:
+    'コレクションのすべての軌道を、それぞれのシードからいっせいに、光の映像の速さで演じます。',
+  orreryNote:
+    'それぞれの軌道は、記録された区間の最初のステップから動き出します。その状態はシードから導き直し、記録と照合してから残したものです。動いているのは再生ではなく、見ているあいだにこのブラウザが計算しているものです。作品を指すかフォーカスすると、その作品自身の光の静止画が現れます。',
+  orreryStill: '動きを止めているため、それぞれの軌道を一度だけ、全体として描いています。',
+  orreryFallback:
+    'このブラウザではここで軌道を演じられません。各作品の光の静止画を代わりに表示しています。',
+  orreryCell: '{work} · 演じられる軌道',
+  orreryCycle: 'サイクル {cycle} · {date}',
+  allTheLight: 'すべての光',
+  allTheLightLine:
+    'コレクションの光の静止画をすべて、光が足し合わさるように重ねた、{count} の軌道によるひとつの露光です。',
+  allTheLightNote:
+    '作品ではなく、作品から導いた眺めです。公開された光の静止画を線形の光のまま足し合わせたもので、一枚も改変せず、販売に供することもありません。光の中を指すとそこを通る軌道の名が現れ、ひとつを選ぶと、手を加えていないその作品自身の静止画だけが見られます。',
+  allTheLightAlt:
+    'すべての光：{count} 点の作品の光の静止画を足し合わせたもの。軌道が重なるところは白く、縁には色が残ります。作品ではなく、作品から導いた眺めです。',
+  allTheLightPoint: 'どこかを指すと、そこを通る軌道の名が現れます。',
+  allTheLightThrough: 'この点を通る軌道 · {works}',
+  allTheLightNone: 'ここを通る軌道はありません。',
+  allTheLightAlone: '{work} のみ、手を加えていないその作品自身の静止画',
+  allTheLightReturn: 'すべての光に戻る',
+  allTheLightVisit: '{work} へ',
+  allTheLightShowAlone: '{work} だけを表示',
+  allTheLightCycles: 'サイクルごとの空',
+  allTheLightSky: '空：{span} · {count} 点',
+  allTheLightReplay: 'サイクルごとに再生',
+  allTheLightOrbits: 'この光の中の軌道',
   // ·
   // ·
 };

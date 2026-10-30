@@ -1,9 +1,40 @@
-import type { OrbitWindow } from './orbit';
+import { WindowPerformance, type OrbitWindow, type PlanePoints } from './orbit';
+import { lightFilmSeconds, stepsDrawnAt } from './light-film';
 
 /*
-  The Orrery's drawing: where a window's plane lands on a cell. The physics it draws is
-  orbit.ts's WindowPerformance, the recorded window replayed from its first step.
+  The Orrery: every work's orbit performed at once, each on its own small canvas, from the
+  first step of its recorded window (orbit.ts's WindowPerformance). A cell draws its orbit as
+  the work page's section draws it: every hundredth step, in light, at the Light film's pace;
+  when its window is complete it holds the finished exposure for a moment and begins again.
+  Cells out of view wait where they are. Under a still preference each cell is drawn whole,
+  once. The engine is pure and synchronous; the Orrery's worker gives it OffscreenCanvases and
+  a clock, and the tests give it a recording surface.
 */
+
+export const ORRERY = {
+  /** The work page samples every hundredth step; the Orrery draws the same samples. */
+  stride: 100,
+  /** A finished window is held this long before the next performance begins. */
+  holdMs: 3000,
+  /** Steps a frame may integrate across every cell; a cell short of them slows, never jumps. */
+  budget: 150_000,
+  /** The margin around the orbit, as a share of the cell's smaller side. */
+  margin: 0.07,
+} as const;
+
+/** The part of a 2D context a cell draws with: a canvas's, or a test's recording. */
+export interface Surface {
+  readonly canvas: { width: number; height: number };
+  globalCompositeOperation: GlobalCompositeOperation;
+  lineWidth: number;
+  lineJoin: CanvasLineJoin;
+  strokeStyle: string | CanvasGradient | CanvasPattern;
+  clearRect(x: number, y: number, width: number, height: number): void;
+  beginPath(): void;
+  moveTo(x: number, y: number): void;
+  lineTo(x: number, y: number): void;
+  stroke(): void;
+}
 
 /** Where the plane lands on a canvas: the work page's fit, a margin on every side. */
 export function planeFit(
@@ -22,4 +53,198 @@ export function planeFit(
     x: (width - (u1 - u0) * scale) / 2 - u0 * scale,
     y: (height - (v1 - v0) * scale) / 2 - v0 * scale,
   };
+}
+
+interface Cell {
+  surface: Surface;
+  replay: WindowPerformance;
+  hues: readonly [number, number, number];
+  fit: ReturnType<typeof planeFit>;
+  /** The last sample drawn, three bodies' x and y, so the next stroke continues from it. */
+  last: Float64Array | null;
+  visible: boolean;
+  /** When the current performance began on the engine's clock, or null before it has. */
+  startedAt: number | null;
+  pausedAt: number | null;
+  heldSince: number | null;
+  /** Drawn whole, under a still preference. */
+  whole: boolean;
+}
+
+/** The messages the Orrery's page sends its worker. */
+export type OrreryRequest =
+  | {
+      type: 'cells';
+      ratio: number;
+      moving: boolean;
+      cells: {
+        id: number;
+        canvas: OffscreenCanvas;
+        window: OrbitWindow;
+        hues: readonly [number, number, number];
+      }[];
+    }
+  | { type: 'visible'; id: number; visible: boolean }
+  | { type: 'moving'; moving: boolean }
+  | { type: 'size'; id: number; width: number; height: number };
+
+/** The worker's one message: a cell drawn whole under a still preference. */
+export type OrreryReply = { type: 'drawn'; id: number };
+
+export class OrreryEngine {
+  private readonly cells = new Map<number, Cell>();
+  private readonly ratio: number;
+  private moving: boolean;
+  private readonly onDrawn?: (id: number) => void;
+  /** The cell a frame starts from, turned each frame so a short budget is shared fairly. */
+  private turn = 0;
+  private readonly points: PlanePoints = { u: new Float64Array(3), v: new Float64Array(3) };
+
+  constructor(ratio: number, moving: boolean, onDrawn?: (id: number) => void) {
+    this.ratio = ratio;
+    this.moving = moving;
+    this.onDrawn = onDrawn;
+  }
+
+  add(id: number, surface: Surface, window: OrbitWindow, hues: readonly [number, number, number]) {
+    const cell: Cell = {
+      surface,
+      replay: new WindowPerformance(window),
+      hues,
+      fit: this.fit(surface, window),
+      last: null,
+      visible: false,
+      startedAt: null,
+      pausedAt: null,
+      heldSince: null,
+      whole: false,
+    };
+    this.cells.set(id, cell);
+  }
+
+  /** A cell came into view or left it; a performance waits where it is while unseen. */
+  visible(id: number, visible: boolean, now: number) {
+    const cell = this.cells.get(id);
+    if (!cell || cell.visible === visible) return;
+    cell.visible = visible;
+    if (!this.moving || cell.startedAt === null) return;
+    if (!visible) cell.pausedAt = now;
+    else if (cell.pausedAt !== null) {
+      const away = now - cell.pausedAt;
+      cell.startedAt += away;
+      if (cell.heldSince !== null) cell.heldSince += away;
+      cell.pausedAt = null;
+    }
+  }
+
+  /** Motion welcome or not: every cell begins again, performed or drawn whole. */
+  setMoving(moving: boolean) {
+    if (moving === this.moving) return;
+    this.moving = moving;
+    for (const cell of this.cells.values()) this.begin(cell);
+  }
+
+  /** A cell's canvas changed size: refit and begin again. */
+  resize(id: number, width: number, height: number) {
+    const cell = this.cells.get(id);
+    if (!cell || width < 1 || height < 1) return;
+    const canvas = cell.surface.canvas;
+    if (canvas.width === width && canvas.height === height) return;
+    canvas.width = width;
+    canvas.height = height;
+    cell.fit = this.fit(cell.surface, cell.replay.window);
+    this.begin(cell);
+  }
+
+  /** Steps a cell has performed of its current window. */
+  stepOf(id: number): number | undefined {
+    return this.cells.get(id)?.replay.step;
+  }
+
+  /** Advance every visible cell to `now`; true while there is more to draw. */
+  frame(now: number): boolean {
+    const cells = [...this.cells.entries()].filter(([, cell]) => cell.visible);
+    if (!cells.length) return false;
+    if (!this.moving) {
+      // Drawn whole, one cell a frame, so a still page fills without holding the worker long.
+      const next = cells.find(([, cell]) => !cell.whole);
+      if (!next) return false;
+      const [id, cell] = next;
+      this.draw(cell, cell.replay.window.steps);
+      cell.whole = true;
+      this.onDrawn?.(id);
+      return cells.some(([, other]) => !other.whole);
+    }
+    let budget = ORRERY.budget;
+    this.turn = (this.turn + 1) % cells.length;
+    for (let k = 0; k < cells.length && budget > 0; k++) {
+      const [, cell] = cells[(this.turn + k) % cells.length];
+      const steps = cell.replay.window.steps;
+      if (cell.heldSince !== null) {
+        if (now - cell.heldSince < ORRERY.holdMs) continue;
+        this.begin(cell);
+      }
+      cell.startedAt ??= now;
+      const target = stepsDrawnAt((now - cell.startedAt) / 1000, steps) + 1;
+      const wanted = target - cell.replay.step;
+      if (wanted > 0) {
+        const taken = Math.min(wanted, budget);
+        budget -= taken;
+        this.draw(cell, cell.replay.step + taken);
+        // Short of its frame, a cell's clock is set to where it stands: slower, never a jump.
+        if (taken < wanted) cell.startedAt = now - lightFilmSeconds(cell.replay.step, steps) * 1000;
+      }
+      if (cell.replay.done) cell.heldSince ??= now;
+    }
+    return true;
+  }
+
+  private fit(surface: Surface, window: OrbitWindow) {
+    const { width, height } = surface.canvas;
+    return planeFit(window.plane.bounds, width, height, ORRERY.margin * Math.min(width, height));
+  }
+
+  /** Clear the cell and stand it at its window's first step. */
+  private begin(cell: Cell) {
+    cell.surface.clearRect(0, 0, cell.surface.canvas.width, cell.surface.canvas.height);
+    cell.replay.restart();
+    cell.last = null;
+    cell.startedAt = null;
+    cell.pausedAt = null;
+    cell.heldSince = null;
+    cell.whole = false;
+  }
+
+  /** Integrate the cell up to `target` and stroke the new samples, one path per body. */
+  private draw(cell: Cell, target: number) {
+    const { replay, fit } = cell;
+    const xs: number[][] = [[], [], []];
+    const ys: number[][] = [[], [], []];
+    replay.run(target, ORRERY.stride, () => {
+      replay.project(this.points);
+      for (let body = 0; body < 3; body++) {
+        xs[body].push(fit.x + this.points.u[body] * fit.scale);
+        ys[body].push(fit.y + this.points.v[body] * fit.scale);
+      }
+    });
+    const count = xs[0].length;
+    if (!count) return;
+    const surface = cell.surface;
+    surface.globalCompositeOperation = 'lighter';
+    surface.lineWidth = this.ratio;
+    surface.lineJoin = 'round';
+    for (let body = 0; body < 3; body++) {
+      surface.strokeStyle = `oklch(0.84 0.075 ${cell.hues[body]} / 0.2)`;
+      surface.beginPath();
+      if (cell.last) surface.moveTo(cell.last[body * 2], cell.last[body * 2 + 1]);
+      else surface.moveTo(xs[body][0], ys[body][0]);
+      for (let k = 0; k < count; k++) surface.lineTo(xs[body][k], ys[body][k]);
+      surface.stroke();
+    }
+    cell.last ??= new Float64Array(6);
+    for (let body = 0; body < 3; body++) {
+      cell.last[body * 2] = xs[body][count - 1];
+      cell.last[body * 2 + 1] = ys[body][count - 1];
+    }
+  }
 }
