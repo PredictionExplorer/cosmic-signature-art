@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#000000">
+  <title>Third Physics — a study</title>
+  <link rel="preload" href="../../node_modules/@fontsource-variable/literata/files/literata-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="study.css">
+</head>
+<body>
+  <header class="head">
+    <span class="mark">Cosmic Signature</span>
+    <span class="head-note">Study · Third Physics · 29 Oct 2026</span>
+  </header>
+
+  <main>
+    <section class="room room-score" id="score" aria-labelledby="score-title">
+      <div class="score-stage">
+        <canvas class="score-trails" aria-hidden="true"></canvas>
+        <canvas class="score-heads" aria-hidden="true"></canvas>
+        <div class="room-label">
+          <p class="numeral">I</p>
+          <h1 id="score-title">The orbit, re-performed</h1>
+          <p class="sub">№ 031 · Eternal Dance — derived from its seed, in this browser, now.</p>
+        </div>
+      </div>
+      <aside class="proof" aria-label="Verification">
+        <div class="choice-wrap">
+          <canvas class="choice" aria-hidden="true"></canvas>
+          <p class="choice-caption">One hundred thousand beginnings, re-derived from the seed: energy against angular momentum. Each was set in motion in the studio and scored. <span class="chosen-note">One was chosen.</span></p>
+        </div>
+        <table>
+          <caption class="mono" style="text-align:left; padding-bottom:6px; opacity:.66">Re-derived here, against the published record</caption>
+          <tbody class="proof-rows"></tbody>
+        </table>
+      </aside>
+      <div class="score-strip">
+        <canvas class="events" aria-hidden="true"></canvas>
+        <p class="readout mono" aria-live="polite">Waiting for the seed…</p>
+        <button class="again" type="button" hidden>Again</button>
+      </div>
+    </section>
+
+    <section class="room room-cross" id="cross" aria-labelledby="cross-title">
+      <canvas class="cross" role="img" aria-label="№ 031, Ink: sumi carried by simulated fluid on kozo."></canvas>
+      <div class="room-label">
+        <p class="numeral">II</p>
+        <h2 id="cross-title">The crossing, in the order it was made</h2>
+      </div>
+      <p class="cross-caption">Light arrives along the orbit, in the order the film drew it. Ink returns in the order its film came to rest. Drag across the wall to hold the crossing anywhere. Every pixel on the plate is a pixel of one of the two published stills; only the order belongs to the films.</p>
+      <div class="cross-strip">
+        <span class="plate-numeral">031</span>
+        <span class="plate-state mono" aria-live="polite">Ink · still</span>
+        <span class="words">
+          <button type="button" data-to="light" disabled>Light</button>
+          <button type="button" data-to="ink" disabled>Ink</button>
+          <button type="button" data-lens aria-pressed="false" disabled>When</button>
+        </span>
+      </div>
+    </section>
+
+    <section class="room room-sum" id="sum" aria-labelledby="sum-title">
+      <div class="sum-stage">
+        <canvas class="sum-canvas" role="img" aria-label="The Light stills of the whole collection, added together."></canvas>
+        <img class="sum-alone" alt="" hidden>
+      </div>
+      <div class="room-label">
+        <p class="numeral">III</p>
+        <h2 id="sum-title">All the light</h2>
+        <p class="sub sum-count">The collection, added as light adds.</p>
+      </div>
+      <p class="sum-caption">Every work's Light still, summed in linear light and gently compressed: an index, not a work. Point anywhere to name the orbits that pass through that place; choose to leave one alone, shown as its own untouched still. Each cycle adds eight more.</p>
+      <div class="sum-strip">
+        <span class="sum-readout mono" aria-live="polite">Loading the collection's light…</span>
+      </div>
+    </section>
+  </main>
+
+  <footer class="colophon">
+    <h2>What is real here</h2>
+    <p><strong>The orbit</strong> is computed in your browser from the published seed by a line-for-line port of the generator's own stream and integrator (Yoshida, fourth order, dt 0.001). It agrees with the published record to the last bit. The drawing is the orbit in the plane of its greatest extent, not the artwork.</p>
+    <p><strong>The crossing</strong> shows only pixels of the two published stills (1920-pixel rungs cut from the 16-bit masters). The order comes from the films: for Light, when each pixel first reached half its final brightness; for Ink, when it stopped changing. Analysis in <code>docs</code>; nothing is invented between the two.</p>
+    <p><strong>All the light</strong> adds the 1280-pixel Light rungs of all works in linear light and compresses the total with a soft shoulder. It is a derived index and says so. A work chosen alone is shown as its own untouched still.</p>
+  </footer>
+
+  <script type="module" src="study.js"></script>
+</body>
+</html>

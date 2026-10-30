@@ -78,7 +78,12 @@ async function retrying(request, attempt = 1) {
 }
 
 /** One bounded JSON read from the origin, by path or absolute URL. */
-export async function json(pathOrUrl, { maxBytes = MAX_JSON_BYTES } = {}) {
+export async function json(pathOrUrl, options) {
+  return (await jsonDocument(pathOrUrl, options)).value;
+}
+
+/** A bounded JSON read with the sha256 of the exact bytes the origin served. */
+export async function jsonDocument(pathOrUrl, { maxBytes = MAX_JSON_BYTES } = {}) {
   const url = pathOrUrl.startsWith('/') ? `${ORIGIN}${pathOrUrl}` : pathOrUrl;
   if (!url.startsWith(`${ORIGIN}/`)) throw new Error(`Refusing to read outside ${ORIGIN}`);
   const response = await retrying(() =>
@@ -99,7 +104,8 @@ export async function json(pathOrUrl, { maxBytes = MAX_JSON_BYTES } = {}) {
     if (size > maxBytes) throw new Error(`Oversized JSON: ${url}`);
     chunks.push(chunk);
   }
-  return JSON.parse(Buffer.concat(chunks).toString('utf8'));
+  const bytes = Buffer.concat(chunks);
+  return { value: JSON.parse(bytes.toString('utf8')), sha256: hashBytes(bytes) };
 }
 
 export function normalizeSeed(value) {

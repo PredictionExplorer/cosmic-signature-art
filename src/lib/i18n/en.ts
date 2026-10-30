@@ -521,6 +521,43 @@ export const en = {
   verifyFailed: 'The file could not be read.',
   publishedHashes: 'Published hashes',
   sharingCollection: 'Collection · {count} works',
+  // The orbit, re-performed (src/components/orbit-score.tsx)
+  orbitTitle: 'The orbit, re-performed',
+  orbitLine: 'Derived from its seed in this browser, then checked against the published record.',
+  orbitCaption:
+    'Three bodies, of masses {m1}, {m2} and {m3}, drawn in the plane of their greatest extent at the pace of the Light film. Bodies {pair} pass closest, {distance} apart, at step {step}, {seconds} seconds into the film.',
+  orbitWaiting: 'The orbit is derived here when you reach it.',
+  orbitUnavailable:
+    'This browser could not derive the orbit. The record is shown as published, unchecked.',
+  orbitProgressBeginnings: 'Reading the seed · candidate {done} of {total}',
+  orbitProgressWarmUp: 'Candidate {index} in motion · warm-up step {done} of {total}',
+  orbitProgressWindow: 'The recorded window · step {done} of {total}',
+  orbitProgressBraid: 'Following the crossings · step {done} of {total}',
+  orbitPlaying: 'Step {step} of {total} · {clock} into the Light film',
+  orbitClosestNow: 'Closest approach · bodies {pair}, {distance} apart',
+  orbitDerived:
+    'Derived here in {seconds} s from seed {seed}: candidate {index} of {total}, then {steps} steps.',
+  orbitAllExact: 'Every measurement is the published record, to the last bit.',
+  orbitSomeDiffer: '{count} of {total} measurements differ from the published record.',
+  orbitTableCaption: 'The published record, checked here',
+  orbitMeasurement: 'Measurement',
+  orbitValue: 'Value',
+  orbitCheck: 'Check',
+  orbitMass: 'Mass of body {n}',
+  orbitEnergy: 'Total energy',
+  orbitMomentum: 'Angular momentum',
+  orbitClosest: 'Closest approach',
+  orbitClosestWhere: 'Closest approach at',
+  orbitBodiesAt: 'bodies {pair} · step {step}',
+  orbitSyzygies: 'Syzygies',
+  orbitBraidCrossings: 'Braid crossings',
+  orbitBraidWord: 'Braid word',
+  orbitExact: 'exact',
+  orbitDiffers: 'differs',
+  orbitPending: 'checking',
+  orbitDerivedValue: 'here: {value}',
+  orbitNote:
+    'The films and stills are recorded renderings of the work. This drawing is the orbit beneath them, computed in your browser by the generator’s own sequence: its random stream, the choice of candidate {index}, and {steps} steps of a fourth-order Yoshida integrator.',
   // ·
   // ·
 } as const;

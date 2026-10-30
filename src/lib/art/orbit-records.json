@@ -1,0 +1,2814 @@
+{
+  "schemaVersion": 1,
+  "readOn": "2026-10-30",
+  "records": [
+    {
+      "id": 0,
+      "seed": "0x2a345aa3f8a0419fc11cd031c98c49d171f3dd2151d9c06fd327e9254e1db962",
+      "traitsSha256": "3d763ab59be11f274148affa37ef33844f22266e4e552bc322a94a60af26cf64",
+      "pipelineVersion": "1.0.0",
+      "generation": {
+        "candidatesPerAttempt": 100000,
+        "selectedIndex": 5084,
+        "retryCount": 0,
+        "weightsRandomized": true,
+        "integrator": "yoshida4",
+        "dt": "0.001",
+        "steps": 1000000,
+        "warmupSteps": 1000000
+      },
+      "physics": {
+        "masses": ["176.43960453699088", "299.9742377391344", "161.69070228338967"],
+        "totalEnergy": "-3123.789910594996",
+        "angularMomentum": "101192.1668287193",
+        "closestApproach": {
+          "distance": "24.943618708929066",
+          "pair": [0, 1],
+          "step": 312635
+        },
+        "syzygyCount": 0,
+        "braid": {
+          "word": "s2 s1' s2' s1 s2' s1' s1' s2 s2 s1 s2' s1 s2' s1' s2 s1' s2' s1 s1 s2' s1' s2 s1' s2'",
+          "crossings": 24,
+          "truncated": false
+        }
+      },
+      "fate": {
+        "outcome": "ejection",
+        "escaper": 0,
+        "ejectionStep": 1670000,
+        "horizonSteps": 8000000
+      },
+      "bodyHues": [144.83261433912605, 125.51416008097223, 128.44040241068788]
+    },
+    {
+      "id": 1,
+      "seed": "0x36794583b610f71be4a51d19a01af5bfe05b673c31d86f3f0c3310c3e4261fce",
+      "traitsSha256": "5784e0e78d9e8e357daebc074c9acee36d98dc5c3ed16dfa6a00c31c09047480",
+      "pipelineVersion": "1.0.0",
+      "generation": {
+        "candidatesPerAttempt": 100000,
+        "selectedIndex": 50908,
+        "retryCount": 0,
+        "weightsRandomized": true,
+        "integrator": "yoshida4",
+        "dt": "0.001",
+        "steps": 1000000,
+        "warmupSteps": 1000000
+      },
+      "physics": {
+        "masses": ["106.18463169028465", "144.49214942581972", "162.31755403710375"],
+        "totalEnergy": "-1613.8179817815758",
+        "angularMomentum": "67998.95277434646",
+        "closestApproach": {
+          "distance": "4.533819457861163",
+          "pair": [0, 1],
+          "step": 473503
+        },
+        "syzygyCount": 0,
+        "braid": {
+          "word": "s2 s2 s1 s2 s2 s1 s2 s1 s2 s1 s2 s1' s1' s2 s1 s2 s1 s2 s1' s2 s1 s1 s2 s1 s2",
+          "crossings": 25,
+          "truncated": false
+        }
+      },
+      "fate": {
+        "outcome": "ejection",
+        "escaper": 0,
+        "ejectionStep": 1350000,
+        "horizonSteps": 8000000
+      },
+      "bodyHues": [252.0917433511051, 144.71826439467338, 204.5146358327558]
+    },
+    {
+      "id": 2,
+      "seed": "0xadbf95ffe328567a552743028b0f8b204fe6ca747fdbce42ede267a8eee7bf0e",
+      "traitsSha256": "cf29b4ae6018b950c326cd19f6f6040c9461d55059e99dbdb7bb14cb86cc26a4",
+      "pipelineVersion": "1.0.0",
+      "generation": {
+        "candidatesPerAttempt": 100000,
+        "selectedIndex": 86433,
+        "retryCount": 0,
+        "weightsRandomized": true,
+        "integrator": "yoshida4",
+        "dt": "0.001",
+        "steps": 1000000,
+        "warmupSteps": 1000000
+      },
+      "physics": {
+        "masses": ["127.1437741562558", "205.79916998266424", "148.89678993107592"],
+        "totalEnergy": "-2198.707806190841",
+        "angularMomentum": "70614.7653780651",
+        "closestApproach": {
+          "distance": "51.27187487821125",
+          "pair": [0, 1],
+          "step": 545141
+        },
+        "syzygyCount": 1,
+        "braid": {
+          "word": "s1' s2' s1 s2' s1' s1' s2' s1 s2' s1' s2 s1' s2' s2' s1' s2 s1' s2' s1 s2' s1' s1' s2' s1 s1 s2' s1'",
+          "crossings": 27,
+          "truncated": false
+        }
+      },
+      "fate": {
+        "outcome": "eternal_dance",
+        "escaper": null,
+        "ejectionStep": null,
+        "horizonSteps": 8000000
+      },
+      "bodyHues": [128.88244332925615, 308.88802189374127, 232.72362467277574]
+    },
+    {
+      "id": 3,
+      "seed": "0x203581755eca174027d8d64b53dcb54d320fd2195fae1c7fbf152dfe83c69855",
+      "traitsSha256": "585931adbe59939dda945df3e3c08eaf560dcb31730fc42b59577d9bc44f146b",
+      "pipelineVersion": "1.0.0",
+      "generation": {
+        "candidatesPerAttempt": 100000,
+        "selectedIndex": 67475,
+        "retryCount": 0,
+        "weightsRandomized": true,
+        "integrator": "yoshida4",
+        "dt": "0.001",
+        "steps": 1000000,
+        "warmupSteps": 1000000
+      },
+      "physics": {
+        "masses": ["177.8836491478604", "298.56439856365137", "278.9715874812356"],
+        "totalEnergy": "-3807.9423189818417",
+        "angularMomentum": "152105.9222171666",
+        "closestApproach": {
+          "distance": "7.752038582729564",
+          "pair": [1, 2],
+          "step": 756950
+        },
+        "syzygyCount": 2,
+        "braid": {
+          "word": "s1 s2 s2 s1 s2' s1 s2 s1' s1' s2 s1 s2 s2 s1 s2' s1 s1 s2 s1 s2 s2 s1",
+          "crossings": 22,
+          "truncated": false
+        }
+      },
+      "fate": {
+        "outcome": "eternal_dance",
+        "escaper": null,
+        "ejectionStep": null,
+        "horizonSteps": 8000000
+      },
+      "bodyHues": [118.22310193774996, 128.74821457411508, 130.04123472812063]
+    },
+    {
+      "id": 4,
+      "seed": "0x082f04a131becec289fb0d93bda9442cf26a11e560c749a05d0eddf99df33d8f",
+      "traitsSha256": "d8b00f41087841dd0eef308771ff0554a57f1fc2f67e886f143467961ced3567",
+      "pipelineVersion": "1.0.0",
+      "generation": {
+        "candidatesPerAttempt": 100000,
+        "selectedIndex": 26535,
+        "retryCount": 0,
+        "weightsRandomized": true,
+        "integrator": "yoshida4",
+        "dt": "0.001",
+        "steps": 1000000,
+        "warmupSteps": 1000000
+      },
+      "physics": {
+        "masses": ["178.96530400517557", "249.48259943017064", "208.19720675576144"],
+        "totalEnergy": "-4559.518259703624",
+        "angularMomentum": "102805.71538870658",
+        "closestApproach": {
+          "distance": "5.510702170343248",
+          "pair": [1, 2],
+          "step": 214371
+        },
+        "syzygyCount": 3,
+        "braid": {
+          "word": "s2' s2' s2' s1' s2' s1' s2' s1' s2' s1' s2 s2 s1' s2' s1 s1 s2' s1' s2 s1' s2' s1' s1' s2' s1' s2' s1' s2' s1' s2' s1' s1' s1 s2' s1' s2' s2' s1' s2' s2'",
+          "crossings": 40,
+          "truncated": false
+        }
+      },
+      "fate": {
+        "outcome": "ejection",
+        "escaper": 0,
+        "ejectionStep": 1540000,
+        "horizonSteps": 8000000
+      },
+      "bodyHues": [85.63853625199509, 227.70401344636923, 56.819499977085826]
+    },
+    {
+      "id": 5,
+      "seed": "0xe29887e5f8aea85d6b775ab8dc95df16a5a0ad2979ace2b539058a0040aca67d",
+      "traitsSha256": "ca379bc201a230a634c19609c5431a032c7a01deef433582fa34af105a03a404",
+      "pipelineVersion": "1.0.0",
+      "generation": {
+        "candidatesPerAttempt": 100000,
+        "selectedIndex": 89391,
+        "retryCount": 0,
+        "weightsRandomized": true,
+        "integrator": "yoshida4",
+        "dt": "0.001",
+        "steps": 1000000,
+        "warmupSteps": 1000000
+      },
+      "physics": {
+        "masses": ["152.65630293705297", "119.20635526092428", "125.20031211068817"],
+        "totalEnergy": "-1784.4198335573096",
+        "angularMomentum": "37803.27715025765",
+        "closestApproach": {
+          "distance": "2.7584213111640006",
+          "pair": [0, 1],
+          "step": 102248
+        },
+        "syzygyCount": 0,
+        "braid": {
+          "word": "s2 s1' s1' s2 s2 s1 s2' s1' s2 s1 s2' s1 s2 s1' s1' s2 s1' s2' s1 s2' s2' s1' s2 s1' s2' s1 s2 s2 s1' s2 s1 s2'",
+          "crossings": 32,
+          "truncated": false
+        }
+      },
+      "fate": {
+        "outcome": "ejection",
+        "escaper": 1,
+        "ejectionStep": 3130000,
+        "horizonSteps": 8000000
+      },
+      "bodyHues": [274.9031961591472, 317.7953672217942, 250.23093748010524]
+    },
+    {
+      "id": 6,
+      "seed": "0x7f12ef4506339e9ccc3c665a5ae8c1878fcf241b7dcbdc4209a95a164622e204",
+      "traitsSha256": "c13307e45179d440518cb7b6be96edfab42876a2a2bf055dc2361e76f5f587ca",
+      "pipelineVersion": "1.0.0",
+      "generation": {
+        "candidatesPerAttempt": 100000,
+        "selectedIndex": 48406,
+        "retryCount": 0,
+        "weightsRandomized": true,
+        "integrator": "yoshida4",
+        "dt": "0.001",
+        "steps": 1000000,
+        "warmupSteps": 1000000
+      },
+      "physics": {
+        "masses": ["275.280720951239", "103.65094088999265", "139.25270431866755"],
+        "totalEnergy": "-4399.985043287174",
+        "angularMomentum": "54740.50615346161",
+        "closestApproach": {
+          "distance": "1.1264658277446118",
+          "pair": [0, 2],
+          "step": 314710
+        },
+        "syzygyCount": 5,
+        "braid": {
+          "word": "s2' s1 s2 s1 s1 s2 s1 s2 s2 s1 s2 s1 s1 s1 s1 s2 s1 s2 s1 s2 s1 s1 s2 s1 s2 s1 s2 s1 s2 s1 s2 s1 s2 s1 s2 s1' s2 s1 s1 s2 s2 s1 s2 s2 s2 s2 s1 s2",
+          "crossings": 71,
+          "truncated": true
+        }
+      },
+      "fate": {
+        "outcome": "ejection",
+        "escaper": 0,
+        "ejectionStep": 5470000,
+        "horizonSteps": 8000000
+      },
+      "bodyHues": [320.78057577237894, 329.0196476735793, 331.8183308393634]
+    },
+    {
+      "id": 7,
+      "seed": "0xae7e4b937e44eddb5693b29148b6bd03f65417f7a363b60829a562ca2370ec0d",
+      "traitsSha256": "ebd57d4625ff8ba5566867f2210354f7d291ffd82dcc7d04b301c9ec6b66491e",
+      "pipelineVersion": "1.0.0",
+      "generation": {
+        "candidatesPerAttempt": 100000,
+        "selectedIndex": 80643,
+        "retryCount": 0,
+        "weightsRandomized": true,
+        "integrator": "yoshida4",
+        "dt": "0.001",
+        "steps": 1000000,
+        "warmupSteps": 1000000
+      },
+      "physics": {
+        "masses": ["155.94352776465814", "140.95649144691282", "158.00063635929303"],
+        "totalEnergy": "-2068.8646898069837",
+        "angularMomentum": "78202.61120152577",
+        "closestApproach": {
+          "distance": "24.974260261323575",
+          "pair": [0, 2],
+          "step": 267978
+        },
+        "syzygyCount": 0,
+        "braid": {
+          "word": "s1' s2 s1 s1 s2 s1' s1' s2 s1 s1 s2 s1' s1' s2 s1 s1 s2' s1 s2 s1 s1' s2 s1 s2 s2 s1 s2 s2 s1 s2",
+          "crossings": 30,
+          "truncated": false
+        }
+      },
+      "fate": {
+        "outcome": "eternal_dance",
+        "escaper": null,
+        "ejectionStep": null,
+        "horizonSteps": 8000000
+      },
+      "bodyHues": [123.23061286700938, 284.8981854086987, 241.30482347980208]
+    },
+    {
+      "id": 8,
+      "seed": "0x7f16d855c0e049505aa951db48ebd2427ee39ba812dd2e41a2e5492096673db5",
+      "traitsSha256": "7a1ba4841adccc0a4ffe79751bef19392fa59f49039dc68411ce907009a650d2",
+      "pipelineVersion": "1.0.0",
+      "generation": {
+        "candidatesPerAttempt": 100000,
+        "selectedIndex": 94831,
+        "retryCount": 0,
+        "weightsRandomized": true,
+        "integrator": "yoshida4",
+        "dt": "0.001",
+        "steps": 1000000,
+        "warmupSteps": 1000000
+      },
+      "physics": {
+        "masses": ["250.33016942705518", "211.98777374518502", "159.869673156971"],
+        "totalEnergy": "-4034.765424809929",
+        "angularMomentum": "106536.03226887606",
+        "closestApproach": {
+          "distance": "3.9477799120428894",
+          "pair": [0, 2],
+          "step": 150779
+        },
+        "syzygyCount": 2,
+        "braid": {
+          "word": "s1 s2 s1 s1 s2 s1 s2' s2' s1 s2 s1 s2 s2 s1 s2' s2' s2 s2 s1 s2 s1 s1 s2 s1 s1 s2 s2 s1 s2 s1 s2 s1 s1 s2 s1 s1 s2 s1'",
+          "crossings": 38,
+          "truncated": false
+        }
+      },
+      "fate": {
+        "outcome": "eternal_dance",
+        "escaper": null,
+        "ejectionStep": null,
+        "horizonSteps": 8000000
+      },
+      "bodyHues": [357.85891102540864, 7.586676449327529, 25.24751610443792]
+    },
+    {
+      "id": 9,
+      "seed": "0x1362465d6ffe31bfc33a924a9406663e313cf417c35d8d4461e66db845d39903",
+      "traitsSha256": "d6ff074ab1ab8ff579a7d2fe99cff7484cd7283f7ef2a3a1a6d37e394ef1d948",
+      "pipelineVersion": "1.0.0",
+      "generation": {
+        "candidatesPerAttempt": 100000,
+        "selectedIndex": 10663,
+        "retryCount": 0,
+        "weightsRandomized": true,
+        "integrator": "yoshida4",
+        "dt": "0.001",
+        "steps": 1000000,
+        "warmupSteps": 1000000
+      },
+      "physics": {
+        "masses": ["117.49532342226138", "213.17931618821518", "197.57398859309006"],
+        "totalEnergy": "-3474.8380961693583",
+        "angularMomentum": "61699.84637790009",
+        "closestApproach": {
+          "distance": "0.576365351150036",
+          "pair": [1, 2],
+          "step": 257203
+        },
+        "syzygyCount": 3,
+        "braid": {
+          "word": "s2 s2 s1 s2' s1 s1 s2 s1' s2 s2 s1 s2' s1 s2 s1' s1' s2' s1 s2' s1' s2 s1' s2' s1 s2' s1' s2 s2 s2 s1 s1 s2' s2' s2' s2' s2' s2' s1 s2 s2 s1 s2' s2'",
+          "crossings": 43,
+          "truncated": false
+        }
+      },
+      "fate": {
+        "outcome": "ejection",
+        "escaper": 1,
+        "ejectionStep": 5310000,
+        "horizonSteps": 8000000
+      },
+      "bodyHues": [141.00535942865133, 227.5274027145995, 116.95055140750202]
+    },
+    {
+      "id": 10,
+      "seed": "0x4fbcf97cd52e5a670e14f706d1c01518fdd7f89d89515bc71b592912b9af59eb",
+      "traitsSha256": "e0081abe3d1547358a8baeeebc2be75905ef915dce8a1ff93fa6dd084621900a",
+      "pipelineVersion": "1.0.0",
+      "generation": {
+        "candidatesPerAttempt": 100000,
+        "selectedIndex": 62129,
+        "retryCount": 0,
+        "weightsRandomized": true,
+        "integrator": "yoshida4",
+        "dt": "0.001",
+        "steps": 1000000,
+        "warmupSteps": 1000000
+      },
+      "physics": {
+        "masses": ["129.6651289772176", "179.48823502340974", "184.6296136633158"],
+        "totalEnergy": "-2537.7995302228933",
+        "angularMomentum": "42717.07963074845",
+        "closestApproach": {
+          "distance": "3.8248451292471715",
+          "pair": [0, 1],
+          "step": 753076
+        },
+        "syzygyCount": 0,
+        "braid": {
+          "word": "s1' s2 s2 s1 s2' s2' s1 s2 s1' s2 s1 s2' s1' s1' s2 s1' s2 s1' s1' s2' s2' s1 s1 s2 s1' s1' s2 s2 s1 s2' s1' s1' s2 s1' s1'",
+          "crossings": 35,
+          "truncated": false
+        }
+      },
+      "fate": {
+        "outcome": "eternal_dance",
+        "escaper": null,
+        "ejectionStep": null,
+        "horizonSteps": 8000000
+      },
+      "bodyHues": [191.45501309404287, 107.30530997441474, 257.8870839768527]
+    },
+    {
+      "id": 11,
+      "seed": "0x55abfa5aa9c648d15d2f46ea2dc9ad640e32247e130962cf87604029da9c6982",
+      "traitsSha256": "a1d00a5ec54ed1793dd486fd8d9ad2ac7fff7615ad9db90d1810e6e94b60d88f",
+      "pipelineVersion": "1.0.0",
+      "generation": {
+        "candidatesPerAttempt": 100000,
+        "selectedIndex": 64759,
+        "retryCount": 0,
+        "weightsRandomized": true,
+        "integrator": "yoshida4",
+        "dt": "0.001",
+        "steps": 1000000,
+        "warmupSteps": 1000000
+      },
+      "physics": {
+        "masses": ["145.766864085291", "262.1514935734637", "231.22785469012373"],
+        "totalEnergy": "-2902.4312105315494",
+        "angularMomentum": "74825.58609753953",
+        "closestApproach": {
+          "distance": "0.6216389118910063",
+          "pair": [1, 2],
+          "step": 788708
+        },
+        "syzygyCount": 2,
+        "braid": {
+          "word": "s1' s1' s2' s2 s2 s1' s2' s2' s1' s2 s1' s2' s1' s2' s1' s2' s1' s2' s2' s1' s2 s1' s2' s1 s2' s1' s1' s2' s2' s1' s2 s2 s1' s1' s2' s1' s1' s2' s1' s2' s2' s1' s2' s1' s1' s2' s1' s2'",
+          "crossings": 97,
+          "truncated": true
+        }
+      },
+      "fate": {
+        "outcome": "eternal_dance",
+        "escaper": null,
+        "ejectionStep": null,
+        "horizonSteps": 8000000
+      },
+      "bodyHues": [99.77327654551236, 98.53782334984095, 118.60270024481304]
+    },
+    {
+      "id": 12,
+      "seed": "0x95c22c676296e4cca545427249c75a2cc99e4e3a43abd24869c9a09ca5960f8a",
+      "traitsSha256": "fa402e18e1fe85d9bd9c8eeb783fb3ced165b20432385c45c43b5b856cd35876",
+      "pipelineVersion": "1.0.0",
+      "generation": {
+        "candidatesPerAttempt": 100000,
+        "selectedIndex": 58704,
+        "retryCount": 0,
+        "weightsRandomized": true,
+        "integrator": "yoshida4",
+        "dt": "0.001",
+        "steps": 1000000,
+        "warmupSteps": 1000000
+      },
+      "physics": {
+        "masses": ["107.65547891010026", "249.78771625611878", "237.0992148018813"],
+        "totalEnergy": "-3171.4867845645026",
+        "angularMomentum": "101361.24856738289",
+        "closestApproach": {
+          "distance": "1.2605702517605184",
+          "pair": [0, 2],
+          "step": 111030
+        },
+        "syzygyCount": 1,
+        "braid": {
+          "word": "s2 s1 s2' s1' s2 s1' s1' s2 s2 s1 s2' s1 s2 s1' s2 s1 s2' s1 s1 s2' s2' s2 s1 s1 s2' s1 s2' s1 s2",
+          "crossings": 29,
+          "truncated": false
+        }
+      },
+      "fate": {
+        "outcome": "eternal_dance",
+        "escaper": null,
+        "ejectionStep": null,
+        "horizonSteps": 8000000
+      },
+      "bodyHues": [69.06266485014852, 84.28756044331506, 34.03520258381839]
+    },
+    {
+      "id": 13,
+      "seed": "0x8b834c15a096e3e2ba8ecaea21627117e104bb37f844f69648c0fdf9406d3457",
+      "traitsSha256": "329b857d6abfe9bb23cf8af75b26b79720ec31db4a0874bd1cf59d4d4080584e",
+      "pipelineVersion": "1.0.0",
+      "generation": {
+        "candidatesPerAttempt": 100000,
+        "selectedIndex": 64421,
+        "retryCount": 0,
+        "weightsRandomized": true,
+        "integrator": "yoshida4",
+        "dt": "0.001",
+        "steps": 1000000,
+        "warmupSteps": 1000000
+      },
+      "physics": {
+        "masses": ["147.91916527523358", "248.12746723580685", "116.43787045041647"],
+        "totalEnergy": "-2861.051004894317",
+        "angularMomentum": "73358.92908400497",
+        "closestApproach": {
+          "distance": "0.6423154829772687",
+          "pair": [0, 2],
+          "step": 268137
+        },
+        "syzygyCount": 2,
+        "braid": {
+          "word": "s1' s2' s2' s1' s1' s2' s1' s2' s1' s2 s1' s1' s2' s1' s1' s2' s1' s2' s1' s2' s2' s1' s2' s2' s1' s2' s1 s2' s1' s2 s1' s2' s1' s1' s2' s1'",
+          "crossings": 36,
+          "truncated": false
+        }
+      },
+      "fate": {
+        "outcome": "ejection",
+        "escaper": 2,
+        "ejectionStep": 3070000,
+        "horizonSteps": 8000000
+      },
+      "bodyHues": [315.711144285036, 149.60697867028486, 198.08984878737817]
+    },
+    {
+      "id": 14,
+      "seed": "0x18952be1a43822726d7920df20bc2e1a2be06c1f907a0dc80e7469e50be3ce4b",
+      "traitsSha256": "5f624e6840bec83adf8d05693acac926632186556990846feeccbae07fbbddf0",
+      "pipelineVersion": "1.0.0",
+      "generation": {
+        "candidatesPerAttempt": 100000,
+        "selectedIndex": 94073,
+        "retryCount": 0,
+        "weightsRandomized": true,
+        "integrator": "yoshida4",
+        "dt": "0.001",
+        "steps": 1000000,
+        "warmupSteps": 1000000
+      },
+      "physics": {
+        "masses": ["246.2609518865162", "108.16960790702791", "112.97047378372159"],
+        "totalEnergy": "-2849.768305735789",
+        "angularMomentum": "36365.20177629218",
+        "closestApproach": {
+          "distance": "3.7839206274868817",
+          "pair": [0, 1],
+          "step": 653521
+        },
+        "syzygyCount": 1,
+        "braid": {
+          "word": "s1 s1 s2' s1 s1 s2 s1' s1' s2' s1 s2' s1' s1' s2' s1 s2' s1' s2 s1' s2 s1' s2 s1 s2' s1 s2 s2 s2 s2 s1' s2 s2 s1 s2' s2' s1' s2 s1' s2 s1 s1 s2' s1 s1 s2 s1' s2",
+          "crossings": 47,
+          "truncated": false
+        }
+      },
+      "fate": {
+        "outcome": "ejection",
+        "escaper": 1,
+        "ejectionStep": 1930000,
+        "horizonSteps": 8000000
+      },
+      "bodyHues": [325.7184158066363, 295.0800699968546, 289.7681568149663]
+    },
+    {
+      "id": 15,
+      "seed": "0x7f5cf3453c81fc1b11767f9c3495712ff3962f3e6f1902c2e2768c679cb5eb01",
+      "traitsSha256": "18d10770e964d8f227a693d3314e1a2f9054ca42ecb3b73e2cfe300e9f3366aa",
+      "pipelineVersion": "1.0.0",
+      "generation": {
+        "candidatesPerAttempt": 100000,
+        "selectedIndex": 99540,
+        "retryCount": 0,
+        "weightsRandomized": true,
+        "integrator": "yoshida4",
+        "dt": "0.001",
+        "steps": 1000000,
+        "warmupSteps": 1000000
+      },
+      "physics": {
+        "masses": ["210.78303107870568", "221.45781466161569", "176.7112022215296"],
+        "totalEnergy": "-3078.6334928388883",
+        "angularMomentum": "118064.72732797668",
+        "closestApproach": {
+          "distance": "18.040885045622215",
+          "pair": [0, 1],
+          "step": 833206
+        },
+        "syzygyCount": 0,
+        "braid": {
+          "word": "s2 s1 s2 s1' s2 s1 s2' s1 s2 s1' s1' s2 s1 s1 s2' s1 s2 s1' s1' s2 s1 s1 s2' s1",
+          "crossings": 24,
+          "truncated": false
+        }
+      },
+      "fate": {
+        "outcome": "eternal_dance",
+        "escaper": null,
+        "ejectionStep": null,
+        "horizonSteps": 8000000
+      },
+      "bodyHues": [319.86300981440195, 315.9925050713273, 296.99831182825415]
+    },
+    {
+      "id": 16,
+      "seed": "0xf36f93da75d41f35844da6b6169ba99088ef0c8d3d1990beea4960a1b23c25db",
+      "traitsSha256": "8dfc2580756737b3693cf55bd18c262e8486f9fc3d6dfa8dad0a37c52fe19a51",
+      "pipelineVersion": "1.0.0",
+      "generation": {
+        "candidatesPerAttempt": 100000,
+        "selectedIndex": 89805,
+        "retryCount": 0,
+        "weightsRandomized": true,
+        "integrator": "yoshida4",
+        "dt": "0.001",
+        "steps": 1000000,
+        "warmupSteps": 1000000
+      },
+      "physics": {
+        "masses": ["152.4436125811342", "291.5461226329834", "101.97191116628252"],
+        "totalEnergy": "-3406.94659441193",
+        "angularMomentum": "70200.31648332428",
+        "closestApproach": {
+          "distance": "1.7462584004758122",
+          "pair": [0, 2],
+          "step": 825951
+        },
+        "syzygyCount": 2,
+        "braid": {
+          "word": "s1' s2 s2 s1' s1' s2' s2' s1 s1 s2' s1 s1 s2 s2 s1' s2 s1' s2 s1 s1 s2' s1 s2' s2' s1 s2 s2' s1 s2 s2 s1' s1' s2 s1 s2' s2' s1' s2 s2 s1 s1 s2'",
+          "crossings": 42,
+          "truncated": false
+        }
+      },
+      "fate": {
+        "outcome": "ejection",
+        "escaper": 2,
+        "ejectionStep": 1730000,
+        "horizonSteps": 8000000
+      },
+      "bodyHues": [343.1998397459282, 344.335595518207, 316.3172864183291]
+    },
+    {
+      "id": 17,
+      "seed": "0x521f97cd91656a41eebd88c365fa81626ca6d8ccf05e6c19c1cd9aba80784382",
+      "traitsSha256": "541f062ff5f3242cf6cff9cb21267c92d1949596a14ee22f787353e2f1311498",
+      "pipelineVersion": "1.0.0",
+      "generation": {
+        "candidatesPerAttempt": 100000,
+        "selectedIndex": 84312,
+        "retryCount": 0,
+        "weightsRandomized": true,
+        "integrator": "yoshida4",
+        "dt": "0.001",
+        "steps": 1000000,
+        "warmupSteps": 1000000
+      },
+      "physics": {
+        "masses": ["113.12688705703958", "179.78203372437113", "271.37722229501617"],
+        "totalEnergy": "-2415.5473261692546",
+        "angularMomentum": "41812.90791967564",
+        "closestApproach": {
+          "distance": "64.023767769247",
+          "pair": [0, 1],
+          "step": 227061
+        },
+        "syzygyCount": 1,
+        "braid": {
+          "word": "s2 s1 s2' s1 s2 s1' s2 s1 s1 s2 s1' s2 s1 s2' s1 s2 s1' s2 s1 s2' s2' s1 s2 s1'",
+          "crossings": 24,
+          "truncated": false
+        }
+      },
+      "fate": {
+        "outcome": "ejection",
+        "escaper": 0,
+        "ejectionStep": 2680000,
+        "horizonSteps": 8000000
+      },
+      "bodyHues": [49.24847511610176, 7.430358893484444, 343.218670266119]
+    },
+    {
+      "id": 18,
+      "seed": "0xb7bd8fb366c9ae47dab5fa448153dd537098743a48fe33af35de8ddd4d584c25",
+      "traitsSha256": "c4cadae1162d6b9efd8e9cc3675209bae5523121d01a8bfb530db96be7732d5d",
+      "pipelineVersion": "1.0.0",
+      "generation": {
+        "candidatesPerAttempt": 100000,
+        "selectedIndex": 52726,
+        "retryCount": 0,
+        "weightsRandomized": true,
+        "integrator": "yoshida4",
+        "dt": "0.001",
+        "steps": 1000000,
+        "warmupSteps": 1000000
+      },
+      "physics": {
+        "masses": ["251.08578126085737", "157.36285277369421", "150.62869423121816"],
+        "totalEnergy": "-2606.858757209032",
+        "angularMomentum": "98746.25464843855",
+        "closestApproach": {
+          "distance": "38.132520551965804",
+          "pair": [0, 1],
+          "step": 982466
+        },
+        "syzygyCount": 0,
+        "braid": {
+          "word": "s2 s2 s1 s2' s1 s2 s2 s1 s2' s2' s1 s2 s2 s1 s2' s1 s2 s1' s2 s1 s1 s2 s2 s1",
+          "crossings": 24,
+          "truncated": false
+        }
+      },
+      "fate": {
+        "outcome": "eternal_dance",
+        "escaper": null,
+        "ejectionStep": null,
+        "horizonSteps": 8000000
+      },
+      "bodyHues": [321.39563527775044, 308.60860259886283, 11.39748614469579]
+    },
+    {
+      "id": 19,
+      "seed": "0x4c7dc283fabb2c4a4971b65cd7806b4e48d76440e3fbee3e4eef58d2269470e2",
+      "traitsSha256": "626970472498bc8028ad2671083b8f9b1a96ce24f06ba0d21d22e1c958d0448b",
+      "pipelineVersion": "1.0.0",
+      "generation": {
+        "candidatesPerAttempt": 100000,
+        "selectedIndex": 56674,
+        "retryCount": 0,
+        "weightsRandomized": true,
+        "integrator": "yoshida4",
+        "dt": "0.001",
+        "steps": 1000000,
+        "warmupSteps": 1000000
+      },
+      "physics": {
+        "masses": ["208.2212728521343", "263.40361686824076", "254.1897364280491"],
+        "totalEnergy": "-4003.6276538377374",
+        "angularMomentum": "163121.72148894775",
+        "closestApproach": {
+          "distance": "1.8355955758943983",
+          "pair": [0, 2],
+          "step": 879832
+        },
+        "syzygyCount": 1,
+        "braid": {
+          "word": "s1 s2 s1' s2 s1' s2 s1 s2' s2' s1 s1 s2 s1 s1 s2 s1' s2 s2 s1 s2' s1 s1 s2 s1'",
+          "crossings": 24,
+          "truncated": false
+        }
+      },
+      "fate": {
+        "outcome": "eternal_dance",
+        "escaper": null,
+        "ejectionStep": null,
+        "horizonSteps": 8000000
+      },
+      "bodyHues": [251.5017735615591, 24.019048265642596, 214.46960154873886]
+    },
+    {
+      "id": 20,
+      "seed": "0xf4bcfd7913601331aff2ff6f771f05806cd4983381a217fc02b7e4f2c497f788",
+      "traitsSha256": "ad439fd61bb227d2e6807cff9cc9d394166dc0bc365a8f6e0c642ab8fa044d43",
+      "pipelineVersion": "1.0.0",
+      "generation": {
+        "candidatesPerAttempt": 100000,
+        "selectedIndex": 48287,
+        "retryCount": 0,
+        "weightsRandomized": true,
+        "integrator": "yoshida4",
+        "dt": "0.001",
+        "steps": 1000000,
+        "warmupSteps": 1000000
+      },
+      "physics": {
+        "masses": ["202.88823802012632", "161.93591005814363", "209.1572428548584"],
+        "totalEnergy": "-3639.4846069505047",
+        "angularMomentum": "94823.55430472559",
+        "closestApproach": {
+          "distance": "1.600751027153359",
+          "pair": [0, 2],
+          "step": 172473
+        },
+        "syzygyCount": 8,
+        "braid": {
+          "word": "s1' s2' s1' s2' s2' s1' s2 s1' s1' s1' s1' s2' s1' s2 s2 s1' s2' s1 s1 s2' s1' s2 s2 s1' s2' s1' s1' s2' s1' s2' s2' s2'",
+          "crossings": 32,
+          "truncated": false
+        }
+      },
+      "fate": {
+        "outcome": "ejection",
+        "escaper": 1,
+        "ejectionStep": 7270000,
+        "horizonSteps": 8000000
+      },
+      "bodyHues": [345.2987913083756, 32.65822893058707, 4.50642516895927]
+    },
+    {
+      "id": 21,
+      "seed": "0x37c73b71ae24c2a263b46ca3399d91b4de4fe97f1eb4dfe608475101f69e590e",
+      "traitsSha256": "985c767ff54f155222248d50f85fd69fe1fc3a875f53919dbc004b80a48664ef",
+      "pipelineVersion": "1.0.0",
+      "generation": {
+        "candidatesPerAttempt": 100000,
+        "selectedIndex": 34950,
+        "retryCount": 0,
+        "weightsRandomized": true,
+        "integrator": "yoshida4",
+        "dt": "0.001",
+        "steps": 1000000,
+        "warmupSteps": 1000000
+      },
+      "physics": {
+        "masses": ["131.36282004835948", "106.04794329677377", "217.04972242499775"],
+        "totalEnergy": "-2548.6603090157614",
+        "angularMomentum": "47918.03360321215",
+        "closestApproach": {
+          "distance": "4.691779619852954",
+          "pair": [0, 2],
+          "step": 62572
+        },
+        "syzygyCount": 0,
+        "braid": {
+          "word": "s2' s2' s1' s2' s1 s2' s1' s2 s2 s2 s1' s2' s1 s2' s1' s2' s2' s1' s2' s1' s2' s1' s1' s2' s1' s1' s2' s2' s1' s1' s2' s1' s2' s1' s2' s1' s2' s1' s2' s1'",
+          "crossings": 40,
+          "truncated": false
+        }
+      },
+      "fate": {
+        "outcome": "eternal_dance",
+        "escaper": null,
+        "ejectionStep": null,
+        "horizonSteps": 8000000
+      },
+      "bodyHues": [247.66752124751434, 323.0474826124454, 163.5515549421763]
+    },
+    {
+      "id": 22,
+      "seed": "0x003108837490f9fd840a44e70590173c7f95340872f60eaa13482b4ecb8fb0a8",
+      "traitsSha256": "7263806f1236e44069c123af2344a050bd3e7bf3e157945e27292be6be78bb90",
+      "pipelineVersion": "1.0.0",
+      "generation": {
+        "candidatesPerAttempt": 100000,
+        "selectedIndex": 38610,
+        "retryCount": 0,
+        "weightsRandomized": true,
+        "integrator": "yoshida4",
+        "dt": "0.001",
+        "steps": 1000000,
+        "warmupSteps": 1000000
+      },
+      "physics": {
+        "masses": ["171.37571967417253", "159.69657012404613", "117.94017073825572"],
+        "totalEnergy": "-1652.7370817138988",
+        "angularMomentum": "58167.41264609538",
+        "closestApproach": {
+          "distance": "0.1850465180225437",
+          "pair": [0, 1],
+          "step": 43932
+        },
+        "syzygyCount": 5,
+        "braid": {
+          "word": "s1' s2' s1 s2' s1 s2 s1' s2 s1 s1 s2 s1' s1' s2' s2' s1 s2' s1' s2 s1' s2' s1 s2' s1' s2 s1' s2' s1 s1' s2 s2 s1' s1 s2 s2 s1'",
+          "crossings": 36,
+          "truncated": false
+        }
+      },
+      "fate": {
+        "outcome": "ejection",
+        "escaper": 2,
+        "ejectionStep": 3930000,
+        "horizonSteps": 8000000
+      },
+      "bodyHues": [2.905088706821393, 8.330391594241544, 24.870385686625127]
+    },
+    {
+      "id": 23,
+      "seed": "0x17d61f1c00e5d16c399a8e341e9feaea32b275e5426a4375394e74cc855affcc",
+      "traitsSha256": "a0c4aea15361edfadfc20f45acfa456eb89137800be510a24088d3b22269afec",
+      "pipelineVersion": "1.0.0",
+      "generation": {
+        "candidatesPerAttempt": 100000,
+        "selectedIndex": 22083,
+        "retryCount": 0,
+        "weightsRandomized": true,
+        "integrator": "yoshida4",
+        "dt": "0.001",
+        "steps": 1000000,
+        "warmupSteps": 1000000
+      },
+      "physics": {
+        "masses": ["141.7666122857421", "123.42091484633418", "148.542917056232"],
+        "totalEnergy": "-1775.023010537104",
+        "angularMomentum": "44961.79246721966",
+        "closestApproach": {
+          "distance": "5.947459085738269",
+          "pair": [0, 2],
+          "step": 242114
+        },
+        "syzygyCount": 1,
+        "braid": {
+          "word": "s2 s1' s2' s1 s2' s1' s1' s2 s2 s1 s1 s2' s1 s2 s1' s2' s2' s1' s2 s1' s1' s2' s1' s2' s2 s1' s2' s1 s2' s2' s1' s2 s1'",
+          "crossings": 33,
+          "truncated": false
+        }
+      },
+      "fate": {
+        "outcome": "eternal_dance",
+        "escaper": null,
+        "ejectionStep": null,
+        "horizonSteps": 8000000
+      },
+      "bodyHues": [167.78543759225505, 144.4921997559523, 158.19016270312312]
+    },
+    {
+      "id": 24,
+      "seed": "0x5084a87375896c7103ba17b57264f20de35d9e6eb545314680ad5e074dfc33ad",
+      "traitsSha256": "47cb2c4717242aa78fa8899291557e9d702279d05840297bbe827a94eaeed179",
+      "pipelineVersion": "1.0.0",
+      "generation": {
+        "candidatesPerAttempt": 100000,
+        "selectedIndex": 80086,
+        "retryCount": 0,
+        "weightsRandomized": true,
+        "integrator": "yoshida4",
+        "dt": "0.001",
+        "steps": 1000000,
+        "warmupSteps": 1000000
+      },
+      "physics": {
+        "masses": ["205.13823581887726", "101.74907130293104", "100.01475656107688"],
+        "totalEnergy": "-1570.2208748220446",
+        "angularMomentum": "48992.84157391714",
+        "closestApproach": {
+          "distance": "4.360090256193309",
+          "pair": [0, 2],
+          "step": 189394
+        },
+        "syzygyCount": 2,
+        "braid": {
+          "word": "s2 s1' s2 s1 s2' s2' s2' s1' s2 s2' s1' s2 s2 s1' s1' s2 s1' s2' s1 s1 s2' s1 s2 s1' s2' s1 s1 s1",
+          "crossings": 28,
+          "truncated": false
+        }
+      },
+      "fate": {
+        "outcome": "ejection",
+        "escaper": 0,
+        "ejectionStep": 1530000,
+        "horizonSteps": 8000000
+      },
+      "bodyHues": [183.28268485615533, 301.25809317966997, 220.12968518004115]
+    },
+    {
+      "id": 25,
+      "seed": "0x6b273359fbc21c34f58a546c86a88b21c2bd307797e3c4959c5eccc8e326e4fd",
+      "traitsSha256": "cbcf1144bee9a3d7f2ddb212e1e3dd557dfdb6cf0a784309c781b837742aa068",
+      "pipelineVersion": "1.0.0",
+      "generation": {
+        "candidatesPerAttempt": 100000,
+        "selectedIndex": 42183,
+        "retryCount": 0,
+        "weightsRandomized": true,
+        "integrator": "yoshida4",
+        "dt": "0.001",
+        "steps": 1000000,
+        "warmupSteps": 1000000
+      },
+      "physics": {
+        "masses": ["173.7043944764187", "119.20689510386178", "162.1956722141846"],
+        "totalEnergy": "-2037.2023343643011",
+        "angularMomentum": "50522.75852724817",
+        "closestApproach": {
+          "distance": "1.126952769366449",
+          "pair": [0, 2],
+          "step": 782292
+        },
+        "syzygyCount": 2,
+        "braid": {
+          "word": "s2 s1' s2 s1 s2' s1 s2' s1 s2 s2 s1' s1' s2 s2 s1 s1 s2 s2 s1' s2 s1 s1 s1 s2 s1' s2'",
+          "crossings": 26,
+          "truncated": false
+        }
+      },
+      "fate": {
+        "outcome": "ejection",
+        "escaper": 1,
+        "ejectionStep": 1210000,
+        "horizonSteps": 8000000
+      },
+      "bodyHues": [77.43847384060228, 107.75707654761585, 91.95216662252324]
+    },
+    {
+      "id": 26,
+      "seed": "0x882c7b9547f87eeb407f34b466c072265f4742e0cdb84bb990149fb0c16e4e9e",
+      "traitsSha256": "e8816b478c5c65496fee5b7d88ed0c73a84e3aaa873b53ef0beb77b634fc07c6",
+      "pipelineVersion": "1.0.0",
+      "generation": {
+        "candidatesPerAttempt": 100000,
+        "selectedIndex": 53412,
+        "retryCount": 0,
+        "weightsRandomized": true,
+        "integrator": "yoshida4",
+        "dt": "0.001",
+        "steps": 1000000,
+        "warmupSteps": 1000000
+      },
+      "physics": {
+        "masses": ["100.90009055563296", "230.47036920684656", "105.76296634693196"],
+        "totalEnergy": "-1539.1995376830141",
+        "angularMomentum": "53178.82566014036",
+        "closestApproach": {
+          "distance": "17.698725384255347",
+          "pair": [0, 1],
+          "step": 654255
+        },
+        "syzygyCount": 0,
+        "braid": {
+          "word": "s1' s2 s1' s2 s1' s2' s1 s1 s2' s2' s1' s2 s2 s1 s1 s2' s1' s1' s1' s2' s2' s1' s2",
+          "crossings": 23,
+          "truncated": false
+        }
+      },
+      "fate": {
+        "outcome": "eternal_dance",
+        "escaper": null,
+        "ejectionStep": null,
+        "horizonSteps": 8000000
+      },
+      "bodyHues": [95.60993270605017, 176.05864048273318, 143.46970834101631]
+    },
+    {
+      "id": 27,
+      "seed": "0xafc587b3c960ca50ba824520a3370fda7756be5f60ef6e06500fecf1ece4beb9",
+      "traitsSha256": "ee67b6dfd8be9bc5e9494d9e6f214a36eb6cdff59250eb5c68067df05ab64648",
+      "pipelineVersion": "1.0.0",
+      "generation": {
+        "candidatesPerAttempt": 100000,
+        "selectedIndex": 22108,
+        "retryCount": 0,
+        "weightsRandomized": true,
+        "integrator": "yoshida4",
+        "dt": "0.001",
+        "steps": 1000000,
+        "warmupSteps": 1000000
+      },
+      "physics": {
+        "masses": ["101.16556322578124", "151.26643815191974", "197.31688919833283"],
+        "totalEnergy": "-2406.583660838829",
+        "angularMomentum": "65729.48263929346",
+        "closestApproach": {
+          "distance": "5.156307299841449",
+          "pair": [1, 2],
+          "step": 815519
+        },
+        "syzygyCount": 2,
+        "braid": {
+          "word": "s1 s2 s1 s2 s1 s2 s1 s2 s2 s2 s1 s2 s2 s1 s2 s1 s1 s2 s1 s2 s2 s1 s2 s1 s1 s2 s1 s2 s2 s2 s1 s2 s1 s1 s2 s1",
+          "crossings": 36,
+          "truncated": false
+        }
+      },
+      "fate": {
+        "outcome": "eternal_dance",
+        "escaper": null,
+        "ejectionStep": null,
+        "horizonSteps": 8000000
+      },
+      "bodyHues": [317.1869409063278, 334.51749632437435, 315.39158824597723]
+    },
+    {
+      "id": 28,
+      "seed": "0xe1b2c47ad2308dbc6456a0995ec9a7572964bb4650e9f7034c427b1e4185d620",
+      "traitsSha256": "f41a746a6437deacd7ccf2cb896ce78a328680549d4dc9220d836b5324eb8544",
+      "pipelineVersion": "1.0.0",
+      "generation": {
+        "candidatesPerAttempt": 100000,
+        "selectedIndex": 274,
+        "retryCount": 0,
+        "weightsRandomized": true,
+        "integrator": "yoshida4",
+        "dt": "0.001",
+        "steps": 1000000,
+        "warmupSteps": 1000000
+      },
+      "physics": {
+        "masses": ["174.74168398338574", "207.47195884627914", "131.1114032866246"],
+        "totalEnergy": "-2577.528373701835",
+        "angularMomentum": "62881.50236225762",
+        "closestApproach": {
+          "distance": "0.7141278380635644",
+          "pair": [0, 1],
+          "step": 4125
+        },
+        "syzygyCount": 1,
+        "braid": {
+          "word": "s1 s1 s1 s2' s1' s2' s1' s1' s2' s2' s1' s2' s2' s1' s2 s1' s2' s2' s1 s2' s1 s1 s2' s1' s2 s2 s1 s2'",
+          "crossings": 28,
+          "truncated": false
+        }
+      },
+      "fate": {
+        "outcome": "eternal_dance",
+        "escaper": null,
+        "ejectionStep": null,
+        "horizonSteps": 8000000
+      },
+      "bodyHues": [230.13856394053883, 259.2484277876686, 237.72745247392737]
+    },
+    {
+      "id": 29,
+      "seed": "0xb0135869a031d80d579dead0d010120b12fd1c334be85174e0474cd359bbdc95",
+      "traitsSha256": "3b4e0860831fff4e85989249db7f51bf944d4d7bc5aba07863073d85838bcdd2",
+      "pipelineVersion": "1.0.0",
+      "generation": {
+        "candidatesPerAttempt": 100000,
+        "selectedIndex": 65386,
+        "retryCount": 0,
+        "weightsRandomized": true,
+        "integrator": "yoshida4",
+        "dt": "0.001",
+        "steps": 1000000,
+        "warmupSteps": 1000000
+      },
+      "physics": {
+        "masses": ["203.3292251275168", "188.43331387900912", "154.56049033846216"],
+        "totalEnergy": "-3148.99623632437",
+        "angularMomentum": "26883.8442098899",
+        "closestApproach": {
+          "distance": "0.5226172376988338",
+          "pair": [0, 2],
+          "step": 229040
+        },
+        "syzygyCount": 4,
+        "braid": {
+          "word": "s2 s2 s2 s1' s2' s2' s2 s1 s2 s2 s2 s1' s2 s1 s1 s2' s2 s1 s1 s2' s2' s1 s1 s2 s1' s2 s1' s1'",
+          "crossings": 28,
+          "truncated": false
+        }
+      },
+      "fate": {
+        "outcome": "ejection",
+        "escaper": 2,
+        "ejectionStep": 2030000,
+        "horizonSteps": 8000000
+      },
+      "bodyHues": [110.27680216253512, 119.67915047350833, 115.73127434350234]
+    },
+    {
+      "id": 30,
+      "seed": "0xf4362bafb766d5a5dfc78b0fcd91607544a4bb6a540ca076f55dd74643a453c2",
+      "traitsSha256": "0defbc3700e100953f6737da25fbcc7fa49858a94e494995b9ba979c06d33284",
+      "pipelineVersion": "1.0.0",
+      "generation": {
+        "candidatesPerAttempt": 100000,
+        "selectedIndex": 27926,
+        "retryCount": 0,
+        "weightsRandomized": true,
+        "integrator": "yoshida4",
+        "dt": "0.001",
+        "steps": 1000000,
+        "warmupSteps": 1000000
+      },
+      "physics": {
+        "masses": ["190.0392474281856", "193.42697295465155", "105.71331173114817"],
+        "totalEnergy": "-2285.8124543132844",
+        "angularMomentum": "69186.04314863026",
+        "closestApproach": {
+          "distance": "0.4369069920502922",
+          "pair": [0, 1],
+          "step": 192723
+        },
+        "syzygyCount": 3,
+        "braid": {
+          "word": "s1' s1' s2' s1' s2' s2 s1' s2' s1 s1 s1' s2' s1' s2 s2 s1' s2' s1 s1 s1 s1 s2' s1' s2",
+          "crossings": 24,
+          "truncated": false
+        }
+      },
+      "fate": {
+        "outcome": "ejection",
+        "escaper": 2,
+        "ejectionStep": 4830000,
+        "horizonSteps": 8000000
+      },
+      "bodyHues": [245.0678728363868, 86.9471391291778, 207.40347970567484]
+    },
+    {
+      "id": 31,
+      "seed": "0x4a0d5b57e13cf40c56cddb4ee2c10f50ab7aff755e24c61a687855663713f5b5",
+      "traitsSha256": "0bb9fdac8f267ba2ac6695e439d7d5854d3ed00d2ad1e802f83bcd0cffcc6e95",
+      "pipelineVersion": "1.0.0",
+      "generation": {
+        "candidatesPerAttempt": 100000,
+        "selectedIndex": 77741,
+        "retryCount": 0,
+        "weightsRandomized": true,
+        "integrator": "yoshida4",
+        "dt": "0.001",
+        "steps": 1000000,
+        "warmupSteps": 1000000
+      },
+      "physics": {
+        "masses": ["130.67371638058603", "250.9920858730805", "124.96327743951707"],
+        "totalEnergy": "-2142.8907060284882",
+        "angularMomentum": "45072.95196766655",
+        "closestApproach": {
+          "distance": "80.20379580764032",
+          "pair": [0, 2],
+          "step": 255842
+        },
+        "syzygyCount": 0,
+        "braid": {
+          "word": "s2' s1' s1' s2' s1 s2' s1' s2 s1' s2' s1 s2' s1' s2 s1' s2' s2' s1' s2 s2 s1' s2' s1 s2' s1'",
+          "crossings": 25,
+          "truncated": false
+        }
+      },
+      "fate": {
+        "outcome": "eternal_dance",
+        "escaper": null,
+        "ejectionStep": null,
+        "horizonSteps": 8000000
+      },
+      "bodyHues": [19.21141290942327, 22.54815743077184, 9.168090395189965]
+    },
+    {
+      "id": 32,
+      "seed": "0x6dd498f93b24ea9493acfed9a8e4069a5b3e6e7c3b426fe43de472010c2636a6",
+      "traitsSha256": "fb6498d00f3b6184edcc82103b36142067c81eaefd7c7a6a46490c06318b91da",
+      "pipelineVersion": "1.0.0",
+      "generation": {
+        "candidatesPerAttempt": 100000,
+        "selectedIndex": 71986,
+        "retryCount": 0,
+        "weightsRandomized": true,
+        "integrator": "yoshida4",
+        "dt": "0.001",
+        "steps": 1000000,
+        "warmupSteps": 1000000
+      },
+      "physics": {
+        "masses": ["275.87082868825", "138.56446939030008", "116.52308997417417"],
+        "totalEnergy": "-3836.384597358996",
+        "angularMomentum": "58804.392805324125",
+        "closestApproach": {
+          "distance": "0.3162689132810182",
+          "pair": [0, 2],
+          "step": 993348
+        },
+        "syzygyCount": 1,
+        "braid": {
+          "word": "s1 s1 s2' s1' s2 s2 s1' s2' s1 s1 s2' s1' s2 s1' s2' s1 s2' s1' s2 s1' s2' s2' s1 s1 s2' s1' s1' s2' s1' s2' s2' s1 s1 s2' s2' s1' s2' s2' s1 s1 s2' s1' s2 s2 s1' s1' s2' s1'",
+          "crossings": 56,
+          "truncated": true
+        }
+      },
+      "fate": {
+        "outcome": "ejection",
+        "escaper": 1,
+        "ejectionStep": 4980000,
+        "horizonSteps": 8000000
+      },
+      "bodyHues": [349.1164332764201, 42.79482219928366, 1.3403343405354384]
+    },
+    {
+      "id": 33,
+      "seed": "0xfecd05a4e7f537281200ed720a095da2d5d4db14867a37d2627ebdaa2d2ad1e6",
+      "traitsSha256": "06b86c026a9e73bcfccc330699036be75ad213c5791e1b369b8900e955341b18",
+      "pipelineVersion": "1.0.0",
+      "generation": {
+        "candidatesPerAttempt": 100000,
+        "selectedIndex": 91402,
+        "retryCount": 0,
+        "weightsRandomized": true,
+        "integrator": "yoshida4",
+        "dt": "0.001",
+        "steps": 1000000,
+        "warmupSteps": 1000000
+      },
+      "physics": {
+        "masses": ["149.84233840238136", "131.35817307839272", "221.51808529165635"],
+        "totalEnergy": "-2335.832211852393",
+        "angularMomentum": "83382.05476011189",
+        "closestApproach": {
+          "distance": "95.7476921368173",
+          "pair": [0, 2],
+          "step": 976489
+        },
+        "syzygyCount": 0,
+        "braid": {
+          "word": "s1' s2 s2 s1' s2' s1 s2' s1' s2 s2 s1' s2' s1 s2' s1' s2 s2 s2 s1' s2' s1' s2' s1' s2' s1' s2' s1'",
+          "crossings": 27,
+          "truncated": false
+        }
+      },
+      "fate": {
+        "outcome": "eternal_dance",
+        "escaper": null,
+        "ejectionStep": null,
+        "horizonSteps": 8000000
+      },
+      "bodyHues": [209.6259372703281, 236.8932614845979, 294.27311770556213]
+    },
+    {
+      "id": 34,
+      "seed": "0x5bbb0a5a29213be7a45e008e31a64e4f3d5e5d84909c6e4bfc90cab43eb14e95",
+      "traitsSha256": "26c10373690f1f8afd9661771b3e233796ed948707ec504fee49b566f7a1869e",
+      "pipelineVersion": "1.0.0",
+      "generation": {
+        "candidatesPerAttempt": 100000,
+        "selectedIndex": 50366,
+        "retryCount": 0,
+        "weightsRandomized": true,
+        "integrator": "yoshida4",
+        "dt": "0.001",
+        "steps": 1000000,
+        "warmupSteps": 1000000
+      },
+      "physics": {
+        "masses": ["204.97702672510792", "118.5633785772209", "111.92755564327065"],
+        "totalEnergy": "-2115.782205330669",
+        "angularMomentum": "83342.57561365601",
+        "closestApproach": {
+          "distance": "15.701790438862863",
+          "pair": [0, 2],
+          "step": 940426
+        },
+        "syzygyCount": 1,
+        "braid": {
+          "word": "s2 s2 s1 s2 s1 s2 s1 s2 s1 s1 s2 s2 s1 s2 s2 s1 s2 s1 s2 s1 s2 s2 s1 s2 s2 s1 s1 s2 s1 s2 s2 s1 s2 s1 s1 s2",
+          "crossings": 36,
+          "truncated": false
+        }
+      },
+      "fate": {
+        "outcome": "eternal_dance",
+        "escaper": null,
+        "ejectionStep": null,
+        "horizonSteps": 8000000
+      },
+      "bodyHues": [5.116144116936922, 351.0410433164191, 28.52383229408346]
+    },
+    {
+      "id": 35,
+      "seed": "0xf5a6f1d364517c39dd5f1d0fdbeeb0cfb7a73a26e5e17a17f91e7b7f16e0ef36",
+      "traitsSha256": "ccdf317cfbb2d6c6037a2243b183f12477d8bfb97c3ec461d0920dea110d62b6",
+      "pipelineVersion": "1.0.0",
+      "generation": {
+        "candidatesPerAttempt": 100000,
+        "selectedIndex": 72916,
+        "retryCount": 0,
+        "weightsRandomized": true,
+        "integrator": "yoshida4",
+        "dt": "0.001",
+        "steps": 1000000,
+        "warmupSteps": 1000000
+      },
+      "physics": {
+        "masses": ["148.99470931114638", "192.72857817411932", "113.76231924179005"],
+        "totalEnergy": "-1901.189469291612",
+        "angularMomentum": "62778.3128007029",
+        "closestApproach": {
+          "distance": "0.9060180890884459",
+          "pair": [0, 1],
+          "step": 62151
+        },
+        "syzygyCount": 1,
+        "braid": {
+          "word": "s2' s1' s2' s2' s2' s1' s2 s1' s1' s2' s1 s2 s1' s2' s1 s2' s1' s2 s2 s2 s2 s1' s2'",
+          "crossings": 23,
+          "truncated": false
+        }
+      },
+      "fate": {
+        "outcome": "ejection",
+        "escaper": 2,
+        "ejectionStep": 4410000,
+        "horizonSteps": 8000000
+      },
+      "bodyHues": [344.0948245538694, 33.17474751689802, 279.47799728802676]
+    },
+    {
+      "id": 36,
+      "seed": "0xfb56077944020a3562a3dc2320e37b2149601b297ded3147c8c8c31dcd9b9179",
+      "traitsSha256": "a6c52ea78a74d4c79fabeb0ad7a79b90805f7e9d7ea7abf3f57f9cb4ed7432dd",
+      "pipelineVersion": "1.0.0",
+      "generation": {
+        "candidatesPerAttempt": 100000,
+        "selectedIndex": 87240,
+        "retryCount": 0,
+        "weightsRandomized": true,
+        "integrator": "yoshida4",
+        "dt": "0.001",
+        "steps": 1000000,
+        "warmupSteps": 1000000
+      },
+      "physics": {
+        "masses": ["260.71962044561633", "219.71262541129346", "238.03133519321872"],
+        "totalEnergy": "-6601.174762577489",
+        "angularMomentum": "124366.49843001454",
+        "closestApproach": {
+          "distance": "0.46042987529405666",
+          "pair": [0, 2],
+          "step": 119140
+        },
+        "syzygyCount": 4,
+        "braid": {
+          "word": "s1 s2 s1 s1 s2 s1 s2' s2 s2 s1 s2 s1 s2 s1 s1 s2 s1 s2 s1 s2 s2 s1 s2 s1 s2 s1 s2 s1 s2 s1 s2 s1 s1 s2 s1 s1 s2 s1' s2 s1' s2 s1 s2' s1 s2 s1' s1' s1'",
+          "crossings": 48,
+          "truncated": false
+        }
+      },
+      "fate": {
+        "outcome": "eternal_dance",
+        "escaper": null,
+        "ejectionStep": null,
+        "horizonSteps": 8000000
+      },
+      "bodyHues": [79.6768318774674, 359.74540743165096, 351.53348308309586]
+    },
+    {
+      "id": 37,
+      "seed": "0xd485462e33dfa28a96e4596012f5a5027443f2d7992490ddc9c2bb65e1f465f7",
+      "traitsSha256": "0584c472e7c7c97e112e3933fd90f6536ed7daf7831b00d21472a891e64ff299",
+      "pipelineVersion": "1.0.0",
+      "generation": {
+        "candidatesPerAttempt": 100000,
+        "selectedIndex": 5593,
+        "retryCount": 0,
+        "weightsRandomized": true,
+        "integrator": "yoshida4",
+        "dt": "0.001",
+        "steps": 1000000,
+        "warmupSteps": 1000000
+      },
+      "physics": {
+        "masses": ["189.51673483881345", "112.72831678160097", "150.74261632578035"],
+        "totalEnergy": "-2049.9160157043116",
+        "angularMomentum": "74466.4165295362",
+        "closestApproach": {
+          "distance": "3.975459121926606",
+          "pair": [0, 2],
+          "step": 828478
+        },
+        "syzygyCount": 2,
+        "braid": {
+          "word": "s2 s1 s2' s2' s1 s2 s1 s1' s2 s1 s2' s1 s2 s1' s2 s1 s2' s1 s2 s1' s1' s2 s1 s2 s1 s2 s2 s1 s2 s1' s1'",
+          "crossings": 31,
+          "truncated": false
+        }
+      },
+      "fate": {
+        "outcome": "eternal_dance",
+        "escaper": null,
+        "ejectionStep": null,
+        "horizonSteps": 8000000
+      },
+      "bodyHues": [334.15757567933423, 327.0077193205148, 13.932917330127111]
+    },
+    {
+      "id": 38,
+      "seed": "0x6fb8e9b6e2e57ad9a4da10357ad1cd81a21361382a29155a072abe265006c27c",
+      "traitsSha256": "825f34b3e2b05ab889be1058b33d63dc39c63ddea1b0818a1aee81a13318f9e8",
+      "pipelineVersion": "1.0.0",
+      "generation": {
+        "candidatesPerAttempt": 100000,
+        "selectedIndex": 991,
+        "retryCount": 0,
+        "weightsRandomized": true,
+        "integrator": "yoshida4",
+        "dt": "0.001",
+        "steps": 1000000,
+        "warmupSteps": 1000000
+      },
+      "physics": {
+        "masses": ["189.28103221485026", "168.07445470038522", "103.49663616181653"],
+        "totalEnergy": "-2388.418451133449",
+        "angularMomentum": "65659.3958552854",
+        "closestApproach": {
+          "distance": "6.563416369421336",
+          "pair": [0, 2],
+          "step": 864609
+        },
+        "syzygyCount": 2,
+        "braid": {
+          "word": "s2 s1 s2' s1 s2 s1' s2 s1 s2' s1 s2 s1' s2 s1 s2 s1 s2 s1 s2 s1 s2' s2' s1 s2 s1' s1' s2 s1 s2 s1 s2 s1' s2 s1 s2' s1' s1 s1 s1",
+          "crossings": 39,
+          "truncated": false
+        }
+      },
+      "fate": {
+        "outcome": "ejection",
+        "escaper": 2,
+        "ejectionStep": 3550000,
+        "horizonSteps": 8000000
+      },
+      "bodyHues": [168.74466515385, 46.99921177952203, 116.5117215393092]
+    },
+    {
+      "id": 39,
+      "seed": "0x56d7e21a3dd131a46f7541b0d4fc85faf7996a325f090d5f18d53d099cade7b8",
+      "traitsSha256": "b77477c67d0165a1499c1d25af46412af17a25e07a5e688c1ebb56ee5aa12fce",
+      "pipelineVersion": "1.0.0",
+      "generation": {
+        "candidatesPerAttempt": 100000,
+        "selectedIndex": 78853,
+        "retryCount": 0,
+        "weightsRandomized": true,
+        "integrator": "yoshida4",
+        "dt": "0.001",
+        "steps": 1000000,
+        "warmupSteps": 1000000
+      },
+      "physics": {
+        "masses": ["152.18017254526742", "116.19250655202055", "282.92576130608813"],
+        "totalEnergy": "-2808.56381773992",
+        "angularMomentum": "81684.10742683044",
+        "closestApproach": {
+          "distance": "2.3027600812001348",
+          "pair": [0, 2],
+          "step": 129253
+        },
+        "syzygyCount": 3,
+        "braid": {
+          "word": "s1' s2 s1' s2' s1' s1' s2' s1' s2 s1 s2' s1' s1' s2' s2' s1 s2' s1 s1 s2' s1' s2 s2 s2 s2 s1' s2' s2 s1'",
+          "crossings": 29,
+          "truncated": false
+        }
+      },
+      "fate": {
+        "outcome": "ejection",
+        "escaper": 0,
+        "ejectionStep": 4440000,
+        "horizonSteps": 8000000
+      },
+      "bodyHues": [28.792847827713395, 172.5214577627739, 228.68645746561282]
+    },
+    {
+      "id": 40,
+      "seed": "0xcdab48977fb18d3c9c46d1e9405c6342cdc58a500013fe856ffb142d31cef6dc",
+      "traitsSha256": "ce7cdfc453f07e4c459a1ba4a93360fa8b281ce364b71735f3664c6f78bd0e94",
+      "pipelineVersion": "1.0.0",
+      "generation": {
+        "candidatesPerAttempt": 100000,
+        "selectedIndex": 18063,
+        "retryCount": 0,
+        "weightsRandomized": true,
+        "integrator": "yoshida4",
+        "dt": "0.001",
+        "steps": 1000000,
+        "warmupSteps": 1000000
+      },
+      "physics": {
+        "masses": ["131.25902845138106", "174.29748351163374", "140.02921230694474"],
+        "totalEnergy": "-5267.237372208612",
+        "angularMomentum": "69587.4476043041",
+        "closestApproach": {
+          "distance": "4.116132982913597",
+          "pair": [0, 1],
+          "step": 146052
+        },
+        "syzygyCount": 1,
+        "braid": {
+          "word": "s1' s2' s1' s2' s2' s2' s1' s2' s2' s1' s1' s2' s1' s2' s1' s2' s2' s1' s2' s1' s2' s1' s2' s1' s2' s1' s2' s1' s2' s1' s2' s1' s2' s1' s2' s1' s2' s1' s1'",
+          "crossings": 39,
+          "truncated": false
+        }
+      },
+      "fate": {
+        "outcome": "ejection",
+        "escaper": 0,
+        "ejectionStep": 2850000,
+        "horizonSteps": 8000000
+      },
+      "bodyHues": [351.8471813305992, 41.818974149663234, 39.06617565082004]
+    },
+    {
+      "id": 41,
+      "seed": "0xb96b34a0a5fa29b0c30f5f8ba1168629b2a8bf6bf75dace7c28321193d9b178c",
+      "traitsSha256": "fbfcda6e55b029832b9d0f0381305cddb8cddb205e2220a0ed44d7fa99a338ae",
+      "pipelineVersion": "1.0.0",
+      "generation": {
+        "candidatesPerAttempt": 100000,
+        "selectedIndex": 41546,
+        "retryCount": 0,
+        "weightsRandomized": true,
+        "integrator": "yoshida4",
+        "dt": "0.001",
+        "steps": 1000000,
+        "warmupSteps": 1000000
+      },
+      "physics": {
+        "masses": ["153.86914851003914", "142.04980445279344", "264.68823961171086"],
+        "totalEnergy": "-3891.1970036430703",
+        "angularMomentum": "56818.27179321829",
+        "closestApproach": {
+          "distance": "42.14090319866704",
+          "pair": [1, 2],
+          "step": 20767
+        },
+        "syzygyCount": 4,
+        "braid": {
+          "word": "s2 s1' s2' s1 s1 s2' s1' s2 s1' s2' s1 s2' s1' s2 s1' s2' s1 s1 s2' s1' s2 s1' s2' s1 s2' s1' s2 s2 s1' s2' s1 s1 s2' s1' s2 s1' s2' s1 s2' s1' s2 s2 s1' s2' s1",
+          "crossings": 45,
+          "truncated": false
+        }
+      },
+      "fate": {
+        "outcome": "eternal_dance",
+        "escaper": null,
+        "ejectionStep": null,
+        "horizonSteps": 8000000
+      },
+      "bodyHues": [102.27753663259743, 135.05394070652252, 112.50359934934133]
+    },
+    {
+      "id": 42,
+      "seed": "0x70f7093200501942444ac597e61579d75d2a9185f51ddce457e0cc50d28dbf37",
+      "traitsSha256": "767dde864c04336ae7f106b92e693e6f7f61ee091424cd32dfd86ae9d0906ea7",
+      "pipelineVersion": "1.0.0",
+      "generation": {
+        "candidatesPerAttempt": 100000,
+        "selectedIndex": 5604,
+        "retryCount": 0,
+        "weightsRandomized": true,
+        "integrator": "yoshida4",
+        "dt": "0.001",
+        "steps": 1000000,
+        "warmupSteps": 1000000
+      },
+      "physics": {
+        "masses": ["286.4689653342747", "282.96464661006536", "114.22128223924787"],
+        "totalEnergy": "-3287.703372179128",
+        "angularMomentum": "171807.63849702416",
+        "closestApproach": {
+          "distance": "28.818506181734023",
+          "pair": [0, 1],
+          "step": 696603
+        },
+        "syzygyCount": 0,
+        "braid": {
+          "word": "s2' s1' s1' s2' s1' s1' s2' s1' s2' s2' s2' s1' s2' s1' s1' s2' s1' s2' s1' s2' s1' s2'",
+          "crossings": 22,
+          "truncated": false
+        }
+      },
+      "fate": {
+        "outcome": "eternal_dance",
+        "escaper": null,
+        "ejectionStep": null,
+        "horizonSteps": 8000000
+      },
+      "bodyHues": [327.96050628137374, 349.1273236308413, 317.2647726821167]
+    },
+    {
+      "id": 43,
+      "seed": "0x7a3dc84c82a0a2c7955ea5d6d4d7adef8a11fe4cddd2ba293752d71fd06ddf8f",
+      "traitsSha256": "97c7d66840cb57628e6992ded6536b6da28bff5f69aba54837e3ff259d8a66b4",
+      "pipelineVersion": "1.0.0",
+      "generation": {
+        "candidatesPerAttempt": 100000,
+        "selectedIndex": 35895,
+        "retryCount": 0,
+        "weightsRandomized": true,
+        "integrator": "yoshida4",
+        "dt": "0.001",
+        "steps": 1000000,
+        "warmupSteps": 1000000
+      },
+      "physics": {
+        "masses": ["134.4597012876928", "146.40089566367902", "254.2452219205597"],
+        "totalEnergy": "-3211.029747772031",
+        "angularMomentum": "85948.41901587529",
+        "closestApproach": {
+          "distance": "2.1317306898160133",
+          "pair": [1, 2],
+          "step": 415248
+        },
+        "syzygyCount": 2,
+        "braid": {
+          "word": "s2' s2' s1' s2' s1' s2' s1' s2' s2' s1' s2' s1 s1 s2' s1' s2 s2 s1' s2' s1' s1' s2' s1' s2' s2' s1' s2' s1' s2' s1' s1' s2' s1' s2' s2' s1' s2' s1' s1'",
+          "crossings": 39,
+          "truncated": false
+        }
+      },
+      "fate": {
+        "outcome": "ejection",
+        "escaper": 0,
+        "ejectionStep": 4080000,
+        "horizonSteps": 8000000
+      },
+      "bodyHues": [207.61954080161192, 209.20750555022843, 211.74991526914795]
+    },
+    {
+      "id": 44,
+      "seed": "0x69e0f4c123a0a888f182a7780f53ad0f9d97d0492d005d205244e2e3b8e079c4",
+      "traitsSha256": "919a5e404a1686016d976901e92ca4a62ecbc395577dae2ccd4c0dff942c7114",
+      "pipelineVersion": "1.0.0",
+      "generation": {
+        "candidatesPerAttempt": 100000,
+        "selectedIndex": 64950,
+        "retryCount": 0,
+        "weightsRandomized": true,
+        "integrator": "yoshida4",
+        "dt": "0.001",
+        "steps": 1000000,
+        "warmupSteps": 1000000
+      },
+      "physics": {
+        "masses": ["211.85026215102357", "140.20147982566394", "115.5841389430963"],
+        "totalEnergy": "-2604.6509915126285",
+        "angularMomentum": "56168.412963214476",
+        "closestApproach": {
+          "distance": "37.348485122031",
+          "pair": [0, 2],
+          "step": 105888
+        },
+        "syzygyCount": 1,
+        "braid": {
+          "word": "s2 s1 s2' s2' s1 s2 s1' s2 s1 s2' s2' s1 s2 s1' s1' s2 s1 s2' s1 s2 s1' s2 s1 s2' s2' s1 s2 s1' s2 s1 s2' s1 s2 s1' s1' s2 s1 s2' s2'",
+          "crossings": 39,
+          "truncated": false
+        }
+      },
+      "fate": {
+        "outcome": "eternal_dance",
+        "escaper": null,
+        "ejectionStep": null,
+        "horizonSteps": 8000000
+      },
+      "bodyHues": [116.11623908447282, 159.6779685607341, 107.17363226646408]
+    },
+    {
+      "id": 45,
+      "seed": "0x7fc88c81e4f2a1c79eab4ac335d45cf6124be4cbf2350c4626bb6c23b43bad6f",
+      "traitsSha256": "b5f5f2a6ff0cb46c40021666fd3ed989e6285850c862727f2618cc501a0934b0",
+      "pipelineVersion": "1.0.0",
+      "generation": {
+        "candidatesPerAttempt": 100000,
+        "selectedIndex": 95212,
+        "retryCount": 0,
+        "weightsRandomized": true,
+        "integrator": "yoshida4",
+        "dt": "0.001",
+        "steps": 1000000,
+        "warmupSteps": 1000000
+      },
+      "physics": {
+        "masses": ["144.7726537710629", "150.25168124967354", "297.42929379052265"],
+        "totalEnergy": "-4054.4599678561453",
+        "angularMomentum": "65949.46456392536",
+        "closestApproach": {
+          "distance": "1.4660629149217983",
+          "pair": [1, 2],
+          "step": 373025
+        },
+        "syzygyCount": 1,
+        "braid": {
+          "word": "s2' s2' s1 s2 s1' s1' s2 s2 s1 s2' s2' s2' s2' s1 s2 s1 s2 s1 s1 s2 s1 s1 s2 s1 s1 s2 s1 s2 s1 s2 s1 s2 s1 s1 s2 s1' s2 s1 s2' s2' s1 s2 s2 s1 s2'",
+          "crossings": 45,
+          "truncated": false
+        }
+      },
+      "fate": {
+        "outcome": "eternal_dance",
+        "escaper": null,
+        "ejectionStep": null,
+        "horizonSteps": 8000000
+      },
+      "bodyHues": [24.804496499303173, 9.261159661128078, 16.932281365989546]
+    },
+    {
+      "id": 46,
+      "seed": "0xde37ad470f34709af38b247150babc6825575a6b954374f5941831a2b96796ec",
+      "traitsSha256": "fff98fe21f79a756c1dc21c047d34353ca9e2c223ac06ffb345957d6737d944e",
+      "pipelineVersion": "1.0.0",
+      "generation": {
+        "candidatesPerAttempt": 100000,
+        "selectedIndex": 67436,
+        "retryCount": 0,
+        "weightsRandomized": true,
+        "integrator": "yoshida4",
+        "dt": "0.001",
+        "steps": 1000000,
+        "warmupSteps": 1000000
+      },
+      "physics": {
+        "masses": ["134.849763046497", "196.6802773937393", "144.28384665708256"],
+        "totalEnergy": "-3179.5729246583746",
+        "angularMomentum": "65019.61154330096",
+        "closestApproach": {
+          "distance": "7.918293721686879",
+          "pair": [0, 1],
+          "step": 478408
+        },
+        "syzygyCount": 4,
+        "braid": {
+          "word": "s1' s1 s2 s1 s2 s1 s2 s1 s2 s1 s2 s1 s2 s1 s2 s2 s1 s2 s1 s2 s1 s1 s1 s2 s1 s1' s2 s1 s2' s1 s2 s2 s1 s1 s2 s1 s1 s2 s1 s2 s1 s1 s2 s1 s2 s1 s2 s1",
+          "crossings": 49,
+          "truncated": true
+        }
+      },
+      "fate": {
+        "outcome": "eternal_dance",
+        "escaper": null,
+        "ejectionStep": null,
+        "horizonSteps": 8000000
+      },
+      "bodyHues": [107.25490940575651, 134.1027724792412, 125.88355930064684]
+    },
+    {
+      "id": 47,
+      "seed": "0x38b23b92766de4c8989e563ea11b3b3aab1965a546a84c6780a715df3b3df0b1",
+      "traitsSha256": "0a38baa5ee9a2f1f093cbfe482caf183776f071d2515ec15e7f12d263ef6fafc",
+      "pipelineVersion": "1.0.0",
+      "generation": {
+        "candidatesPerAttempt": 100000,
+        "selectedIndex": 4662,
+        "retryCount": 0,
+        "weightsRandomized": true,
+        "integrator": "yoshida4",
+        "dt": "0.001",
+        "steps": 1000000,
+        "warmupSteps": 1000000
+      },
+      "physics": {
+        "masses": ["162.88062491846497", "201.4549777498493", "141.21515908243404"],
+        "totalEnergy": "-4115.5470568095825",
+        "angularMomentum": "52029.44337653202",
+        "closestApproach": {
+          "distance": "1.579378022262397",
+          "pair": [0, 2],
+          "step": 495314
+        },
+        "syzygyCount": 3,
+        "braid": {
+          "word": "s2 s1 s1 s2 s1' s2 s1 s1 s2' s2' s1 s1 s2 s1' s1' s2 s2 s1 s2 s2 s2 s1 s2' s2 s1 s2 s1 s2 s2 s1' s2' s1 s2 s1' s1' s2 s1 s1 s2' s2' s1 s2 s1' s2 s1' s1' s2 s1",
+          "crossings": 63,
+          "truncated": true
+        }
+      },
+      "fate": {
+        "outcome": "ejection",
+        "escaper": 2,
+        "ejectionStep": 5400000,
+        "horizonSteps": 8000000
+      },
+      "bodyHues": [37.43964581493383, 290.04935897590786, 131.07507398754342]
+    },
+    {
+      "id": 48,
+      "seed": "0x09e2fdfc0261b33baa2d71294977cff267c25cd234b9e07ad133c622a974e65b",
+      "traitsSha256": "02491f22ec32b6895e33feff0d05f8c33bac965a656394fee87b11cb3fdf54fe",
+      "pipelineVersion": "1.1.0",
+      "generation": {
+        "candidatesPerAttempt": 100000,
+        "selectedIndex": 84957,
+        "retryCount": 0,
+        "weightsRandomized": true,
+        "integrator": "yoshida4",
+        "dt": "0.001",
+        "steps": 1000000,
+        "warmupSteps": 1000000
+      },
+      "physics": {
+        "masses": ["103.52235417368527", "107.7811400144566", "163.2633108648313"],
+        "totalEnergy": "-1676.2398205274283",
+        "angularMomentum": "51427.95195537353",
+        "closestApproach": {
+          "distance": "17.81511144106526",
+          "pair": [1, 2],
+          "step": 69300
+        },
+        "syzygyCount": 0,
+        "braid": {
+          "word": "s1' s2' s1' s1' s2' s1' s1 s1 s2' s1' s2 s1' s1' s2' s1 s1 s2' s1' s1' s2' s1 s2' s1' s1' s2' s2' s1' s2 s2 s1' s2' s2' s1' s2'",
+          "crossings": 34,
+          "truncated": false
+        }
+      },
+      "fate": {
+        "outcome": "ejection",
+        "escaper": 0,
+        "ejectionStep": 1360000,
+        "horizonSteps": 8000000
+      },
+      "bodyHues": [312.5063689052366, 352.88823136544414, 303.0587416535858]
+    },
+    {
+      "id": 49,
+      "seed": "0xb068e7e284206250807bc52a4d50d2f76d66826596bd3393e1b966f9d5ffc5ea",
+      "traitsSha256": "5e50f20e51c1c7d10d5eddfc0e2cfb8cdd736b1247cb376c8556558aeb1aa849",
+      "pipelineVersion": "1.1.0",
+      "generation": {
+        "candidatesPerAttempt": 100000,
+        "selectedIndex": 67596,
+        "retryCount": 0,
+        "weightsRandomized": true,
+        "integrator": "yoshida4",
+        "dt": "0.001",
+        "steps": 1000000,
+        "warmupSteps": 1000000
+      },
+      "physics": {
+        "masses": ["284.4837618627182", "102.61671075285585", "194.32526471986927"],
+        "totalEnergy": "-2478.1165583505967",
+        "angularMomentum": "114544.49641516946",
+        "closestApproach": {
+          "distance": "34.73291305538927",
+          "pair": [0, 1],
+          "step": 747486
+        },
+        "syzygyCount": 0,
+        "braid": {
+          "word": "s1' s2' s1 s2' s1' s2' s1' s2' s1' s2 s1' s2' s1 s2' s1 s2' s1' s2' s1' s2' s2' s1' s2' s1' s2'",
+          "crossings": 25,
+          "truncated": false
+        }
+      },
+      "fate": {
+        "outcome": "eternal_dance",
+        "escaper": null,
+        "ejectionStep": null,
+        "horizonSteps": 8000000
+      },
+      "bodyHues": [334.73713450129793, 287.4536439738569, 305.126267966393]
+    },
+    {
+      "id": 50,
+      "seed": "0xaea416d13cefdc488d8f64b2f720f429fc140bb3960e2676361ef01492b9d3b8",
+      "traitsSha256": "c5ced1a8533c77a4839d8cd4823c5f5ca80f80729b391344c95bffb429a4f223",
+      "pipelineVersion": "1.1.0",
+      "generation": {
+        "candidatesPerAttempt": 100000,
+        "selectedIndex": 79658,
+        "retryCount": 0,
+        "weightsRandomized": true,
+        "integrator": "yoshida4",
+        "dt": "0.001",
+        "steps": 1000000,
+        "warmupSteps": 1000000
+      },
+      "physics": {
+        "masses": ["182.17515715960798", "287.29307295455254", "256.13212629641737"],
+        "totalEnergy": "-4668.388744275967",
+        "angularMomentum": "129649.49750376322",
+        "closestApproach": {
+          "distance": "0.31990940414624963",
+          "pair": [0, 2],
+          "step": 32
+        },
+        "syzygyCount": 3,
+        "braid": {
+          "word": "s1 s2' s1' s2 s1' s2' s1 s1 s2' s1 s2 s1' s2' s2' s1' s1' s2 s2 s1' s2' s1' s2 s2 s1' s2 s1 s1 s2' s2' s1'",
+          "crossings": 30,
+          "truncated": false
+        }
+      },
+      "fate": {
+        "outcome": "eternal_dance",
+        "escaper": null,
+        "ejectionStep": null,
+        "horizonSteps": 8000000
+      },
+      "bodyHues": [148.05273101496192, 143.31497433313427, 111.33228378732966]
+    },
+    {
+      "id": 51,
+      "seed": "0x3c99a74aa7a31db0e267ffa0c0d26a410ca11d8780ded3696d15372fba14a8ae",
+      "traitsSha256": "00bd7b160e89aa4ee0549648a3b3fcbbe86b432c419b746254a25b94a2846da8",
+      "pipelineVersion": "1.1.0",
+      "generation": {
+        "candidatesPerAttempt": 100000,
+        "selectedIndex": 72569,
+        "retryCount": 0,
+        "weightsRandomized": true,
+        "integrator": "yoshida4",
+        "dt": "0.001",
+        "steps": 1000000,
+        "warmupSteps": 1000000
+      },
+      "physics": {
+        "masses": ["140.42881216194175", "263.5729416174024", "101.04812918258854"],
+        "totalEnergy": "-2998.448489008437",
+        "angularMomentum": "74586.73370287746",
+        "closestApproach": {
+          "distance": "24.00334200094432",
+          "pair": [0, 1],
+          "step": 899720
+        },
+        "syzygyCount": 1,
+        "braid": {
+          "word": "s1' s1' s2' s1' s1' s2' s1' s1' s2' s1' s1' s2' s1' s1' s2' s1' s2' s1' s2' s2' s2 s1' s2' s1' s2' s1' s2' s1' s2' s1' s2' s1' s2' s1' s2' s1' s2' s2' s2' s2' s1' s2' s2'",
+          "crossings": 43,
+          "truncated": false
+        }
+      },
+      "fate": {
+        "outcome": "eternal_dance",
+        "escaper": null,
+        "ejectionStep": null,
+        "horizonSteps": 8000000
+      },
+      "bodyHues": [51.731653317230624, 63.752555340237336, 50.098371776441184]
+    },
+    {
+      "id": 52,
+      "seed": "0x0343cf7f15c9e696d9d1762dad65913cb28d20d2e14815d7ff3aaa12d82e1c84",
+      "traitsSha256": "26fe0e77f4e2c1b127e85ad1316cf156783952aaa718ba2ae9641db2bdad2ff4",
+      "pipelineVersion": "1.1.0",
+      "generation": {
+        "candidatesPerAttempt": 100000,
+        "selectedIndex": 20551,
+        "retryCount": 0,
+        "weightsRandomized": true,
+        "integrator": "yoshida4",
+        "dt": "0.001",
+        "steps": 1000000,
+        "warmupSteps": 1000000
+      },
+      "physics": {
+        "masses": ["146.61013626396897", "252.4280169698674", "115.5737181079354"],
+        "totalEnergy": "-2321.8986445412293",
+        "angularMomentum": "77890.45703670598",
+        "closestApproach": {
+          "distance": "2.3119690106043174",
+          "pair": [0, 2],
+          "step": 553770
+        },
+        "syzygyCount": 5,
+        "braid": {
+          "word": "s1 s2' s2' s1 s2' s1 s2 s2 s1 s1 s2' s2' s1 s2' s2' s1' s1' s2 s1 s1 s2' s2 s1' s1' s2 s1 s2' s2'",
+          "crossings": 28,
+          "truncated": false
+        }
+      },
+      "fate": {
+        "outcome": "eternal_dance",
+        "escaper": null,
+        "ejectionStep": null,
+        "horizonSteps": 8000000
+      },
+      "bodyHues": [345.5247965104763, 9.864054589420117, 345.0698989806227]
+    },
+    {
+      "id": 53,
+      "seed": "0xe74d53c964137b9f28d18dfa3c7ecd7bd7f631664edc4f0b5ffd827abeb49f7d",
+      "traitsSha256": "a3e1a80e75069af8f4f1cd3f1316fdc81be10e0429c13e14c0d2344d419702fc",
+      "pipelineVersion": "1.1.0",
+      "generation": {
+        "candidatesPerAttempt": 100000,
+        "selectedIndex": 12358,
+        "retryCount": 0,
+        "weightsRandomized": true,
+        "integrator": "yoshida4",
+        "dt": "0.001",
+        "steps": 1000000,
+        "warmupSteps": 1000000
+      },
+      "physics": {
+        "masses": ["271.1236857241694", "141.46208079234978", "172.93506595997272"],
+        "totalEnergy": "-4145.860500221018",
+        "angularMomentum": "87895.43724758734",
+        "closestApproach": {
+          "distance": "4.4986267543798",
+          "pair": [0, 1],
+          "step": 328386
+        },
+        "syzygyCount": 0,
+        "braid": {
+          "word": "s1' s2' s1 s1 s2' s1' s1' s2' s1 s2' s1' s1' s1' s2' s1' s1' s2' s1' s2' s1 s1' s1 s2' s1' s2 s2' s1' s2' s1' s2' s1' s1' s2' s2' s1' s2 s1' s2' s2' s1' s2' s1' s1' s2' s1' s2'",
+          "crossings": 46,
+          "truncated": false
+        }
+      },
+      "fate": {
+        "outcome": "ejection",
+        "escaper": 1,
+        "ejectionStep": 7790000,
+        "horizonSteps": 8000000
+      },
+      "bodyHues": [3.712578381813497, 91.33974972183591, 316.08296799661787]
+    },
+    {
+      "id": 54,
+      "seed": "0x55892fe4212e84dac6d35e696b9a084c3b6b52c57d1f8bccac01a5d52d28725c",
+      "traitsSha256": "f6ebb5b27e92673c8e0b395de4959682a8ad8152527758d166dc9337fa65a8d6",
+      "pipelineVersion": "1.1.0",
+      "generation": {
+        "candidatesPerAttempt": 100000,
+        "selectedIndex": 79187,
+        "retryCount": 0,
+        "weightsRandomized": true,
+        "integrator": "yoshida4",
+        "dt": "0.001",
+        "steps": 1000000,
+        "warmupSteps": 1000000
+      },
+      "physics": {
+        "masses": ["204.86506365059967", "115.57290737852219", "175.97622913731965"],
+        "totalEnergy": "-2864.2062873260875",
+        "angularMomentum": "58597.01907435993",
+        "closestApproach": {
+          "distance": "2.644681343296868",
+          "pair": [0, 2],
+          "step": 296342
+        },
+        "syzygyCount": 0,
+        "braid": {
+          "word": "s2' s2' s1 s2' s2' s1' s2 s1' s2 s1' s2' s1 s2' s2' s1' s2 s1' s1' s2' s1 s2' s2' s1' s2 s1' s1' s2' s1 s2' s2' s1' s2 s1 s1 s1",
+          "crossings": 35,
+          "truncated": false
+        }
+      },
+      "fate": {
+        "outcome": "ejection",
+        "escaper": 1,
+        "ejectionStep": 1090000,
+        "horizonSteps": 8000000
+      },
+      "bodyHues": [251.1870171425854, 270.6427046546387, 243.53586950203484]
+    },
+    {
+      "id": 55,
+      "seed": "0x213abfda7f0448c3c4e24dead41c791f4fd68a6fe200fa1d1b61cc4cf5279153",
+      "traitsSha256": "c308dd8f6a68a9ed59b9d26475b9db4c3577d2280dfcd0d0c9b7bca40b7d16aa",
+      "pipelineVersion": "1.1.0",
+      "generation": {
+        "candidatesPerAttempt": 100000,
+        "selectedIndex": 28944,
+        "retryCount": 0,
+        "weightsRandomized": true,
+        "integrator": "yoshida4",
+        "dt": "0.001",
+        "steps": 1000000,
+        "warmupSteps": 1000000
+      },
+      "physics": {
+        "masses": ["247.61047309620005", "291.0024804041477", "252.59237338848882"],
+        "totalEnergy": "-7263.896070196151",
+        "angularMomentum": "139781.81168988274",
+        "closestApproach": {
+          "distance": "12.96651716049951",
+          "pair": [1, 2],
+          "step": 976437
+        },
+        "syzygyCount": 0,
+        "braid": {
+          "word": "s2' s2' s1 s2 s1' s2 s1 s1 s2 s1' s1' s2 s1 s2 s1 s2 s1' s1' s2 s1 s1 s2 s1' s2 s1 s2' s2' s1 s2 s2 s1 s2' s1 s2 s1' s1' s2 s1 s2' s1 s2 s2 s1 s2' s2'",
+          "crossings": 45,
+          "truncated": false
+        }
+      },
+      "fate": {
+        "outcome": "eternal_dance",
+        "escaper": null,
+        "ejectionStep": null,
+        "horizonSteps": 8000000
+      },
+      "bodyHues": [330.3945125116237, 317.0840611836174, 16.423758197691484]
+    },
+    {
+      "id": 56,
+      "seed": "0x1b2f078c1c0e78e2df328ff2bf0322c61e5287e1f4beec8718d7c9a2a9ae0332",
+      "traitsSha256": "07829e2bcf8274daad8b485a9bab9489521298158a9784ee7c04d021088809ef",
+      "pipelineVersion": "1.1.0",
+      "generation": {
+        "candidatesPerAttempt": 100000,
+        "selectedIndex": 99403,
+        "retryCount": 0,
+        "weightsRandomized": true,
+        "integrator": "yoshida4",
+        "dt": "0.001",
+        "steps": 1000000,
+        "warmupSteps": 1000000
+      },
+      "physics": {
+        "masses": ["278.3042038748873", "166.87465868410794", "273.293572026933"],
+        "totalEnergy": "-6034.88648526951",
+        "angularMomentum": "87612.47872992915",
+        "closestApproach": {
+          "distance": "2.1038854359978174",
+          "pair": [1, 2],
+          "step": 968190
+        },
+        "syzygyCount": 2,
+        "braid": {
+          "word": "s2' s1 s2 s1' s2 s1 s1 s2 s2 s1 s2' s2 s1 s2' s2' s1 s2' s1 s2 s1' s2 s1 s2' s2' s1' s1' s2 s2 s2 s2 s1' s2' s1 s2' s1 s2' s1 s2 s2' s2' s1 s1 s1 s1 s2' s1' s2 s1'",
+          "crossings": 48,
+          "truncated": false
+        }
+      },
+      "fate": {
+        "outcome": "ejection",
+        "escaper": 1,
+        "ejectionStep": 1300000,
+        "horizonSteps": 8000000
+      },
+      "bodyHues": [321.85608779868215, 50.98033727892778, 241.36371264654696]
+    },
+    {
+      "id": 57,
+      "seed": "0x7df5e0ba6194375eb61373957010113588235381653eece5e6de9972947b1710",
+      "traitsSha256": "314e9f4f378c5e618d62aef2d85fe40d9db396ba26ed3e52a1475364503f0e70",
+      "pipelineVersion": "1.1.0",
+      "generation": {
+        "candidatesPerAttempt": 100000,
+        "selectedIndex": 14485,
+        "retryCount": 0,
+        "weightsRandomized": true,
+        "integrator": "yoshida4",
+        "dt": "0.001",
+        "steps": 1000000,
+        "warmupSteps": 1000000
+      },
+      "physics": {
+        "masses": ["151.6468291684283", "122.34510445521812", "158.5940699940067"],
+        "totalEnergy": "-1623.399385608221",
+        "angularMomentum": "61035.00901707418",
+        "closestApproach": {
+          "distance": "25.135778442565222",
+          "pair": [0, 1],
+          "step": 194377
+        },
+        "syzygyCount": 1,
+        "braid": {
+          "word": "s2' s1 s2 s2 s1 s1 s2 s1' s2 s1 s2' s1 s2 s1' s2 s1 s2' s1 s2 s1' s2 s1",
+          "crossings": 22,
+          "truncated": false
+        }
+      },
+      "fate": {
+        "outcome": "ejection",
+        "escaper": 0,
+        "ejectionStep": 1760000,
+        "horizonSteps": 8000000
+      },
+      "bodyHues": [120.2839132556154, 54.79029495886856, 205.4641701993006]
+    },
+    {
+      "id": 58,
+      "seed": "0xdd560625a4fde92fb72cf2f405a28a717e1fbc7965d89165c996f68307a4e39c",
+      "traitsSha256": "956c7c1872f035d70fc4c17fed8fbe75933352bcca0ba78d66fc81bac27a61be",
+      "pipelineVersion": "1.1.0",
+      "generation": {
+        "candidatesPerAttempt": 100000,
+        "selectedIndex": 40576,
+        "retryCount": 0,
+        "weightsRandomized": true,
+        "integrator": "yoshida4",
+        "dt": "0.001",
+        "steps": 1000000,
+        "warmupSteps": 1000000
+      },
+      "physics": {
+        "masses": ["130.91987302906463", "248.47009623383764", "220.96081407968057"],
+        "totalEnergy": "-3429.8227140032614",
+        "angularMomentum": "108698.55295040157",
+        "closestApproach": {
+          "distance": "48.46444587342942",
+          "pair": [0, 1],
+          "step": 20105
+        },
+        "syzygyCount": 0,
+        "braid": {
+          "word": "s1' s2' s1 s2' s1' s2 s2 s1' s2' s2' s1' s2 s2' s1' s2' s1' s2' s1' s2' s2' s1' s2' s1' s2' s1' s2 s1' s2' s1 s2' s1' s2 s2",
+          "crossings": 33,
+          "truncated": false
+        }
+      },
+      "fate": {
+        "outcome": "ejection",
+        "escaper": 0,
+        "ejectionStep": 1810000,
+        "horizonSteps": 8000000
+      },
+      "bodyHues": [326.40528402567804, 33.47058544384964, 349.4355642626241]
+    },
+    {
+      "id": 59,
+      "seed": "0x820a8c7ca90059eebc268a363d7a20d2c134ba8dce3c1b015ad47deb7386b431",
+      "traitsSha256": "3bb3a3159375344730917432c16ef23ead023b1784d422efb943283e327a49c7",
+      "pipelineVersion": "1.1.0",
+      "generation": {
+        "candidatesPerAttempt": 100000,
+        "selectedIndex": 53304,
+        "retryCount": 0,
+        "weightsRandomized": true,
+        "integrator": "yoshida4",
+        "dt": "0.001",
+        "steps": 1000000,
+        "warmupSteps": 1000000
+      },
+      "physics": {
+        "masses": ["242.76944511800548", "288.92885368736216", "179.43413383602763"],
+        "totalEnergy": "-6720.515624361398",
+        "angularMomentum": "115089.64785477794",
+        "closestApproach": {
+          "distance": "3.3740956016634835",
+          "pair": [0, 2],
+          "step": 801838
+        },
+        "syzygyCount": 4,
+        "braid": {
+          "word": "s1' s1' s1' s1' s2' s1' s2' s2' s1' s2' s1' s1' s2' s2' s1' s2' s2' s1' s2' s2' s1' s2' s1' s1' s2' s1' s2' s1' s2' s1' s2' s1 s2' s1' s2 s2 s2 s2 s1' s2' s2' s1 s2' s1' s2 s1' s2' s1",
+          "crossings": 55,
+          "truncated": true
+        }
+      },
+      "fate": {
+        "outcome": "eternal_dance",
+        "escaper": null,
+        "ejectionStep": null,
+        "horizonSteps": 8000000
+      },
+      "bodyHues": [274.79591347062745, 285.0676757931643, 309.362880938859]
+    },
+    {
+      "id": 60,
+      "seed": "0x16533d1ae83d689ec7073396bbdca9ccba2481a94528b96a31f5362586832e7e",
+      "traitsSha256": "28988ecf7242dcfcc5bbab2515d1ac0224014d303f3c2a7aed453fddfeb200e4",
+      "pipelineVersion": "1.1.0",
+      "generation": {
+        "candidatesPerAttempt": 100000,
+        "selectedIndex": 94308,
+        "retryCount": 0,
+        "weightsRandomized": true,
+        "integrator": "yoshida4",
+        "dt": "0.001",
+        "steps": 1000000,
+        "warmupSteps": 1000000
+      },
+      "physics": {
+        "masses": ["242.80896250533394", "116.19004935286291", "133.22008672636056"],
+        "totalEnergy": "-2690.324512331807",
+        "angularMomentum": "51820.41177130826",
+        "closestApproach": {
+          "distance": "0.399920100209231",
+          "pair": [0, 2],
+          "step": 444269
+        },
+        "syzygyCount": 1,
+        "braid": {
+          "word": "s2 s1' s2 s1 s2' s1 s2 s1' s2 s1 s2' s2' s1 s2 s2 s1 s2' s1 s2 s1 s1 s2 s1 s2 s1 s2 s1 s1 s2 s1 s1 s2 s2 s1 s2' s2' s2'",
+          "crossings": 37,
+          "truncated": false
+        }
+      },
+      "fate": {
+        "outcome": "ejection",
+        "escaper": 1,
+        "ejectionStep": 2310000,
+        "horizonSteps": 8000000
+      },
+      "bodyHues": [315.1664242969304, 30.905131986924516, 296.20606029576845]
+    },
+    {
+      "id": 61,
+      "seed": "0x7b80589e25e55d01498ee7677d4be975ab226d9cdb9e8d7bd6157b0f59a8ff9d",
+      "traitsSha256": "70798289702bc64ac1c7f4bab18e46601bae1be95d03a29f6bee554c30c0a782",
+      "pipelineVersion": "1.1.0",
+      "generation": {
+        "candidatesPerAttempt": 100000,
+        "selectedIndex": 93119,
+        "retryCount": 0,
+        "weightsRandomized": true,
+        "integrator": "yoshida4",
+        "dt": "0.001",
+        "steps": 1000000,
+        "warmupSteps": 1000000
+      },
+      "physics": {
+        "masses": ["158.2624268385815", "145.91838348684067", "193.76268680015988"],
+        "totalEnergy": "-3050.6131784573145",
+        "angularMomentum": "78115.55871726846",
+        "closestApproach": {
+          "distance": "13.735043947703733",
+          "pair": [0, 2],
+          "step": 955347
+        },
+        "syzygyCount": 1,
+        "braid": {
+          "word": "s1 s1 s1 s1 s2' s1 s2 s1 s2 s1 s2 s1 s1 s2 s1' s1 s2 s1 s1 s2 s1' s2 s2 s1 s2' s1 s2' s1 s2 s2 s1' s2 s1 s1 s2 s1' s2 s2 s1 s2",
+          "crossings": 40,
+          "truncated": false
+        }
+      },
+      "fate": {
+        "outcome": "eternal_dance",
+        "escaper": null,
+        "ejectionStep": null,
+        "horizonSteps": 8000000
+      },
+      "bodyHues": [57.78443256491753, 70.36681393518282, 61.070253048558584]
+    },
+    {
+      "id": 62,
+      "seed": "0xf632bb5f87281006cc881d3fa2d7026fb7df4709b45055f2e05722fd875b06db",
+      "traitsSha256": "8a85e2f45ad805118e8fc5c8c3c5f235e372cded0ddbe4a8c9b4c7a8c311a6d7",
+      "pipelineVersion": "1.1.0",
+      "generation": {
+        "candidatesPerAttempt": 100000,
+        "selectedIndex": 18674,
+        "retryCount": 0,
+        "weightsRandomized": true,
+        "integrator": "yoshida4",
+        "dt": "0.001",
+        "steps": 1000000,
+        "warmupSteps": 1000000
+      },
+      "physics": {
+        "masses": ["108.76311276251478", "294.41759967931944", "144.86892708609452"],
+        "totalEnergy": "-2242.151738233049",
+        "angularMomentum": "86515.02258199404",
+        "closestApproach": {
+          "distance": "2.205504240575967",
+          "pair": [1, 2],
+          "step": 601873
+        },
+        "syzygyCount": 1,
+        "braid": {
+          "word": "s1 s1 s2' s1' s2 s2 s1' s2' s1' s1' s2' s1' s2' s2' s1' s2' s1' s1' s2' s1' s2' s2'",
+          "crossings": 22,
+          "truncated": false
+        }
+      },
+      "fate": {
+        "outcome": "eternal_dance",
+        "escaper": null,
+        "ejectionStep": null,
+        "horizonSteps": 8000000
+      },
+      "bodyHues": [318.78011791814487, 322.27282306444033, 345.7023265525235]
+    },
+    {
+      "id": 63,
+      "seed": "0x82f72ed838e70d9f85e6f647b12e145de51d6e6c429b48857a72007f1ece332b",
+      "traitsSha256": "d30088bd8996ab8775558b02c94be64d8428f28cd51af805bfb133447cebe161",
+      "pipelineVersion": "1.1.0",
+      "generation": {
+        "candidatesPerAttempt": 100000,
+        "selectedIndex": 41542,
+        "retryCount": 0,
+        "weightsRandomized": true,
+        "integrator": "yoshida4",
+        "dt": "0.001",
+        "steps": 1000000,
+        "warmupSteps": 1000000
+      },
+      "physics": {
+        "masses": ["144.7386600058764", "119.1728703674224", "130.32620553300026"],
+        "totalEnergy": "-2019.4148508161923",
+        "angularMomentum": "60477.774078984665",
+        "closestApproach": {
+          "distance": "3.13096366154588",
+          "pair": [0, 2],
+          "step": 859189
+        },
+        "syzygyCount": 1,
+        "braid": {
+          "word": "s1 s2 s1 s1 s2 s1 s1 s2 s1 s2 s1 s2 s1 s2 s1 s2 s1 s2 s1 s2 s1 s2 s1 s2 s1 s2 s2 s1 s2 s1 s1 s1 s1 s2 s1 s2 s2 s1 s1 s2 s1",
+          "crossings": 41,
+          "truncated": false
+        }
+      },
+      "fate": {
+        "outcome": "eternal_dance",
+        "escaper": null,
+        "ejectionStep": null,
+        "horizonSteps": 8000000
+      },
+      "bodyHues": [352.68848284615694, 317.82058944855385, 2.2393821859132004]
+    },
+    {
+      "id": 64,
+      "seed": "0x8eec181f2742e6b90e3a46507ce22633f134248e202a58189f5e97095c749871",
+      "traitsSha256": "a92f465dd3723b777f466b10d16fa795cac30ed2d294a589a8e03d5b18e56ad0",
+      "pipelineVersion": "1.1.0",
+      "generation": {
+        "candidatesPerAttempt": 100000,
+        "selectedIndex": 89704,
+        "retryCount": 0,
+        "weightsRandomized": true,
+        "integrator": "yoshida4",
+        "dt": "0.001",
+        "steps": 1000000,
+        "warmupSteps": 1000000
+      },
+      "physics": {
+        "masses": ["120.35080702531083", "100.76489859216765", "190.78098671653652"],
+        "totalEnergy": "-1726.0401291860217",
+        "angularMomentum": "25755.426101604502",
+        "closestApproach": {
+          "distance": "40.54432569442937",
+          "pair": [0, 1],
+          "step": 28650
+        },
+        "syzygyCount": 0,
+        "braid": {
+          "word": "s2 s1 s1 s2 s1' s1' s1' s2 s1 s1 s2 s1' s2 s1 s2' s1 s2 s1' s2 s1 s2' s1 s2 s1' s1' s2 s1 s1 s2 s2",
+          "crossings": 30,
+          "truncated": false
+        }
+      },
+      "fate": {
+        "outcome": "ejection",
+        "escaper": 1,
+        "ejectionStep": 2860000,
+        "horizonSteps": 8000000
+      },
+      "bodyHues": [248.90534760943862, 291.2922639925163, 264.57292537633134]
+    },
+    {
+      "id": 65,
+      "seed": "0x3e20a409a7cb7eba0092cac8bf1d07cb1cfb51b3c63f4e9e61fa4a71e73860e6",
+      "traitsSha256": "52f0871d18a57aa010959644b2fc73c5299ed46587a06470e0b2a6e6686fdf49",
+      "pipelineVersion": "1.1.0",
+      "generation": {
+        "candidatesPerAttempt": 100000,
+        "selectedIndex": 53329,
+        "retryCount": 0,
+        "weightsRandomized": true,
+        "integrator": "yoshida4",
+        "dt": "0.001",
+        "steps": 1000000,
+        "warmupSteps": 1000000
+      },
+      "physics": {
+        "masses": ["250.0662778983044", "101.5318363468688", "273.1408348145095"],
+        "totalEnergy": "-3749.949104360483",
+        "angularMomentum": "59193.7494267633",
+        "closestApproach": {
+          "distance": "0.34183361605553464",
+          "pair": [0, 2],
+          "step": 363601
+        },
+        "syzygyCount": 6,
+        "braid": {
+          "word": "s1' s1' s1' s2 s1 s2' s1 s2 s1' s1' s1' s1' s1' s1' s2 s1 s2 s1 s2 s1 s1 s2 s1 s2' s2' s1 s2 s1 s1 s2 s1' s2 s1' s2 s1 s2 s1' s2 s2 s2' s1 s2 s1' s2 s1 s2' s2' s1",
+          "crossings": 50,
+          "truncated": true
+        }
+      },
+      "fate": {
+        "outcome": "ejection",
+        "escaper": 1,
+        "ejectionStep": 1470000,
+        "horizonSteps": 8000000
+      },
+      "bodyHues": [70.97069507349016, 86.02062987320355, 65.10547839525525]
+    },
+    {
+      "id": 66,
+      "seed": "0x7ea99800619e5e7bda53ad62d4b322f3f1532fdaa6dfcf3e79c701b36d2ae369",
+      "traitsSha256": "2d47a420dbcf84d375e0db0b4ce43efbc48f5049f0c5a48a8659965758f5754f",
+      "pipelineVersion": "1.1.0",
+      "generation": {
+        "candidatesPerAttempt": 100000,
+        "selectedIndex": 1345,
+        "retryCount": 0,
+        "weightsRandomized": true,
+        "integrator": "yoshida4",
+        "dt": "0.001",
+        "steps": 1000000,
+        "warmupSteps": 1000000
+      },
+      "physics": {
+        "masses": ["129.67095306712287", "245.76684051821056", "242.82280648163658"],
+        "totalEnergy": "-3854.7341480664427",
+        "angularMomentum": "83100.11483766611",
+        "closestApproach": {
+          "distance": "0.24078119197959774",
+          "pair": [1, 2],
+          "step": 996651
+        },
+        "syzygyCount": 1,
+        "braid": {
+          "word": "s1' s2 s1' s2' s2 s1' s2 s1 s2' s1 s2' s1' s1' s2 s1' s2' s2' s1 s2' s1' s1' s2 s1' s2 s2 s1 s2' s1' s1' s2 s1' s2' s2' s1 s2' s1",
+          "crossings": 36,
+          "truncated": false
+        }
+      },
+      "fate": {
+        "outcome": "ejection",
+        "escaper": 0,
+        "ejectionStep": 2760000,
+        "horizonSteps": 8000000
+      },
+      "bodyHues": [250.39497604269576, 320.86652482131655, 136.67865843487087]
+    },
+    {
+      "id": 67,
+      "seed": "0x096b3fe491ce5fee66edae6f601047fcc8af8cbdb1d68a4ad04eaacc20557414",
+      "traitsSha256": "3a30e0d371c8cea4e4fc67dab9e50aa05d7c91ce66f7ff7310d0ca5971e07112",
+      "pipelineVersion": "1.1.0",
+      "generation": {
+        "candidatesPerAttempt": 100000,
+        "selectedIndex": 46252,
+        "retryCount": 0,
+        "weightsRandomized": true,
+        "integrator": "yoshida4",
+        "dt": "0.001",
+        "steps": 1000000,
+        "warmupSteps": 1000000
+      },
+      "physics": {
+        "masses": ["109.88987922282654", "173.26308201545106", "192.6489646164331"],
+        "totalEnergy": "-3584.874201869458",
+        "angularMomentum": "53179.07478443394",
+        "closestApproach": {
+          "distance": "1.5722259587817216",
+          "pair": [0, 1],
+          "step": 376157
+        },
+        "syzygyCount": 1,
+        "braid": {
+          "word": "s1 s2 s2 s1 s1 s2 s2 s1 s1 s1 s1 s2 s1 s2 s1 s2 s1 s1 s2 s2 s1 s1 s2 s1' s2 s1 s1 s2 s2 s1 s2' s1 s2 s1 s2 s2 s1 s2 s1 s1 s2 s1' s1' s2 s1 s1 s2' s1",
+          "crossings": 57,
+          "truncated": true
+        }
+      },
+      "fate": {
+        "outcome": "ejection",
+        "escaper": 0,
+        "ejectionStep": 1320000,
+        "horizonSteps": 8000000
+      },
+      "bodyHues": [269.7122859484751, 227.078297096567, 18.27286144757607]
+    },
+    {
+      "id": 68,
+      "seed": "0xd6d0f838253b016e56856aaf1f9f9be5c461d073ceca6573478e224f31e96cb4",
+      "traitsSha256": "b8650cf8970c8c81a9d0563240af97f2c5ff94c1b42cb977602a4605bc6bebb7",
+      "pipelineVersion": "1.1.0",
+      "generation": {
+        "candidatesPerAttempt": 100000,
+        "selectedIndex": 25634,
+        "retryCount": 0,
+        "weightsRandomized": true,
+        "integrator": "yoshida4",
+        "dt": "0.001",
+        "steps": 1000000,
+        "warmupSteps": 1000000
+      },
+      "physics": {
+        "masses": ["286.6073223263103", "253.1200660545673", "195.38008675209798"],
+        "totalEnergy": "-7369.752887401464",
+        "angularMomentum": "120138.70379930378",
+        "closestApproach": {
+          "distance": "0.2958350910544715",
+          "pair": [0, 1],
+          "step": 919458
+        },
+        "syzygyCount": 4,
+        "braid": {
+          "word": "s1 s2 s1 s2' s1 s2 s2 s1 s2 s1' s2 s1 s2' s2' s1 s2 s1' s1' s2 s1' s2 s2 s1 s2' s1 s2' s1 s2 s2 s1 s2 s1' s1' s2 s1 s2' s2' s2' s2' s2' s2' s1 s2 s1' s2 s1 s2 s2",
+          "crossings": 54,
+          "truncated": true
+        }
+      },
+      "fate": {
+        "outcome": "eternal_dance",
+        "escaper": null,
+        "ejectionStep": null,
+        "horizonSteps": 8000000
+      },
+      "bodyHues": [206.77006757488772, 65.33496073882532, 37.892350426472206]
+    },
+    {
+      "id": 69,
+      "seed": "0x83e1cf74f14f5219fd9e3eac51532ce53d1e4420eb6a357b5a6f12878523108e",
+      "traitsSha256": "1ea5756a546dc2dc2f8529672e6425423b012a0c18fa2cf8be388d5f83dee5ed",
+      "pipelineVersion": "1.1.0",
+      "generation": {
+        "candidatesPerAttempt": 100000,
+        "selectedIndex": 37468,
+        "retryCount": 0,
+        "weightsRandomized": true,
+        "integrator": "yoshida4",
+        "dt": "0.001",
+        "steps": 1000000,
+        "warmupSteps": 1000000
+      },
+      "physics": {
+        "masses": ["299.21452060084835", "275.14824900762767", "170.46627933654548"],
+        "totalEnergy": "-10131.144126016",
+        "angularMomentum": "70731.21811054334",
+        "closestApproach": {
+          "distance": "3.7489735023593025",
+          "pair": [0, 1],
+          "step": 896818
+        },
+        "syzygyCount": 4,
+        "braid": {
+          "word": "s2' s1' s1' s2 s1 s2' s1' s2' s1' s2' s1' s1' s2' s1 s1 s2' s1' s2 s2 s1' s2' s1 s1 s2' s1' s2 s1' s2' s1' s2 s1' s2' s2' s1 s2' s1 s2' s1' s2 s1' s2' s1 s2' s1' s2 s2 s1' s2'",
+          "crossings": 91,
+          "truncated": true
+        }
+      },
+      "fate": {
+        "outcome": "ejection",
+        "escaper": 2,
+        "ejectionStep": 1470000,
+        "horizonSteps": 8000000
+      },
+      "bodyHues": [128.56418558311094, 72.81663833194254, 297.2374079921141]
+    },
+    {
+      "id": 70,
+      "seed": "0xc6eb8adccc594aa92650d007ddad8b939d51c030b95abd9a2be05e5546527572",
+      "traitsSha256": "c055df2c1f789bc4c14007a8e24c3114e2b55a73e57f64d5b3e9fd68ed0bc0a8",
+      "pipelineVersion": "1.1.0",
+      "generation": {
+        "candidatesPerAttempt": 100000,
+        "selectedIndex": 53195,
+        "retryCount": 0,
+        "weightsRandomized": true,
+        "integrator": "yoshida4",
+        "dt": "0.001",
+        "steps": 1000000,
+        "warmupSteps": 1000000
+      },
+      "physics": {
+        "masses": ["207.1029205460663", "110.83764519837136", "162.88386749813225"],
+        "totalEnergy": "-2426.249121573196",
+        "angularMomentum": "69167.46098292699",
+        "closestApproach": {
+          "distance": "0.8561475891965202",
+          "pair": [1, 2],
+          "step": 721091
+        },
+        "syzygyCount": 4,
+        "braid": {
+          "word": "s2 s1 s1 s2 s2 s1 s2' s2' s1' s1' s2 s1 s1 s2 s2 s1 s2 s2 s1 s2 s2 s1 s2' s1 s2 s1 s2 s1 s2 s2 s1 s2 s2",
+          "crossings": 33,
+          "truncated": false
+        }
+      },
+      "fate": {
+        "outcome": "eternal_dance",
+        "escaper": null,
+        "ejectionStep": null,
+        "horizonSteps": 8000000
+      },
+      "bodyHues": [249.94404892620915, 203.54356634302206, 18.166963048754383]
+    },
+    {
+      "id": 71,
+      "seed": "0x3a75145359c9144bc6da79fce8e4f4b83f02ddf77aa7b64d1e6e7ec3163e4af4",
+      "traitsSha256": "07559be33d1a7ae86f1c94e59f2e9692b73c86284a045cfdeb7e52f00f1126b6",
+      "pipelineVersion": "1.1.0",
+      "generation": {
+        "candidatesPerAttempt": 100000,
+        "selectedIndex": 87098,
+        "retryCount": 0,
+        "weightsRandomized": true,
+        "integrator": "yoshida4",
+        "dt": "0.001",
+        "steps": 1000000,
+        "warmupSteps": 1000000
+      },
+      "physics": {
+        "masses": ["221.7433293613898", "176.9886648606522", "172.58991689393264"],
+        "totalEnergy": "-3684.501760753729",
+        "angularMomentum": "68497.9777086389",
+        "closestApproach": {
+          "distance": "3.8906375630142453",
+          "pair": [0, 1],
+          "step": 735370
+        },
+        "syzygyCount": 1,
+        "braid": {
+          "word": "s2' s1' s2 s1' s2' s2' s1' s2 s1 s1 s2' s1' s1' s1' s2' s1 s2' s1' s2 s1' s2' s1 s2' s1' s2 s1' s2' s2' s1' s1' s2' s1 s2' s1' s1' s2' s2'",
+          "crossings": 37,
+          "truncated": false
+        }
+      },
+      "fate": {
+        "outcome": "ejection",
+        "escaper": 1,
+        "ejectionStep": 1720000,
+        "horizonSteps": 8000000
+      },
+      "bodyHues": [354.41500650922126, 4.952202252155892, 15.457266828062426]
+    }
+  ]
+}

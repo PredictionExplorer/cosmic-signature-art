@@ -519,6 +519,43 @@ export const ja: Messages = {
   verifyFailed: 'ファイルを読み込めませんでした。',
   publishedHashes: '公開されたハッシュ',
   sharingCollection: 'コレクション · {count} 作品',
+  // The orbit, re-performed (src/components/orbit-score.tsx)
+  orbitTitle: '軌道を、もう一度',
+  orbitLine: 'このブラウザでシードから導き出し、公開された記録と照合します。',
+  orbitCaption:
+    '質量 {m1}、{m2}、{m3} の三つの天体を、最も広がる平面に、光の映像と同じ速さで描きます。天体 {pair} は第 {step} ステップで最も接近し、距離は {distance}。映像の {seconds} 秒目です。',
+  orbitWaiting: 'ここまで来ると、軌道をこの場で導き出します。',
+  orbitUnavailable:
+    'このブラウザでは軌道を導き出せませんでした。記録は照合せず、公開されたままに示します。',
+  orbitProgressBeginnings: 'シードを読む · 候補 {done} / {total}',
+  orbitProgressWarmUp: '候補 {index} が動き出す · 助走ステップ {done} / {total}',
+  orbitProgressWindow: '記録区間 · ステップ {done} / {total}',
+  orbitProgressBraid: '交差をたどる · ステップ {done} / {total}',
+  orbitPlaying: 'ステップ {step} / {total} · 光の映像 {clock}',
+  orbitClosestNow: '最接近 · 天体 {pair}、距離 {distance}',
+  orbitDerived:
+    'この場で {seconds} 秒、シード {seed} から導出：{total} の候補のうち第 {index} 番、続いて {steps} ステップ。',
+  orbitAllExact: 'すべての測定値が、公開された記録と最後のビットまで一致します。',
+  orbitSomeDiffer: '{total} 項目のうち {count} 項目が、公開された記録と異なります。',
+  orbitTableCaption: '公開された記録を、ここで照合',
+  orbitMeasurement: '測定項目',
+  orbitValue: '値',
+  orbitCheck: '照合',
+  orbitMass: '天体 {n} の質量',
+  orbitEnergy: '全エネルギー',
+  orbitMomentum: '角運動量',
+  orbitClosest: '最接近距離',
+  orbitClosestWhere: '最接近の位置',
+  orbitBodiesAt: '天体 {pair} · 第 {step} ステップ',
+  orbitSyzygies: '天体の直列',
+  orbitBraidCrossings: '組みひもの交差数',
+  orbitBraidWord: '組みひもの語',
+  orbitExact: '一致',
+  orbitDiffers: '相違',
+  orbitPending: '照合中',
+  orbitDerivedValue: 'ここでは {value}',
+  orbitNote:
+    '映像と静止画は、作品を記録したレンダリングです。この図はその下にある軌道で、生成器そのものの手順でブラウザが計算しました。乱数の流れ、第 {index} 番の候補の選択、そして四次の吉田積分法による {steps} ステップです。',
   // ·
   // ·
 };

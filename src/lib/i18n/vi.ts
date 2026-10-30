@@ -523,6 +523,44 @@ export const vi: Messages = {
   verifyFailed: 'Không đọc được tệp.',
   publishedHashes: 'Mã băm đã công bố',
   sharingCollection: 'Bộ sưu tập · {count} tác phẩm',
+  // The orbit, re-performed (src/components/orbit-score.tsx)
+  orbitTitle: 'Quỹ đạo, được tính lại',
+  orbitLine:
+    'Được suy ra từ hạt giống ngay trong trình duyệt này, rồi đối chiếu với hồ sơ đã công bố.',
+  orbitCaption:
+    'Ba vật thể, khối lượng {m1}, {m2} và {m3}, được vẽ trên mặt phẳng nơi chúng trải rộng nhất, theo nhịp của phim Ánh sáng. Hai vật thể {pair} gần nhau nhất ở bước {step}, cách nhau {distance}, tức giây thứ {seconds} của phim.',
+  orbitWaiting: 'Khi bạn đến đây, quỹ đạo sẽ được suy ra ngay tại chỗ.',
+  orbitUnavailable:
+    'Trình duyệt này không thể suy ra quỹ đạo. Hồ sơ được hiển thị đúng như đã công bố, chưa đối chiếu.',
+  orbitProgressBeginnings: 'Đọc hạt giống · ứng viên {done}/{total}',
+  orbitProgressWarmUp: 'Ứng viên {index} bắt đầu chuyển động · bước khởi động {done}/{total}',
+  orbitProgressWindow: 'Khoảng được ghi lại · bước {done}/{total}',
+  orbitProgressBraid: 'Lần theo các điểm giao · bước {done}/{total}',
+  orbitPlaying: 'Bước {step}/{total} · {clock} trong phim Ánh sáng',
+  orbitClosestNow: 'Lần gần nhất · vật thể {pair}, cách nhau {distance}',
+  orbitDerived:
+    'Suy ra tại đây trong {seconds} giây từ hạt giống {seed}: ứng viên {index} trong số {total}, rồi {steps} bước.',
+  orbitAllExact: 'Mọi phép đo đều trùng với hồ sơ đã công bố, đến từng bit cuối cùng.',
+  orbitSomeDiffer: '{count} trong số {total} phép đo khác với hồ sơ đã công bố.',
+  orbitTableCaption: 'Hồ sơ đã công bố, đối chiếu tại đây',
+  orbitMeasurement: 'Phép đo',
+  orbitValue: 'Giá trị',
+  orbitCheck: 'Đối chiếu',
+  orbitMass: 'Khối lượng vật thể {n}',
+  orbitEnergy: 'Tổng năng lượng',
+  orbitMomentum: 'Mômen động lượng',
+  orbitClosest: 'Khoảng cách gần nhất',
+  orbitClosestWhere: 'Vị trí gần nhất',
+  orbitBodiesAt: 'vật thể {pair} · bước {step}',
+  orbitSyzygies: 'Các lần thiên thể thẳng hàng',
+  orbitBraidCrossings: 'Số điểm giao của các đường bện',
+  orbitBraidWord: 'Từ bện',
+  orbitExact: 'chính xác',
+  orbitDiffers: 'khác',
+  orbitPending: 'đang đối chiếu',
+  orbitDerivedValue: 'tại đây: {value}',
+  orbitNote:
+    'Phim và ảnh tĩnh là các bản kết xuất được ghi lại của tác phẩm. Hình vẽ này là quỹ đạo nằm bên dưới chúng, được trình duyệt của bạn tính theo đúng trình tự của bộ tạo: dòng ngẫu nhiên của nó, việc chọn ứng viên {index}, và {steps} bước của bộ tích phân Yoshida bậc bốn.',
   // ·
   // ·
 };

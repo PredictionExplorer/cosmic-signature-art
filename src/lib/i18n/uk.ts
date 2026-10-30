@@ -522,6 +522,43 @@ export const uk: Messages = {
   verifyFailed: 'Файл не вдалося прочитати.',
   publishedHashes: 'Опубліковані хеші',
   sharingCollection: 'Колекція · роботи: {count}',
+  // The orbit, re-performed (src/components/orbit-score.tsx)
+  orbitTitle: 'Орбіта, обчислена наново',
+  orbitLine: 'Виведена з її зерна в цьому браузері й звірена з опублікованим записом.',
+  orbitCaption:
+    'Три тіла з масами {m1}, {m2} і {m3}, накреслені в площині їхнього найбільшого розмаху в темпі фільму «Світло». Тіла {pair} найбільше зближуються на кроці {step}, до відстані {distance}, на {seconds} секунді фільму.',
+  orbitWaiting: 'Орбіту буде виведено тут, коли ви дійдете до неї.',
+  orbitUnavailable:
+    'Цей браузер не зміг вивести орбіту. Запис показано так, як його опубліковано, без перевірки.',
+  orbitProgressBeginnings: 'Читаємо зерно · кандидат {done} з {total}',
+  orbitProgressWarmUp: 'Кандидат {index} рушає · крок розгону {done} з {total}',
+  orbitProgressWindow: 'Записане вікно · крок {done} з {total}',
+  orbitProgressBraid: 'Простежуємо перетини · крок {done} з {total}',
+  orbitPlaying: 'Крок {step} з {total} · {clock} фільму «Світло»',
+  orbitClosestNow: 'Найбільше зближення · тіла {pair}, відстань {distance}',
+  orbitDerived:
+    'Виведено тут за {seconds} с із зерна {seed}: кандидат {index} з {total}, далі {steps} кроків.',
+  orbitAllExact: 'Кожне вимірювання збігається з опублікованим записом до останнього біта.',
+  orbitSomeDiffer: '{count} з {total} вимірювань відрізняються від опублікованого запису.',
+  orbitTableCaption: 'Опублікований запис, перевірений тут',
+  orbitMeasurement: 'Вимірювання',
+  orbitValue: 'Значення',
+  orbitCheck: 'Перевірка',
+  orbitMass: 'Маса тіла {n}',
+  orbitEnergy: 'Повна енергія',
+  orbitMomentum: 'Момент імпульсу',
+  orbitClosest: 'Найменша відстань',
+  orbitClosestWhere: 'Тіла й крок зближення',
+  orbitBodiesAt: 'тіла {pair} · крок {step}',
+  orbitSyzygies: 'Сизигії',
+  orbitBraidCrossings: 'Перетини кіс',
+  orbitBraidWord: 'Слово коси',
+  orbitExact: 'точно',
+  orbitDiffers: 'відрізняється',
+  orbitPending: 'перевіряємо',
+  orbitDerivedValue: 'тут: {value}',
+  orbitNote:
+    'Фільми й зображення — записані відтворення твору. Цей рисунок — орбіта під ними, обчислена у вашому браузері власною послідовністю генератора: його випадковим потоком, вибором кандидата {index} і {steps} кроками інтегратора Йошиди четвертого порядку.',
   // ·
   // ·
 };

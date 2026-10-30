@@ -23,6 +23,8 @@ import { ArtworkViewer } from '@/components/artwork-viewer';
 import type { Neighbour, Neighbours } from '@/components/artwork-neighbours';
 import type { HistoryQuery } from '@/components/artwork-history';
 import { ArtworkEntry } from '@/components/artwork-entry';
+import { OrbitScore } from '@/components/orbit-score';
+import { workOrbit } from '@/lib/art/orbit-records';
 import recordStyles from '@/components/artwork-record.module.css';
 import { artworkViewParams } from '@/lib/art/view';
 
@@ -151,6 +153,8 @@ export default async function ArtworkPage({
         light: inlineCuratedPreview(curated.id, 'light'),
       }
     : undefined;
+  // The orbit beneath the work, re-derived in the browser and checked against its record.
+  const orbit = workOrbit(tokenId);
   return (
     <main id="main" className="work-page" data-opening-expression={expression}>
       <ArtworkViewer
@@ -164,6 +168,7 @@ export default async function ArtworkPage({
         traits={{ structure: indexed?.traits.structure, underlay: indexed?.traits.underlay }}
         neighbours={neighboursFor(tokenId)}
       />
+      {orbit ? <OrbitScore key={tokenId} orbit={orbit} t={t} locale={locale} /> : null}
       <div className="section-wrap">
         {settled ? (
           <ArtworkEntry result={settled} fallback={work} locale={locale} t={t} query={query} />
