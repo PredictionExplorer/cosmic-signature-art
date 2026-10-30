@@ -34,7 +34,13 @@ scope.onmessage = ({ data }) => {
     );
     for (const cell of data.cells) {
       const surface = cell.canvas.getContext('2d') as Surface | null;
-      if (surface) engine.add(cell.id, surface, cell.window, cell.hues);
+      // A canvas this worker cannot draw on: the page shows every work's still instead.
+      if (!surface) {
+        engine = null;
+        scope.postMessage({ type: 'failed' });
+        return;
+      }
+      engine.add(cell.id, surface, cell.window, cell.hues);
     }
   } else if (data.type === 'visible') engine?.visible(data.id, data.visible, now);
   else if (data.type === 'moving') engine?.setMoving(data.moving);

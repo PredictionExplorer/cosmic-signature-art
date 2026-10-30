@@ -1,5 +1,5 @@
 import { WindowPerformance, type OrbitWindow, type PlanePoints } from './orbit';
-import { lightFilmSeconds, stepsDrawnAt } from './light-film';
+import { lightFilmFrame, lightFilmSeconds, stepsDrawnAt } from './light-film';
 
 /*
   The Orrery: every work's orbit performed at once, each on its own small canvas, from the
@@ -20,6 +20,8 @@ export const ORRERY = {
   budget: 150_000,
   /** The margin around the orbit, as a share of the cell's smaller side. */
   margin: 0.07,
+  /** A silence longer than this between a cell's frames (a hidden page, a busy thread) is a pause. */
+  gapMs: 250,
 } as const;
 
 /** The part of a 2D context a cell draws with: a canvas's, or a test's recording. */
@@ -62,6 +64,12 @@ interface Cell {
   fit: ReturnType<typeof planeFit>;
   /** The last sample drawn, three bodies' x and y, so the next stroke continues from it. */
   last: Float64Array | null;
+  /** The film frame whose samples are gathered but not yet stroked: x, y pairs per body. */
+  open: { frame: number; points: [number[], number[], number[]] } | null;
+  /** The cell's three strokes, one hue a body. */
+  styles: readonly [string, string, string];
+  /** When the cell last advanced, so a silence since can be taken as a pause. */
+  lastFrame: number | null;
   visible: boolean;
   /** When the current performance began on the engine's clock, or null before it has. */
   startedAt: number | null;
@@ -88,8 +96,8 @@ export type OrreryRequest =
   | { type: 'moving'; moving: boolean }
   | { type: 'size'; id: number; width: number; height: number };
 
-/** The worker's one message: a cell drawn whole under a still preference. */
-export type OrreryReply = { type: 'drawn'; id: number };
+/** The worker's messages: a cell drawn whole under a still preference, or no way to draw. */
+export type OrreryReply = { type: 'drawn'; id: number } | { type: 'failed' };
 
 export class OrreryEngine {
   private readonly cells = new Map<number, Cell>();
@@ -113,6 +121,13 @@ export class OrreryEngine {
       hues,
       fit: this.fit(surface, window),
       last: null,
+      open: null,
+      styles: [0, 1, 2].map((body) => `oklch(0.84 0.075 ${hues[body]} / 0.2)`) as [
+        string,
+        string,
+        string,
+      ],
+      lastFrame: null,
       visible: false,
       startedAt: null,
       pausedAt: null,
@@ -127,6 +142,8 @@ export class OrreryEngine {
     const cell = this.cells.get(id);
     if (!cell || cell.visible === visible) return;
     cell.visible = visible;
+    // The time away is accounted for here, not again as a silence at the next frame.
+    cell.lastFrame = null;
     if (!this.moving || cell.startedAt === null) return;
     if (!visible) cell.pausedAt = now;
     else if (cell.pausedAt !== null) {
@@ -180,6 +197,14 @@ export class OrreryEngine {
     for (let k = 0; k < cells.length && budget > 0; k++) {
       const [, cell] = cells[(this.turn + k) % cells.length];
       const steps = cell.replay.window.steps;
+      // A silence since the cell last advanced (a hidden page, a busy thread) is a pause: its
+      // clocks move on by it, so it resumes where it stood instead of owing the silence.
+      if (cell.lastFrame !== null && now - cell.lastFrame > ORRERY.gapMs) {
+        const away = now - cell.lastFrame;
+        if (cell.startedAt !== null) cell.startedAt += away;
+        if (cell.heldSince !== null) cell.heldSince += away;
+      }
+      cell.lastFrame = now;
       if (cell.heldSince !== null) {
         if (now - cell.heldSince < ORRERY.holdMs) continue;
         this.begin(cell);
@@ -209,42 +234,57 @@ export class OrreryEngine {
     cell.surface.clearRect(0, 0, cell.surface.canvas.width, cell.surface.canvas.height);
     cell.replay.restart();
     cell.last = null;
+    cell.open = null;
+    cell.lastFrame = null;
     cell.startedAt = null;
     cell.pausedAt = null;
     cell.heldSince = null;
     cell.whole = false;
   }
 
-  /** Integrate the cell up to `target` and stroke the new samples, one path per body. */
+  /** Integrate the cell up to `target`, gathering its samples by the film frame that shows them. */
   private draw(cell: Cell, target: number) {
     const { replay, fit } = cell;
-    const xs: number[][] = [[], [], []];
-    const ys: number[][] = [[], [], []];
-    replay.run(target, ORRERY.stride, () => {
+    const steps = replay.window.steps;
+    replay.run(target, ORRERY.stride, (step) => {
+      const frame = lightFilmFrame(step, steps);
+      if (cell.open && cell.open.frame !== frame) this.stroke(cell);
+      cell.open ??= { frame, points: [[], [], []] };
       replay.project(this.points);
-      for (let body = 0; body < 3; body++) {
-        xs[body].push(fit.x + this.points.u[body] * fit.scale);
-        ys[body].push(fit.y + this.points.v[body] * fit.scale);
-      }
+      for (let body = 0; body < 3; body++)
+        cell.open.points[body].push(
+          fit.x + this.points.u[body] * fit.scale,
+          fit.y + this.points.v[body] * fit.scale,
+        );
     });
-    const count = xs[0].length;
-    if (!count) return;
+    // The window's last frame is complete once its last step is taken.
+    if (replay.done) this.stroke(cell);
+  }
+
+  /**
+   * Stroke the gathered film frame: one path a body, continuing from the frame before. The Light
+   * film adds each frame's marks as one exposure, so a frame is one path, whether the cell is
+   * drawn whole or performed, at any display's pace, and a performance ends on the very picture
+   * the whole drawing makes.
+   */
+  private stroke(cell: Cell) {
+    const open = cell.open;
+    cell.open = null;
+    if (!open) return;
     const surface = cell.surface;
     surface.globalCompositeOperation = 'lighter';
     surface.lineWidth = this.ratio;
     surface.lineJoin = 'round';
+    cell.last ??= Float64Array.from(open.points.flatMap((points) => [points[0], points[1]]));
     for (let body = 0; body < 3; body++) {
-      surface.strokeStyle = `oklch(0.84 0.075 ${cell.hues[body]} / 0.2)`;
+      const points = open.points[body];
+      surface.strokeStyle = cell.styles[body];
       surface.beginPath();
-      if (cell.last) surface.moveTo(cell.last[body * 2], cell.last[body * 2 + 1]);
-      else surface.moveTo(xs[body][0], ys[body][0]);
-      for (let k = 0; k < count; k++) surface.lineTo(xs[body][k], ys[body][k]);
+      surface.moveTo(cell.last[body * 2], cell.last[body * 2 + 1]);
+      for (let k = 0; k < points.length; k += 2) surface.lineTo(points[k], points[k + 1]);
       surface.stroke();
-    }
-    cell.last ??= new Float64Array(6);
-    for (let body = 0; body < 3; body++) {
-      cell.last[body * 2] = xs[body][count - 1];
-      cell.last[body * 2 + 1] = ys[body][count - 1];
+      cell.last[body * 2] = points[points.length - 2];
+      cell.last[body * 2 + 1] = points[points.length - 1];
     }
   }
 }

@@ -39,6 +39,34 @@ function surface(width = 200, height = 130) {
   return recording;
 }
 
+/** A surface that keeps every path it strokes: its style and its points, in order. */
+function tracing() {
+  const paths: { style: string; points: number[] }[] = [];
+  let points: number[] = [];
+  const trace: Surface & { paths: typeof paths } = {
+    paths,
+    canvas: { width: 200, height: 130 },
+    globalCompositeOperation: 'source-over',
+    lineWidth: 1,
+    lineJoin: 'miter',
+    strokeStyle: '',
+    clearRect: () => void paths.splice(0),
+    beginPath: () => void (points = []),
+    moveTo: (x, y) => void points.push(x, y),
+    lineTo: (x, y) => void points.push(x, y),
+    stroke() {
+      paths.push({ style: String(this.strokeStyle), points });
+    },
+  };
+  return trace;
+}
+
+/** Frames at a display's pace from `from` to `to`, as a page in view gives them. */
+function play(engine: OrreryEngine, from: number, to: number, fps = 60) {
+  for (let now = from; now < to; now += 1000 / fps) engine.frame(now);
+  engine.frame(to);
+}
+
 describe('the Orrery', () => {
   it('fits the plane on the cell, centred, a margin on every side', () => {
     const fit = planeFit([-10, 10, -5, 5], 220, 120, 10);
@@ -56,11 +84,13 @@ describe('the Orrery', () => {
     engine.visible(31, true, 0);
     expect(engine.frame(0)).toBe(true);
     expect(engine.stepOf(31)).toBe(stepsDrawnAt(0, window.steps) + 1);
-    engine.frame(1000);
+    play(engine, 0, 1000);
     expect(engine.stepOf(31)).toBe(stepsDrawnAt(1, window.steps) + 1);
     expect(canvas.globalCompositeOperation).toBe('lighter');
     expect(canvas.lineWidth).toBe(2);
-    expect(canvas.calls.strokes).toBe(6);
+    // One path a body for every film frame complete so far.
+    expect(canvas.calls.strokes % 3).toBe(0);
+    expect(canvas.calls.strokes).toBeGreaterThan(0);
     expect(canvas.strokeStyle).toBe('oklch(0.84 0.075 250 / 0.2)');
   });
 
@@ -68,8 +98,7 @@ describe('the Orrery', () => {
     const engine = new OrreryEngine(1, true);
     engine.add(1, surface(), window, hues);
     engine.visible(1, true, 0);
-    engine.frame(0);
-    engine.frame(2000);
+    play(engine, 0, 2000);
     const left = engine.stepOf(1);
     engine.visible(1, false, 2000);
     expect(engine.frame(9000)).toBe(false);
@@ -77,7 +106,7 @@ describe('the Orrery', () => {
     engine.visible(1, true, 9000);
     engine.frame(9000);
     expect(engine.stepOf(1)).toBe(left);
-    engine.frame(10_000);
+    play(engine, 9000, 10_000);
     expect(engine.stepOf(1)).toBe(stepsDrawnAt(3, window.steps) + 1);
   });
 
@@ -86,13 +115,14 @@ describe('the Orrery', () => {
     const canvas = surface();
     engine.add(1, canvas, window, hues);
     engine.visible(1, true, 0);
+    // The window is complete on the film's last frame, a frame before the film's end.
     engine.frame(0);
-    const end = lightFilmDuration(window.steps) * 1000;
-    engine.frame(end);
-    expect(engine.stepOf(1)).toBe(window.steps);
-    engine.frame(end + ORRERY.holdMs - 1);
+    let finished = 0;
+    while (engine.stepOf(1)! < window.steps) engine.frame((finished += 1000 / 60));
+    expect(finished).toBeLessThanOrEqual(lightFilmDuration(window.steps) * 1000);
+    play(engine, finished, finished + ORRERY.holdMs - 1);
     expect(canvas.calls.clears).toBe(0);
-    engine.frame(end + ORRERY.holdMs);
+    engine.frame(finished + ORRERY.holdMs);
     expect(canvas.calls.clears).toBe(1);
     expect(engine.stepOf(1)).toBe(stepsDrawnAt(0, window.steps) + 1);
   });
@@ -115,22 +145,60 @@ describe('the Orrery', () => {
   });
 
   it('shares a short budget, and a cell short of it slows rather than jumps', () => {
+    // Two thousand steps a film frame: frames 200 ms apart ask 24,000 of each of eight cells.
     const big: OrbitWindow = { ...window, steps: 3_600_000 };
     const engine = new OrreryEngine(1, true);
-    for (let id = 0; id < 4; id++) {
+    const ids = [0, 1, 2, 3, 4, 5, 6, 7];
+    for (const id of ids) {
       engine.add(id, surface(), big, hues);
       engine.visible(id, true, 0);
     }
     engine.frame(0);
-    const before = [0, 1, 2, 3].map((id) => engine.stepOf(id)!);
-    // Thirty seconds at once asks every cell for its whole window; the budget allows a share.
-    engine.frame(30_000);
-    const taken = [0, 1, 2, 3].map((id, k) => engine.stepOf(id)! - before[k]);
-    expect(taken.reduce((sum, steps) => sum + steps, 0)).toBeLessThanOrEqual(ORRERY.budget);
-    const starved = [0, 1, 2, 3].find((id) => engine.stepOf(id)! < big.steps)!;
-    const standing = engine.stepOf(starved)!;
-    engine.frame(30_016);
-    expect(engine.stepOf(starved)! - standing).toBeLessThanOrEqual(ORRERY.budget);
+    let starved = 0;
+    for (let now = 200; now <= 600; now += 200) {
+      const before = ids.map((id) => engine.stepOf(id)!);
+      engine.frame(now);
+      const taken = ids.map((id, k) => engine.stepOf(id)! - before[k]);
+      expect(taken.reduce((sum, steps) => sum + steps, 0)).toBeLessThanOrEqual(ORRERY.budget);
+      for (const steps of taken) expect(steps).toBeLessThanOrEqual(24_000 + 2_000);
+      starved += taken.filter((steps) => steps < 24_000).length;
+    }
+    expect(starved).toBeGreaterThan(0);
+  });
+
+  it('takes a silence between frames as a pause, so every cell resumes where it stood', () => {
+    // A hundred steps a film frame.
+    const long: OrbitWindow = { ...window, steps: 180_000 };
+    const engine = new OrreryEngine(1, true);
+    const ids = [0, 1, 2, 3];
+    for (const id of ids) {
+      engine.add(id, surface(), long, hues);
+      engine.visible(id, true, 0);
+    }
+    play(engine, 0, 1000);
+    const before = ids.map((id) => engine.stepOf(id)!);
+    // A minute with no frames at all, as in a hidden tab.
+    engine.frame(61_000);
+    const after = ids.map((id) => engine.stepOf(id)!);
+    ids.forEach((_, k) => expect(after[k] - before[k]).toBeLessThanOrEqual(100));
+    // A second later every cell has gone on by about a second of the film; none stands frozen.
+    play(engine, 61_000, 62_000);
+    ids.forEach((id, k) => expect(engine.stepOf(id)! - after[k]).toBeGreaterThan(5000));
+  });
+
+  it('ends a performance on the very picture the whole drawing makes, at any display’s pace', () => {
+    const picture = (fps: number | null) => {
+      const trace = tracing();
+      const engine = new OrreryEngine(1, fps !== null);
+      engine.add(1, trace, window, hues);
+      engine.visible(1, true, 0);
+      if (fps === null) engine.frame(0);
+      else play(engine, 0, lightFilmDuration(window.steps) * 1000 + 100, fps);
+      return trace.paths;
+    };
+    const whole = picture(null);
+    expect(whole.length).toBeGreaterThan(30);
+    for (const fps of [24, 60, 144]) expect(picture(fps)).toEqual(whole);
   });
 
   it('begins a cell again when its canvas changes size, and not when it keeps it', () => {

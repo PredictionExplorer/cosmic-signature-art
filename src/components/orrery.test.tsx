@@ -29,6 +29,7 @@ let observers: { callback: IntersectionObserverCallback; targets: Element[] }[] 
 let workers: FakeWorker[] = [];
 class FakeWorker {
   onmessage: ((event: MessageEvent<OrreryReply>) => void) | null = null;
+  onerror: ((event: ErrorEvent) => void) | null = null;
   posted: { message: OrreryRequest; transfer: Transferable[] }[] = [];
   terminated = false;
   constructor() {
@@ -167,12 +168,75 @@ describe('the Orrery', () => {
     expect(container.querySelectorAll('canvas')).toHaveLength(0);
   });
 
+  it('shows every work’s still when the worker fails or cannot draw', () => {
+    offscreen();
+    const { container } = render(<Page />);
+    act(() => workers[0].onerror?.({} as ErrorEvent));
+    expect(container.querySelector('section')).toHaveAttribute('data-mode', 'plates');
+    expect(workers[0].terminated).toBe(true);
+    expect(container.querySelectorAll('canvas')).toHaveLength(0);
+    expect(screen.getByRole('status')).toHaveTextContent('Stills instead.');
+    expect(container.querySelectorAll('img')).toHaveLength(2);
+    cleanup();
+    workers = [];
+    const again = render(<Page />);
+    workers[0].reply({ type: 'failed' });
+    expect(again.container.querySelector('section')).toHaveAttribute('data-mode', 'plates');
+  });
+
+  it('takes every cell out of view while the page is hidden, and back as it was', () => {
+    offscreen();
+    render(<Page />);
+    const visibility = observers.find((observer) => observer.targets.length === 3)!;
+    act(() =>
+      visibility.callback(
+        [
+          { target: visibility.targets[0], isIntersecting: true },
+        ] as unknown as IntersectionObserverEntry[],
+        {} as IntersectionObserver,
+      ),
+    );
+    const hidden = vi.spyOn(document, 'hidden', 'get').mockReturnValue(true);
+    act(() => {
+      document.dispatchEvent(new Event('visibilitychange'));
+    });
+    expect(ofType('visible').slice(-3)).toEqual([
+      { type: 'visible', id: 0, visible: false },
+      { type: 'visible', id: 31, visible: false },
+      { type: 'visible', id: 40, visible: false },
+    ]);
+    hidden.mockReturnValue(false);
+    act(() => {
+      document.dispatchEvent(new Event('visibilitychange'));
+    });
+    expect(ofType('visible').slice(-3)).toEqual([
+      { type: 'visible', id: 0, visible: true },
+      { type: 'visible', id: 31, visible: false },
+      { type: 'visible', id: 40, visible: false },
+    ]);
+  });
+
+  it('lets no cell stand drawn whole once motion changes', () => {
+    offscreen();
+    motion.paused = true;
+    const { container } = render(<Page />);
+    workers[0].reply({ type: 'drawn', id: 31 });
+    expect(container.querySelector('[data-stage="31"]')).toHaveAttribute('data-drawn');
+    motion.paused = false;
+    render(<Page />, { container });
+    expect(container.querySelector('[data-drawn]')).toBeNull();
+    expect(ofType('moving').at(-1)).toEqual({ type: 'moving', moving: true });
+  });
+
   it('loads a work’s still only when it is pointed at or focused, then keeps it', () => {
     offscreen();
     const { container } = render(<Page />);
     expect(container.querySelectorAll('img')).toHaveLength(0);
     const link = screen.getByRole('link', { name: '№ 031 · its orbit, performed' });
-    fireEvent.pointerEnter(link);
+    // A finger landing changes nothing under the tap, so the tap enters the work at once.
+    fireEvent.pointerEnter(link, { pointerType: 'touch' });
+    expect(link.querySelector('img')).toBeNull();
+    fireEvent.pointerEnter(link, { pointerType: 'mouse' });
     expect(link.querySelector('img')).toHaveAttribute('src', 'https://example.test/31.webp');
     fireEvent.focus(screen.getByRole('link', { name: '№ 000 · its orbit, performed' }));
     expect(container.querySelectorAll('img')).toHaveLength(2);
