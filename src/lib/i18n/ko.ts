@@ -278,6 +278,7 @@ export const ko: Messages = {
   orderNumber: '번호',
   orderCycle: '사이클',
   orderSpectrum: '스펙트럼',
+  collectionViews: '컬렉션 전체를 한눈에',
   filters: '필터',
   clearFilters: '필터 지우기',
   unmeasured: '측정되지 않음',
@@ -580,7 +581,7 @@ export const ko: Messages = {
   allTheLightNote:
     '작품이 아니라 작품에서 이끌어 낸 보기입니다. 공개된 빛 정지 이미지를 선형 빛으로 합한 것으로, 어느 것도 바꾸지 않았고 판매하지도 않습니다. 빛 속을 가리키면 그곳을 지나는 궤도의 이름이 나타나고, 하나를 고르면 손대지 않은 그 작품의 정지 이미지만 볼 수 있습니다.',
   allTheLightAlt:
-    '모든 빛: 작품 {count}점의 빛 정지 이미지를 더한 것으로, 궤도가 겹치는 곳은 희고 가장자리에는 색이 남습니다. 작품이 아니라 작품에서 이끌어 낸 보기입니다.',
+    '모든 빛({span}): 작품 {count}점의 빛 정지 이미지를 더한 것으로, 궤도가 겹치는 곳은 희고 가장자리에는 색이 남습니다. 작품이 아니라 작품에서 이끌어 낸 보기입니다.',
   allTheLightPoint: '어디든 가리키면 그곳을 지나는 궤도의 이름이 나타납니다.',
   allTheLightThrough: '이 지점을 지나는 궤도 · {works}',
   allTheLightNone: '이곳을 지나는 궤도는 없습니다.',

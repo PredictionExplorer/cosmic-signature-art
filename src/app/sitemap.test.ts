@@ -16,6 +16,14 @@ describe('direct-link auction pages', () => {
     expect(paths.some((path) => path.includes('/auctions/'))).toBe(false);
   });
 
+  it('lists the Orrery in every locale, and never the derived image of All the light', () => {
+    const paths = sitemap().map(({ url }) => new URL(url).pathname);
+    for (const locale of locales) {
+      expect(paths).toContain(localizedPath(locale, '/collection/orrery'));
+      expect(paths).not.toContain(localizedPath(locale, '/collection/all-the-light'));
+    }
+  });
+
   it('asks crawlers not to index the auction route family or its terms', async () => {
     expect(auctionMetadata.robots).toEqual({ index: false, follow: false });
     for (const locale of locales) {

@@ -259,6 +259,41 @@ describe('the Index of numbers', () => {
     );
   });
 
+  it('offers the collection’s other two indexes, the current one marked', () => {
+    pathname = '/ja/collection/orrery';
+    renderSheet('ja');
+    act(() => openSheet('index'));
+    const views = screen.getByRole('navigation', { name: en.collectionViews });
+    expect(within(views).getByRole('link', { name: en.allTheLight })).toHaveAttribute(
+      'href',
+      '/ja/collection/all-the-light',
+    );
+    const orrery = within(views).getByRole('link', { name: en.orrery });
+    expect(orrery).toHaveAttribute('href', '/ja/collection/orrery');
+    expect(orrery).toHaveAttribute('aria-current', 'page');
+    expect(within(views).getByRole('link', { name: en.allTheLight })).not.toHaveAttribute(
+      'aria-current',
+    );
+    // Away from the collection no ordering is the page; the session's expression stays marked.
+    const orderings = screen.getByRole('navigation', { name: en.ordering });
+    expect(within(orderings).getByRole('link', { name: en.orderNumber })).not.toHaveAttribute(
+      'aria-current',
+    );
+    expect(within(orderings).getByRole('link', { name: en.ink })).toHaveAttribute(
+      'aria-current',
+      'true',
+    );
+  });
+
+  it('never offers the derived views where a work is for sale', () => {
+    pathname = '/auctions/12';
+    renderSheet();
+    act(() => openSheet('index'));
+    expect(screen.queryByRole('navigation', { name: en.collectionViews })).toBeNull();
+    expect(screen.queryByRole('link', { name: en.allTheLight })).toBeNull();
+    expect(screen.getByRole('navigation', { name: en.ordering })).toBeInTheDocument();
+  });
+
   it('closes when the route changes', () => {
     const view = renderSheet();
     act(() => openSheet('index'));

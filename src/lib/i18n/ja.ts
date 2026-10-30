@@ -281,6 +281,7 @@ export const ja: Messages = {
   orderNumber: '番号',
   orderCycle: 'サイクル',
   orderSpectrum: 'スペクトル',
+  collectionViews: 'コレクション全体を一度に',
   filters: '絞り込み',
   clearFilters: '絞り込みを解除',
   unmeasured: '未計測',
@@ -584,7 +585,7 @@ export const ja: Messages = {
   allTheLightNote:
     '作品ではなく、作品から導いた眺めです。公開された光の静止画を線形の光のまま足し合わせたもので、一枚も改変せず、販売に供することもありません。光の中を指すとそこを通る軌道の名が現れ、ひとつを選ぶと、手を加えていないその作品自身の静止画だけが見られます。',
   allTheLightAlt:
-    'すべての光：{count} 点の作品の光の静止画を足し合わせたもの。軌道が重なるところは白く、縁には色が残ります。作品ではなく、作品から導いた眺めです。',
+    'すべての光（{span}）：{count} 点の作品の光の静止画を足し合わせたもの。軌道が重なるところは白く、縁には色が残ります。作品ではなく、作品から導いた眺めです。',
   allTheLightPoint: 'どこかを指すと、そこを通る軌道の名が現れます。',
   allTheLightThrough: 'この点を通る軌道 · {works}',
   allTheLightNone: 'ここを通る軌道はありません。',

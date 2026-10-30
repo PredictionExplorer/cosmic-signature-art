@@ -268,6 +268,7 @@ export const zhHK: Messages = {
   orderNumber: '編號',
   orderCycle: '週期',
   orderSpectrum: '光譜',
+  collectionViews: '整個作品集一覽',
   filters: '篩選',
   clearFilters: '清除篩選',
   unmeasured: '未測量',
@@ -556,7 +557,7 @@ export const zhHK: Messages = {
   allTheLightNote:
     '這是衍生的視圖，而非作品：已發佈的光的靜態影像在線性光中相加，沒有一幅被修改，也從不出售。指向光中，即可說出經過那裏的軌道之名；選擇其一，即可單獨看到它未經改動的靜態影像。',
   allTheLightAlt:
-    '全部的光：{count} 件作品的光的靜態影像相加而成，軌道密集處為白色，邊緣留有顏色。這是衍生的視圖，而非作品。',
+    '全部的光（{span}）：{count} 件作品的光的靜態影像相加而成，軌道密集處為白色，邊緣留有顏色。這是衍生的視圖，而非作品。',
   allTheLightPoint: '指向任何一處，即可說出經過那裏的軌道之名。',
   allTheLightThrough: '經過此點 · {works}',
   allTheLightNone: '沒有軌道經過這裏。',

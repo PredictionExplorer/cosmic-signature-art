@@ -268,6 +268,7 @@ export const zh: Messages = {
   orderNumber: '编号',
   orderCycle: '周期',
   orderSpectrum: '光谱',
+  collectionViews: '整个作品集一览',
   filters: '筛选',
   clearFilters: '清除筛选',
   unmeasured: '未测量',
@@ -556,7 +557,7 @@ export const zh: Messages = {
   allTheLightNote:
     '这是派生的视图，而非作品：已发布的光的静态图像在线性光中相加，没有一幅被修改，也从不出售。指向光中，即可说出经过那里的轨道之名；选择其一，即可单独看到它未经改动的静态图像。',
   allTheLightAlt:
-    '全部的光：{count} 件作品的光的静态图像相加而成，轨道密集处为白色，边缘留有颜色。这是派生的视图，而非作品。',
+    '全部的光（{span}）：{count} 件作品的光的静态图像相加而成，轨道密集处为白色，边缘留有颜色。这是派生的视图，而非作品。',
   allTheLightPoint: '指向任意一处，即可说出经过那里的轨道之名。',
   allTheLightThrough: '经过此点 · {works}',
   allTheLightNone: '没有轨道经过这里。',

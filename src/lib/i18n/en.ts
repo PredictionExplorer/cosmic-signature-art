@@ -279,6 +279,7 @@ export const en = {
   orderNumber: 'Number',
   orderCycle: 'Cycle',
   orderSpectrum: 'Spectrum',
+  collectionViews: 'The whole collection at once',
   filters: 'Filters',
   clearFilters: 'Clear filters',
   unmeasured: 'Unmeasured',
@@ -586,7 +587,7 @@ export const en = {
   allTheLightNote:
     'A derived view, not a work: the published Light stills summed in linear light, none of them altered, never offered for sale. Point into the light to name the orbits that pass through it, and choose one to see it alone, as its own untouched still.',
   allTheLightAlt:
-    'All the light: the Light stills of {count} works added together, white where orbits crowd and coloured at their edges. A derived view, not a work.',
+    'All the light, {span}: the Light stills of {count} works added together, white where orbits crowd and coloured at their edges. A derived view, not a work.',
   allTheLightPoint: 'Point anywhere to name the orbits that pass through it.',
   allTheLightThrough: 'Through this point · {works}',
   allTheLightNone: 'No orbit passes here.',

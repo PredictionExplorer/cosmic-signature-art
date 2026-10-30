@@ -283,6 +283,7 @@ export const vi: Messages = {
   orderNumber: 'Số',
   orderCycle: 'Chu kỳ',
   orderSpectrum: 'Quang phổ',
+  collectionViews: 'Cả bộ sưu tập cùng lúc',
   filters: 'Bộ lọc',
   clearFilters: 'Xóa bộ lọc',
   unmeasured: 'Chưa đo',
@@ -590,7 +591,7 @@ export const vi: Messages = {
   allTheLightNote:
     'Một góc nhìn phái sinh, không phải tác phẩm: các ảnh tĩnh Ánh sáng đã công bố được cộng trong ánh sáng tuyến tính, không ảnh nào bị chỉnh sửa, không bao giờ được rao bán. Trỏ vào vùng sáng để gọi tên các quỹ đạo đi qua đó, và chọn một quỹ đạo để xem riêng nó, như ảnh tĩnh nguyên vẹn của chính nó.',
   allTheLightAlt:
-    'Toàn bộ ánh sáng: ảnh tĩnh Ánh sáng của {count} tác phẩm cộng lại, trắng nơi các quỹ đạo dày đặc và còn màu ở rìa. Một góc nhìn phái sinh, không phải tác phẩm.',
+    'Toàn bộ ánh sáng, {span}: ảnh tĩnh Ánh sáng của {count} tác phẩm cộng lại, trắng nơi các quỹ đạo dày đặc và còn màu ở rìa. Một góc nhìn phái sinh, không phải tác phẩm.',
   allTheLightPoint: 'Trỏ vào bất cứ đâu để gọi tên các quỹ đạo đi qua đó.',
   allTheLightThrough: 'Đi qua điểm này · {works}',
   allTheLightNone: 'Không có quỹ đạo nào đi qua đây.',

@@ -8,6 +8,9 @@ export default function sitemap(): MetadataRoute.Sitemap {
     [
       '/',
       '/collection',
+      // The Orrery performs the physics; All the light is a derived image, and a derived image
+      // is never offered for discovery as if it were a work (docs/third-physics.md §9).
+      '/collection/orrery',
       '/exhibitions',
       '/process',
       '/statement',
