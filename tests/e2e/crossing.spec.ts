@@ -129,12 +129,15 @@ for (const id of [31, 23, 35]) {
     const clip = (await plate.boundingBox())!;
     const shot = async () => pixels(await page.screenshot({ clip }));
     const inkStill = await shot();
+    // The crossing is slowed to six seconds here, through its own token, so that a runner whose
+    // screenshots take most of a second still samples the middle of the order.
+    const slow = await page.addStyleTag({ content: ':root { --t-cross: 6000ms; }' });
 
     const frames: Pixels[] = [];
     await page.locator(`${current} [data-turn="light"]`).click();
     const started = Date.now();
-    while (Date.now() - started < 2600) frames.push(await shot());
-    await expect(stage).toHaveAttribute('data-expression', 'light', { timeout: 6000 });
+    while (Date.now() - started < 6300) frames.push(await shot());
+    await expect(stage).toHaveAttribute('data-expression', 'light', { timeout: 9000 });
     await expect(page.locator('html')).not.toHaveAttribute('data-turning', /./);
     // The canvas rests, and the head and the strip are the seam's own again.
     await expect(page.locator(`${pageStage} canvas[data-active]`)).toHaveCount(0);
@@ -162,7 +165,8 @@ for (const id of [31, 23, 35]) {
     expect(seen.headFront).toBeGreaterThan(0);
     expect(seen.stripFront).toBeGreaterThan(0);
 
-    // And back to Ink, in the order the current came to rest.
+    // And back to Ink, in the order the current came to rest, at the work's own pace.
+    await slow.evaluate((node) => (node as HTMLElement).remove());
     await page.locator(`${current} [data-turn="ink"]`).click();
     await expect(stage).toHaveAttribute('data-expression', 'ink', { timeout: 6000 });
     await expect(page.locator('html')).not.toHaveAttribute('data-turning', /./);

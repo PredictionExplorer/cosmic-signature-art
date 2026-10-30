@@ -152,11 +152,14 @@ export class ArrivalCrossing {
 
   private async load(ink: ArtInterpretation, light: ArtInterpretation): Promise<boolean> {
     if (!ink.arrival || !light.arrival) return false;
+    // The drawing buffer is kept: a repaint that comes without a new frame (a snapshot, a
+    // print, an engine that paints the canvas outside its compositor) shows the last frame
+    // painted, never a cleared one.
     const gl = this.canvas.getContext('webgl', {
       alpha: false,
       antialias: false,
       premultipliedAlpha: false,
-      preserveDrawingBuffer: false,
+      preserveDrawingBuffer: true,
     });
     if (!gl) return false;
     const container = this.container();

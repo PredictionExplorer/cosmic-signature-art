@@ -83,6 +83,7 @@ Phase B of [Third Physics](third-physics.md) changes how a work turns between it
 
 - **The edge stays soft.** A front one device pixel wide was tried, so that no pixel would be a mix. With eight-bit maps it shows the quantisation as stair-steps along slow fronts. A crisp front would need sixteen-bit maps, carried in two channels. The plan's `smoothstep(p ± ε)` hides the steps, so the mix across the front is stated rather than avoided.
 - **The canvas is faithful enough to take over the plate.** It samples the sharpest readable still the page already shows, or the work's own rung, with no visible change when it appears.
+- **The canvas keeps its drawing buffer.** On CI's Linux WebKit, screenshots taken mid-crossing disagreed with both stills in 7–15 % of pixels, while the run's screen recording showed the crossing correctly. The likely cause is a snapshot that paints the WebGL canvas from a buffer already cleared after compositing. The crossing now keeps its buffer, so any repaint shows the last frame painted.
 - **The head and the strip follow the front.** Their edges are hard, as the straight seam's always were. The plate's front is soft.
 
 ## Found on the way

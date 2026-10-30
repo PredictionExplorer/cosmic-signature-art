@@ -1,6 +1,11 @@
 import { expect, test } from '@playwright/test';
 import { catalogs } from '../../src/lib/i18n/messages';
-import { artworkImageSource, noHorizontalOverflow, pauseAmbientMotion } from './helpers';
+import {
+  artworkImageSource,
+  noHorizontalOverflow,
+  pauseAmbientMotion,
+  playAmbientMotion,
+} from './helpers';
 
 const current = '[data-artwork-stage="page"]:visible [data-layer-state="current"]';
 
@@ -119,9 +124,7 @@ test('a work without a local film wakes into its settling clip, keeps the filmâ€
     'No ambient film under reduced motion; the settling plate is proved in the unit suite.',
   );
   await page.goto('/art/40');
-  const toggle = page.locator('button.motion-toggle');
-  await expect(toggle).toHaveAttribute('aria-pressed', /true|false/);
-  if ((await toggle.getAttribute('aria-pressed')) === 'true') await toggle.click();
+  await playAmbientMotion(page);
   const plate = page.locator(current);
   const film = plate.locator('video');
   if (isMobile) {
