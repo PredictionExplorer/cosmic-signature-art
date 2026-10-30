@@ -111,6 +111,15 @@ An independent review of the branch, before merge, found one blocker and seven s
 - **The map builder ran ffmpeg without safeguards.** A missing ffmpeg crashed the build with the registry locked, and a stalled decode would hang it. It now listens for errors, kills a decode that runs past its time, and reads only a local MP4 (`-nostdin`, the `file` protocol, a forced container).
 - **Smaller.** The idle start is cancelled by the scheduler that set it. The first version of that fix called the cancel through an object, which every browser refuses with "Illegal invocation" when a viewer unmounts; jsdom does not check, so the unit test now does, and the browser tests caught it first. The `When` word keeps its focus when the lens cannot be painted, and `T` then does nothing and ignores key repeats. Uniform locations are looked up once.
 
+## What CI found after the review
+
+The follow-up pull request's first runs on CI's Ubuntu runner found three more problems that the local runs had not shown.
+- **The decoder tests leaned on macOS's `yes`.** They ran `yes` in ffmpeg's place, with ffmpeg's arguments. macOS's `yes` ignores them; GNU's takes `-nostdin` for an option and quits. The tests now run a small script that ignores the arguments, and the reader test checks that the decoder has gone.
+- **A film that began to fade in during a Turn came in all at once on the canvas.** Once a Turn has landed, the page plays the new layer's settling clip, fading it in over the still. A Turn back that began before that fade took the clip's frame whole as soon as its opacity left zero. The orbits the clip had yet to draw then vanished in a single frame, while the page beneath had only begun to fade. The canvas now lays the clip over the still at the clip's own opacity, as the page does.
+- **Two crossing specs depended on the runner.**
+  - The crossing spec compared the Turn back with the Light still. In WebKit the clip was already on view when that Turn began, so the Turn correctly left from the clip's frame. The spec now holds the films back, so both Turns leave a still at rest. The unit tests check the clip's weight.
+  - The peek spec's bound on the first frame after release depended on how slow the runner's screenshots were. It now checks that the night stopped short of the marks Light brings last, which a night that jumped to the far side would cover.
+
 ## Limits, and what is next
 
 - The plate's front is soft and the head's and strip's are hard. A soft head would need a mask that tracks text, which clip-path cannot do.
@@ -124,3 +133,4 @@ Built 29–30 October 2026 on `claude/third-physics-phase-b` and merged on 30 Oc
 - Type-check, lint, format, the script tests (47) and font coverage pass.
 - The unit suite passes: 894 tests, 92.9 % of statements, with the coverage thresholds held.
 - The full browser suite passes in the six local projects, against a production build: 1,121 passed, 37 skipped by design, none failed, in 13.3 minutes.
+- After CI's findings: type-check, lint and format pass, and so do the script tests (47) and the unit suite (895 tests). The crossing spec passes in the six local projects against a production build: 38 passed, 10 skipped by design.

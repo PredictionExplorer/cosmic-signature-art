@@ -48,6 +48,15 @@ async function workReady(page: Page, id: number) {
   await expect(page.locator('html')).toHaveAttribute('data-keys', 'ready');
 }
 
+/**
+ * Hold every film back, unanswered, so each plate rests on its still. Where a film plays, the
+ * page fades it in over the still once a Turn has landed, and the next Turn leaves from its
+ * frame; a film that never arrives is never shown, and never reported as failed.
+ */
+async function holdFilmsBack(page: Page) {
+  await page.route('**/*.mp4', () => {});
+}
+
 /** Count every frame on which the crossing's canvas is painted, from the first script on. */
 async function watchCanvas(page: Page) {
   await page.addInitScript(() => {
@@ -169,6 +178,35 @@ function followsMap(
   };
 }
 
+/**
+ * The share of the marks an order brings last (its final tenth) that a frame no longer shows
+ * as the Ink still: none, for a Turn let go part of the way.
+ */
+function lastChanged(
+  frame: Pixels,
+  ink: Pixels,
+  map: Buffer,
+  box: { x: number; y: number; width: number; height: number },
+  tolerance = 24,
+) {
+  let last = 0;
+  let moved = 0;
+  for (let y = 0; y < box.height; y++) {
+    for (let x = 0; x < box.width; x++) {
+      if (map[y * box.width + x] < 230) continue;
+      last += 1;
+      const i = ((box.y + y) * frame.width + box.x + x) * 3;
+      for (let c = 0; c < 3; c++) {
+        if (Math.abs(frame.data[i + c] - ink.data[i + c]) > tolerance) {
+          moved += 1;
+          break;
+        }
+      }
+    }
+  }
+  return moved / Math.max(1, last);
+}
+
 /** The share of the plate's pixels that no longer show the Ink still. */
 function changed(frame: Pixels, ink: Pixels, tolerance = 24) {
   let moved = 0;
@@ -228,6 +266,8 @@ for (const id of [31, 23, 35]) {
     // Two slowed crossings, sampled frame by frame, on runners whose screenshots are slow.
     test.slow();
     await watchCanvas(page);
+    // Both Turns leave a still at rest; one that leaves a playing film is the canvas's own test.
+    await holdFilmsBack(page);
     await page.emulateMedia({ reducedMotion: 'no-preference' });
     await workReady(page, id);
     await crossingOffered(page);
@@ -280,7 +320,9 @@ for (const id of [31, 23, 35]) {
     expect(toNight.waiting).toBeGreaterThan(200);
     expect(toNight.latestArrived).toBeLessThanOrEqual(toNight.earliestWaiting + 16);
 
-    // And back to Ink, in the order the current came to rest, at the work's own pace.
+    // And back to Ink, in the order the current came to rest, at the work's own pace, from the
+    // Light still at rest: its film, held back, never came.
+    await expect(page.locator(`${current} video.has-frame`)).toHaveCount(0);
     const back: Pixels[] = [];
     await page.locator(`${current} [data-turn="ink"]`).click();
     const returning = Date.now();
@@ -312,8 +354,13 @@ test('a peek released mid-way returns from where it is, never from the far side'
   await workReady(page, 31);
   await crossingOffered(page);
   const clip = (await page.locator(`${current} .plate`).boundingBox())!;
-  const shot = async () => coarse(await page.screenshot({ clip }));
-  const ink = await shot();
+  const capture = () => page.screenshot({ clip });
+  const shot = async () => coarse(await capture());
+  const inkShot = await capture();
+  const ink = await coarse(inkShot);
+  const inkStill = await pixels(inkShot);
+  const box = await workBox(page, clip, inkStill);
+  const lightMap = await arrivalMap(31, 'light', box.width, box.height);
   // Slowed to twelve seconds, so a runner's slow screenshots still see the release itself.
   await page.addStyleTag({ content: ':root { --t-cross: 12000ms; }' });
   // Hold L a while: the night comes in its own order, part of the way along the eased curve.
@@ -323,12 +370,16 @@ test('a peek released mid-way returns from where it is, never from the far side'
   const held = changed(await shot(), ink);
   expect(held).toBeGreaterThan(0.02);
   await page.keyboard.up('l');
-  const after: number[] = [];
+  const first = await capture();
+  const after = [changed(await coarse(first), ink)];
   const released = Date.now();
   while (Date.now() - released < 3000) after.push(changed(await shot(), ink));
-  // The first frame after the key is let go is near where the night was, not the far side,
-  // and from there the night only recedes.
-  expect(after[0]).toBeLessThan(held + 0.3);
+  // The first frame after the key is let go keeps the night where it had come: short of the
+  // marks Light brings last, all of which a night jumped to the far side would cover. How far
+  // it had come depends on how slow a runner's screenshots are, but a twelve-second order held
+  // for four seconds is nowhere near its end.
+  expect(lastChanged(await pixels(first), inkStill, lightMap, box)).toBeLessThan(0.1);
+  // And from there the night only recedes.
   for (let i = 1; i < after.length; i++) expect(after[i]).toBeLessThanOrEqual(after[i - 1] + 0.03);
   await expect(page.locator('html')).not.toHaveAttribute('data-turning', /./, { timeout: 12_000 });
   await expect(page.locator(`${pageStage} canvas[data-active]`)).toHaveCount(0);
