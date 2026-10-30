@@ -1,0 +1,1079 @@
+{
+  "schemaVersion": 1,
+  "builtOn": "2026-10-30",
+  "works": [
+    {
+      "id": 0,
+      "cycle": 0,
+      "rungs": {
+        "1280": {
+          "src": "/art/stills/0-light-1280-b14c25f379798d9c.webp",
+          "sha256": "b14c25f379798d9c731f1a8a5abbfb0c143b0214acbfc34949ae8b7b97d0fb9f"
+        },
+        "1920": {
+          "src": "/art/stills/0-light-1920-98290142066a6dbb.webp",
+          "sha256": "98290142066a6dbb6289992fc1af8d1eb91c877990c5c79e63a502dd6c02a456"
+        }
+      }
+    },
+    {
+      "id": 1,
+      "cycle": 0,
+      "rungs": {
+        "1280": {
+          "src": "/art/stills/1-light-1280-8ac880f8df9a680b.webp",
+          "sha256": "8ac880f8df9a680b5444b0f8b884e44008b2cbdd0d239e65572b29e11b69cb35"
+        },
+        "1920": {
+          "src": "/art/stills/1-light-1920-8ffe32ac15412b86.webp",
+          "sha256": "8ffe32ac15412b869525f771b65c6ac12667675f050ea54d2120c735eeb4f3a6"
+        }
+      }
+    },
+    {
+      "id": 2,
+      "cycle": 0,
+      "rungs": {
+        "1280": {
+          "src": "/art/stills/2-light-1280-02f88e1bf3bb5f7f.webp",
+          "sha256": "02f88e1bf3bb5f7f82804e08471a32e10712477dab07c32261141d54a335aabf"
+        },
+        "1920": {
+          "src": "/art/stills/2-light-1920-ba3097b785c71cc5.webp",
+          "sha256": "ba3097b785c71cc56f68c17f3e408be24a675bfdb039999e04fcc62d8cf2d92b"
+        }
+      }
+    },
+    {
+      "id": 3,
+      "cycle": 0,
+      "rungs": {
+        "1280": {
+          "src": "/art/stills/3-light-1280-bdd7b16d823c1367.webp",
+          "sha256": "bdd7b16d823c1367011f3a5f50d9081efe7e37f660de110280f0214418ee86e7"
+        },
+        "1920": {
+          "src": "/art/stills/3-light-1920-c4eddc5181b9eb19.webp",
+          "sha256": "c4eddc5181b9eb191b22002d13d846ee6df20c54d2d4f21ccb474e3de0de8447"
+        }
+      }
+    },
+    {
+      "id": 4,
+      "cycle": 0,
+      "rungs": {
+        "1280": {
+          "src": "/art/stills/4-light-1280-b6c7a36eec6a3a72.webp",
+          "sha256": "b6c7a36eec6a3a729ef03ed4640d0367b2992eb6a8e68fbd42d26d60714c4537"
+        },
+        "1920": {
+          "src": "/art/stills/4-light-1920-5e691d8b4141f880.webp",
+          "sha256": "5e691d8b4141f880c9de249a04f81498755cfe717c7e4b178eb813f6ac1f95d2"
+        }
+      }
+    },
+    {
+      "id": 5,
+      "cycle": 0,
+      "rungs": {
+        "1280": {
+          "src": "/art/stills/5-light-1280-50733a849bbebd65.webp",
+          "sha256": "50733a849bbebd6548a3c8625cd3b2b9d2cf887256c9c88c9edb778caa266557"
+        },
+        "1920": {
+          "src": "/art/stills/5-light-1920-8a95a959eea6e924.webp",
+          "sha256": "8a95a959eea6e924c32bdd88d02ecb2fc4e8ac9a9cc6a2882b6221cb5df35c19"
+        }
+      }
+    },
+    {
+      "id": 6,
+      "cycle": 0,
+      "rungs": {
+        "1280": {
+          "src": "/art/stills/6-light-1280-890b203409fd7f49.webp",
+          "sha256": "890b203409fd7f49c259859cf8ce8673ddeff7dd5ec15e5fb8c568491ffd9de6"
+        },
+        "1920": {
+          "src": "/art/stills/6-light-1920-72dc43446822e6b9.webp",
+          "sha256": "72dc43446822e6b9b80280c76016ff43c4025f645589ae59ed0a831c42c93d77"
+        }
+      }
+    },
+    {
+      "id": 7,
+      "cycle": 0,
+      "rungs": {
+        "1280": {
+          "src": "/art/stills/7-light-1280-6df1d5760a316be4.webp",
+          "sha256": "6df1d5760a316be4475cffe254f91b217a92eb8bf4437c9272de9f0b1181ca9c"
+        },
+        "1920": {
+          "src": "/art/stills/7-light-1920-19f6a55851ba83bd.webp",
+          "sha256": "19f6a55851ba83bda01cdbd2d34ff308430a82d7c7cd6292ad7918571465ab60"
+        }
+      }
+    },
+    {
+      "id": 8,
+      "cycle": 0,
+      "rungs": {
+        "1280": {
+          "src": "/art/stills/8-light-1280-04224bcd3a56cc2f.webp",
+          "sha256": "04224bcd3a56cc2f67cfdb88981cbdbdc3347e21022c9e7b7b6e9874ac59d5ab"
+        },
+        "1920": {
+          "src": "/art/stills/8-light-1920-efa23e7fba2dd2a6.webp",
+          "sha256": "efa23e7fba2dd2a68b0641e5148d42d738490f9de0139c50d11347de796bcb1c"
+        }
+      }
+    },
+    {
+      "id": 9,
+      "cycle": 0,
+      "rungs": {
+        "1280": {
+          "src": "/art/stills/9-light-1280-bf8486f4d4281fd8.webp",
+          "sha256": "bf8486f4d4281fd8f5ce9a50b364f10d482924cf0dfe59d14e886c04827c6bcf"
+        },
+        "1920": {
+          "src": "/art/stills/9-light-1920-bc525e1a61faebc9.webp",
+          "sha256": "bc525e1a61faebc95ff0a6f3c356181c954fe5009dff11531a5f809b38a1b353"
+        }
+      }
+    },
+    {
+      "id": 10,
+      "cycle": 0,
+      "rungs": {
+        "1280": {
+          "src": "/art/stills/10-light-1280-8dfb3da5a0bc45d3.webp",
+          "sha256": "8dfb3da5a0bc45d33abb45664c7e0b34f25d32f0494f05b25a15271ffd034fb9"
+        },
+        "1920": {
+          "src": "/art/stills/10-light-1920-4f1eae0326260570.webp",
+          "sha256": "4f1eae0326260570456b839e5038e28337987b9877c62184263d8a4a22b692f2"
+        }
+      }
+    },
+    {
+      "id": 11,
+      "cycle": 0,
+      "rungs": {
+        "1280": {
+          "src": "/art/stills/11-light-1280-f2c078d1aa4249dd.webp",
+          "sha256": "f2c078d1aa4249dd6c91fc0c0d637afc84c50f7b89b0f08f935b252e88c5d929"
+        },
+        "1920": {
+          "src": "/art/stills/11-light-1920-bb539a6cc5cb09f4.webp",
+          "sha256": "bb539a6cc5cb09f4ec43071d786a060be3fdfa970770f133e6085fa9acfdd6da"
+        }
+      }
+    },
+    {
+      "id": 12,
+      "cycle": 0,
+      "rungs": {
+        "1280": {
+          "src": "/art/stills/12-light-1280-d2c0b65731813932.webp",
+          "sha256": "d2c0b657318139328053cf6dadb31c86c1d4ce6324770e72d6eae20f6acade1e"
+        },
+        "1920": {
+          "src": "/art/stills/12-light-1920-82a63aabd2a84c68.webp",
+          "sha256": "82a63aabd2a84c683dd1bc2281937dc3252369199ff96b12ffebb8e6eb01face"
+        }
+      }
+    },
+    {
+      "id": 13,
+      "cycle": 0,
+      "rungs": {
+        "1280": {
+          "src": "/art/stills/13-light-1280-b385030bdb725bc2.webp",
+          "sha256": "b385030bdb725bc25ee47ab01c83581f2f6d3d79b10d09e5aba870df5d879ef6"
+        },
+        "1920": {
+          "src": "/art/stills/13-light-1920-c0598dedfa77404d.webp",
+          "sha256": "c0598dedfa77404d2b56cef2f34862162bcabebad02c791a13a1dd50ad355044"
+        }
+      }
+    },
+    {
+      "id": 14,
+      "cycle": 0,
+      "rungs": {
+        "1280": {
+          "src": "/art/stills/14-light-1280-0fce264eba7602a4.webp",
+          "sha256": "0fce264eba7602a4b1029a28b55a7206f9b012653363cc79ec1a6aca79934a61"
+        },
+        "1920": {
+          "src": "/art/stills/14-light-1920-5ea5cf9513b68857.webp",
+          "sha256": "5ea5cf9513b6885749cbc1909caf30c3827b56b869e63623f0a65262ba698fc0"
+        }
+      }
+    },
+    {
+      "id": 15,
+      "cycle": 0,
+      "rungs": {
+        "1280": {
+          "src": "/art/stills/15-light-1280-a07c67d1d98f2d69.webp",
+          "sha256": "a07c67d1d98f2d69f8ee0dd101ae0eff9f419f206e40fd4f751090a08af1a2c3"
+        },
+        "1920": {
+          "src": "/art/stills/15-light-1920-40afe604e2452116.webp",
+          "sha256": "40afe604e24521169723463ac84dfa80dd8473fbf35dbc3663a6db1e4d55057a"
+        }
+      }
+    },
+    {
+      "id": 16,
+      "cycle": 0,
+      "rungs": {
+        "1280": {
+          "src": "/art/stills/16-light-1280-7a33cca4583c81c0.webp",
+          "sha256": "7a33cca4583c81c0a6bac19a8d55b0908272607c295c365cbd0ac1a50d0e5ab0"
+        },
+        "1920": {
+          "src": "/art/stills/16-light-1920-56658cd292dd06cd.webp",
+          "sha256": "56658cd292dd06cd2f0876babc9d62e72ad7c09b3fbb88ede80915b95b9ebaad"
+        }
+      }
+    },
+    {
+      "id": 17,
+      "cycle": 0,
+      "rungs": {
+        "1280": {
+          "src": "/art/stills/17-light-1280-3ef8aaac6865cb92.webp",
+          "sha256": "3ef8aaac6865cb920421f7f26e6e4299e77ebf544744a6f7ea91b2953781e773"
+        },
+        "1920": {
+          "src": "/art/stills/17-light-1920-b146aa286dfc53ed.webp",
+          "sha256": "b146aa286dfc53ed2881a1c1b1bc03da66aba98707d7e93f58f5e74d613bd3c1"
+        }
+      }
+    },
+    {
+      "id": 18,
+      "cycle": 0,
+      "rungs": {
+        "1280": {
+          "src": "/art/stills/18-light-1280-b60fad2ae35caec4.webp",
+          "sha256": "b60fad2ae35caec4faa5ab4293632ee9360248be4127acb3bd96fbbce60ab80c"
+        },
+        "1920": {
+          "src": "/art/stills/18-light-1920-1ec9126e861ebe8c.webp",
+          "sha256": "1ec9126e861ebe8c1c7981a92f4dcf210dc7efbfb46a3bc8b8bd7861c0926c86"
+        }
+      }
+    },
+    {
+      "id": 19,
+      "cycle": 0,
+      "rungs": {
+        "1280": {
+          "src": "/art/stills/19-light-1280-758a2030dc2e02af.webp",
+          "sha256": "758a2030dc2e02af2141ec4c42dc37bb0581fae870525fdb631018186b627dda"
+        },
+        "1920": {
+          "src": "/art/stills/19-light-1920-de392b17fef59579.webp",
+          "sha256": "de392b17fef5957904f98fcf681afc480bfba2a1fc8c5dc4ec2c37a54ee4386d"
+        }
+      }
+    },
+    {
+      "id": 20,
+      "cycle": 0,
+      "rungs": {
+        "1280": {
+          "src": "/art/stills/20-light-1280-10ec446777fdbfcd.webp",
+          "sha256": "10ec446777fdbfcd1cf4b6c43109fc5052eec5a0e3064a959ad5b4abf35b9e57"
+        },
+        "1920": {
+          "src": "/art/stills/20-light-1920-90379994874401b6.webp",
+          "sha256": "90379994874401b6fb92a928d1124301a75db3d3ca9119cfbff3e2db6db1c5bf"
+        }
+      }
+    },
+    {
+      "id": 21,
+      "cycle": 0,
+      "rungs": {
+        "1280": {
+          "src": "/art/stills/21-light-1280-7305e98f51d2b1e5.webp",
+          "sha256": "7305e98f51d2b1e5ae5b857b92d2fab5b67013b9ad66892e8927400dc2e45905"
+        },
+        "1920": {
+          "src": "/art/stills/21-light-1920-08c4d12f1f625815.webp",
+          "sha256": "08c4d12f1f6258157b5c19ba9b9ea83ba6e5f147d3107eca8b59864c0e5b3f41"
+        }
+      }
+    },
+    {
+      "id": 22,
+      "cycle": 0,
+      "rungs": {
+        "1280": {
+          "src": "/art/stills/22-light-1280-9eff6e605d79a9b9.webp",
+          "sha256": "9eff6e605d79a9b9ee4c74f53328c76c0ce835925d873acab2115cf2dfd86a0e"
+        },
+        "1920": {
+          "src": "/art/stills/22-light-1920-e0422429b16985d1.webp",
+          "sha256": "e0422429b16985d12559daed78646d03e83f60663e18fbed02317ee69f122e1d"
+        }
+      }
+    },
+    {
+      "id": 23,
+      "cycle": 0,
+      "rungs": {
+        "1280": {
+          "src": "/art/stills/23-light-1280-5ea50de36b4e7c36.webp",
+          "sha256": "5ea50de36b4e7c36d5ebe241f216a88c60b8b56ab6247bce036f1ba9f6823639"
+        },
+        "1920": {
+          "src": "/art/stills/23-light-1920-3aac2e15094d87f5.webp",
+          "sha256": "3aac2e15094d87f5ed30f27070a4d3aad58d1a102d1def70c726d453e303cf71"
+        }
+      }
+    },
+    {
+      "id": 24,
+      "cycle": 1,
+      "rungs": {
+        "1280": {
+          "src": "/art/stills/24-light-1280-51aa8325e5a40ca4.webp",
+          "sha256": "51aa8325e5a40ca45376b8106695c544070190afb019a561f245516d0f1e11f2"
+        },
+        "1920": {
+          "src": "/art/stills/24-light-1920-4c3208fef6513360.webp",
+          "sha256": "4c3208fef6513360cbd77ff485e4f1f8197df7bb6a54363c90fbd6b0bed5f533"
+        }
+      }
+    },
+    {
+      "id": 25,
+      "cycle": 1,
+      "rungs": {
+        "1280": {
+          "src": "/art/stills/25-light-1280-50878730fd95df17.webp",
+          "sha256": "50878730fd95df1755c55697dbf2f9b487588be55b544bbcdc0afb6bf6f5e3dd"
+        },
+        "1920": {
+          "src": "/art/stills/25-light-1920-0cfa26887a46a8ff.webp",
+          "sha256": "0cfa26887a46a8fffd63da18497a9b658301b4965be6135cce5088094278615b"
+        }
+      }
+    },
+    {
+      "id": 26,
+      "cycle": 1,
+      "rungs": {
+        "1280": {
+          "src": "/art/stills/26-light-1280-3b37c2c9b9756920.webp",
+          "sha256": "3b37c2c9b97569205d47fbaa845709b3aaac8632e7778e02e43a3087e8f92c36"
+        },
+        "1920": {
+          "src": "/art/stills/26-light-1920-27aaec16be3e7eab.webp",
+          "sha256": "27aaec16be3e7eab709eb0646f478a00fec1fc18b1ce486c4572c9abbfccf64a"
+        }
+      }
+    },
+    {
+      "id": 27,
+      "cycle": 1,
+      "rungs": {
+        "1280": {
+          "src": "/art/stills/27-light-1280-84109a8c140eafc6.webp",
+          "sha256": "84109a8c140eafc66c1ee4dd3c0570b0225bf046180f2cb11e054fed5dbc2e87"
+        },
+        "1920": {
+          "src": "/art/stills/27-light-1920-7d4c2ae068639c06.webp",
+          "sha256": "7d4c2ae068639c064e30744a2571d80c271f207ed777514e7858eccf762332ea"
+        }
+      }
+    },
+    {
+      "id": 28,
+      "cycle": 1,
+      "rungs": {
+        "1280": {
+          "src": "/art/stills/28-light-1280-a5278a09cec7a425.webp",
+          "sha256": "a5278a09cec7a425bae008d977b332440d266cb48a2cda0ddc2c82fd8c53dc0a"
+        },
+        "1920": {
+          "src": "/art/stills/28-light-1920-d5f0515a35e92cdb.webp",
+          "sha256": "d5f0515a35e92cdbdc1b9bd2bfaf0d860df0dbbc6435673c841ce4b567c85608"
+        }
+      }
+    },
+    {
+      "id": 29,
+      "cycle": 1,
+      "rungs": {
+        "1280": {
+          "src": "/art/stills/29-light-1280-aaee8203b3406f6f.webp",
+          "sha256": "aaee8203b3406f6f1cdc0befc5712b3e9aed8fd3a964fc1c98d3e29b7fa002ff"
+        },
+        "1920": {
+          "src": "/art/stills/29-light-1920-c598adee88ff296d.webp",
+          "sha256": "c598adee88ff296dd9f73ab481562469e0631e358e7bb4bbc62f3ddbed6c92c1"
+        }
+      }
+    },
+    {
+      "id": 30,
+      "cycle": 1,
+      "rungs": {
+        "1280": {
+          "src": "/art/stills/30-light-1280-3418a6761cf0b62f.webp",
+          "sha256": "3418a6761cf0b62f4b1b0b4db84ad8d99d2a6393ceb0be4d600d2765ea7f4319"
+        },
+        "1920": {
+          "src": "/art/stills/30-light-1920-41387ed6190ea31f.webp",
+          "sha256": "41387ed6190ea31f0451ce5879c2ca91b307d949421db2130a1eec326ec14295"
+        }
+      }
+    },
+    {
+      "id": 31,
+      "cycle": 1,
+      "rungs": {
+        "1280": {
+          "src": "/art/stills/31-light-1280-18dcfff2778f195a.webp",
+          "sha256": "18dcfff2778f195a735e7685923658b8fe561dbe29e42dd80198388939a29aa3"
+        },
+        "1920": {
+          "src": "/art/stills/31-light-1920-0fa45c59568a5574.webp",
+          "sha256": "0fa45c59568a5574e3087e5a51434fc7c0071e87adb6a65049bc69a9777f23c8"
+        }
+      }
+    },
+    {
+      "id": 32,
+      "cycle": 1,
+      "rungs": {
+        "1280": {
+          "src": "/art/stills/32-light-1280-878f6663ba804bb1.webp",
+          "sha256": "878f6663ba804bb1eafb39ad5b761293c0f264dab2a7351ccce1b6c49b14bb27"
+        },
+        "1920": {
+          "src": "/art/stills/32-light-1920-ed0c9c258fd8a5b5.webp",
+          "sha256": "ed0c9c258fd8a5b556c5e525379ba329d741ac96cc6c4cae37ea0242af48a109"
+        }
+      }
+    },
+    {
+      "id": 33,
+      "cycle": 1,
+      "rungs": {
+        "1280": {
+          "src": "/art/stills/33-light-1280-a39f63850dc8ae96.webp",
+          "sha256": "a39f63850dc8ae960806ae5b551c5667bdfb62fc99ff8bdb4cebabf263c0ffe9"
+        },
+        "1920": {
+          "src": "/art/stills/33-light-1920-f8d59e6dc7e43cb3.webp",
+          "sha256": "f8d59e6dc7e43cb3992cc3731411c6a20be3d3a62708b6a8c46df3969d2c5f51"
+        }
+      }
+    },
+    {
+      "id": 34,
+      "cycle": 1,
+      "rungs": {
+        "1280": {
+          "src": "/art/stills/34-light-1280-5b10df1da6a55bfc.webp",
+          "sha256": "5b10df1da6a55bfca6428c6b117a75d8facbcb21c3f003a30afa598177159dec"
+        },
+        "1920": {
+          "src": "/art/stills/34-light-1920-1e2e178ce61ade0d.webp",
+          "sha256": "1e2e178ce61ade0d7bdb79f59e78c5c7f5691de8cd0528a3056f01ddcb9418a8"
+        }
+      }
+    },
+    {
+      "id": 35,
+      "cycle": 1,
+      "rungs": {
+        "1280": {
+          "src": "/art/stills/35-light-1280-ee7b6723da9b026c.webp",
+          "sha256": "ee7b6723da9b026c8868a39316a1dfa578113b8edf5aaf6a0540dad8dc5a006b"
+        },
+        "1920": {
+          "src": "/art/stills/35-light-1920-c0026116f875b3a3.webp",
+          "sha256": "c0026116f875b3a39863c906d5c1631d12bee5ab48d7cd92aa36b715174268c0"
+        }
+      }
+    },
+    {
+      "id": 36,
+      "cycle": 1,
+      "rungs": {
+        "1280": {
+          "src": "/art/stills/36-light-1280-98feb09f947b36f1.webp",
+          "sha256": "98feb09f947b36f176891a9b2106852290331bf406b98c73f95ff8b7448dcab8"
+        },
+        "1920": {
+          "src": "/art/stills/36-light-1920-2cd364253d5e8746.webp",
+          "sha256": "2cd364253d5e87462c16f3bb78a3f220bb829989491c6b4761f7a1986b9a1694"
+        }
+      }
+    },
+    {
+      "id": 37,
+      "cycle": 1,
+      "rungs": {
+        "1280": {
+          "src": "/art/stills/37-light-1280-09a0cc868ca6208c.webp",
+          "sha256": "09a0cc868ca6208c569eea21cc2ad3ee8f257adad55f14bbffd91501d0d484fe"
+        },
+        "1920": {
+          "src": "/art/stills/37-light-1920-c2779905df7369fa.webp",
+          "sha256": "c2779905df7369fa43e5f7faf2e1da6d5d2f7324867e574e16b92ecc5d8545a9"
+        }
+      }
+    },
+    {
+      "id": 38,
+      "cycle": 1,
+      "rungs": {
+        "1280": {
+          "src": "/art/stills/38-light-1280-04a9966693c7cbc3.webp",
+          "sha256": "04a9966693c7cbc3c6b8e8cf5d1118720db1044219313c7d42d0a02566711ac0"
+        },
+        "1920": {
+          "src": "/art/stills/38-light-1920-5a80ade64f1e1e0d.webp",
+          "sha256": "5a80ade64f1e1e0ddc7f928b48c3ad2b4e9d3e9aa39f3bf824fe951a8b4a8b64"
+        }
+      }
+    },
+    {
+      "id": 39,
+      "cycle": 1,
+      "rungs": {
+        "1280": {
+          "src": "/art/stills/39-light-1280-bd513ea3e5c8d7eb.webp",
+          "sha256": "bd513ea3e5c8d7ebcde05f1ed3350a808320327d5e1fe8e9804c00d2e77d3363"
+        },
+        "1920": {
+          "src": "/art/stills/39-light-1920-63c2de442236c2d2.webp",
+          "sha256": "63c2de442236c2d2b1899a1fa7f8d4900c279e12c3e2e1839228a541f0071f81"
+        }
+      }
+    },
+    {
+      "id": 40,
+      "cycle": 1,
+      "rungs": {
+        "1280": {
+          "src": "/art/stills/40-light-1280-7f1ac66963953678.webp",
+          "sha256": "7f1ac66963953678f3ab7af55b679f19aec996d70b6dc5487b5ed7a29832f95b"
+        },
+        "1920": {
+          "src": "/art/stills/40-light-1920-27dad0eaada9aac6.webp",
+          "sha256": "27dad0eaada9aac62dfae13eabf778ce122005c6b3cf31400adfc36d4874aadc"
+        }
+      }
+    },
+    {
+      "id": 41,
+      "cycle": 1,
+      "rungs": {
+        "1280": {
+          "src": "/art/stills/41-light-1280-8116d31f94f5a4d0.webp",
+          "sha256": "8116d31f94f5a4d04f132a6ebdcb8486fc1f4c544f1d69df4bf6e6aad9b8351a"
+        },
+        "1920": {
+          "src": "/art/stills/41-light-1920-99439b1bf0335890.webp",
+          "sha256": "99439b1bf0335890f1c7e17c0039df669e768ba5ac91bcd7df7a2b3956dcca46"
+        }
+      }
+    },
+    {
+      "id": 42,
+      "cycle": 1,
+      "rungs": {
+        "1280": {
+          "src": "/art/stills/42-light-1280-b13bda3bb44a02f0.webp",
+          "sha256": "b13bda3bb44a02f038e0a817605840d7cb9d30b49600dea026c0e4c11de9ffd4"
+        },
+        "1920": {
+          "src": "/art/stills/42-light-1920-cfbb1ca0dd7809a4.webp",
+          "sha256": "cfbb1ca0dd7809a4462342ae450e27d1183132b45daf6fcf3a1c8e0ee13a3b5b"
+        }
+      }
+    },
+    {
+      "id": 43,
+      "cycle": 1,
+      "rungs": {
+        "1280": {
+          "src": "/art/stills/43-light-1280-1856d111394701eb.webp",
+          "sha256": "1856d111394701ebb1f551c44b95a3a632f0de2ba66e8bb4eda9daaa66d9c67f"
+        },
+        "1920": {
+          "src": "/art/stills/43-light-1920-27d2afbfe1aa5d71.webp",
+          "sha256": "27d2afbfe1aa5d71314f9ad8aa6cf5bbfdd164e61d98c43df58470e12b6bc119"
+        }
+      }
+    },
+    {
+      "id": 44,
+      "cycle": 1,
+      "rungs": {
+        "1280": {
+          "src": "/art/stills/44-light-1280-e756d74aa9b9977c.webp",
+          "sha256": "e756d74aa9b9977cd86f6be0bfcea683269be927f84550641fa7c2b11b95bd97"
+        },
+        "1920": {
+          "src": "/art/stills/44-light-1920-302e82ab265f0f03.webp",
+          "sha256": "302e82ab265f0f035eec0010cb20aa67310b5135aa0aad1352a2eec1f30f48ed"
+        }
+      }
+    },
+    {
+      "id": 45,
+      "cycle": 1,
+      "rungs": {
+        "1280": {
+          "src": "/art/stills/45-light-1280-083959d7ce41fce5.webp",
+          "sha256": "083959d7ce41fce5bf94be4a97c3dcbe86c3259ee2316e0f0b4c5955aa4d5b21"
+        },
+        "1920": {
+          "src": "/art/stills/45-light-1920-2620f81aad913424.webp",
+          "sha256": "2620f81aad91342400c89c39120c1639137309d6c4b0870e04c46b7dbc8de620"
+        }
+      }
+    },
+    {
+      "id": 46,
+      "cycle": 1,
+      "rungs": {
+        "1280": {
+          "src": "/art/stills/46-light-1280-9574667b9b7340fe.webp",
+          "sha256": "9574667b9b7340fe1e201561d8e5ee828a9293de1983c6492dc1d983fe3cbcb7"
+        },
+        "1920": {
+          "src": "/art/stills/46-light-1920-1656ccb0a7da3c11.webp",
+          "sha256": "1656ccb0a7da3c11c5bd4b5e015540bd366bae51969d5084f05fdd158194f6ba"
+        }
+      }
+    },
+    {
+      "id": 47,
+      "cycle": 1,
+      "rungs": {
+        "1280": {
+          "src": "/art/stills/47-light-1280-10d0f8fb31e0211f.webp",
+          "sha256": "10d0f8fb31e0211f25fe46241756b182a13a119b4490b1061da7f520c8191bdc"
+        },
+        "1920": {
+          "src": "/art/stills/47-light-1920-441583f862483c20.webp",
+          "sha256": "441583f862483c20bd362549d0bc32323054440575b75f7a6e8ca32fb0a0c600"
+        }
+      }
+    },
+    {
+      "id": 48,
+      "cycle": 2,
+      "rungs": {
+        "1280": {
+          "src": "/art/stills/48-light-1280-4cd284553b2eb976.webp",
+          "sha256": "4cd284553b2eb9765ae0a726ad2b0b5813de2081a5f183816f4a0c6ab8387cd9"
+        },
+        "1920": {
+          "src": "/art/stills/48-light-1920-3728076fb421b7de.webp",
+          "sha256": "3728076fb421b7de95c5da1a5fff1a799aa9386df3fe3464425115f4814ac122"
+        }
+      }
+    },
+    {
+      "id": 49,
+      "cycle": 2,
+      "rungs": {
+        "1280": {
+          "src": "/art/stills/49-light-1280-eca5cf58666aa95e.webp",
+          "sha256": "eca5cf58666aa95eb7d4b10dc68e9807799c47b363c372f2ff77a3f1786597a6"
+        },
+        "1920": {
+          "src": "/art/stills/49-light-1920-3764f9e189afccff.webp",
+          "sha256": "3764f9e189afccff36bbce02a6c0cc2c7dc5f4b2ab580958ac565b7e81c6ee9c"
+        }
+      }
+    },
+    {
+      "id": 50,
+      "cycle": 2,
+      "rungs": {
+        "1280": {
+          "src": "/art/stills/50-light-1280-becd7afcc702b0a5.webp",
+          "sha256": "becd7afcc702b0a5335b90357c68975cd5e9ed40e0cb0715917b8700807cbd01"
+        },
+        "1920": {
+          "src": "/art/stills/50-light-1920-4433535c54dba93c.webp",
+          "sha256": "4433535c54dba93c3be70a2674c031be8d244ea10738c966d4f14f878ca6f7dc"
+        }
+      }
+    },
+    {
+      "id": 51,
+      "cycle": 2,
+      "rungs": {
+        "1280": {
+          "src": "/art/stills/51-light-1280-53ad15d79680ca86.webp",
+          "sha256": "53ad15d79680ca86f5d50f3b11a1c6dcd1fa90cfc935747360b17a38aa9384ae"
+        },
+        "1920": {
+          "src": "/art/stills/51-light-1920-ff74333f18262c6f.webp",
+          "sha256": "ff74333f18262c6fbfcf9a667c2531ed53e17a178d58c54fcdbfb6529928f2f9"
+        }
+      }
+    },
+    {
+      "id": 52,
+      "cycle": 2,
+      "rungs": {
+        "1280": {
+          "src": "/art/stills/52-light-1280-93163faa753f5ed9.webp",
+          "sha256": "93163faa753f5ed916ac889809dee7457dd67ef020b11fc2c11c9b4321c888a9"
+        },
+        "1920": {
+          "src": "/art/stills/52-light-1920-59135ed1a88cfefe.webp",
+          "sha256": "59135ed1a88cfefe878beace45de7a64e6391894b87a9724adc6b9350f9a3123"
+        }
+      }
+    },
+    {
+      "id": 53,
+      "cycle": 2,
+      "rungs": {
+        "1280": {
+          "src": "/art/stills/53-light-1280-1ef332c7b5048404.webp",
+          "sha256": "1ef332c7b50484040f7df12f7df93f881c35b87433448bfc8a6330eecb6f55ef"
+        },
+        "1920": {
+          "src": "/art/stills/53-light-1920-3a703ba3dc4d83a1.webp",
+          "sha256": "3a703ba3dc4d83a10e60c11a0ee5958a9462cff2db8c6d3110fdc75e96dcfc6e"
+        }
+      }
+    },
+    {
+      "id": 54,
+      "cycle": 2,
+      "rungs": {
+        "1280": {
+          "src": "/art/stills/54-light-1280-2d682844bd53e635.webp",
+          "sha256": "2d682844bd53e6355859d64f885259db35c2075e09e56ae7acd69979f434f0ff"
+        },
+        "1920": {
+          "src": "/art/stills/54-light-1920-0513eb0ce2b22236.webp",
+          "sha256": "0513eb0ce2b222368b317dd0b1bff089037610a01f2ad8db53d84f21f1e68176"
+        }
+      }
+    },
+    {
+      "id": 55,
+      "cycle": 2,
+      "rungs": {
+        "1280": {
+          "src": "/art/stills/55-light-1280-6811380133ad3946.webp",
+          "sha256": "6811380133ad3946c4218c31e2ee370db546b1aad84f0aae76baa622bca29980"
+        },
+        "1920": {
+          "src": "/art/stills/55-light-1920-5bd370eb667531a7.webp",
+          "sha256": "5bd370eb667531a73c9ca5d3170f61f57b1bb7dce5b0b37f053bace782dc760a"
+        }
+      }
+    },
+    {
+      "id": 56,
+      "cycle": 2,
+      "rungs": {
+        "1280": {
+          "src": "/art/stills/56-light-1280-42a4fcf9c13a905d.webp",
+          "sha256": "42a4fcf9c13a905d494bbf8c0c1f4db4ea0874cdd43563c395ccd021461b9b7c"
+        },
+        "1920": {
+          "src": "/art/stills/56-light-1920-09477fa378cf5413.webp",
+          "sha256": "09477fa378cf541344c460c744280c8096e353df7b576f672186352d72f3f17b"
+        }
+      }
+    },
+    {
+      "id": 57,
+      "cycle": 2,
+      "rungs": {
+        "1280": {
+          "src": "/art/stills/57-light-1280-fa7646ede2a58bd7.webp",
+          "sha256": "fa7646ede2a58bd7cfc80251fd62797da8f66755a608a245b9629dc0e672c0df"
+        },
+        "1920": {
+          "src": "/art/stills/57-light-1920-af7a676c72520dcf.webp",
+          "sha256": "af7a676c72520dcf5163f4e72376c1f416dd71a972759e5572fb28e2647fddb4"
+        }
+      }
+    },
+    {
+      "id": 58,
+      "cycle": 2,
+      "rungs": {
+        "1280": {
+          "src": "/art/stills/58-light-1280-f4b7ed81d1b31e7c.webp",
+          "sha256": "f4b7ed81d1b31e7c247120f267dc92211dc81f8907df62333f74c05403311e0c"
+        },
+        "1920": {
+          "src": "/art/stills/58-light-1920-ef8384bb1f733163.webp",
+          "sha256": "ef8384bb1f733163a2bd049253164116203534393e55ce86c043f8fefad7d71f"
+        }
+      }
+    },
+    {
+      "id": 59,
+      "cycle": 2,
+      "rungs": {
+        "1280": {
+          "src": "/art/stills/59-light-1280-357316c10e0ac9f4.webp",
+          "sha256": "357316c10e0ac9f43f16ade41daf4127a66b9b22c168ec8072665b14790123e2"
+        },
+        "1920": {
+          "src": "/art/stills/59-light-1920-8fb2ac92a7e3c9ed.webp",
+          "sha256": "8fb2ac92a7e3c9ed7a0dc1d2a2ec4332a00fe739d156a15749be602f2311c8ff"
+        }
+      }
+    },
+    {
+      "id": 60,
+      "cycle": 2,
+      "rungs": {
+        "1280": {
+          "src": "/art/stills/60-light-1280-ec1d4356951e2ea5.webp",
+          "sha256": "ec1d4356951e2ea5e7e15df30fe49465a26c7895e5e43f3510464527eb9bc863"
+        },
+        "1920": {
+          "src": "/art/stills/60-light-1920-044631924da7604e.webp",
+          "sha256": "044631924da7604e53ca7992acb09072d9c57e69dfc6fd345f5e396ccef46fab"
+        }
+      }
+    },
+    {
+      "id": 61,
+      "cycle": 2,
+      "rungs": {
+        "1280": {
+          "src": "/art/stills/61-light-1280-f5acc127b27340f4.webp",
+          "sha256": "f5acc127b27340f472486d3209ffdf8099c91a1f62801023dbeb25c3c65c12f7"
+        },
+        "1920": {
+          "src": "/art/stills/61-light-1920-451e50f2081d5229.webp",
+          "sha256": "451e50f2081d5229ea681aceafc22f13aabe7437465e4760371ccce92267258d"
+        }
+      }
+    },
+    {
+      "id": 62,
+      "cycle": 2,
+      "rungs": {
+        "1280": {
+          "src": "/art/stills/62-light-1280-a232264d1d024dff.webp",
+          "sha256": "a232264d1d024dff9bc9051b4fb40b9a34652122a075eff01a0bb3379df873df"
+        },
+        "1920": {
+          "src": "/art/stills/62-light-1920-0f78c39791bae4a8.webp",
+          "sha256": "0f78c39791bae4a874bdf08221cf9a41b612bb6306b9f2f00561caefb0014f1e"
+        }
+      }
+    },
+    {
+      "id": 63,
+      "cycle": 2,
+      "rungs": {
+        "1280": {
+          "src": "/art/stills/63-light-1280-a4c3a534e6b07285.webp",
+          "sha256": "a4c3a534e6b072850a24acc5e1263752d807a4941fcb0f42e906c5cabf7942df"
+        },
+        "1920": {
+          "src": "/art/stills/63-light-1920-f19077b8da408901.webp",
+          "sha256": "f19077b8da408901a339d9d53ace154e8f71adb048a64ed6491a720f56977023"
+        }
+      }
+    },
+    {
+      "id": 64,
+      "cycle": 2,
+      "rungs": {
+        "1280": {
+          "src": "/art/stills/64-light-1280-42c9baa6d1ec900d.webp",
+          "sha256": "42c9baa6d1ec900d7023aa2f65f202aca6182a8039d7274d356be3694196df48"
+        },
+        "1920": {
+          "src": "/art/stills/64-light-1920-6f50a146d47ec21d.webp",
+          "sha256": "6f50a146d47ec21d951aa7eb0dac4b3b6f09c7b2c6fbf21e167b86c896cde8ae"
+        }
+      }
+    },
+    {
+      "id": 65,
+      "cycle": 2,
+      "rungs": {
+        "1280": {
+          "src": "/art/stills/65-light-1280-405793c204761b91.webp",
+          "sha256": "405793c204761b9135110870a05c63cc57d589db71d098afdde5834ad29cb34c"
+        },
+        "1920": {
+          "src": "/art/stills/65-light-1920-2554636330a627f8.webp",
+          "sha256": "2554636330a627f8ff6bc2323888f5d57e4cebb3804aa34c90b13fdf68fde4ce"
+        }
+      }
+    },
+    {
+      "id": 66,
+      "cycle": 2,
+      "rungs": {
+        "1280": {
+          "src": "/art/stills/66-light-1280-71834d50f883e238.webp",
+          "sha256": "71834d50f883e238e5c9818d1945112d04ee0e7a71196fbc8fefff8d3e5189ba"
+        },
+        "1920": {
+          "src": "/art/stills/66-light-1920-8746caa5632ade18.webp",
+          "sha256": "8746caa5632ade184d0fe7954b5372d2377f4408f4181ffe3cfd15a207dc662a"
+        }
+      }
+    },
+    {
+      "id": 67,
+      "cycle": 2,
+      "rungs": {
+        "1280": {
+          "src": "/art/stills/67-light-1280-00fa20354e364e14.webp",
+          "sha256": "00fa20354e364e1484fc3fe0dff630ea0d9597ac28ba88ffe2ea37b02039bc5d"
+        },
+        "1920": {
+          "src": "/art/stills/67-light-1920-2465b2c6bb6f69f1.webp",
+          "sha256": "2465b2c6bb6f69f16b0ada48010266faf39013c959714f4298052c865a93db95"
+        }
+      }
+    },
+    {
+      "id": 68,
+      "cycle": 2,
+      "rungs": {
+        "1280": {
+          "src": "/art/stills/68-light-1280-be2bb3b883dcb573.webp",
+          "sha256": "be2bb3b883dcb5730946b5dbd0c44d4826cba47c509ac071ff10edc2c986d506"
+        },
+        "1920": {
+          "src": "/art/stills/68-light-1920-45203565dfa23469.webp",
+          "sha256": "45203565dfa23469f7db5dc08b60be990d91b7ef4012a669bff9f7d56a867ddf"
+        }
+      }
+    },
+    {
+      "id": 69,
+      "cycle": 2,
+      "rungs": {
+        "1280": {
+          "src": "/art/stills/69-light-1280-6173df6a0e85c95b.webp",
+          "sha256": "6173df6a0e85c95b6553d5e00ddf67307e2113ca7020a18cf8725d7079c69df4"
+        },
+        "1920": {
+          "src": "/art/stills/69-light-1920-3caf2fb112f15fc1.webp",
+          "sha256": "3caf2fb112f15fc191c93b32f1eb162446d469c3f65d94288215e7fdd8364369"
+        }
+      }
+    },
+    {
+      "id": 70,
+      "cycle": 2,
+      "rungs": {
+        "1280": {
+          "src": "/art/stills/70-light-1280-d451eb5dfecfb5b2.webp",
+          "sha256": "d451eb5dfecfb5b2bb27a1d385a0f509face88f8f130c6efef05ff6406c46eaf"
+        },
+        "1920": {
+          "src": "/art/stills/70-light-1920-be7dba5d95cc38b1.webp",
+          "sha256": "be7dba5d95cc38b18d1e214da0489984bd80b95860e771e73669a431a9a73d30"
+        }
+      }
+    },
+    {
+      "id": 71,
+      "cycle": 2,
+      "rungs": {
+        "1280": {
+          "src": "/art/stills/71-light-1280-a286392e9ae01b72.webp",
+          "sha256": "a286392e9ae01b72942924959b3576c8d3b7cb1cad3ca43cad8ae072e202a35d"
+        },
+        "1920": {
+          "src": "/art/stills/71-light-1920-6ccd3be6a2baca6d.webp",
+          "sha256": "6ccd3be6a2baca6d43420927e16f5ca23be89975010875d57ce85a931dbf9a7e"
+        }
+      }
+    }
+  ],
+  "cycles": [0, 1, 2],
+  "skies": [
+    {
+      "upTo": 0,
+      "width": 1280,
+      "height": 828,
+      "src": "/art/light/sky-0-1280-822fa4d879405bd3.webp",
+      "sha256": "822fa4d879405bd3ad46c621062247575de64667bcba808f1ce0635300815c83",
+      "bytes": 241362
+    },
+    {
+      "upTo": 1,
+      "width": 1280,
+      "height": 828,
+      "src": "/art/light/sky-1-1280-08b54b500a2e6d7c.webp",
+      "sha256": "08b54b500a2e6d7c3477a968061253f88381023df416d683d1f8e2cb34458b91",
+      "bytes": 297208
+    },
+    {
+      "upTo": 2,
+      "width": 1280,
+      "height": 828,
+      "src": "/art/light/sky-2-1280-ecda2520bf3fa356.webp",
+      "sha256": "ecda2520bf3fa356ed94cde1d439f69fb3ab88cf95e98fcbdff5992f49b04e41",
+      "bytes": 318480
+    },
+    {
+      "upTo": 0,
+      "width": 1920,
+      "height": 1242,
+      "src": "/art/light/sky-0-1920-e3783dea9624b9e9.webp",
+      "sha256": "e3783dea9624b9e9860eab3f6aadfd7d0a5da74ac00d5e3d5ecd4b0254902466",
+      "bytes": 449572
+    },
+    {
+      "upTo": 1,
+      "width": 1920,
+      "height": 1242,
+      "src": "/art/light/sky-1-1920-cdea4c344ab9e911.webp",
+      "sha256": "cdea4c344ab9e911a885c6bd7b787e2946991e907fa7b7d966f20f3f38b1465b",
+      "bytes": 557460
+    },
+    {
+      "upTo": 2,
+      "width": 1920,
+      "height": 1242,
+      "src": "/art/light/sky-2-1920-7acc14924f05c756.webp",
+      "sha256": "7acc14924f05c7567408d9ee6d2ad67673c7f76c26a11a47639f7ee93f393980",
+      "bytes": 603722
+    }
+  ],
+  "grid": {
+    "src": "/art/light/grid-c6895674ead5f5ad.webp",
+    "sha256": "c6895674ead5f5adc5577c62731b885aded3750b53e394b076b514e8772477d1",
+    "bytes": 150470,
+    "across": 8,
+    "columns": 128,
+    "rows": 83
+  },
+  "parameters": {
+    "exposure": 0.42,
+    "widths": [1280, 1920],
+    "grid": [128, 83],
+    "quality": 90
+  }
+}
