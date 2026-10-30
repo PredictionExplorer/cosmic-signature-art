@@ -556,6 +556,16 @@ export const ja: Messages = {
   orbitDerivedValue: 'ここでは {value}',
   orbitNote:
     '映像と静止画は、作品を記録したレンダリングです。この図はその下にある軌道で、生成器そのものの手順でブラウザが計算しました。乱数の流れ、第 {index} 番の候補の選択、そして四次の吉田積分法による {steps} ステップです。',
+  // The crossing and the When lens (src/components/when-lens.tsx)
+  whenLens: '時刻',
+  whenLight: 'それぞれの線が描かれた時刻',
+  whenInk: 'それぞれの墨が落ち着いた時刻',
+  whenFirst: '最初',
+  whenLast: '最後',
+  whenAlt: '{plate} · {caption}。青が最初、次にばら色、淡い金色が最後。作品ではなく分析です。',
+  analysisNotWork: '作品ではなく分析',
+  keyWhen: '時刻：映像のなかで現れた時刻で、それぞれの部分を色分け',
+  whenUnavailable: 'このブラウザでは時刻の図を描けませんでした。静止画を表示しています。',
   // ·
   // ·
 };

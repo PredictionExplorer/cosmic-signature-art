@@ -561,6 +561,17 @@ export const vi: Messages = {
   orbitDerivedValue: 'tại đây: {value}',
   orbitNote:
     'Phim và ảnh tĩnh là các bản kết xuất được ghi lại của tác phẩm. Hình vẽ này là quỹ đạo nằm bên dưới chúng, được trình duyệt của bạn tính theo đúng trình tự của bộ tạo: dòng ngẫu nhiên của nó, việc chọn ứng viên {index}, và {steps} bước của bộ tích phân Yoshida bậc bốn.',
+  // The crossing and the When lens (src/components/when-lens.tsx)
+  whenLens: 'Thời điểm',
+  whenLight: 'Thời điểm mỗi nét được vẽ',
+  whenInk: 'Thời điểm mỗi nét mực lắng lại',
+  whenFirst: 'đầu tiên',
+  whenLast: 'sau cùng',
+  whenAlt:
+    '{plate} · {caption}. Xanh lam trước tiên, rồi hồng, rồi vàng nhạt sau cùng. Phân tích, không phải tác phẩm.',
+  analysisNotWork: 'Phân tích, không phải tác phẩm',
+  keyWhen: 'Thời điểm: tô màu mỗi nét theo khoảnh khắc nó xuất hiện trong phim',
+  whenUnavailable: 'Trình duyệt này không vẽ được lớp thời điểm; ảnh tĩnh được hiển thị thay thế.',
   // ·
   // ·
 };

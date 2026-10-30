@@ -9,4 +9,12 @@ if (typeof HTMLMediaElement !== 'undefined')
     writable: true,
     value: () => {},
   });
+// jsdom has no canvas either; a context request answers null, as in a browser without one,
+// so the crossing keeps the straight seam and the orbit's drawing rests on its record.
+if (typeof HTMLCanvasElement !== 'undefined')
+  Object.defineProperty(HTMLCanvasElement.prototype, 'getContext', {
+    configurable: true,
+    writable: true,
+    value: () => null,
+  });
 afterEach(cleanup);

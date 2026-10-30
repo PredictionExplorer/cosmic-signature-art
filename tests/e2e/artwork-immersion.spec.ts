@@ -90,6 +90,29 @@ async function seamInset(page: Page) {
   });
 }
 
+/**
+ * The straight seam is the Turn wherever the crossing in the work's own order cannot be
+ * painted; hiding WebGL makes it the Turn here, so its geometry can be read as one inset.
+ * crossing.spec.ts follows the crossing itself.
+ */
+async function straightSeam(page: Page) {
+  await page.addInitScript(() => {
+    const original = HTMLCanvasElement.prototype.getContext;
+    HTMLCanvasElement.prototype.getContext = function (
+      this: HTMLCanvasElement,
+      type: string,
+      ...rest: unknown[]
+    ) {
+      if (/webgl/.test(type)) return null;
+      return (original as (...args: unknown[]) => RenderingContext | null).call(
+        this,
+        type,
+        ...rest,
+      );
+    } as typeof original;
+  });
+}
+
 async function cinematicObserver(page: Page) {
   await page.addInitScript(() => {
     const state = { attempted: 0, ready: 0 };
@@ -187,9 +210,10 @@ test('the plate is painted from an inline preview before the full still arrives'
   await expect(still).toHaveAttribute('alt', '№ 031 · Ink');
 });
 
-test('the Turn carries Light in from the right and Ink back from the left, and remembers the choice', async ({
+test('without WebGL, the straight seam carries Light in from the right and Ink back from the left, and remembers the choice', async ({
   page,
 }) => {
+  await straightSeam(page);
   await cinematicObserver(page);
   await page.emulateMedia({ reducedMotion: 'no-preference' });
   await artworkReady(page);
@@ -234,6 +258,7 @@ test('the Turn carries Light in from the right and Ink back from the left, and r
 });
 
 test('holding L peeks at Light and lets go; a tap completes the Turn', async ({ page }) => {
+  await straightSeam(page);
   await page.emulateMedia({ reducedMotion: 'no-preference' });
   await artworkReady(page);
   const stage = page.locator(pageStage);

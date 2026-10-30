@@ -8,6 +8,7 @@ import { describe, expect, it } from 'vitest';
  * This guards the direct imports; a module a client component imports must keep the same rule.
  */
 const SERVER_ONLY_MODULES = [
+  'arrival-maps',
   'catalog',
   'collection-cards',
   'collection-index',

@@ -558,6 +558,17 @@ export const en = {
   orbitDerivedValue: 'here: {value}',
   orbitNote:
     'The films and stills are recorded renderings of the work. This drawing is the orbit beneath them, computed in your browser by the generator’s own sequence: its random stream, the choice of candidate {index}, and {steps} steps of a fourth-order Yoshida integrator.',
+  // The crossing and the When lens (src/components/when-lens.tsx)
+  whenLens: 'When',
+  whenLight: 'When each mark was drawn',
+  whenInk: 'When each mark came to rest',
+  whenFirst: 'first',
+  whenLast: 'last',
+  whenAlt:
+    '{plate} · {caption}. Blue first, then rose, then pale gold last. Analysis, not the work.',
+  analysisNotWork: 'Analysis, not the work',
+  keyWhen: 'When: each mark coloured by its moment in the film',
+  whenUnavailable: 'This browser could not draw the When lens; the still stands in.',
   // ·
   // ·
 } as const;

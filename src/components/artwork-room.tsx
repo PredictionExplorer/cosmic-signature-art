@@ -29,6 +29,7 @@ import { inField } from './keys';
 import { Loupe, type LoupeView } from './loupe';
 import { useMediaPolicy } from './media-policy';
 import { useMotion } from './motion-provider';
+import { WhenLens } from './when-lens';
 import styles from './artwork-room.module.css';
 import { ART_HEIGHT, ART_WIDTH } from '@/lib/art/constants';
 import { stillSourceSet } from '@/lib/art/types';
@@ -319,6 +320,9 @@ export function ArtworkRoom({
   const [playing, setPlaying] = useState(false);
   const [allowedStudies, setAllowedStudies] = useState<string[]>([]);
   const [loupe, setLoupe] = useState<{ window: number } | null>(null);
+  const [when, setWhen] = useState(false);
+  /** The arrival map a When lens could not be painted from, so its word rests. */
+  const [whenFailed, setWhenFailed] = useState<string | null>(null);
   const [views] = useState(createViewStore);
   const [hint, setHint] = useState(false);
   const [fullscreen, setFullscreen] = useState(false);
@@ -348,6 +352,14 @@ export function ArtworkRoom({
   const studyHeld = !!film && isStudy(film) && constrained && !allowedStudies.includes(film.id);
   const filmShown = showFilm && !!film && !loupe && !studyHeld && filmStatus !== 'failed';
   const slow = filmShown && isStudy(film);
+  // The When lens needs the still, its rung and the arrival map bound to them.
+  const whenOffered = !!media?.arrival && !!media.rungs?.length;
+  const whenShown =
+    when && whenOffered && stillShown && !loupe && !filmShown && whenFailed !== media?.arrival?.src;
+  const whenCaption = media?.id === 'light' ? t.whenLight : t.whenInk;
+  // A lens that could not be painted is said once, beside the still that stands in for it.
+  const whenUnavailable =
+    whenOffered && whenFailed === media?.arrival?.src && stillShown && !filmShown && !loupe;
   const numbers = useMemo(() => new Intl.NumberFormat(locale), [locale]);
 
   /* Open and close: the Expansion. */
@@ -526,6 +538,7 @@ export function ArtworkRoom({
   function showStill() {
     setShowFilm(false);
     setLoupe(null);
+    setWhen(false);
     views.set(null);
   }
   function pickFilm(id: string) {
@@ -534,7 +547,17 @@ export function ArtworkRoom({
     setFilmStatus('loading');
     setShowFilm(true);
     setLoupe(null);
+    setWhen(false);
     views.set(null);
+  }
+  /** The When lens takes the still's place; the film and the loupe step aside. */
+  function toggleWhen() {
+    if (whenShown) return setWhen(false);
+    if (!whenOffered || !stillShown) return;
+    setShowFilm(false);
+    setLoupe(null);
+    views.set(null);
+    setWhen(true);
   }
   function retryFilm() {
     setFilmStatus('loading');
@@ -543,6 +566,7 @@ export function ArtworkRoom({
   function openLoupe(window = 0) {
     if (!stillShown) return;
     setShowFilm(false);
+    setWhen(false);
     setLoupe({ window });
   }
   function closeLoupe() {
@@ -603,6 +627,10 @@ export function ArtworkRoom({
       if (!loupe) return;
       event.preventDefault();
       closeLoupe();
+    } else if (key === 't' || key === 'T') {
+      if (!whenOffered) return;
+      event.preventDefault();
+      toggleWhen();
     } else if (key === '?') {
       event.preventDefault();
       setHint((value) => !value);
@@ -635,6 +663,7 @@ export function ArtworkRoom({
     ['F', t.keyFilm],
     ['Z', t.keyDetail],
     ['W', t.keyWhole],
+    ...(whenOffered ? [['T', t.keyWhen] as [string, string]] : []),
     ['?', t.keyHelp],
     ['Esc', t.close],
   ];
@@ -682,6 +711,17 @@ export function ArtworkRoom({
                   label={`${label} · ${t.detail}`}
                   description={t.loupeKeys}
                   onView={views.set}
+                />
+              ) : whenShown && media.arrival ? (
+                <WhenLens
+                  key={`${media.id}:${media.arrival.src}`}
+                  media={media}
+                  paper={tone}
+                  label={fill(t.whenAlt, { plate: label, caption: whenCaption })}
+                  onFailure={() => {
+                    setWhenFailed(media.arrival?.src ?? null);
+                    setWhen(false);
+                  }}
                 />
               ) : filmShown ? (
                 <RoomFilm
@@ -780,6 +820,16 @@ export function ArtworkRoom({
               </div>
             )}
             <div className={styles.actions}>
+              {whenOffered ? (
+                <button
+                  type="button"
+                  onClick={toggleWhen}
+                  aria-pressed={whenShown}
+                  disabled={!stillShown || whenFailed === media?.arrival?.src}
+                >
+                  {t.whenLens}
+                </button>
+              ) : null}
               <button
                 type="button"
                 onClick={() => (loupe ? closeLoupe() : openLoupe(0))}
@@ -805,7 +855,7 @@ export function ArtworkRoom({
           </div>
           <div
             className={styles.notice}
-            role={status || loupe ? 'status' : undefined}
+            role={status || loupe || whenShown || whenUnavailable ? 'status' : undefined}
             aria-live={loupe ? 'off' : 'polite'}
           >
             <span className={styles.statusText}>
@@ -816,10 +866,21 @@ export function ArtworkRoom({
                   t={t}
                   numbers={numbers}
                 />
+              ) : whenShown ? (
+                [whenCaption, t.analysisNotWork, status].filter(Boolean).join(' · ')
+              ) : whenUnavailable && !status ? (
+                t.whenUnavailable
               ) : (
                 status
               )}
             </span>
+            {whenShown ? (
+              <span className={styles.whenScale} aria-hidden="true">
+                {t.whenFirst}
+                <i />
+                {t.whenLast}
+              </span>
+            ) : null}
             {retryStill ? (
               <button
                 type="button"

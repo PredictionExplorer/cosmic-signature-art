@@ -99,6 +99,60 @@ describe('the seam', () => {
     await expect(back).resolves.toBe(true);
   });
 
+  it('knows where the seam is on any frame of a travel, and takes the crossing’s longer clock', async () => {
+    root().setAttribute('data-crossing', 'arrival');
+    try {
+      const seam = new SeamController();
+      expect(seam.current()).toBeNull();
+      const travel = seam.animateTo(0, { breath: false });
+      const started = performance.now();
+      // The curve is symmetric, so halfway through its time the seam is halfway across.
+      expect(seam.current(started)).toBe(100);
+      expect(seam.current(started + 1000)).toBeCloseTo(50, 6);
+      expect(seam.current(started + 60_000)).toBe(0);
+      let settled = false;
+      void travel.then(() => {
+        settled = true;
+      });
+      // The crossing in the order the work was made runs two seconds, not the seam's 900 ms.
+      await act(async () => vi.advanceTimersByTime(1500));
+      expect(settled).toBe(false);
+      await act(async () => vi.advanceTimersByTime(600));
+      await expect(travel).resolves.toBe(true);
+      // A finger's position is the seam itself.
+      seam.set(30);
+      expect(seam.current()).toBe(30);
+      seam.end();
+    } finally {
+      root().removeAttribute('data-crossing');
+    }
+  });
+
+  it('springs a crossing back in its share of the order’s time', async () => {
+    root().setAttribute('data-crossing', 'arrival');
+    try {
+      const seam = new SeamController();
+      seam.begin('drag', 100);
+      seam.set(80);
+      // A fifth of the plate returns in a fifth of the two seconds.
+      const back = seam.animateTo(100, { breath: false });
+      expect(root().style.getPropertyValue('--t-crossing')).toBe('400ms');
+      let settled = false;
+      void back.then(() => {
+        settled = true;
+      });
+      await act(async () => vi.advanceTimersByTime(300));
+      expect(settled).toBe(false);
+      await act(async () => vi.advanceTimersByTime(200));
+      await expect(back).resolves.toBe(true);
+      seam.end();
+      await act(async () => vi.advanceTimersByTime(300));
+      expect(root().style.getPropertyValue('--t-crossing')).toBe('');
+    } finally {
+      root().removeAttribute('data-crossing');
+    }
+  });
+
   it('end() cancels a travel in flight', async () => {
     const seam = new SeamController();
     const travel = seam.animateTo(0, { breath: false });

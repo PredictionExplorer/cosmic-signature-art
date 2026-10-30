@@ -531,6 +531,16 @@ export const zhHK: Messages = {
   orbitDerivedValue: '此處：{value}',
   orbitNote:
     '影片與靜態影像是作品的紀錄渲染。這幅圖是它們之下的軌道，由你的瀏覽器按生成器自己的次序計算：它的隨機流、第 {index} 號候選的選擇，以及四階 Yoshida 積分器的 {steps} 步。',
+  // The crossing and the When lens (src/components/when-lens.tsx)
+  whenLens: '時刻',
+  whenLight: '每一筆被畫出的時刻',
+  whenInk: '每一處墨跡靜止的時刻',
+  whenFirst: '最早',
+  whenLast: '最晚',
+  whenAlt: '{plate} · {caption}。藍色最早，其次是玫瑰色，淡金色最晚。這是分析，而非作品。',
+  analysisNotWork: '分析，而非作品',
+  keyWhen: '時刻：按每一筆在影片中出現的時刻着色',
+  whenUnavailable: '此瀏覽器未能繪製時刻視圖，改為顯示靜態影像。',
   // ·
   // ·
 };

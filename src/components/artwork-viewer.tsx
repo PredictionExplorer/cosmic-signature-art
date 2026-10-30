@@ -45,6 +45,7 @@ import { DUSK_CANCEL_EVENTS, DuskController } from './dusk';
 import { inField } from './keys';
 import { useOpenSheet } from './sheets-store';
 import { ArtworkNeighbours, neighbourHref, type Neighbours } from './artwork-neighbours';
+import { useArrivalCrossing } from './arrival-crossing';
 import { ArtworkGatefold } from './artwork-gatefold';
 import { useSit } from './sit';
 import { useCompactWall } from './compact-wall';
@@ -241,17 +242,20 @@ function ArtworkViewerSession({
           return;
         }
         const to = target as Expression;
-        setTurning({ to, mode: 'time' });
-        void seam
-          .animateTo(targetSeam(to), {
-            mode: 'time',
-            breath: seam.seam === null,
-            from: restSeam(),
-            halfway: () => setThemeColor(to === 'light' ? 'night' : 'paper'),
-          })
-          .then((done) => {
-            if (done) commit();
-          });
+        // A crossing still being prepared is worth a moment; past that the straight seam travels.
+        void whenReady(400).then(() => {
+          setTurning({ to, mode: 'time' });
+          void seam
+            .animateTo(targetSeam(to), {
+              mode: 'time',
+              breath: seam.seam === null,
+              from: restSeam(),
+              halfway: () => setThemeColor(to === 'light' ? 'night' : 'paper'),
+            })
+            .then((done) => {
+              if (done) commit();
+            });
+        });
       },
     });
 
@@ -327,6 +331,18 @@ function ArtworkViewerSession({
   }
   const targetSeam = (to: string) => (to === 'light' ? 0 : inkSeam());
   const restSeam = () => targetSeam(expression);
+  // The crossing in the order the work was made, where both arrival maps are bound.
+  const { canvas: crossingCanvas, whenReady } = useArrivalCrossing({
+    seam,
+    ink,
+    light,
+    expression,
+    enabled: hasBoth && !!ink?.arrival && !!light?.arrival && !instant,
+    wingSeam: () =>
+      wingMode === 'scroll' && expression === 'ink' && scrollTimelinesSupported()
+        ? inkSeam()
+        : null,
+  });
   // A seam left at the finger or the key whose twin failed to decode returns to rest.
   const returnFailedSeam = useEffectEvent(() => {
     if (seam.seam === null) return;
@@ -797,6 +813,7 @@ function ArtworkViewerSession({
       seam={seam}
       canTurn={canTurn && !instant}
       restSeam={restSeam}
+      crossing={crossingCanvas}
       onCommit={turnTo}
       onDragChange={(dragging) =>
         setTurning(dragging ? { to: expression === 'light' ? 'ink' : 'light', mode: 'drag' } : null)

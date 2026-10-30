@@ -552,6 +552,17 @@ export const ko: Messages = {
   orbitDerivedValue: '여기: {value}',
   orbitNote:
     '영상과 정지 이미지는 작품을 기록한 렌더링입니다. 이 그림은 그 아래의 궤도로, 생성기 고유의 순서에 따라 브라우저에서 계산했습니다. 그 순서는 난수 흐름, {index}번 후보의 선택, 그리고 4차 요시다 적분기의 {steps}단계입니다.',
+  // The crossing and the When lens (src/components/when-lens.tsx)
+  whenLens: '시각',
+  whenLight: '각 선이 그려진 시각',
+  whenInk: '각 먹이 자리 잡은 시각',
+  whenFirst: '처음',
+  whenLast: '마지막',
+  whenAlt:
+    '{plate} · {caption}. 파랑이 처음, 이어서 장밋빛, 옅은 금빛이 마지막입니다. 작품이 아닌 분석입니다.',
+  analysisNotWork: '작품이 아닌 분석',
+  keyWhen: '시각: 영상 속에서 나타난 시각에 따라 각 부분을 색칠',
+  whenUnavailable: '이 브라우저에서는 시각 보기를 그리지 못해 정지 이미지를 보여 줍니다.',
   // ·
   // ·
 };

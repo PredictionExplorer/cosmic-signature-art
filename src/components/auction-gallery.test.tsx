@@ -392,6 +392,20 @@ function showPlates() {
   );
 }
 
+/**
+ * The lot comes into view and the lease's clip mounts. A plate's observer is made in a passive
+ * effect that can land after its article does, so each poll tells every observer that exists by
+ * then that its targets are visible, rather than telling only those made before the first look.
+ */
+function clipInView(lot: HTMLElement) {
+  return waitFor(() => {
+    VisibilityObserver.instances.forEach((observer) => observer.setVisible(true));
+    const video = lot.querySelector('video');
+    expect(video).not.toBeNull();
+    return video!;
+  });
+}
+
 describe('the lots as plates', () => {
   it('alternates Ink on paper and Light on black, paints from the curated archive, and lends the lease only settling clips', async () => {
     showPlates();
@@ -427,12 +441,7 @@ describe('the lots as plates', () => {
     activeId = 31;
     render(<AuctionGallery locale="en" t={en} curated={curated} />);
     const first = await screen.findByRole('article', { name: lotName(1, 31) });
-    act(() => VisibilityObserver.instances.forEach((observer) => observer.setVisible(true)));
-    const video = await waitFor(() => {
-      const element = first.querySelector('video');
-      expect(element).not.toBeNull();
-      return element!;
-    });
+    const video = await clipInView(first);
     expect(video.getAttribute('src')).toMatch(/^\/art\/clips\/31-ink-settling-[a-f0-9]{16}\.mp4$/);
     expect(document.querySelectorAll('video')).toHaveLength(1);
     // The clip's last frame is held and faded into the still before the lease moves on.
@@ -459,12 +468,7 @@ describe('the lots as plates', () => {
     activeId = 31;
     const view = render(<AuctionGallery locale="en" t={en} curated={curated} />);
     const first = await screen.findByRole('article', { name: lotName(1, 31) });
-    act(() => VisibilityObserver.instances.forEach((observer) => observer.setVisible(true)));
-    const video = await waitFor(() => {
-      const element = first.querySelector('video');
-      expect(element).not.toBeNull();
-      return element!;
-    });
+    const video = await clipInView(first);
     vi.useFakeTimers();
     fireEvent.ended(video);
     act(() => {

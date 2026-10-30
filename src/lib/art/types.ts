@@ -51,6 +51,20 @@ export interface StillRung {
   bytes: number;
 }
 
+/**
+ * When each part of the still first arrived, measured from the published film: a lossless
+ * grey map, 0 for the first marks and 255 for the last, beside the share of the frame a
+ * front travels per frame diagonal once it leaves the marks. It orders a crossing between
+ * two published stills; it is never shown as the work.
+ */
+export interface ArrivalMap {
+  src: string;
+  sha256: string;
+  width: number;
+  height: number;
+  spread: number;
+}
+
 export interface ArtInterpretation {
   id: InterpretationId;
   label: string;
@@ -83,6 +97,8 @@ export interface ArtInterpretation {
   rungs?: StillRung[];
   /** The still's heaviest windows, measured offline and bound to its hash; at most three. */
   detail?: PlateDetail[];
+  /** When each part of the still arrived in its film; bound to the film's and the still's hashes. */
+  arrival?: ArrivalMap;
   source: MediaSource;
   /** A manifest advertises an asset; it does not prove continued availability. */
   availability: 'local-copy' | 'advertised' | 'unverified';

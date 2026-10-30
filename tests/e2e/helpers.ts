@@ -90,6 +90,23 @@ export async function collectionLoaded(page: Page, loadAllImages = false) {
   }
 }
 
+/**
+ * The counterpart of pauseAmbientMotion. Server HTML begins paused, so the toggle is read only
+ * once the client has attached its listeners and shows the browser's own preference; a click
+ * before that would land on the server's state and could pause what had just begun to play.
+ */
+export async function playAmbientMotion(page: Page) {
+  await expect(page.locator('html')).toHaveAttribute('data-keys', 'ready');
+  const control = page.locator('button.motion-toggle');
+  const initiallyPaused = await page.evaluate(() => {
+    const saved = sessionStorage.getItem('cosmic-art-motion-v1');
+    return saved ? saved === 'paused' : matchMedia('(prefers-reduced-motion: reduce)').matches;
+  });
+  await expect(control).toHaveAttribute('aria-pressed', String(initiallyPaused));
+  if (initiallyPaused) await control.click();
+  await expect(control).toHaveAttribute('aria-pressed', 'false');
+}
+
 export async function pauseAmbientMotion(page: Page) {
   const control = page.locator('button.motion-toggle');
   // Server HTML begins paused. Wait for the actual browser preference before clicking.
