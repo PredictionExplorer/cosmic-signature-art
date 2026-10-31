@@ -189,6 +189,12 @@
   gap: 0 24px;
   border-bottom: 1px solid var(--rule);
 }
+/* Where the two indexes wrap onto a line of their own, nothing stands before them. */
+@media (max-width: 639px) {
+  .views .divider {
+    display: none;
+  }
+}
 @media (max-width: 767px) {
   .sheet {
     grid-template-rows: auto minmax(30dvh, 1fr) auto;

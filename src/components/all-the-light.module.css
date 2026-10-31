@@ -1,0 +1,273 @@
+/*
+  All the light: one exposure of the whole collection, on the night. The sky is an image, the
+  orbits named under the pointer are their own stills added over it as light adds, and a chosen
+  orbit stands alone on the black as its own untouched still.
+*/
+.light {
+  --type: var(--night-type);
+  --muted: #b8b5ad;
+  --rule: color-mix(in srgb, var(--night-type) 24%, transparent);
+  min-height: 100svh;
+  padding: 45px var(--gutter) 72px;
+  background: var(--night);
+  color: var(--night-type);
+}
+@supports not (color: color-mix(in srgb, red, blue)) {
+  .light {
+    --rule: rgba(241, 235, 223, 0.24);
+  }
+}
+.head {
+  max-width: 44em;
+}
+.title {
+  margin: 0;
+  font-size: var(--fs-chapter);
+  font-weight: 300;
+  line-height: 1.05;
+  letter-spacing: -0.01em;
+  text-wrap: balance;
+}
+.line {
+  margin: 9px 0 0;
+  font-size: var(--fs-reading);
+  font-style: italic;
+  color: var(--muted);
+}
+.figure {
+  margin: 27px 0 0;
+}
+/*
+  The sky keeps its own proportion and fits the screen beneath the running head, with the title
+  above it and the line that names the orbits beneath it in view.
+*/
+.frame {
+  position: relative;
+  width: min(100%, calc((100svh - var(--head) - 240px) * var(--ratio)));
+  aspect-ratio: var(--ratio);
+  margin-inline: auto;
+  scroll-margin-block: calc(var(--head) + 18px) 18px;
+  overflow: hidden;
+  background: var(--night);
+  cursor: crosshair;
+  touch-action: manipulation;
+}
+.layer,
+.overlay,
+.alone {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  pointer-events: none;
+}
+.layer {
+  opacity: 0;
+  transition:
+    opacity var(--t-expand) var(--ease-settle),
+    filter var(--t-chrome) var(--ease-settle);
+}
+.layer[data-shown] {
+  opacity: 1;
+}
+/* Naming dims the sky; the named orbits are their own stills, added over it as light adds. */
+.frame[data-naming] .layer {
+  filter: brightness(0.32);
+}
+.overlay {
+  mix-blend-mode: plus-lighter;
+}
+@supports not (mix-blend-mode: plus-lighter) {
+  .overlay {
+    mix-blend-mode: screen;
+  }
+}
+.frame[data-alone] .layer {
+  opacity: 0;
+}
+.readout,
+.state {
+  min-height: 1lh;
+  margin: 12px 0 0;
+  font-size: var(--fs-control);
+  color: var(--muted);
+}
+.state {
+  margin: 0;
+  font-size: var(--fs-folio);
+}
+.choice {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 18px;
+  min-height: 44px;
+  margin: 6px 0 0;
+}
+.controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0 27px;
+  margin-top: 9px;
+}
+.cycles {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 18px;
+}
+.word {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--night-type);
+  font: inherit;
+  font-size: var(--fs-control);
+  text-decoration-line: underline;
+  text-decoration-color: transparent;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.3em;
+  cursor: pointer;
+  transition: text-decoration-color var(--t-chrome) var(--ease-settle);
+}
+.word:hover,
+.word:focus-visible,
+.word[aria-pressed='true'] {
+  text-decoration-color: currentColor;
+}
+.word:focus-visible,
+.numeral:focus-visible {
+  outline: 1px solid var(--night-type);
+  outline-offset: 3px;
+}
+.note {
+  max-width: 44em;
+  margin: 27px 0 0;
+  font-size: var(--fs-reading);
+  line-height: 1.55;
+  color: var(--muted);
+}
+.orbits {
+  margin-top: 45px;
+  padding-top: 18px;
+  border-top: 1px solid var(--rule);
+}
+.heading {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: var(--fs-folio);
+  font-weight: 400;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+}
+.cycle {
+  margin-top: 12px;
+}
+.caption {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: var(--fs-folio);
+  font-weight: 400;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+  opacity: 0.72;
+}
+.numerals {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 6px;
+  margin: 3px 0 0;
+  padding: 0;
+  list-style: none;
+}
+.numeral {
+  min-width: 44px;
+  min-height: 44px;
+  padding: 0 4px;
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: var(--fs-folio);
+  font-variant-numeric: tabular-nums lining-nums;
+  cursor: pointer;
+  transition: color var(--t-expand) var(--ease-settle);
+}
+/* An orbit not yet in the sky on view, its cycle still to come: quieter, and still legible. */
+.numeral[data-outside] {
+  color: #8c8981;
+}
+.numeral:hover,
+.numeral:focus-visible,
+.numeral[aria-pressed='true'] {
+  color: var(--night-type);
+}
+
+/*
+  On a wide screen the orbits' index stands beside the sky, so that pointing at a numeral lights
+  its orbit where the eye already is, and the sky, its naming line and the index share one view.
+*/
+@media (min-width: 1100px) {
+  .light {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(300px, 22rem);
+    grid-template-areas:
+      'head head'
+      'figure orbits'
+      'choice orbits'
+      'controls orbits'
+      'note orbits';
+    grid-template-rows: auto auto auto auto 1fr;
+    column-gap: clamp(36px, 4vw, 72px);
+    align-items: start;
+  }
+  .head {
+    grid-area: head;
+  }
+  .figure {
+    grid-area: figure;
+  }
+  .choice {
+    grid-area: choice;
+  }
+  .controls {
+    grid-area: controls;
+  }
+  .note {
+    grid-area: note;
+  }
+  .orbits {
+    grid-area: orbits;
+    position: sticky;
+    top: calc(var(--head) + 18px);
+    margin-top: 27px;
+    padding-top: 0;
+    border-top: 0;
+  }
+  .numerals {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(50px, 1fr));
+    gap: 0;
+  }
+}
+/* A screen too short to hold the sky beneath its title gives the sky its own height. */
+@media (max-height: 560px) {
+  .frame {
+    width: min(100%, calc(100svh * var(--ratio)));
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .layer,
+  .word,
+  .numeral {
+    transition: none;
+  }
+}
+:global(.motion-paused) .layer,
+:global(.motion-paused) .word,
+:global(.motion-paused) .numeral {
+  transition: none;
+}

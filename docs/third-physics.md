@@ -165,14 +165,14 @@ Each lens is labelled *analysis, not the work* and is never used on a sharing ca
 
 ![When: each mark of 031's ink coloured by the moment it came to rest](../concepts/third-physics-v1/screenshots/05-when-lens-ink.jpg)
 
-### 5.4 All the light *(built in the study)*
+### 5.4 All the light *(built)*
 
 **The visitor meets** the collection as a single exposure: every Light still added as light adds, white-hot where orbits crowd and coloured at the edges.
 - Point anywhere and the orbits through that place light up and name themselves, for example *№ 061 · № 004 · № 033 …*.
 - Choose, and the rest of the sky goes dark around one orbit. That orbit is then shown as its own untouched still, and from there it can walk to its page.
-- A cycle control replays the sky filling cycle by cycle. Every new cycle adds eight orbits to it, so the index itself is a living, growing work of record.
+- A cycle control replays the sky filling cycle by cycle. Every new cycle adds its orbits to it (24 in each of the first three), so the index itself is a living, growing work of record.
 
-**How.** The GPU accumulates in a half-float target from the 1280 (or 640) rungs, with a precomputed coarse luminance grid for naming. About 1 MB of previews in production.
+**How.** As planned: the GPU accumulates in a half-float target from the 1280 (or 640) rungs, with a precomputed coarse luminance grid for naming, about 1 MB of previews in production. As built: the sky is summed offline in linear light, after each cycle, and the page shows one image of 0.3–0.6 MB ([third-physics-phase-c.md](third-physics-phase-c.md)).
 
 ![All the light](../concepts/third-physics-v1/screenshots/06-all-the-light.jpg)
 
@@ -194,7 +194,7 @@ The traits say *Eternal Dance* or *Ejection*. The generator decided this over an
 
 The artwork stays the recorded rendering; this is its physics, continued and labelled as such. *Every motion has an echo* finally has a literal page.
 
-### 5.7 The Orrery: the collection, moving, for zero megabytes
+### 5.7 The Orrery: the collection, moving, for zero megabytes *(built)*
 
 This is a physical index beside All the light: every work's orbit re-performed at once as a small live score, hung by cycle, with the work's numeral beneath. Hover to see the plate.
 - The registry carries each work's state at the start of its recorded window: 18 doubles per work, about 10 KB in binary or a few tens of kilobytes as JSON for the whole collection.
@@ -306,7 +306,7 @@ Each phase ships behind a flag, on its own branch, with the existing seven-proje
 - The When lens in the room.
 - Visual regression on three works, and reduced-motion parity.
 
-**Phase C — the indexes (2–3 weeks).** All the light, with naming, pull-out and the cycle replay; the Orrery; both added to the Index sheet.
+**Phase C — the indexes (2–3 weeks).** *Built 30 October 2026; see [third-physics-phase-c.md](third-physics-phase-c.md).* All the light, with naming, pull-out and the cycle replay; the Orrery; both added to the Index sheet.
 
 **Phase D — the events (3–4 weeks).**
 - The Overture, version 1 then version 2 with drift registration.

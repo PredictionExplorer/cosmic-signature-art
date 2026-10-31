@@ -6,7 +6,12 @@ import { clock, fill } from '@/lib/i18n/format';
 import type { WorkOrbit } from '@/lib/art/orbit-records';
 import type { Comparison, MeasurementKey, Progress, Rederivation } from '@/lib/physics/orbit';
 import type { OrbitReply, OrbitRequest } from '@/lib/physics/orbit.worker';
-import { lightFilmDuration, lightFilmSeconds, stepsDrawnAt } from '@/lib/physics/light-film';
+import {
+  lightFilmDuration,
+  lightFilmFrame,
+  lightFilmSeconds,
+  stepsDrawnAt,
+} from '@/lib/physics/light-film';
 import { principalPlane, type Plane } from '@/lib/physics/plane';
 import { useMotion } from './motion-provider';
 import { lendPlateTone, returnPlateTone } from './room-ground';
@@ -186,17 +191,30 @@ export function OrbitScore({
     const radius = result.masses.map((mass) => Math.cbrt(mass) * 0.6 * ratio);
     const closestSample = Math.floor(result.closestApproach.step / STRIDE);
 
+    // One path a body for each frame of the Light film, as the film adds each frame's marks:
+    // the orbit drawn whole and the orbit performed end on the same picture, at any display's
+    // pace. Light adds, so the paths may be stroked body by body.
     const strokes = (from: number, to: number) => {
+      const spans: [number, number][] = [];
+      for (let start = from; start < to;) {
+        const frame = lightFilmFrame((start + 1) * STRIDE, steps);
+        let end = start + 1;
+        while (end < to && lightFilmFrame((end + 1) * STRIDE, steps) === frame) end += 1;
+        spans.push([start, end]);
+        start = end;
+      }
       trail.globalCompositeOperation = 'lighter';
       trail.lineWidth = ratio;
       trail.lineJoin = 'round';
       for (let body = 0; body < 3; body++) {
         trail.strokeStyle = `oklch(0.84 0.075 ${hues[body]} / 0.2)`;
-        trail.beginPath();
-        trail.moveTo(x(from, body), y(from, body));
-        for (let sample = from + 1; sample <= to; sample++)
-          trail.lineTo(x(sample, body), y(sample, body));
-        trail.stroke();
+        for (const [first, last] of spans) {
+          trail.beginPath();
+          trail.moveTo(x(first, body), y(first, body));
+          for (let sample = first + 1; sample <= last; sample++)
+            trail.lineTo(x(sample, body), y(sample, body));
+          trail.stroke();
+        }
       }
     };
     const bodies = (sample: number, moving: boolean) => {

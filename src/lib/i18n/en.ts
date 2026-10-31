@@ -279,6 +279,7 @@ export const en = {
   orderNumber: 'Number',
   orderCycle: 'Cycle',
   orderSpectrum: 'Spectrum',
+  collectionViews: 'The whole collection at once',
   filters: 'Filters',
   clearFilters: 'Clear filters',
   unmeasured: 'Unmeasured',
@@ -569,6 +570,35 @@ export const en = {
   analysisNotWork: 'Analysis, not the work',
   keyWhen: 'When: each mark coloured by its moment in the film',
   whenUnavailable: 'This browser could not draw the When lens; the still stands in.',
+  // The indexes: the Orrery and All the light (src/components/orrery.tsx, all-the-light.tsx)
+  orrery: 'Orrery',
+  orreryTitle: 'The Orrery',
+  orreryLine:
+    'Every orbit in the collection, performed at once from its seed, at the pace of its Light film.',
+  orreryNote:
+    'Each orbit starts from the first step of its recorded window, re-derived from the seed and checked against the record before it was kept. What moves is computed in this browser as you watch, not played back. Point at a work, or focus it, to see its own Light still.',
+  orreryStill: 'Motion is paused, so each orbit is drawn whole, once.',
+  orreryFallback: 'This browser cannot perform the orbits here; each work’s Light still stands in.',
+  orreryCell: '{work} · its orbit, performed',
+  orreryCycle: 'Cycle {cycle} · {date}',
+  allTheLight: 'All the light',
+  allTheLightLine:
+    'Every Light still in the collection, added as light adds: one exposure of {count} orbits.',
+  allTheLightNote:
+    'A derived view, not a work: the published Light stills summed in linear light, none of them altered, never offered for sale. Point into the light to name the orbits that pass through it, and choose one to see it alone, as its own untouched still.',
+  allTheLightAlt:
+    'All the light, {span}: the Light stills of {count} works added together, white where orbits crowd and coloured at their edges. A derived view, not a work.',
+  allTheLightPoint: 'Point anywhere to name the orbits that pass through it.',
+  allTheLightThrough: 'Through this point · {works}',
+  allTheLightNone: 'No orbit passes here.',
+  allTheLightAlone: '{work} alone, as its own untouched still',
+  allTheLightReturn: 'Back to all the light',
+  allTheLightVisit: 'Go to {work}',
+  allTheLightShowAlone: 'Show {work} alone',
+  allTheLightCycles: 'The sky by cycle',
+  allTheLightSky: 'The sky: {span} · {count} works',
+  allTheLightReplay: 'Replay, cycle by cycle',
+  allTheLightOrbits: 'The orbits in this light',
   // ·
   // ·
 } as const;

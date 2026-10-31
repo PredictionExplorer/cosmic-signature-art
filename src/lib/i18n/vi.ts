@@ -283,6 +283,7 @@ export const vi: Messages = {
   orderNumber: 'Số',
   orderCycle: 'Chu kỳ',
   orderSpectrum: 'Quang phổ',
+  collectionViews: 'Cả bộ sưu tập cùng lúc',
   filters: 'Bộ lọc',
   clearFilters: 'Xóa bộ lọc',
   unmeasured: 'Chưa đo',
@@ -572,6 +573,36 @@ export const vi: Messages = {
   analysisNotWork: 'Phân tích, không phải tác phẩm',
   keyWhen: 'Thời điểm: tô màu mỗi nét theo khoảnh khắc nó xuất hiện trong phim',
   whenUnavailable: 'Trình duyệt này không vẽ được lớp thời điểm; ảnh tĩnh được hiển thị thay thế.',
+  // The indexes: the Orrery and All the light (src/components/orrery.tsx, all-the-light.tsx)
+  orrery: 'Mô hình quỹ đạo',
+  orreryTitle: 'Mô hình quỹ đạo',
+  orreryLine:
+    'Mọi quỹ đạo trong bộ sưu tập, được diễn cùng lúc từ hạt giống của mình, theo nhịp của phim Ánh sáng.',
+  orreryNote:
+    'Mỗi quỹ đạo bắt đầu từ bước đầu tiên của khoảng đã ghi, được suy lại từ hạt giống và đối chiếu với hồ sơ trước khi được lưu. Những gì chuyển động được trình duyệt này tính ngay trong lúc xem, không phải phát lại. Trỏ vào một tác phẩm, hoặc chọn nó bằng bàn phím, để xem ảnh tĩnh Ánh sáng của chính nó.',
+  orreryStill: 'Chuyển động đang tạm dừng, nên mỗi quỹ đạo được vẽ trọn một lần.',
+  orreryFallback:
+    'Trình duyệt này không diễn được các quỹ đạo tại đây; ảnh tĩnh Ánh sáng của từng tác phẩm được hiển thị thay thế.',
+  orreryCell: '{work} · quỹ đạo, đang diễn',
+  orreryCycle: 'Chu kỳ {cycle} · {date}',
+  allTheLight: 'Toàn bộ ánh sáng',
+  allTheLightLine:
+    'Mọi ảnh tĩnh Ánh sáng trong bộ sưu tập, cộng lại như ánh sáng cộng vào nhau: một lần phơi sáng của {count} quỹ đạo.',
+  allTheLightNote:
+    'Một góc nhìn phái sinh, không phải tác phẩm: các ảnh tĩnh Ánh sáng đã công bố được cộng trong ánh sáng tuyến tính, không ảnh nào bị chỉnh sửa, không bao giờ được rao bán. Trỏ vào vùng sáng để gọi tên các quỹ đạo đi qua đó, và chọn một quỹ đạo để xem riêng nó, như ảnh tĩnh nguyên vẹn của chính nó.',
+  allTheLightAlt:
+    'Toàn bộ ánh sáng, {span}: ảnh tĩnh Ánh sáng của {count} tác phẩm cộng lại, trắng nơi các quỹ đạo dày đặc và còn màu ở rìa. Một góc nhìn phái sinh, không phải tác phẩm.',
+  allTheLightPoint: 'Trỏ vào bất cứ đâu để gọi tên các quỹ đạo đi qua đó.',
+  allTheLightThrough: 'Đi qua điểm này · {works}',
+  allTheLightNone: 'Không có quỹ đạo nào đi qua đây.',
+  allTheLightAlone: 'Riêng {work}, như ảnh tĩnh nguyên vẹn của chính nó',
+  allTheLightReturn: 'Trở lại toàn bộ ánh sáng',
+  allTheLightVisit: 'Đến {work}',
+  allTheLightShowAlone: 'Xem riêng {work}',
+  allTheLightCycles: 'Bầu trời theo chu kỳ',
+  allTheLightSky: 'Bầu trời: {span} · {count} tác phẩm',
+  allTheLightReplay: 'Phát lại theo từng chu kỳ',
+  allTheLightOrbits: 'Các quỹ đạo trong ánh sáng này',
   // ·
   // ·
 };
