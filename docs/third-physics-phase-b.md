@@ -113,12 +113,13 @@ An independent review of the branch, before merge, found one blocker and seven s
 
 ## What CI found after the review
 
-The follow-up pull request's first runs on CI's Ubuntu runner found three more problems that the local runs had not shown.
+The follow-up pull request's first runs on CI's Ubuntu runner found problems that the local runs had not shown.
 - **The decoder tests leaned on macOS's `yes`.** They ran `yes` in ffmpeg's place, with ffmpeg's arguments. macOS's `yes` ignores them; GNU's takes `-nostdin` for an option and quits. The tests now run a small script that ignores the arguments, and the reader test checks that the decoder has gone.
 - **A film that began to fade in during a Turn came in all at once on the canvas.** Once a Turn has landed, the page plays the new layer's settling clip, fading it in over the still. A Turn back that began before that fade took the clip's frame whole as soon as its opacity left zero. The orbits the clip had yet to draw then vanished in a single frame, while the page beneath had only begun to fade. The canvas now lays the clip over the still at the clip's own opacity, as the page does.
-- **Two crossing specs depended on the runner.**
+- **The crossing specs depended on the runner.**
   - The crossing spec compared the Turn back with the Light still. In WebKit the clip was already on view when that Turn began, so the Turn correctly left from the clip's frame. The spec now holds the films back, so both Turns leave a still at rest. The unit tests check the clip's weight.
   - The peek spec's bound on the first frame after release depended on how slow the runner's screenshots were. It now checks that the night stopped short of the marks Light brings last, which a night that jumped to the far side would cover.
+  - On a runner without a GPU, a screenshot taken while the canvas draws takes up to four times as long as one taken at rest. A six-second Turn could then pass between samples with neither showing a twentieth of each still, although the page had painted such frames. The crossing spec now sizes the Turn to the runner: sixteen of its screenshots at rest, and at least six seconds. It also asks only that some frame show part of both stills. Where the stills differ, a pixel showing one cannot pass for the other, so a crossfade, or a Turn painted in one frame, still never shows both.
 
 ## Limits, and what is next
 

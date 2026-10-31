@@ -276,15 +276,20 @@ for (const id of [31, 23, 35]) {
     const clip = (await plate.boundingBox())!;
     const shot = async () => pixels(await page.screenshot({ clip }));
     const inkStill = await shot();
-    // The crossing is slowed to six seconds here, through its own token, so that a runner whose
-    // screenshots take most of a second still samples the middle of the order.
-    const slow = await page.addStyleTag({ content: ':root { --t-cross: 6000ms; }' });
+    // The crossing is slowed through its own token, so that this runner's screenshots land
+    // within it. The stretch where both stills show is about a third of the Turn, and while
+    // WebGL draws on a runner without a GPU a screenshot takes up to four times as long as at
+    // rest; so the Turn lasts sixteen screenshots at rest, and at least six seconds.
+    const timing = Date.now();
+    for (let i = 0; i < 3; i++) await shot();
+    const cross = Math.round(Math.min(20_000, Math.max(6000, ((Date.now() - timing) / 3) * 16)));
+    const slow = await page.addStyleTag({ content: `:root { --t-cross: ${cross}ms; }` });
 
     const frames: Pixels[] = [];
     await page.locator(`${current} [data-turn="light"]`).click();
     const started = Date.now();
-    while (Date.now() - started < 6300) frames.push(await shot());
-    await expect(stage).toHaveAttribute('data-expression', 'light', { timeout: 9000 });
+    while (Date.now() - started < cross + 300) frames.push(await shot());
+    await expect(stage).toHaveAttribute('data-expression', 'light', { timeout: cross + 3000 });
     await expect(page.locator('html')).not.toHaveAttribute('data-turning', /./);
     // The canvas rests, and the head and the strip are the seam's own again.
     await expect(page.locator(`${pageStage} canvas[data-active]`)).toHaveCount(0);
@@ -301,12 +306,14 @@ for (const id of [31, 23, 35]) {
     const made = frames.map((frame) => ({ frame, ...composition(frame, inkStill, lightStill) }));
     // No frame paints anything but the two stills and their mix.
     for (const frame of made) expect(frame.outside).toBeLessThan(0.04);
-    // Some frame shows both stills at once, untouched, side by side.
+    // Some frame shows both stills at once, untouched, side by side. Where the stills differ, a
+    // pixel showing one cannot pass for the other, so a crossfade or a Turn painted in a single
+    // frame shows none of one of them; a frame that shows any share of both is within the Turn.
     const mixed = made.reduce((best, frame) =>
       Math.min(frame.ink, frame.light) > Math.min(best.ink, best.light) ? frame : best,
     );
-    expect(mixed.ink).toBeGreaterThan(0.05);
-    expect(mixed.light).toBeGreaterThan(0.05);
+    expect(mixed.ink).toBeGreaterThan(0.005);
+    expect(mixed.light).toBeGreaterThan(0.005);
     const seen = await crossingState(page);
     expect(seen.painted).toBeGreaterThan(5);
     expect(seen.headFront).toBeGreaterThan(0);
@@ -326,8 +333,8 @@ for (const id of [31, 23, 35]) {
     const back: Pixels[] = [];
     await page.locator(`${current} [data-turn="ink"]`).click();
     const returning = Date.now();
-    while (Date.now() - returning < 6300) back.push(await shot());
-    await expect(stage).toHaveAttribute('data-expression', 'ink', { timeout: 9000 });
+    while (Date.now() - returning < cross + 300) back.push(await shot());
+    await expect(stage).toHaveAttribute('data-expression', 'ink', { timeout: cross + 3000 });
     await expect(page.locator('html')).not.toHaveAttribute('data-turning', /./);
     await expect(page.locator(`${pageStage} canvas[data-active]`)).toHaveCount(0);
     await slow.evaluate((node) => (node as HTMLElement).remove());
