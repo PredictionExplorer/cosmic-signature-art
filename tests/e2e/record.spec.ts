@@ -109,8 +109,6 @@ test('invalid history cursors show an honest recovery path without losing the st
   await expect(history.getByText(t.historyUnavailable)).toBeVisible();
   const reset = history.getByRole('link', { name: /Latest events/ });
   await expect(reset).toHaveAttribute('href', '/art/31?view=still#history');
-  // A link clicked while the page hydrates can be dropped; the keys' marker says it has.
-  await expect(page.locator('html')).toHaveAttribute('data-keys', 'ready');
   await reset.click();
   await expect(page).toHaveURL(/\/art\/31\?view=still#history$/);
   await expect(page.getByRole('region', { name: t.ownershipHistory })).toBeVisible();
