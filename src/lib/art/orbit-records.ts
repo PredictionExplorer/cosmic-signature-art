@@ -74,6 +74,8 @@ export type OrbitRecord = z.infer<typeof recordSchema>;
 /** Everything the orbit section needs about one work, and nothing about the others. */
 export interface WorkOrbit {
   id: number;
+  /** The hash of the trait file the record was read from, to bind what is derived from it. */
+  traitsSha256: string;
   generation: OrbitGeneration;
   published: PublishedPhysics;
   fate: OrbitRecord['fate'];
@@ -95,6 +97,7 @@ export function workOrbit(id: number): WorkOrbit | undefined {
   if (!record) return undefined;
   return {
     id: record.id,
+    traitsSha256: record.traitsSha256,
     generation: {
       seed: record.seed,
       candidatesPerAttempt: record.generation.candidatesPerAttempt,

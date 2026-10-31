@@ -46,6 +46,14 @@ const TRAIT_LABEL: Record<TraitKey, keyof Messages> = {
   fate: 'fate',
 };
 const ORDERS = ['number', 'cycle', 'spectrum'] as const;
+/**
+ * The collection's two other indexes, each the whole collection at once: its light in one
+ * exposure, and every orbit performed together. Derived views, so never offered on a sale.
+ */
+const VIEWS = [
+  { path: '/collection/all-the-light', label: 'allTheLight' },
+  { path: '/collection/orrery', label: 'orrery' },
+] as const;
 const ORDER_LABEL = {
   number: 'orderNumber',
   cycle: 'orderCycle',
@@ -272,6 +280,9 @@ function SheetBody({
     collectionHref(locale, params, { [key]: params.get(key) === value ? null : value });
   const filtering = ['cycle', ...TRAIT_KEYS].some((key) => params.get(key));
   const unlocalized = unlocalizedPath(pathname);
+  // An ordering is the page only on the collection it orders; elsewhere the expression is still
+  // the session's current one, since the wall and every link follow it.
+  const onCollection = unlocalized === '/collection';
   const close = () => closeSheet('index');
 
   /** A tap focuses a link in some browsers; only focus a keyboard made visible hangs a work there. */
@@ -304,7 +315,9 @@ function SheetBody({
             <Link
               key={order}
               href={collectionHref(locale, params, { order })}
-              aria-current={(params.get('order') ?? 'number') === order ? 'page' : undefined}
+              aria-current={
+                onCollection && (params.get('order') ?? 'number') === order ? 'page' : undefined
+              }
               onClick={close}
             >
               {t[ORDER_LABEL[order]]}
@@ -315,13 +328,28 @@ function SheetBody({
             <Link
               key={value}
               href={collectionHref(locale, params, { expression: value })}
-              aria-current={expression === value ? 'page' : undefined}
+              aria-current={expression === value ? (onCollection ? 'page' : 'true') : undefined}
               onClick={close}
             >
               {t[value]}
             </Link>
           ))}
         </nav>
+        {unlocalized.startsWith('/auctions') ? null : (
+          <nav aria-label={t.collectionViews} className={`${styles.orderings} ${styles.views}`}>
+            <span className={styles.divider} aria-hidden="true" />
+            {VIEWS.map((view) => (
+              <Link
+                key={view.path}
+                href={localizedPath(locale, view.path)}
+                aria-current={unlocalized === view.path ? 'page' : undefined}
+                onClick={close}
+              >
+                {t[view.label]}
+              </Link>
+            ))}
+          </nav>
+        )}
         <form className={styles.search} action={localizedPath(locale, '/collection')} role="search">
           <label>
             <span className="sr-only">{t.search}</span>

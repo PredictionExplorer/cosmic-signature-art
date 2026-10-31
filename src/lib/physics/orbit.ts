@@ -736,6 +736,11 @@ export interface Rederivation {
   attempt: number;
   /** Every `stride`-th step of the recorded window: x, y, z for each body, as float32. */
   samples: { stride: number; count: number; positions: Float32Array; separations: Float32Array };
+  /**
+   * The bodies at the first step of the recorded window, after the warm-up: x, y, z for each,
+   * exactly. Integrating from here replays the recorded window step for step.
+   */
+  windowStart: { positions: Float64Array; velocities: Float64Array };
   milliseconds: { beginnings: number; orbit: number };
 }
 
@@ -933,8 +938,126 @@ export function rederive(
     profileDraws,
     attempt,
     samples: { stride, count, positions, separations },
+    windowStart: { positions: windowStart.P, velocities: windowStart.V },
     milliseconds: { beginnings: derived - started, orbit: performance.now() - derived },
   };
+}
+
+// ───────────────────────── The window, performed again ─────────────────────────
+
+/*
+  A recorded window replayed from its first step. A window's start is re-derived offline from
+  the seed and checked against the record (scripts/build-orbit-windows.mjs); integrating from it
+  with the generator's own step replays the recorded window step for step, so a page can perform
+  many orbits at once without deriving any of them (the Orrery).
+*/
+
+/** One orbit's recorded window: where it starts, how it steps, and the plane it is drawn in. */
+export interface OrbitWindow {
+  masses: readonly [number, number, number];
+  dt: number;
+  steps: number;
+  /** x, y, z of each body at the window's first step. */
+  positions: readonly number[];
+  velocities: readonly number[];
+  plane: {
+    mean: readonly [number, number, number];
+    axes: readonly [readonly [number, number, number], readonly [number, number, number]];
+    /** u0, u1, v0, v1: the extent of the window's samples in the plane. */
+    bounds: readonly [number, number, number, number];
+  };
+}
+
+/** The bodies' places in the plane at one step: u and v for each of the three. */
+export interface PlanePoints {
+  u: Float64Array;
+  v: Float64Array;
+}
+
+/** A window performed step by step from its first step; restartable at no cost. */
+export class WindowPerformance {
+  readonly window: OrbitWindow;
+  readonly positions = new Float64Array(9);
+  readonly velocities = new Float64Array(9);
+  /** Steps taken since the window's start: the bodies stand at this step of the window. */
+  step = 0;
+  private advance: () => void = () => {};
+
+  // Node strips this file's types without transforming it, so no parameter properties here.
+  constructor(window: OrbitWindow) {
+    this.window = window;
+    this.restart();
+  }
+
+  get done() {
+    return this.step >= this.window.steps;
+  }
+
+  /** Back to the window's first step, exactly. */
+  restart() {
+    this.positions.set(this.window.positions);
+    this.velocities.set(this.window.velocities);
+    this.step = 0;
+    this.advance = integrator(this.window.masses, this.positions, this.velocities, this.window.dt);
+  }
+
+  /**
+   * Step up to `target` (never past the window). At every step that is a multiple of `stride`,
+   * before the step is taken, `sample` sees the bodies, as the work page samples them.
+   */
+  run(target: number, stride: number, sample?: (step: number) => void) {
+    const end = Math.min(target, this.window.steps);
+    while (this.step < end) {
+      if (sample && this.step % stride === 0) sample(this.step);
+      this.advance();
+      this.step += 1;
+    }
+  }
+
+  /** The bodies projected onto the window's plane, into `into`. */
+  project(into: PlanePoints) {
+    const { mean, axes } = this.window.plane;
+    const [a, b] = axes;
+    for (let body = 0; body < 3; body++) {
+      const dx = this.positions[body * 3] - mean[0];
+      const dy = this.positions[body * 3 + 1] - mean[1];
+      const dz = this.positions[body * 3 + 2] - mean[2];
+      into.u[body] = dx * a[0] + dy * a[1] + dz * a[2];
+      into.v[body] = dx * b[0] + dy * b[1] + dz * b[2];
+    }
+    return into;
+  }
+}
+
+/**
+ * The closest approach over a whole window, measured as the generator measures it: at every
+ * step before it is taken, the first of the smallest separations of each pair, then the
+ * smallest of the three pairs.
+ */
+export function closestApproachOf(window: OrbitWindow): ClosestApproach {
+  const best = PAIRS.map(() => ({ distance: Infinity, step: -1 }));
+  const replay = new WindowPerformance(window);
+  const P = replay.positions;
+  replay.run(window.steps, 1, (step) => {
+    for (let k = 0; k < 3; k++) {
+      const a = PAIRS[k][0] * 3;
+      const b = PAIRS[k][1] * 3;
+      const dx = P[a] - P[b];
+      const dy = P[a + 1] - P[b + 1];
+      const dz = P[a + 2] - P[b + 2];
+      const distance = Math.sqrt(dx * dx + dy * dy + dz * dz);
+      if (distance < best[k].distance) best[k] = { distance, step };
+    }
+  });
+  let closest: ClosestApproach = { distance: best[0].distance, pair: [0, 1], step: best[0].step };
+  for (let k = 1; k < 3; k++)
+    if (best[k].distance < closest.distance)
+      closest = {
+        distance: best[k].distance,
+        pair: [PAIRS[k][0], PAIRS[k][1]],
+        step: best[k].step,
+      };
+  return closest;
 }
 
 // ───────────────────────── The record, and the comparison ─────────────────────────

@@ -268,6 +268,7 @@ export const zhHK: Messages = {
   orderNumber: '編號',
   orderCycle: '週期',
   orderSpectrum: '光譜',
+  collectionViews: '整個作品集一覽',
   filters: '篩選',
   clearFilters: '清除篩選',
   unmeasured: '未測量',
@@ -541,6 +542,33 @@ export const zhHK: Messages = {
   analysisNotWork: '分析，而非作品',
   keyWhen: '時刻：按每一筆在影片中出現的時刻着色',
   whenUnavailable: '此瀏覽器未能繪製時刻視圖，改為顯示靜態影像。',
+  // The indexes: the Orrery and All the light (src/components/orrery.tsx, all-the-light.tsx)
+  orrery: '軌道儀',
+  orreryTitle: '軌道儀',
+  orreryLine: '收藏中的每一條軌道，都由各自的種子同時演出，按光的影片的節奏。',
+  orreryNote:
+    '每條軌道都從其紀錄區間的第一步開始；這一狀態由種子重新推導，並在與紀錄核對後才保留。運動着的並非回放，而是這個瀏覽器在觀看時即時計算的結果。指向或聚焦一件作品，即可看到它自己的光的靜態影像。',
+  orreryStill: '運動已暫停，因此每條軌道都完整地描繪一次。',
+  orreryFallback: '此瀏覽器未能在這裏演出軌道，改為顯示每件作品的光的靜態影像。',
+  orreryCell: '{work} · 它的軌道，正在演出',
+  orreryCycle: '週期 {cycle} · {date}',
+  allTheLight: '全部的光',
+  allTheLightLine: '收藏中的每一幅光的靜態影像，像光那樣相加：{count} 條軌道的一次曝光。',
+  allTheLightNote:
+    '這是衍生的視圖，而非作品：已發佈的光的靜態影像在線性光中相加，沒有一幅被修改，也從不出售。指向光中，即可說出經過那裏的軌道之名；選擇其一，即可單獨看到它未經改動的靜態影像。',
+  allTheLightAlt:
+    '全部的光（{span}）：{count} 件作品的光的靜態影像相加而成，軌道密集處為白色，邊緣留有顏色。這是衍生的視圖，而非作品。',
+  allTheLightPoint: '指向任何一處，即可說出經過那裏的軌道之名。',
+  allTheLightThrough: '經過此點 · {works}',
+  allTheLightNone: '沒有軌道經過這裏。',
+  allTheLightAlone: '單獨的 {work}，即它未經改動的靜態影像',
+  allTheLightReturn: '回到全部的光',
+  allTheLightVisit: '前往 {work}',
+  allTheLightShowAlone: '單獨顯示 {work}',
+  allTheLightCycles: '按週期的天空',
+  allTheLightSky: '天空：{span} · {count} 件作品',
+  allTheLightReplay: '按週期重播',
+  allTheLightOrbits: '這片光中的軌道',
   // ·
   // ·
 };

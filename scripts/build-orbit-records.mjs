@@ -53,9 +53,9 @@ const positive = (value, name) => {
   if (finite(value, name) <= 0) throw new Error(`${name} is not positive`);
   return value;
 };
-/** The shortest decimal that parses back to exactly this double. */
+/** The shortest decimal that parses back to exactly this double; String(-0) alone loses the sign. */
 export function decimal(value) {
-  const text = String(value);
+  const text = Object.is(value, -0) ? '-0' : String(value);
   if (!Object.is(Number(text), value)) throw new Error(`${value} does not round-trip`);
   return text;
 }

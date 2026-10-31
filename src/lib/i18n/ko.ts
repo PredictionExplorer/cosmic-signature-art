@@ -278,6 +278,7 @@ export const ko: Messages = {
   orderNumber: '번호',
   orderCycle: '사이클',
   orderSpectrum: '스펙트럼',
+  collectionViews: '컬렉션 전체를 한눈에',
   filters: '필터',
   clearFilters: '필터 지우기',
   unmeasured: '측정되지 않음',
@@ -563,6 +564,35 @@ export const ko: Messages = {
   analysisNotWork: '작품이 아닌 분석',
   keyWhen: '시각: 영상 속에서 나타난 시각에 따라 각 부분을 색칠',
   whenUnavailable: '이 브라우저에서는 시각 보기를 그리지 못해 정지 이미지를 보여 줍니다.',
+  // The indexes: the Orrery and All the light (src/components/orrery.tsx, all-the-light.tsx)
+  orrery: '오러리',
+  orreryTitle: '오러리',
+  orreryLine: '컬렉션의 모든 궤도를 각자의 시드에서 한꺼번에, 빛 영상의 속도로 펼쳐 보입니다.',
+  orreryNote:
+    '각 궤도는 기록된 구간의 첫 단계에서 움직이기 시작합니다. 그 상태는 시드에서 다시 도출하고 기록과 대조한 뒤에 남긴 것입니다. 움직이는 것은 재생이 아니라, 보는 동안 이 브라우저가 계산하는 것입니다. 작품을 가리키거나 포커스하면 그 작품의 빛 정지 이미지가 나타납니다.',
+  orreryStill: '움직임을 멈췄기 때문에 각 궤도를 한 번, 전체로 그립니다.',
+  orreryFallback:
+    '이 브라우저에서는 여기서 궤도를 펼칠 수 없어 각 작품의 빛 정지 이미지를 대신 보여 줍니다.',
+  orreryCell: '{work} · 펼쳐지는 궤도',
+  orreryCycle: '사이클 {cycle} · {date}',
+  allTheLight: '모든 빛',
+  allTheLightLine:
+    '컬렉션의 모든 빛 정지 이미지를 빛이 더해지듯 겹친, 궤도 {count}개의 한 번의 노출입니다.',
+  allTheLightNote:
+    '작품이 아니라 작품에서 이끌어 낸 보기입니다. 공개된 빛 정지 이미지를 선형 빛으로 합한 것으로, 어느 것도 바꾸지 않았고 판매하지도 않습니다. 빛 속을 가리키면 그곳을 지나는 궤도의 이름이 나타나고, 하나를 고르면 손대지 않은 그 작품의 정지 이미지만 볼 수 있습니다.',
+  allTheLightAlt:
+    '모든 빛({span}): 작품 {count}점의 빛 정지 이미지를 더한 것으로, 궤도가 겹치는 곳은 희고 가장자리에는 색이 남습니다. 작품이 아니라 작품에서 이끌어 낸 보기입니다.',
+  allTheLightPoint: '어디든 가리키면 그곳을 지나는 궤도의 이름이 나타납니다.',
+  allTheLightThrough: '이 지점을 지나는 궤도 · {works}',
+  allTheLightNone: '이곳을 지나는 궤도는 없습니다.',
+  allTheLightAlone: '{work}만, 손대지 않은 그 작품의 정지 이미지로',
+  allTheLightReturn: '모든 빛으로 돌아가기',
+  allTheLightVisit: '{work}(으)로 가기',
+  allTheLightShowAlone: '{work}만 보기',
+  allTheLightCycles: '사이클별 하늘',
+  allTheLightSky: '하늘: {span} · {count}점',
+  allTheLightReplay: '사이클별로 다시 보기',
+  allTheLightOrbits: '이 빛 속의 궤도',
   // ·
   // ·
 };

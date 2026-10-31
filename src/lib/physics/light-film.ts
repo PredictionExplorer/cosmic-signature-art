@@ -23,11 +23,15 @@ export function lightFilmDuration(steps: number): number {
   return lightFilmFrames(steps) / LIGHT_FILM.fps;
 }
 
+/** The frame of the Light film that first draws `step` of the recorded window. */
+export function lightFilmFrame(step: number, steps: number): number {
+  const { interval, count } = frames(steps);
+  return step <= interval ? 0 : Math.min(Math.ceil(step / interval) - 1, count - 1);
+}
+
 /** Seconds into the Light film at which `step` of the recorded window is first drawn. */
 export function lightFilmSeconds(step: number, steps: number): number {
-  const { interval, count } = frames(steps);
-  const frame = step <= interval ? 0 : Math.min(Math.ceil(step / interval) - 1, count - 1);
-  return frame / LIGHT_FILM.fps;
+  return lightFilmFrame(step, steps) / LIGHT_FILM.fps;
 }
 
 /** The last step the Light film has drawn `seconds` in. */
