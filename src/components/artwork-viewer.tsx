@@ -209,6 +209,10 @@ function ArtworkViewerSession({
   const remembered = useRememberedExpression();
   const restored = useRef(false);
   const instantNext = useRef(false);
+  /** Each Turn the twin's decode asked for; a newer one supersedes a Turn still waiting. */
+  const turnRequest = useRef(0);
+  // A Turn that waited on the crossing reads the room and motion as they are when it ends.
+  const landsAtOnce = useRef(false);
 
   const { expression, pendingExpression, failedExpression, selectExpression, cancelPending } =
     useArtworkExpression({
@@ -242,9 +246,18 @@ function ArtworkViewerSession({
           return;
         }
         const to = target as Expression;
-        // A crossing still being prepared is worth a moment; past that the straight seam travels.
+        // The Turn is under way from here, and reads so. A crossing still being prepared is
+        // worth a moment; past that the straight seam travels. Whatever takes the seam in the
+        // meantime (a newer request, the room, a key, the page left) supersedes this Turn.
+        setTurning({ to, mode: 'time' });
+        const request = ++turnRequest.current;
+        const generation = seam.generation;
         void whenReady(400).then(() => {
-          setTurning({ to, mode: 'time' });
+          if (request !== turnRequest.current || generation !== seam.generation) return;
+          if (landsAtOnce.current) {
+            commit();
+            return;
+          }
           void seam
             .animateTo(targetSeam(to), {
               mode: 'time',
@@ -258,6 +271,10 @@ function ArtworkViewerSession({
         });
       },
     });
+
+  useEffect(() => {
+    landsAtOnce.current = instant || room !== null;
+  }, [instant, room]);
 
   // A still that could not be decoded marks its layer; the layer is mounted afresh once a retry succeeds.
   useEffect(() => {
@@ -338,10 +355,7 @@ function ArtworkViewerSession({
     light,
     expression,
     enabled: hasBoth && !!ink?.arrival && !!light?.arrival && !instant,
-    wingSeam: () =>
-      wingMode === 'scroll' && expression === 'ink' && scrollTimelinesSupported()
-        ? inkSeam()
-        : null,
+    wingSeam: () => (wingMode === 'scroll' && scrollTimelinesSupported() ? inkSeam() : null),
   });
   // A seam left at the finger or the key whose twin failed to decode returns to rest.
   const returnFailedSeam = useEffectEvent(() => {
@@ -933,6 +947,7 @@ function ArtworkViewerSession({
           locale={locale}
           onClose={closeRoom}
           returnFocusRef={returnFocusRef}
+          derivedViews={presentation !== 'auction'}
         />
       ) : null}
     </>

@@ -153,6 +153,59 @@ describe('the seam', () => {
     }
   });
 
+  it('reverses from where the seam is, not from where it was going', async () => {
+    root().setAttribute('data-crossing', 'arrival');
+    let clock = 0;
+    vi.spyOn(performance, 'now').mockImplementation(() => clock);
+    try {
+      const seam = new SeamController();
+      const out = seam.animateTo(0, { breath: false, from: 100 });
+      const generation = seam.generation;
+      // A key held for a second, then released: halfway through the order's two seconds.
+      clock = 1000;
+      const here = seam.current()!;
+      expect(here).toBeCloseTo(50, 6);
+      const back = seam.animateTo(100, { breath: false });
+      expect(seam.generation).not.toBe(generation);
+      await expect(out).resolves.toBe(false);
+      // The canvas paints the very position the straight seam shows, on this frame and after.
+      expect(seam.current()).toBeCloseTo(here, 6);
+      expect(seam.current(clock + 500)).toBeGreaterThan(here);
+      // The way back is its share of the order: half the plate in half the time.
+      expect(root().style.getPropertyValue('--t-crossing')).toBe('1000ms');
+      await act(async () => vi.advanceTimersByTime(1030));
+      await expect(back).resolves.toBe(true);
+      expect(seam.current(clock + 1000)).toBe(100);
+      seam.end();
+    } finally {
+      root().removeAttribute('data-crossing');
+    }
+  });
+
+  it('holds the seam where it is for a breath, and gives it to a finger there', async () => {
+    let clock = 0;
+    vi.spyOn(performance, 'now').mockImplementation(() => clock);
+    const seam = new SeamController();
+    void seam.animateTo(0, { breath: false, from: 100 });
+    clock = 450;
+    const here = seam.current()!;
+    expect(here).toBeGreaterThan(0);
+    expect(here).toBeLessThan(100);
+    // A new Turn breathes first: the seam stays where the visitor sees it, not at the target.
+    void seam.animateTo(100);
+    expect(seam.seam).toBeCloseTo(here, 6);
+    expect(seam.current()).toBeCloseTo(here, 6);
+    await act(async () => vi.advanceTimersByTime(BREATH_MS + 100));
+    clock += 200;
+    const moving = seam.current()!;
+    expect(moving).toBeGreaterThan(here);
+    // A finger takes the seam mid-travel exactly where it is.
+    seam.begin('drag', 100);
+    expect(seam.current()).toBeCloseTo(moving, 6);
+    expect(seam.mode).toBe('drag');
+    seam.end();
+  });
+
   it('end() cancels a travel in flight', async () => {
     const seam = new SeamController();
     const travel = seam.animateTo(0, { breath: false });

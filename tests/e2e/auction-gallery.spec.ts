@@ -75,6 +75,8 @@ for (const locale of locales) {
       exact: true,
     });
     await expect(room).toBeVisible();
+    // A sale surface shows the work alone: the derived views (the When lens) are never offered.
+    await expect(room.getByRole('button', { name: t.whenLens, exact: true })).toHaveCount(0);
     await room.getByRole('button', { name: new RegExp(`^${t.light}$`) }).click();
     await expect(room.locator('[data-artwork-stage="room"]')).toHaveAttribute(
       'data-expression',

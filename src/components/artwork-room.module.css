@@ -205,7 +205,8 @@
   text-decoration-color: currentColor;
   text-decoration-style: dotted;
 }
-.strip button:disabled {
+.strip button:disabled,
+.strip button[aria-disabled='true'] {
   color: var(--room-muted);
   cursor: default;
   opacity: 0.6;

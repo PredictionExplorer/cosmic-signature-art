@@ -116,11 +116,13 @@ function Harness({
   work = artwork,
   returnPointerFocus = false,
   startAt,
+  derivedViews,
 }: {
   initialFilm?: boolean;
   work?: Artwork;
   returnPointerFocus?: boolean;
   startAt?: number;
+  derivedViews?: boolean;
 }) {
   const [open, setOpen] = useState(false);
   const [expression, setExpression] = useState('ink');
@@ -144,6 +146,7 @@ function Harness({
           initialFilm={initialFilm}
           startAt={startAt}
           returnFocusRef={returnPointerFocus ? opener : undefined}
+          derivedViews={derivedViews}
           onClose={() => setOpen(false)}
         />
       ) : null}
@@ -706,6 +709,9 @@ describe('immersive artwork room', () => {
     fireEvent.keyDown(room, { key: 't' });
     expect(lens).toHaveAttribute('aria-pressed', 'true');
     expect(room.firstElementChild).not.toHaveAttribute('data-loupe');
+    // A held T paints the lens once; its repeats change nothing.
+    fireEvent.keyDown(room, { key: 't', repeat: true });
+    expect(lens).toHaveAttribute('aria-pressed', 'true');
     fireEvent.keyDown(room, { key: 'f' });
     expect(lens).toHaveAttribute('aria-pressed', 'false');
     expect(room.querySelector('video')).toHaveAttribute('src', '/complete-ink.mp4');
@@ -731,15 +737,37 @@ describe('immersive artwork room', () => {
     try {
       const { room } = openRoom();
       const lens = within(room).getByRole('button', { name: en.whenLens });
+      lens.focus();
       fireEvent.click(lens);
       await act(async () => {});
-      expect(lens).toBeDisabled();
+      // The word rests but keeps the focus the visitor gave it.
+      expect(lens).toHaveAttribute('aria-disabled', 'true');
+      expect(lens).not.toBeDisabled();
+      expect(lens).toHaveFocus();
       expect(lens).toHaveAttribute('aria-pressed', 'false');
       expect(within(room).getByRole('status')).toHaveTextContent(en.whenUnavailable);
       expect(room.querySelector('canvas')).toBeNull();
+      // Neither the word nor T disturbs a film that plays after it.
+      fireEvent.keyDown(room, { key: 'f' });
+      expect(room.querySelector('video')).toHaveAttribute('src', '/complete-ink.mp4');
+      fireEvent.click(lens);
+      fireEvent.keyDown(room, { key: 't' });
+      expect(room.querySelector('video')).toHaveAttribute('src', '/complete-ink.mp4');
+      expect(lens).toHaveAttribute('aria-pressed', 'false');
     } finally {
       vi.unstubAllGlobals();
     }
+  });
+
+  it('never offers the When lens on a sale surface, by word or by key', () => {
+    render(<Harness derivedViews={false} />);
+    fireEvent.click(screen.getByRole('button', { name: 'Enter room' }));
+    const room = screen.getByRole('dialog');
+    expect(within(room).queryByRole('button', { name: en.whenLens })).toBeNull();
+    fireEvent.keyDown(room, { key: 't' });
+    expect(room.querySelector('canvas')).toBeNull();
+    fireEvent.keyDown(room, { key: '?' });
+    expect(within(room).getByLabelText(en.roomKeys)).not.toHaveTextContent(en.keyWhen);
   });
 
   it('offers no When lens where no arrival map is bound', () => {

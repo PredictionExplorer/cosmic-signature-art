@@ -70,6 +70,11 @@ type ArtworkRoomProps = {
   expressionFailed?: boolean;
   /** Safari pointer clicks need not focus the launcher; capture the explicit opener. */
   returnFocusRef?: RefObject<HTMLElement | null>;
+  /**
+   * The derived views (the When lens) may be offered. They are analysis, never the work, so a
+   * sale surface passes false and the room shows the work alone.
+   */
+  derivedViews?: boolean;
   onClose: () => void;
 };
 
@@ -294,6 +299,7 @@ export function ArtworkRoom({
   pendingExpression,
   expressionFailed = false,
   returnFocusRef,
+  derivedViews = true,
   onClose,
 }: ArtworkRoomProps) {
   const dialog = useRef<HTMLDialogElement>(null);
@@ -353,13 +359,15 @@ export function ArtworkRoom({
   const filmShown = showFilm && !!film && !loupe && !studyHeld && filmStatus !== 'failed';
   const slow = filmShown && isStudy(film);
   // The When lens needs the still, its rung and the arrival map bound to them.
-  const whenOffered = !!media?.arrival && !!media.rungs?.length;
+  const whenOffered = derivedViews && !!media?.arrival && !!media.rungs?.length;
   const whenShown =
     when && whenOffered && stillShown && !loupe && !filmShown && whenFailed !== media?.arrival?.src;
   const whenCaption = media?.id === 'light' ? t.whenLight : t.whenInk;
   // A lens that could not be painted is said once, beside the still that stands in for it.
   const whenUnavailable =
     whenOffered && whenFailed === media?.arrival?.src && stillShown && !filmShown && !loupe;
+  // A lens that cannot be painted keeps its word, and its focus, but does nothing.
+  const whenBlocked = !stillShown || whenFailed === media?.arrival?.src;
   const numbers = useMemo(() => new Intl.NumberFormat(locale), [locale]);
 
   /* Open and close: the Expansion. */
@@ -553,7 +561,7 @@ export function ArtworkRoom({
   /** The When lens takes the still's place; the film and the loupe step aside. */
   function toggleWhen() {
     if (whenShown) return setWhen(false);
-    if (!whenOffered || !stillShown) return;
+    if (!whenOffered || whenBlocked) return;
     setShowFilm(false);
     setLoupe(null);
     views.set(null);
@@ -628,7 +636,8 @@ export function ArtworkRoom({
       event.preventDefault();
       closeLoupe();
     } else if (key === 't' || key === 'T') {
-      if (!whenOffered) return;
+      // A held key paints the lens once, not on every repeat.
+      if (!whenOffered || event.repeat) return;
       event.preventDefault();
       toggleWhen();
     } else if (key === '?') {
@@ -825,7 +834,7 @@ export function ArtworkRoom({
                   type="button"
                   onClick={toggleWhen}
                   aria-pressed={whenShown}
-                  disabled={!stillShown || whenFailed === media?.arrival?.src}
+                  aria-disabled={whenBlocked || undefined}
                 >
                   {t.whenLens}
                 </button>

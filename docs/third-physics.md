@@ -300,7 +300,7 @@ Each phase ships behind a flag, on its own branch, with the existing seven-proje
 - Text equivalents for screen readers ("Three bodies of masses 130.7, 251.0 and 125.0 … closest approach 80.2 at step 255,842, 7.7 s into the film").
 - Settled first: the profile-offset question (§7.6) and the step ↔ film map.
 
-**Phase B — the crossing (3–4 weeks).** *Built 29–30 October 2026; see [third-physics-phase-b.md](third-physics-phase-b.md).*
+**Phase B — the crossing (3–4 weeks).** *Shipped 29–30 October 2026; see [third-physics-phase-b.md](third-physics-phase-b.md).*
 - `scripts/build-arrival-maps.mjs` for 72 Light films (about 4 MB each) and 71 Ink films. It decodes the published films once at reduced resolution. The 96 MB originals stream through the existing relay, about 7 GB read once, and only the maps are kept.
 - The WebGL crossing replaces the straight seam in all four places.
 - The When lens in the room.
