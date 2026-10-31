@@ -14,6 +14,7 @@
   place-items: center;
 }
 .wordsRow {
+  position: relative;
   display: flex;
   align-items: center;
   gap: 18px;
@@ -57,6 +58,16 @@
   flex-basis: 100%;
   text-align: end;
   line-height: 1.5;
+}
+/* The live state (Arriving, a phone's excerpt) comes and goes while the visitor reads, so it
+   stands out of the flow, beneath the words inside the 56 px strip: the strip keeps its
+   height whichever state it shows, and nothing below the plate moves when the still settles. */
+.state[data-film-state] {
+  position: absolute;
+  inset-inline-end: 0;
+  top: calc(100% - 10px);
+  line-height: 1;
+  pointer-events: none;
 }
 /* The home's one line, italic at 15 px, signed. */
 .line {
@@ -188,6 +199,12 @@
   }
   .state {
     padding-bottom: 9px;
+  }
+  /* A phone's strip is only as tall as its words: the live state hangs just below them. */
+  .state[data-film-state] {
+    top: 100%;
+    padding-bottom: 0;
+    line-height: 1.5;
   }
   .neighbours {
     grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);

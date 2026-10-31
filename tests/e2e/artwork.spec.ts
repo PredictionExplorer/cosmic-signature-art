@@ -85,6 +85,40 @@ test('Film from a still starts the intended film with one explicit word', async 
   await expect(plate.getByRole('button', { name: 'Film', exact: true })).toBeVisible();
 });
 
+test('the plate settles in place: its strip keeps its height and nothing beneath it moves', async ({
+  page,
+}) => {
+  // The still decodes only when the test lets it, as late as a starved runner decodes it; a
+  // collapsing strip once moved a link from under a click that began before the still settled.
+  await page.addInitScript(() => {
+    const decode = HTMLImageElement.prototype.decode;
+    let settle = () => {};
+    const settled = new Promise<void>((resolve) => (settle = resolve));
+    Object.assign(window, { __settlePlate: () => settle() });
+    HTMLImageElement.prototype.decode = function (this: HTMLImageElement) {
+      return settled.then(() => decode.call(this));
+    };
+  });
+  await page.goto('/art/31?view=still');
+  await pauseAmbientMotion(page);
+  const plate = page.locator(current);
+  const state = plate.locator('[data-film-state]');
+  await expect(state).toHaveAttribute('data-film-state', 'arriving');
+  // The state still shows while the plate arrives; it is set beneath the words, not hidden.
+  expect((await state.boundingBox())!.height).toBeGreaterThan(1);
+  const record = page.getByRole('main').locator('#record');
+  await expect(record).toBeVisible();
+  const layout = async () => {
+    const strip = (await plate.locator('.strip').boundingBox())!;
+    const below = (await record.boundingBox())!;
+    return { strip: strip.height, below: below.y - strip.y };
+  };
+  const arriving = await layout();
+  await page.evaluate(() => (window as unknown as { __settlePlate: () => void }).__settlePlate());
+  await expect(state).toHaveAttribute('data-film-state', 'still');
+  expect(await layout()).toEqual(arriving);
+});
+
 test('the neighbours carry the visitor on by number and by wavelength', async ({ page }) => {
   await page.goto('/art/31?view=still');
   await pauseAmbientMotion(page);
