@@ -7,8 +7,10 @@ import { lightFilmFrame, lightFilmSeconds, stepsDrawnAt } from './light-film';
   the work page's section draws it: every hundredth step, in light, at the Light film's pace;
   when its window is complete it holds the finished exposure for a moment and begins again.
   Cells out of view wait where they are. Under a still preference each cell is drawn whole,
-  once. The engine is pure and synchronous; the Orrery's worker gives it OffscreenCanvases and
-  a clock, and the tests give it a recording surface.
+  once, and shown only when it is whole. A frame's work is bounded by time as well as steps,
+  so a slow machine performs the orbits more slowly instead of leaving the page no time of
+  its own. The engine is pure and synchronous; the Orrery's worker gives it OffscreenCanvases
+  and a clock, and the tests give it a recording surface and a clock of their own.
 */
 
 export const ORRERY = {
@@ -18,11 +20,18 @@ export const ORRERY = {
   holdMs: 3000,
   /** Steps a frame may integrate across every cell; a cell short of them slows, never jumps. */
   budget: 150_000,
+  /** Milliseconds a frame may work: a fast machine's frame fits well within them. */
+  frameMs: 6,
+  /** Steps integrated between looks at the clock. */
+  chunk: 2000,
   /** The margin around the orbit, as a share of the cell's smaller side. */
   margin: 0.07,
   /** A silence longer than this between a cell's frames (a hidden page, a busy thread) is a pause. */
   gapMs: 250,
 } as const;
+
+/** The samples of one Light film frame, x and y pairs per body: one path a body. */
+type FilmFrame = { frame: number; points: [number[], number[], number[]] };
 
 /** The part of a 2D context a cell draws with: a canvas's, or a test's recording. */
 export interface Surface {
@@ -64,8 +73,10 @@ interface Cell {
   fit: ReturnType<typeof planeFit>;
   /** The last sample drawn, three bodies' x and y, so the next stroke continues from it. */
   last: Float64Array | null;
-  /** The film frame whose samples are gathered but not yet stroked: x, y pairs per body. */
-  open: { frame: number; points: [number[], number[], number[]] } | null;
+  /** The film frame whose samples are gathered but not yet stroked. */
+  open: FilmFrame | null;
+  /** Film frames complete but kept from the canvas until the cell is drawn whole. */
+  unshown: FilmFrame[] | null;
   /** The cell's three strokes, one hue a body. */
   styles: readonly [string, string, string];
   /** When the cell last advanced, so a silence since can be taken as a pause. */
@@ -104,14 +115,24 @@ export class OrreryEngine {
   private readonly ratio: number;
   private moving: boolean;
   private readonly onDrawn?: (id: number) => void;
+  /** The time a frame's work is measured by, in milliseconds. */
+  private readonly clock: () => number;
   /** The cell a frame starts from, turned each frame so a short budget is shared fairly. */
   private turn = 0;
   private readonly points: PlanePoints = { u: new Float64Array(3), v: new Float64Array(3) };
 
-  constructor(ratio: number, moving: boolean, onDrawn?: (id: number) => void) {
+  constructor(
+    ratio: number,
+    moving: boolean,
+    {
+      onDrawn,
+      clock = () => performance.now(),
+    }: { onDrawn?: (id: number) => void; clock?: () => number } = {},
+  ) {
     this.ratio = ratio;
     this.moving = moving;
     this.onDrawn = onDrawn;
+    this.clock = clock;
   }
 
   add(id: number, surface: Surface, window: OrbitWindow, hues: readonly [number, number, number]) {
@@ -122,6 +143,7 @@ export class OrreryEngine {
       fit: this.fit(surface, window),
       last: null,
       open: null,
+      unshown: null,
       styles: [0, 1, 2].map((body) => `oklch(0.84 0.075 ${hues[body]} / 0.2)`) as [
         string,
         string,
@@ -182,19 +204,30 @@ export class OrreryEngine {
   frame(now: number): boolean {
     const cells = [...this.cells.entries()].filter(([, cell]) => cell.visible);
     if (!cells.length) return false;
+    const began = this.clock();
+    const spent = () => this.clock() - began >= ORRERY.frameMs;
     if (!this.moving) {
-      // Drawn whole, one cell a frame, so a still page fills without holding the worker long.
+      // Drawn whole, a cell at a time and a slice of its window a frame, and shown only once
+      // whole: a still preference never sees an orbit drawn, and the worker never holds long.
       const next = cells.find(([, cell]) => !cell.whole);
       if (!next) return false;
       const [id, cell] = next;
-      this.draw(cell, cell.replay.window.steps);
+      const { replay } = cell;
+      cell.unshown ??= [];
+      do {
+        this.draw(cell, Math.min(replay.window.steps, replay.step + ORRERY.chunk));
+      } while (!replay.done && !spent());
+      if (!replay.done) return true;
+      for (const frame of cell.unshown) this.paint(cell, frame);
+      cell.unshown = null;
       cell.whole = true;
       this.onDrawn?.(id);
       return cells.some(([, other]) => !other.whole);
     }
     let budget = ORRERY.budget;
     this.turn = (this.turn + 1) % cells.length;
-    for (let k = 0; k < cells.length && budget > 0; k++) {
+    // Every frame moves at least one cell; past its time, the rest wait for the next.
+    for (let k = 0; k < cells.length && budget > 0 && (k === 0 || !spent()); k++) {
       const [, cell] = cells[(this.turn + k) % cells.length];
       const steps = cell.replay.window.steps;
       // A silence since the cell last advanced (a hidden page, a busy thread) is a pause: its
@@ -213,9 +246,14 @@ export class OrreryEngine {
       const target = stepsDrawnAt((now - cell.startedAt) / 1000, steps) + 1;
       const wanted = target - cell.replay.step;
       if (wanted > 0) {
-        const taken = Math.min(wanted, budget);
+        const most = Math.min(wanted, budget);
+        let taken = 0;
+        do {
+          const slice = Math.min(most - taken, ORRERY.chunk);
+          this.draw(cell, cell.replay.step + slice);
+          taken += slice;
+        } while (taken < most && !spent());
         budget -= taken;
-        this.draw(cell, cell.replay.step + taken);
         // Short of its frame, a cell's clock is set to where it stands: slower, never a jump.
         if (taken < wanted) cell.startedAt = now - lightFilmSeconds(cell.replay.step, steps) * 1000;
       }
@@ -235,6 +273,7 @@ export class OrreryEngine {
     cell.replay.restart();
     cell.last = null;
     cell.open = null;
+    cell.unshown = null;
     cell.lastFrame = null;
     cell.startedAt = null;
     cell.pausedAt = null;
@@ -261,16 +300,22 @@ export class OrreryEngine {
     if (replay.done) this.stroke(cell);
   }
 
-  /**
-   * Stroke the gathered film frame: one path a body, continuing from the frame before. The Light
-   * film adds each frame's marks as one exposure, so a frame is one path, whether the cell is
-   * drawn whole or performed, at any display's pace, and a performance ends on the very picture
-   * the whole drawing makes.
-   */
+  /** Close the gathered film frame: stroke it now, or keep it until the cell is drawn whole. */
   private stroke(cell: Cell) {
     const open = cell.open;
     cell.open = null;
     if (!open) return;
+    if (cell.unshown) cell.unshown.push(open);
+    else this.paint(cell, open);
+  }
+
+  /**
+   * Stroke a film frame: one path a body, continuing from the frame before. The Light film adds
+   * each frame's marks as one exposure, so a frame is one path, whether the cell is drawn whole
+   * or performed, at any display's pace, and a performance ends on the very picture the whole
+   * drawing makes.
+   */
+  private paint(cell: Cell, open: FilmFrame) {
     const surface = cell.surface;
     surface.globalCompositeOperation = 'lighter';
     surface.lineWidth = this.ratio;

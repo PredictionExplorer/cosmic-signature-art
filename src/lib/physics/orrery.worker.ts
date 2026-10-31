@@ -29,9 +29,9 @@ function schedule() {
 scope.onmessage = ({ data }) => {
   const now = performance.now();
   if (data.type === 'cells') {
-    engine = new OrreryEngine(data.ratio, data.moving, (id) =>
-      scope.postMessage({ type: 'drawn', id }),
-    );
+    engine = new OrreryEngine(data.ratio, data.moving, {
+      onDrawn: (id) => scope.postMessage({ type: 'drawn', id }),
+    });
     for (const cell of data.cells) {
       const surface = cell.canvas.getContext('2d') as Surface | null;
       // A canvas this worker cannot draw on: the page shows every work's still instead.
