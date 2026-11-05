@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 const mocked = vi.hoisted(() => ({ readBatch: vi.fn() }));
 const coordinator = vi.hoisted(() => ({
@@ -100,12 +100,15 @@ const lot = {
 };
 const bidder = '0x6308000000000000000000000000000000001F7C';
 let activeId: number | null = null;
+/** One ref for the life of a test, as the hook's own ref lasts the life of the gallery. */
+let gridRef: { current: HTMLElement | null } = { current: null };
 beforeEach(() => {
   vi.clearAllMocks();
   mocked.readBatch.mockReset();
   activeId = null;
+  gridRef = { current: null };
   coordinator.use.mockImplementation(() => ({
-    gridRef: { current: null },
+    gridRef,
     activeId,
     intent: coordinator.intent,
     clearIntent: coordinator.clearIntent,
@@ -124,6 +127,9 @@ beforeEach(() => {
   Object.defineProperty(document, 'hidden', { configurable: true, value: false });
 });
 afterEach(() => {
+  // Unmount before the stubs go: effects still pending from the last commit run as the tree
+  // comes down, and they must meet the observer and the frames they were written against.
+  cleanup();
   vi.useRealTimers();
   vi.restoreAllMocks();
   vi.unstubAllGlobals();
@@ -406,6 +412,19 @@ function clipInView(lot: HTMLElement) {
   });
 }
 
+/**
+ * The head starts listening in a passive effect that can land after the lot's article does,
+ * so each poll scrolls and lets a frame pass until the head reads the ground beneath it. The
+ * frames pass outside act, as a browser's do; waitFor tells React not to expect act meanwhile.
+ */
+function headReads(tone: string) {
+  return waitFor(() => {
+    window.dispatchEvent(new Event('scroll'));
+    for (const callback of frames.splice(0)) callback(0);
+    expect(document.documentElement.style.getPropertyValue('--plate-tone')).toBe(tone);
+  });
+}
+
 describe('the lots as plates', () => {
   it('alternates Ink on paper and Light on black, paints from the curated archive, and lends the lease only settling clips', async () => {
     showPlates();
@@ -510,14 +529,7 @@ describe('the lots as plates', () => {
 
   it('lends the running head the ground of the lot beneath it', async () => {
     showPlates();
-    coordinator.use.mockImplementation(() => ({
-      gridRef: { current: document.body },
-      activeId: null,
-      intent: coordinator.intent,
-      clearIntent: coordinator.clearIntent,
-      fail: coordinator.fail,
-      rest: coordinator.rest,
-    }));
+    gridRef.current = document.body;
     const rects = new Map<string, DOMRect>();
     vi.spyOn(Element.prototype, 'getBoundingClientRect').mockImplementation(function (
       this: Element,
@@ -530,13 +542,8 @@ describe('the lots as plates', () => {
     });
     render(<AuctionGallery locale="en" t={en} curated={curated} />);
     await screen.findByRole('article', { name: lotName(2, 23) });
-    paint();
     rects.set('23', { top: -10, bottom: 800 } as DOMRect);
-    act(() => {
-      window.dispatchEvent(new Event('scroll'));
-    });
-    paint();
-    expect(document.documentElement.style.getPropertyValue('--plate-tone')).toBe('#000000');
+    await headReads('#000000');
     expect(document.documentElement).toHaveAttribute('data-plate-material', 'night');
     rects.clear();
     rects.set('31', { top: 0, bottom: 900 } as DOMRect);
