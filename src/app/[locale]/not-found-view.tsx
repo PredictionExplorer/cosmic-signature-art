@@ -2,7 +2,7 @@
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { messages } from '@/lib/i18n/messages';
-import { isLocale, localizedPath } from '@/lib/i18n/routing';
+import { isLocale, localizedPath, type Locale } from '@/lib/i18n/routing';
 import { fill } from '@/lib/i18n/format';
 import type { ArtInterpretation } from '@/lib/art/types';
 import { workNumber } from '@/lib/art/number';
@@ -10,17 +10,23 @@ import { ArtworkMedia } from '@/components/artwork-media';
 import { useRoom } from '@/components/room-ground';
 import styles from './not-found.module.css';
 
-/** A page of the same venue: the night ground, a real plate, and the way to the work next door. */
+/**
+ * A page of the same venue: the night ground, a real plate, and the way to the work next door.
+ * Its language is the route's, unless the page is the one no route answered, which has no route
+ * and names its locale.
+ */
 export function NotFoundView({
   neighbour,
   light,
+  locale: named,
 }: {
   neighbour: number;
   light?: ArtInterpretation;
+  locale?: Locale;
 }) {
   const params = useParams();
   const locale =
-    typeof params.locale === 'string' && isLocale(params.locale) ? params.locale : 'en';
+    named ?? (typeof params?.locale === 'string' && isLocale(params.locale) ? params.locale : 'en');
   const t = messages(locale);
   useRoom('night');
   return (

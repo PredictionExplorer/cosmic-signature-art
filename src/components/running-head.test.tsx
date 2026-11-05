@@ -137,6 +137,32 @@ describe('running head', () => {
     expect(within(list).getAllByRole('link')).toHaveLength(8);
   });
 
+  it('reads the visitor’s address where the route is not it', () => {
+    // The venue's 404 is rendered for an address no route answers (src/app/global-not-found.tsx).
+    pathname = '/uk/_venue/not-here';
+    window.history.replaceState(null, '', '/uk/exhibitions/nothing');
+    render(
+      <MotionProvider>
+        <RunningHead locale="uk" t={en} address="/uk/exhibitions/nothing" />
+      </MotionProvider>,
+    );
+    fireEvent.click(screen.getByRole('button', { name: `${en.language}: UK` }));
+    const list = screen.getByRole('navigation', { name: en.language });
+    expect(within(list).getByRole('link', { name: '日本語' })).toHaveAttribute(
+      'href',
+      '/ja/exhibitions/nothing',
+    );
+    expect(within(list).getByRole('link', { name: 'English' })).toHaveAttribute(
+      'href',
+      '/exhibitions/nothing',
+    );
+    const nav = screen.getByRole('navigation', { name: en.siteNavigation });
+    expect(within(nav).getByRole('link', { name: en.exhibitions })).toHaveAttribute(
+      'aria-current',
+      'page',
+    );
+  });
+
   it('closes the language list on Escape, returning focus, and on an outside press', () => {
     renderHead();
     const trigger = screen.getByRole('button', { name: `${en.language}: EN` });

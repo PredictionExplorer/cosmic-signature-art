@@ -12,6 +12,7 @@ This records the implemented frontend adapter and read-only inspection of the ex
 - Collection pagination requests one additional record to establish `hasMore`. The upstream legacy list has no total, so `total` remains `null`; the frontend must not infer a total from the highest token ID or from the archive size. Offset pagination may move while new tokens arrive. A refreshed first page is the way to discover newly indexed works.
 - Numeric search uses the individual token endpoint. Name search uses the indexer's global name-search endpoint, rather than filtering only the displayed page. Upstream failure is explicit; a limited local selection is never labelled the complete collection.
 - An explicit record-not-found response is different from an outage. Invalid IDs do not cause a request. An unknown token during an outage is `unavailable`, not a false 404.
+- A work page streams behind the locale's loading plate, so its own `notFound()` comes too late to change the status. The proxy (`src/proxy.ts`, `src/lib/addresses.ts`) decides first. It refuses an invalid ID at once and sends `031` to `31`. It lets a number in the build-time index through without a request. Any other number is asked of the individual token endpoint, with a two-second deadline. Only the explicit record-not-found answers a true 404. An outage, a slow answer or anything unreadable leaves the number to the page, which tells the two apart as above. Works minted after the index was built therefore still open.
 
 ## Existing endpoints and observed behavior
 
