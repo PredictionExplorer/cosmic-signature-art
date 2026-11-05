@@ -246,7 +246,7 @@ This is a public page beside Verify a download. Enter any token number, and the 
 
 - **Home:**
   1. the Overture (first visit only);
-  2. the day's work in Ink, with the crossing to Light;
+  2. the day's work in the day's expression, with the crossing to the other (Ink first until 4 November 2026; see [third-physics-phase-d.md](third-physics-phase-d.md) §2);
   3. the score of its film;
   4. All the light, as the door to the collection;
   5. the statement;
@@ -308,7 +308,7 @@ Each phase ships behind a flag, on its own branch, with the existing seven-proje
 
 **Phase C — the indexes (2–3 weeks).** *Built 30 October 2026; see [third-physics-phase-c.md](third-physics-phase-c.md).* All the light, with naming, pull-out and the cycle replay; the Orrery; both added to the Index sheet.
 
-**Phase D — the events (3–4 weeks).**
+**Phase D — the events (3–4 weeks).** *Begun 4 November 2026 with two equal expressions and phones; see [third-physics-phase-d.md](third-physics-phase-d.md).*
 - The Overture, version 1 then version 2 with drift registration.
 - After the frame.
 - The choice in the process essay.
