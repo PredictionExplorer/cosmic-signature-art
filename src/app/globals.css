@@ -476,6 +476,19 @@ html[data-turning][data-turn-to='paper'] .head-overlay {
   --muted: #68685e;
   clip-path: inset(0 calc(100% - var(--seam, 0%)) 0 0);
 }
+/* A wall hung across the seam lies under the head (<html data-split>, split-head.ts): the head
+   stands on both grounds, its night copy clipped to the right half like the wall beneath it. A
+   focused control in the head takes the whole head, so its ring is never under the copy. */
+html[data-split]:not([data-turning]) .head-overlay {
+  display: block;
+  --ground: var(--night);
+  --type: var(--night-type);
+  --muted: #b8b5ad;
+  clip-path: inset(0 0 0 50%);
+}
+html[data-split]:not([data-turning]) .site-header:has(:focus-visible) .head-overlay {
+  display: none;
+}
 html[data-turning='time'] .head-overlay {
   transition: clip-path var(--t-turn) var(--ease-turn);
 }

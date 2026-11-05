@@ -119,17 +119,27 @@ test('the plate settles in place: its strip keeps its height and nothing beneath
   expect(await layout()).toEqual(arriving);
 });
 
-test('the neighbours carry the visitor on by number and by wavelength', async ({ page }) => {
+test('the neighbours carry the visitor on by number and by wavelength, in the expression on view', async ({
+  page,
+}) => {
   await page.goto('/art/31?view=still');
   await pauseAmbientMotion(page);
+  // The suite's day opens the plate in Ink; each step carries it to the next work.
   const next = page.locator('[data-neighbour="next"]');
-  await expect(next).toHaveAttribute('href', '/art/32');
-  await expect(page.locator('[data-neighbour="previous"]')).toHaveAttribute('href', '/art/30');
+  await expect(next).toHaveAttribute('href', '/art/32?expression=ink');
+  await expect(page.locator('[data-neighbour="previous"]')).toHaveAttribute(
+    'href',
+    '/art/30?expression=ink',
+  );
   const star = page.locator('[data-neighbour="spectral"]');
   await expect(star).toHaveText(/Next by wavelength · № \d{3} · \d+ nm (?:redder|bluer)/);
   await page.keyboard.press('ArrowRight');
-  await expect(page).toHaveURL(/\/art\/32$/);
+  await expect(page).toHaveURL(/\/art\/32\?expression=ink$/);
   await expect(page).toHaveTitle(/№ 032/);
+  await expect(page.locator(current).locator('img.art-still')).toHaveAttribute(
+    'alt',
+    '№ 032 · Ink',
+  );
 });
 
 test('language switching preserves the current artwork route', async ({ page, isMobile }) => {

@@ -93,13 +93,25 @@
   top: -0.55em;
   margin-left: 2px;
 }
-/* A footnote mark is a link in running text; a hairline underline keeps it legible without colour. */
+/* A footnote mark is a link in running text; a hairline underline keeps it legible without colour.
+   Its target is a 24 px square centred on the figure (WCAG 2.5.8), drawn by a pseudo-element so
+   the line's spacing never moves for a finger's sake. */
 .mark a {
+  position: relative;
   color: var(--muted);
   text-decoration: underline;
   text-decoration-thickness: 1px;
   text-underline-offset: 0.12em;
   text-decoration-color: var(--rule-strong);
+}
+.mark a::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 24px;
+  height: 24px;
+  transform: translate(-50%, -50%);
 }
 .mark a:hover,
 .mark a:focus-visible {

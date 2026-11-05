@@ -8,7 +8,8 @@ const leaseFilm = (isMobile: boolean, id = '[0-9]+') =>
     ? new RegExp(`/art/previews/${id}-[a-f0-9]+\\.mp4$`)
     : new RegExp(`/art/clips/${id}-ink-settling-[a-f0-9]{16}\\.mp4$`);
 
-async function collectionReady(page: Page, path = '/collection?q=31') {
+/** Ink's lease is proved on Ink's own ground; the pairs across the seam are proved below. */
+async function collectionReady(page: Page, path = '/collection?expression=ink&q=31') {
   await page.goto(path, { waitUntil: 'domcontentloaded' });
   await expect(page.locator('#works .collection-skeleton')).toHaveCount(0, { timeout: 30_000 });
   const cards = page.locator('#works a[data-preview-id]');
@@ -51,7 +52,7 @@ test('the collection plays the genuine Ink film in place without replacing the t
 }) => {
   await collectionReady(page);
   const work = page.locator('#works a[data-preview-id="31"]');
-  await expect(work).toHaveAttribute('href', '/art/31');
+  await expect(work).toHaveAttribute('href', '/art/31?expression=ink');
   const still = work.locator('img');
   await imageReady(still);
   const original = await still.getAttribute('src');
@@ -87,7 +88,7 @@ test('the collection plays the genuine Ink film in place without replacing the t
 });
 
 test('the first collection plate paints from the publisher’s own preview', async ({ page }) => {
-  const cards = await collectionReady(page, '/collection');
+  const cards = await collectionReady(page, '/collection?expression=ink');
   const image = cards.first().locator('img');
   await expect(image).toHaveAttribute(
     'src',
@@ -101,7 +102,7 @@ test('focus and scrolling transfer the single film budget across the catalogue',
   page,
   isMobile,
 }) => {
-  const cards = await collectionReady(page, '/collection');
+  const cards = await collectionReady(page, '/collection?expression=ink');
   await allowMotion(page);
   await expect(cards).toHaveCount(18);
   await page.evaluate((selector) => {
@@ -186,7 +187,7 @@ for (const connection of [
     await imageReady(cards.first().locator('img'));
     expect(films).toEqual([]);
     await cards.first().click();
-    await expect(page).toHaveURL(/\/art\/31$/);
+    await expect(page).toHaveURL(/\/art\/31\?expression=ink$/);
     await expect(page.getByRole('heading', { level: 1 })).toHaveText(/^Signature 031/);
   });
 }
@@ -234,7 +235,7 @@ test('pausing releases the collection film and persists without downloading it a
   expect(newFilmRequests).toEqual([]);
 });
 
-test('Light releases Ink previews and opens the same expression in the viewing room', async ({
+test('Light hangs alone with its own clip and opens the same expression in the viewing room', async ({
   page,
   isMobile,
 }) => {
@@ -242,7 +243,7 @@ test('Light releases Ink previews and opens the same expression in the viewing r
   await allowMotion(page);
   await cards.first().focus();
   await expect(page.locator(filmSelector)).toHaveCount(1);
-  // The orderings and the other expression live in the header on wide screens and in the bottom bar on phones.
+  // The orderings and the expressions live in the header on wide screens and in the bottom bar on phones.
   await (
     isMobile
       ? page.getByRole('navigation', { name: 'Collection controls' })
@@ -251,13 +252,47 @@ test('Light releases Ink previews and opens the same expression in the viewing r
     .getByRole('link', { name: 'Light', exact: true })
     .click();
   await expect(page).toHaveURL(/\/collection\?expression=light&q=31$/);
-  await expect(page.locator(`${previewSelector} video`)).toHaveCount(0);
   const work = page.locator('#works a[data-preview-id="31"]');
   await expect(work).toHaveAttribute('href', '/art/31?expression=light');
   await expect(work.locator('[data-material]')).toHaveAttribute('data-material', 'light');
+  // Light moves as Ink does: its settling clip, on a desk and on a phone alike.
+  await work.focus();
+  await expect(page.locator(filmSelector)).toHaveAttribute(
+    'src',
+    /\/art\/clips\/31-light-settling-[a-f0-9]{16}\.mp4$/,
+  );
   await work.click();
   await expect(page).toHaveURL(/\/art\/31\?expression=light$/);
   await expect(page.locator('.viewer-plate .art-media')).toHaveAttribute('data-material', 'light');
+});
+
+test('a work hangs as its pair across the seam, and both halves wake under one lease', async ({
+  page,
+}) => {
+  await collectionReady(page, '/collection?q=31');
+  await allowMotion(page);
+  await expect(page.locator('#works [data-hanging="both"]')).toBeVisible();
+  const ink = page.locator('#works a[data-preview-id="31"][data-expression="ink"]');
+  const light = page.locator('#works a[data-preview-id="31"][data-expression="light"]');
+  await expect(ink).toHaveAttribute('href', '/art/31?expression=ink');
+  await expect(light).toHaveAttribute('href', '/art/31?expression=light');
+  await expect(ink.locator('xpath=ancestor::*[@data-ground][1]')).toHaveAttribute(
+    'data-ground',
+    'paper',
+  );
+  await expect(light.locator('xpath=ancestor::*[@data-ground][1]')).toHaveAttribute(
+    'data-ground',
+    'night',
+  );
+  // One lease for the pair: both halves wake together, each into its own clip.
+  await ink.focus();
+  await expect(ink.locator('video[src]')).toHaveCount(1);
+  await expect(light.locator('video[src]')).toHaveAttribute(
+    'src',
+    /\/art\/clips\/31-light-settling-[a-f0-9]{16}\.mp4$/,
+  );
+  await light.click();
+  await expect(page).toHaveURL(/\/art\/31\?expression=light$/);
 });
 
 test('an unavailable preview leaves the authentic image and usable artwork link', async ({
@@ -287,7 +322,7 @@ test('an unavailable preview leaves the authentic image and usable artwork link'
   await imageReady(image);
   expect(rejectedRequests).toBe(requestsAtRelease);
   await work.click();
-  await expect(page).toHaveURL(/\/art\/31$/);
+  await expect(page).toHaveURL(/\/art\/31\?expression=ink$/);
   await expect(page.getByRole('heading', { level: 1 })).toHaveText(/^Signature 031/);
   expect(errors).toEqual([]);
 });
@@ -305,11 +340,11 @@ test('artwork navigation and browser Back work without native view-transition su
   page.on('pageerror', (error) => errors.push(error.message));
   const cards = await collectionReady(page);
   await cards.first().click();
-  await expect(page).toHaveURL(/\/art\/31$/);
+  await expect(page).toHaveURL(/\/art\/31\?expression=ink$/);
   await expect(page.getByRole('heading', { level: 1 })).toHaveText(/^Signature 031/);
   await expect(page.locator('.viewer-plate .art-media')).toHaveAttribute('data-material', 'ink');
   await page.goBack();
-  await expect(page).toHaveURL(/\/collection\?q=31$/);
+  await expect(page).toHaveURL(/\/collection\?expression=ink&q=31$/);
   await expect(page.locator('#works a[data-preview-id="31"]')).toBeVisible();
   expect(errors).toEqual([]);
 });
@@ -353,7 +388,7 @@ test('native artwork transitions complete without delaying navigation or breakin
   // through the loading boundary instead, where no shared element exists to animate.
   const prefetched = page.waitForResponse(
     (response) =>
-      /\/art\/31\?_rsc=/.test(response.url()) &&
+      /\/art\/31\?expression=ink&_rsc=/.test(response.url()) &&
       !!response.request().headers()['next-router-prefetch'],
     { timeout: 30_000 },
   );
@@ -371,7 +406,7 @@ test('native artwork transitions complete without delaying navigation or breakin
       ).__artworkTransitions,
   );
   await cards.first().click();
-  await expect(page).toHaveURL(/\/art\/31$/);
+  await expect(page).toHaveURL(/\/art\/31\?expression=ink$/);
   await expect(page.getByRole('heading', { level: 1 })).toHaveText(/^Signature 031/);
   await expect(page.locator('.viewer-plate .art-media')).toHaveAttribute('data-material', 'ink');
   expect(
@@ -406,12 +441,12 @@ test('native artwork transitions complete without delaying navigation or breakin
     }
     if (ready <= before.ready) {
       await page.goBack();
-      await expect(page).toHaveURL(/\/collection\?q=31$/);
+      await expect(page).toHaveURL(/\/collection\?expression=ink&q=31$/);
       const again = page.locator('#works a[data-preview-id="31"]');
       await expect(again).toBeVisible();
       await expect(again.locator('video[src]')).toHaveClass(/has-frame/);
       await again.click();
-      await expect(page).toHaveURL(/\/art\/31$/);
+      await expect(page).toHaveURL(/\/art\/31\?expression=ink$/);
       await expect(page.locator('.viewer-plate .art-media')).toHaveAttribute(
         'data-material',
         'ink',
@@ -420,14 +455,14 @@ test('native artwork transitions complete without delaying navigation or breakin
     await expect.poll(readyCount).toBeGreaterThan(before.ready);
   }
   await page.goBack();
-  await expect(page).toHaveURL(/\/collection\?q=31$/);
+  await expect(page).toHaveURL(/\/collection\?expression=ink&q=31$/);
   await expect(page.locator('#works a[data-preview-id="31"]')).toBeVisible();
   if (!isMobile) {
     const popupPromise = context.waitForEvent('page');
     await page.locator('#works a[data-preview-id="31"]').click({ modifiers: ['ControlOrMeta'] });
     const popup = await popupPromise;
-    await expect(popup).toHaveURL(/\/art\/31$/);
-    await expect(page).toHaveURL(/\/collection\?q=31$/);
+    await expect(popup).toHaveURL(/\/art\/31\?expression=ink$/);
+    await expect(page).toHaveURL(/\/collection\?expression=ink&q=31$/);
     await popup.close();
   }
   expect(errors).toEqual([]);

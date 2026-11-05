@@ -4,6 +4,10 @@ import { catalogs } from '../../src/lib/i18n/messages';
 import { collectionLoaded, imageLoaded, noHorizontalOverflow, pauseAmbientMotion } from './helpers';
 
 const t = catalogs.en;
+/** The accessible name of an expression's word while both hang: it hangs that one alone. */
+const alone = (expression: string) => t.hangAlone.replace('{expression}', expression);
+/** An expression's word, named by the word itself; its description says what it does. */
+const word = (expression: string) => ({ name: expression, exact: true });
 const index = JSON.parse(
   readFileSync(new URL('../../src/lib/art/collection-index.json', import.meta.url), 'utf8'),
 ) as {
@@ -12,11 +16,11 @@ const index = JSON.parse(
 };
 const folio = (id: number) => String(id).padStart(3, '0');
 
-test('the first screen of the collection is a plate in the sequence’s rhythm, under the range', async ({
+test('the first screen of the Ink hang is a plate in the sequence’s rhythm, under the range', async ({
   page,
   isMobile,
 }) => {
-  await page.goto('/collection', { waitUntil: 'domcontentloaded' });
+  await page.goto('/collection?expression=ink', { waitUntil: 'domcontentloaded' });
   await pauseAmbientMotion(page);
   await expect(page.getByRole('heading', { level: 1 })).toContainText(
     `${t.collection} · ${folio(index.total - 1)}–${folio(index.total - 18)}`,
@@ -25,7 +29,7 @@ test('the first screen of the collection is a plate in the sequence’s rhythm, 
   const cards = page.locator('#works .work-card');
   await expect(cards).toHaveCount(18);
   const first = cards.first();
-  await expect(first).toHaveAttribute('href', `/art/${index.total - 1}`);
+  await expect(first).toHaveAttribute('href', `/art/${index.total - 1}?expression=ink`);
   await expect(first).toHaveAttribute('aria-label', `№ ${folio(index.total - 1)} · ${t.ink}`);
   await expect(first).toContainText(folio(index.total - 1));
   await expect(first).not.toContainText('Signature');
@@ -89,6 +93,53 @@ test('the first screen of the collection is a plate in the sequence’s rhythm, 
   await noHorizontalOverflow(page);
 });
 
+test('the collection hangs every work as its pair across the seam, and the head splits over it', async ({
+  page,
+  isMobile,
+}) => {
+  await page.goto('/collection', { waitUntil: 'domcontentloaded' });
+  await pauseAmbientMotion(page);
+  await collectionLoaded(page);
+  const wall = page.locator('#works [data-hanging="both"]');
+  await expect(wall).toBeVisible();
+  // Ink on the paper leaf to the left, Light on the night leaf to the right, one line per work.
+  const newest = index.total - 1;
+  const ink = wall.getByRole('link', { name: `№ ${folio(newest)} · ${t.ink}`, exact: true });
+  const light = wall.getByRole('link', { name: `№ ${folio(newest)} · ${t.light}`, exact: true });
+  await expect(ink).toHaveAttribute('href', `/art/${newest}?expression=ink`);
+  await expect(light).toHaveAttribute('href', `/art/${newest}?expression=light`);
+  const [inkBox, lightBox] = await Promise.all([ink.boundingBox(), light.boundingBox()]);
+  const width = page.viewportSize()!.width;
+  expect(inkBox!.x + inkBox!.width).toBeLessThanOrEqual(width / 2 + 1);
+  expect(lightBox!.x).toBeGreaterThanOrEqual(width / 2 - 1);
+  expect(Math.abs(inkBox!.y - lightBox!.y)).toBeLessThanOrEqual(1);
+  // Neither expression hangs alone, so neither word is current; each hangs its own alone.
+  const words = isMobile
+    ? page.getByRole('navigation', { name: t.collectionControls })
+    : page.locator('main header').getByRole('navigation', { name: t.ordering });
+  for (const expression of [t.ink, t.light]) {
+    const choice = words.getByRole('link', word(expression));
+    await expect(choice).not.toHaveAttribute('aria-current');
+    await expect(choice).toHaveAttribute('title', alone(expression));
+  }
+  // While the wall stands under the running head, the head stands on both grounds.
+  await expect(page.locator('html')).not.toHaveAttribute('data-split');
+  await wall.evaluate((node) =>
+    window.scrollTo({
+      top: node.getBoundingClientRect().top + window.scrollY + 300,
+      behavior: 'instant',
+    }),
+  );
+  await expect(page.locator('html')).toHaveAttribute('data-split', '');
+  await expect(page.locator('.site-header .head-overlay')).toHaveCSS(
+    'clip-path',
+    'inset(0px 0px 0px 50%)',
+  );
+  await page.evaluate(() => window.scrollTo({ top: 0, behavior: 'instant' }));
+  await expect(page.locator('html')).not.toHaveAttribute('data-split');
+  await noHorizontalOverflow(page);
+});
+
 test('the number ordering walks the whole collection to token zero with chapter strips at the seams', async ({
   page,
 }) => {
@@ -106,10 +157,17 @@ test('the number ordering walks the whole collection to token zero with chapter 
       elements.map((element) => element.getAttribute('href')),
     );
     expect(links.length).toBeGreaterThan(0);
+    // Each work hangs as its pair on one page: its Ink and its Light, each opening its own.
+    const onPage = new Map<string, string[]>();
     for (const link of links) {
-      expect(link).toMatch(/^\/art\/\d+$/);
-      expect(seen.has(link!)).toBe(false);
-      seen.add(link!);
+      const [, id, expression] = /^\/art\/(\d+)\?expression=(ink|light)$/.exec(link!) ?? [];
+      expect(id).toBeDefined();
+      onPage.set(id, [...(onPage.get(id) ?? []), expression]);
+    }
+    for (const [id, expressions] of onPage) {
+      expect(expressions.sort()).toEqual(['ink', 'light']);
+      expect(seen.has(id)).toBe(false);
+      seen.add(id);
     }
     strips.push(
       ...(await main
@@ -125,7 +183,7 @@ test('the number ordering walks the whole collection to token zero with chapter 
   }
   expect(pages).toBe(Math.ceil(index.total / 18));
   expect(seen.size).toBe(index.total);
-  expect(seen.has('/art/0')).toBe(true);
+  expect(seen.has('0')).toBe(true);
   // Three cycles meet twice inside the pages; each seam has its strip, with the count and the date.
   expect(strips).toHaveLength(2);
   expect(strips[0]).toContain(`${t.cycle} 1`);
@@ -151,7 +209,7 @@ test('the cycle ordering opens every cycle with its strip; the Light view is a n
   await expect(strips).toHaveCount(3);
   await expect(strips.nth(0)).toContainText(`${t.cycle} 0`);
   await expect(strips.nth(2)).toContainText(`${t.cycle} 2`);
-  await expect(page.locator('#works .work-card')).toHaveCount(index.total);
+  await expect(page.locator('#works .work-card')).toHaveCount(index.total * 2);
   await expect(page.locator('html')).toHaveAttribute('data-room', 'paper');
   const orderings = isMobile
     ? page.getByRole('navigation', { name: t.collectionControls })
@@ -160,7 +218,7 @@ test('the cycle ordering opens every cycle with its strip; the Light view is a n
     'aria-current',
     'page',
   );
-  await orderings.getByRole('link', { name: t.light, exact: true }).click();
+  await orderings.getByRole('link', word(t.light)).click();
   await expect(page).toHaveURL(/\/collection\?order=cycle&expression=light$/);
   await expect(page.locator('html')).toHaveAttribute('data-room', 'night');
   await expect(page.getByRole('main')).toHaveCSS('background-color', 'rgb(0, 0, 0)');
@@ -253,7 +311,7 @@ test('filter chips narrow the collection through the published traits and can be
   await page.goto('/collection?cycle=2&fate=Ejection', { waitUntil: 'domcontentloaded' });
   await pauseAmbientMotion(page);
   await collectionLoaded(page);
-  await expect(page.locator('#works .work-card')).toHaveCount(expected.length);
+  await expect(page.locator('#works .work-card')).toHaveCount(expected.length * 2);
   await expect(page.getByRole('heading', { level: 1 })).toContainText(`${expected.length} works`);
   const filters = page.getByRole('navigation', { name: t.filters });
   await expect(filters.getByRole('link', { name: `${t.cycle} 2` })).toHaveAttribute(
@@ -267,7 +325,7 @@ test('filter chips narrow the collection through the published traits and can be
   await filters.getByRole('link', { name: t.clearFilters }).click();
   await expect(page).toHaveURL(/\/collection$/);
   await collectionLoaded(page);
-  await expect(page.locator('#works .work-card')).toHaveCount(18);
+  await expect(page.locator('#works .work-card')).toHaveCount(36);
 });
 
 test('the Index of numbers opens from the head and the slash key, hangs the work under the hand, and enters it', async ({
@@ -340,15 +398,16 @@ test('the Index sheet searches by number and the Light view follows the result',
   await expect(page.getByRole('heading', { level: 1 })).toContainText('“0”');
   await collectionLoaded(page);
   const result = page.locator('#works .work-card');
-  await expect(result).toHaveCount(1);
-  await expect(result).toHaveAttribute('href', '/art/0');
-  // Published works can gain new expressions; choose Light explicitly.
+  await expect(result).toHaveCount(2);
+  await expect(result.first()).toHaveAttribute('href', '/art/0?expression=ink');
+  await expect(result.last()).toHaveAttribute('href', '/art/0?expression=light');
+  // Hang Light alone, and the result follows.
   await (
     isMobile
       ? page.getByRole('navigation', { name: t.collectionControls })
       : page.locator('main header').getByRole('navigation', { name: t.ordering })
   )
-    .getByRole('link', { name: t.light, exact: true })
+    .getByRole('link', word(t.light))
     .click();
   await expect(page).toHaveURL(/\/collection\?expression=light&q=0$/);
   await collectionLoaded(page);
@@ -375,7 +434,11 @@ test('on a phone the collection carries a bottom bar and the Index sheet is the 
     'href',
     '/collection?order=spectrum',
   );
-  await expect(bar.getByRole('link', { name: t.light, exact: true })).toHaveAttribute(
+  await expect(bar.getByRole('link', word(t.ink))).toHaveAttribute(
+    'href',
+    '/collection?expression=ink',
+  );
+  await expect(bar.getByRole('link', word(t.light))).toHaveAttribute(
     'href',
     '/collection?expression=light',
   );
@@ -404,7 +467,51 @@ test('on a phone the collection carries a bottom bar and the Index sheet is the 
   await expect(sheet.getByRole('navigation', { name: t.language }).getByRole('link')).toHaveCount(
     8,
   );
+  // Under a finger the empty wall says how to hang a work on it, and the search takes its row.
+  await expect(sheet.getByText(t.indexWallHint)).toBeVisible();
+  const field = sheet.getByRole('textbox', { name: t.search });
+  const fieldWidth = (await field.boundingBox())!.width;
+  expect(fieldWidth).toBeGreaterThan(page.viewportSize()!.width / 2);
+  await sheet.getByRole('link', { name: '№ 031', exact: true }).tap();
+  await expect(sheet.getByText(t.indexWallHint)).toHaveCount(0);
   await noHorizontalOverflow(page);
+});
+
+test('on a phone the bar keeps every word whole, in every language, with both expressions in view', async ({
+  page,
+  isMobile,
+}) => {
+  test.skip(!isMobile, 'The pocket edition only');
+  for (const locale of ['en', 'uk']) {
+    // A middle page carries both pager arrows: the bar is at its fullest.
+    await page.goto(`/${locale}/collection?offset=18`, { waitUntil: 'domcontentloaded' });
+    const catalogue = catalogs[locale as 'en' | 'uk'];
+    const bar = page.getByRole('navigation', { name: catalogue.collectionControls });
+    await expect(bar).toBeVisible();
+    const boxes = await bar.locator('a, button').evaluateAll((controls) =>
+      controls.map((control) => {
+        const box = control.getBoundingClientRect();
+        const words = control.firstChild;
+        const range = document.createRange();
+        if (words) range.selectNodeContents(control);
+        const text = range.getBoundingClientRect();
+        return { left: box.left, right: box.right, textLeft: text.left, textRight: text.right };
+      }),
+    );
+    // No word's ink runs into another's: each label lies inside its own target.
+    for (const box of boxes) {
+      expect(box.textLeft).toBeGreaterThanOrEqual(box.left - 1);
+      expect(box.textRight).toBeLessThanOrEqual(box.right + 1);
+    }
+    const width = page.viewportSize()!.width;
+    for (const word of [catalogue.ink, catalogue.light]) {
+      const choice = (await bar.getByRole('link', { name: word, exact: true }).boundingBox())!;
+      expect(choice.x).toBeGreaterThanOrEqual(0);
+      expect(choice.x + choice.width).toBeLessThanOrEqual(width);
+    }
+    await expect(bar.getByRole('link', { name: catalogue.older })).toBeInViewport();
+    await noHorizontalOverflow(page);
+  }
 });
 
 test('an unprintable search is no search, a repeated key reads once, and an ordering leaves the search', async ({
@@ -417,7 +524,7 @@ test('an unprintable search is no search, a repeated key reads once, and an orde
   await expect(page.getByRole('heading', { level: 1 })).toContainText('071');
   await expect(page.getByText(t.errorTitle)).toHaveCount(0);
   await collectionLoaded(page);
-  await expect(page.locator('#works .work-card')).toHaveCount(18);
+  await expect(page.locator('#works .work-card')).toHaveCount(36);
   // A repeated key counts once, so the page and the room agree.
   await page.goto('/collection?expression=light&expression=light', {
     waitUntil: 'domcontentloaded',

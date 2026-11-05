@@ -1,7 +1,7 @@
 'use client';
 import Link from 'next/link';
 import { useRef, useState, type CSSProperties, type MouseEvent, type PointerEvent } from 'react';
-import { getInterpretation, type Artwork } from '@/lib/art/types';
+import { getInterpretation, twinOf, type Artwork, type Expression } from '@/lib/art/types';
 import { workFolio, workNumber } from '@/lib/art/number';
 import { getPlateGround } from '@/lib/art/plate-records';
 import type { Messages } from '@/lib/i18n/en';
@@ -19,18 +19,24 @@ export const LEAF_SIZES = '(max-width: 767px) 100vw, 55vw';
  * blink later; a second tap, Enter or a click enters the work. The plates are seeded from
  * the works' stills on the server, so the wall is never blank. Under reduced motion or
  * Pause the growth is instant.
+ *
+ * The leaves take turns between the two expressions, the first in the day's, so the wall
+ * stands on both grounds and each work hangs in both on alternate days.
  */
 export function Hang({
   works,
   locale,
   t,
   labels = {},
+  day,
 }: {
   works: Artwork[];
   locale: Locale;
   t: Messages;
   /** One line per work beneath its numeral, e.g. the structure and underlay words. */
   labels?: Record<number, string>;
+  /** The day's expression, in which the first leaf hangs. */
+  day: Expression;
 }) {
   const [chosen, setChosen] = useState<number | null>(null);
   // How the last input arrived: a tap focuses a leaf too, and that focus must not choose it,
@@ -52,8 +58,12 @@ export function Hang({
       data-chosen={chosen ?? undefined}
       onKeyDown={() => (lastInput.current = 'keyboard')}
     >
-      {works.map((work) => {
-        const media = getInterpretation(work, 'ink') ?? work.media[0];
+      {works.map((work, index) => {
+        const wanted = index % 2 === 0 ? day : twinOf(day);
+        const media =
+          getInterpretation(work, wanted) ??
+          getInterpretation(work, twinOf(wanted)) ??
+          work.media[0];
         const ground = media
           ? getPlateGround(work.id, media.id, media.stillSha256)?.tone
           : undefined;
@@ -64,7 +74,10 @@ export function Hang({
           <Link
             key={work.id}
             className={styles.leaf}
-            href={localizedPath(locale, `/art/${work.id}`)}
+            href={localizedPath(
+              locale,
+              `/art/${work.id}${media ? `?expression=${encodeURIComponent(media.id)}` : ''}`,
+            )}
             data-state={state}
             data-material={media?.id ?? 'ink'}
             style={style}

@@ -1,0 +1,73 @@
+/* The wing: the hand draws the twin over the plate; elsewhere, a hard material edge. The scroll
+   carries two seams: the night's, in from the right, and the paper's, back from the left. Each is
+   a plain percentage, so it interpolates in every engine and reads back as one inset. */
+@property --seam-scroll {
+  syntax: '<percentage>';
+  inherits: true;
+  initial-value: 100%;
+}
+@property --seam-return {
+  syntax: '<percentage>';
+  inherits: true;
+  initial-value: 0%;
+}
+@keyframes seam-scroll {
+  from {
+    --seam-scroll: 100%;
+    --seam-return: 0%;
+  }
+  to {
+    --seam-scroll: 0%;
+    --seam-return: 100%;
+  }
+}
+.wing {
+  position: relative;
+}
+.stage {
+  position: relative;
+}
+/* The hard edge: a second screen on the twin's ground with the twin's plate at the same eye line. */
+.fallback {
+  display: block;
+  background: #000;
+}
+.wing[data-twin='ink'] .fallback {
+  background: var(--paper);
+}
+/* The plate already shows the twin: the wing has no second screen to add. */
+.wing[data-twin='light'][data-expression='light'] .fallback,
+.wing[data-twin='ink'][data-expression='ink'] .fallback {
+  display: none;
+}
+@supports (animation-timeline: view()) {
+  .wing[data-mode='scroll'] {
+    height: calc(2 * (var(--plate-height) + var(--strip)));
+    animation: seam-scroll linear both;
+    animation-timeline: view();
+    animation-range: contain 0% contain 100%;
+  }
+  .wing[data-mode='scroll'] .stage {
+    position: sticky;
+    top: var(--head);
+  }
+  .wing[data-mode='scroll'] .fallback {
+    display: none;
+  }
+  /* The night wing draws the night in from the right (the seam 100 → 0 %). */
+  .wing[data-mode='scroll'][data-twin='light'][data-expression='ink'] :global(.turn-night) {
+    clip-path: inset(0 0 0 var(--seam-scroll));
+  }
+  /* The paper wing draws the paper back from the left (the seam 0 → 100 %). */
+  .wing[data-mode='scroll'][data-twin='ink'][data-expression='light'] :global(.turn-night) {
+    clip-path: inset(0 0 0 var(--seam-return));
+  }
+  /* While the Turn travels, the seam alone rules the clip: it starts where the hand left the
+     twin, so a plain percentage interpolates in every engine (min() would not in WebKit). The
+     selector names the twin and the expression too, so it outranks both scroll rules above. */
+  :global(html[data-turning])
+    .wing[data-mode='scroll'][data-twin][data-expression]
+    :global(.turn-night) {
+    clip-path: inset(0 0 0 var(--seam, 100%));
+  }
+}

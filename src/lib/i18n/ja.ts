@@ -262,6 +262,7 @@ export const ja: Messages = {
   statement: 'ステートメント',
   index: '索引',
   indexSheet: 'コレクションの索引',
+  indexWallHint: '番号に触れると、その作品がここに掛かります。もう一度触れると開きます。',
   closeIndex: '索引を閉じる',
   keys: 'キー',
   keysSheet: 'キーボードショートカット',
@@ -300,6 +301,8 @@ export const ja: Messages = {
   // プレートと転回
   showLight: '光の表現を見る',
   showInk: '墨の表現を見る',
+  hangAlone: '{expression}のみ',
+  hangTogether: 'インクと光を並べて',
   noInkPublished: '墨の表現は未公開',
   previousWork: '前の作品',
   nextWork: '次の作品',

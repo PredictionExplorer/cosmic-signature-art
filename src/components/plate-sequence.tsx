@@ -1,16 +1,27 @@
 'use client';
 import Link from 'next/link';
-import { Fragment, useMemo, useState, type CSSProperties } from 'react';
+import {
+  Fragment,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type CSSProperties,
+  type ReactNode,
+} from 'react';
 import { useCompactWall } from './compact-wall';
 import {
   getInterpretation,
   type ArtFilm,
   type ArtInterpretation,
   type Artwork,
+  twinOf,
+  type Expression,
 } from '@/lib/art/types';
 import { workFolio, workNumber } from '@/lib/art/number';
 import { getPlateGround } from '@/lib/art/plate-records';
 import type { CycleSummary } from '@/lib/art/collection-index';
+import type { Hanging } from '@/lib/art/collection-traits';
 import { expressionWord, fill } from '@/lib/i18n/format';
 import type { Messages } from '@/lib/i18n/en';
 import { localizedPath, type Locale } from '@/lib/i18n/routing';
@@ -19,6 +30,7 @@ import { useCollectionMotion } from './collection-motion';
 import { CollectionPreview, excerptRange, getCollectionPreviewFilm } from './collection-preview';
 import { ArtworkTransition } from './artwork-transition';
 import { PLATE_SIZES } from './artwork-media';
+import { useSplitHead } from './split-head';
 import styles from './plate-sequence.module.css';
 
 export { useCompactWall } from './compact-wall';
@@ -42,18 +54,24 @@ export function hangOffset(
 }
 
 /**
- * What a card plays under the lease: on a desk the settling clip, the film's own final eight
- * seconds, which ends on the still; on a phone's budget the 8 s excerpt. Only Ink moves in the
- * sequence, and never without a hash-verified clip.
+ * What a card plays under the lease, always a hash-verified clip. Ink: on a desk the settling
+ * clip, the film's own final eight seconds, which ends on the still; on a phone's budget the
+ * 8 s excerpt. Light: its settling clip everywhere, since at under 400 KB it is lighter than
+ * Ink's excerpt. Light moves as Ink does (third-physics-phase-d.md §2).
  */
 export function sequenceFilm(
   media: ArtInterpretation | undefined,
   compact: boolean,
 ): ArtFilm | undefined {
-  if (!media || media.id !== 'ink') return undefined;
+  if (media?.id === 'light') return media.settlingFilm;
+  if (media?.id !== 'ink') return undefined;
   const excerpt = getCollectionPreviewFilm(media);
   return compact ? excerpt : (media.settlingFilm ?? excerpt);
 }
+
+export type { Hanging };
+/** The order the leaves hang in: Ink on the left, Light on the right, as the gatefold opens. */
+const LEAVES: readonly Expression[] = ['ink', 'light'];
 
 /** The still ladder's layout width for each shape of the rhythm. */
 const SIZES: Record<Shape, string> = {
@@ -108,23 +126,50 @@ export function sequenceRows(
   return rows;
 }
 
-/** A 48 px strip between cycles: the cycle, how many works it imprinted, and when. */
+/**
+ * A 48 px strip between cycles: the cycle, how many works it imprinted, and when. Across the
+ * seam the cycle and its count stand on the paper leaf and the date on the night leaf.
+ */
 export function ChapterStrip({
   cycle,
   summary,
   locale,
   t,
+  paired = false,
 }: {
   cycle: number;
   summary?: CycleSummary;
   locale: Locale;
   t: Messages;
+  paired?: boolean;
 }) {
   const date = summary?.mintedAt
     ? new Intl.DateTimeFormat(locale, { dateStyle: 'long', timeZone: 'UTC' }).format(
         new Date(summary.mintedAt),
       )
     : undefined;
+  if (paired)
+    return (
+      <h2 className={`${styles.pairRow} ${styles.pairChapter}`} data-cycle={cycle}>
+        <span className={styles.leaf} data-ground="paper">
+          <span>
+            {t.cycle} {cycle}
+          </span>
+          {summary ? (
+            <span className={styles.chapterCount}>
+              {summary.count === 1 ? t.oneWork : fill(t.worksCount, { count: summary.count })}
+            </span>
+          ) : null}
+        </span>
+        <span className={styles.leaf} data-ground="night">
+          {date && summary?.mintedAt ? (
+            <time dateTime={summary.mintedAt} className={styles.chapterDate}>
+              {fill(t.imprintedOn, { date })}
+            </time>
+          ) : null}
+        </span>
+      </h2>
+    );
   return (
     <h2 className={styles.chapter} data-cycle={cycle}>
       <span>
@@ -148,7 +193,7 @@ export function PlateSequence({
   works,
   locale,
   t,
-  expression = 'ink',
+  expression = 'both',
   animated = false,
   eagerFirstRow = false,
   chapters = 'none',
@@ -158,8 +203,11 @@ export function PlateSequence({
   works: Artwork[];
   locale: Locale;
   t: Messages;
-  /** The expression every card shows; a work without it falls back to what it has. */
-  expression?: 'ink' | 'light';
+  /**
+   * What every card shows: one expression (a work without it falls back to what it has), or
+   * `both`, each work's Ink and Light side by side across the seam.
+   */
+  expression?: Hanging;
   animated?: boolean;
   eagerFirstRow?: boolean;
   chapters?: Chapters;
@@ -168,23 +216,46 @@ export function PlateSequence({
 }) {
   const [intentId, setIntentId] = useState<number | null>(null);
   const compact = useCompactWall();
+  const paired = expression === 'both';
+  const leaves = useMemo<readonly Expression[]>(
+    () => (expression === 'both' ? LEAVES : [expression]),
+    [expression],
+  );
   const rows = useMemo(() => sequenceRows(works, rhythm, chapters), [works, rhythm, chapters]);
-  // Only a verified Ink clip may move, and never in a row of three stills.
+  // A work moves under the lease when one of its hung expressions has a verified clip, never in
+  // a row of three stills. Across the seam a work is one unit: its two halves settle together.
   const previewIds = useMemo(
     () =>
       rows.flatMap((row) =>
         row.shape === 3
           ? []
           : row.works
-              .filter((work) => sequenceFilm(getInterpretation(work, 'ink'), compact))
+              .filter((work) =>
+                leaves.some((leaf) => sequenceFilm(cardMedia(work, leaf, paired), compact)),
+              )
               .map((work) => work.id),
       ),
-    [rows, compact],
+    [rows, compact, paired, leaves],
   );
   const { gridRef, activeId, intent, clearIntent, fail, rest } = useCollectionMotion({
-    enabled: animated && expression === 'ink',
+    enabled: animated,
     ids: previewIds,
   });
+  useSplitHead(gridRef, paired);
+  // A pair rests once each of its moving halves has played to its still, within one lease: when
+  // the lease moves on, the halves that ended before it did are forgotten.
+  const endings = useRef(new Map<number, Set<string>>());
+  useEffect(() => {
+    endings.current.clear();
+  }, [activeId]);
+  const ended = (work: Artwork, leaf: string, moving: number) => {
+    const done = endings.current.get(work.id) ?? new Set<string>();
+    done.add(leaf);
+    endings.current.set(work.id, done);
+    if (done.size < moving) return;
+    endings.current.delete(work.id);
+    rest(work.id);
+  };
   const summaries = useMemo(() => new Map(cycles.map((cycle) => [cycle.cycle, cycle])), [cycles]);
   // The index of each row's first work, so the first row's plates may load eagerly.
   const starts = useMemo(
@@ -194,16 +265,149 @@ export function PlateSequence({
       ),
     [rows],
   );
+
+  /** One card: a work in one expression, with its numeral and, for a hand, its label. */
+  function card(row: SequenceRow, work: Artwork, index: number, leaf: Expression): ReactNode {
+    const media = cardMedia(work, leaf, paired);
+    if (!media)
+      return (
+        <span key={work.id} className={`work-card ${styles.card} ${styles.unpublished}`}>
+          <span className="art-placeholder" role="img" aria-label={workNumber(work.id)} />
+          <span className={styles.caption}>
+            <span className={styles.folio}>{workFolio(work.id)}</span>
+            {leaf === 'ink' ? <span className={styles.notYet}>{t.noInkPublished}</span> : null}
+          </span>
+        </span>
+      );
+    const word = expressionWord(media, t);
+    const alt = `${workNumber(work.id)} · ${word ?? ''}`.trim();
+    const label = media.id === 'ink' ? t.ink : leaf === 'ink' ? t.lightOnly : t.light;
+    // The plate opens on the expression the visitor chose by choosing this card.
+    const href = localizedPath(
+      locale,
+      `/art/${work.id}?expression=${encodeURIComponent(media.id)}`,
+    );
+    const film = sequenceFilm(media, compact);
+    const live = animated && row.shape !== 3;
+    const active = live && activeId === work.id;
+    const moving = paired
+      ? LEAVES.filter((other) => sequenceFilm(cardMedia(work, other, true), compact)).length
+      : 1;
+    const eager = eagerFirstRow && index < 2;
+    // The eye line: a sheet in a row of two or three hangs so its measured centre sits on the
+    // band's line; the full plate already fills its band. A pair's halves share one line.
+    const centre =
+      !paired && row.shape !== 1
+        ? getPlateGround(work.id, media.id, media.stillSha256)?.centre.y
+        : undefined;
+    const hang = centre !== undefined ? ({ '--centre-y': centre } as CSSProperties) : undefined;
+    const plate = live ? (
+      <CollectionPreview
+        key={`${work.id}-${media.id}`}
+        media={media}
+        alt={alt}
+        artworkId={work.id}
+        film={film}
+        sizes={paired ? PAIR_SIZES[row.shape] : SIZES[row.shape]}
+        eager={eager}
+        active={active && !!film}
+        onFailure={(reason) => fail(work.id, reason)}
+        onEnded={() => ended(work, media.id, moving)}
+      />
+    ) : (
+      <ArtworkMedia
+        key={`${work.id}-${media.id}`}
+        media={media}
+        alt={alt}
+        artworkId={work.id}
+        sizes={paired ? PAIR_SIZES[row.shape] : SIZES[row.shape]}
+        still
+        thumbnail
+        eager={eager}
+      />
+    );
+    return (
+      <Link
+        key={`${work.id}-${media.id}`}
+        className={`work-card ${styles.card}`}
+        href={href}
+        style={hang}
+        prefetch={live ? active || intentId === work.id : undefined}
+        aria-label={alt}
+        data-preview-id={work.id}
+        data-expression={media.id}
+        data-preview-available={live && !!film}
+        data-motion={active && film ? 'active' : 'still'}
+        onPointerEnter={(event) => {
+          intent(work.id, 'pointer', event.pointerType);
+          if (event.pointerType !== 'touch') setIntentId(work.id);
+        }}
+        onPointerLeave={() => clearIntent(work.id, 'pointer')}
+        onFocus={() => {
+          intent(work.id, 'focus');
+          setIntentId(work.id);
+        }}
+        onBlur={() => clearIntent(work.id, 'focus')}
+      >
+        {live ? (
+          <ArtworkTransition artworkId={work.id} interpretationId={media.id} role="preview">
+            {plate}
+          </ArtworkTransition>
+        ) : (
+          plate
+        )}
+        <span className={styles.caption} aria-hidden="true">
+          <span className={!paired && row.shape === 1 ? 'hanging-numeral' : styles.folio}>
+            {workFolio(work.id)}
+          </span>
+          <span className={styles.label}>
+            {label}
+            {active && film
+              ? ` · ${film.id === 'settling' ? t.settling : t.excerpt} ${excerptRange(film) ?? ''}`.trimEnd()
+              : ''}
+          </span>
+        </span>
+      </Link>
+    );
+  }
+
   return (
-    <div className={`work-grid ${styles.sequence}`} ref={gridRef}>
+    <div
+      className={`work-grid ${styles.sequence} ${paired ? styles.paired : ''}`}
+      ref={gridRef}
+      data-hanging={expression}
+    >
       {rows.map((row, rowIndex) => {
         const first = starts[rowIndex];
+        const chapter =
+          row.chapter !== undefined ? (
+            <ChapterStrip
+              cycle={row.chapter}
+              summary={summaries.get(row.chapter)}
+              locale={locale}
+              t={t}
+              paired={paired}
+            />
+          ) : null;
+        if (paired)
+          return (
+            <Fragment key={rowIndex}>
+              {chapter}
+              <div className={styles.pairRow} data-shape={row.shape}>
+                {LEAVES.map((leaf) => (
+                  <div
+                    key={leaf}
+                    className={styles.leaf}
+                    data-ground={leaf === 'ink' ? 'paper' : 'night'}
+                  >
+                    {row.works.map((work, offset) => card(row, work, first + offset, leaf))}
+                  </div>
+                ))}
+              </div>
+            </Fragment>
+          );
         const plateMedia =
-          row.shape === 1 && row.works[0]
-            ? (getInterpretation(row.works[0], expression) ??
-              getInterpretation(row.works[0], 'light') ??
-              row.works[0].media[0])
-            : undefined;
+          row.shape === 1 && row.works[0] ? cardMedia(row.works[0], leaves[0], false) : undefined;
         // A full-bleed plate takes its whole band from the sheet's own measured tone; a Light
         // plate takes the field's black, so neither ever shows an edge against the wall.
         const ground = plateMedia
@@ -212,122 +416,39 @@ export function PlateSequence({
           : undefined;
         return (
           <Fragment key={rowIndex}>
-            {row.chapter !== undefined ? (
-              <ChapterStrip
-                cycle={row.chapter}
-                summary={summaries.get(row.chapter)}
-                locale={locale}
-                t={t}
-              />
-            ) : null}
+            {chapter}
             <div
               className={styles.row}
               data-shape={row.shape}
               data-material={plateMedia?.id}
               style={ground ? ({ '--plate-ground': ground } as CSSProperties) : undefined}
             >
-              {row.works.map((work, offset) => {
-                const index = first + offset;
-                const media =
-                  getInterpretation(work, expression) ??
-                  getInterpretation(work, 'light') ??
-                  work.media[0];
-                const word = expressionWord(media, t);
-                const alt = `${workNumber(work.id)} · ${word ?? ''}`.trim();
-                const label =
-                  media?.id === 'ink' ? t.ink : expression === 'ink' ? t.lightOnly : t.light;
-                const href = localizedPath(
-                  locale,
-                  `/art/${work.id}${media && media.id !== 'ink' ? `?expression=${encodeURIComponent(media.id)}` : ''}`,
-                );
-                const film = sequenceFilm(media, compact);
-                const live = animated && row.shape !== 3;
-                const active = live && activeId === work.id;
-                const eager = eagerFirstRow && index < 2;
-                // The eye line: a sheet in a row of two or three hangs so its measured centre
-                // sits on the band's line; the full plate already fills its band.
-                const centre =
-                  row.shape !== 1 && media
-                    ? getPlateGround(work.id, media.id, media.stillSha256)?.centre.y
-                    : undefined;
-                const hang =
-                  centre !== undefined ? ({ '--centre-y': centre } as CSSProperties) : undefined;
-                const plate = live ? (
-                  <CollectionPreview
-                    key={`${work.id}-${media?.id}`}
-                    media={media}
-                    alt={alt}
-                    artworkId={work.id}
-                    film={film}
-                    sizes={SIZES[row.shape]}
-                    eager={eager}
-                    active={active}
-                    onFailure={(reason) => fail(work.id, reason)}
-                    onEnded={() => rest(work.id)}
-                  />
-                ) : (
-                  <ArtworkMedia
-                    key={`${work.id}-${media?.id}`}
-                    media={media}
-                    alt={alt}
-                    artworkId={work.id}
-                    sizes={SIZES[row.shape]}
-                    still
-                    thumbnail
-                    eager={eager}
-                  />
-                );
-                return (
-                  <Link
-                    key={work.id}
-                    className={`work-card ${styles.card}`}
-                    href={href}
-                    style={hang}
-                    prefetch={live ? active || intentId === work.id : undefined}
-                    aria-label={alt}
-                    data-preview-id={work.id}
-                    data-preview-available={live && !!film}
-                    data-motion={active ? 'active' : 'still'}
-                    onPointerEnter={(event) => {
-                      intent(work.id, 'pointer', event.pointerType);
-                      if (event.pointerType !== 'touch') setIntentId(work.id);
-                    }}
-                    onPointerLeave={() => clearIntent(work.id, 'pointer')}
-                    onFocus={() => {
-                      intent(work.id, 'focus');
-                      setIntentId(work.id);
-                    }}
-                    onBlur={() => clearIntent(work.id, 'focus')}
-                  >
-                    {live && media ? (
-                      <ArtworkTransition
-                        artworkId={work.id}
-                        interpretationId={media.id}
-                        role="preview"
-                      >
-                        {plate}
-                      </ArtworkTransition>
-                    ) : (
-                      plate
-                    )}
-                    <span className={styles.caption} aria-hidden="true">
-                      <span className={row.shape === 1 ? 'hanging-numeral' : styles.folio}>
-                        {workFolio(work.id)}
-                      </span>
-                      <span className={styles.label}>
-                        {label}
-                        {active && film
-                          ? ` · ${film.id === 'settling' ? t.settling : t.excerpt} ${excerptRange(film) ?? ''}`.trimEnd()
-                          : ''}
-                      </span>
-                    </span>
-                  </Link>
-                );
-              })}
+              {row.works.map((work, offset) => card(row, work, first + offset, leaves[0]))}
             </div>
           </Fragment>
         );
       })}
     </div>
   );
+}
+
+/** The still ladder's layout width for each shape when the leaves halve the wall. */
+const PAIR_SIZES: Record<Shape, string> = {
+  1: '(max-width: 767px) 50vw, 46vw',
+  2: '(max-width: 767px) 50vw, 23vw',
+  3: '(max-width: 767px) 50vw, 15vw',
+};
+
+/**
+ * The interpretation a card shows. On its own ground a work without the asked expression shows
+ * what it has; across the seam each leaf shows its own expression or nothing, so a pair's
+ * halves never show the same plate twice.
+ */
+function cardMedia(
+  work: Artwork,
+  leaf: Expression,
+  paired: boolean,
+): ArtInterpretation | undefined {
+  if (paired) return getInterpretation(work, leaf);
+  return getInterpretation(work, leaf) ?? getInterpretation(work, twinOf(leaf)) ?? work.media[0];
 }

@@ -249,6 +249,7 @@ export const zh: Messages = {
   statement: '自述',
   index: '索引',
   indexSheet: '藏品索引',
+  indexWallHint: '轻触编号，作品便挂在这里；再触一次即可进入。',
   closeIndex: '关闭索引',
   keys: '按键',
   keysSheet: '键盘快捷键',
@@ -286,6 +287,8 @@ export const zh: Messages = {
   // 版面与翻转
   showLight: '显示光的表达',
   showInk: '显示墨的表达',
+  hangAlone: '仅{expression}',
+  hangTogether: '墨与光并置',
   noInkPublished: '尚未发布墨的表达',
   previousWork: '上一件作品',
   nextWork: '下一件作品',

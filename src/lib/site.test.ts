@@ -103,7 +103,9 @@ describe('room ground', () => {
       const fn = new Function(
         'location',
         'document',
-        roomScript.replace(/^\(function\(\)\{/, '').replace(/\}\)\(\)$/, ''),
+        roomScript({ poolSize: 3, pinned: '2026-11-06' })
+          .replace(/^\(function\(\)\{/, '')
+          .replace(/\}\)\(\)$/, ''),
       );
       fn(
         { pathname: path },

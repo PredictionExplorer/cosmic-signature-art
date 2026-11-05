@@ -12,8 +12,15 @@ import {
 } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { getInterpretation, type ArtInterpretation, type Artwork } from '@/lib/art/types';
+import {
+  getInterpretation,
+  isExpression,
+  twinOf,
+  type ArtInterpretation,
+  type Artwork,
+} from '@/lib/art/types';
 import { workNumber } from '@/lib/art/number';
+import { getPlateGround } from '@/lib/art/plate-records';
 import type { Messages } from '@/lib/i18n/en';
 import { localizedPath, type Locale } from '@/lib/i18n/routing';
 import { ArtworkMedia } from './artwork-media';
@@ -30,17 +37,19 @@ import {
   Turn,
   TurnLayer,
   rememberExpression,
+  seamFor,
   setThemeColor,
   useRememberedExpression,
   type Expression,
 } from './turn';
 import {
-  NightWing,
+  Wing,
   scrollTimelinesSupported,
   useRoomSeam,
   wingProgress,
+  wingSeamAt,
   type WingMode,
-} from './night-wing';
+} from './wing';
 import { DUSK_CANCEL_EVENTS, DuskController } from './dusk';
 import { inField } from './keys';
 import { useOpenSheet } from './sheets-store';
@@ -67,7 +76,10 @@ type ArtworkViewerProps = {
   t: Messages;
   locale: Locale;
   initialStill?: boolean;
+  /** The visitor's request from the URL; it outranks the session's remembered choice. */
   initialExpression?: string;
+  /** The page's opening without a request or a remembered choice (src/lib/art/opening.ts). */
+  openingExpression?: string;
   presentation?: Presentation;
   /** Inline preview bytes per expression, read on the server for the route's hero. */
   inlinePreviews?: Partial<Record<string, string>>;
@@ -85,7 +97,7 @@ type ArtworkViewerProps = {
 export function ArtworkViewer(props: ArtworkViewerProps) {
   return (
     <ArtworkViewerSession
-      key={`${props.artwork.id}:${props.initialStill ?? false}:${props.initialExpression ?? ''}`}
+      key={`${props.artwork.id}:${props.initialStill ?? false}:${props.initialExpression ?? ''}:${props.openingExpression ?? ''}`}
       {...props}
     />
   );
@@ -133,6 +145,7 @@ function ArtworkViewerSession({
   locale,
   initialStill = false,
   initialExpression,
+  openingExpression,
   presentation = 'gallery',
   inlinePreviews,
   live,
@@ -209,6 +222,10 @@ function ArtworkViewerSession({
   const remembered = useRememberedExpression();
   const restored = useRef(false);
   const instantNext = useRef(false);
+  // The wing hangs the twin of the expression the page opened on, and a remembered choice
+  // re-opens the page; a Turn afterwards never reverses the wing under the hand.
+  const [turnedTwin, setTurnedTwin] = useState<Expression | null>(null);
+  const restoring = useRef(false);
   /** Each Turn the twin's decode asked for; a newer one supersedes a Turn still waiting. */
   const turnRequest = useRef(0);
   // A Turn that waited on the crossing reads the room and motion as they are when it ends.
@@ -218,7 +235,10 @@ function ArtworkViewerSession({
     useArtworkExpression({
       media: artwork.media,
       initialExpression,
+      openingExpression,
       onCommit: (committed) => {
+        if (restoring.current) restoring.current = false;
+        else if (isExpression(committed)) setTurnedTwin((current) => current ?? committed);
         seam.end();
         setTurning(null);
         if (hasBoth) rememberExpression(committed);
@@ -278,8 +298,17 @@ function ArtworkViewerSession({
 
   // A still that could not be decoded marks its layer; the layer is mounted afresh once a retry succeeds.
   useEffect(() => {
-    if (failedExpression) failedLayers.current.add(failedExpression);
+    if (!failedExpression) return;
+    failedLayers.current.add(failedExpression);
+    restoring.current = false;
   }, [failedExpression]);
+
+  // An expression the URL asked for is the visitor's choice (the half they pressed, a shared
+  // link): the visit remembers it, as it remembers a Turn.
+  useEffect(() => {
+    if (initialExpression && hasBoth && initialExpression === expression)
+      rememberExpression(initialExpression);
+  }, [initialExpression, hasBoth, expression]);
 
   // A plate opened without an expression in its URL follows the session's remembered choice.
   useEffect(() => {
@@ -287,6 +316,7 @@ function ArtworkViewerSession({
     restored.current = true;
     if (remembered !== expression) {
       instantNext.current = true;
+      restoring.current = true;
       selectExpression(remembered);
     }
   }, [remembered, initialExpression, hasBoth, expression, selectExpression]);
@@ -327,26 +357,34 @@ function ArtworkViewerSession({
   // A phone reads two compact plates in the page's natural flow. The material button still
   // performs the Turn; a sticky, viewport-long wing would leave the small plate stranded.
   const wingMode: WingMode = instant || compact ? 'hard' : 'scroll';
-  useRoomSeam({ enabled: true, expression, mode: wingMode, wingRef, fallbackRef });
+  const twin: Expression = turnedTwin ?? (isExpression(expression) ? twinOf(expression) : 'light');
+  const twinMedia = twin === 'light' ? light : ink;
+  const twinTone = twinMedia
+    ? getPlateGround(artwork.id, twinMedia.id, twinMedia.stillSha256)?.tone
+    : undefined;
+  useRoomSeam({ enabled: true, expression, twin, twinTone, mode: wingMode, wingRef, fallbackRef });
 
-  /** Where the seam rests for Ink: 100 % on a plate, or wherever the hand has drawn the night. */
-  function inkSeam() {
+  /**
+   * Where the seam rests on the plate's own expression: wherever the hand has drawn the twin
+   * across the wing, or the plate alone (100 % for Ink, 0 % for Light) outside it.
+   */
+  function wingSeam() {
     const wingNode = wingRef.current;
     const stageNode = wingNode?.firstElementChild as HTMLElement | null;
-    if (!wingNode || !stageNode || wingMode !== 'scroll' || !scrollTimelinesSupported()) return 100;
+    if (!wingNode || !stageNode || wingMode !== 'scroll' || !scrollTimelinesSupported())
+      return seamFor(twinOf(twin));
     const head =
       parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--head')) || 48;
-    return (
-      100 *
-      (1 -
-        wingProgress(
-          wingNode.getBoundingClientRect(),
-          stageNode.getBoundingClientRect().height,
-          head,
-        ))
+    return wingSeamAt(
+      twin,
+      wingProgress(
+        wingNode.getBoundingClientRect(),
+        stageNode.getBoundingClientRect().height,
+        head,
+      ),
     );
   }
-  const targetSeam = (to: string) => (to === 'light' ? 0 : inkSeam());
+  const targetSeam = (to: string) => (to === twin ? seamFor(twin) : wingSeam());
   const restSeam = () => targetSeam(expression);
   // The crossing in the order the work was made, where both arrival maps are bound.
   const { canvas: crossingCanvas, whenReady } = useArrivalCrossing({
@@ -355,7 +393,8 @@ function ArtworkViewerSession({
     light,
     expression,
     enabled: hasBoth && !!ink?.arrival && !!light?.arrival && !instant,
-    wingSeam: () => (wingMode === 'scroll' && scrollTimelinesSupported() ? inkSeam() : null),
+    twin,
+    wingSeam: () => (wingMode === 'scroll' && scrollTimelinesSupported() ? wingSeam() : null),
   });
   // A seam left at the finger or the key whose twin failed to decode returns to rest.
   const returnFailedSeam = useEffectEvent(() => {
@@ -551,9 +590,11 @@ function ArtworkViewerSession({
 
   /* The Dusk: the home's one automatic event, behind its flag. */
   const performDusk = useEffectEvent(async () => {
+    // The Dusk lowers the night over an Ink plate; a page that opened in Light has no Dusk.
     if (
       !dusk ||
       !home ||
+      twin !== 'light' ||
       instant ||
       expression !== 'ink' ||
       !canTurn ||
@@ -599,7 +640,7 @@ function ArtworkViewerSession({
     if (duskController.input() !== 'cancel') return;
     // Cancel, never resume mid-travel: the seam returns and the plate stays on paper.
     setTurning(null);
-    void seam.animateTo(inkSeam(), { mode: 'time', breath: false }).then((done) => {
+    void seam.animateTo(wingSeam(), { mode: 'time', breath: false }).then((done) => {
       if (done) seam.end();
     });
   });
@@ -868,18 +909,19 @@ function ArtworkViewerSession({
           </Suspense>
         ) : null}
         <ArtworkStage artworkId={artwork.id} expression={expression} scope="page" disabled>
-          {wing && light?.still && ink?.still ? (
-            <NightWing
+          {wing && hasBoth && twinMedia ? (
+            <Wing
               mode={wingMode}
               expression={expression}
+              twin={twin}
               wingRef={wingRef}
               fallbackRef={fallbackRef}
               fallback={
                 <Plate
                   id={artwork.id}
-                  media={light}
+                  media={twinMedia}
                   current={false}
-                  centre={<span>{label('light')}</span>}
+                  centre={<span>{label(twin)}</span>}
                   words={
                     <div className={styles.wordsRow}>
                       <span className={styles.state}>{t.still}</span>
@@ -888,17 +930,17 @@ function ArtworkViewerSession({
                   className={styles.echo}
                 >
                   <ArtworkMedia
-                    media={{ ...light, films: [] }}
-                    alt={`${workNumber(artwork.id)} · ${t.light}`}
+                    media={{ ...twinMedia, films: [] }}
+                    alt={`${workNumber(artwork.id)} · ${label(twin)}`}
                     artworkId={artwork.id}
-                    previewSrc={inlinePreviews?.light}
+                    previewSrc={inlinePreviews?.[twin]}
                     still
                   />
                 </Plate>
               }
             >
               {turn}
-            </NightWing>
+            </Wing>
           ) : (
             turn
           )}

@@ -6,6 +6,7 @@ import { getCuratedArtwork } from '@/lib/art/catalog';
 import { collectionIndex, cycles, indexedAssetUrl, indexedWork } from '@/lib/art/collection-index';
 import { artworkForView } from '@/lib/art/view-media';
 import { workFolio, workNumber } from '@/lib/art/number';
+import type { Expression } from '@/lib/art/types';
 import { SpreadPlates } from './home-spread-plates';
 import styles from './home-screens.module.css';
 import { PreviewImage } from './preview-image';
@@ -49,16 +50,35 @@ export function HomeStatement({ locale, t }: { locale: Locale; t: Messages }) {
   );
 }
 
-/** Screen 4: Signatures 031 and 035 in Ink, side by side, each in its own tone. */
-export function HomeSpread({ locale, t }: { locale: Locale; t: Messages }) {
-  const works = [31, 35].flatMap((id) => {
+/**
+ * Screen 4: Signatures 031 and 035 across the seam, one in Ink on paper and one in Light on
+ * night, each in its own tone. The two change places with the day's expression, so each hangs
+ * in both on alternate days.
+ */
+export function HomeSpread({
+  locale,
+  t,
+  day,
+}: {
+  locale: Locale;
+  t: Messages;
+  /** The day's expression, which decides which work hangs in Ink. */
+  day: Expression;
+}) {
+  const ids = day === 'ink' ? [31, 35] : [35, 31];
+  const leaves = ids.flatMap((id, index) => {
     const work = getCuratedArtwork(id);
-    return work ? [artworkForView(work, 'card')] : [];
+    const expression: Expression = index === 0 ? 'ink' : 'light';
+    return work ? [{ work: artworkForView(work, 'card'), expression }] : [];
   });
-  return <SpreadPlates works={works} locale={locale} t={t} />;
+  return <SpreadPlates leaves={leaves} locale={locale} t={t} />;
 }
 
-/** Screen 5: the day's work's cycle, its count and date, and every work of the cycle as a real preview. */
+/**
+ * Screen 5: the day's work's cycle, its count and date, and every work of the cycle as a real
+ * preview, twice across the seam: the cycle in Ink on the paper leaf beside the cycle in Light
+ * on the night leaf, each work on one line with itself.
+ */
 export function HomeCycle({
   locale,
   t,
@@ -90,33 +110,46 @@ export function HomeCycle({
           {date ? ` · ${fill(t.imprintedOn, { date })}` : ''}
         </p>
       </header>
-      <ul className={styles.row}>
-        {summary.ids.map((id) => {
-          const work = indexedWork(id);
-          const preview = work ? indexedAssetUrl(work, work.media.ink?.preview?.path) : undefined;
-          return (
-            <li key={id}>
-              <Link href={localizedPath(locale, `/art/${id}`)} className={styles.cell}>
-                <span className="art-media" data-material="ink">
-                  {preview ? (
-                    <PreviewImage
-                      src={preview}
-                      alt={`${workNumber(id)} · ${t.ink}`}
-                      width={work?.media.ink?.preview?.width ?? 640}
-                      height={work?.media.ink?.preview?.height ?? 414}
-                      loading="lazy"
-                      decoding="async"
-                    />
-                  ) : (
-                    <span className="art-placeholder" role="img" aria-label={workNumber(id)} />
-                  )}
-                </span>
-                <span className="numeral control">{workFolio(id)}</span>
-              </Link>
-            </li>
-          );
-        })}
-      </ul>
+      <div className={styles.pairs}>
+        {(['ink', 'light'] as const).map((leaf) => (
+          <ul
+            key={leaf}
+            className={styles.row}
+            data-ground={leaf === 'ink' ? 'paper' : 'night'}
+            aria-label={t[leaf]}
+          >
+            {summary.ids.map((id) => {
+              const work = indexedWork(id);
+              const published = work?.media[leaf]?.preview;
+              const preview = work ? indexedAssetUrl(work, published?.path) : undefined;
+              return (
+                <li key={id}>
+                  <Link
+                    href={localizedPath(locale, `/art/${id}?expression=${leaf}`)}
+                    className={styles.cell}
+                  >
+                    <span className="art-media" data-material={leaf}>
+                      {preview ? (
+                        <PreviewImage
+                          src={preview}
+                          alt={`${workNumber(id)} · ${t[leaf]}`}
+                          width={published?.width ?? 640}
+                          height={published?.height ?? 414}
+                          loading="lazy"
+                          decoding="async"
+                        />
+                      ) : (
+                        <span className="art-placeholder" role="img" aria-label={workNumber(id)} />
+                      )}
+                    </span>
+                    <span className="numeral control">{workFolio(id)}</span>
+                  </Link>
+                </li>
+              );
+            })}
+          </ul>
+        ))}
+      </div>
       <Link
         className="text-link"
         href={localizedPath(locale, `/collection?order=cycle&cycle=${cycle}`)}

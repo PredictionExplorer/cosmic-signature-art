@@ -1,5 +1,5 @@
 import { useEffect, useEffectEvent, useRef, type RefObject } from 'react';
-import { rungFor, type ArtInterpretation, type Expression } from '@/lib/art/types';
+import { rungFor, twinOf, type ArtInterpretation, type Expression } from '@/lib/art/types';
 import { bandClip, bandFront, type Field } from '@/lib/crossing/front';
 import { FRONT_EDGE, revealAt, revealEnd, spreadPerPlate } from '@/lib/crossing/timing';
 import type { SeamController } from './turn';
@@ -557,15 +557,17 @@ export class ArrivalCrossing {
  * Each Turn is the crossing's only if it was ready when the Turn began, and it is read once,
  * then: the order it follows and the layer it leaves hold until the Turn ends, so a reversal,
  * a spring-back or the commit itself never switches pictures mid-way. The order is that of the
- * expression arriving: Light's toward the night, Ink's toward the paper, except where Ink rests
- * partly under the night wing, which is drawn in Light's order and so retraced in it. Between
- * Turns, inside the wing, the crossing paints wherever the hand has drawn the night.
+ * expression arriving: Light's toward the night, Ink's toward the paper, except where a plate
+ * rests partly under its wing, which is drawn in the twin's order and so retraced in it: the
+ * night wing's in Light's, the paper wing's in Ink's. Between Turns, inside the wing, the
+ * crossing paints wherever the hand has drawn the twin.
  */
 export function useArrivalCrossing({
   seam,
   ink,
   light,
   expression,
+  twin = 'light',
   enabled,
   wingSeam,
 }: {
@@ -573,24 +575,29 @@ export function useArrivalCrossing({
   ink?: ArtInterpretation;
   light?: ArtInterpretation;
   expression: string;
+  /** The expression the wing hangs beneath the plate: Light (the night wing) or Ink (the paper wing). */
+  twin?: Expression;
   /** Both maps are bound and crossings travel (not reduced, paused or hushed). */
   enabled: boolean;
-  /** Where Ink rests inside the night wing (wherever the hand has drawn the night), else null. */
+  /** Where the plate rests inside its wing (wherever the hand has drawn the twin), else null. */
   wingSeam: () => number | null;
 }) {
   const canvas = useRef<HTMLCanvasElement>(null);
   const crossing = useRef<ArrivalCrossing | null>(null);
-  /** Ink's rest inside the wing while the night is partly drawn there; null otherwise. */
+  /** The plate's rest inside the wing while the twin is partly drawn there; null otherwise. */
   const partial = useEffectEvent(() => {
     const value = wingSeam();
     return value !== null && value > 0 && value < 100 ? value : null;
   });
   const reading = useEffectEvent((): Reading => {
     const leaving: Expression = expression === 'light' ? 'light' : 'ink';
-    return { toward: leaving === 'ink' || partial() !== null ? 'night' : 'paper', leaving };
+    // Inside a partly drawn wing every crossing follows the twin's order; elsewhere the
+    // expression arriving sets it.
+    const arriving = leaving !== twin || partial() !== null ? twin : twinOf(leaving);
+    return { toward: arriving === 'light' ? 'night' : 'paper', leaving };
   });
-  /** Between Turns: the wing's night over Ink, the only seam that rests partway. */
-  const resting = useEffectEvent(() => (expression === 'light' ? null : partial()));
+  /** Between Turns: the wing's twin over the plate, the only seam that rests partway. */
+  const resting = useEffectEvent(() => (expression === twin ? null : partial()));
 
   useEffect(() => {
     const node = canvas.current;

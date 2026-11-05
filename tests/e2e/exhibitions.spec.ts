@@ -50,10 +50,10 @@ test('a trail states its rule, hangs its works in the plate sequence and prints 
   await expect(measures.first().getByRole('link')).toContainText('№ 059');
   await expect(measures.first().getByRole('link')).toContainText('eccentricity 0.499');
   await expect(measures.first().getByRole('link')).toHaveAttribute('href', '/art/59');
-  // The plates above are the works' own stills, numeral captions only.
+  // The plates above are the works' own stills, numeral captions only, each work as its pair.
   const plates = main.locator('.work-grid .work-card');
-  await expect(plates).toHaveCount(count);
-  await expect(plates.first()).toHaveAttribute('href', '/art/59');
+  await expect(plates).toHaveCount(count * 2);
+  await expect(plates.first()).toHaveAttribute('href', '/art/59?expression=ink');
   await expect(plates.first().locator('img').first()).toHaveAttribute(
     'src',
     /full|ember_full|\.webp/,
@@ -70,12 +70,13 @@ test('the hang seeds three plates from local stills and grows the one under the 
   const main = page.getByRole('main');
   await expect(main.getByRole('heading', { level: 1 })).toHaveText(t.hangTitle);
   await expect(main.getByText(t.hangNote)).toBeVisible();
-  const leaves = main.getByRole('link', { name: /^№ 0(23|31|35) · Ink$/ });
+  // The suite's day is an Ink day: the leaves take turns from Ink, so the wall stands on both grounds.
+  const leaves = main.getByRole('link', { name: /^№ 0(23|31|35) · (Ink|Light)$/ });
   await expect(leaves).toHaveCount(3);
-  for (const [index, id] of ['23', '31', '35'].entries()) {
+  for (const [index, still] of ['23-ink', '31-light', '35-ink'].entries()) {
     await expect(leaves.nth(index).locator('img.art-still')).toHaveAttribute(
       'src',
-      `/art/${id}-ink.webp`,
+      `/art/${still}.webp`,
     );
     await expect(leaves.nth(index)).toHaveAttribute('data-state', 'even');
   }
@@ -90,14 +91,14 @@ test('the hang seeds three plates from local stills and grows the one under the 
       .toBeGreaterThan(other!.width * 1.8);
     expect(chosen).not.toBeNull();
     await leaves.nth(1).click();
-    await expect(page).toHaveURL(/\/art\/31$/);
+    await expect(page).toHaveURL(/\/art\/31\?expression=light$/);
   } else {
     // On a phone the first tap chooses, the second enters.
     await leaves.nth(2).tap();
     await expect(leaves.nth(2)).toHaveAttribute('data-state', 'chosen');
     await expect(page).toHaveURL(/\/exhibitions\/a-hang$/);
     await leaves.nth(2).tap();
-    await expect(page).toHaveURL(/\/art\/35$/);
+    await expect(page).toHaveURL(/\/art\/35\?expression=ink$/);
   }
 });
 
@@ -110,7 +111,7 @@ test('a cycle keeps every work of the cycle with its count and imprint date', as
     main.locator('header').first().getByText(`${t.cycle} · August 11, 2026`),
   ).toBeVisible();
   await expect(main.getByText('24 works').first()).toBeVisible();
-  await expect(main.locator('.work-grid .work-card')).toHaveCount(24);
+  await expect(main.locator('.work-grid .work-card')).toHaveCount(48);
   await expect(main.getByText(t.results)).toHaveCount(0);
   await expect(
     main.getByRole('navigation', { name: t.otherExhibitions }).getByRole('link'),
@@ -144,7 +145,7 @@ test('the sharing cards are drawn from the works’ own rungs for a work, the ho
   const alt = await page
     .goto('/art/31')
     .then(() => page.locator('meta[property="og:image:alt"]').first().getAttribute('content'));
-  expect(alt).toBe('№ 031 · Ink');
+  expect(alt).toBe('№ 031 · Ink · Light');
 });
 
 test('an unknown exhibition is not here, and the venue says which work is next door', async ({

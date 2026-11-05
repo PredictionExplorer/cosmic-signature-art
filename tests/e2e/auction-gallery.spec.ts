@@ -98,7 +98,7 @@ test('auction pages keep restored motion preferences and the original work ident
   await expect(page.locator('button.motion-toggle')).toHaveAttribute('aria-pressed', 'true');
   await expect(stage.locator('video')).toHaveCount(0);
   // Paused: the Turn is one frame, and the lot page has no night wing beneath the plate.
-  await expect(page.locator('[data-night-wing]')).toHaveCount(0);
+  await expect(page.locator('[data-wing]')).toHaveCount(0);
   await page
     .locator(current)
     .getByRole('button', { name: /^Light$/ })
