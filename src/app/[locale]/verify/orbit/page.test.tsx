@@ -2,6 +2,7 @@ import { render, screen, within } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { en } from '@/lib/i18n/en';
 import { orbitIds } from '@/lib/art/orbit-records';
+import { readAddress } from '@/lib/addresses';
 import VerifyOrbitIndex, { generateMetadata as indexMetadata } from './page';
 import VerifyOrbitPage, { generateMetadata as workMetadata } from './[id]/page';
 
@@ -75,5 +76,17 @@ describe('Verify an orbit, one work', () => {
     for (const id of ['031', '999', 'abc', '-1', '3.1'])
       await expect(VerifyOrbitPage(params({ locale: 'en', id }))).rejects.toThrow('NEXT_NOT_FOUND');
     expect(await workMetadata(params({ locale: 'en', id: '999' }))).toEqual({});
+  });
+
+  it('is rendered for exactly the numbers the proxy lets through', async () => {
+    // The proxy answers the rest with a true 404 before the page can stream (src/lib/addresses.ts).
+    const numbers = Array.from({ length: 100 }, (_, id) => String(id));
+    for (const id of [...numbers, '031', '00', '071', '999', 'abc', '-1', '3.1', '1e1', '+31']) {
+      const rendered = await VerifyOrbitPage(params({ locale: 'en', id })).then(
+        () => true,
+        () => false,
+      );
+      expect(readAddress(`/verify/orbit/${id}`).kind === 'here', id).toBe(rendered);
+    }
   });
 });

@@ -1,8 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import fc from 'fast-check';
-import orbitData from '@/lib/art/orbit-records.json';
 import { collectionIndex } from '@/lib/art/collection-index';
-import { loadOrbitRecords } from '@/lib/art/orbit-records';
+import { orbitIds } from '@/lib/art/orbit-records';
 import { ART_API_ORIGIN } from '@/lib/art/constants';
 import { parseArtworkId } from '@/lib/art/validation';
 import { exhibitions } from '@/lib/exhibitions/exhibitions';
@@ -29,7 +28,7 @@ describe('what the proxy holds', () => {
   });
 
   it('holds every orbit record, and no other', () => {
-    expect(ascending(ORBIT_RECORDS)).toEqual(ascending(loadOrbitRecords(orbitData).keys()));
+    expect(ascending(ORBIT_RECORDS)).toEqual(orbitIds());
   });
 
   it('holds every exhibition, the cycles included, and no other', () => {
