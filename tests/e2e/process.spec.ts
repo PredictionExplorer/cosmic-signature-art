@@ -150,7 +150,9 @@ test('the essay opens on night, pins the day’s Light film, crosses a hard edge
     `/art/${day}`,
   );
   await noHorizontalOverflow(page);
-  await page.evaluate(() => window.scrollTo(0, 0));
+  // Instantly: the venue scrolls smoothly, and WebKit gives up a smooth scroll when the layout
+  // moves beneath it (the sweep's clock), leaving the page short of the top.
+  await page.evaluate(() => window.scrollTo({ top: 0, behavior: 'instant' }));
   await expect(header).toBeInViewport();
   await expect(header).toHaveCSS('background-color', 'rgb(0, 0, 0)');
   const screenshot = testInfo.outputPath('process-redesign.png');
