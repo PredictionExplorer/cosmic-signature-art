@@ -62,10 +62,6 @@ test.describe('localized home', () => {
 test("the home paints the day's work from an inline preview before the full still arrives", async ({
   page,
 }) => {
-  test.skip(
-    test.info().project.name === 'webkit-reduced-motion',
-    "Headless WebKit under reduced-motion emulation fires no requestAnimationFrame before load, so React's streamed Suspense reveal waits for the held still; the preview-first contract is proved by every other project.",
-  );
   // Hold the hero's full still in flight: the preview alone must carry the first paint.
   const inkSource = archivedMedia
     .find((work) => work.id === today)!

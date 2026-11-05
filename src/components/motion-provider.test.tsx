@@ -167,7 +167,7 @@ describe('theatre', () => {
     return import('./motion-provider');
   }
 
-  it('starts playing and reflects a hush on the site wrapper and in the context', async () => {
+  it('starts playing and reflects a hush on the site wrapper and to its readers', async () => {
     mockReducedMotion(false);
     const { MotionProvider, useMotion, setTheatre } = await freshModule();
     function Probe() {
@@ -225,5 +225,87 @@ describe('theatre', () => {
     );
     expect(html).toContain('data-theatre="playing"');
     expect(html).toContain('motion-paused');
+  });
+});
+
+describe('hydration', () => {
+  const runtimeGlobals = ['$RB', '$RC', '$RT', '$RV'];
+  let root: { unmount: () => void } | undefined;
+  afterEach(() => {
+    if (root) act(() => root!.unmount());
+    root = undefined;
+    document.body.replaceChildren();
+    for (const name of runtimeGlobals) Reflect.deleteProperty(globalThis, name);
+  });
+
+  /**
+   * React streams a large boundary behind its fallback and reveals it on an animation frame,
+   * which WebKit often grants only after hydration. Were a context above it to change when the
+   * preference resolves, React would give up hydrating the waiting boundary and render it again
+   * on the client, discarding the server's nodes.
+   */
+  it('lets a streamed boundary that waits for its reveal hydrate in place', async () => {
+    mockReducedMotion(false);
+    vi.resetModules();
+    vi.doMock('react', () => React);
+    const { MotionProvider } = await import('./motion-provider');
+    const { renderToReadableStream } = await import('react-dom/server');
+    const { hydrateRoot } = await import('react-dom/client');
+    function Room() {
+      const [presses, setPresses] = React.useState(0);
+      return (
+        <main>
+          <button type="button" onClick={() => setPresses(presses + 1)}>
+            {presses}
+          </button>
+          <p>{'A recorded three-body orbit, rendered as light and as ink. '.repeat(12)}</p>
+        </main>
+      );
+    }
+    // A route component stands between the two, as the router's segments do on the site; a
+    // context change reaches a waiting boundary through a parent that bails out of rendering.
+    function Route() {
+      return (
+        <React.Suspense fallback={<p>Cosmic Signature</p>}>
+          <Room />
+        </React.Suspense>
+      );
+    }
+    const page = (
+      <MotionProvider>
+        <Route />
+      </MotionProvider>
+    );
+    // A boundary larger than the progressive chunk is sent after its fallback, as on the site.
+    const stream = await renderToReadableStream(page, { progressiveChunkSize: 1 });
+    await stream.allReady;
+    const template = document.createElement('template');
+    template.innerHTML = await new Response(stream).text();
+    const container = document.createElement('div');
+    container.append(template.content.firstElementChild!);
+    const scripts = [...template.content.querySelectorAll('script')].map((script) => script.text);
+    template.content.querySelectorAll('script').forEach((script) => script.remove());
+    document.body.append(container, template.content);
+    const streamed = document.querySelector('[hidden] > main');
+    expect(streamed).not.toBeNull();
+
+    // React's own runtime marks the boundary as queued and asks for a frame to reveal it.
+    const frames: FrameRequestCallback[] = [];
+    vi.stubGlobal('requestAnimationFrame', (frame: FrameRequestCallback) => frames.push(frame));
+    for (const script of scripts) new Function(script)();
+    await act(async () => {
+      root = hydrateRoot(container, page);
+    });
+    // Hydration has settled on the visitor's motion; the boundary still waits, untouched.
+    expect(container.firstElementChild).not.toHaveClass('motion-paused');
+    expect(container.querySelector('main')).toBeNull();
+    expect(streamed!.isConnected).toBe(true);
+
+    await act(async () => {
+      while (frames.length) frames.shift()!(performance.now());
+    });
+    expect(container.querySelector('main')).toBe(streamed);
+    fireEvent.click(screen.getByRole('button', { name: '0' }));
+    expect(streamed!.querySelector('button')).toHaveTextContent('1');
   });
 });
