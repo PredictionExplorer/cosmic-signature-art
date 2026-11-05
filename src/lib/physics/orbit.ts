@@ -426,7 +426,7 @@ export interface Bodies {
   velocities: Float64Array;
 }
 
-function randomBodies(stream: SeedStream): Bodies {
+export function randomBodies(stream: SeedStream): Bodies {
   const masses: [number, number, number] = [0, 0, 0];
   const positions = new Float64Array(9);
   const velocities = new Float64Array(9);

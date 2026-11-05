@@ -362,6 +362,22 @@ export const zhTW: Messages = {
   // 過程，重新分章
   chapterChoice: '遴選',
   chapterChoiceCopy: '十萬條候選軌道被評分；一條被選中。',
+  // The choice, derived here (src/components/choice-field.tsx)
+  choiceFieldCaption:
+    '每個點都是由種子抽取的 {total} 組初始條件之一，即三個天體在第一步之前的質量、位置和速度；橫向按總能量、縱向按角動量排布，兩軸均為對數刻度。',
+  choiceFieldWaiting: '當你來到這裡，{total} 組初始條件便在此推導。',
+  choiceFieldProgress: '推導初始條件 · {done} / {total}',
+  choiceFieldDerived: '{total} 組初始條件已全部在此瀏覽器中推導完成，用時 {seconds} 秒。',
+  choiceFieldUnavailable: '這個瀏覽器無法推導這些初始條件。遴選按已發布的原樣顯示，未經核對。',
+  choiceFieldAllPassed:
+    '全部 {total} 組都通過了工作室的快速篩選：能量不高於 {energy}，角動量不低於 {momentum}。',
+  choiceFieldSomePassed:
+    '工作室的快速篩選（能量不高於 {energy}，角動量不低於 {momentum}）從 {total} 組中剔除了 {failed} 組；{passed} 組通過。',
+  choiceFieldSearch:
+    '隨後，每一組都在工作室中運行至多 {steps} 步並評分；整個搜尋至多 {search} 步，無法在瀏覽器中執行。被圈出的第 {index} 號被選中。',
+  choiceFieldMassesExact: '它在此推導出的質量與已發布的紀錄一致，精確到最後一位。',
+  choiceFieldMassesDiffer: '它在此推導出的質量與已發布的紀錄不同。',
+  choiceFieldSummary: '{gate}{search}{masses}',
   chapterSpectrum: '光譜',
   playSweep: '播放光譜掃描',
   sweepCopy: '已發布的十秒光譜掃描讓作品的調色盤穿過可見光，從 380 到 700 nm。',

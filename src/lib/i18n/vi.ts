@@ -385,6 +385,24 @@ export const vi: Messages = {
   // Quy trình, chia chương lại
   chapterChoice: 'Sự lựa chọn',
   chapterChoiceCopy: 'Một trăm nghìn quỹ đạo ứng viên được chấm điểm; một quỹ đạo được chọn.',
+  // The choice, derived here (src/components/choice-field.tsx)
+  choiceFieldCaption:
+    'Mỗi chấm là một trong {total} khởi điểm rút ra từ hạt giống: khối lượng, vị trí và vận tốc của ba vật thể trước bước đầu tiên, đặt theo tổng năng lượng theo chiều ngang và mômen động lượng theo chiều dọc, trên thang logarit.',
+  choiceFieldWaiting: 'Khi bạn đến đây, {total} khởi điểm sẽ được suy ra ngay tại chỗ.',
+  choiceFieldProgress: 'Đang suy ra khởi điểm {done}/{total}',
+  choiceFieldDerived: 'Đã suy ra cả {total} khởi điểm trong trình duyệt này, mất {seconds} giây.',
+  choiceFieldUnavailable:
+    'Trình duyệt này không thể suy ra các khởi điểm. Sự lựa chọn được hiển thị đúng như đã công bố, chưa đối chiếu.',
+  choiceFieldAllPassed:
+    'Cả {total} khởi điểm đều qua cửa lọc nhanh của xưởng sáng tác: năng lượng không quá {energy}, mômen động lượng ít nhất {momentum}.',
+  choiceFieldSomePassed:
+    'Cửa lọc nhanh của xưởng sáng tác (năng lượng không quá {energy}, mômen động lượng ít nhất {momentum}) đã gạt ra {failed} trong số {total}; {passed} khởi điểm lọt qua.',
+  choiceFieldSearch:
+    'Sau đó, tại xưởng sáng tác, mỗi khởi điểm được cho chuyển động tối đa {steps} bước rồi chấm điểm, một cuộc tìm kiếm lên tới {search} bước mà trình duyệt không thể chạy. Khởi điểm được khoanh tròn, số {index}, đã được chọn.',
+  choiceFieldMassesExact:
+    'Các khối lượng của nó, suy ra tại đây, trùng với hồ sơ đã công bố đến từng bit cuối cùng.',
+  choiceFieldMassesDiffer: 'Các khối lượng của nó, suy ra tại đây, khác với hồ sơ đã công bố.',
+  choiceFieldSummary: '{gate} {search} {masses}',
   chapterSpectrum: 'Quang phổ',
   playSweep: 'Phát bản quét',
   sweepCopy:

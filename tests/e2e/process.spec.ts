@@ -2,7 +2,9 @@ import { expect, test, type Page } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
 import { readFileSync } from 'node:fs';
 import { catalogs } from '../../src/lib/i18n/messages';
+import { fill } from '../../src/lib/i18n/format';
 import { workOfTheDay } from '../../src/lib/art/work-of-the-day';
+import { deriveBeginnings, QUICK_GATE } from '../../src/lib/physics/beginnings';
 import { artworkImageSource, imageLoaded, noHorizontalOverflow } from './helpers';
 
 const t = catalogs.en;
@@ -16,6 +18,25 @@ const plates = JSON.parse(
 const index = JSON.parse(
   readFileSync(new URL('../../src/lib/art/collection-index.json', import.meta.url), 'utf8'),
 ) as { works: { id: number; borda: { selectedIndex: number; totalCandidates: number } }[] };
+/** The orbit records, as published: the generation that chose each work, doubles as text. */
+const orbits = JSON.parse(
+  readFileSync(new URL('../../src/lib/art/orbit-records.json', import.meta.url), 'utf8'),
+) as {
+  records: {
+    id: number;
+    seed: string;
+    generation: {
+      candidatesPerAttempt: number;
+      selectedIndex: number;
+      retryCount: number;
+      weightsRandomized: boolean;
+      dt: string;
+      steps: number;
+      warmupSteps: number;
+    };
+    physics: { masses: [string, string, string] };
+  }[];
+};
 /** The one real control; the running head's inert overlay repeats its markup without a role. */
 const motionToggle = (page: Page) => page.locator('button.motion-toggle');
 async function pauseAmbientMotion(page: Page) {
@@ -191,4 +212,82 @@ test('with ambient motion allowed the Light chapter plays the published film fro
     .poll(() => film.evaluate((element) => (element as HTMLVideoElement).paused))
     .toBe(true);
   await expect(light.getByRole('button', { name: t.play, exact: true })).toBeVisible();
+});
+
+test('the choice derives every beginning of the day’s work in the browser and rings the chosen one', async ({
+  page,
+}) => {
+  // Under a second on a desk; CI's two cores without a GPU are given far longer, and the test
+  // waits on the figure's phase, never on a clock.
+  test.setTimeout(150_000);
+  const day = workOfTheDay();
+  const record = orbits.records.find((item) => item.id === day)!;
+  const { generation } = record;
+  // The same walk in Node: the counts the browser states must be these.
+  const walk = deriveBeginnings({
+    ...generation,
+    seed: record.seed,
+    dt: Number(generation.dt),
+    masses: [
+      Number(record.physics.masses[0]),
+      Number(record.physics.masses[1]),
+      Number(record.physics.masses[2]),
+    ],
+  });
+  const errors: string[] = [];
+  page.on('pageerror', (error) => errors.push(error.message));
+  await page.goto('/process');
+  // The figure sits within a screen of the top, so it derives without a scroll; every check
+  // below re-reads it, so none holds on to a node the page has since rendered anew.
+  const field = page.locator('#choice figure');
+  await expect(field).toHaveAttribute('data-phase', 'derived', { timeout: 120_000 });
+  await expect(field).toHaveAttribute('data-passed', String(walk.passed));
+
+  const n = (value: number) => value.toLocaleString('en');
+  const stepsEach = generation.warmupSteps + generation.steps;
+  const gate =
+    walk.passed === walk.count
+      ? fill(t.choiceFieldAllPassed, {
+          total: n(walk.count),
+          energy: n(QUICK_GATE.maxEnergy),
+          momentum: n(QUICK_GATE.minAngularMomentum),
+        })
+      : fill(t.choiceFieldSomePassed, {
+          total: n(walk.count),
+          passed: n(walk.passed),
+          failed: n(walk.count - walk.passed),
+          energy: n(QUICK_GATE.maxEnergy),
+          momentum: n(QUICK_GATE.minAngularMomentum),
+        });
+  await expect(field.locator('[data-summary]')).toHaveText(
+    fill(t.choiceFieldSummary, {
+      gate,
+      search: fill(t.choiceFieldSearch, {
+        steps: n(stepsEach),
+        search: n(walk.passed * stepsEach),
+        index: n(generation.selectedIndex),
+      }),
+      masses: walk.chosen.massesExact ? t.choiceFieldMassesExact : t.choiceFieldMassesDiffer,
+    }),
+  );
+  await expect(field.getByRole('status')).toHaveText(
+    new RegExp(`^All ${n(walk.count)} beginnings derived in this browser in \\d+\\.\\d s\\.$`),
+  );
+
+  // The chosen beginning is ringed and named, and the field holds the beginnings' light.
+  await expect(field.getByText(`№ ${n(generation.selectedIndex)}`, { exact: true })).toBeVisible();
+  await expect
+    .poll(() =>
+      field.locator('canvas').evaluate((element) => {
+        const canvas = element as HTMLCanvasElement;
+        const pixels = canvas
+          .getContext('2d')!
+          .getImageData(0, 0, canvas.width, canvas.height).data;
+        let lit = 0;
+        for (let i = 3; i < pixels.length; i += 4) if (pixels[i] > 0) lit += 1;
+        return lit;
+      }),
+    )
+    .toBeGreaterThan(1_000);
+  expect(errors).toEqual([]);
 });

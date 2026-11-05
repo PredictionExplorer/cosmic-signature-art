@@ -383,6 +383,25 @@ export const ja: Messages = {
   // プロセス、章の再構成
   chapterChoice: '選択',
   chapterChoiceCopy: '十万本の候補軌道が採点され、一本が選ばれる。',
+  // The choice, derived here (src/components/choice-field.tsx)
+  choiceFieldCaption:
+    '点はそれぞれ、シードから引き出した {total} 通りの初期条件のひとつ、最初のステップより前の三つの天体の質量、位置、速度です。全エネルギーを横に、角運動量を縦にとり、どちらも対数目盛です。',
+  choiceFieldWaiting: 'ここまで来ると、{total} 通りの初期条件をこの場で導き出します。',
+  choiceFieldProgress: '初期条件を導出中 · {done} / {total}',
+  choiceFieldDerived:
+    '{total} 通りの初期条件をすべて、このブラウザで {seconds} 秒かけて導き出しました。',
+  choiceFieldUnavailable:
+    'このブラウザでは初期条件を導き出せませんでした。選択は照合せず、公開されたままに示します。',
+  choiceFieldAllPassed:
+    '{total} 通りすべてが、スタジオの簡易審査を通過しました。エネルギーは {energy} 以下、角運動量は {momentum} 以上です。',
+  choiceFieldSomePassed:
+    'スタジオの簡易審査（エネルギー {energy} 以下、角運動量 {momentum} 以上）は、{total} 通りのうち {failed} 通りを退けました。通過したのは {passed} 通りです。',
+  choiceFieldSearch:
+    'そのそれぞれをスタジオで最大 {steps} ステップ動かし、採点しました。延べ最大 {search} ステップに及ぶ探索で、ブラウザでは実行できません。丸で囲んだ第 {index} 番が選ばれました。',
+  choiceFieldMassesExact:
+    'ここで導き出したその質量は、公開された記録と最後のビットまで一致します。',
+  choiceFieldMassesDiffer: 'ここで導き出したその質量は、公開された記録と異なります。',
+  choiceFieldSummary: '{gate}{search}{masses}',
   chapterSpectrum: 'スペクトル',
   playSweep: 'スイープを再生',
   sweepCopy:
