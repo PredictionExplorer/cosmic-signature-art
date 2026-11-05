@@ -385,6 +385,24 @@ export const vi: Messages = {
   // Quy trình, chia chương lại
   chapterChoice: 'Sự lựa chọn',
   chapterChoiceCopy: 'Một trăm nghìn quỹ đạo ứng viên được chấm điểm; một quỹ đạo được chọn.',
+  // The choice, derived here (src/components/choice-field.tsx)
+  choiceFieldCaption:
+    'Mỗi chấm là một trong {total} khởi điểm rút ra từ hạt giống: khối lượng, vị trí và vận tốc của ba vật thể trước bước đầu tiên, đặt theo tổng năng lượng theo chiều ngang và mômen động lượng theo chiều dọc, trên thang logarit.',
+  choiceFieldWaiting: 'Khi bạn đến đây, {total} khởi điểm sẽ được suy ra ngay tại chỗ.',
+  choiceFieldProgress: 'Đang suy ra khởi điểm {done}/{total}',
+  choiceFieldDerived: 'Đã suy ra cả {total} khởi điểm trong trình duyệt này, mất {seconds} giây.',
+  choiceFieldUnavailable:
+    'Trình duyệt này không thể suy ra các khởi điểm. Sự lựa chọn được hiển thị đúng như đã công bố, chưa đối chiếu.',
+  choiceFieldAllPassed:
+    'Cả {total} khởi điểm đều qua cửa lọc nhanh của xưởng sáng tác: năng lượng không quá {energy}, mômen động lượng ít nhất {momentum}.',
+  choiceFieldSomePassed:
+    'Cửa lọc nhanh của xưởng sáng tác (năng lượng không quá {energy}, mômen động lượng ít nhất {momentum}) đã gạt ra {failed} trong số {total}; {passed} khởi điểm lọt qua.',
+  choiceFieldSearch:
+    'Sau đó, tại xưởng sáng tác, mỗi khởi điểm được cho chuyển động tối đa {steps} bước rồi chấm điểm, một cuộc tìm kiếm lên tới {search} bước mà trình duyệt không thể chạy. Khởi điểm được khoanh tròn, số {index}, đã được chọn.',
+  choiceFieldMassesExact:
+    'Các khối lượng của nó, suy ra tại đây, trùng với hồ sơ đã công bố đến từng bit cuối cùng.',
+  choiceFieldMassesDiffer: 'Các khối lượng của nó, suy ra tại đây, khác với hồ sơ đã công bố.',
+  choiceFieldSummary: '{gate} {search} {masses}',
   chapterSpectrum: 'Quang phổ',
   playSweep: 'Phát bản quét',
   sweepCopy:
@@ -565,6 +583,16 @@ export const vi: Messages = {
   orbitDerivedValue: 'tại đây: {value}',
   orbitNote:
     'Phim và ảnh tĩnh là các bản kết xuất được ghi lại của tác phẩm. Hình vẽ này là quỹ đạo nằm bên dưới chúng, được trình duyệt của bạn tính theo đúng trình tự của bộ tạo: dòng ngẫu nhiên của nó, việc chọn ứng viên {index}, và {steps} bước của bộ tích phân Yoshida bậc bốn.',
+  afterTheFrame: 'Sau khung hình',
+  afterTheFrameNote:
+    'Quá cửa sổ đã ghi, cùng một vật lý ấy vẫn tiếp diễn, theo nhịp của phim. Đây không phải tác phẩm: đây là điều quỹ đạo của tác phẩm làm tiếp theo.',
+  orbitFate: 'Số phận',
+  orbitFateEjection: 'vật thể {body} thoát ra ở bước {step}',
+  orbitFateDance: 'còn gắn kết qua {steps} bước',
+  orbitBeyond: 'Sau khung hình · bước {step} · {clock} sau phim',
+  orbitEscaped: 'Vật thể {body} đã thoát ra, ở bước {step}',
+  orbitHeld: 'Vũ điệu giữ vững qua cả {steps} bước',
+  toTheEjection: 'Đến lúc thoát ra',
   // The crossing and the When lens (src/components/when-lens.tsx)
   whenLens: 'Thời điểm',
   whenLight: 'Thời điểm mỗi nét được vẽ',

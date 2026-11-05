@@ -9,6 +9,7 @@ import {
 } from 'react';
 import type { Room } from '@/lib/room';
 import type { Expression } from '@/lib/art/types';
+import { SEAM_EVENT } from '@/lib/venue-events';
 import { lendPlateTone, overrideRoom, returnPlateTone } from './room-ground';
 import { useOpenSheet } from './sheets-store';
 import styles from './wing.module.css';
@@ -195,11 +196,11 @@ export function useRoomSeam({
     sample();
     window.addEventListener('scroll', schedule, { passive: true });
     window.addEventListener('resize', schedule);
-    window.addEventListener('cosmic:seam', schedule);
+    window.addEventListener(SEAM_EVENT, schedule);
     return () => {
       window.removeEventListener('scroll', schedule);
       window.removeEventListener('resize', schedule);
-      window.removeEventListener('cosmic:seam', schedule);
+      window.removeEventListener(SEAM_EVENT, schedule);
       if (frame.current !== null) cancelAnimationFrame(frame.current);
       frame.current = null;
       overrideRoom(null);

@@ -86,7 +86,8 @@ export async function collectionLoaded(page: Page, loadAllImages = false) {
           ),
       )
       .toBe(true);
-    await page.evaluate(() => window.scrollTo(0, 0));
+    // Instantly, as the venue's smooth scroll can be given up when the layout moves beneath it.
+    await page.evaluate(() => window.scrollTo({ top: 0, behavior: 'instant' }));
   }
 }
 

@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import data from './orbit-records.json' with { type: 'json' };
-import type { OrbitGeneration, PublishedPhysics } from '@/lib/physics/orbit';
+import type { OrbitGeneration, PublishedFate, PublishedPhysics } from '@/lib/physics/orbit';
 
 /**
  * The orbit beneath every work, as its published trait file states it
@@ -34,6 +34,7 @@ const recordSchema = z.object({
     dt: decimal.pipe(finite.positive()),
     steps: z.number().int().positive(),
     warmupSteps: count,
+    escapeThreshold: decimal,
   }),
   physics: z.object({
     masses: z.tuple([
@@ -78,7 +79,8 @@ export interface WorkOrbit {
   traitsSha256: string;
   generation: OrbitGeneration;
   published: PublishedPhysics;
-  fate: OrbitRecord['fate'];
+  /** Who escapes and when, or how long the dance held, with the threshold it was asked with. */
+  fate: PublishedFate;
   bodyHues: [number, number, number];
 }
 
@@ -110,7 +112,7 @@ export function workOrbit(id: number): WorkOrbit | undefined {
       masses: record.physics.masses,
     },
     published: record.physics,
-    fate: record.fate,
+    fate: { ...record.fate, escapeThreshold: record.generation.escapeThreshold },
     bodyHues: record.bodyHues,
   };
 }

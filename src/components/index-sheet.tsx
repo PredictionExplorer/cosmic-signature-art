@@ -34,11 +34,10 @@ import { useDayExpression } from './venue-day';
 import { useMotion } from './motion-provider';
 import { PreviewImage } from './preview-image';
 import { closeSheet, useOpenSheet } from './sheets-store';
+import { EXPRESSION_KEY } from '@/lib/storage-keys';
 import styles from './index-sheet.module.css';
 
 export type { Expression };
-/** The session remembers the chosen expression beside the motion preference; a new visit opens on the day's. */
-export const EXPRESSION_KEY = 'cosmic-art-expression-v1';
 const TRAIT_LABEL: Record<TraitKey, keyof Messages> = {
   structure: 'structure',
   underlay: 'underlay',

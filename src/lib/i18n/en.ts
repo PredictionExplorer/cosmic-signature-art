@@ -384,6 +384,23 @@ export const en = {
   // The process, re-chaptered
   chapterChoice: 'The choice',
   chapterChoiceCopy: 'One hundred thousand candidate orbits are scored; one is chosen.',
+  // The choice, derived here (src/components/choice-field.tsx)
+  choiceFieldCaption:
+    'Each dot is one of the {total} beginnings drawn from the seed: three bodies’ masses, places and velocities before their first step, set by total energy across and angular momentum upward, on logarithmic scales.',
+  choiceFieldWaiting: 'The {total} beginnings are derived here when you reach them.',
+  choiceFieldProgress: 'Deriving beginning {done} of {total}',
+  choiceFieldDerived: 'All {total} beginnings derived in this browser in {seconds} s.',
+  choiceFieldUnavailable:
+    'This browser could not derive the beginnings. The choice is shown as published, unchecked.',
+  choiceFieldAllPassed:
+    'All {total} passed the studio’s quick gate: energy at most {energy}, angular momentum at least {momentum}.',
+  choiceFieldSomePassed:
+    'The studio’s quick gate, energy at most {energy} and angular momentum at least {momentum}, set aside {failed} of the {total}; {passed} passed.',
+  choiceFieldSearch:
+    'Each was then set in motion in the studio for up to {steps} steps and scored, a search of up to {search} steps that cannot run in a browser. The ringed one, number {index}, was chosen.',
+  choiceFieldMassesExact: 'Its masses, derived here, are the published record, to the last bit.',
+  choiceFieldMassesDiffer: 'Its masses, derived here, differ from the published record.',
+  choiceFieldSummary: '{gate} {search} {masses}',
   chapterSpectrum: 'The spectrum',
   playSweep: 'Play the sweep',
   sweepCopy:
@@ -562,6 +579,17 @@ export const en = {
   orbitDerivedValue: 'here: {value}',
   orbitNote:
     'The films and stills are recorded renderings of the work. This drawing is the orbit beneath them, computed in your browser by the generator’s own sequence: its random stream, the choice of candidate {index}, and {steps} steps of a fourth-order Yoshida integrator.',
+  // After the frame (src/components/orbit-score.tsx)
+  afterTheFrame: 'After the frame',
+  afterTheFrameNote:
+    'Past the recorded window the same physics runs on, at the film’s pace. This is not the work: it is what the work’s orbit does next.',
+  orbitFate: 'Fate',
+  orbitFateEjection: 'body {body} escapes at step {step}',
+  orbitFateDance: 'bound through {steps} steps',
+  orbitBeyond: 'After the frame · step {step} · {clock} past the film',
+  orbitEscaped: 'Body {body} has escaped, at step {step}',
+  orbitHeld: 'The dance held through all {steps} steps',
+  toTheEjection: 'To the ejection',
   // The crossing and the When lens (src/components/when-lens.tsx)
   whenLens: 'When',
   whenLight: 'When each mark was drawn',

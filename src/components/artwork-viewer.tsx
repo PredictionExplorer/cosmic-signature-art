@@ -23,6 +23,8 @@ import { workNumber } from '@/lib/art/number';
 import { getPlateGround } from '@/lib/art/plate-records';
 import type { Messages } from '@/lib/i18n/en';
 import { localizedPath, type Locale } from '@/lib/i18n/routing';
+import { AFTER_THE_FRAME_EVENT, SEAM_EVENT } from '@/lib/venue-events';
+import { HOME_RESOLVED_KEY } from '@/lib/storage-keys';
 import { ArtworkMedia } from './artwork-media';
 import { useMotion } from './motion-provider';
 import { useMediaPolicy } from './media-policy';
@@ -41,6 +43,7 @@ import {
   setThemeColor,
   useRememberedExpression,
   type Expression,
+  type TurnMode,
 } from './turn';
 import {
   Wing,
@@ -50,7 +53,7 @@ import {
   wingSeamAt,
   type WingMode,
 } from './wing';
-import { DUSK_CANCEL_EVENTS, DuskController } from './dusk';
+import { setOverturePhase, useOverturePhase, type OverturePhase } from './overture-store';
 import { inField } from './keys';
 import { useOpenSheet } from './sheets-store';
 import { ArtworkNeighbours, neighbourHref, type Neighbours } from './artwork-neighbours';
@@ -64,10 +67,6 @@ import { clock } from '@/lib/i18n/format';
 
 /** After a film resolves into its still, nothing moves for --t-rest; then "Again". */
 const REST_MS = 8000;
-/** The home rests a little less (--t-rest-dusk), because the Dusk may follow. */
-const REST_HOME_MS = 6000;
-/** Once the home's arrival film has resolved in this session, the home opens on the still. */
-const HOME_RESOLVED_KEY = 'cosmic-art-home-film-v1';
 
 export type Presentation = 'gallery' | 'auction' | 'home';
 
@@ -90,8 +89,11 @@ type ArtworkViewerProps = {
   neighbours?: Neighbours;
   /** The night wing beneath the plate; the lot page has the bid rail there instead. */
   wing?: boolean;
-  /** The home's one automatic event, behind its flag. */
-  dusk?: boolean;
+  /**
+   * The work's orbit stands beneath the plate (orbit-score.tsx): once the film resolves into
+   * its still, the strip offers After the frame, which goes on down to it.
+   */
+  afterTheFrame?: boolean;
 };
 
 export function ArtworkViewer(props: ArtworkViewerProps) {
@@ -152,7 +154,7 @@ function ArtworkViewerSession({
   traits,
   neighbours,
   wing = presentation !== 'auction',
-  dusk = false,
+  afterTheFrame = false,
 }: ArtworkViewerProps) {
   const router = useRouter();
   const [liveArtwork, setLiveArtwork] = useState<Artwork | null>(null);
@@ -192,7 +194,7 @@ function ArtworkViewerSession({
   const [failed, setFailed] = useState(false);
   const [turning, setTurning] = useState<{
     to: Expression;
-    mode: 'time' | 'peek' | 'drag' | 'dusk';
+    mode: 'time' | 'peek' | 'drag' | 'overture';
   } | null>(null);
   const returnFocusRef = useRef<HTMLElement | null>(null);
   /** A held I or L: the seam is out on a peek and returns on release. */
@@ -211,8 +213,6 @@ function ArtworkViewerSession({
   const homeResolved = home && (resolvedOverride ?? (ended ? false : resolvedBefore));
   const restedNow = rested || (home && resolvedOverride === null && !ended && resolvedBefore);
   const idle = paused || still || homeResolved || !playing;
-  // The Dusk controller is created once; each firing performs the latest render's Dusk.
-  const [duskController] = useState(() => new DuskController());
 
   useEffect(() => () => seam.end(), [seam]);
 
@@ -225,7 +225,15 @@ function ArtworkViewerSession({
   // The wing hangs the twin of the expression the page opened on, and a remembered choice
   // re-opens the page; a Turn afterwards never reverses the wing under the hand.
   const [turnedTwin, setTurnedTwin] = useState<Expression | null>(null);
-  const restoring = useRef(false);
+  /**
+   * The next commit is not the visitor's: a remembered choice restored, or the Overture's own
+   * move. It neither turns the wing nor is remembered.
+   */
+  const quiet = useRef(false);
+  /** The mode the next Turn by time travels in: a Turn's, or the Overture's slower crossing. */
+  const turnMode = useRef<TurnMode>('time');
+  /** The Overture's crossing is under way, and lands the Overture when it commits. */
+  const landingOverture = useRef(false);
   /** Each Turn the twin's decode asked for; a newer one supersedes a Turn still waiting. */
   const turnRequest = useRef(0);
   // A Turn that waited on the crossing reads the room and motion as they are when it ends.
@@ -237,12 +245,17 @@ function ArtworkViewerSession({
       initialExpression,
       openingExpression,
       onCommit: (committed) => {
-        if (restoring.current) restoring.current = false;
-        else if (isExpression(committed)) setTurnedTwin((current) => current ?? committed);
+        const chosen = !quiet.current;
+        quiet.current = false;
+        if (chosen && isExpression(committed)) setTurnedTwin((current) => current ?? committed);
         seam.end();
         setTurning(null);
-        if (hasBoth) rememberExpression(committed);
-        window.dispatchEvent(new Event('cosmic:seam'));
+        if (hasBoth && chosen) rememberExpression(committed);
+        if (landingOverture.current) {
+          landingOverture.current = false;
+          setOverturePhase('done');
+        }
+        window.dispatchEvent(new Event(SEAM_EVENT));
         setTime({ current: 0, duration: 0 });
         setPlaying(false);
         setFailed(false);
@@ -259,6 +272,9 @@ function ArtworkViewerSession({
         if (failedLayers.current.delete(target))
           setAttempts((current) => ({ ...current, [target]: (current[target] ?? 0) + 1 }));
         // The twin is decoded. Instant crossings commit at once; otherwise the seam travels first.
+        // Either way the mode asked for is spent here, so it never carries to a later Turn.
+        const mode = turnMode.current;
+        turnMode.current = 'time';
         const now = instantNext.current || instant || room !== null;
         instantNext.current = false;
         if (now) {
@@ -269,7 +285,7 @@ function ArtworkViewerSession({
         // The Turn is under way from here, and reads so. A crossing still being prepared is
         // worth a moment; past that the straight seam travels. Whatever takes the seam in the
         // meantime (a newer request, the room, a key, the page left) supersedes this Turn.
-        setTurning({ to, mode: 'time' });
+        setTurning({ to, mode });
         const request = ++turnRequest.current;
         const generation = seam.generation;
         void whenReady(400).then(() => {
@@ -280,7 +296,7 @@ function ArtworkViewerSession({
           }
           void seam
             .animateTo(targetSeam(to), {
-              mode: 'time',
+              mode,
               breath: seam.seam === null,
               from: restSeam(),
               halfway: () => setThemeColor(to === 'light' ? 'night' : 'paper'),
@@ -300,7 +316,14 @@ function ArtworkViewerSession({
   useEffect(() => {
     if (!failedExpression) return;
     failedLayers.current.add(failedExpression);
-    restoring.current = false;
+    quiet.current = false;
+    instantNext.current = false;
+    turnMode.current = 'time';
+    // A crossing that cannot land still ends the Overture: the head is never kept waiting.
+    if (landingOverture.current) {
+      landingOverture.current = false;
+      setOverturePhase('done');
+    }
   }, [failedExpression]);
 
   // An expression the URL asked for is the visitor's choice (the half they pressed, a shared
@@ -316,20 +339,58 @@ function ArtworkViewerSession({
     restored.current = true;
     if (remembered !== expression) {
       instantNext.current = true;
-      restoring.current = true;
+      quiet.current = true;
       selectExpression(remembered);
     }
   }, [remembered, initialExpression, hasBoth, expression, selectExpression]);
 
-  const restMs = home ? REST_HOME_MS : REST_MS;
+  /*
+    The Overture (overture.tsx), on a first visit to the home. Beneath its black the plate stands
+    in Light, which is what condenses there; as it lands the plate crosses to the expression it
+    would have opened on, by the Overture's own slower crossing, in the order the ink came to
+    rest; and any input puts it there at once. None of it is the visitor's choice.
+  */
+  const overture = useOverturePhase();
+  const followOverture = useEffectEvent((phase: OverturePhase) => {
+    if (!home || !hasBoth) {
+      if (phase === 'landing') setOverturePhase('done');
+      return;
+    }
+    const opening = remembered ?? openingExpression ?? expression;
+    /** The Overture's move: quiet, at once or by its crossing; false when there is none to make. */
+    const stand = (to: string, how: 'at once' | TurnMode) => {
+      if (to === expression) {
+        // A quiet move still on its way is called off, and leaves nothing for the next Turn:
+        // even one decoded and waiting in a transition, which is no longer pending.
+        cancelPending();
+        quiet.current = false;
+        instantNext.current = false;
+        turnMode.current = 'time';
+        return false;
+      }
+      quiet.current = true;
+      if (how === 'at once') instantNext.current = true;
+      else turnMode.current = how;
+      selectExpression(to);
+      return true;
+    };
+    if (phase === 'playing') stand('light', 'at once');
+    else if (phase === 'done') stand(opening, 'at once');
+    else if (stand(opening, 'overture')) landingOverture.current = true;
+    else setOverturePhase('done');
+  });
+  useEffect(() => {
+    if (overture) followOverture(overture);
+  }, [overture]);
+
   useEffect(() => {
     if (!ended) return;
     const timer = setTimeout(() => {
       setRested(true);
       stand();
-    }, restMs);
+    }, REST_MS);
     return () => clearTimeout(timer);
-  }, [ended, restMs, stand]);
+  }, [ended, stand]);
 
   const media = getInterpretation(artwork, expression);
   const settled = settledLayers.includes(expression);
@@ -459,7 +520,6 @@ function ArtworkViewerSession({
     setEnded(false);
     setRested(false);
     if (home) setResolvedOverride(false);
-    duskController.reset();
     setRestart((value) => value + 1);
     setTime((value) => ({ ...value, current: 0 }));
     if (paused) toggle();
@@ -588,76 +648,6 @@ function ArtworkViewerSession({
     };
   }, []);
 
-  /* The Dusk: the home's one automatic event, behind its flag. */
-  const performDusk = useEffectEvent(async () => {
-    // The Dusk lowers the night over an Ink plate; a page that opened in Light has no Dusk.
-    if (
-      !dusk ||
-      !home ||
-      twin !== 'light' ||
-      instant ||
-      expression !== 'ink' ||
-      !canTurn ||
-      sheet ||
-      room ||
-      document.fullscreenElement ||
-      document.visibilityState !== 'visible'
-    )
-      return false;
-    setTurning({ to: 'light', mode: 'dusk' });
-    const done = await seam.animateTo(0, {
-      mode: 'dusk',
-      breath: false,
-      from: restSeam(),
-      halfway: () => setThemeColor('night'),
-    });
-    if (!done) return false;
-    // Hand and clock never fight: land the scroll where the hand would have drawn the night.
-    const wingNode = wingRef.current;
-    const stage = wingNode?.firstElementChild as HTMLElement | null;
-    if (wingNode && stage && wingMode === 'scroll' && scrollTimelinesSupported()) {
-      const head =
-        parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--head')) || 48;
-      const top =
-        wingNode.getBoundingClientRect().top +
-        window.scrollY +
-        (wingNode.offsetHeight - stage.offsetHeight) -
-        head;
-      window.scrollTo({ top, behavior: 'instant' as ScrollBehavior });
-    }
-    selectExpression('light');
-    return true;
-  });
-  useEffect(() => {
-    if (!dusk || !home || !ended) return;
-    duskController.arm();
-  }, [dusk, home, ended, duskController]);
-  useEffect(() => {
-    if (!dusk || !home || !rested) return;
-    void duskController.fire(() => performDusk());
-  }, [dusk, home, rested, duskController]);
-  const duskInput = useEffectEvent(() => {
-    if (duskController.input() !== 'cancel') return;
-    // Cancel, never resume mid-travel: the seam returns and the plate stays on paper.
-    setTurning(null);
-    void seam.animateTo(wingSeam(), { mode: 'time', breath: false }).then((done) => {
-      if (done) seam.end();
-    });
-  });
-  useEffect(() => {
-    if (!dusk || !home) return;
-    const cancel = () => duskInput();
-    const hidden = () => {
-      if (document.visibilityState === 'hidden') duskInput();
-    };
-    for (const name of DUSK_CANCEL_EVENTS) window.addEventListener(name, cancel, { passive: true });
-    document.addEventListener('visibilitychange', hidden);
-    return () => {
-      for (const name of DUSK_CANCEL_EVENTS) window.removeEventListener(name, cancel);
-      document.removeEventListener('visibilitychange', hidden);
-    };
-  }, [dusk, home]);
-
   const filmState = !settled || handoverWaiting ? 'arriving' : playing ? 'film' : 'still';
   const stateWord =
     filmState === 'film' && excerpt
@@ -700,10 +690,28 @@ function ArtworkViewerSession({
         {showAgain ? t.again : idle ? t.film : t.still}
       </button>
     ) : null;
+    // When a film resolves into its still, the venue offers what no film shows: the orbit
+    // carried on past its recorded window, further down the page (third-physics.md §5.6).
+    // A phone's strip has no room to spare, and its orbit is the next thing down.
+    const beyondWord =
+      afterTheFrame && !home && !compact && showAgain ? (
+        <a
+          className={styles.word}
+          href="#orbit"
+          onClick={(event) => {
+            event.preventDefault();
+            window.dispatchEvent(new Event(AFTER_THE_FRAME_EVENT));
+          }}
+          data-after-the-frame
+        >
+          {t.afterTheFrame}
+        </a>
+      ) : null;
     return (
       <>
         {turnWord}
         {filmWord}
+        {beyondWord}
         {!home || (inlineFilm && !showAgain) ? (
           <ArtworkOptions
             key={`${layer}:${current}`}
@@ -889,6 +897,7 @@ function ArtworkViewerSession({
         ref={section}
         className={`viewing-room ${styles.room} ${styles[presentation]}`}
         aria-label={t.ways}
+        data-presentation={presentation}
         data-expression={expression}
         data-live={liveArtwork ? 'adopted' : undefined}
         data-turning={turning?.mode}

@@ -38,6 +38,36 @@ describe('the orbit worker', () => {
     ]);
   }, 30_000);
 
+  it('runs on to the fate when asked, and hands over the bodies After the frame starts from', async () => {
+    const { scope, replies } = await workerScope();
+    // № 054 ejects soonest, so its run past the window is short.
+    const orbit = workOrbit(54)!;
+    scope.onmessage!({
+      data: {
+        generation: orbit.generation,
+        published: orbit.published,
+        stride: 10_000,
+        fate: { published: orbit.fate, lead: 30_000 },
+      },
+    } as MessageEvent<OrbitRequest>);
+    const kinds = replies.map(({ message }) => message.type);
+    expect(kinds.slice(-2)).toEqual(['done', 'fate']);
+    const { message, transfer } = replies.at(-1)!;
+    if (message.type !== 'fate') throw new Error('no fate');
+    expect(message.comparison).toMatchObject({ key: 'fate', exact: true });
+    expect(message.fate).toMatchObject({
+      outcome: 'ejection',
+      escaper: orbit.fate.escaper,
+      ejectionStep: orbit.fate.ejectionStep,
+    });
+    expect(transfer).toEqual([
+      message.fate.windowEnd.positions.buffer,
+      message.fate.windowEnd.velocities.buffer,
+      message.fate.approach!.positions.buffer,
+      message.fate.approach!.velocities.buffer,
+    ]);
+  }, 30_000);
+
   it('says why it failed instead of throwing', async () => {
     const { scope, replies } = await workerScope();
     const orbit = workOrbit(0)!;

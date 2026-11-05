@@ -379,6 +379,23 @@ export const ko: Messages = {
   // 과정, 새 장 구성
   chapterChoice: '선택',
   chapterChoiceCopy: '십만 개의 후보 궤도에 점수를 매기고, 하나를 선택합니다.',
+  // The choice, derived here (src/components/choice-field.tsx)
+  choiceFieldCaption:
+    '점 하나하나가 시드에서 뽑은 초기 조건 {total}개 가운데 하나로, 첫 단계 이전 세 천체의 질량과 위치와 속도입니다. 총에너지를 가로로, 각운동량을 세로로 놓았으며 두 축 모두 로그 눈금입니다.',
+  choiceFieldWaiting: '이곳에 이르면 초기 조건 {total}개를 이 자리에서 도출합니다.',
+  choiceFieldProgress: '초기 조건 도출 중 · {done} / {total}',
+  choiceFieldDerived: '초기 조건 {total}개를 모두 이 브라우저에서 {seconds}초 만에 도출했습니다.',
+  choiceFieldUnavailable:
+    '이 브라우저에서는 초기 조건을 도출할 수 없었습니다. 선택은 공개된 그대로, 대조하지 않은 채 보여 줍니다.',
+  choiceFieldAllPassed:
+    '{total}개 모두 스튜디오의 빠른 관문을 통과했습니다. 에너지는 {energy} 이하, 각운동량은 {momentum} 이상입니다.',
+  choiceFieldSomePassed:
+    '스튜디오의 빠른 관문(에너지 {energy} 이하, 각운동량 {momentum} 이상)은 {total}개 중 {failed}개를 걸러 냈고, {passed}개가 통과했습니다.',
+  choiceFieldSearch:
+    '이어서 스튜디오에서 각각을 최대 {steps}단계까지 움직여 점수를 매겼습니다. 모두 합쳐 최대 {search}단계에 이르는 탐색으로, 브라우저에서는 실행할 수 없습니다. 동그라미 친 {index}번이 선택되었습니다.',
+  choiceFieldMassesExact: '여기에서 도출한 그 질량은 공개된 기록과 마지막 비트까지 일치합니다.',
+  choiceFieldMassesDiffer: '여기에서 도출한 그 질량은 공개된 기록과 다릅니다.',
+  choiceFieldSummary: '{gate} {search} {masses}',
   chapterSpectrum: '스펙트럼',
   playSweep: '스윕 재생',
   sweepCopy:
@@ -556,6 +573,16 @@ export const ko: Messages = {
   orbitDerivedValue: '여기: {value}',
   orbitNote:
     '영상과 정지 이미지는 작품을 기록한 렌더링입니다. 이 그림은 그 아래의 궤도로, 생성기 고유의 순서에 따라 브라우저에서 계산했습니다. 그 순서는 난수 흐름, {index}번 후보의 선택, 그리고 4차 요시다 적분기의 {steps}단계입니다.',
+  afterTheFrame: '프레임 너머',
+  afterTheFrameNote:
+    '기록된 구간 너머에서도 같은 물리가 영상의 속도로 이어집니다. 이것은 작품이 아니라, 작품의 궤도가 그다음에 하는 일입니다.',
+  orbitFate: '운명',
+  orbitFateEjection: '천체 {body}이(가) {step}번째 단계에서 탈출',
+  orbitFateDance: '{steps}단계 동안 묶여 있음',
+  orbitBeyond: '프레임 너머 · {step}번째 단계 · 영상 이후 {clock}',
+  orbitEscaped: '천체 {body}이(가) {step}번째 단계에서 탈출했습니다',
+  orbitHeld: '춤은 {steps}단계 내내 이어졌습니다',
+  toTheEjection: '탈출로',
   // The crossing and the When lens (src/components/when-lens.tsx)
   whenLens: '시각',
   whenLight: '각 선이 그려진 시각',

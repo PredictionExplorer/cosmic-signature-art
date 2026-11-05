@@ -43,6 +43,7 @@ function traits(overrides = {}) {
       dt: 0.001,
       steps: 1000000,
       warmup_steps: 1000000,
+      escape_threshold: -0.3,
     },
     generation: {
       borda: {
@@ -68,6 +69,7 @@ test('keeps the inputs and the measurements, every double as its exact decimal',
     dt: '0.001',
     steps: 1000000,
     warmupSteps: 1000000,
+    escapeThreshold: '-0.3',
   });
   assert.deepEqual(record.physics.masses, [
     '130.67371638058603',
@@ -113,6 +115,7 @@ test('refuses a trait file it cannot vouch for', () => {
   refuse((d) => (d.simulation.integrator = 'rk4'), /integrator/);
   refuse((d) => (d.simulation.braid.word = 's3'), /braid word/);
   refuse((d) => (d.simulation.fate.outcome = 'collision'), /fate/);
+  refuse((d) => delete d.simulation.escape_threshold, /escape threshold/);
   refuse((d) => (d.simulation.closest_approach.step = 1000000), /closest step/);
   refuse((d) => (d.simulation.closest_approach.pair = [2, 0]), /pair/);
   refuse((d) => (d.generation.borda.retry_count = 2), /divide/);
@@ -145,12 +148,15 @@ test('merges by id, keeps the date when nothing changed, and serializes as the f
   assert.equal(decideReadOn('2026-10-29', registry.records, merged, '2027-01-01'), '2027-01-01');
 });
 
-test('every committed record re-derives from its seed to the last bit', async () => {
+test('every committed record re-derives from its seed to the last bit, its fate included', async () => {
   const { records } = JSON.parse(await readFile(registryUrl, 'utf8'));
   const results = await verifyOrbits(records);
   assert.equal(results.length, records.length);
   assert.deepEqual(differences(results), []);
-  for (const result of results) assert.ok([23, 24].includes(result.profileDraws));
+  for (const result of results) {
+    assert.ok([23, 24].includes(result.profileDraws));
+    assert.equal(result.comparisons.filter((row) => row.key === 'fate').length, 1);
+  }
 });
 
 test('names a work whose derivation differs', () => {

@@ -23,11 +23,12 @@ import { verifyOrbits } from './lib/orbit-verify.mjs';
  * For every indexed work the package's metadata/nft_traits.json is read (bounded, and hashed
  * so a changed file is noticed on the next run). The record keeps the inputs that chose the
  * orbit (the candidate, the aesthetic retries, whether the Borda weights were drawn, the step
- * counts) and the measurements published about it (masses, energy, angular momentum, the
- * closest approach, the syzygies and the braid word), plus the fate and the body hues for the
- * pages that draw it. src/lib/physics/orbit.ts then re-derives every orbit from its seed; the
- * registry is written only when every measurement of every work matches exactly. Nothing here
- * alters a published file or infers a value the publisher did not state.
+ * counts, the escape threshold) and the measurements published about it (masses, energy,
+ * angular momentum, the closest approach, the syzygies, the braid word and the fate), plus the
+ * body hues for the pages that draw it. src/lib/physics/orbit.ts then re-derives every orbit
+ * from its seed, and every fate through its horizon; the registry is written only when every
+ * measurement of every work matches exactly. Nothing here alters a published file or infers a
+ * value the publisher did not state.
  *
  * Every measured double is kept as its shortest decimal string: the bundler's JSON loader turns
  * numbers into literals that do not round-trip every double (124.96327743951707 arrived as
@@ -125,6 +126,7 @@ export function orbitRecord(work, traits, traitsSha256) {
       dt: decimal(positive(simulation.dt, 'dt')),
       steps,
       warmupSteps: count(simulation.warmup_steps, 'warm-up steps'),
+      escapeThreshold: decimal(finite(simulation.escape_threshold, 'escape threshold')),
     },
     physics: {
       masses: masses.map(decimal),

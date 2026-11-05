@@ -10,8 +10,11 @@ import { getCuratedArtwork } from '@/lib/art/catalog';
 import { indexedWork } from '@/lib/art/collection-index';
 import { workOfTheDay } from '@/lib/art/work-of-the-day';
 import { workNumber } from '@/lib/art/number';
+import { workOrbit } from '@/lib/art/orbit-records';
+import { QUICK_GATE } from '@/lib/physics/beginnings';
 import { getArtwork } from '@/lib/art/server';
 import { getInterpretation, type Artwork } from '@/lib/art/types';
+import { ChoiceField } from '@/components/choice-field';
 import { ChapterPlate } from './chapter-plate';
 import { SweepPlayer } from './sweep-player';
 import { RoomSeams } from './room-seams';
@@ -78,6 +81,7 @@ export default async function Process({ params }: { params: Promise<{ locale: st
   const number = new Intl.NumberFormat(locale);
   const decimals = new Intl.NumberFormat(locale, { maximumFractionDigits: 3 });
   const borda = indexed?.borda;
+  const orbit = workOrbit(work.id);
   return (
     <main id="main" className={`process-page ${styles.page}`}>
       <RoomSeams />
@@ -135,6 +139,14 @@ export default async function Process({ params }: { params: Promise<{ locale: st
                 })}
               </p>
             </>
+          ) : null}
+          {orbit ? (
+            // A boundary of its own: React holds a large boundary back behind its fallback (the
+            // route's loading plate), and the essay with the field inside outgrew that size.
+            // Now only the field, which needs the browser anyway, can follow the essay's words.
+            <Suspense fallback={null}>
+              <ChoiceField generation={orbit.generation} gate={QUICK_GATE} t={t} locale={locale} />
+            </Suspense>
           ) : null}
         </div>
         <p className={`reading ${styles.chapterCopy}`}>{t.glossaryBorda}</p>

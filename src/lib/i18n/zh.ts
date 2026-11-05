@@ -362,6 +362,22 @@ export const zh: Messages = {
   // 过程，重新分章
   chapterChoice: '遴选',
   chapterChoiceCopy: '十万条候选轨道被评分；一条被选中。',
+  // The choice, derived here (src/components/choice-field.tsx)
+  choiceFieldCaption:
+    '每个点都是由种子抽取的 {total} 组初始条件之一，即三个天体在第一步之前的质量、位置和速度；横向按总能量、纵向按角动量排布，两轴均为对数刻度。',
+  choiceFieldWaiting: '当你来到这里，{total} 组初始条件便在此推导。',
+  choiceFieldProgress: '推导初始条件 · {done} / {total}',
+  choiceFieldDerived: '{total} 组初始条件已全部在此浏览器中推导完成，用时 {seconds} 秒。',
+  choiceFieldUnavailable: '这个浏览器无法推导这些初始条件。遴选按已发布的原样显示，未经核对。',
+  choiceFieldAllPassed:
+    '全部 {total} 组都通过了工作室的快速筛选：能量不高于 {energy}，角动量不低于 {momentum}。',
+  choiceFieldSomePassed:
+    '工作室的快速筛选（能量不高于 {energy}，角动量不低于 {momentum}）从 {total} 组中剔除了 {failed} 组；{passed} 组通过。',
+  choiceFieldSearch:
+    '随后，每一组都在工作室中运行至多 {steps} 步并评分；整个搜索至多 {search} 步，无法在浏览器中运行。被圈出的第 {index} 号被选中。',
+  choiceFieldMassesExact: '它在此推导出的质量与已发布的记录一致，精确到最后一位。',
+  choiceFieldMassesDiffer: '它在此推导出的质量与已发布的记录不同。',
+  choiceFieldSummary: '{gate}{search}{masses}',
   chapterSpectrum: '光谱',
   playSweep: '播放光谱扫描',
   sweepCopy: '已发布的十秒光谱扫描让作品的调色板穿过可见光，从 380 到 700 nm。',
@@ -535,6 +551,16 @@ export const zh: Messages = {
   orbitDerivedValue: '此处：{value}',
   orbitNote:
     '影片与静态图像是作品的记录渲染。这幅图是它们之下的轨道，由你的浏览器按生成器自己的顺序计算：它的随机流、第 {index} 号候选的选择，以及四阶 Yoshida 积分器的 {steps} 步。',
+  afterTheFrame: '画面之后',
+  afterTheFrameNote:
+    '越过记录的时段，同样的物理以影片的速度继续运行。这不是作品：这是作品的轨道接下来的样子。',
+  orbitFate: '命运',
+  orbitFateEjection: '天体 {body} 在第 {step} 步逃逸',
+  orbitFateDance: '在 {steps} 步内始终束缚',
+  orbitBeyond: '画面之后 · 第 {step} 步 · 影片之后 {clock}',
+  orbitEscaped: '天体 {body} 已在第 {step} 步逃逸',
+  orbitHeld: '这支舞持续了全部 {steps} 步',
+  toTheEjection: '前往逃逸',
   // The crossing and the When lens (src/components/when-lens.tsx)
   whenLens: '时刻',
   whenLight: '每一笔被画出的时刻',

@@ -384,6 +384,24 @@ export const uk: Messages = {
   // Процес, перерозділений
   chapterChoice: 'Вибір',
   chapterChoiceCopy: 'Сто тисяч орбіт-кандидаток оцінюються; одну обирають.',
+  // The choice, derived here (src/components/choice-field.tsx)
+  choiceFieldCaption:
+    'Кожна точка — один із {total} початків, видобутих із зерна: маси, положення й швидкості трьох тіл до першого кроку, розміщені за повною енергією по горизонталі та моментом імпульсу по вертикалі, на логарифмічних шкалах.',
+  choiceFieldWaiting: '{total} початків буде виведено тут, коли ви дійдете до них.',
+  choiceFieldProgress: 'Виводимо початок {done} з {total}',
+  choiceFieldDerived: 'Усі {total} початків виведено в цьому браузері за {seconds} с.',
+  choiceFieldUnavailable:
+    'Цей браузер не зміг вивести початки. Вибір показано так, як його опубліковано, без перевірки.',
+  choiceFieldAllPassed:
+    'Усі {total} пройшли швидку перевірку студії: енергія не більша за {energy}, момент імпульсу не менший за {momentum}.',
+  choiceFieldSomePassed:
+    'Швидка перевірка студії (енергія не більша за {energy}, момент імпульсу не менший за {momentum}) відсіяла {failed} з {total}; пройшли {passed}.',
+  choiceFieldSearch:
+    'Потім кожен із них у студії запустили щонайбільше на {steps} кроків і оцінили — пошук обсягом до {search} кроків, який не під силу браузеру. Обрано обведений, номер {index}.',
+  choiceFieldMassesExact:
+    'Його маси, виведені тут, збігаються з опублікованим записом до останнього біта.',
+  choiceFieldMassesDiffer: 'Його маси, виведені тут, відрізняються від опублікованого запису.',
+  choiceFieldSummary: '{gate} {search} {masses}',
   chapterSpectrum: 'Спектр',
   playSweep: 'Відтворити прохід',
   sweepCopy:
@@ -563,6 +581,16 @@ export const uk: Messages = {
   orbitDerivedValue: 'тут: {value}',
   orbitNote:
     'Фільми й зображення — записані відтворення твору. Цей рисунок — орбіта під ними, обчислена у вашому браузері власною послідовністю генератора: його випадковим потоком, вибором кандидата {index} і {steps} кроками інтегратора Йошиди четвертого порядку.',
+  afterTheFrame: 'За кадром',
+  afterTheFrameNote:
+    'Поза записаним вікном та сама фізика триває в темпі фільму. Це не твір: це те, що орбіта твору робить далі.',
+  orbitFate: 'Доля',
+  orbitFateEjection: 'тіло {body} вилітає на кроці {step}',
+  orbitFateDance: 'зв’язані впродовж {steps} кроків',
+  orbitBeyond: 'За кадром · крок {step} · {clock} після фільму',
+  orbitEscaped: 'Тіло {body} вилетіло на кроці {step}',
+  orbitHeld: 'Танець тривав усі {steps} кроків',
+  toTheEjection: 'До вильоту',
   // The crossing and the When lens (src/components/when-lens.tsx)
   whenLens: 'Коли',
   whenLight: 'Коли було намальовано кожен штрих',

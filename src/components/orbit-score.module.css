@@ -22,6 +22,10 @@
   color: var(--night-type);
   scroll-margin-top: var(--head);
 }
+/* Focused only as the plate's word arrives here; the section itself is not a control. */
+.orbit:focus {
+  outline: none;
+}
 @supports not (color: color-mix(in srgb, red, blue)) {
   .orbit {
     --rule: rgba(241, 235, 223, 0.24);
@@ -104,7 +108,17 @@
   font-variant-numeric: tabular-nums lining-nums;
   color: var(--muted);
 }
+/* Again, To the ejection and After the frame: words at the right of the readout, never under it
+   on a desk; on a phone they take the line beneath when the readout needs the width. */
+.words {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  column-gap: 18px;
+  flex-shrink: 0;
+}
 .again {
+  min-width: 44px;
   min-height: 44px;
   padding: 0;
   border: 0;
@@ -121,6 +135,11 @@
 .again:hover,
 .again:active,
 .again:focus-visible {
+  text-decoration-thickness: 2px;
+}
+/* After the frame, pressed: the orbit stands past its window until the word is pressed again. */
+.again[aria-pressed='true'] {
+  font-style: italic;
   text-decoration-thickness: 2px;
 }
 .record {
@@ -213,6 +232,17 @@
     flex: none;
     min-height: 0;
     aspect-ratio: 1;
+  }
+  /* The readout keeps its two lines at the full width, and the words keep a line of their own
+     beneath it from the start: neither squeezes the other, and neither moves the page when the
+     words change. */
+  .readoutRow {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0;
+  }
+  .words {
+    min-height: 44px;
   }
   .record {
     padding-top: 27px;

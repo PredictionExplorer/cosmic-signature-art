@@ -1,0 +1,170 @@
+/*
+  The choice: every beginning of the day's work as a field of light on the chapter's night,
+  total energy across and angular momentum upward, both on logarithmic scales, with the chosen
+  beginning ringed. The canvas carries only the light; the scales, the ring and its number are
+  set in type over it, so they stay crisp at any size and keep the 12 px floor.
+*/
+.field {
+  margin: 45px 0 0;
+}
+.chart {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  grid-template-areas:
+    'title title'
+    'momentum plot'
+    '. energy'
+    '. energyTitle';
+  font-family: var(--font-mono);
+  font-size: var(--fs-folio);
+  line-height: 18px;
+  font-variant-numeric: tabular-nums lining-nums;
+  color: var(--muted);
+}
+.momentumTitle {
+  grid-area: title;
+  margin-bottom: 18px;
+}
+.momentumScale {
+  grid-area: momentum;
+  position: relative;
+  padding-right: 12px;
+}
+.sizer {
+  display: block;
+  height: 0;
+  overflow: hidden;
+  visibility: hidden;
+  white-space: nowrap;
+}
+.momentumTick {
+  position: absolute;
+  right: 12px;
+  transform: translateY(50%);
+  white-space: nowrap;
+}
+.momentumTick::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  right: -12px;
+  width: 6px;
+  height: 1px;
+  background: var(--rule);
+}
+/* The axes are drawn inside the plot's box, so its percentages and the canvas agree exactly. */
+.plot {
+  grid-area: plot;
+  position: relative;
+  aspect-ratio: 3 / 2;
+  box-shadow: inset 1px -1px 0 var(--rule);
+}
+.canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+/* A ring of type between two of ground: legible on black and on the brightest light alike. */
+.ring {
+  position: absolute;
+  width: 23px;
+  height: 23px;
+  border: 1px solid var(--type);
+  border-radius: 50%;
+  transform: translate(-50%, 50%);
+  box-shadow:
+    0 0 0 2px var(--ground, #000000),
+    inset 0 0 0 2px var(--ground, #000000);
+}
+/* The number on a tab of ground, so it reads over the brightest of the light. */
+.chosen {
+  position: absolute;
+  padding: 0 6px;
+  transform: translate(15px, 50%);
+  background: var(--ground, #000000);
+  color: var(--type);
+  white-space: nowrap;
+}
+.chosen[data-side='before'] {
+  transform: translate(calc(-100% - 15px), 50%);
+}
+.energyScale {
+  grid-area: energy;
+  position: relative;
+  height: 33px;
+}
+.energyTick {
+  position: absolute;
+  top: 0;
+  padding-top: 12px;
+  transform: translateX(-50%);
+  white-space: nowrap;
+}
+.energyTick::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: 1px;
+  height: 6px;
+  background: var(--rule);
+}
+.energyTick[data-edge='start'] {
+  transform: none;
+}
+.energyTick[data-edge='start']::before {
+  left: 0;
+}
+.energyTick[data-edge='end'] {
+  transform: translateX(-100%);
+}
+.energyTick[data-edge='end']::before {
+  left: auto;
+  right: 0;
+}
+.energyTitle {
+  grid-area: energyTitle;
+  justify-self: end;
+}
+/* Two lines, always: the progress and the timing change length, and nothing beneath moves. */
+.progress {
+  min-height: 36px;
+  margin: 18px 0 0;
+  font-family: var(--font-mono);
+  font-size: var(--fs-folio);
+  line-height: 18px;
+  font-variant-numeric: tabular-nums lining-nums;
+  color: var(--muted);
+}
+.caption {
+  max-width: 40em;
+  margin-top: 9px;
+  font-size: var(--fs-control);
+  line-height: 1.5;
+  color: var(--muted);
+}
+/* The summary arrives with the derivation, over an unseen copy of it that keeps its room. */
+.summary {
+  display: grid;
+  margin-top: 9px;
+  color: var(--type);
+}
+.summary > * {
+  grid-area: 1 / 1;
+}
+.room {
+  visibility: hidden;
+}
+@media (max-width: 767px) {
+  .field {
+    margin-top: 36px;
+  }
+  .plot {
+    aspect-ratio: 1;
+  }
+  /* A phone labels every other decade, so no two labels touch; every tick stays. */
+  .energyTick[data-between] {
+    color: transparent;
+  }
+}
