@@ -202,6 +202,8 @@ describe('the choice, derived here', () => {
     expect(workers).toHaveLength(1);
     expect(workers[0].posted).toEqual([{ generation }]);
     expect(screen.getByRole('status')).toHaveTextContent('Deriving beginning 0 of 100,000');
+    // Busy while deriving: a screen reader waits for the outcome rather than every count.
+    expect(screen.getByRole('status')).toHaveAttribute('aria-busy', 'true');
     send(0);
     expect(screen.getByRole('status')).toHaveTextContent('Deriving beginning 2,500 of 100,000');
     clockNow = 100;

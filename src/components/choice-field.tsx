@@ -442,7 +442,8 @@ export function ChoiceField({
         </div>
         <span className={styles.energyTitle}>{t.orbitEnergy}</span>
       </div>
-      <p className={styles.progress} role="status">
+      {/* Busy while the beginnings arrive, so a screen reader speaks the outcome, not each count. */}
+      <p className={styles.progress} role="status" aria-busy={state.phase === 'deriving'}>
         {progressLine}
       </p>
       <figcaption className={styles.caption}>
