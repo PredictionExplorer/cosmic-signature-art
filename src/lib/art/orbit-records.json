@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "readOn": "2026-10-30",
+  "readOn": "2026-11-05",
   "records": [
     {
       "id": 0,
@@ -15,7 +15,8 @@
         "integrator": "yoshida4",
         "dt": "0.001",
         "steps": 1000000,
-        "warmupSteps": 1000000
+        "warmupSteps": 1000000,
+        "escapeThreshold": "-0.3"
       },
       "physics": {
         "masses": ["176.43960453699088", "299.9742377391344", "161.69070228338967"],
@@ -54,7 +55,8 @@
         "integrator": "yoshida4",
         "dt": "0.001",
         "steps": 1000000,
-        "warmupSteps": 1000000
+        "warmupSteps": 1000000,
+        "escapeThreshold": "-0.3"
       },
       "physics": {
         "masses": ["106.18463169028465", "144.49214942581972", "162.31755403710375"],
@@ -93,7 +95,8 @@
         "integrator": "yoshida4",
         "dt": "0.001",
         "steps": 1000000,
-        "warmupSteps": 1000000
+        "warmupSteps": 1000000,
+        "escapeThreshold": "-0.3"
       },
       "physics": {
         "masses": ["127.1437741562558", "205.79916998266424", "148.89678993107592"],
@@ -132,7 +135,8 @@
         "integrator": "yoshida4",
         "dt": "0.001",
         "steps": 1000000,
-        "warmupSteps": 1000000
+        "warmupSteps": 1000000,
+        "escapeThreshold": "-0.3"
       },
       "physics": {
         "masses": ["177.8836491478604", "298.56439856365137", "278.9715874812356"],
@@ -171,7 +175,8 @@
         "integrator": "yoshida4",
         "dt": "0.001",
         "steps": 1000000,
-        "warmupSteps": 1000000
+        "warmupSteps": 1000000,
+        "escapeThreshold": "-0.3"
       },
       "physics": {
         "masses": ["178.96530400517557", "249.48259943017064", "208.19720675576144"],
@@ -210,7 +215,8 @@
         "integrator": "yoshida4",
         "dt": "0.001",
         "steps": 1000000,
-        "warmupSteps": 1000000
+        "warmupSteps": 1000000,
+        "escapeThreshold": "-0.3"
       },
       "physics": {
         "masses": ["152.65630293705297", "119.20635526092428", "125.20031211068817"],
@@ -249,7 +255,8 @@
         "integrator": "yoshida4",
         "dt": "0.001",
         "steps": 1000000,
-        "warmupSteps": 1000000
+        "warmupSteps": 1000000,
+        "escapeThreshold": "-0.3"
       },
       "physics": {
         "masses": ["275.280720951239", "103.65094088999265", "139.25270431866755"],
@@ -288,7 +295,8 @@
         "integrator": "yoshida4",
         "dt": "0.001",
         "steps": 1000000,
-        "warmupSteps": 1000000
+        "warmupSteps": 1000000,
+        "escapeThreshold": "-0.3"
       },
       "physics": {
         "masses": ["155.94352776465814", "140.95649144691282", "158.00063635929303"],
@@ -327,7 +335,8 @@
         "integrator": "yoshida4",
         "dt": "0.001",
         "steps": 1000000,
-        "warmupSteps": 1000000
+        "warmupSteps": 1000000,
+        "escapeThreshold": "-0.3"
       },
       "physics": {
         "masses": ["250.33016942705518", "211.98777374518502", "159.869673156971"],
@@ -366,7 +375,8 @@
         "integrator": "yoshida4",
         "dt": "0.001",
         "steps": 1000000,
-        "warmupSteps": 1000000
+        "warmupSteps": 1000000,
+        "escapeThreshold": "-0.3"
       },
       "physics": {
         "masses": ["117.49532342226138", "213.17931618821518", "197.57398859309006"],
@@ -405,7 +415,8 @@
         "integrator": "yoshida4",
         "dt": "0.001",
         "steps": 1000000,
-        "warmupSteps": 1000000
+        "warmupSteps": 1000000,
+        "escapeThreshold": "-0.3"
       },
       "physics": {
         "masses": ["129.6651289772176", "179.48823502340974", "184.6296136633158"],
@@ -444,7 +455,8 @@
         "integrator": "yoshida4",
         "dt": "0.001",
         "steps": 1000000,
-        "warmupSteps": 1000000
+        "warmupSteps": 1000000,
+        "escapeThreshold": "-0.3"
       },
       "physics": {
         "masses": ["145.766864085291", "262.1514935734637", "231.22785469012373"],
@@ -483,7 +495,8 @@
         "integrator": "yoshida4",
         "dt": "0.001",
         "steps": 1000000,
-        "warmupSteps": 1000000
+        "warmupSteps": 1000000,
+        "escapeThreshold": "-0.3"
       },
       "physics": {
         "masses": ["107.65547891010026", "249.78771625611878", "237.0992148018813"],
@@ -522,7 +535,8 @@
         "integrator": "yoshida4",
         "dt": "0.001",
         "steps": 1000000,
-        "warmupSteps": 1000000
+        "warmupSteps": 1000000,
+        "escapeThreshold": "-0.3"
       },
       "physics": {
         "masses": ["147.91916527523358", "248.12746723580685", "116.43787045041647"],
@@ -561,7 +575,8 @@
         "integrator": "yoshida4",
         "dt": "0.001",
         "steps": 1000000,
-        "warmupSteps": 1000000
+        "warmupSteps": 1000000,
+        "escapeThreshold": "-0.3"
       },
       "physics": {
         "masses": ["246.2609518865162", "108.16960790702791", "112.97047378372159"],
@@ -600,7 +615,8 @@
         "integrator": "yoshida4",
         "dt": "0.001",
         "steps": 1000000,
-        "warmupSteps": 1000000
+        "warmupSteps": 1000000,
+        "escapeThreshold": "-0.3"
       },
       "physics": {
         "masses": ["210.78303107870568", "221.45781466161569", "176.7112022215296"],
@@ -639,7 +655,8 @@
         "integrator": "yoshida4",
         "dt": "0.001",
         "steps": 1000000,
-        "warmupSteps": 1000000
+        "warmupSteps": 1000000,
+        "escapeThreshold": "-0.3"
       },
       "physics": {
         "masses": ["152.4436125811342", "291.5461226329834", "101.97191116628252"],
@@ -678,7 +695,8 @@
         "integrator": "yoshida4",
         "dt": "0.001",
         "steps": 1000000,
-        "warmupSteps": 1000000
+        "warmupSteps": 1000000,
+        "escapeThreshold": "-0.3"
       },
       "physics": {
         "masses": ["113.12688705703958", "179.78203372437113", "271.37722229501617"],
@@ -717,7 +735,8 @@
         "integrator": "yoshida4",
         "dt": "0.001",
         "steps": 1000000,
-        "warmupSteps": 1000000
+        "warmupSteps": 1000000,
+        "escapeThreshold": "-0.3"
       },
       "physics": {
         "masses": ["251.08578126085737", "157.36285277369421", "150.62869423121816"],
@@ -756,7 +775,8 @@
         "integrator": "yoshida4",
         "dt": "0.001",
         "steps": 1000000,
-        "warmupSteps": 1000000
+        "warmupSteps": 1000000,
+        "escapeThreshold": "-0.3"
       },
       "physics": {
         "masses": ["208.2212728521343", "263.40361686824076", "254.1897364280491"],
@@ -795,7 +815,8 @@
         "integrator": "yoshida4",
         "dt": "0.001",
         "steps": 1000000,
-        "warmupSteps": 1000000
+        "warmupSteps": 1000000,
+        "escapeThreshold": "-0.3"
       },
       "physics": {
         "masses": ["202.88823802012632", "161.93591005814363", "209.1572428548584"],
@@ -834,7 +855,8 @@
         "integrator": "yoshida4",
         "dt": "0.001",
         "steps": 1000000,
-        "warmupSteps": 1000000
+        "warmupSteps": 1000000,
+        "escapeThreshold": "-0.3"
       },
       "physics": {
         "masses": ["131.36282004835948", "106.04794329677377", "217.04972242499775"],
@@ -873,7 +895,8 @@
         "integrator": "yoshida4",
         "dt": "0.001",
         "steps": 1000000,
-        "warmupSteps": 1000000
+        "warmupSteps": 1000000,
+        "escapeThreshold": "-0.3"
       },
       "physics": {
         "masses": ["171.37571967417253", "159.69657012404613", "117.94017073825572"],
@@ -912,7 +935,8 @@
         "integrator": "yoshida4",
         "dt": "0.001",
         "steps": 1000000,
-        "warmupSteps": 1000000
+        "warmupSteps": 1000000,
+        "escapeThreshold": "-0.3"
       },
       "physics": {
         "masses": ["141.7666122857421", "123.42091484633418", "148.542917056232"],
@@ -951,7 +975,8 @@
         "integrator": "yoshida4",
         "dt": "0.001",
         "steps": 1000000,
-        "warmupSteps": 1000000
+        "warmupSteps": 1000000,
+        "escapeThreshold": "-0.3"
       },
       "physics": {
         "masses": ["205.13823581887726", "101.74907130293104", "100.01475656107688"],
@@ -990,7 +1015,8 @@
         "integrator": "yoshida4",
         "dt": "0.001",
         "steps": 1000000,
-        "warmupSteps": 1000000
+        "warmupSteps": 1000000,
+        "escapeThreshold": "-0.3"
       },
       "physics": {
         "masses": ["173.7043944764187", "119.20689510386178", "162.1956722141846"],
@@ -1029,7 +1055,8 @@
         "integrator": "yoshida4",
         "dt": "0.001",
         "steps": 1000000,
-        "warmupSteps": 1000000
+        "warmupSteps": 1000000,
+        "escapeThreshold": "-0.3"
       },
       "physics": {
         "masses": ["100.90009055563296", "230.47036920684656", "105.76296634693196"],
@@ -1068,7 +1095,8 @@
         "integrator": "yoshida4",
         "dt": "0.001",
         "steps": 1000000,
-        "warmupSteps": 1000000
+        "warmupSteps": 1000000,
+        "escapeThreshold": "-0.3"
       },
       "physics": {
         "masses": ["101.16556322578124", "151.26643815191974", "197.31688919833283"],
@@ -1107,7 +1135,8 @@
         "integrator": "yoshida4",
         "dt": "0.001",
         "steps": 1000000,
-        "warmupSteps": 1000000
+        "warmupSteps": 1000000,
+        "escapeThreshold": "-0.3"
       },
       "physics": {
         "masses": ["174.74168398338574", "207.47195884627914", "131.1114032866246"],
@@ -1146,7 +1175,8 @@
         "integrator": "yoshida4",
         "dt": "0.001",
         "steps": 1000000,
-        "warmupSteps": 1000000
+        "warmupSteps": 1000000,
+        "escapeThreshold": "-0.3"
       },
       "physics": {
         "masses": ["203.3292251275168", "188.43331387900912", "154.56049033846216"],
@@ -1185,7 +1215,8 @@
         "integrator": "yoshida4",
         "dt": "0.001",
         "steps": 1000000,
-        "warmupSteps": 1000000
+        "warmupSteps": 1000000,
+        "escapeThreshold": "-0.3"
       },
       "physics": {
         "masses": ["190.0392474281856", "193.42697295465155", "105.71331173114817"],
@@ -1224,7 +1255,8 @@
         "integrator": "yoshida4",
         "dt": "0.001",
         "steps": 1000000,
-        "warmupSteps": 1000000
+        "warmupSteps": 1000000,
+        "escapeThreshold": "-0.3"
       },
       "physics": {
         "masses": ["130.67371638058603", "250.9920858730805", "124.96327743951707"],
@@ -1263,7 +1295,8 @@
         "integrator": "yoshida4",
         "dt": "0.001",
         "steps": 1000000,
-        "warmupSteps": 1000000
+        "warmupSteps": 1000000,
+        "escapeThreshold": "-0.3"
       },
       "physics": {
         "masses": ["275.87082868825", "138.56446939030008", "116.52308997417417"],
@@ -1302,7 +1335,8 @@
         "integrator": "yoshida4",
         "dt": "0.001",
         "steps": 1000000,
-        "warmupSteps": 1000000
+        "warmupSteps": 1000000,
+        "escapeThreshold": "-0.3"
       },
       "physics": {
         "masses": ["149.84233840238136", "131.35817307839272", "221.51808529165635"],
@@ -1341,7 +1375,8 @@
         "integrator": "yoshida4",
         "dt": "0.001",
         "steps": 1000000,
-        "warmupSteps": 1000000
+        "warmupSteps": 1000000,
+        "escapeThreshold": "-0.3"
       },
       "physics": {
         "masses": ["204.97702672510792", "118.5633785772209", "111.92755564327065"],
@@ -1380,7 +1415,8 @@
         "integrator": "yoshida4",
         "dt": "0.001",
         "steps": 1000000,
-        "warmupSteps": 1000000
+        "warmupSteps": 1000000,
+        "escapeThreshold": "-0.3"
       },
       "physics": {
         "masses": ["148.99470931114638", "192.72857817411932", "113.76231924179005"],
@@ -1419,7 +1455,8 @@
         "integrator": "yoshida4",
         "dt": "0.001",
         "steps": 1000000,
-        "warmupSteps": 1000000
+        "warmupSteps": 1000000,
+        "escapeThreshold": "-0.3"
       },
       "physics": {
         "masses": ["260.71962044561633", "219.71262541129346", "238.03133519321872"],
@@ -1458,7 +1495,8 @@
         "integrator": "yoshida4",
         "dt": "0.001",
         "steps": 1000000,
-        "warmupSteps": 1000000
+        "warmupSteps": 1000000,
+        "escapeThreshold": "-0.3"
       },
       "physics": {
         "masses": ["189.51673483881345", "112.72831678160097", "150.74261632578035"],
@@ -1497,7 +1535,8 @@
         "integrator": "yoshida4",
         "dt": "0.001",
         "steps": 1000000,
-        "warmupSteps": 1000000
+        "warmupSteps": 1000000,
+        "escapeThreshold": "-0.3"
       },
       "physics": {
         "masses": ["189.28103221485026", "168.07445470038522", "103.49663616181653"],
@@ -1536,7 +1575,8 @@
         "integrator": "yoshida4",
         "dt": "0.001",
         "steps": 1000000,
-        "warmupSteps": 1000000
+        "warmupSteps": 1000000,
+        "escapeThreshold": "-0.3"
       },
       "physics": {
         "masses": ["152.18017254526742", "116.19250655202055", "282.92576130608813"],
@@ -1575,7 +1615,8 @@
         "integrator": "yoshida4",
         "dt": "0.001",
         "steps": 1000000,
-        "warmupSteps": 1000000
+        "warmupSteps": 1000000,
+        "escapeThreshold": "-0.3"
       },
       "physics": {
         "masses": ["131.25902845138106", "174.29748351163374", "140.02921230694474"],
@@ -1614,7 +1655,8 @@
         "integrator": "yoshida4",
         "dt": "0.001",
         "steps": 1000000,
-        "warmupSteps": 1000000
+        "warmupSteps": 1000000,
+        "escapeThreshold": "-0.3"
       },
       "physics": {
         "masses": ["153.86914851003914", "142.04980445279344", "264.68823961171086"],
@@ -1653,7 +1695,8 @@
         "integrator": "yoshida4",
         "dt": "0.001",
         "steps": 1000000,
-        "warmupSteps": 1000000
+        "warmupSteps": 1000000,
+        "escapeThreshold": "-0.3"
       },
       "physics": {
         "masses": ["286.4689653342747", "282.96464661006536", "114.22128223924787"],
@@ -1692,7 +1735,8 @@
         "integrator": "yoshida4",
         "dt": "0.001",
         "steps": 1000000,
-        "warmupSteps": 1000000
+        "warmupSteps": 1000000,
+        "escapeThreshold": "-0.3"
       },
       "physics": {
         "masses": ["134.4597012876928", "146.40089566367902", "254.2452219205597"],
@@ -1731,7 +1775,8 @@
         "integrator": "yoshida4",
         "dt": "0.001",
         "steps": 1000000,
-        "warmupSteps": 1000000
+        "warmupSteps": 1000000,
+        "escapeThreshold": "-0.3"
       },
       "physics": {
         "masses": ["211.85026215102357", "140.20147982566394", "115.5841389430963"],
@@ -1770,7 +1815,8 @@
         "integrator": "yoshida4",
         "dt": "0.001",
         "steps": 1000000,
-        "warmupSteps": 1000000
+        "warmupSteps": 1000000,
+        "escapeThreshold": "-0.3"
       },
       "physics": {
         "masses": ["144.7726537710629", "150.25168124967354", "297.42929379052265"],
@@ -1809,7 +1855,8 @@
         "integrator": "yoshida4",
         "dt": "0.001",
         "steps": 1000000,
-        "warmupSteps": 1000000
+        "warmupSteps": 1000000,
+        "escapeThreshold": "-0.3"
       },
       "physics": {
         "masses": ["134.849763046497", "196.6802773937393", "144.28384665708256"],
@@ -1848,7 +1895,8 @@
         "integrator": "yoshida4",
         "dt": "0.001",
         "steps": 1000000,
-        "warmupSteps": 1000000
+        "warmupSteps": 1000000,
+        "escapeThreshold": "-0.3"
       },
       "physics": {
         "masses": ["162.88062491846497", "201.4549777498493", "141.21515908243404"],
@@ -1887,7 +1935,8 @@
         "integrator": "yoshida4",
         "dt": "0.001",
         "steps": 1000000,
-        "warmupSteps": 1000000
+        "warmupSteps": 1000000,
+        "escapeThreshold": "-0.3"
       },
       "physics": {
         "masses": ["103.52235417368527", "107.7811400144566", "163.2633108648313"],
@@ -1926,7 +1975,8 @@
         "integrator": "yoshida4",
         "dt": "0.001",
         "steps": 1000000,
-        "warmupSteps": 1000000
+        "warmupSteps": 1000000,
+        "escapeThreshold": "-0.3"
       },
       "physics": {
         "masses": ["284.4837618627182", "102.61671075285585", "194.32526471986927"],
@@ -1965,7 +2015,8 @@
         "integrator": "yoshida4",
         "dt": "0.001",
         "steps": 1000000,
-        "warmupSteps": 1000000
+        "warmupSteps": 1000000,
+        "escapeThreshold": "-0.3"
       },
       "physics": {
         "masses": ["182.17515715960798", "287.29307295455254", "256.13212629641737"],
@@ -2004,7 +2055,8 @@
         "integrator": "yoshida4",
         "dt": "0.001",
         "steps": 1000000,
-        "warmupSteps": 1000000
+        "warmupSteps": 1000000,
+        "escapeThreshold": "-0.3"
       },
       "physics": {
         "masses": ["140.42881216194175", "263.5729416174024", "101.04812918258854"],
@@ -2043,7 +2095,8 @@
         "integrator": "yoshida4",
         "dt": "0.001",
         "steps": 1000000,
-        "warmupSteps": 1000000
+        "warmupSteps": 1000000,
+        "escapeThreshold": "-0.3"
       },
       "physics": {
         "masses": ["146.61013626396897", "252.4280169698674", "115.5737181079354"],
@@ -2082,7 +2135,8 @@
         "integrator": "yoshida4",
         "dt": "0.001",
         "steps": 1000000,
-        "warmupSteps": 1000000
+        "warmupSteps": 1000000,
+        "escapeThreshold": "-0.3"
       },
       "physics": {
         "masses": ["271.1236857241694", "141.46208079234978", "172.93506595997272"],
@@ -2121,7 +2175,8 @@
         "integrator": "yoshida4",
         "dt": "0.001",
         "steps": 1000000,
-        "warmupSteps": 1000000
+        "warmupSteps": 1000000,
+        "escapeThreshold": "-0.3"
       },
       "physics": {
         "masses": ["204.86506365059967", "115.57290737852219", "175.97622913731965"],
@@ -2160,7 +2215,8 @@
         "integrator": "yoshida4",
         "dt": "0.001",
         "steps": 1000000,
-        "warmupSteps": 1000000
+        "warmupSteps": 1000000,
+        "escapeThreshold": "-0.3"
       },
       "physics": {
         "masses": ["247.61047309620005", "291.0024804041477", "252.59237338848882"],
@@ -2199,7 +2255,8 @@
         "integrator": "yoshida4",
         "dt": "0.001",
         "steps": 1000000,
-        "warmupSteps": 1000000
+        "warmupSteps": 1000000,
+        "escapeThreshold": "-0.3"
       },
       "physics": {
         "masses": ["278.3042038748873", "166.87465868410794", "273.293572026933"],
@@ -2238,7 +2295,8 @@
         "integrator": "yoshida4",
         "dt": "0.001",
         "steps": 1000000,
-        "warmupSteps": 1000000
+        "warmupSteps": 1000000,
+        "escapeThreshold": "-0.3"
       },
       "physics": {
         "masses": ["151.6468291684283", "122.34510445521812", "158.5940699940067"],
@@ -2277,7 +2335,8 @@
         "integrator": "yoshida4",
         "dt": "0.001",
         "steps": 1000000,
-        "warmupSteps": 1000000
+        "warmupSteps": 1000000,
+        "escapeThreshold": "-0.3"
       },
       "physics": {
         "masses": ["130.91987302906463", "248.47009623383764", "220.96081407968057"],
@@ -2316,7 +2375,8 @@
         "integrator": "yoshida4",
         "dt": "0.001",
         "steps": 1000000,
-        "warmupSteps": 1000000
+        "warmupSteps": 1000000,
+        "escapeThreshold": "-0.3"
       },
       "physics": {
         "masses": ["242.76944511800548", "288.92885368736216", "179.43413383602763"],
@@ -2355,7 +2415,8 @@
         "integrator": "yoshida4",
         "dt": "0.001",
         "steps": 1000000,
-        "warmupSteps": 1000000
+        "warmupSteps": 1000000,
+        "escapeThreshold": "-0.3"
       },
       "physics": {
         "masses": ["242.80896250533394", "116.19004935286291", "133.22008672636056"],
@@ -2394,7 +2455,8 @@
         "integrator": "yoshida4",
         "dt": "0.001",
         "steps": 1000000,
-        "warmupSteps": 1000000
+        "warmupSteps": 1000000,
+        "escapeThreshold": "-0.3"
       },
       "physics": {
         "masses": ["158.2624268385815", "145.91838348684067", "193.76268680015988"],
@@ -2433,7 +2495,8 @@
         "integrator": "yoshida4",
         "dt": "0.001",
         "steps": 1000000,
-        "warmupSteps": 1000000
+        "warmupSteps": 1000000,
+        "escapeThreshold": "-0.3"
       },
       "physics": {
         "masses": ["108.76311276251478", "294.41759967931944", "144.86892708609452"],
@@ -2472,7 +2535,8 @@
         "integrator": "yoshida4",
         "dt": "0.001",
         "steps": 1000000,
-        "warmupSteps": 1000000
+        "warmupSteps": 1000000,
+        "escapeThreshold": "-0.3"
       },
       "physics": {
         "masses": ["144.7386600058764", "119.1728703674224", "130.32620553300026"],
@@ -2511,7 +2575,8 @@
         "integrator": "yoshida4",
         "dt": "0.001",
         "steps": 1000000,
-        "warmupSteps": 1000000
+        "warmupSteps": 1000000,
+        "escapeThreshold": "-0.3"
       },
       "physics": {
         "masses": ["120.35080702531083", "100.76489859216765", "190.78098671653652"],
@@ -2550,7 +2615,8 @@
         "integrator": "yoshida4",
         "dt": "0.001",
         "steps": 1000000,
-        "warmupSteps": 1000000
+        "warmupSteps": 1000000,
+        "escapeThreshold": "-0.3"
       },
       "physics": {
         "masses": ["250.0662778983044", "101.5318363468688", "273.1408348145095"],
@@ -2589,7 +2655,8 @@
         "integrator": "yoshida4",
         "dt": "0.001",
         "steps": 1000000,
-        "warmupSteps": 1000000
+        "warmupSteps": 1000000,
+        "escapeThreshold": "-0.3"
       },
       "physics": {
         "masses": ["129.67095306712287", "245.76684051821056", "242.82280648163658"],
@@ -2628,7 +2695,8 @@
         "integrator": "yoshida4",
         "dt": "0.001",
         "steps": 1000000,
-        "warmupSteps": 1000000
+        "warmupSteps": 1000000,
+        "escapeThreshold": "-0.3"
       },
       "physics": {
         "masses": ["109.88987922282654", "173.26308201545106", "192.6489646164331"],
@@ -2667,7 +2735,8 @@
         "integrator": "yoshida4",
         "dt": "0.001",
         "steps": 1000000,
-        "warmupSteps": 1000000
+        "warmupSteps": 1000000,
+        "escapeThreshold": "-0.3"
       },
       "physics": {
         "masses": ["286.6073223263103", "253.1200660545673", "195.38008675209798"],
@@ -2706,7 +2775,8 @@
         "integrator": "yoshida4",
         "dt": "0.001",
         "steps": 1000000,
-        "warmupSteps": 1000000
+        "warmupSteps": 1000000,
+        "escapeThreshold": "-0.3"
       },
       "physics": {
         "masses": ["299.21452060084835", "275.14824900762767", "170.46627933654548"],
@@ -2745,7 +2815,8 @@
         "integrator": "yoshida4",
         "dt": "0.001",
         "steps": 1000000,
-        "warmupSteps": 1000000
+        "warmupSteps": 1000000,
+        "escapeThreshold": "-0.3"
       },
       "physics": {
         "masses": ["207.1029205460663", "110.83764519837136", "162.88386749813225"],
@@ -2784,7 +2855,8 @@
         "integrator": "yoshida4",
         "dt": "0.001",
         "steps": 1000000,
-        "warmupSteps": 1000000
+        "warmupSteps": 1000000,
+        "escapeThreshold": "-0.3"
       },
       "physics": {
         "masses": ["221.7433293613898", "176.9886648606522", "172.58991689393264"],

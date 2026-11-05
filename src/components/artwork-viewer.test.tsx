@@ -7,6 +7,7 @@ import { indexedWork } from '@/lib/art/collection-index';
 import { withCollectionPreviews } from '@/lib/art/collection-previews';
 import type { Artwork } from '@/lib/art/types';
 import { en } from '@/lib/i18n/en';
+import { AFTER_THE_FRAME_EVENT, SEAM_EVENT } from '@/lib/venue-events';
 import { BREATH_MS, EXPRESSION_KEY, forgetExpression } from './turn';
 import { closeSheet, openSheet } from './sheets-store';
 
@@ -227,7 +228,7 @@ describe('the Turn', () => {
     expect(root().style.getPropertyValue('--seam')).toBe('0%');
     expect(stage()).toHaveAttribute('data-expression', 'ink');
     const seams = vi.fn();
-    window.addEventListener('cosmic:seam', seams);
+    window.addEventListener(SEAM_EVENT, seams);
     await act(async () => {
       vi.advanceTimersByTime(950);
     });
@@ -490,6 +491,43 @@ describe('the film, the rest and Sit', () => {
     expect(screen.queryByRole('button', { name: en.again })).toBeNull();
     expect(word(en.film)).toBeInTheDocument();
   });
+
+  it.each([true, false])(
+    'offers After the frame once the film resolves, only above an orbit (%s)',
+    async (orbit) => {
+      const asked = vi.fn();
+      window.addEventListener(AFTER_THE_FRAME_EVENT, asked);
+      renderViewer({ afterTheFrame: orbit });
+      await settle();
+      await act(async () => {
+        vi.advanceTimersByTime(1300);
+      });
+      const video = player()!;
+      Object.defineProperty(video, 'duration', { configurable: true, value: 30 });
+      fireEvent.playing(video);
+      const strip = () =>
+        within(document.querySelector<HTMLElement>('[data-layer-state="current"]')!);
+      expect(strip().queryByRole('link', { name: en.afterTheFrame })).toBeNull();
+      fireEvent.ended(video);
+      await act(async () => {
+        vi.advanceTimersByTime(8000);
+      });
+      if (!orbit) {
+        expect(strip().queryByRole('link', { name: en.afterTheFrame })).toBeNull();
+        window.removeEventListener(AFTER_THE_FRAME_EVENT, asked);
+        return;
+      }
+      // A link to the orbit beneath, which the page asks to go on past the frame.
+      const link = strip().getByRole('link', { name: en.afterTheFrame });
+      expect(link).toHaveAttribute('href', '#orbit');
+      fireEvent.click(link);
+      expect(asked).toHaveBeenCalledTimes(1);
+      window.removeEventListener(AFTER_THE_FRAME_EVENT, asked);
+      // Again takes the word away until the film resolves once more.
+      fireEvent.click(word(en.again));
+      expect(strip().queryByRole('link', { name: en.afterTheFrame })).toBeNull();
+    },
+  );
 
   it('Sit fades the strip and the head until the visitor moves, swallowing the waking click', async () => {
     const { container } = renderViewer();

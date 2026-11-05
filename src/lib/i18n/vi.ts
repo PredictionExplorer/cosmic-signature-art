@@ -583,6 +583,16 @@ export const vi: Messages = {
   orbitDerivedValue: 'tại đây: {value}',
   orbitNote:
     'Phim và ảnh tĩnh là các bản kết xuất được ghi lại của tác phẩm. Hình vẽ này là quỹ đạo nằm bên dưới chúng, được trình duyệt của bạn tính theo đúng trình tự của bộ tạo: dòng ngẫu nhiên của nó, việc chọn ứng viên {index}, và {steps} bước của bộ tích phân Yoshida bậc bốn.',
+  afterTheFrame: 'Sau khung hình',
+  afterTheFrameNote:
+    'Quá cửa sổ đã ghi, cùng một vật lý ấy vẫn tiếp diễn, theo nhịp của phim. Đây không phải tác phẩm: đây là điều quỹ đạo của tác phẩm làm tiếp theo.',
+  orbitFate: 'Số phận',
+  orbitFateEjection: 'vật thể {body} thoát ra ở bước {step}',
+  orbitFateDance: 'còn gắn kết qua {steps} bước',
+  orbitBeyond: 'Sau khung hình · bước {step} · {clock} sau phim',
+  orbitEscaped: 'Vật thể {body} đã thoát ra, ở bước {step}',
+  orbitHeld: 'Vũ điệu giữ vững qua cả {steps} bước',
+  toTheEjection: 'Đến lúc thoát ra',
   // The crossing and the When lens (src/components/when-lens.tsx)
   whenLens: 'Thời điểm',
   whenLight: 'Thời điểm mỗi nét được vẽ',

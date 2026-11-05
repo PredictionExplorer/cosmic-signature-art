@@ -551,6 +551,16 @@ export const zhTW: Messages = {
   orbitDerivedValue: '此處：{value}',
   orbitNote:
     '影片與靜態影像是作品的紀錄渲染。這幅圖是它們之下的軌道，由你的瀏覽器按生成器自己的順序計算：它的隨機流、第 {index} 號候選的選擇，以及四階 Yoshida 積分器的 {steps} 步。',
+  afterTheFrame: '畫面之後',
+  afterTheFrameNote:
+    '越過記錄的時段，同樣的物理以影片的速度繼續運行。這不是作品：這是作品的軌道接下來的樣子。',
+  orbitFate: '命運',
+  orbitFateEjection: '天體 {body} 在第 {step} 步逃逸',
+  orbitFateDance: '在 {steps} 步內始終束縛',
+  orbitBeyond: '畫面之後 · 第 {step} 步 · 影片之後 {clock}',
+  orbitEscaped: '天體 {body} 已在第 {step} 步逃逸',
+  orbitHeld: '這支舞持續了全部 {steps} 步',
+  toTheEjection: '前往逃逸',
   // The crossing and the When lens (src/components/when-lens.tsx)
   whenLens: '時刻',
   whenLight: '每一筆被畫出的時刻',

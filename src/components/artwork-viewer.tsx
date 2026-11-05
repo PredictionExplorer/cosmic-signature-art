@@ -23,6 +23,7 @@ import { workNumber } from '@/lib/art/number';
 import { getPlateGround } from '@/lib/art/plate-records';
 import type { Messages } from '@/lib/i18n/en';
 import { localizedPath, type Locale } from '@/lib/i18n/routing';
+import { AFTER_THE_FRAME_EVENT, SEAM_EVENT } from '@/lib/venue-events';
 import { ArtworkMedia } from './artwork-media';
 import { useMotion } from './motion-provider';
 import { useMediaPolicy } from './media-policy';
@@ -92,6 +93,11 @@ type ArtworkViewerProps = {
   wing?: boolean;
   /** The home's one automatic event, behind its flag. */
   dusk?: boolean;
+  /**
+   * The work's orbit stands beneath the plate (orbit-score.tsx): once the film resolves into
+   * its still, the strip offers After the frame, which goes on down to it.
+   */
+  afterTheFrame?: boolean;
 };
 
 export function ArtworkViewer(props: ArtworkViewerProps) {
@@ -153,6 +159,7 @@ function ArtworkViewerSession({
   neighbours,
   wing = presentation !== 'auction',
   dusk = false,
+  afterTheFrame = false,
 }: ArtworkViewerProps) {
   const router = useRouter();
   const [liveArtwork, setLiveArtwork] = useState<Artwork | null>(null);
@@ -242,7 +249,7 @@ function ArtworkViewerSession({
         seam.end();
         setTurning(null);
         if (hasBoth) rememberExpression(committed);
-        window.dispatchEvent(new Event('cosmic:seam'));
+        window.dispatchEvent(new Event(SEAM_EVENT));
         setTime({ current: 0, duration: 0 });
         setPlaying(false);
         setFailed(false);
@@ -700,10 +707,28 @@ function ArtworkViewerSession({
         {showAgain ? t.again : idle ? t.film : t.still}
       </button>
     ) : null;
+    // When a film resolves into its still, the venue offers what no film shows: the orbit
+    // carried on past its recorded window, further down the page (third-physics.md §5.6).
+    // A phone's strip has no room to spare, and its orbit is the next thing down.
+    const beyondWord =
+      afterTheFrame && !home && !compact && showAgain ? (
+        <a
+          className={styles.word}
+          href="#orbit"
+          onClick={(event) => {
+            event.preventDefault();
+            window.dispatchEvent(new Event(AFTER_THE_FRAME_EVENT));
+          }}
+          data-after-the-frame
+        >
+          {t.afterTheFrame}
+        </a>
+      ) : null;
     return (
       <>
         {turnWord}
         {filmWord}
+        {beyondWord}
         {!home || (inlineFilm && !showAgain) ? (
           <ArtworkOptions
             key={`${layer}:${current}`}

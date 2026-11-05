@@ -579,6 +579,17 @@ export const en = {
   orbitDerivedValue: 'here: {value}',
   orbitNote:
     'The films and stills are recorded renderings of the work. This drawing is the orbit beneath them, computed in your browser by the generator’s own sequence: its random stream, the choice of candidate {index}, and {steps} steps of a fourth-order Yoshida integrator.',
+  // After the frame (src/components/orbit-score.tsx)
+  afterTheFrame: 'After the frame',
+  afterTheFrameNote:
+    'Past the recorded window the same physics runs on, at the film’s pace. This is not the work: it is what the work’s orbit does next.',
+  orbitFate: 'Fate',
+  orbitFateEjection: 'body {body} escapes at step {step}',
+  orbitFateDance: 'bound through {steps} steps',
+  orbitBeyond: 'After the frame · step {step} · {clock} past the film',
+  orbitEscaped: 'Body {body} has escaped, at step {step}',
+  orbitHeld: 'The dance held through all {steps} steps',
+  toTheEjection: 'To the ejection',
   // The crossing and the When lens (src/components/when-lens.tsx)
   whenLens: 'When',
   whenLight: 'When each mark was drawn',

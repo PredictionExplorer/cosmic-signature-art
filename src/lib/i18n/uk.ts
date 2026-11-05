@@ -581,6 +581,16 @@ export const uk: Messages = {
   orbitDerivedValue: 'тут: {value}',
   orbitNote:
     'Фільми й зображення — записані відтворення твору. Цей рисунок — орбіта під ними, обчислена у вашому браузері власною послідовністю генератора: його випадковим потоком, вибором кандидата {index} і {steps} кроками інтегратора Йошиди четвертого порядку.',
+  afterTheFrame: 'За кадром',
+  afterTheFrameNote:
+    'Поза записаним вікном та сама фізика триває в темпі фільму. Це не твір: це те, що орбіта твору робить далі.',
+  orbitFate: 'Доля',
+  orbitFateEjection: 'тіло {body} вилітає на кроці {step}',
+  orbitFateDance: 'зв’язані впродовж {steps} кроків',
+  orbitBeyond: 'За кадром · крок {step} · {clock} після фільму',
+  orbitEscaped: 'Тіло {body} вилетіло на кроці {step}',
+  orbitHeld: 'Танець тривав усі {steps} кроків',
+  toTheEjection: 'До вильоту',
   // The crossing and the When lens (src/components/when-lens.tsx)
   whenLens: 'Коли',
   whenLight: 'Коли було намальовано кожен штрих',

@@ -573,6 +573,16 @@ export const ko: Messages = {
   orbitDerivedValue: '여기: {value}',
   orbitNote:
     '영상과 정지 이미지는 작품을 기록한 렌더링입니다. 이 그림은 그 아래의 궤도로, 생성기 고유의 순서에 따라 브라우저에서 계산했습니다. 그 순서는 난수 흐름, {index}번 후보의 선택, 그리고 4차 요시다 적분기의 {steps}단계입니다.',
+  afterTheFrame: '프레임 너머',
+  afterTheFrameNote:
+    '기록된 구간 너머에서도 같은 물리가 영상의 속도로 이어집니다. 이것은 작품이 아니라, 작품의 궤도가 그다음에 하는 일입니다.',
+  orbitFate: '운명',
+  orbitFateEjection: '천체 {body}이(가) {step}번째 단계에서 탈출',
+  orbitFateDance: '{steps}단계 동안 묶여 있음',
+  orbitBeyond: '프레임 너머 · {step}번째 단계 · 영상 이후 {clock}',
+  orbitEscaped: '천체 {body}이(가) {step}번째 단계에서 탈출했습니다',
+  orbitHeld: '춤은 {steps}단계 내내 이어졌습니다',
+  toTheEjection: '탈출로',
   // The crossing and the When lens (src/components/when-lens.tsx)
   whenLens: '시각',
   whenLight: '각 선이 그려진 시각',

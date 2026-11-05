@@ -160,6 +160,7 @@ export default async function ArtworkPage({
         live={curated ? live.then((result) => result.artwork) : undefined}
         traits={{ structure: indexed?.traits.structure, underlay: indexed?.traits.underlay }}
         neighbours={neighboursFor(tokenId)}
+        afterTheFrame={!!orbit}
       />
       {orbit ? <OrbitScore key={tokenId} orbit={orbit} t={t} locale={locale} /> : null}
       <div className="section-wrap">

@@ -579,6 +579,16 @@ export const ja: Messages = {
   orbitDerivedValue: 'ここでは {value}',
   orbitNote:
     '映像と静止画は、作品を記録したレンダリングです。この図はその下にある軌道で、生成器そのものの手順でブラウザが計算しました。乱数の流れ、第 {index} 番の候補の選択、そして四次の吉田積分法による {steps} ステップです。',
+  afterTheFrame: 'フレームの先',
+  afterTheFrameNote:
+    '記録された時間の先でも、同じ物理が映像の速さで続きます。これは作品ではありません。作品の軌道がその後どうなるかです。',
+  orbitFate: '運命',
+  orbitFateEjection: '天体 {body} が第 {step} ステップで脱出',
+  orbitFateDance: '{steps} ステップを通じて束縛',
+  orbitBeyond: 'フレームの先 · 第 {step} ステップ · 映像の後 {clock}',
+  orbitEscaped: '天体 {body} が第 {step} ステップで脱出しました',
+  orbitHeld: '{steps} ステップのあいだ、舞は続きました',
+  toTheEjection: '脱出へ',
   // The crossing and the When lens (src/components/when-lens.tsx)
   whenLens: '時刻',
   whenLight: 'それぞれの線が描かれた時刻',
