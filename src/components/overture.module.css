@@ -1,0 +1,45 @@
+/*
+  The Overture (overture-performance.tsx), the black of the first paint taken over: the score
+  on one side and the plate condensing on the other, or the plate in its place with the score
+  beneath it on a phone. The pointer passes through; the press that ends it is swallowed.
+*/
+.overture {
+  position: fixed;
+  inset: 0;
+  z-index: 41;
+  background: var(--night);
+  pointer-events: none;
+}
+.score,
+.plate {
+  position: absolute;
+}
+.plate {
+  transform-origin: 0 0;
+  background: var(--night);
+}
+.layer {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+/* Landing: the score gives way while the plate grows into its place on the home. */
+.overture[data-landing] .score {
+  opacity: 0;
+  transition: opacity var(--t-overture-land) var(--ease-settle);
+}
+/* A plate already in its place lets the page around it come up as the score goes; a plate
+   still growing keeps the black, or the home's own plate would show beside it. */
+.overture[data-landing][data-arrangement='stacked'] {
+  background-color: transparent;
+  transition: background-color var(--t-overture-land) var(--ease-settle);
+}
+.overture[data-landing] .plate {
+  transition: transform var(--t-overture-land) var(--ease-settle);
+}
+/* Landed: the home's own plate is beneath, the same still in the same place. */
+.overture[data-gone] {
+  opacity: 0;
+  transition: opacity var(--t-blink) linear;
+}

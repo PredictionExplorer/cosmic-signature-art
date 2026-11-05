@@ -6,13 +6,13 @@ import { en } from '@/lib/i18n/en';
 import {
   collectionHref,
   cyclesOf,
-  EXPRESSION_KEY,
   facetsOf,
   IndexSheet,
   readHanging,
   seenExpression,
 } from './index-sheet';
 import { closeSheet, openSheet, useOpenSheet } from './sheets-store';
+import { EXPRESSION_KEY } from '@/lib/storage-keys';
 
 let pathname = '/collection';
 vi.mock('next/navigation', () => ({ usePathname: () => pathname }));

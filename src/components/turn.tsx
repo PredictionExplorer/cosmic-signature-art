@@ -12,6 +12,7 @@ import {
 import { ROOM_COLORS, type Room } from '@/lib/room';
 import { parseEasing } from '@/lib/crossing/timing';
 import styles from './turn.module.css';
+import { EXPRESSION_KEY } from '@/lib/storage-keys';
 
 /*
   The Turn: one straight vertical seam carries wall and work together from paper to night and
@@ -34,7 +35,8 @@ const DRAG_THRESHOLD_PX = 8;
 /** A click the browser synthesises this soon after a drag ended is the drag, not a choice. */
 const DRAG_CLICK_MS = 500;
 
-export type TurnMode = 'time' | 'drag' | 'dusk';
+/** A Turn by time, by the finger, or the Overture's own crossing as it lands (overture.tsx). */
+export type TurnMode = 'time' | 'drag' | 'overture';
 export type Expression = 'ink' | 'light';
 
 /** The seam position that shows one expression alone. */
@@ -175,8 +177,8 @@ export class SeamController {
         const duration =
           start === target
             ? (inherited ?? 0)
-            : mode === 'dusk'
-              ? tokenMs(element, '--t-dusk', 4000)
+            : mode === 'overture'
+              ? tokenMs(element, '--t-overture-cross', 4000)
               : crossing
                 ? (tokenMs(element, '--t-cross', 2000) * Math.abs(target - start)) / 100
                 : tokenMs(element, '--t-turn', 900);
@@ -192,7 +194,7 @@ export class SeamController {
                 duration,
                 easing: parseEasing(
                   getComputedStyle(element).getPropertyValue(
-                    mode === 'dusk' ? '--ease-dusk' : '--ease-turn',
+                    mode === 'overture' ? '--ease-overture' : '--ease-turn',
                   ),
                 ),
               };
@@ -266,8 +268,7 @@ export class SeamController {
 }
 
 /* The chosen expression travels in the URL and is remembered for the session; a new visit
-   always opens on Ink, and a work that has only one expression never decides for the next. */
-export const EXPRESSION_KEY = 'cosmic-art-expression-v1';
+   opens on the day's, and a work that has only one expression never decides for the next. */
 let remembered: Expression | null | undefined;
 const listeners = new Set<() => void>();
 function readRemembered(): Expression | null {

@@ -8,8 +8,10 @@ import { withCollectionPreviews } from '@/lib/art/collection-previews';
 import type { Artwork } from '@/lib/art/types';
 import { en } from '@/lib/i18n/en';
 import { AFTER_THE_FRAME_EVENT, SEAM_EVENT } from '@/lib/venue-events';
-import { BREATH_MS, EXPRESSION_KEY, forgetExpression } from './turn';
+import { BREATH_MS, forgetExpression } from './turn';
 import { closeSheet, openSheet } from './sheets-store';
+import { EXPRESSION_KEY, HOME_RESOLVED_KEY } from '@/lib/storage-keys';
+import { overturePhase, setOverturePhase } from './overture-store';
 
 const motion = vi.hoisted(() => ({
   paused: false,
@@ -674,9 +676,9 @@ describe('the home', () => {
       'film',
     );
     fireEvent.ended(film);
-    expect(sessionStorage.getItem('cosmic-art-home-film-v1')).toBe('resolved');
+    expect(sessionStorage.getItem(HOME_RESOLVED_KEY)).toBe('resolved');
     await act(async () => {
-      vi.advanceTimersByTime(6000);
+      vi.advanceTimersByTime(8000);
     });
     expect(word(en.again)).toBeInTheDocument();
     cleanup();
@@ -685,30 +687,94 @@ describe('the home', () => {
     expect(within(second.container).getByRole('button', { name: en.again })).toBeInTheDocument();
     expect(container.querySelector('video')).toBeNull();
   });
+});
 
-  it('the Dusk, behind its flag, lowers the wall after the rest and is cancelled by any input', async () => {
-    renderViewer({ presentation: 'home', dusk: true });
+describe('the Overture, beneath and landing', () => {
+  const wing = () => document.querySelector<HTMLElement>('[data-wing]')!;
+  afterEach(() => {
+    act(() => setOverturePhase(null));
+  });
+
+  it('stands the home in Light beneath it, then crosses to the day’s Ink by its own crossing', async () => {
+    renderViewer({ presentation: 'home', openingExpression: 'ink' });
     await settle();
-    await act(async () => {
-      vi.advanceTimersByTime(1200);
-    });
-    fireEvent.ended(await handover());
-    await act(async () => {
-      vi.advanceTimersByTime(6000);
-    });
+    expect(stage()).toHaveAttribute('data-expression', 'ink');
+    act(() => setOverturePhase('playing'));
     await act(async () => {});
-    expect(root().getAttribute('data-turning')).toBe('dusk');
-    expect(root().style.getPropertyValue('--seam')).toBe('0%');
-    fireEvent.keyDown(window, { key: 'ArrowDown' });
-    expect(root().getAttribute('data-turning')).toBe('time');
-    expect(root().style.getPropertyValue('--seam')).toBe('100%');
+    expect(stage()).toHaveAttribute('data-expression', 'light');
+    act(() => setOverturePhase('landing'));
+    await act(async () => {});
     await act(async () => {
-      vi.advanceTimersByTime(5000);
+      vi.advanceTimersByTime(BREATH_MS);
+    });
+    expect(root().getAttribute('data-turning')).toBe('overture');
+    // --t-overture-cross: 4000 ms in jsdom's fallback.
+    await act(async () => {
+      vi.advanceTimersByTime(4100);
     });
     await act(async () => {});
     await dropSeam();
     expect(stage()).toHaveAttribute('data-expression', 'ink');
+    expect(overturePhase()).toBe('done');
+    // None of it was the visitor's choice: nothing is remembered, and the wing keeps the twin.
+    expect(sessionStorage.getItem(EXPRESSION_KEY)).toBeNull();
+    expect(wing()).toHaveAttribute('data-twin', 'light');
+  });
+
+  it('leaves nothing of a move it called off for the visitor’s own next Turn', async () => {
+    renderViewer({ presentation: 'home', openingExpression: 'ink' });
+    await settle();
+    // The Light still is slow to come, and the Overture ends before it has.
+    const decode = HTMLImageElement.prototype.decode;
+    Object.defineProperty(HTMLImageElement.prototype, 'decode', {
+      configurable: true,
+      value: () => new Promise<void>(() => {}),
+    });
+    act(() => setOverturePhase('playing'));
+    await act(async () => {});
+    act(() => setOverturePhase('done'));
+    await act(async () => {});
+    expect(stage()).toHaveAttribute('data-expression', 'ink');
+    Object.defineProperty(HTMLImageElement.prototype, 'decode', {
+      configurable: true,
+      value: decode,
+    });
+    // The visitor's own Turn travels by time, and the visit remembers it.
+    fireEvent.click(word(en.light));
+    await act(async () => {});
+    await act(async () => {
+      vi.advanceTimersByTime(BREATH_MS);
+    });
+    expect(root().getAttribute('data-turning')).toBe('time');
+    await act(async () => {
+      vi.advanceTimersByTime(950);
+    });
+    await act(async () => {});
+    await dropSeam();
+    expect(stage()).toHaveAttribute('data-expression', 'light');
+    expect(sessionStorage.getItem(EXPRESSION_KEY)).toBe('light');
+  });
+
+  it('lands at once when an input ends it, and lands a Light day where it stands', async () => {
+    renderViewer({ presentation: 'home', openingExpression: 'ink' });
+    await settle();
+    act(() => setOverturePhase('playing'));
+    await act(async () => {});
+    expect(stage()).toHaveAttribute('data-expression', 'light');
+    act(() => setOverturePhase('done'));
+    await act(async () => {});
+    expect(stage()).toHaveAttribute('data-expression', 'ink');
     expect(root().hasAttribute('data-turning')).toBe(false);
+    expect(sessionStorage.getItem(EXPRESSION_KEY)).toBeNull();
+    cleanup();
+    act(() => setOverturePhase(null));
+    renderViewer({ presentation: 'home', openingExpression: 'light' });
+    await settle();
+    act(() => setOverturePhase('playing'));
+    act(() => setOverturePhase('landing'));
+    await act(async () => {});
+    expect(overturePhase()).toBe('done');
+    expect(stage()).toHaveAttribute('data-expression', 'light');
   });
 });
 

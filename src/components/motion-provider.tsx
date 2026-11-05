@@ -1,7 +1,6 @@
 'use client';
 import { createContext, useContext, useSyncExternalStore, type ReactNode } from 'react';
-
-const key = 'cosmic-art-motion-v1';
+import { MOTION_KEY } from '@/lib/storage-keys';
 const listeners = new Set<() => void>();
 let explicit: boolean | undefined;
 let query: MediaQueryList | undefined;
@@ -12,7 +11,7 @@ function subscribe(listener: () => void) {
   if (!query) {
     query = window.matchMedia('(prefers-reduced-motion: reduce)');
     try {
-      const saved = sessionStorage.getItem(key);
+      const saved = sessionStorage.getItem(MOTION_KEY);
       if (saved === 'paused' || saved === 'playing') explicit = saved === 'paused';
     } catch {
       /* Storage is optional. */
@@ -61,7 +60,7 @@ export function MotionProvider({ children }: { children: ReactNode }) {
   function toggle() {
     explicit = !paused;
     try {
-      sessionStorage.setItem(key, explicit ? 'paused' : 'playing');
+      sessionStorage.setItem(MOTION_KEY, explicit ? 'paused' : 'playing');
     } catch {
       /* A private browser can still control playback. */
     }

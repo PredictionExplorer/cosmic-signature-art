@@ -5,9 +5,12 @@ import { getCuratedArtwork } from '@/lib/art/catalog';
 import { inlineCuratedPreview } from '@/lib/art/inline-preview';
 import { expressionOfTheDay, venueNow, workOfTheDay } from '@/lib/art/work-of-the-day';
 import { openingOn } from '@/lib/art/opening';
+import { performedOrbits } from '@/lib/art/orbit-windows';
+import { getInterpretation, type Artwork } from '@/lib/art/types';
 import { metadata } from '@/lib/site';
 import { ArtworkViewer } from '@/components/artwork-viewer';
 import { HomeCycle, HomeSpread, HomeStatement } from '@/components/home-screens';
+import { Overture, type OvertureWork } from '@/components/overture';
 
 /**
  * The day's work follows the UTC date. Both the home and the process regenerate every five
@@ -24,12 +27,24 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
   return metadata(locale, '/', `${t.shape} ${t.ofMotion}`, t.statementLine, null);
 }
 
+/** The day's work as the Overture performs it: its recorded window, and its Light and order. */
+function overtureOf(work: Artwork): OvertureWork | null {
+  const [performed] = performedOrbits([work.id]);
+  const light = getInterpretation(work, 'light');
+  if (!performed || !light?.rungs?.length || !light.arrival) return null;
+  return {
+    window: performed.window,
+    bodyHues: performed.bodyHues,
+    rungs: light.rungs,
+    arrival: light.arrival.src,
+  };
+}
+
 /**
  * The home opens on the day's work in the day's expression: Screen 1 is that plate with the
  * one line, Screen 2 the same orbit in the other expression, one Turn away. Light and Ink take
- * the first screen on alternate days (third-physics-phase-d.md §2). The Dusk, the home's one
- * automatic event, waits behind NEXT_PUBLIC_HOME_DUSK until the owner has watched naive
- * visitors meet it.
+ * the first screen on alternate days (third-physics-phase-d.md §2). A first visit opens with
+ * the Overture, the venue's one timed event: the plate condenses out of its orbit, then lands.
  */
 export default async function Home({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
@@ -50,8 +65,8 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
           ink: inlineCuratedPreview(work.id, 'ink'),
           light: inlineCuratedPreview(work.id, 'light'),
         }}
-        dusk={process.env.NEXT_PUBLIC_HOME_DUSK === '1'}
       />
+      <Overture work={overtureOf(work)} />
       {/* Screen 3: the statement line, the one screen without a work. */}
       <HomeStatement locale={locale} t={t} />
       {/* Screen 4: a spread of two plates across the seam, one in each expression. */}

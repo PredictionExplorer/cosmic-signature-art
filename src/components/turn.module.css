@@ -26,8 +26,8 @@
 :global(html[data-turning='time']) .turn .night {
   transition: clip-path var(--t-turn) var(--ease-turn);
 }
-:global(html[data-turning='dusk']) .turn .night {
-  transition: clip-path var(--t-dusk) var(--ease-dusk);
+:global(html[data-turning='overture']) .turn .night {
+  transition: clip-path var(--t-overture-cross) var(--ease-overture);
 }
 /* The crossing in the order the work was made keeps the work's pace, set per travel. */
 :global(html[data-turning='time'][data-crossing='arrival']) .turn .night {

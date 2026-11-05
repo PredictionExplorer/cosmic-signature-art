@@ -1,7 +1,11 @@
 import { defineConfig } from '@playwright/test';
+import { OVERTURE_KEY } from './src/lib/storage-keys';
 import { VENUE_DATE } from './tests/e2e/venue-day';
 
 const baseURL = process.env.PLAYWRIGHT_BASE_URL ?? 'http://127.0.0.1:4318';
+// The suite's own arithmetic (the day's work, its expression) runs on the server's pinned day,
+// in every worker, however the suite is started.
+process.env.COSMIC_VENUE_DATE ??= VENUE_DATE;
 
 export default defineConfig({
   testDir: './tests/e2e',
@@ -16,6 +20,17 @@ export default defineConfig({
   globalSetup: './tests/e2e/global-setup.ts',
   use: {
     baseURL,
+    // The suite meets the venue as a returning visitor: the Overture plays once a browser, and
+    // its own spec starts afresh to meet it (tests/e2e/overture.spec.ts).
+    storageState: {
+      cookies: [],
+      origins: [
+        {
+          origin: new URL(baseURL).origin,
+          localStorage: [{ name: OVERTURE_KEY, value: 'seen' }],
+        },
+      ],
+    },
     trace: 'retain-on-failure',
     screenshot: 'only-on-failure',
     video: 'retain-on-failure',
