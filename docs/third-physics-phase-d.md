@@ -69,7 +69,7 @@ One policy module decides the opening expression, and every surface asks it. Tes
 Unchanged from [third-physics.md](third-physics.md) §5, ordered by readiness:
 1. **After the frame** (§5.6). When a film resolves, the re-performance continues past the recorded window, labelled as physics, not the work. An ejection leaves at the published `ejection_step`.
 2. **The choice** (§5.10). The process essay re-derives all 100,000 beginnings of the day's work in a worker, in a field of energy against angular momentum with the chosen one ringed.
-3. **The Overture** (§5.8). It still needs the owner's decision (§11.2) to replace the Dusk. Under rule 3 its last beat lands on the day's expression.
+3. **The Overture** (§5.8). Approved by the owner on 4 November 2026 to replace the Dusk. Under rule 3 its last beat lands on the day's expression.
 4. **Opening night** (§5.9). It waits for the pipeline to publish traits early.
 
 ## 5. Order of work
@@ -77,7 +77,9 @@ Unchanged from [third-physics.md](third-physics.md) §5, ordered by readiness:
 1. **Two equal expressions and phones**, one PR, since both touch the same surfaces.
 2. **After the frame.**
 3. **The choice.**
-4. **The Overture**, once the owner decides.
+4. **The Overture.**
+
+Parts 2 to 4 shipped together; §7 records them.
 
 Each PR passes the seven-project Playwright matrix, axe, the 12 px floor, the motion tokens and eight locales with exact key parity.
 
@@ -133,9 +135,54 @@ Each PR passes the seven-project Playwright matrix, axe, the 12 px floor, the mo
 
 **Open for the owner.**
 - Should the auction landing show work before a contract exists, clearly labelled as not offered?
-- The Overture (§11.2 of the plan) is still unanswered.
+- The Overture was approved on 4 November 2026 and is built (§7).
 
 **Still to do on phones.**
 - A finger held on All the light to browse names before choosing.
 - The Orrery's phone pass, after the freeze fix lands.
 
+## 7. Parts 2 to 4 as built: the events
+
+**After the frame.**
+- **The fate is re-derived and checked.** The port gains the generator's fate rule (`classify_fate`): from the window's first step, the escape check every 10,000 steps, and five positive answers in a row date an ejection by the first. The published threshold (−0.3) now travels in the orbit registry, and the registry's build re-derives every fate before it writes. All 72 are exact: 36 ejections and 36 eternal dances.
+- **The proof table gains a row: Fate.** After the measurements the worker runs on past the window, to the escape or the 8,000,000-step horizon. It hands back the bodies at the window's end and just before an ejection. The summary speaks once every row, the fate included, has been checked.
+- **The performance.** The section's word After the frame, or the plate's once its film resolves, runs the same physics on at the film's pace from the bodies the worker kept. It passes through the fate run's states bit for bit; a test proves it for №054. The window dims behind it and the score loses its playhead. The continued trails take the bodies' hues drained of colour, on a layer that forgets them over about a film's length. The section's line says what it is: not the work, but what the work's orbit does next.
+- **An ejection** is performed to its confirmation. It rests as soon as the escaping body's light has left the drawing, and never more than two seconds of the film's pace later. The readout dates it: "Body 2 has escaped, at step 1,090,000". An escape further on is one word away: To the ejection starts four seconds before it. **An eternal dance** turns on to the horizon.
+- **Reduced motion and Pause** draw it at once: an escape from its approach, or half a window of a dance. The steps are taken a hundred thousand to a frame, so the page stays responsive.
+- **On a phone** the readout keeps its full width, and the words take a line of their own beneath it, reserved from the start.
+- **The plate's word** links to `#orbit` and asks by `cosmic:after-the-frame`. It appears on a desk, where the film resolves; a phone's plate rests on its excerpt.
+
+**The choice** was built in its own worktree and brought in whole; its commit message records the details.
+- The day's 100,000 beginnings are re-derived in a worker, in the generator's order, each measured exactly at the quick gate.
+- They arrive as a field of light: total energy across and angular momentum upward, on logarithmic scales, with the chosen one ringed and named.
+- The caption states this browser's counts and the studio's search, which cannot run here: up to two million steps a beginning, 200,000,000,000 in all. It also says whether the chosen masses are the published ones, to the last bit.
+- The derivation takes 0.4 s in WebKit and 0.6 s in Chromium.
+
+**The Overture**, version 1.
+- **The gate is the first paint.** On a first visit to the home the inline room script marks `<html data-overture="pending">`. It requires that nothing is asked of the plate in the URL, that motion is welcome, and that this browser's local storage holds no earlier Overture. The page then paints black, with the head and the plate waiting beneath. Should the Overture never come, the black lifts itself after `--t-overture-wait`. The performance is its own chunk, so a returning visitor never downloads it.
+- **One clock.** Over the black, the day's work's bodies replay its recorded window from the verified first step, with the Orrery's `WindowPerformance`. They follow the Light film's own map from step to time, compressed to `--t-overture` (6.5 s). Beside them the Light still condenses in its arrival order, from just before its first mark to just past its last. A minimal WebGL front with the crossing's own edge draws it; without WebGL the still comes up whole, on the same clock.
+- **Where.** On a desk the plate condenses smaller, beside the score. It is laid out in its own place and only scaled down, so it lands sharp. On a phone it condenses in place, with the score beneath it.
+- **Landing.** The score gives way as the plate grows into its place, and the black lifts over the home's own Light plate. On an Ink day the plate then crosses to Ink in the order the ink came to rest, by the Overture's own crossing (`--t-overture-cross`, the Dusk's old pace). The running head and the strip arrive with it, as walls the crossing turns. On a Light day the plate stays in Light.
+- **Quiet.** Beneath the black the plate stands in Light. It lands on the opening it would have had: the remembered choice, else the day's expression. None of this is the visitor's choice, so nothing is remembered and the wing keeps the twin the page opened with. A shared store (`overture-store.ts`) carries the phase and the viewer follows it, so the order in which the two mount never matters.
+- **Any input ends it at once**, on the page as it would have opened. The press that ends it presses nothing beneath. Pause, reduced motion, a new width and a hidden tab end it too.
+- **The Dusk is retired**, with its controller, its flag, its tokens and the home's shorter rest.
+
+**Found while building.**
+- **Two clocks in development.** React mounts every effect twice in development. The Overture's first run let its images' promise outlive its cleanup, and built a second condensation on the same WebGL context; WebKit reported "location not for current program". A run that is taken down now builds nothing, and a test mounts it twice.
+- **One home for storage keys.** The expression's key was defined three times. The venue's storage keys now live in one module (`storage-keys.ts`), which the components and the first-paint script read alike.
+- **The suite's own day.** A local run without the pin computed today's work while the server showed the pinned day's. The config now pins the test process too.
+- **The suite as a returning visitor.** Every spec but the Overture's starts with the Overture already seen.
+
+**An independent review, and what it changed.** It found four defects and three likely ones, all in the Overture and the plate's handling of it; the fate, the continuation and the choice checked out. All are fixed and tested:
+- **Once a visit.** Coming back to the home later in the visit played the Overture again. Its request now lives on `<html>` until it ends.
+- **Nothing leaks onto the visitor's Turn.** A quiet move called off before it landed could leave its flags for the visitor's next Turn, which then neither travelled nor was remembered. One case was decoded and waiting in a transition, so no longer pending; the browser suite caught it once on a WebKit phone. A move called off is now always superseded and its flags cleared, and a Turn's mode is spent wherever it is read.
+- **The ending input does nothing else.** While the black is up, the press and the key that end the Overture act on nothing beneath; Tab still moves on. Once the black has lifted, input acts on the page as usual.
+- **No black twice.** On a slow phone the first paint's black could lift itself and then return when the Overture arrived. The Overture now stands aside once that wait has passed.
+- **Never left hidden.** A performance taken down mid-play gives the page back. A failure inside the still's arrival ends it, and its listeners are attached only once nothing can throw.
+- **Smaller things.** The plate's word now takes the keyboard and the screen reader to the orbit. The field's status is busy while it derives, so a screen reader speaks the outcome rather than every count. The word is offered on a desk only, where the strip has room. A browser test that could not fail now presses a link beneath the black.
+
+**Open.**
+- **WebKit swaps a large streamed page in after load.** It holds the page behind the route's fallback and renders the streamed `main` again after hydration: on the home, a work page and the Ukrainian process essay. This was reported while building The choice, predates this phase, and wants its own fix.
+- **A prefetch of `/exhibitions` answers 404** on the English home. It also predates this phase.
+- **Version 2 of the Overture** registers the score with the plate (drift and framing), so the bodies draw the plate itself.
+- **Opening night** (§5.9) waits for the pipeline to publish traits early.
