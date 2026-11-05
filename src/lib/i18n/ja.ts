@@ -622,6 +622,14 @@ export const ja: Messages = {
   analysisNotWork: '作品ではなく分析',
   keyWhen: '時刻：映像のなかで現れた時刻で、それぞれの部分を色分け',
   whenUnavailable: 'このブラウザでは時刻の図を描けませんでした。静止画を表示しています。',
+  // The Wavelength lens (src/components/wavelength-lens.tsx)
+  wavelengthLens: '波長',
+  wavelengthCaption: 'ひとつの波長のスイープ',
+  wavelengthValue: '{n} ナノメートル',
+  wavelengthAlt: '{plate} · {n} nm で止めたスペクトル・スイープ。作品ではなく分析。',
+  wavelengthLoading: 'スイープを読み込んでいます…',
+  keyWavelength: '波長：スペクトル・スイープをひとつの波長で止める。← → で選ぶ',
+  wavelengthUnavailable: 'ここではスペクトル・スイープを表示できません。静止画を表示しています。',
   // The indexes: the Orrery and All the light (src/components/orrery.tsx, all-the-light.tsx)
   orrery: 'オーラリー',
   orreryTitle: 'オーラリー',

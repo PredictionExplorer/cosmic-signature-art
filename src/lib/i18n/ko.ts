@@ -616,6 +616,14 @@ export const ko: Messages = {
   analysisNotWork: '작품이 아닌 분석',
   keyWhen: '시각: 영상 속에서 나타난 시각에 따라 각 부분을 색칠',
   whenUnavailable: '이 브라우저에서는 시각 보기를 그리지 못해 정지 이미지를 보여 줍니다.',
+  // The Wavelength lens (src/components/wavelength-lens.tsx)
+  wavelengthLens: '파장',
+  wavelengthCaption: '한 파장의 스윕',
+  wavelengthValue: '{n}나노미터',
+  wavelengthAlt: '{plate} · {n} nm에 멈춘 스펙트럼 스윕. 작품이 아닌 분석.',
+  wavelengthLoading: '스윕을 불러오는 중입니다…',
+  keyWavelength: '파장: 스펙트럼 스윕을 한 파장에 멈춤. ← →로 고르기',
+  wavelengthUnavailable: '여기서는 스펙트럼 스윕을 보여 줄 수 없어 정지 이미지를 보여 줍니다.',
   // The indexes: the Orrery and All the light (src/components/orrery.tsx, all-the-light.tsx)
   orrery: '오러리',
   orreryTitle: '오러리',

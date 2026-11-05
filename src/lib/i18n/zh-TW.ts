@@ -593,6 +593,14 @@ export const zhTW: Messages = {
   analysisNotWork: '分析，而非作品',
   keyWhen: '時刻：依每一筆在影片中出現的時刻著色',
   whenUnavailable: '此瀏覽器無法繪製時刻視圖，改為顯示靜態影像。',
+  // The Wavelength lens (src/components/wavelength-lens.tsx)
+  wavelengthLens: '波長',
+  wavelengthCaption: '停在單一波長的光譜掃描',
+  wavelengthValue: '{n} 奈米',
+  wavelengthAlt: '{plate} · 停在 {n} nm 的光譜掃描。分析，而非作品。',
+  wavelengthLoading: '正在載入光譜掃描…',
+  keyWavelength: '波長：讓光譜掃描停在單一波長；用 ← → 選擇',
+  wavelengthUnavailable: '此處無法顯示光譜掃描，改為顯示靜態影像。',
   // The indexes: the Orrery and All the light (src/components/orrery.tsx, all-the-light.tsx)
   orrery: '軌道儀',
   orreryTitle: '軌道儀',

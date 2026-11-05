@@ -623,6 +623,14 @@ export const en = {
   analysisNotWork: 'Analysis, not the work',
   keyWhen: 'When: each mark coloured by its moment in the film',
   whenUnavailable: 'This browser could not draw the When lens; the still stands in.',
+  // The Wavelength lens (src/components/wavelength-lens.tsx)
+  wavelengthLens: 'Wavelength',
+  wavelengthCaption: 'The sweep at one wavelength',
+  wavelengthValue: '{n} nanometres',
+  wavelengthAlt: '{plate} · the spectral sweep held at {n} nm. Analysis, not the work.',
+  wavelengthLoading: 'Loading the sweep…',
+  keyWavelength: 'Wavelength: the spectral sweep held at one wavelength; ← → choose it',
+  wavelengthUnavailable: 'The spectral sweep cannot be shown here; the still stands in.',
   // The indexes: the Orrery and All the light (src/components/orrery.tsx, all-the-light.tsx)
   orrery: 'Orrery',
   orreryTitle: 'The Orrery',

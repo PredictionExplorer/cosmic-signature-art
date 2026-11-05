@@ -625,6 +625,14 @@ export const uk: Messages = {
   keyWhen: 'Коли: кожен штрих забарвлено за моментом його появи у фільмі',
   whenUnavailable:
     'Цей браузер не зміг намалювати вигляд «Коли»; замість нього показано зображення.',
+  // The Wavelength lens (src/components/wavelength-lens.tsx)
+  wavelengthLens: 'Довжина хвилі',
+  wavelengthCaption: 'Прохід на одній довжині хвилі',
+  wavelengthValue: '{n} нм',
+  wavelengthAlt: '{plate} · спектральний прохід, зупинений на {n} нм. Аналіз, а не твір.',
+  wavelengthLoading: 'Завантажуємо прохід…',
+  keyWavelength: 'Довжина хвилі: спектральний прохід на одній довжині хвилі; ← → обирають її',
+  wavelengthUnavailable: 'Спектральний прохід тут недоступний; замість нього показано зображення.',
   // The indexes: the Orrery and All the light (src/components/orrery.tsx, all-the-light.tsx)
   orrery: 'Оррері',
   orreryTitle: 'Оррері',

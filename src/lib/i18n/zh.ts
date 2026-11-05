@@ -593,6 +593,14 @@ export const zh: Messages = {
   analysisNotWork: '分析，而非作品',
   keyWhen: '时刻：按每一笔在影片中出现的时刻着色',
   whenUnavailable: '此浏览器无法绘制时刻视图，改为显示静态图像。',
+  // The Wavelength lens (src/components/wavelength-lens.tsx)
+  wavelengthLens: '波长',
+  wavelengthCaption: '停在单一波长的光谱扫描',
+  wavelengthValue: '{n} 纳米',
+  wavelengthAlt: '{plate} · 停在 {n} nm 的光谱扫描。分析，而非作品。',
+  wavelengthLoading: '正在载入光谱扫描…',
+  keyWavelength: '波长：让光谱扫描停在单一波长；用 ← → 选择',
+  wavelengthUnavailable: '此处无法显示光谱扫描，改为显示静态图像。',
   // The indexes: the Orrery and All the light (src/components/orrery.tsx, all-the-light.tsx)
   orrery: '轨道仪',
   orreryTitle: '轨道仪',

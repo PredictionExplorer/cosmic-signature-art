@@ -627,6 +627,15 @@ export const vi: Messages = {
   analysisNotWork: 'Phân tích, không phải tác phẩm',
   keyWhen: 'Thời điểm: tô màu mỗi nét theo khoảnh khắc nó xuất hiện trong phim',
   whenUnavailable: 'Trình duyệt này không vẽ được lớp thời điểm; ảnh tĩnh được hiển thị thay thế.',
+  // The Wavelength lens (src/components/wavelength-lens.tsx)
+  wavelengthLens: 'Bước sóng',
+  wavelengthCaption: 'Bản quét ở một bước sóng',
+  wavelengthValue: '{n} nanomét',
+  wavelengthAlt: '{plate} · bản quét quang phổ dừng ở {n} nm. Phân tích, không phải tác phẩm.',
+  wavelengthLoading: 'Đang tải bản quét…',
+  keyWavelength: 'Bước sóng: bản quét quang phổ dừng ở một bước sóng; ← → để chọn',
+  wavelengthUnavailable:
+    'Không thể hiển thị bản quét quang phổ ở đây; ảnh tĩnh được hiển thị thay thế.',
   // The indexes: the Orrery and All the light (src/components/orrery.tsx, all-the-light.tsx)
   orrery: 'Mô hình quỹ đạo',
   orreryTitle: 'Mô hình quỹ đạo',
