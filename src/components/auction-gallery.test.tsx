@@ -444,13 +444,13 @@ describe('the lots as plates', () => {
       '№ 031 · Cycle 1 · Orbit Ribbons · Harmonic Weave · Eternal Dance',
     );
     expect(first).toHaveAttribute('data-preview-available', 'true');
-    // The curated archive records no Light film, so no Light settling clip binds until the
-    // live record arrives; the lease is offered only what can honestly move.
+    // The curated archive records each expression's published film from the index, so the
+    // Light lot's verified settling clip binds as the Ink lots' do: Light moves as Ink does.
     expect(screen.getByRole('article', { name: lotName(2, 23) })).toHaveAttribute(
       'data-preview-available',
-      'false',
+      'true',
     );
-    expect(coordinator.use).toHaveBeenLastCalledWith({ enabled: true, ids: [31, 35] });
+    expect(coordinator.use).toHaveBeenLastCalledWith({ enabled: true, ids: [31, 23, 35] });
     expect(screen.queryByText(en.mediaNotPublished)).toBeNull();
     expect(document.querySelectorAll('video')).toHaveLength(0);
   });

@@ -249,6 +249,7 @@ export const zhHK: Messages = {
   statement: '自述',
   index: '索引',
   indexSheet: '藏品索引',
+  indexWallHint: '輕觸編號，作品便掛在這裡；再觸一次即可進入。',
   closeIndex: '關閉索引',
   keys: '按鍵',
   keysSheet: '鍵盤快捷鍵',
@@ -286,6 +287,8 @@ export const zhHK: Messages = {
   // 版面與翻轉
   showLight: '顯示光的表達',
   showInk: '顯示墨的表達',
+  hangAlone: '只看{expression}',
+  hangTogether: '墨與光並置',
   noInkPublished: '尚未發布墨的表達',
   previousWork: '上一件作品',
   nextWork: '下一件作品',

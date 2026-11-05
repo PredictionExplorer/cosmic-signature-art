@@ -1,4 +1,5 @@
 import { defineConfig } from '@playwright/test';
+import { VENUE_DATE } from './tests/e2e/venue-day';
 
 const baseURL = process.env.PLAYWRIGHT_BASE_URL ?? 'http://127.0.0.1:4318';
 
@@ -11,6 +12,8 @@ export default defineConfig({
   retries: process.env.CI ? 1 : 0,
   reporter: [['list'], ['html', { open: 'never' }]],
   outputDir: './test-results',
+  // A reused server must be on the suite's venue day; this says so before any test runs.
+  globalSetup: './tests/e2e/global-setup.ts',
   use: {
     baseURL,
     trace: 'retain-on-failure',
@@ -23,6 +26,7 @@ export default defineConfig({
     command: process.env.CI ? 'npm run start' : 'npm run dev',
     url: baseURL,
     reuseExistingServer: !process.env.CI,
+    env: { COSMIC_VENUE_DATE: VENUE_DATE },
     timeout: 120_000,
     stdout: 'pipe',
     stderr: 'pipe',

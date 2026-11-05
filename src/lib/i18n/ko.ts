@@ -259,6 +259,7 @@ export const ko: Messages = {
   statement: '작가 노트',
   index: '색인',
   indexSheet: '컬렉션 색인',
+  indexWallHint: '번호를 누르면 작품이 여기에 걸립니다. 한 번 더 누르면 들어갑니다.',
   closeIndex: '색인 닫기',
   keys: '단축키',
   keysSheet: '키보드 단축키',
@@ -296,6 +297,8 @@ export const ko: Messages = {
   // 플레이트와 전환
   showLight: '빛 표현 보기',
   showInk: '먹 표현 보기',
+  hangAlone: '{expression}만',
+  hangTogether: '잉크와 빛을 함께',
   noInkPublished: '먹 표현이 공개되지 않음',
   previousWork: '이전 작품',
   nextWork: '다음 작품',

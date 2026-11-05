@@ -29,11 +29,18 @@ const transitionTypes = {
 export function useArtworkExpression({
   media,
   initialExpression,
+  openingExpression,
   onCommit,
   onReady,
 }: {
   media: readonly ArtInterpretation[];
+  /** The visitor's request, honoured when the work publishes it. */
   initialExpression?: string;
+  /**
+   * The page's opening when nothing is requested, as src/lib/art/opening.ts decides it on the
+   * server. Without one the plate opens on the first published medium: no expression leads.
+   */
+  openingExpression?: string;
   onCommit?: (expression: string) => void;
   /**
    * The requested still has decoded. When given, the caller decides the moment of the
@@ -41,10 +48,10 @@ export function useArtworkExpression({
    */
   onReady?: (expression: string, commit: () => void) => void;
 }) {
-  const [expression, setExpression] = useState(
-    media.find((item) => item.id === initialExpression)?.id ??
-      (media.some((item) => item.id === 'ink') ? 'ink' : (media[0]?.id ?? 'light')),
-  );
+  const [expression, setExpression] = useState(() => {
+    const published = (id?: string) => media.find((item) => item.id === id)?.id;
+    return published(initialExpression) ?? published(openingExpression) ?? media[0]?.id ?? 'light';
+  });
   const [pendingExpression, setPendingExpression] = useState<string | null>(null);
   const [failedExpression, setFailedExpression] = useState<string | null>(null);
   const preparation = useRef<(() => void) | null>(null);

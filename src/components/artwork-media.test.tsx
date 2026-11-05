@@ -117,7 +117,8 @@ describe('artwork media delivery', () => {
   });
 
   it('does not invent a film for a still-only interpretation', () => {
-    const { container } = render(<ArtworkMedia media={light} alt="Signature 31 in light" />);
+    const stillOnly = { ...light, films: [], settlingFilm: undefined, openingFilm: undefined };
+    const { container } = render(<ArtworkMedia media={stillOnly} alt="Signature 31 in light" />);
     enterViewport();
     expect(imagePath()).toBe('/art/31-light.webp');
     expect(container.querySelector('video')).toBeNull();

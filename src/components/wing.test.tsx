@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { roomAtCentre, wingProgress } from './night-wing';
+import { roomAtCentre, wingProgress, wingSeamAt } from './wing';
 
 const rect = (top: number, height: number): DOMRect =>
   ({
@@ -18,7 +18,7 @@ const viewportHeight = 1000;
 const head = 48;
 const stageHeight = viewportHeight - head;
 
-describe('the night wing', () => {
+describe('the wing', () => {
   it('keeps the phone masthead on Ink until the compact Light plate reaches the viewing line', () => {
     const phone = {
       expression: 'ink',
@@ -81,6 +81,52 @@ describe('the night wing', () => {
         scrollDriven: false,
         wing: rect(-700, 2 * stageHeight),
         fallback: rect(252, stageHeight),
+      }),
+    ).toBe('night');
+  });
+
+  it('places the seam where the hand has drawn the twin: night from the right, paper from the left', () => {
+    expect(wingSeamAt('light', 0)).toBe(100);
+    expect(wingSeamAt('light', 0.25)).toBe(75);
+    expect(wingSeamAt('light', 1)).toBe(0);
+    expect(wingSeamAt('ink', 0)).toBe(0);
+    expect(wingSeamAt('ink', 0.25)).toBe(25);
+    expect(wingSeamAt('ink', 1)).toBe(100);
+  });
+
+  it('mirrors the ground under a Light plate: night until half the travel, then paper', () => {
+    const base = {
+      expression: 'light',
+      twin: 'ink' as const,
+      mode: 'scroll' as const,
+      scrollDriven: true,
+      stageHeight,
+      head,
+      viewportHeight,
+      fallback: null,
+    };
+    expect(roomAtCentre({ ...base, wing: rect(head - 100, 2 * stageHeight) })).toBe('night');
+    expect(roomAtCentre({ ...base, wing: rect(head - stageHeight * 0.6, 2 * stageHeight) })).toBe(
+      'paper',
+    );
+    // A Turn to Ink on that page: the plate already shows the wing's twin.
+    expect(roomAtCentre({ ...base, expression: 'ink', wing: rect(head, 2 * stageHeight) })).toBe(
+      'paper',
+    );
+    // The hard edge on a phone: the paper screen beneath decides.
+    const hard = { ...base, mode: 'hard' as const, scrollDriven: false };
+    expect(
+      roomAtCentre({
+        ...hard,
+        wing: rect(-700, 2 * stageHeight),
+        fallback: rect(252, stageHeight),
+      }),
+    ).toBe('paper');
+    expect(
+      roomAtCentre({
+        ...hard,
+        wing: rect(-700, 2 * stageHeight),
+        fallback: rect(700, stageHeight),
       }),
     ).toBe('night');
   });

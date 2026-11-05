@@ -260,6 +260,7 @@ export const uk: Messages = {
   statement: 'Від автора',
   index: 'Покажчик',
   indexSheet: 'Покажчик колекції',
+  indexWallHint: 'Торкніться номера, щоб повісити тут його твір; торкніться ще раз, щоб увійти.',
   closeIndex: 'Закрити покажчик',
   keys: 'Клавіші',
   keysSheet: 'Клавіатурні скорочення',
@@ -298,6 +299,8 @@ export const uk: Messages = {
   // Плата і Поворот
   showLight: 'Показати вираз у Світлі',
   showInk: 'Показати вираз у Туші',
+  hangAlone: 'Лише {expression}',
+  hangTogether: 'Чорнило і Світло разом',
   noInkPublished: 'вираз у Туші не опубліковано',
   previousWork: 'Попередня робота',
   nextWork: 'Наступна робота',

@@ -21,6 +21,8 @@ export interface WorkFilter {
 }
 
 export type Expression = 'ink' | 'light';
+/** What a wall hangs: one expression on its own ground, or both across the seam. */
+export type Hanging = Expression | 'both';
 
 /** What a client view needs to hang a numeral with the work behind it; nothing more. */
 export interface CompactWork {

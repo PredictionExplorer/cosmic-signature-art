@@ -18,6 +18,8 @@ import { ArtworkViewer } from '@/components/artwork-viewer';
 import { AuctionAvailability } from '@/components/auction-summary';
 import { AuctionRules } from '@/components/auction-rules';
 import { artworkViewParams, type ArtworkViewQuery } from '@/lib/art/view';
+import { knownExpressions, openingExpression, openingOn } from '@/lib/art/opening';
+import { expressionOfTheDay } from '@/lib/art/work-of-the-day';
 import styles from '../auction-pages.module.css';
 export async function generateMetadata({
   params,
@@ -64,7 +66,10 @@ export default async function AuctionWork({
   // artwork page; any other token waits for the publisher, and one it reports as not found is
   // not a lot: no strip, no canonical record.
   const registry = getCuratedArtwork(tokenId);
-  const opening = initialExpression ?? (indexed?.media.ink || !indexed ? 'ink' : 'light');
+  const opening =
+    initialExpression ??
+    openingExpression(knownExpressions(registry, indexed)) ??
+    expressionOfTheDay();
   const curated = registry?.media.some((item) => item.id === opening && item.still)
     ? registry
     : undefined;
@@ -85,6 +90,7 @@ export default async function AuctionWork({
           presentation="auction"
           initialStill={view.get('view') === 'still'}
           initialExpression={initialExpression}
+          openingExpression={openingOn(artwork, initialExpression)}
           inlinePreviews={
             curated
               ? {

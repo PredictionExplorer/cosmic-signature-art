@@ -118,6 +118,70 @@
   font-family: var(--font-mono);
   font-size: var(--fs-folio);
 }
+/* Both expressions across the seam (third-physics-phase-d.md §2): the wall is paper to the left
+   and night to the right, the Turn's seam at rest at the middle. Each leaf keeps the hang's
+   rhythm, and a work's Ink and Light hang on one line, its Ink on the paper leaf beside its
+   Light on the night leaf. */
+.paired {
+  row-gap: 0;
+  background: linear-gradient(to right, var(--paper) 50%, var(--night) 50%);
+}
+.pairRow {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+.leaf {
+  --per-leaf: 1;
+  display: grid;
+  grid-template-columns: repeat(var(--per-leaf), minmax(0, 1fr));
+  align-content: start;
+  column-gap: var(--gutter);
+  row-gap: calc(var(--baseline) * 2);
+  padding: calc(var(--baseline) * 3) calc(var(--gutter) / 2) calc(var(--baseline) * 2) var(--gutter);
+}
+.leaf[data-ground='night'] {
+  padding-inline: calc(var(--gutter) / 2) var(--gutter);
+  --type: var(--night-type);
+  --muted: #b8b5ad;
+  --rule: color-mix(in srgb, var(--night-type) 24%, transparent);
+  color: var(--type);
+}
+.leaf[data-ground='paper'] {
+  --type: var(--paper-type);
+  --muted: #5a5a51;
+  color: var(--type);
+}
+.pairRow[data-shape='2'] .leaf {
+  --per-leaf: 2;
+}
+.pairRow[data-shape='3'] .leaf {
+  --per-leaf: 3;
+}
+/* The cycle and its count on the paper leaf, the date on the night leaf, one strip across. */
+.pairChapter {
+  min-height: 48px;
+  margin: 0;
+  font-size: var(--fs-control);
+  font-weight: 400;
+  letter-spacing: 0;
+  line-height: 1.2;
+}
+.pairChapter .leaf {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0 24px;
+  padding-block: 12px;
+  border-top: 1px solid var(--rule);
+}
+/* A work that publishes only one expression keeps its place across the seam, and says so. */
+.unpublished :global(.art-placeholder) {
+  aspect-ratio: 3456 / 2234;
+}
+.notYet {
+  color: var(--muted);
+  font-size: var(--fs-folio);
+}
 @media (max-width: 767px) {
   /* A phone's wall is its own height: the sheets fill their cells and the eye line rests. */
   .sequence {
@@ -141,5 +205,16 @@
   }
   .row[data-shape='1'] .caption {
     padding-inline: var(--gutter);
+  }
+  /* On a phone every work is one line across the seam, its Ink beside its Light. */
+  .pairRow[data-shape] .leaf {
+    --per-leaf: 1;
+  }
+  /* Half a phone is narrow: the numeral, then the label beneath it, never squeezed beside it. */
+  .paired .caption {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0;
+    padding-inline: 0;
   }
 }

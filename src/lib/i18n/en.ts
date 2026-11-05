@@ -260,6 +260,7 @@ export const en = {
   statement: 'Statement',
   index: 'Index',
   indexSheet: 'Index of the collection',
+  indexWallHint: 'Tap a number to hang its work here; tap it again to enter.',
   closeIndex: 'Close the index',
   keys: 'Keys',
   keysSheet: 'Keyboard shortcuts',
@@ -298,6 +299,8 @@ export const en = {
   // The plate and the Turn
   showLight: 'Show the Light expression',
   showInk: 'Show the Ink expression',
+  hangAlone: '{expression} alone',
+  hangTogether: 'Ink and Light together',
   noInkPublished: 'no Ink expression published',
   previousWork: 'Previous work',
   nextWork: 'Next work',

@@ -33,7 +33,15 @@ test('an artwork is typed as a catalogue entry from the publisher’s record, wi
   const glossary = entry.getByRole('complementary', { name: t.glossary });
   await expect(glossary.getByRole('listitem').first()).toHaveText(new RegExp(t.glossarySignature));
   await expect(glossary.getByRole('listitem').nth(1)).toHaveText(new RegExp(t.glossaryExpression));
-  await entry.getByRole('link', { name: 'Note 1', exact: true }).click();
+  // A footnote mark is a small figure with a 24 px target (WCAG 2.5.8), so a finger finds it.
+  const mark = entry.getByRole('link', { name: 'Note 1', exact: true });
+  const target = await mark.evaluate((link) => {
+    const area = getComputedStyle(link, '::after');
+    return { width: parseFloat(area.width), height: parseFloat(area.height) };
+  });
+  expect(target.width).toBeGreaterThanOrEqual(24);
+  expect(target.height).toBeGreaterThanOrEqual(24);
+  await mark.click();
   await expect(page).toHaveURL(/#note-1$/);
   // Verify on chain holds the full seed, the mint transaction and the two honesty notes.
   const verify = entry.locator('details', { hasText: t.verifyOnChain });

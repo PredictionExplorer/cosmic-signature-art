@@ -40,7 +40,13 @@ export default async function Exhibitions({ params }: { params: Promise<{ locale
         {items.map((item) => {
           const first = indexedWork(exhibitionIds(item)[0]);
           const work = first ? artworkFromIndex(first) : undefined;
-          const media = work ? (getInterpretation(work, 'ink') ?? work.media[0]) : undefined;
+          // The first work as its pair across the seam, its Ink on paper beside its Light.
+          const pair = work
+            ? (['ink', 'light'] as const).flatMap((expression) => {
+                const media = getInterpretation(work, expression);
+                return media ? [media] : [];
+              })
+            : [];
           const title = exhibitionTitle(item, t);
           return (
             <li key={item.slug}>
@@ -50,9 +56,15 @@ export default async function Exhibitions({ params }: { params: Promise<{ locale
                 aria-label={title}
               >
                 <span className={styles.rowPlate}>
-                  {media ? (
-                    <ArtworkMedia media={media} alt="" artworkId={work!.id} still thumbnail />
-                  ) : null}
+                  {pair.map((media) => (
+                    <span
+                      key={media.id}
+                      className={styles.rowLeaf}
+                      data-ground={media.id === 'light' ? 'night' : 'paper'}
+                    >
+                      <ArtworkMedia media={media} alt="" artworkId={work!.id} still thumbnail />
+                    </span>
+                  ))}
                 </span>
                 <span className={styles.rowWords}>
                   <span className="eyebrow">{exhibitionLine(item, locale, t)}</span>

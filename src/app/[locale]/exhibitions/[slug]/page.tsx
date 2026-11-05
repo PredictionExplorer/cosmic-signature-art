@@ -22,6 +22,7 @@ import {
   formatMeasure,
 } from '@/lib/exhibitions/exhibitions';
 import styles from '../exhibitions.module.css';
+import { expressionOfTheDay } from '@/lib/art/work-of-the-day';
 
 type Params = Promise<{ locale: string; slug: string }>;
 
@@ -86,7 +87,7 @@ export default async function ExhibitionPage({ params }: { params: Params }) {
         <p className={`reading ${styles.note}`}>{note}</p>
       </header>
       {item.kind === 'hang' ? (
-        <Hang works={works} locale={locale} t={t} labels={labels} />
+        <Hang works={works} locale={locale} t={t} labels={labels} day={expressionOfTheDay()} />
       ) : (
         <>
           {item.kind === 'cycle' ? (
@@ -96,7 +97,7 @@ export default async function ExhibitionPage({ params }: { params: Params }) {
             works={works}
             locale={locale}
             t={t}
-            expression="ink"
+            expression="both"
             eagerFirstRow
             chapters="none"
             cycles={cycles()}

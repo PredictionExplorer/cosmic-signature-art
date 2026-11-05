@@ -3,7 +3,8 @@ import { isLocale } from '@/lib/i18n/routing';
 import { messages } from '@/lib/i18n/messages';
 import { getCuratedArtwork } from '@/lib/art/catalog';
 import { inlineCuratedPreview } from '@/lib/art/inline-preview';
-import { workOfTheDay } from '@/lib/art/work-of-the-day';
+import { expressionOfTheDay, venueNow, workOfTheDay } from '@/lib/art/work-of-the-day';
+import { openingOn } from '@/lib/art/opening';
 import { metadata } from '@/lib/site';
 import { ArtworkViewer } from '@/components/artwork-viewer';
 import { HomeCycle, HomeSpread, HomeStatement } from '@/components/home-screens';
@@ -24,15 +25,18 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
 }
 
 /**
- * The home opens on the day's work: Screen 1 is its Ink plate with the one line, Screen 2
- * the same orbit in Light, one Turn away. The Dusk, the home's one automatic event, waits
- * behind NEXT_PUBLIC_HOME_DUSK until the owner has watched naive visitors meet it.
+ * The home opens on the day's work in the day's expression: Screen 1 is that plate with the
+ * one line, Screen 2 the same orbit in the other expression, one Turn away. Light and Ink take
+ * the first screen on alternate days (third-physics-phase-d.md §2). The Dusk, the home's one
+ * automatic event, waits behind NEXT_PUBLIC_HOME_DUSK until the owner has watched naive
+ * visitors meet it.
  */
 export default async function Home({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
   if (!isLocale(locale)) notFound();
   const t = messages(locale);
-  const work = getCuratedArtwork(workOfTheDay())!;
+  const now = venueNow();
+  const work = getCuratedArtwork(workOfTheDay(now))!;
   return (
     <main id="main" className="home">
       {/* No headline on the wall: the page's h1 is the statement screen's wordmark below. */}
@@ -41,6 +45,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
         t={t}
         locale={locale}
         presentation="home"
+        openingExpression={openingOn(work, undefined, expressionOfTheDay(now))}
         inlinePreviews={{
           ink: inlineCuratedPreview(work.id, 'ink'),
           light: inlineCuratedPreview(work.id, 'light'),
@@ -49,8 +54,8 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
       />
       {/* Screen 3: the statement line, the one screen without a work. */}
       <HomeStatement locale={locale} t={t} />
-      {/* Screen 4: a spread of two plates, each in its own tone. */}
-      <HomeSpread locale={locale} t={t} />
+      {/* Screen 4: a spread of two plates across the seam, one in each expression. */}
+      <HomeSpread locale={locale} t={t} day={expressionOfTheDay(now)} />
       {/* Screen 5: the day's work's cycle as a row of real previews. */}
       <HomeCycle locale={locale} t={t} dayWork={work.id} />
     </main>

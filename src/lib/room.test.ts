@@ -1,20 +1,26 @@
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it } from 'vitest';
 import { roomFor, roomScript } from './room';
+import { dayNumber, expressionOfDay } from './art/day';
+
+/** Days the venue's arithmetic answers for a pool of three: an Ink day and a Light day. */
+const INK_DAY = '2026-11-06';
+const LIGHT_DAY = '2026-11-05';
 
 /** Run the inline first-paint script against a location, as the browser would. */
-function paint(pathname: string, search = '') {
+function paint(pathname: string, search = '', pinned = INK_DAY) {
   window.history.replaceState(null, '', `${pathname}${search}`);
   document.documentElement.removeAttribute('data-room');
   const meta = document.querySelector('meta[name="theme-color"]') ?? document.createElement('meta');
   meta.setAttribute('name', 'theme-color');
   meta.setAttribute('content', '');
   document.head.append(meta);
-  new Function(roomScript)();
+  new Function(roomScript({ poolSize: 3, pinned }))();
   return {
     room: document.documentElement.getAttribute('data-room'),
     color: meta.getAttribute('content'),
   };
 }
+afterEach(() => sessionStorage.clear());
 
 describe('the room by route and view', () => {
   it('opens the Spectrum wall and the Light section on night, the rest of the collection on paper', () => {
@@ -34,6 +40,35 @@ describe('the room by route and view', () => {
       color: '#000000',
     });
     expect(paint('/zh-TW/process')).toEqual({ room: 'night', color: '#000000' });
-    expect(paint('/art/0', '?expression=light')).toEqual({ room: 'paper', color: '#f1ebdf' });
+  });
+});
+
+describe('the first paint of a plate', () => {
+  const NIGHT = { room: 'night', color: '#000000' };
+  const PAPER = { room: 'paper', color: '#f1ebdf' };
+
+  it('paints the ground of the expression the URL asks for', () => {
+    expect(paint('/art/0', '?expression=light')).toEqual(NIGHT);
+    expect(paint('/uk/art/31', '?expression=ink', LIGHT_DAY)).toEqual(PAPER);
+    // A lot keeps its route's ground: its plate lends the head its tone once it is in view.
+    expect(paint('/auctions/31', '?expression=light')).toEqual(PAPER);
+  });
+
+  it("else the session's remembered choice, else the day's expression", () => {
+    expect(paint('/', '', INK_DAY)).toEqual(PAPER);
+    expect(paint('/ja', '', LIGHT_DAY)).toEqual(NIGHT);
+    expect(paint('/art/31', '', LIGHT_DAY)).toEqual(NIGHT);
+    sessionStorage.setItem('cosmic-art-expression-v1', 'ink');
+    expect(paint('/art/31', '', LIGHT_DAY)).toEqual(PAPER);
+    expect(paint('/art/31', '?expression=light', LIGHT_DAY)).toEqual(NIGHT);
+  });
+
+  it("reads the day as the server's arithmetic does, on every day of two passes", () => {
+    const start = Date.UTC(2026, 10, 1);
+    for (let offset = 0; offset < 12; offset += 1) {
+      const date = new Date(start + offset * 86_400_000).toISOString().slice(0, 10);
+      const day = expressionOfDay(dayNumber(new Date(date)), 3);
+      expect(paint('/', '', date).room).toBe(day === 'light' ? 'night' : 'paper');
+    }
   });
 });

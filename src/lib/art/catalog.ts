@@ -1,8 +1,9 @@
 import records from './curated-records.json' with { type: 'json' };
 import mediaRecords from './curated-media.json' with { type: 'json' };
 import { ART_API_ORIGIN, seedPackageUrl } from './constants';
-import type { Artwork, ArtInterpretation } from './types';
+import type { ArtFilm, Artwork, ArtInterpretation } from './types';
 import { withLocalDerivatives } from './derivatives';
+import { indexedWork } from './collection-index';
 
 /** Hash-verified local derivatives of one published expression. */
 export interface CuratedMediaEntry {
@@ -27,6 +28,34 @@ export interface CuratedMediaEntry {
   };
 }
 const curatedMedia = mediaRecords as { id: number; media: CuratedMediaEntry[] }[];
+
+/**
+ * The published film of an expression the archive holds no local copy of, as the index
+ * advertises it: the same original the live path plays, so the expression's verified clips
+ * (src/lib/art/plate-clips.ts) bind here too and Light moves on a curated plate as Ink does.
+ */
+function publishedFilm(id: number, seed: `0x${string}`, entry: CuratedMediaEntry): ArtFilm[] {
+  if (entry.id !== 'light' && entry.id !== 'ink') return [];
+  const file = indexedWork(id)?.media[entry.id]?.films.main;
+  if (!file) return [];
+  const src = seedPackageUrl(seed, file.path);
+  return [
+    {
+      id: 'normal',
+      label: 'Film',
+      src,
+      sourceUrl: src,
+      durationSeconds: file.durationSeconds,
+      bytes: file.bytes,
+      poster: entry.still,
+      sha256: file.sha256,
+      sourceSha256: file.sha256,
+      mimeType: 'video/mp4',
+      variantKey: `${id}:${entry.id}:normal`,
+      delivery: 'original-web',
+    },
+  ];
+}
 
 /** An explicitly limited, identity-verified archive. Not the collection total. */
 export const curatedArtworks: Artwork[] = curatedMedia.map(({ id, media }) => {
@@ -56,7 +85,7 @@ export const curatedArtworks: Artwork[] = curatedMedia.map(({ id, media }) => {
             delivery: 'local-preview' as const,
           },
         ]
-      : [],
+      : publishedFilm(id, seed, entry),
     source: 'local-archive',
     availability: 'local-copy',
   }));

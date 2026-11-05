@@ -1,5 +1,6 @@
 import { curatedArtworks } from './catalog';
-import { getInterpretation } from './types';
+import { dayNumber, expressionOfDay, venueDate } from './day';
+import { getInterpretation, type Expression } from './types';
 
 /**
  * The day's work: deterministic per UTC date and stable for the visit, drawn from the works
@@ -22,8 +23,26 @@ function heroWorks(requireOpening: boolean): number[] {
 const withOpening = heroWorks(true);
 export const DAY_WORK_POOL: readonly number[] = withOpening.length ? withOpening : heroWorks(false);
 
-export function workOfTheDay(now = new Date(), pool: readonly number[] = DAY_WORK_POOL): number {
+/**
+ * The venue's today. `COSMIC_VENUE_DATE` (an ISO date, read on the server) pins it, so the
+ * browser suite and previews meet one day's work and one day's expression whatever the
+ * calendar says; unset, as in production, it is the clock's. A value that is not a date is
+ * refused rather than quietly ignored.
+ */
+export function venueNow(pinned = process.env.COSMIC_VENUE_DATE): Date {
+  return venueDate(pinned);
+}
+
+export function workOfTheDay(now = venueNow(), pool: readonly number[] = DAY_WORK_POOL): number {
   if (pool.length === 0) throw new Error('No work can open the home: the curated archive is empty');
-  const day = Math.floor(now.getTime() / 86_400_000);
+  const day = dayNumber(now);
   return pool[((day % pool.length) + pool.length) % pool.length];
+}
+
+/** The day's expression, on the day's work's pool (src/lib/art/day.ts states the turn). */
+export function expressionOfTheDay(
+  now = venueNow(),
+  pool: readonly number[] = DAY_WORK_POOL,
+): Expression {
+  return expressionOfDay(dayNumber(now), pool.length);
 }

@@ -264,6 +264,7 @@ export const vi: Messages = {
   statement: 'Tuyên ngôn',
   index: 'Mục lục',
   indexSheet: 'Mục lục bộ sưu tập',
+  indexWallHint: 'Chạm vào một số để treo tác phẩm ở đây; chạm lần nữa để vào.',
   closeIndex: 'Đóng mục lục',
   keys: 'Phím',
   keysSheet: 'Phím tắt',
@@ -302,6 +303,8 @@ export const vi: Messages = {
   // Bản in và Lật trang
   showLight: 'Hiện biểu đạt Ánh sáng',
   showInk: 'Hiện biểu đạt Mực',
+  hangAlone: 'Chỉ {expression}',
+  hangTogether: 'Mực và Ánh sáng cùng nhau',
   noInkPublished: 'chưa công bố biểu đạt Mực',
   previousWork: 'Tác phẩm trước',
   nextWork: 'Tác phẩm sau',
