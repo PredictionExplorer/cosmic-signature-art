@@ -319,6 +319,8 @@ export const en = {
   lightMedium: 'Light: luminous orbit ribbons on black.',
   filmsWord: 'films',
   spectralSweep: 'spectral sweep',
+  /** The sweep as a word in a list of films (the room's sources); spectralSweep runs in text. */
+  sweepFilm: 'Spectral sweep',
   mintedTo: 'Minted to',
   heldBy: 'held by',
   recordAsOf: 'Arbitrum record as of {date}',
@@ -612,6 +614,10 @@ export const en = {
   orbitEscaped: 'Body {body} has escaped, at step {step}',
   orbitHeld: 'The dance held through all {steps} steps',
   toTheEjection: 'To the ejection',
+  // The score in the film's transport (src/components/film-score-band.tsx)
+  filmPhysics: 'bodies {pair} · {distance} apart',
+  toClosestApproach: 'Closest approach',
+  closestApproachAt: 'Open the film just before the closest approach, {clock} in',
   // The crossing and the When lens (src/components/when-lens.tsx)
   whenLens: 'When',
   whenLight: 'When each mark was drawn',

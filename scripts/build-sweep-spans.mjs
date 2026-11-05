@@ -27,7 +27,7 @@ import {
  * The generator sweeps only the part of its 64 five-nanometre bins (380 to 700 nm) that the
  * render put light in: from the first bin with any light to the last, each widened by two and
  * clamped to the spectrum (BinBuffers::active_bin_range in CS-Image-Generation's
- * src/render/spectral_output.rs). Seventeen of the first seventy-two works sweep a narrower band
+ * src/render/spectral_output.rs). Fifteen of the first seventy-two works sweep a narrower band
  * than the whole spectrum. The span itself is not published, but the bins are: the
  * spectral_bins image set holds one 16-bit PNG per bin, each normalised to its own brightest
  * pixel, so a bin without light is an all-zero image and a bin with light is not.

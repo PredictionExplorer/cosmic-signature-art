@@ -121,13 +121,28 @@ test('a phone holds the whole transcript within its width, in a long language to
     expect(box).toBeLessThanOrEqual(width);
 });
 
-test('a number without a record is not here', async ({ page, request }) => {
-  // Never rendered, so never cached: the plain 404 of any address the venue lacks.
-  const response = await page.goto('/verify/orbit/999');
-  expect(response?.status()).toBe(404);
-  await expect(page.getByRole('heading', { name: t.verifyOrbitLineByLine })).toHaveCount(0);
+test('a number without a record is not here', async ({ page }) => {
+  // Rendered when asked for and kept for no number. Like an unknown work, it has the venue's
+  // own not-found, marked noindex: the page has begun to stream when the number is refused.
+  const notHere = async (path: string, locale: 'en' | 'ja' = 'en') => {
+    await page.goto(path);
+    await expect(
+      page.getByRole('heading', { level: 1, name: catalogs[locale].notFound }),
+    ).toBeVisible();
+    // Next marks a not-found that streamed: once from its boundary, once from the page.
+    await expect(page.locator('meta[name="robots"]').first()).toHaveAttribute('content', /noindex/);
+    await expect(
+      page.getByRole('heading', { name: catalogs[locale].verifyOrbitLineByLine }),
+    ).toHaveCount(0);
+  };
+  await notHere('/verify/orbit/999');
   // Only the one spelling of a number that has a record, in any language.
-  for (const path of ['/verify/orbit/031', '/verify/orbit/abc', '/ja/verify/orbit/72'])
-    expect((await request.get(path)).status(), path).toBe(404);
-  expect((await request.get('/ja/verify/orbit/71')).status()).toBe(200);
+  await notHere('/verify/orbit/031');
+  await notHere('/verify/orbit/abc');
+  await notHere('/ja/verify/orbit/72', 'ja');
+  await page.goto('/ja/verify/orbit/71');
+  await expect(
+    page.getByRole('heading', { name: catalogs.ja.verifyOrbitLineByLine }),
+  ).toBeVisible();
+  await expect(page.locator('meta[name="robots"]')).toHaveCount(0);
 });

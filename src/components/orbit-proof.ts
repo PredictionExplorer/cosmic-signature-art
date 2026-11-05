@@ -2,6 +2,7 @@ import type { Messages } from '@/lib/i18n/en';
 import { fill } from '@/lib/i18n/format';
 import type { WorkOrbit } from '@/lib/art/orbit-records';
 import type { Comparison, MeasurementKey, OrbitGeneration, Progress } from '@/lib/physics/orbit';
+import { pairName } from '@/lib/physics/film-score';
 
 /*
   The proof, in words: what the orbit section (orbit-score.tsx) and Verify an orbit
@@ -13,8 +14,6 @@ import type { Comparison, MeasurementKey, OrbitGeneration, Progress } from '@/li
 export const MINUS = '−';
 /** A double at full precision, its sign a true minus. */
 export const exact = (value: number) => (value < 0 ? `${MINUS}${-value}` : String(value));
-/** A pair of bodies as a reader numbers them: bodies 0 and 2 are "1–3". */
-export const pairWords = (pair: readonly number[]) => pair.map((body) => body + 1).join('–');
 /** The seed, shortened: "0x4a0d…f5b5". */
 export const seedShort = (seed: string) => `${seed.slice(0, 6)}…${seed.slice(-4)}`;
 
@@ -69,7 +68,7 @@ export function recordValues(
     angularMomentum: exact(published.angularMomentum),
     closestDistance: exact(closest.distance),
     closestWhere: fill(t.orbitBodiesAt, {
-      pair: pairWords(closest.pair),
+      pair: pairName(closest.pair),
       step: number.format(closest.step),
     }),
     syzygies: number.format(published.syzygyCount),

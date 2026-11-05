@@ -321,6 +321,18 @@ describe('Verify an orbit', () => {
     );
   });
 
+  it('prints the transcript afresh when its derivation is asked again', () => {
+    const { rerender } = render(<OrbitVerifier orbit={orbit} t={t} locale="en" />);
+    derive();
+    expect(lines().length).toBeGreaterThan(1);
+    // The page's data refreshed: the same work, a new record object.
+    rerender(<OrbitVerifier orbit={{ ...orbit }} t={t} locale="en" />);
+    expect(workers).toHaveLength(2);
+    expect(workers[0].terminated).toBe(true);
+    expect(lines()).toEqual(['0.0 sSeed 0x4a0d…f5b5']);
+    expect(screen.queryByRole('term')).not.toBeInTheDocument();
+  });
+
   it('lets the worker go when the visitor leaves', () => {
     const { unmount } = render(<OrbitVerifier orbit={orbit} t={t} locale="en" />);
     unmount();

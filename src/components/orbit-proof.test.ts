@@ -2,12 +2,12 @@ import { describe, expect, it } from 'vitest';
 import { messages } from '@/lib/i18n/messages';
 import { workOrbit } from '@/lib/art/orbit-records';
 import type { Comparison } from '@/lib/physics/orbit';
+import { pairName } from '@/lib/physics/film-score';
 import {
   MEASUREMENTS,
   derivedValue,
   exact,
   measurementLabels,
-  pairWords,
   progressText,
   recordValues,
   seedShort,
@@ -31,7 +31,7 @@ describe('the proof, in words', () => {
   it('sets doubles in full with a true minus, pairs as a reader counts, and the seed short', () => {
     expect(exact(-2142.8907060284882)).toBe('−2142.8907060284882');
     expect(exact(124.96327743951707)).toBe('124.96327743951707');
-    expect(pairWords([0, 2])).toBe('1–3');
+    expect(pairName([0, 2])).toBe('1–3');
     expect(seedShort(calm.generation.seed)).toBe('0x4a0d…f5b5');
   });
 

@@ -133,7 +133,11 @@ export function OrbitVerifier({
       fate: { published: orbit.fate, lead: 0 },
     };
     worker.postMessage(request);
-    return () => worker.terminate();
+    return () => {
+      worker.terminate();
+      // A derivation asked again (the page's data refreshed) prints its transcript afresh.
+      setTranscript(BEGUN);
+    };
   }, [hydrated, orbit]);
 
   const phase = !hydrated

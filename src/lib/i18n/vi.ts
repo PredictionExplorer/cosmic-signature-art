@@ -323,6 +323,7 @@ export const vi: Messages = {
   lightMedium: 'Ánh sáng: những dải quỹ đạo phát sáng trên nền đen.',
   filmsWord: 'phim',
   spectralSweep: 'quét quang phổ',
+  sweepFilm: 'Quét quang phổ',
   mintedTo: 'Đúc cho',
   heldBy: 'đang giữ bởi',
   recordAsOf: 'Bản ghi Arbitrum tính đến {date}',
@@ -616,6 +617,9 @@ export const vi: Messages = {
   orbitEscaped: 'Vật thể {body} đã thoát ra, ở bước {step}',
   orbitHeld: 'Vũ điệu giữ vững qua cả {steps} bước',
   toTheEjection: 'Đến lúc thoát ra',
+  filmPhysics: 'vật thể {pair} · cách nhau {distance}',
+  toClosestApproach: 'Đến lúc gần nhất',
+  closestApproachAt: 'Mở phim ngay trước lúc gần nhất, ở {clock}',
   // The crossing and the When lens (src/components/when-lens.tsx)
   whenLens: 'Thời điểm',
   whenLight: 'Thời điểm mỗi nét được vẽ',

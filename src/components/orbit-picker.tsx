@@ -34,11 +34,20 @@ export function OrbitPicker({
   const [unknown, setUnknown] = useState<number | null>(null);
   const page = (id: number) => localizedPath(locale, `/verify/orbit/${id}`);
 
-  // A number the form sent before this page could answer it goes on to its work as it arrives.
+  // A number the form sent before this page could answer it goes on to its work as it arrives,
+  // or, without a record, is answered here as a number typed now would be.
   useEffect(() => {
     const sent = typedDigits(new URLSearchParams(window.location.search).get(WORK_PARAM) ?? '');
-    if (sent && ids.includes(Number(sent)))
-      router.replace(localizedPath(locale, `/verify/orbit/${Number(sent)}`));
+    if (!sent) return;
+    const id = Number(sent);
+    if (ids.includes(id)) {
+      router.replace(localizedPath(locale, `/verify/orbit/${id}`));
+      return;
+    }
+    queueMicrotask(() => {
+      setValue(sent);
+      setUnknown(id);
+    });
   }, [ids, locale, router]);
 
   const submit = (event: FormEvent<HTMLFormElement>) => {

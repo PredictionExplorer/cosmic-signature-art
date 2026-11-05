@@ -108,6 +108,20 @@ describe('the Wavelength lens', () => {
     expect(HTMLMediaElement.prototype.play).not.toHaveBeenCalled();
   });
 
+  it('holds the frame it asked for where a browser settles the seek a hair early, and asks no more', () => {
+    const view = render(lens(540));
+    const video = view.container.querySelector('video')!;
+    metadata(video);
+    const asked = frameTime(frameForNm(540, span));
+    expect(video.currentTime).toBe(asked);
+    // Settled a millisecond short of the frame: read back, that is the frame before it.
+    video.currentTime = asked - 0.001;
+    fireEvent(video, new Event('seeked'));
+    expect(video).toHaveAttribute('data-frame', String(frameForNm(540, span)));
+    // The same frame is not sought again.
+    expect(video.currentTime).toBe(asked - 0.001);
+  });
+
   it('seeks at once when the film’s metadata is already cached, through a Strict Mode replay', () => {
     vi.spyOn(HTMLMediaElement.prototype, 'readyState', 'get').mockReturnValue(4);
     const view = render(<StrictMode>{lens(450)}</StrictMode>);

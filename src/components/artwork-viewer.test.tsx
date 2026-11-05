@@ -12,6 +12,18 @@ import { BREATH_MS, forgetExpression } from './turn';
 import { closeSheet, openSheet } from './sheets-store';
 import { EXPRESSION_KEY, HOME_RESOLVED_KEY } from '@/lib/storage-keys';
 import { overturePhase, setOverturePhase } from './overture-store';
+import { filmOrbit } from '@/lib/art/orbit-windows';
+import { clock, fill } from '@/lib/i18n/format';
+import {
+  closestApproachSeconds,
+  pairName,
+  physicsAt,
+  type FilmScore,
+} from '@/lib/physics/film-score';
+import { lightFilmDuration } from '@/lib/physics/light-film';
+import { scoreWindow } from '@/lib/physics/score-window';
+import type { ScoreReply, ScoreRequest } from '@/lib/physics/score.worker';
+import { forgetFilmScores } from './film-score-store';
 
 const motion = vi.hoisted(() => ({
   paused: false,
@@ -993,6 +1005,185 @@ describe('the settling plate', () => {
       'src',
       expect.stringMatching(/\/art\/clips\/40-light-settling-[a-f0-9]{16}\.mp4$/),
     );
+  });
+});
+
+describe('the score in the Light film’s transport', () => {
+  const orbit = filmOrbit(31)!;
+  const clip = work.media.find((item) => item.id === 'light')!.settlingFilm!;
+  let measured: FilmScore | undefined;
+  /** № 031's window measured as the worker measures it, once for the file. */
+  const scoreOf = () => (measured ??= scoreWindow(orbit.window));
+  const oneDecimal = new Intl.NumberFormat('en', {
+    minimumFractionDigits: 1,
+    maximumFractionDigits: 1,
+  });
+  const reading = (seconds: number) => {
+    const moment = physicsAt(scoreOf(), seconds);
+    return fill(en.filmPhysics, {
+      pair: pairName(moment.pair),
+      distance: oneDecimal.format(moment.distance),
+    });
+  };
+  let workers: ScoreWorker[] = [];
+  class ScoreWorker {
+    onmessage: ((event: MessageEvent<ScoreReply>) => void) | null = null;
+    onerror: (() => void) | null = null;
+    posted: ScoreRequest[] = [];
+    constructor() {
+      workers.push(this);
+    }
+    postMessage(request: ScoreRequest) {
+      this.posted.push(request);
+    }
+    terminate() {}
+    reply(message: ScoreReply) {
+      act(() => this.onmessage?.({ data: message } as MessageEvent<ScoreReply>));
+    }
+  }
+  beforeEach(() => {
+    workers = [];
+    forgetFilmScores();
+    vi.stubGlobal('Worker', ScoreWorker);
+  });
+
+  /** The plate's film plays `at` seconds into its clip. */
+  async function play(at: number) {
+    await settle();
+    await act(async () => {
+      vi.advanceTimersByTime(1250);
+    });
+    const video = player() as HTMLVideoElement;
+    Object.defineProperty(video, 'duration', { configurable: true, value: 8 });
+    Object.defineProperty(video, 'currentTime', { configurable: true, value: at, writable: true });
+    fireEvent.playing(video);
+    fireEvent.timeUpdate(video);
+    return video;
+  }
+  const strip = () => within(document.querySelector<HTMLElement>('[data-layer-state="current"]')!);
+
+  it('measures the orbit while the Light film plays, scores its transport and reads the physics of the moment', async () => {
+    renderViewer({ initialExpression: 'light', orbit });
+    expect(workers).toHaveLength(0);
+    const video = await play(3);
+    expect(video).toHaveAttribute('src', clip.src);
+    expect(workers).toHaveLength(1);
+    expect(workers[0].posted).toEqual([{ window: orbit.window }]);
+    // The plain time line stands at the plate's foot until the score is measured; nothing is
+    // read yet.
+    const plate = document.querySelector('[data-layer-state="current"] [data-plate-ground]')!;
+    expect(plate).toHaveAttribute('data-plate-ground', 'night');
+    expect(plate.lastElementChild).toHaveClass('time-line');
+    expect(document.querySelector('[data-film-score]')).toBeNull();
+    expect(document.querySelector('[data-film-physics]')).toBeNull();
+
+    workers[0].reply({ type: 'done', score: scoreOf() });
+    expect(document.querySelector('.time-line')).toBeNull();
+    expect(plate.lastElementChild).toHaveAttribute('data-film-score');
+    const seconds = clip.startSeconds! + 3;
+    const share = seconds / lightFilmDuration(orbit.window.steps);
+    expect(document.querySelector('[data-film-score-progress]')).toHaveAttribute(
+      'data-film-score-progress',
+      String(Math.round(share * 1000) / 10),
+    );
+    expect(strip().getByText(reading(seconds))).toBeVisible();
+    // The film draws on, and the strip reads on with it.
+    video.currentTime = 7;
+    fireEvent.timeUpdate(video);
+    expect(strip().getByText(reading(clip.startSeconds! + 7))).toBeVisible();
+
+    // Still: the plate rests, and the readout and the score step aside with the film.
+    fireEvent.click(word(en.still));
+    fireEvent.pause(video);
+    expect(document.querySelector('[data-film-physics]')).toBeNull();
+    expect(document.querySelector('[data-film-score]')).toBeNull();
+  });
+
+  it('opens the room’s complete film just before the closest approach, then the plate’s own moment again', async () => {
+    renderViewer({ initialExpression: 'light', orbit, initialStill: true });
+    const seconds = closestApproachSeconds({
+      steps: orbit.window.steps,
+      closestApproach: orbit.closestApproach,
+    });
+    // № 031's bodies pass closest at step 255,842, first drawn by the film's frame 460.
+    expect(seconds).toBeCloseTo(460 / 60, 9);
+    fireEvent.click(word(en.ways));
+    // The record's closest approach: offered before anything is measured.
+    const closest = word(`${en.toClosestApproach} ${clock(seconds)}`);
+    expect(closest).toHaveAccessibleDescription(
+      fill(en.closestApproachAt, { clock: clock(seconds) }),
+    );
+    fireEvent.click(closest);
+    const dialog = screen.getByRole('dialog');
+    const film = dialog.querySelector('video')!;
+    Object.defineProperty(film, 'duration', { configurable: true, value: 30 });
+    fireEvent.loadedMetadata(film);
+    expect(film.currentTime).toBeCloseTo(seconds - 2, 9);
+
+    fireEvent.click(within(dialog).getByRole('button', { name: en.close }));
+    await act(async () => {
+      vi.advanceTimersByTime(1000);
+    });
+    fireEvent.keyDown(window, { key: 'f' });
+    const again = screen.getByRole('dialog').querySelector('video')!;
+    Object.defineProperty(again, 'duration', { configurable: true, value: 30 });
+    fireEvent.loadedMetadata(again);
+    expect(again.currentTime).toBe(0);
+  });
+
+  it('measures the score for a room entered on the still, whose complete film then carries it', () => {
+    renderViewer({ initialExpression: 'light', orbit, initialStill: true });
+    expect(workers).toHaveLength(0);
+    fireEvent.click(word(en.ways));
+    fireEvent.click(word(en.enlarge));
+    const dialog = screen.getByRole('dialog');
+    expect(workers).toHaveLength(1);
+    workers[0].reply({ type: 'done', score: scoreOf() });
+    expect(dialog.querySelector('[data-film-score]')).toBeNull();
+    const sources = within(dialog).getByRole('group', { name: en.sources });
+    fireEvent.click(within(sources).getByRole('button', { name: en.film }));
+    expect(dialog.querySelector('video')).toHaveAttribute(
+      'src',
+      expect.stringMatching(/\/videos\/web\/main\.mp4$/),
+    );
+    expect(dialog.querySelector('[data-film-score]')).not.toBeNull();
+  });
+
+  it('opens the other expression’s film from its first frame after a Turn in the room', async () => {
+    renderViewer({ initialExpression: 'light', orbit, initialStill: true });
+    fireEvent.click(word(en.ways));
+    fireEvent.click(word(new RegExp(`^${en.toClosestApproach}`)));
+    const dialog = screen.getByRole('dialog');
+    const light = dialog.querySelector('video')!;
+    Object.defineProperty(light, 'duration', { configurable: true, value: 30 });
+    fireEvent.loadedMetadata(light);
+    expect(light.currentTime).toBeGreaterThan(5);
+    // The closest approach is a moment of the Light film, not of Ink's.
+    fireEvent.keyDown(dialog, { key: 'i' });
+    await act(async () => {});
+    expect(stage()).toHaveAttribute('data-expression', 'ink');
+    const ink = screen.getByRole('dialog').querySelector('video')!;
+    expect(ink).not.toBe(light);
+    Object.defineProperty(ink, 'duration', { configurable: true, value: 30 });
+    fireEvent.loadedMetadata(ink);
+    expect(ink.currentTime).toBe(0);
+  });
+
+  it('keeps the score to the Light film, and off a sale’s page', async () => {
+    renderViewer({ orbit });
+    await play(3);
+    expect(workers).toHaveLength(0);
+    expect(document.querySelector('.time-line')).not.toBeNull();
+    fireEvent.click(word(en.ways));
+    expect(strip().queryByRole('button', { name: new RegExp(en.toClosestApproach) })).toBeNull();
+    cleanup();
+
+    renderViewer({ initialExpression: 'light', orbit, presentation: 'auction' });
+    await play(3);
+    expect(workers).toHaveLength(0);
+    expect(document.querySelector('.time-line')).not.toBeNull();
+    fireEvent.click(word(en.ways));
+    expect(strip().queryByRole('button', { name: new RegExp(en.toClosestApproach) })).toBeNull();
   });
 });
 

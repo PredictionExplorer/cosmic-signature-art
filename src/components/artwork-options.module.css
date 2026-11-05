@@ -36,6 +36,22 @@
   text-align: start;
   white-space: normal;
 }
+/* The closest approach says where it falls in the film, in the readout's figures, set on the
+   word's own baseline; the word sits in its box as Study and Sit do. */
+.closest {
+  display: flex;
+  flex: 1;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 18px;
+}
+.clock {
+  font-family: var(--font-mono);
+  font-size: var(--fs-folio);
+  font-variant-numeric: tabular-nums lining-nums;
+  color: var(--muted);
+  white-space: nowrap;
+}
 .readout {
   padding-block: 9px;
   border-top: 1px solid var(--rule);

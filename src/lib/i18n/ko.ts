@@ -317,6 +317,7 @@ export const ko: Messages = {
   lightMedium: '빛: 검은 바탕 위에 빛나는 궤도 리본.',
   filmsWord: '필름',
   spectralSweep: '스펙트럼 스윕',
+  sweepFilm: '스펙트럼 스윕',
   mintedTo: '발행 대상',
   heldBy: '보유',
   recordAsOf: '{date} 기준 Arbitrum 기록',
@@ -605,6 +606,9 @@ export const ko: Messages = {
   orbitEscaped: '천체 {body}이(가) {step}번째 단계에서 탈출했습니다',
   orbitHeld: '춤은 {steps}단계 내내 이어졌습니다',
   toTheEjection: '탈출로',
+  filmPhysics: '천체 {pair} · 거리 {distance}',
+  toClosestApproach: '최근접으로',
+  closestApproachAt: '최근접 직전부터 전체 영상을 엽니다 ({clock})',
   // The crossing and the When lens (src/components/when-lens.tsx)
   whenLens: '시각',
   whenLight: '각 선이 그려진 시각',

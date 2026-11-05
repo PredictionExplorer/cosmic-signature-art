@@ -1,25 +1,16 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
+import { connection } from 'next/server';
 import { isLocale, localizedPath } from '@/lib/i18n/routing';
 import { messages } from '@/lib/i18n/messages';
 import { fill } from '@/lib/i18n/format';
 import { metadata } from '@/lib/site';
-import { orbitIds, workOrbit } from '@/lib/art/orbit-records';
+import { workOrbit } from '@/lib/art/orbit-records';
 import { workNumber } from '@/lib/art/number';
 import { OrbitVerifier } from '@/components/orbit-verifier';
 import styles from '../verify.module.css';
 
 type Params = Promise<{ locale: string; id: string }>;
-
-/**
- * Every work the registry holds a record for, in every locale; any other number is not here.
- * It is never rendered either: with dynamic params a page would be rendered and cached for every
- * number anyone typed, so another number has the plain 404 of any address the venue lacks.
- */
-export const dynamicParams = false;
-export function generateStaticParams() {
-  return orbitIds().map((id) => ({ id: String(id) }));
-}
 
 /** The record a number names, by its one spelling: "31", never "031". */
 function orbitFor(id: string) {
@@ -50,6 +41,11 @@ export async function generateMetadata({ params }: { params: Params }) {
  * work's record and nothing about the others.
  */
 export default async function VerifyOrbitPage({ params }: { params: Params }) {
+  // Rendered when asked for, as a work's own page is: the page is one record and a few lines,
+  // so it costs nothing to set, while 576 prerendered copies of the venue's frame would weigh
+  // 230 MB. Nothing is kept for a number someone made up: like an unknown work, it has the
+  // venue's own not-found, marked noindex, since the page has begun to stream by then.
+  await connection();
   const { locale, id } = await params;
   if (!isLocale(locale)) notFound();
   const orbit = orbitFor(id);

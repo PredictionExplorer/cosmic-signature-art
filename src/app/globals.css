@@ -792,14 +792,15 @@ html[data-turning='overture'] .head-overlay {
   transition: width var(--t-chrome) linear;
 }
 /* The one time line: 1 px at the viewport's bottom edge while a film plays. */
+/* The film's time line, along the foot of its plate's screen (plate.tsx): on a desk the
+   viewport's foot, on a phone beneath the strip, and always on the plate's own ground. */
 .time-line {
-  position: fixed;
+  position: absolute;
   left: 0;
   right: 0;
   bottom: 0;
   height: 1px;
   background: var(--rule);
-  z-index: 15;
   pointer-events: none;
 }
 .time-line i {

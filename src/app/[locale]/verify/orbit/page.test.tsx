@@ -3,12 +3,10 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { en } from '@/lib/i18n/en';
 import { orbitIds } from '@/lib/art/orbit-records';
 import VerifyOrbitIndex, { generateMetadata as indexMetadata } from './page';
-import VerifyOrbitPage, {
-  dynamicParams,
-  generateMetadata as workMetadata,
-  generateStaticParams,
-} from './[id]/page';
+import VerifyOrbitPage, { generateMetadata as workMetadata } from './[id]/page';
 
+const connection = vi.hoisted(() => vi.fn(() => Promise.resolve()));
+vi.mock('next/server', () => ({ connection }));
 vi.mock('next/navigation', () => ({
   useRouter: () => ({ push: vi.fn(), replace: vi.fn() }),
   notFound: () => {
@@ -46,9 +44,11 @@ describe('Verify an orbit, the door', () => {
 });
 
 describe('Verify an orbit, one work', () => {
-  it('is built for every work with a record, and for no other number', () => {
-    expect(dynamicParams).toBe(false);
-    expect(generateStaticParams()).toEqual(orbitIds().map((id) => ({ id: String(id) })));
+  it('is rendered when asked for: nothing is built ahead, or kept for a number', async () => {
+    vi.stubGlobal('Worker', undefined);
+    connection.mockClear();
+    render(await VerifyOrbitPage(params({ locale: 'en', id: '31' })));
+    expect(connection).toHaveBeenCalledOnce();
   });
 
   it('sets the work’s number and seed in the margin, the derivation beside them', async () => {

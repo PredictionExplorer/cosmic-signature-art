@@ -321,6 +321,7 @@ export const ja: Messages = {
   lightMedium: '光：黒の上に輝く軌道のリボン。',
   filmsWord: 'フィルム',
   spectralSweep: 'スペクトル・スイープ',
+  sweepFilm: 'スペクトル・スイープ',
   mintedTo: '発行先',
   heldBy: '所有',
   recordAsOf: '{date} 時点の Arbitrum の記録',
@@ -612,6 +613,9 @@ export const ja: Messages = {
   orbitEscaped: '天体 {body} が第 {step} ステップで脱出しました',
   orbitHeld: '{steps} ステップのあいだ、舞は続きました',
   toTheEjection: '脱出へ',
+  filmPhysics: '天体 {pair} · 距離 {distance}',
+  toClosestApproach: '最接近へ',
+  closestApproachAt: '最接近の少し手前から全編を開きます（{clock}）',
   // The crossing and the When lens (src/components/when-lens.tsx)
   whenLens: '時刻',
   whenLight: 'それぞれの線が描かれた時刻',

@@ -1,5 +1,7 @@
 /* One art screen: the plate on the sheet's own tone, the strip beneath it in the same ground. */
 .screen {
+  /* The film's transport stands along the screen's foot (globals.css .time-line). */
+  position: relative;
   --ground: var(--paper);
   --type: var(--paper-type);
   /* Muted words on a sheet's own tone: 5.1:1 on the darkest kozo measured (#e2ddd2). */

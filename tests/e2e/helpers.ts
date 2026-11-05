@@ -23,6 +23,34 @@ export async function imageLoaded(image: Locator) {
     .toBe(true);
 }
 
+/**
+ * Stands a local film in for a published one, answering the byte ranges a video asks for: the
+ * published host does, and a film served whole cannot be sought before it has all arrived.
+ */
+export async function standInFilm(page: Page, url: RegExp, file: string) {
+  const film = readFileSync(file);
+  await page.route(url, (route) => {
+    const range = /^bytes=(\d+)-(\d*)$/.exec(route.request().headers().range ?? '');
+    if (!range)
+      return route.fulfill({
+        body: film,
+        contentType: 'video/mp4',
+        headers: { 'accept-ranges': 'bytes' },
+      });
+    const start = Number(range[1]);
+    const end = range[2] ? Math.min(Number(range[2]), film.length - 1) : film.length - 1;
+    return route.fulfill({
+      status: 206,
+      body: film.subarray(start, end + 1),
+      contentType: 'video/mp4',
+      headers: {
+        'accept-ranges': 'bytes',
+        'content-range': `bytes ${start}-${end}/${film.length}`,
+      },
+    });
+  });
+}
+
 export const archivedMedia = JSON.parse(
   readFileSync(new URL('../../src/lib/art/curated-media.json', import.meta.url), 'utf8'),
 ) as { id: number; media: { id: string; sourceUrl: string }[] }[];

@@ -319,6 +319,7 @@ export const uk: Messages = {
   lightMedium: 'Світло: сяйливі орбітальні стрічки на чорному.',
   filmsWord: 'фільми',
   spectralSweep: 'спектральний прохід',
+  sweepFilm: 'Спектральний прохід',
   mintedTo: 'Викарбовано для',
   heldBy: 'зберігає',
   recordAsOf: 'Запис Arbitrum станом на {date}',
@@ -613,6 +614,9 @@ export const uk: Messages = {
   orbitEscaped: 'Тіло {body} вилетіло на кроці {step}',
   orbitHeld: 'Танець тривав усі {steps} кроків',
   toTheEjection: 'До вильоту',
+  filmPhysics: 'тіла {pair} · відстань {distance}',
+  toClosestApproach: 'До зближення',
+  closestApproachAt: 'Фільм відкривається трохи раніше за найтісніше зближення, на {clock}',
   // The crossing and the When lens (src/components/when-lens.tsx)
   whenLens: 'Коли',
   whenLight: 'Коли було намальовано кожен штрих',

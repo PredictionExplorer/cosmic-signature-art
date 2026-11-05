@@ -54,6 +54,8 @@ export function WavelengthLens({
   const video = useRef<HTMLVideoElement>(null);
   const wanted = useRef(frameForNm(nm, span));
   const seeking = useRef(false);
+  /** The frame the seek in flight asked for. */
+  const requested = useRef<number | null>(null);
   const onScreen = useRef<number | null>(null);
   const [frame, setFrame] = useState<number | null>(null);
   const attached = useEffectEvent(() => onState('loading'));
@@ -64,6 +66,7 @@ export function WavelengthLens({
     if (!player || seeking.current || player.readyState < HTMLMediaElement.HAVE_METADATA) return;
     if (wanted.current === onScreen.current) return;
     seeking.current = true;
+    requested.current = wanted.current;
     player.currentTime = frameTime(wanted.current);
   }, []);
 
@@ -80,6 +83,7 @@ export function WavelengthLens({
     if (player.readyState >= HTMLMediaElement.HAVE_METADATA) seek();
     return () => {
       seeking.current = false;
+      requested.current = null;
       onScreen.current = null;
       // A lens shown again (Activity, Strict Mode) waits for its own first frame.
       setFrame(null);
@@ -128,7 +132,10 @@ export function WavelengthLens({
             onLoadedMetadata={seek}
             onSeeked={(event) => {
               seeking.current = false;
-              const shown = timeFrame(event.currentTarget.currentTime);
+              // The frame asked for is the one held. A browser may settle a seek a hair from the
+              // time asked; read back, that could ask for the same frame forever.
+              const shown = requested.current ?? timeFrame(event.currentTarget.currentTime);
+              requested.current = null;
               onScreen.current = shown;
               setFrame(shown);
               onState('held');

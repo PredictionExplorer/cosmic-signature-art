@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from '@testing-library/react';
+import { act, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { messages } from '@/lib/i18n/messages';
 import { orbitIds } from '@/lib/art/orbit-records';
@@ -79,9 +79,13 @@ describe('the number field', () => {
     expect(router.replace).toHaveBeenCalledWith('/ja/verify/orbit/31');
   });
 
-  it('stays on the door for a number it does not know', () => {
+  it('stays on the door for a number it does not know, and says so as if typed now', async () => {
     window.history.replaceState(null, '', '/verify/orbit?work=999');
     render(<OrbitPicker ids={ids} locale="en" t={t} />);
+    await act(async () => {});
     expect(router.replace).not.toHaveBeenCalled();
+    expect(field()).toHaveValue('999');
+    expect(field()).toHaveAttribute('aria-invalid', 'true');
+    expect(screen.getByText('№ 999 has no published record.')).toBeInTheDocument();
   });
 });

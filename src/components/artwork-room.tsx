@@ -3,6 +3,7 @@
 import {
   useCallback,
   useEffect,
+  useLayoutEffect,
   useMemo,
   useRef,
   useState,
@@ -33,7 +34,10 @@ import { useMotion } from './motion-provider';
 import { WavelengthSlider, wavelengthForKey } from './spectrum-rule';
 import { WavelengthLens } from './wavelength-lens';
 import { WhenLens } from './when-lens';
+import { FilmScoreBand } from './film-score-band';
 import styles from './artwork-room.module.css';
+import { pairName, physicsAt, type FilmScore } from '@/lib/physics/film-score';
+import { lightFilmDuration } from '@/lib/physics/light-film';
 import { ART_HEIGHT, ART_WIDTH } from '@/lib/art/constants';
 import { stillSourceSet } from '@/lib/art/types';
 import { tokenMs } from './turn';
@@ -56,6 +60,8 @@ const SCRUB_S = 1;
 const SCRUB_SHIFT_S = 10;
 /** The keys that move the Wavelength lens from anywhere in the room while it is on. */
 const WAVELENGTH_KEYS = new Set(['ArrowLeft', 'ArrowRight', 'Home', 'End']);
+/** A film's clock before it has reported one. */
+const NO_TIME = { current: 0, duration: 0 };
 
 type ArtworkRoomProps = {
   artwork: Artwork;
@@ -80,6 +86,11 @@ type ArtworkRoomProps = {
    * the work, so a sale surface passes false and the room shows the work alone.
    */
   derivedViews?: boolean;
+  /**
+   * The Light film's score (third-physics.md §5.5), as the viewer measured it: the complete
+   * Light film's transport carries it, and its readout says the physics of the moment.
+   */
+  filmScore?: { score: FilmScore; hues: readonly number[] } | null;
   onClose: () => void;
 };
 
@@ -162,11 +173,16 @@ function RoomFilm({
     playerRef.current = player;
     let resume = true;
     let disposed = false;
+    // A film has a position once its metadata has arrived or it has moved. Before that it reads
+    // 0, which a replay of this effect (Strict Mode, Activity) must not remember as the
+    // visitor's: the plate's time would be lost.
+    let positioned = false;
     const play = () => {
       // A user agent may refuse playback; the transport remains available.
       void player.play().catch(() => {});
     };
     const restorePosition = () => {
+      positioned = true;
       // The room resumes where the plate was, unless this film was already watched in the room.
       const position = memory.get(identity) ?? (film.id === 'normal' ? startAt : undefined);
       if (position && Number.isFinite(player.duration)) {
@@ -194,8 +210,9 @@ function RoomFilm({
     if (document.visibilityState !== 'hidden') play();
     return () => {
       disposed = true;
-      if (Number.isFinite(player.currentTime)) {
-        memory.set(identity, player.ended ? 0 : player.currentTime);
+      const position = player.currentTime;
+      if (Number.isFinite(position) && (positioned || position > 0)) {
+        memory.set(identity, player.ended ? 0 : position);
       }
       player.removeEventListener('loadedmetadata', restorePosition);
       document.removeEventListener('visibilitychange', visibility);
@@ -305,6 +322,7 @@ export function ArtworkRoom({
   expressionFailed = false,
   returnFocusRef,
   derivedViews = true,
+  filmScore = null,
   onClose,
 }: ArtworkRoomProps) {
   const dialog = useRef<HTMLDialogElement>(null);
@@ -327,7 +345,8 @@ export function ArtworkRoom({
   const [filmStatus, setFilmStatus] = useState<FilmStatus>(initialFilm ? 'loading' : null);
   const [stillAttempt, setStillAttempt] = useState(0);
   const [stillFailed, setStillFailed] = useState<string | null>(null);
-  const [time, setTime] = useState({ current: 0, duration: 0 });
+  /** The clock of the film it was read from; another film reads as its start until it reports. */
+  const [filmClock, setFilmClock] = useState({ film: '', ...NO_TIME });
   const [playing, setPlaying] = useState(false);
   const [allowedStudies, setAllowedStudies] = useState<string[]>([]);
   const [loupe, setLoupe] = useState<{ window: number } | null>(null);
@@ -360,6 +379,10 @@ export function ArtworkRoom({
     ? [...media.films].sort((a, b) => FILM_ORDER.indexOf(a.id) - FILM_ORDER.indexOf(b.id))
     : [];
   const film = films.find((item) => item.id === selectedFilms[media?.id ?? '']) ?? films[0];
+  const filmIdentity = film ? `${film.variantKey}:${film.src}` : '';
+  const time = filmClock.film === filmIdentity ? filmClock : NO_TIME;
+  const setTime = (next: { current: number; duration: number }) =>
+    setFilmClock({ film: filmIdentity, ...next });
   const label = `${workNumber(artwork.id)} · ${media ? expressionWord(media, t) : ''}`;
   const plate = media ? getPlateGround(artwork.id, media.id, media.stillSha256) : undefined;
   const tone = media?.id === 'light' ? '#000000' : (plate?.tone ?? '#f1ebdf');
@@ -384,8 +407,10 @@ export function ArtworkRoom({
   // sweep without a measured span, or a work without a sweep, keeps the word and says so once.
   const sweep = media?.id === 'light' ? films.find((item) => item.id === 'sweep') : undefined;
   const span = sweep?.span;
-  const wavelengthOffered = derivedViews && media?.id === 'light';
-  const sweepKey = sweep && span ? sweep.src : `${artwork.id}:no-sweep`;
+  // Offered where the work has a sweep: the home's curated media carry none, and a work's page
+  // has one once its live record arrives.
+  const wavelengthOffered = derivedViews && media?.id === 'light' && !!sweep;
+  const sweepKey = sweep && span ? sweep.src : `${artwork.id}:unmeasured`;
   const wavelengthBlocked = sweepFailed === sweepKey;
   const held = span ? heldNm(chosenNm ?? startingNm(span), span) : null;
   const wavelengthShown =
@@ -400,6 +425,28 @@ export function ArtworkRoom({
   const wavelengthUnavailable =
     wavelengthOffered && wavelengthBlocked && stillShown && !filmShown && !loupe && !whenShown;
   const numbers = useMemo(() => new Intl.NumberFormat(locale), [locale]);
+  const oneDecimal = useMemo(
+    () => new Intl.NumberFormat(locale, { minimumFractionDigits: 1, maximumFractionDigits: 1 }),
+    [locale],
+  );
+  // The score belongs to the complete Light film, the one whose clock it shares.
+  const scored =
+    filmShown && derivedViews && media?.id === 'light' && film?.id === 'normal' ? filmScore : null;
+  const moment = scored ? physicsAt(scored.score, time.current) : null;
+
+  /*
+    A lens that leaves takes its slider with it. Focus that was on the slider would fall to the
+    page, outside the dialog that hears the room's keys, so it returns to the lens's word.
+  */
+  const wavelengthWord = useRef<HTMLButtonElement>(null);
+  const wavelengthWasShown = useRef(false);
+  useLayoutEffect(() => {
+    const left = wavelengthWasShown.current && !wavelengthShown;
+    wavelengthWasShown.current = wavelengthShown;
+    if (!left) return;
+    const active = document.activeElement;
+    if (!active || active === document.body) wavelengthWord.current?.focus({ preventScroll: true });
+  }, [wavelengthShown]);
 
   /* Open and close: the Expansion. */
   const expand = useCallback((direction: 'open' | 'close') => {
@@ -664,7 +711,8 @@ export function ArtworkRoom({
       return;
     }
     if (key === ' ') {
-      if (!film) return;
+      // Space belongs to the film, not to the lens's slider, where it would switch to the film.
+      if (!film || (event.target as Element).closest?.('[role="slider"]')) return;
       event.preventDefault();
       togglePlay();
     } else if (key === 'ArrowLeft' || key === 'ArrowRight') {
@@ -925,6 +973,7 @@ export function ArtworkRoom({
               ) : null}
               {wavelengthOffered ? (
                 <button
+                  ref={wavelengthWord}
                   type="button"
                   onClick={toggleWavelength}
                   aria-pressed={wavelengthShown}
@@ -1052,8 +1101,22 @@ export function ArtworkRoom({
         ) : null}
         {filmShown ? (
           <>
+            {scored ? (
+              <FilmScoreBand
+                score={scored.score}
+                hues={scored.hues}
+                progress={time.current / lightFilmDuration(scored.score.steps)}
+                className={styles.score}
+              />
+            ) : null}
             <span className={styles.readout} aria-hidden="true">
               {clock(time.current)} · {clock(time.duration)}
+              {moment
+                ? ` · ${fill(t.filmPhysics, {
+                    pair: pairName(moment.pair),
+                    distance: oneDecimal.format(moment.distance),
+                  })}`
+                : null}
             </span>
             <input
               className={styles.transport}

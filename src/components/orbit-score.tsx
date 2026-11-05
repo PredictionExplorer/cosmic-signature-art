@@ -13,6 +13,7 @@ import type {
   Rederivation,
 } from '@/lib/physics/orbit';
 import { Continuation, restingStep } from '@/lib/physics/continuation';
+import { pairName } from '@/lib/physics/film-score';
 import type { OrbitReply, OrbitRequest } from '@/lib/physics/orbit.worker';
 import {
   lightFilmDuration,
@@ -24,11 +25,11 @@ import { principalPlane, type Plane } from '@/lib/physics/plane';
 import { AFTER_THE_FRAME_EVENT } from '@/lib/venue-events';
 import { useMotion } from './motion-provider';
 import { lendPlateTone, returnPlateTone } from './room-ground';
+import { drawScore } from './score-drawing';
 import {
   derivedValue,
   measurementLabels,
   orbitWorker,
-  pairWords,
   progressText,
   recordValues,
   seedShort,
@@ -349,14 +350,6 @@ export function OrbitScore({
     // the braid crossings as ticks, and the playhead.
     const scoreWidth = eventCanvas.width;
     const scoreHeight = eventCanvas.height;
-    const separations = result.samples.separations;
-    let lo = Infinity;
-    let hi = -Infinity;
-    for (let i = 0; i < count * 3; i++) {
-      const value = Math.log(separations[i]);
-      lo = Math.min(lo, value);
-      hi = Math.max(hi, value);
-    }
     const at = (step: number) => (step / (steps - 1)) * scoreWidth;
     const lane = scoreHeight - 12 * ratio;
     const scoreStill = document.createElement('canvas');
@@ -364,32 +357,28 @@ export function OrbitScore({
     scoreStill.height = scoreHeight;
     const base = scoreStill.getContext('2d');
     if (!base) return;
-    const pairs = [
-      [0, 1],
-      [0, 2],
-      [1, 2],
-    ];
-    pairs.forEach(([a, b], k) => {
-      base.strokeStyle = `oklch(0.8 0.07 ${(hues[a] + hues[b]) / 2} / 0.55)`;
-      base.lineWidth = ratio;
-      base.beginPath();
-      for (let sample = 0; sample < count; sample += 2) {
-        const px = at(sample * STRIDE);
-        const py =
-          2 * ratio +
-          (1 - (Math.log(separations[sample * 3 + k]) - lo) / (hi - lo || 1)) * (lane - 4 * ratio);
-        if (sample === 0) base.moveTo(px, py);
-        else base.lineTo(px, py);
-      }
-      base.stroke();
-    });
-    const tick = (step: number, length: number, alpha: number) => {
-      base.fillStyle = `rgb(241 235 223 / ${alpha})`;
-      base.fillRect(Math.round(at(step)), scoreHeight - length * ratio, ratio, length * ratio);
-    };
-    for (const crossing of result.braid.events) tick(crossing.step, 3, 0.4);
-    for (const step of result.syzygies) tick(step, 7, 0.8);
-    tick(result.closestApproach.step, 11, 1);
+    drawScore(
+      base,
+      {
+        separations: result.samples.separations,
+        count,
+        stride: STRIDE,
+        closestApproach: result.closestApproach,
+        syzygies: result.syzygies,
+        crossings: result.braid.events.map((crossing) => crossing.step),
+      },
+      hues,
+      {
+        ratio,
+        x: at,
+        lane: { top: 2 * ratio, height: lane - 4 * ratio },
+        base: scoreHeight,
+        ticks: { crossing: 3, syzygy: 7, closest: 11 },
+        lineAlpha: 0.55,
+        ink: 'rgb(241 235 223)',
+        every: 2,
+      },
+    );
     /** The score with its playhead, or dimmed without one while the orbit runs past it. */
     const scoreAt = (step: number | null) => {
       score.clearRect(0, 0, scoreWidth, scoreHeight);
@@ -594,7 +583,7 @@ export function OrbitScore({
             : nearClosest
               ? fill(t.orbitClosestNow, {
                   distance: oneDecimal.format(closest.distance),
-                  pair: pairWords(closest.pair),
+                  pair: pairName(closest.pair),
                 })
               : fill(t.orbitPlaying, {
                   step: number.format(step),
@@ -658,7 +647,7 @@ export function OrbitScore({
     m2: oneDecimal.format(published.masses[1]),
     m3: oneDecimal.format(published.masses[2]),
     distance: oneDecimal.format(closest.distance),
-    pair: pairWords(closest.pair),
+    pair: pairName(closest.pair),
     step: number.format(closest.step),
     seconds: oneDecimal.format(lightFilmSeconds(closest.step, steps)),
   });

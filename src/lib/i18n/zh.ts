@@ -307,6 +307,7 @@ export const zh: Messages = {
   lightMedium: '光：黑色之上的发光轨道丝带。',
   filmsWord: '影片',
   spectralSweep: '光谱扫描',
+  sweepFilm: '光谱扫描',
   mintedTo: '铸造至',
   heldBy: '持有者',
   recordAsOf: 'Arbitrum 记录，截至 {date}',
@@ -583,6 +584,9 @@ export const zh: Messages = {
   orbitEscaped: '天体 {body} 已在第 {step} 步逃逸',
   orbitHeld: '这支舞持续了全部 {steps} 步',
   toTheEjection: '前往逃逸',
+  filmPhysics: '天体 {pair} · 相距 {distance}',
+  toClosestApproach: '前往最接近时刻',
+  closestApproachAt: '从最接近时刻前不久开启影片，于 {clock}',
   // The crossing and the When lens (src/components/when-lens.tsx)
   whenLens: '时刻',
   whenLight: '每一笔被画出的时刻',
