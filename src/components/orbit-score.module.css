@@ -209,6 +209,10 @@
   line-height: 1.5;
   color: var(--muted);
 }
+/* The note's way on: the same derivation, printed line by line on Verify an orbit. */
+.verify {
+  margin: 9px 0 0;
+}
 .visuallyHidden {
   position: absolute;
   width: 1px;

@@ -17,6 +17,8 @@ for (const locale of locales) {
     '/exhibitions',
     '/exhibitions/a-hang',
     '/exhibitions/the-long-curve',
+    '/verify/orbit',
+    '/verify/orbit/31',
   ]) {
     const title =
       locale === 'en'

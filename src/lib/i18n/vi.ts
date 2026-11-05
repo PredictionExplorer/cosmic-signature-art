@@ -543,6 +543,29 @@ export const vi: Messages = {
   verifyTooLarge:
     'Tệp này quá lớn để xác minh trong trình duyệt. Hãy chạy lệnh bên dưới và so kết quả với các mã băm đã công bố.',
   verifyFailed: 'Không đọc được tệp.',
+  // Verify an orbit (src/components/orbit-verifier.tsx, orbit-picker.tsx)
+  verifyOrbit: 'Xác minh một quỹ đạo',
+  verifyOrbitIntro:
+    'Chọn một tác phẩm theo số. Trình duyệt này suy ra lại quỹ đạo của nó từ hạt giống, bằng chính phép tính của bộ tạo, rồi in phần đối chiếu với hồ sơ đã công bố, từng dòng một.',
+  verifyOrbitNumber: 'Số tác phẩm',
+  verifyOrbitGo: 'Xác minh',
+  verifyOrbitUnknown: '{work} không có hồ sơ đã công bố.',
+  verifyOrbitWorks: 'Mọi tác phẩm có hồ sơ đã công bố',
+  verifyOrbitOf: 'Xác minh quỹ đạo của {work}',
+  verifyOrbitWorkIntro:
+    'Trình duyệt này suy ra lại quỹ đạo của {work} từ hạt giống, rồi đối chiếu từng phép đo trong hồ sơ đã công bố, từng dòng một.',
+  verifyOrbitLineByLine: 'Quá trình suy ra, từng dòng một',
+  verifyOrbitWaiting: 'Quá trình suy ra sẽ bắt đầu tại đây khi trang đã sẵn sàng.',
+  verifyOrbitSeedLine: 'Hạt giống {seed}',
+  verifyOrbitFateRun: 'Quá khoảng được ghi lại, để biết số phận · đến bước {steps}',
+  verifyOrbitAt: '{seconds} giây',
+  verifyOrbitTook: 'Đã đối chiếu tại đây trong {seconds} giây.',
+  verifyOrbitUnchecked: 'chưa đối chiếu',
+  verifyOrbitSomeUnchecked:
+    '{count} trong số {total} phép đo không thể đối chiếu trong trình duyệt này.',
+  verifyOrbitAnother: 'Xác minh quỹ đạo khác',
+  verifyOrbitNote:
+    'Phép tính là của chính bộ tạo: dòng ngẫu nhiên của nó, đọc đến ứng viên {index}; {steps} bước của bộ tích phân Yoshida bậc bốn; rồi tiếp tục quá khoảng được ghi lại để biết số phận. Chỉ dùng phép cộng, trừ, nhân, chia và căn bậc hai, mỗi phép đều được tiêu chuẩn định nghĩa chính xác, nên trình duyệt nào cũng đi đến cùng những bit ấy. Không có gì được gửi đi.',
   publishedHashes: 'Mã băm đã công bố',
   sharingCollection: 'Bộ sưu tập · {count} tác phẩm',
   // The orbit, re-performed (src/components/orbit-score.tsx)

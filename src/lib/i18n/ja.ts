@@ -540,6 +540,29 @@ export const ja: Messages = {
   verifyTooLarge:
     'このファイルは大きすぎてブラウザでは検証できません。下のコマンドを実行し、結果を公開されたハッシュと比べてください。',
   verifyFailed: 'ファイルを読み込めませんでした。',
+  // Verify an orbit (src/components/orbit-verifier.tsx, orbit-picker.tsx)
+  verifyOrbit: '軌道を検証',
+  verifyOrbitIntro:
+    '番号で作品を選んでください。このブラウザが生成器と同じ計算でシードから軌道をもう一度導き出し、公開された記録との照合を一行ずつ示します。',
+  verifyOrbitNumber: '作品番号',
+  verifyOrbitGo: '検証する',
+  verifyOrbitUnknown: '{work} には公開された記録がありません。',
+  verifyOrbitWorks: '公開された記録のあるすべての作品',
+  verifyOrbitOf: '{work} の軌道を検証',
+  verifyOrbitWorkIntro:
+    'このブラウザがシードから {work} の軌道をもう一度導き出し、公開された記録の測定値を一行ずつ照合します。',
+  verifyOrbitLineByLine: '導出を、一行ずつ',
+  verifyOrbitWaiting: 'ページの準備が整うと、ここで導出が始まります。',
+  verifyOrbitSeedLine: 'シード {seed}',
+  verifyOrbitFateRun: '記録区間の先、運命へ · 第 {steps} ステップまで',
+  verifyOrbitAt: '{seconds} 秒',
+  verifyOrbitTook: 'この場で {seconds} 秒で照合しました。',
+  verifyOrbitUnchecked: '未照合',
+  verifyOrbitSomeUnchecked:
+    '{total} 項目のうち {count} 項目は、このブラウザでは照合できませんでした。',
+  verifyOrbitAnother: 'ほかの軌道を検証',
+  verifyOrbitNote:
+    '計算は生成器そのものの手順です。乱数の流れを第 {index} 番の候補まで読み、四次の吉田積分法で {steps} ステップ進め、運命を知るために記録区間の先まで続けます。使うのは加算・減算・乗算・除算と平方根だけで、いずれも規格が厳密に定めているため、どのブラウザでも同じビットに至ります。どこにも何も送信しません。',
   publishedHashes: '公開されたハッシュ',
   sharingCollection: 'コレクション · {count} 作品',
   // The orbit, re-performed (src/components/orbit-score.tsx)

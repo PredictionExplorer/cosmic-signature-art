@@ -513,6 +513,28 @@ export const zh: Messages = {
   verifyTooLarge:
     '此文件过大，无法在浏览器中校验。请运行下面的命令，并将结果与已发布的哈希值比对。',
   verifyFailed: '无法读取该文件。',
+  // Verify an orbit (src/components/orbit-verifier.tsx, orbit-picker.tsx)
+  verifyOrbit: '核验轨道',
+  verifyOrbitIntro:
+    '按编号选择一件作品。这个浏览器会用生成器自己的算法，由种子重新推导它的轨道，并逐行列出与已发布记录的比对。',
+  verifyOrbitNumber: '作品编号',
+  verifyOrbitGo: '核验',
+  verifyOrbitUnknown: '{work} 没有已发布的记录。',
+  verifyOrbitWorks: '具有已发布记录的全部作品',
+  verifyOrbitOf: '核验 {work} 的轨道',
+  verifyOrbitWorkIntro:
+    '这个浏览器由种子重新推导 {work} 的轨道，再逐行核对已发布记录中的每一项测量。',
+  verifyOrbitLineByLine: '推导过程，逐行列出',
+  verifyOrbitWaiting: '页面就绪后，推导便在此开始。',
+  verifyOrbitSeedLine: '种子 {seed}',
+  verifyOrbitFateRun: '越过记录区间，求其命运 · 直至第 {steps} 步',
+  verifyOrbitAt: '{seconds} 秒',
+  verifyOrbitTook: '在此核对，用时 {seconds} 秒。',
+  verifyOrbitUnchecked: '未核对',
+  verifyOrbitSomeUnchecked: '{total} 项测量中有 {count} 项无法在这个浏览器中核对。',
+  verifyOrbitAnother: '核验另一条轨道',
+  verifyOrbitNote:
+    '算法是生成器自己的：它的随机流读到第 {index} 号候选；四阶 Yoshida 积分器的 {steps} 步；再越过记录区间，推算命运。只用加、减、乘、除与平方根，每一种运算都由标准精确规定，因此任何浏览器都会得到相同的比特。不会向任何地方发送数据。',
   publishedHashes: '已发布的哈希值',
   sharingCollection: '藏品 · {count} 件作品',
   // The orbit, re-performed (src/components/orbit-score.tsx)

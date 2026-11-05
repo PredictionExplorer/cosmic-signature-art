@@ -1,12 +1,19 @@
 import { describe, expect, it } from 'vitest';
 import data from './orbit-records.json' with { type: 'json' };
 import { collectionIndex } from './collection-index';
-import { loadOrbitRecords, workOrbit } from './orbit-records';
+import { loadOrbitRecords, orbitIds, workOrbit } from './orbit-records';
 
 describe('the orbit records', () => {
   it('cover every indexed work', () => {
     const missing = collectionIndex.works.filter((work) => !workOrbit(work.id)).map((w) => w.id);
     expect(missing).toEqual([]);
+  });
+
+  it('name every work they hold, in order, and nothing else', () => {
+    const ids = orbitIds();
+    expect(ids).toEqual([...ids].sort((a, b) => a - b));
+    expect(ids).toEqual(data.records.map((record) => record.id).sort((a, b) => a - b));
+    for (const id of ids) expect(workOrbit(id)?.id).toBe(id);
   });
 
   it('carry each measured double exactly, past the bundler', () => {

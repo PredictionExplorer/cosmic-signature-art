@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { locales, localizedPath } from '@/lib/i18n/routing';
+import { orbitIds } from '@/lib/art/orbit-records';
 import sitemap from './sitemap';
 import { metadata as auctionMetadata } from './[locale]/auctions/layout';
 import { generateMetadata as termsMetadata } from './[locale]/terms/page';
@@ -22,6 +23,16 @@ describe('direct-link auction pages', () => {
       expect(paths).toContain(localizedPath(locale, '/collection/orrery'));
       expect(paths).not.toContain(localizedPath(locale, '/collection/all-the-light'));
     }
+  });
+
+  it('lists Verify an orbit and the page of every work it can derive, in every locale', () => {
+    const paths = sitemap().map(({ url }) => new URL(url).pathname);
+    for (const locale of locales) {
+      expect(paths).toContain(localizedPath(locale, '/verify/orbit'));
+      for (const id of orbitIds())
+        expect(paths).toContain(localizedPath(locale, `/verify/orbit/${id}`));
+    }
+    expect(paths.filter((path) => path.endsWith('/verify/orbit/31'))).toHaveLength(locales.length);
   });
 
   it('asks crawlers not to index the auction route family or its terms', async () => {

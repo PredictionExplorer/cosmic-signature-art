@@ -513,6 +513,28 @@ export const zhTW: Messages = {
   verifyTooLarge:
     '此檔案過大，無法在瀏覽器中驗證。請執行下面的指令，並將結果與已發布的雜湊值比對。',
   verifyFailed: '無法讀取該檔案。',
+  // Verify an orbit (src/components/orbit-verifier.tsx, orbit-picker.tsx)
+  verifyOrbit: '核驗軌道',
+  verifyOrbitIntro:
+    '依編號選擇一件作品。這個瀏覽器會用生成器自己的演算法，由種子重新推導它的軌道，並逐行列出與已發布紀錄的比對。',
+  verifyOrbitNumber: '作品編號',
+  verifyOrbitGo: '核驗',
+  verifyOrbitUnknown: '{work} 沒有已發布的紀錄。',
+  verifyOrbitWorks: '具有已發布紀錄的全部作品',
+  verifyOrbitOf: '核驗 {work} 的軌道',
+  verifyOrbitWorkIntro:
+    '這個瀏覽器由種子重新推導 {work} 的軌道，再逐行核對已發布紀錄中的每一項測量。',
+  verifyOrbitLineByLine: '推導過程，逐行列出',
+  verifyOrbitWaiting: '頁面就緒後，推導便在此開始。',
+  verifyOrbitSeedLine: '種子 {seed}',
+  verifyOrbitFateRun: '越過紀錄區間，求其命運 · 直至第 {steps} 步',
+  verifyOrbitAt: '{seconds} 秒',
+  verifyOrbitTook: '在此核對，用時 {seconds} 秒。',
+  verifyOrbitUnchecked: '未核對',
+  verifyOrbitSomeUnchecked: '{total} 項測量中有 {count} 項無法在這個瀏覽器中核對。',
+  verifyOrbitAnother: '核驗另一條軌道',
+  verifyOrbitNote:
+    '演算法是生成器自己的：它的隨機流讀到第 {index} 號候選；四階 Yoshida 積分器的 {steps} 步；再越過紀錄區間，推算命運。只用加、減、乘、除與平方根，每一種運算都由標準精確規定，因此任何瀏覽器都會得到相同的位元。不會向任何地方傳送資料。',
   publishedHashes: '已發布的雜湊值',
   sharingCollection: '典藏 · {count} 件作品',
   // The orbit, re-performed (src/components/orbit-score.tsx)

@@ -540,6 +540,28 @@ export const en = {
   verifyTooLarge:
     'This file is too large to verify in the browser. Run the command below and compare the result with the published hashes.',
   verifyFailed: 'The file could not be read.',
+  // Verify an orbit (src/components/orbit-verifier.tsx, orbit-picker.tsx)
+  verifyOrbit: 'Verify an orbit',
+  verifyOrbitIntro:
+    'Choose a work by its number. This browser derives its orbit again from the seed, with the generator’s own arithmetic, and prints the comparison with the published record, line by line.',
+  verifyOrbitNumber: 'Work number',
+  verifyOrbitGo: 'Verify',
+  verifyOrbitUnknown: '{work} has no published record.',
+  verifyOrbitWorks: 'Every work with a published record',
+  verifyOrbitOf: 'Verify the orbit of {work}',
+  verifyOrbitWorkIntro:
+    'This browser derives the orbit of {work} again from its seed, then checks every measurement in its published record, line by line.',
+  verifyOrbitLineByLine: 'The derivation, line by line',
+  verifyOrbitWaiting: 'The derivation begins here once the page is ready.',
+  verifyOrbitSeedLine: 'Seed {seed}',
+  verifyOrbitFateRun: 'Past the window, for the fate · up to step {steps}',
+  verifyOrbitAt: '{seconds} s',
+  verifyOrbitTook: 'Checked here in {seconds} s.',
+  verifyOrbitUnchecked: 'unchecked',
+  verifyOrbitSomeUnchecked: '{count} of {total} measurements could not be checked in this browser.',
+  verifyOrbitAnother: 'Verify another',
+  verifyOrbitNote:
+    'The arithmetic is the generator’s own: its random stream, read as far as candidate {index}; {steps} steps of a fourth-order Yoshida integrator; then on past the window for the fate. It uses only addition, subtraction, multiplication, division and the square root, each defined exactly by the standard, so any browser reaches the same bits. Nothing is sent anywhere.',
   publishedHashes: 'Published hashes',
   sharingCollection: 'Collection · {count} works',
   // The orbit, re-performed (src/components/orbit-score.tsx)

@@ -1,6 +1,7 @@
 'use client';
+import Link from 'next/link';
 import { useEffect, useEffectEvent, useMemo, useRef, useState } from 'react';
-import type { Locale } from '@/lib/i18n/routing';
+import { localizedPath, type Locale } from '@/lib/i18n/routing';
 import type { Messages } from '@/lib/i18n/en';
 import { clock, fill } from '@/lib/i18n/format';
 import type { WorkOrbit } from '@/lib/art/orbit-records';
@@ -23,11 +24,20 @@ import { principalPlane, type Plane } from '@/lib/physics/plane';
 import { AFTER_THE_FRAME_EVENT } from '@/lib/venue-events';
 import { useMotion } from './motion-provider';
 import { lendPlateTone, returnPlateTone } from './room-ground';
+import {
+  derivedValue,
+  measurementLabels,
+  orbitWorker,
+  pairWords,
+  progressText,
+  recordValues,
+  seedShort,
+  verdict,
+} from './orbit-proof';
 import styles from './orbit-score.module.css';
 
 /** Every hundredth step is drawn: ten thousand points per body for a million-step window. */
 const STRIDE = 100;
-const MINUS = '−';
 /** To the ejection starts this many seconds of the film's pace before the escape. */
 const LEAD_SECONDS = 4;
 /**
@@ -63,15 +73,6 @@ type Fate =
   | { phase: 'failed' };
 /** After the frame: where the performance starts, and a count so a repeat starts afresh. */
 type Beyond = { from: 'end' | 'approach'; run: number };
-
-/** The worker is a module of its own; tests replace the global Worker. */
-function orbitWorker(): Worker {
-  return new Worker(new URL('../lib/physics/orbit.worker.ts', import.meta.url), { type: 'module' });
-}
-
-const exact = (value: number) => (value < 0 ? `${MINUS}${-value}` : String(value));
-const pairWords = (pair: readonly number[]) => pair.map((body) => body + 1).join('–');
-const seedShort = (seed: string) => `${seed.slice(0, 6)}…${seed.slice(-4)}`;
 
 /**
  * The orbit, re-performed: the work's orbit derived from its seed in this browser, drawn at
@@ -662,41 +663,8 @@ export function OrbitScore({
     seconds: oneDecimal.format(lightFilmSeconds(closest.step, steps)),
   });
 
-  const labels: Record<MeasurementKey, string> = {
-    mass1: fill(t.orbitMass, { n: 1 }),
-    mass2: fill(t.orbitMass, { n: 2 }),
-    mass3: fill(t.orbitMass, { n: 3 }),
-    totalEnergy: t.orbitEnergy,
-    angularMomentum: t.orbitMomentum,
-    closestDistance: t.orbitClosest,
-    closestWhere: t.orbitClosestWhere,
-    syzygies: t.orbitSyzygies,
-    braidCrossings: t.orbitBraidCrossings,
-    braidWord: t.orbitBraidWord,
-    fate: t.orbitFate,
-  };
-  const recordValues: Record<MeasurementKey, string> = {
-    mass1: exact(published.masses[0]),
-    mass2: exact(published.masses[1]),
-    mass3: exact(published.masses[2]),
-    totalEnergy: exact(published.totalEnergy),
-    angularMomentum: exact(published.angularMomentum),
-    closestDistance: exact(closest.distance),
-    closestWhere: fill(t.orbitBodiesAt, {
-      pair: pairWords(closest.pair),
-      step: number.format(closest.step),
-    }),
-    syzygies: number.format(published.syzygyCount),
-    braidCrossings: number.format(published.braid.crossings),
-    braidWord: `${published.braid.word}${published.braid.truncated ? ' …' : ''}`,
-    fate:
-      orbit.fate.outcome === 'ejection'
-        ? fill(t.orbitFateEjection, {
-            body: (orbit.fate.escaper ?? 0) + 1,
-            step: number.format(orbit.fate.ejectionStep ?? 0),
-          })
-        : fill(t.orbitFateDance, { steps: number.format(orbit.fate.horizonSteps) }),
-  };
+  const labels = measurementLabels(t);
+  const record = recordValues(orbit, t, number);
   // Each row is marked as it is checked; the fate is checked last, since it runs on past the
   // window to the horizon, and the summary speaks once every row has been.
   const comparisons =
@@ -723,31 +691,12 @@ export function OrbitScore({
       : state.phase === 'waiting'
         ? t.orbitWaiting
         : state.phase === 'deriving'
-          ? progress?.phase === 'beginnings'
-            ? fill(t.orbitProgressBeginnings, {
-                done: number.format(progress.done),
-                total: number.format(progress.total),
-              })
-            : progress?.phase === 'warm-up'
-              ? fill(t.orbitProgressWarmUp, {
-                  index: number.format(orbit.generation.selectedIndex),
-                  done: number.format(progress.done),
-                  total: number.format(progress.total),
-                })
-              : progress?.phase === 'window'
-                ? fill(t.orbitProgressWindow, {
-                    done: number.format(progress.done),
-                    total: number.format(progress.total),
-                  })
-                : progress?.phase === 'braid'
-                  ? fill(t.orbitProgressBraid, {
-                      done: number.format(progress.done),
-                      total: number.format(progress.total),
-                    })
-                  : fill(t.orbitProgressBeginnings, {
-                      done: 0,
-                      total: number.format(orbit.generation.selectedIndex),
-                    })
+          ? progressText(
+              progress ?? { phase: 'beginnings', done: 0, total: orbit.generation.selectedIndex },
+              orbit.generation,
+              t,
+              number,
+            )
           : finished
             ? playingLine(steps, film)
             : playingLine(0, 0);
@@ -763,14 +712,7 @@ export function OrbitScore({
               orbit.generation.candidatesPerAttempt * (orbit.generation.retryCount + 1),
             ),
             steps: number.format(orbit.generation.warmupSteps + steps),
-          })} ${
-            differing.length
-              ? fill(t.orbitSomeDiffer, {
-                  count: differing.length,
-                  total: comparisons?.length ?? 0,
-                })
-              : t.orbitAllExact
-          }`
+          })} ${verdict(comparisons ?? [], t)}`
         : null;
   const line = beyond ? readout : ((still ? null : readout) ?? progressLine);
   const approach = derivedFate?.approach;
@@ -857,11 +799,9 @@ export function OrbitScore({
                 <tr key={key} data-key={key} data-exact={row ? String(row.exact) : undefined}>
                   <th scope="row">{labels[key]}</th>
                   <td className={key === 'braidWord' ? styles.word : undefined}>
-                    <span>{recordValues[key]}</span>
+                    <span>{record[key]}</span>
                     {row && !row.exact ? (
-                      <span className={styles.derivedValue}>
-                        {fill(t.orbitDerivedValue, { value: row.derived.replace(/^-/, MINUS) })}
-                      </span>
+                      <span className={styles.derivedValue}>{derivedValue(row, t)}</span>
                     ) : null}
                   </td>
                   <td className={styles.check}>
@@ -880,6 +820,12 @@ export function OrbitScore({
             index: number.format(orbit.generation.selectedIndex),
             steps: number.format(orbit.generation.warmupSteps + steps),
           })}
+        </p>
+        {/* The same derivation, printed whole on a page of its own (Verify an orbit). */}
+        <p className={styles.verify}>
+          <Link className="word-link" href={localizedPath(locale, `/verify/orbit/${orbit.id}`)}>
+            {t.verifyOrbitLineByLine}
+          </Link>
         </p>
       </div>
     </section>

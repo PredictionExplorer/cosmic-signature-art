@@ -534,6 +534,28 @@ export const ko: Messages = {
   verifyTooLarge:
     '이 파일은 브라우저에서 검증하기에 너무 큽니다. 아래 명령을 실행하고 결과를 공개된 해시와 비교하세요.',
   verifyFailed: '파일을 읽을 수 없습니다.',
+  // Verify an orbit (src/components/orbit-verifier.tsx, orbit-picker.tsx)
+  verifyOrbit: '궤도 검증',
+  verifyOrbitIntro:
+    '번호로 작품을 고르세요. 이 브라우저가 생성기 고유의 계산으로 시드에서 궤도를 다시 도출하고, 공개된 기록과의 대조를 한 줄씩 보여 줍니다.',
+  verifyOrbitNumber: '작품 번호',
+  verifyOrbitGo: '검증',
+  verifyOrbitUnknown: '{work}에는 공개된 기록이 없습니다.',
+  verifyOrbitWorks: '공개된 기록이 있는 모든 작품',
+  verifyOrbitOf: '{work}의 궤도 검증',
+  verifyOrbitWorkIntro:
+    '이 브라우저가 시드에서 {work}의 궤도를 다시 도출한 뒤, 공개된 기록의 모든 측정값을 한 줄씩 대조합니다.',
+  verifyOrbitLineByLine: '도출 과정, 한 줄씩',
+  verifyOrbitWaiting: '페이지가 준비되면 이곳에서 도출이 시작됩니다.',
+  verifyOrbitSeedLine: '시드 {seed}',
+  verifyOrbitFateRun: '기록 구간 너머, 운명을 향해 · {steps}번째 단계까지',
+  verifyOrbitAt: '{seconds}초',
+  verifyOrbitTook: '여기에서 {seconds}초 만에 대조했습니다.',
+  verifyOrbitUnchecked: '미대조',
+  verifyOrbitSomeUnchecked: '측정값 {total}개 중 {count}개는 이 브라우저에서 대조하지 못했습니다.',
+  verifyOrbitAnother: '다른 궤도 검증',
+  verifyOrbitNote:
+    '계산은 생성기 고유의 순서를 따릅니다. 난수 흐름을 {index}번 후보까지 읽고, 4차 요시다 적분기로 {steps}단계를 진행한 다음, 운명을 알기 위해 기록 구간 너머까지 이어 갑니다. 덧셈, 뺄셈, 곱셈, 나눗셈과 제곱근만 쓰며, 모두 표준이 정확히 정의하므로 어느 브라우저든 같은 비트에 이릅니다. 아무것도 외부로 보내지 않습니다.',
   publishedHashes: '공개된 해시',
   sharingCollection: '컬렉션 · 작품 {count}점',
   // The orbit, re-performed (src/components/orbit-score.tsx)
