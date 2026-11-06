@@ -1,6 +1,6 @@
 import { Activity, StrictMode, useRef, useState } from 'react';
 import { act, cleanup, fireEvent, render, screen, within } from '@testing-library/react';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import { getCuratedArtwork } from '@/lib/art/catalog';
 import type { Artwork } from '@/lib/art/types';
 import { en } from '@/lib/i18n/en';
@@ -816,11 +816,12 @@ describe('immersive artwork room', () => {
 
   describe('the Light film’s score', () => {
     const orbit = filmOrbit(31)!;
-    let measured: FilmScore | undefined;
-    const filmScore = () => ({
-      score: (measured ??= scoreWindow(orbit.window)),
-      hues: orbit.bodyHues,
-    });
+    let measured: FilmScore;
+    // № 031's window measured once, with its own budget: see the viewer's score tests.
+    beforeAll(() => {
+      measured = scoreWindow(orbit.window);
+    }, 30_000);
+    const filmScore = () => ({ score: measured, hues: orbit.bodyHues });
     const room = (props: Partial<Parameters<typeof ArtworkRoom>[0]> = {}) => {
       render(
         <ArtworkRoom
