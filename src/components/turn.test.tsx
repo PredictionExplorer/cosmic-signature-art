@@ -2,7 +2,6 @@ import { act, cleanup, fireEvent, render, renderHook, screen } from '@testing-li
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   BREATH_MS,
-  EXPRESSION_KEY,
   SeamController,
   Turn,
   TurnLayer,
@@ -12,6 +11,7 @@ import {
   setThemeColor,
   useRememberedExpression,
 } from './turn';
+import { EXPRESSION_KEY } from '@/lib/storage-keys';
 
 const root = () => document.documentElement;
 

@@ -1,7 +1,6 @@
 'use client';
 import { useSyncExternalStore, type ReactNode } from 'react';
-
-const key = 'cosmic-art-motion-v1';
+import { MOTION_KEY } from '@/lib/storage-keys';
 const listeners = new Set<() => void>();
 let explicit: boolean | undefined;
 let query: MediaQueryList | undefined;
@@ -14,7 +13,7 @@ function system() {
   if (!query) {
     query = window.matchMedia('(prefers-reduced-motion: reduce)');
     try {
-      const saved = sessionStorage.getItem(key);
+      const saved = sessionStorage.getItem(MOTION_KEY);
       if (saved === 'paused' || saved === 'playing') explicit = saved === 'paused';
     } catch {
       /* Storage is optional. */
@@ -48,7 +47,7 @@ function serverSnapshot() {
 function choose(paused: boolean) {
   explicit = paused;
   try {
-    sessionStorage.setItem(key, paused ? 'paused' : 'playing');
+    sessionStorage.setItem(MOTION_KEY, paused ? 'paused' : 'playing');
   } catch {
     /* A private browser can still control playback. */
   }

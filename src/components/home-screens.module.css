@@ -44,20 +44,38 @@
   color: var(--muted);
 }
 
-/* Screen 4: two leaves, a 1 px gutter, the numerals hanging in the outer margins. */
+/* Screen 4: two leaves across the seam, the Ink leaf on paper and the Light leaf on night, a
+   1 px gutter at the seam and the numerals hanging in the outer margins. */
 .spread {
   min-height: calc(100svh - var(--head));
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-  column-gap: 1px;
-  align-items: center;
-  /* The outer padding reserves the hanging numerals (three figures at --fs-plate plus 9 px). */
-  padding: 54px max(var(--gutter), 6vw, calc(var(--fs-plate) * 2 + 9px));
   overflow-x: clip;
 }
-.leaf {
-  /* The leaf's strip reads on the sheet's own tone: 5.1:1 on the darkest kozo measured. */
+.side {
+  display: grid;
+  align-items: center;
+  padding-block: 54px;
+}
+/* The outer padding reserves the hanging numerals (three figures at --fs-plate plus 9 px). */
+.side[data-side='left'] {
+  padding-inline: max(var(--gutter), 6vw, calc(var(--fs-plate) * 2 + 9px)) 0.5px;
+}
+.side[data-side='right'] {
+  padding-inline: 0.5px max(var(--gutter), 6vw, calc(var(--fs-plate) * 2 + 9px));
+}
+/* The leaf's strip reads on the sheet's own tone: 5.1:1 on the darkest kozo measured. */
+.side[data-ground='paper'] {
   --muted: #5a5a51;
+  background: var(--paper);
+}
+.side[data-ground='night'] {
+  --type: var(--night-type);
+  --muted: #b8b5ad;
+  background: var(--night);
+  color: var(--type);
+}
+.leaf {
   position: relative;
   display: grid;
   grid-template-rows: auto var(--strip);
@@ -96,7 +114,8 @@
   font-variant-numeric: tabular-nums lining-nums;
 }
 
-/* Screen 5: this cycle. */
+/* Screen 5: this cycle, twice across the seam: the Ink leaf on paper, the Light leaf on night,
+   full-bleed, so each work of the cycle stands on one line with itself. */
 .cycle {
   padding: 90px var(--gutter) 108px;
   display: grid;
@@ -112,14 +131,28 @@
   color: var(--muted);
   font-variant-numeric: lining-nums tabular-nums;
 }
+.pairs {
+  justify-self: stretch;
+  margin-inline: calc(-1 * var(--gutter));
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
 .row {
   list-style: none;
   margin: 0;
-  padding: 0;
-  width: 100%;
+  padding: 36px calc(var(--gutter) / 2) 36px var(--gutter);
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  align-content: start;
   gap: 27px 18px;
+  background: var(--paper);
+}
+.row[data-ground='night'] {
+  --type: var(--night-type);
+  --muted: #b8b5ad;
+  padding-inline: calc(var(--gutter) / 2) var(--gutter);
+  background: var(--night);
+  color: var(--type);
 }
 .cell {
   display: grid;
@@ -145,9 +178,9 @@
   }
   .spread {
     grid-template-columns: minmax(0, 1fr);
-    row-gap: 36px;
+  }
+  .side[data-side] {
     padding: 36px var(--gutter);
-    align-content: center;
   }
   .leaf {
     grid-template-rows: auto auto var(--strip);
@@ -165,7 +198,7 @@
     gap: 27px;
   }
   .row {
-    grid-template-columns: repeat(auto-fill, minmax(104px, 1fr));
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 18px 9px;
   }
 }

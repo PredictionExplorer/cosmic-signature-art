@@ -7,8 +7,11 @@ import { indexedWork } from '@/lib/art/collection-index';
 import { withCollectionPreviews } from '@/lib/art/collection-previews';
 import type { Artwork } from '@/lib/art/types';
 import { en } from '@/lib/i18n/en';
-import { BREATH_MS, EXPRESSION_KEY, forgetExpression } from './turn';
+import { AFTER_THE_FRAME_EVENT, SEAM_EVENT } from '@/lib/venue-events';
+import { BREATH_MS, forgetExpression } from './turn';
 import { closeSheet, openSheet } from './sheets-store';
+import { EXPRESSION_KEY, HOME_RESOLVED_KEY } from '@/lib/storage-keys';
+import { overturePhase, setOverturePhase } from './overture-store';
 
 const motion = vi.hoisted(() => ({
   paused: false,
@@ -19,10 +22,12 @@ const motion = vi.hoisted(() => ({
 const push = vi.hoisted(() => vi.fn());
 const overrideRoom = vi.hoisted(() => vi.fn());
 const setPlateTone = vi.hoisted(() => vi.fn());
+const lendPlateTone = vi.hoisted(() => vi.fn());
+const returnPlateTone = vi.hoisted(() => vi.fn());
 const imageDecode = Object.getOwnPropertyDescriptor(HTMLImageElement.prototype, 'decode');
 vi.mock('./motion-provider', () => ({ useMotion: () => motion }));
 vi.mock('next/navigation', () => ({ useRouter: () => ({ push }) }));
-vi.mock('./room-ground', () => ({ overrideRoom, setPlateTone }));
+vi.mock('./room-ground', () => ({ overrideRoom, setPlateTone, lendPlateTone, returnPlateTone }));
 
 const root = () => document.documentElement;
 /** The seam's travel under fake timers: the breath, then --t-turn (900 ms in jsdom's fallback). */
@@ -113,8 +118,18 @@ function previewWork(id: number) {
 const work = previewWork(31);
 const traits = { structure: 'Orbit Ribbons', underlay: 'Harmonic Weave' };
 
+/** The page's opening is Ink unless a case says otherwise, as on an Ink day. */
 function renderViewer(props: Partial<Parameters<typeof ArtworkViewer>[0]> = {}) {
-  return render(<ArtworkViewer artwork={work} t={en} locale="en" traits={traits} {...props} />);
+  return render(
+    <ArtworkViewer
+      artwork={work}
+      t={en}
+      locale="en"
+      traits={traits}
+      openingExpression="ink"
+      {...props}
+    />,
+  );
 }
 const stage = () => document.querySelector('[data-artwork-stage="page"]')!;
 const layer = (id: string) => document.querySelector(`[data-layer="${id}"]`)!;
@@ -197,7 +212,7 @@ describe('the plate and its strip', () => {
     expect(layer('light')).toHaveAttribute('data-layer-state', 'current');
     expect(screen.getByText(`${en.light} · ${en.noInkPublished}`)).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: en.ink })).toBeNull();
-    expect(document.querySelector('[data-night-wing]')).toBeNull();
+    expect(document.querySelector('[data-wing]')).toBeNull();
   });
 });
 
@@ -215,7 +230,7 @@ describe('the Turn', () => {
     expect(root().style.getPropertyValue('--seam')).toBe('0%');
     expect(stage()).toHaveAttribute('data-expression', 'ink');
     const seams = vi.fn();
-    window.addEventListener('cosmic:seam', seams);
+    window.addEventListener(SEAM_EVENT, seams);
     await act(async () => {
       vi.advanceTimersByTime(950);
     });
@@ -361,7 +376,7 @@ describe('the Turn', () => {
     expect(stage()).toHaveAttribute('data-expression', 'ink');
   });
 
-  it('follows the session’s remembered expression when the URL names none, and never for a work with one expression', async () => {
+  it('follows the session’s remembered expression when the URL names none, remembers what a URL asks for, and never a work with one expression', async () => {
     sessionStorage.setItem(EXPRESSION_KEY, 'light');
     forgetExpression();
     sessionStorage.setItem(EXPRESSION_KEY, 'light');
@@ -370,13 +385,73 @@ describe('the Turn', () => {
     expect(stage()).toHaveAttribute('data-expression', 'light');
     expect(root().hasAttribute('data-turning')).toBe(false);
     cleanup();
+    // The half the visitor pressed, or a shared link, is their choice for the visit.
     renderViewer({ initialExpression: 'ink' });
     await act(async () => {});
     expect(stage()).toHaveAttribute('data-expression', 'ink');
+    expect(sessionStorage.getItem(EXPRESSION_KEY)).toBe('ink');
     cleanup();
-    renderViewer({ artwork: getCuratedArtwork(2)!, traits: undefined });
+    renderViewer({ artwork: getCuratedArtwork(2)!, traits: undefined, initialExpression: 'light' });
     await act(async () => {});
-    expect(sessionStorage.getItem(EXPRESSION_KEY)).toBe('light');
+    expect(sessionStorage.getItem(EXPRESSION_KEY)).toBe('ink');
+  });
+});
+
+describe('the wing', () => {
+  const wing = () => document.querySelector<HTMLElement>('[data-wing]')!;
+  /** The Turn by the word, through the breath and the travel to the commit. */
+  async function turnBy(name: string) {
+    fireEvent.click(word(name));
+    await act(async () => {});
+    await act(async () => {
+      vi.advanceTimersByTime(BREATH_MS + 950);
+    });
+    await act(async () => {});
+  }
+
+  it('hangs the Light twin in the night wing beneath an Ink plate', () => {
+    renderViewer();
+    expect(wing()).toHaveAttribute('data-wing', 'night');
+    expect(wing()).toHaveAttribute('data-twin', 'light');
+    expect(wing().lastElementChild).toHaveAttribute('data-ground', 'night');
+    expect(wing().lastElementChild!.querySelector('img.art-still')).toHaveAttribute(
+      'src',
+      '/art/31-light.webp',
+    );
+  });
+
+  it('hangs the Ink twin in a paper wing beneath a Light plate', () => {
+    renderViewer({ openingExpression: 'light' });
+    expect(stage()).toHaveAttribute('data-expression', 'light');
+    expect(wing()).toHaveAttribute('data-wing', 'paper');
+    expect(wing()).toHaveAttribute('data-twin', 'ink');
+    expect(wing().lastElementChild).toHaveAttribute('data-ground', 'paper');
+    expect(wing().lastElementChild!.querySelector('img.art-still')).toHaveAttribute(
+      'src',
+      '/art/31-ink.webp',
+    );
+  });
+
+  it('keeps the wing under the hand when the plate Turns', async () => {
+    renderViewer({ openingExpression: 'light' });
+    await turnBy(en.ink);
+    expect(stage()).toHaveAttribute('data-expression', 'ink');
+    expect(wing()).toHaveAttribute('data-twin', 'ink');
+    await turnBy(en.light);
+    expect(stage()).toHaveAttribute('data-expression', 'light');
+    expect(wing()).toHaveAttribute('data-twin', 'ink');
+  });
+
+  it('follows a remembered choice that re-opens the page, which is not a Turn', async () => {
+    sessionStorage.setItem(EXPRESSION_KEY, 'light');
+    forgetExpression();
+    sessionStorage.setItem(EXPRESSION_KEY, 'light');
+    renderViewer();
+    await act(async () => {});
+    expect(stage()).toHaveAttribute('data-expression', 'light');
+    expect(wing()).toHaveAttribute('data-twin', 'ink');
+    await turnBy(en.ink);
+    expect(wing()).toHaveAttribute('data-twin', 'ink');
   });
 });
 
@@ -418,6 +493,43 @@ describe('the film, the rest and Sit', () => {
     expect(screen.queryByRole('button', { name: en.again })).toBeNull();
     expect(word(en.film)).toBeInTheDocument();
   });
+
+  it.each([true, false])(
+    'offers After the frame once the film resolves, only above an orbit (%s)',
+    async (orbit) => {
+      const asked = vi.fn();
+      window.addEventListener(AFTER_THE_FRAME_EVENT, asked);
+      renderViewer({ afterTheFrame: orbit });
+      await settle();
+      await act(async () => {
+        vi.advanceTimersByTime(1300);
+      });
+      const video = player()!;
+      Object.defineProperty(video, 'duration', { configurable: true, value: 30 });
+      fireEvent.playing(video);
+      const strip = () =>
+        within(document.querySelector<HTMLElement>('[data-layer-state="current"]')!);
+      expect(strip().queryByRole('link', { name: en.afterTheFrame })).toBeNull();
+      fireEvent.ended(video);
+      await act(async () => {
+        vi.advanceTimersByTime(8000);
+      });
+      if (!orbit) {
+        expect(strip().queryByRole('link', { name: en.afterTheFrame })).toBeNull();
+        window.removeEventListener(AFTER_THE_FRAME_EVENT, asked);
+        return;
+      }
+      // A link to the orbit beneath, which the page asks to go on past the frame.
+      const link = strip().getByRole('link', { name: en.afterTheFrame });
+      expect(link).toHaveAttribute('href', '#orbit');
+      fireEvent.click(link);
+      expect(asked).toHaveBeenCalledTimes(1);
+      window.removeEventListener(AFTER_THE_FRAME_EVENT, asked);
+      // Again takes the word away until the film resolves once more.
+      fireEvent.click(word(en.again));
+      expect(strip().queryByRole('link', { name: en.afterTheFrame })).toBeNull();
+    },
+  );
 
   it('Sit fades the strip and the head until the visitor moves, swallowing the waking click', async () => {
     const { container } = renderViewer();
@@ -496,9 +608,9 @@ describe('the room and the keys', () => {
     });
     await settle();
     fireEvent.keyDown(window, { key: 'ArrowRight' });
-    expect(push).toHaveBeenLastCalledWith('/art/32');
+    expect(push).toHaveBeenLastCalledWith('/art/32?expression=ink');
     fireEvent.keyDown(window, { key: 'ArrowLeft' });
-    expect(push).toHaveBeenLastCalledWith('/art/30');
+    expect(push).toHaveBeenLastCalledWith('/art/30?expression=ink');
     const field = document.createElement('input');
     document.body.append(field);
     fireEvent.keyDown(field, { key: 'ArrowRight' });
@@ -515,7 +627,7 @@ describe('the room and the keys', () => {
     );
   });
 
-  it('lists the neighbours with the remembered expression in their links', async () => {
+  it('lists the neighbours with the expression on view in their links, Ink or Light', async () => {
     renderViewer({
       neighbours: {
         previous: { id: 30, preview: '/art/previews/30.webp' },
@@ -526,7 +638,7 @@ describe('the room and the keys', () => {
     });
     expect(screen.getByRole('link', { name: `${en.previousWork} · № 030` })).toHaveAttribute(
       'href',
-      '/art/30',
+      '/art/30?expression=ink',
     );
     expect(screen.getByRole('link', { name: /Next by wavelength/ })).toHaveTextContent(
       'Next by wavelength · № 044 · 18 nm redder',
@@ -564,9 +676,9 @@ describe('the home', () => {
       'film',
     );
     fireEvent.ended(film);
-    expect(sessionStorage.getItem('cosmic-art-home-film-v1')).toBe('resolved');
+    expect(sessionStorage.getItem(HOME_RESOLVED_KEY)).toBe('resolved');
     await act(async () => {
-      vi.advanceTimersByTime(6000);
+      vi.advanceTimersByTime(8000);
     });
     expect(word(en.again)).toBeInTheDocument();
     cleanup();
@@ -575,30 +687,94 @@ describe('the home', () => {
     expect(within(second.container).getByRole('button', { name: en.again })).toBeInTheDocument();
     expect(container.querySelector('video')).toBeNull();
   });
+});
 
-  it('the Dusk, behind its flag, lowers the wall after the rest and is cancelled by any input', async () => {
-    renderViewer({ presentation: 'home', dusk: true });
+describe('the Overture, beneath and landing', () => {
+  const wing = () => document.querySelector<HTMLElement>('[data-wing]')!;
+  afterEach(() => {
+    act(() => setOverturePhase(null));
+  });
+
+  it('stands the home in Light beneath it, then crosses to the day’s Ink by its own crossing', async () => {
+    renderViewer({ presentation: 'home', openingExpression: 'ink' });
     await settle();
-    await act(async () => {
-      vi.advanceTimersByTime(1200);
-    });
-    fireEvent.ended(await handover());
-    await act(async () => {
-      vi.advanceTimersByTime(6000);
-    });
+    expect(stage()).toHaveAttribute('data-expression', 'ink');
+    act(() => setOverturePhase('playing'));
     await act(async () => {});
-    expect(root().getAttribute('data-turning')).toBe('dusk');
-    expect(root().style.getPropertyValue('--seam')).toBe('0%');
-    fireEvent.keyDown(window, { key: 'ArrowDown' });
-    expect(root().getAttribute('data-turning')).toBe('time');
-    expect(root().style.getPropertyValue('--seam')).toBe('100%');
+    expect(stage()).toHaveAttribute('data-expression', 'light');
+    act(() => setOverturePhase('landing'));
+    await act(async () => {});
     await act(async () => {
-      vi.advanceTimersByTime(5000);
+      vi.advanceTimersByTime(BREATH_MS);
+    });
+    expect(root().getAttribute('data-turning')).toBe('overture');
+    // --t-overture-cross: 4000 ms in jsdom's fallback.
+    await act(async () => {
+      vi.advanceTimersByTime(4100);
     });
     await act(async () => {});
     await dropSeam();
     expect(stage()).toHaveAttribute('data-expression', 'ink');
+    expect(overturePhase()).toBe('done');
+    // None of it was the visitor's choice: nothing is remembered, and the wing keeps the twin.
+    expect(sessionStorage.getItem(EXPRESSION_KEY)).toBeNull();
+    expect(wing()).toHaveAttribute('data-twin', 'light');
+  });
+
+  it('leaves nothing of a move it called off for the visitor’s own next Turn', async () => {
+    renderViewer({ presentation: 'home', openingExpression: 'ink' });
+    await settle();
+    // The Light still is slow to come, and the Overture ends before it has.
+    const decode = HTMLImageElement.prototype.decode;
+    Object.defineProperty(HTMLImageElement.prototype, 'decode', {
+      configurable: true,
+      value: () => new Promise<void>(() => {}),
+    });
+    act(() => setOverturePhase('playing'));
+    await act(async () => {});
+    act(() => setOverturePhase('done'));
+    await act(async () => {});
+    expect(stage()).toHaveAttribute('data-expression', 'ink');
+    Object.defineProperty(HTMLImageElement.prototype, 'decode', {
+      configurable: true,
+      value: decode,
+    });
+    // The visitor's own Turn travels by time, and the visit remembers it.
+    fireEvent.click(word(en.light));
+    await act(async () => {});
+    await act(async () => {
+      vi.advanceTimersByTime(BREATH_MS);
+    });
+    expect(root().getAttribute('data-turning')).toBe('time');
+    await act(async () => {
+      vi.advanceTimersByTime(950);
+    });
+    await act(async () => {});
+    await dropSeam();
+    expect(stage()).toHaveAttribute('data-expression', 'light');
+    expect(sessionStorage.getItem(EXPRESSION_KEY)).toBe('light');
+  });
+
+  it('lands at once when an input ends it, and lands a Light day where it stands', async () => {
+    renderViewer({ presentation: 'home', openingExpression: 'ink' });
+    await settle();
+    act(() => setOverturePhase('playing'));
+    await act(async () => {});
+    expect(stage()).toHaveAttribute('data-expression', 'light');
+    act(() => setOverturePhase('done'));
+    await act(async () => {});
+    expect(stage()).toHaveAttribute('data-expression', 'ink');
     expect(root().hasAttribute('data-turning')).toBe(false);
+    expect(sessionStorage.getItem(EXPRESSION_KEY)).toBeNull();
+    cleanup();
+    act(() => setOverturePhase(null));
+    renderViewer({ presentation: 'home', openingExpression: 'light' });
+    await settle();
+    act(() => setOverturePhase('playing'));
+    act(() => setOverturePhase('landing'));
+    await act(async () => {});
+    expect(overturePhase()).toBe('done');
+    expect(stage()).toHaveAttribute('data-expression', 'light');
   });
 });
 

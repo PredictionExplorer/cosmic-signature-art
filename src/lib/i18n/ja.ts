@@ -262,6 +262,7 @@ export const ja: Messages = {
   statement: 'ステートメント',
   index: '索引',
   indexSheet: 'コレクションの索引',
+  indexWallHint: '番号に触れると、その作品がここに掛かります。もう一度触れると開きます。',
   closeIndex: '索引を閉じる',
   keys: 'キー',
   keysSheet: 'キーボードショートカット',
@@ -300,6 +301,8 @@ export const ja: Messages = {
   // プレートと転回
   showLight: '光の表現を見る',
   showInk: '墨の表現を見る',
+  hangAlone: '{expression}のみ',
+  hangTogether: 'インクと光を並べて',
   noInkPublished: '墨の表現は未公開',
   previousWork: '前の作品',
   nextWork: '次の作品',
@@ -380,6 +383,25 @@ export const ja: Messages = {
   // プロセス、章の再構成
   chapterChoice: '選択',
   chapterChoiceCopy: '十万本の候補軌道が採点され、一本が選ばれる。',
+  // The choice, derived here (src/components/choice-field.tsx)
+  choiceFieldCaption:
+    '点はそれぞれ、シードから引き出した {total} 通りの初期条件のひとつ、最初のステップより前の三つの天体の質量、位置、速度です。全エネルギーを横に、角運動量を縦にとり、どちらも対数目盛です。',
+  choiceFieldWaiting: 'ここまで来ると、{total} 通りの初期条件をこの場で導き出します。',
+  choiceFieldProgress: '初期条件を導出中 · {done} / {total}',
+  choiceFieldDerived:
+    '{total} 通りの初期条件をすべて、このブラウザで {seconds} 秒かけて導き出しました。',
+  choiceFieldUnavailable:
+    'このブラウザでは初期条件を導き出せませんでした。選択は照合せず、公開されたままに示します。',
+  choiceFieldAllPassed:
+    '{total} 通りすべてが、スタジオの簡易審査を通過しました。エネルギーは {energy} 以下、角運動量は {momentum} 以上です。',
+  choiceFieldSomePassed:
+    'スタジオの簡易審査（エネルギー {energy} 以下、角運動量 {momentum} 以上）は、{total} 通りのうち {failed} 通りを退けました。通過したのは {passed} 通りです。',
+  choiceFieldSearch:
+    'そのそれぞれをスタジオで最大 {steps} ステップ動かし、採点しました。延べ最大 {search} ステップに及ぶ探索で、ブラウザでは実行できません。丸で囲んだ第 {index} 番が選ばれました。',
+  choiceFieldMassesExact:
+    'ここで導き出したその質量は、公開された記録と最後のビットまで一致します。',
+  choiceFieldMassesDiffer: 'ここで導き出したその質量は、公開された記録と異なります。',
+  choiceFieldSummary: '{gate}{search}{masses}',
   chapterSpectrum: 'スペクトル',
   playSweep: 'スイープを再生',
   sweepCopy:
@@ -557,6 +579,16 @@ export const ja: Messages = {
   orbitDerivedValue: 'ここでは {value}',
   orbitNote:
     '映像と静止画は、作品を記録したレンダリングです。この図はその下にある軌道で、生成器そのものの手順でブラウザが計算しました。乱数の流れ、第 {index} 番の候補の選択、そして四次の吉田積分法による {steps} ステップです。',
+  afterTheFrame: 'フレームの先',
+  afterTheFrameNote:
+    '記録された時間の先でも、同じ物理が映像の速さで続きます。これは作品ではありません。作品の軌道がその後どうなるかです。',
+  orbitFate: '運命',
+  orbitFateEjection: '天体 {body} が第 {step} ステップで脱出',
+  orbitFateDance: '{steps} ステップを通じて束縛',
+  orbitBeyond: 'フレームの先 · 第 {step} ステップ · 映像の後 {clock}',
+  orbitEscaped: '天体 {body} が第 {step} ステップで脱出しました',
+  orbitHeld: '{steps} ステップのあいだ、舞は続きました',
+  toTheEjection: '脱出へ',
   // The crossing and the When lens (src/components/when-lens.tsx)
   whenLens: '時刻',
   whenLight: 'それぞれの線が描かれた時刻',

@@ -79,22 +79,38 @@ async function ready(image = images.at(-1)!) {
 }
 
 describe('expression preparation', () => {
-  it('shows the requested or Ink expression without preloading any alternative', () => {
-    const ink = renderHook(() => useArtworkExpression({ media }));
-    expect(ink.result.current.expression).toBe('ink');
-    const light = renderHook(() => useArtworkExpression({ media, initialExpression: 'light' }));
+  it('opens on the first published medium when the page gives no opening: no expression leads', () => {
+    const first = renderHook(() => useArtworkExpression({ media }));
+    expect(first.result.current.expression).toBe(media[0].id);
+    const light = renderHook(() => useArtworkExpression({ media, openingExpression: 'light' }));
     expect(light.result.current.expression).toBe('light');
     const unknown = renderHook(() =>
-      useArtworkExpression({ media, initialExpression: 'not-published' }),
+      useArtworkExpression({ media, openingExpression: 'not-published' }),
+    );
+    expect(unknown.result.current.expression).toBe(media[0].id);
+    expect(images).toHaveLength(0);
+  });
+
+  it('shows the requested or the opening expression without preloading any alternative', () => {
+    const ink = renderHook(() => useArtworkExpression({ openingExpression: 'ink', media }));
+    expect(ink.result.current.expression).toBe('ink');
+    const light = renderHook(() =>
+      useArtworkExpression({ openingExpression: 'ink', media, initialExpression: 'light' }),
+    );
+    expect(light.result.current.expression).toBe('light');
+    const unknown = renderHook(() =>
+      useArtworkExpression({ openingExpression: 'ink', media, initialExpression: 'not-published' }),
     );
     expect(unknown.result.current.expression).toBe('ink');
     expect(images).toHaveLength(0);
   });
 
   it('falls back to the first published expression or an empty safe stage', () => {
-    const first = renderHook(() => useArtworkExpression({ media: [other] }));
+    const first = renderHook(() =>
+      useArtworkExpression({ openingExpression: 'ink', media: [other] }),
+    );
     expect(first.result.current.expression).toBe('sculpture');
-    const empty = renderHook(() => useArtworkExpression({ media: [] }));
+    const empty = renderHook(() => useArtworkExpression({ openingExpression: 'ink', media: [] }));
     expect(empty.result.current.expression).toBe('light');
     act(() => empty.result.current.selectExpression('ink'));
     expect(images).toHaveLength(0);
@@ -102,7 +118,9 @@ describe('expression preparation', () => {
 
   it('keeps the current film visible until the selected still is decoded', async () => {
     const onCommit = vi.fn();
-    const { result } = renderHook(() => useArtworkExpression({ media, onCommit }));
+    const { result } = renderHook(() =>
+      useArtworkExpression({ openingExpression: 'ink', media, onCommit }),
+    );
     act(() => result.current.selectExpression('light'));
     expect(result.current).toMatchObject({
       expression: 'ink',
@@ -127,7 +145,11 @@ describe('expression preparation', () => {
 
   it('uses the inverse sweep for Ink and a dissolve for future expressions', async () => {
     const { result } = renderHook(() =>
-      useArtworkExpression({ media: [...media, other], initialExpression: 'light' }),
+      useArtworkExpression({
+        openingExpression: 'ink',
+        media: [...media, other],
+        initialExpression: 'light',
+      }),
     );
     act(() => result.current.selectExpression('ink'));
     await ready();
@@ -139,7 +161,7 @@ describe('expression preparation', () => {
   });
 
   it('keeps the current work after a decoding error and permits an explicit retry', async () => {
-    const { result } = renderHook(() => useArtworkExpression({ media }));
+    const { result } = renderHook(() => useArtworkExpression({ openingExpression: 'ink', media }));
     act(() => result.current.selectExpression('light'));
     await act(async () => images[0].reject());
     expect(result.current).toMatchObject({
@@ -155,7 +177,9 @@ describe('expression preparation', () => {
 
   it('bounds preparation to eight seconds and ignores a late decode result', async () => {
     const onCommit = vi.fn();
-    const { result } = renderHook(() => useArtworkExpression({ media, onCommit }));
+    const { result } = renderHook(() =>
+      useArtworkExpression({ openingExpression: 'ink', media, onCommit }),
+    );
     act(() => result.current.selectExpression('light'));
     act(() => vi.advanceTimersByTime(7999));
     expect(result.current.pendingExpression).toBe('light');
@@ -174,7 +198,7 @@ describe('expression preparation', () => {
   it('the latest selection wins even when prior downloads finish out of order', async () => {
     const onCommit = vi.fn();
     const { result } = renderHook(() =>
-      useArtworkExpression({ media: [...media, other], onCommit }),
+      useArtworkExpression({ openingExpression: 'ink', media: [...media, other], onCommit }),
     );
     act(() => result.current.selectExpression('light'));
     act(() => result.current.selectExpression('sculpture'));
@@ -188,7 +212,9 @@ describe('expression preparation', () => {
 
   it('reselecting the current expression cancels preparation immediately', async () => {
     const onCommit = vi.fn();
-    const { result } = renderHook(() => useArtworkExpression({ media, onCommit }));
+    const { result } = renderHook(() =>
+      useArtworkExpression({ openingExpression: 'ink', media, onCommit }),
+    );
     act(() => result.current.selectExpression('light'));
     act(() => result.current.selectExpression('ink'));
     expect(result.current.pendingExpression).toBeNull();
@@ -207,7 +233,7 @@ describe('expression preparation', () => {
       return <p data-testid="visible-expression">{expression}</p>;
     }
     function Viewer() {
-      const selection = useArtworkExpression({ media, onCommit });
+      const selection = useArtworkExpression({ openingExpression: 'ink', media, onCommit });
       return (
         <>
           <button onClick={() => selection.selectExpression('ink')}>Ink</button>
@@ -238,7 +264,7 @@ describe('expression preparation', () => {
     const original = vi.fn();
     const latest = vi.fn();
     const { result, rerender } = renderHook(
-      ({ onCommit }) => useArtworkExpression({ media, onCommit }),
+      ({ onCommit }) => useArtworkExpression({ openingExpression: 'ink', media, onCommit }),
       { initialProps: { onCommit: original } },
     );
     expect(original).not.toHaveBeenCalled();
@@ -253,7 +279,7 @@ describe('expression preparation', () => {
   });
 
   it('unknown expressions cannot interrupt a valid pending selection', async () => {
-    const { result } = renderHook(() => useArtworkExpression({ media }));
+    const { result } = renderHook(() => useArtworkExpression({ openingExpression: 'ink', media }));
     act(() => result.current.selectExpression('light'));
     act(() => result.current.selectExpression('not-published'));
     expect(result.current.pendingExpression).toBe('light');
@@ -263,7 +289,10 @@ describe('expression preparation', () => {
 
   it('a missing canonical still cannot blank out the currently displayed work', () => {
     const { result } = renderHook(() =>
-      useArtworkExpression({ media: [...media, { ...other, still: undefined }] }),
+      useArtworkExpression({
+        openingExpression: 'ink',
+        media: [...media, { ...other, still: undefined }],
+      }),
     );
     act(() => result.current.selectExpression('sculpture'));
     expect(result.current).toMatchObject({
@@ -276,7 +305,9 @@ describe('expression preparation', () => {
 
   it('cancels pending work when opening another presentation context', async () => {
     const onCommit = vi.fn();
-    const { result } = renderHook(() => useArtworkExpression({ media, onCommit }));
+    const { result } = renderHook(() =>
+      useArtworkExpression({ openingExpression: 'ink', media, onCommit }),
+    );
     act(() => result.current.selectExpression('light'));
     act(() => result.current.cancelPending());
     await ready();
@@ -287,7 +318,9 @@ describe('expression preparation', () => {
 
   it('releases timers, handlers, and requested bytes when navigating away', async () => {
     const onCommit = vi.fn();
-    const { result, unmount } = renderHook(() => useArtworkExpression({ media, onCommit }));
+    const { result, unmount } = renderHook(() =>
+      useArtworkExpression({ openingExpression: 'ink', media, onCommit }),
+    );
     act(() => result.current.selectExpression('light'));
     unmount();
     expect(images[0]).toMatchObject({ onload: null, onerror: null });
@@ -301,7 +334,9 @@ describe('expression preparation', () => {
     'still prepares the chosen image but does not animate when %s',
     async (preference) => {
       state[preference] = true;
-      const { result } = renderHook(() => useArtworkExpression({ media }));
+      const { result } = renderHook(() =>
+        useArtworkExpression({ openingExpression: 'ink', media }),
+      );
       act(() => result.current.selectExpression('light'));
       expect(result.current.expression).toBe('ink');
       await ready();
@@ -311,7 +346,9 @@ describe('expression preparation', () => {
   );
 
   it('crosses instantly while the theatre is hushed, even if the hush began mid-preparation', async () => {
-    const { result, rerender } = renderHook(() => useArtworkExpression({ media }));
+    const { result, rerender } = renderHook(() =>
+      useArtworkExpression({ openingExpression: 'ink', media }),
+    );
     act(() => result.current.selectExpression('light'));
     state.theatre = 'hushed';
     rerender();
@@ -321,7 +358,9 @@ describe('expression preparation', () => {
   });
 
   it('honors a motion preference changed while preparation is still pending', async () => {
-    const { result, rerender } = renderHook(() => useArtworkExpression({ media }));
+    const { result, rerender } = renderHook(() =>
+      useArtworkExpression({ openingExpression: 'ink', media }),
+    );
     act(() => result.current.selectExpression('light'));
     state.reducedMotion = true;
     rerender();
@@ -332,7 +371,7 @@ describe('expression preparation', () => {
 
   it('falls back to a successful load in browsers without image.decode', () => {
     supportsDecode = false;
-    const { result } = renderHook(() => useArtworkExpression({ media }));
+    const { result } = renderHook(() => useArtworkExpression({ openingExpression: 'ink', media }));
     act(() => result.current.selectExpression('light'));
     act(() => images[0].onload?.());
     expect(result.current.expression).toBe('light');
@@ -340,7 +379,7 @@ describe('expression preparation', () => {
   });
 
   it('handles a network failure without waiting for the preparation deadline', () => {
-    const { result } = renderHook(() => useArtworkExpression({ media }));
+    const { result } = renderHook(() => useArtworkExpression({ openingExpression: 'ink', media }));
     act(() => result.current.selectExpression('light'));
     act(() => images[0].onerror?.());
     expect(result.current.failedExpression).toBe('light');

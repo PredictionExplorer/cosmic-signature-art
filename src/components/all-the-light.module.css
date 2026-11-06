@@ -254,6 +254,12 @@
   }
 }
 /* A screen too short to hold the sky beneath its title gives the sky its own height. */
+/* A phone's sky runs edge to edge: the exposure is the page's subject. */
+@media (max-width: 767px) {
+  .figure {
+    margin-inline: calc(-1 * var(--gutter));
+  }
+}
 @media (max-height: 560px) {
   .frame {
     width: min(100%, calc(100svh * var(--ratio)));

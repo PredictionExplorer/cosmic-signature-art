@@ -23,6 +23,11 @@ export function generationOf(record) {
   };
 }
 
+/** The record's fate, and the threshold it was asked with, as numbers. */
+export function publishedFateOf(record) {
+  return { ...record.fate, escapeThreshold: Number(record.generation.escapeThreshold) };
+}
+
 /** The record's measurements as numbers; the registry keeps each double as its exact decimal. */
 export function publishedOf(record) {
   const { physics } = record;

@@ -253,6 +253,30 @@ test('without WebGL, the straight seam carries Light in from the right and Ink b
   await noOverflow(page);
 });
 
+test('from a plate that opened in Light, the straight seam carries Ink back from the left inside the paper wing', async ({
+  page,
+}) => {
+  await straightSeam(page);
+  await page.emulateMedia({ reducedMotion: 'no-preference' });
+  await page.goto('/art/31?expression=light&view=still', { waitUntil: 'domcontentloaded' });
+  const stage = page.locator(pageStage);
+  await expect(stage).toHaveAttribute('data-expression', 'light');
+  await imageReady(page.locator(`${current} img.art-still`));
+  await expect(page.locator('html')).toHaveAttribute('data-keys', 'ready');
+  expect(await seamInset(page)).toBe(0);
+  await turnWord(page, 'ink').click();
+  // The seam travels: the night layer's inset grows from the left, frame after frame.
+  await expect(page.locator('html')).toHaveAttribute('data-turning', 'time');
+  const first = await expect
+    .poll(() => seamInset(page), { timeout: 2000 })
+    .toBeGreaterThan(0)
+    .then(() => seamInset(page));
+  await expect.poll(() => seamInset(page), { timeout: 2000 }).toBeGreaterThan((first ?? 0) + 0.5);
+  await expect(stage).toHaveAttribute('data-expression', 'ink', { timeout: 5000 });
+  await expect(page.locator('html')).toHaveAttribute('data-room', 'paper');
+  expect(await seamInset(page)).toBe(100);
+});
+
 test('holding L peeks at Light and lets go; a tap completes the Turn', async ({ page }) => {
   await straightSeam(page);
   await page.emulateMedia({ reducedMotion: 'no-preference' });
@@ -311,7 +335,7 @@ test('the night wing is drawn by the hand where the browser can, and is a hard e
 }) => {
   await page.emulateMedia({ reducedMotion: 'no-preference' });
   await artworkReady(page);
-  const wing = page.locator('[data-night-wing]:visible');
+  const wing = page.locator('[data-wing]:visible');
   await expect(wing).toHaveAttribute('data-mode', /^(scroll|hard)$/);
   const scrollDriven = await wing.evaluate(
     (element) =>
@@ -350,6 +374,55 @@ test('the night wing is drawn by the hand where the browser can, and is a hard e
     await expect(page.locator('html')).toHaveAttribute('data-room', 'night');
     await page.evaluate(() => window.scrollTo({ top: 0, behavior: 'instant' }));
     await expect(page.locator('html')).toHaveAttribute('data-room', 'paper');
+  }
+});
+
+test('the paper wing beneath a Light plate is drawn back from the left by the hand', async ({
+  page,
+}) => {
+  await page.emulateMedia({ reducedMotion: 'no-preference' });
+  await page.goto('/art/31?expression=light&view=still', { waitUntil: 'domcontentloaded' });
+  await expect(page.locator(pageStage)).toHaveAttribute('data-expression', 'light');
+  await imageReady(page.locator(`${current} img.art-still`));
+  await expect(page.locator('html')).toHaveAttribute('data-keys', 'ready');
+  const wing = page.locator('[data-wing]:visible');
+  await expect(wing).toHaveAttribute('data-wing', 'paper');
+  await expect(wing).toHaveAttribute('data-twin', 'ink');
+  const scrollDriven = await wing.evaluate(
+    (element) =>
+      element.getAttribute('data-mode') === 'scroll' && CSS.supports('animation-timeline: view()'),
+  );
+  const { top, height, stage } = await wing.evaluate((element) => ({
+    top: element.getBoundingClientRect().top + window.scrollY,
+    height: element.getBoundingClientRect().height,
+    stage: element.firstElementChild!.getBoundingClientRect().height,
+  }));
+  if (scrollDriven) {
+    expect(await seamInset(page)).toBe(0);
+    await page.evaluate(
+      (y) => window.scrollTo({ top: y, behavior: 'instant' }),
+      top + height - stage,
+    );
+    await expect.poll(() => seamInset(page), { timeout: 3000 }).toBeGreaterThan(99);
+    await expect(page.locator('html')).toHaveAttribute('data-room', 'paper');
+    await expect(page.locator(pageStage)).toHaveAttribute('data-expression', 'light');
+    // The head stands on the Ink sheet the hand has drawn, not on the Light plate beneath it.
+    await expect(page.locator('html')).toHaveAttribute('data-plate-material', 'paper');
+    await expect(page.locator('.site-header')).toHaveCSS('color', 'rgb(34, 35, 31)');
+    await page.evaluate(() => window.scrollTo({ top: 0, behavior: 'instant' }));
+    await expect.poll(() => seamInset(page), { timeout: 3000 }).toBe(0);
+    await expect(page.locator('html')).toHaveAttribute('data-room', 'night');
+  } else {
+    // The hard edge: a second screen on paper with the same work's Ink plate.
+    const fallback = wing.locator('> div').nth(1);
+    await expect(fallback).toBeVisible();
+    await expect(fallback.locator('img.art-still')).toHaveAttribute('alt', '№ 031 · Ink');
+    await fallback.evaluate((element) =>
+      element.scrollIntoView({ block: 'start', behavior: 'instant' }),
+    );
+    await expect(page.locator('html')).toHaveAttribute('data-room', 'paper');
+    await page.evaluate(() => window.scrollTo({ top: 0, behavior: 'instant' }));
+    await expect(page.locator('html')).toHaveAttribute('data-room', 'night');
   }
 });
 
@@ -464,7 +537,7 @@ for (const preference of ['reduced motion', 'paused motion'] as const) {
       if (/\.mp4(?:\?|$)/.test(request.url())) filmRequests.push(request.url());
     });
     await artworkReady(page);
-    await expect(page.locator('[data-night-wing]:visible')).toHaveAttribute('data-mode', 'hard');
+    await expect(page.locator('[data-wing]:visible')).toHaveAttribute('data-mode', 'hard');
     await turnWord(page, 'light').click();
     await expect(page.locator(pageStage)).toHaveAttribute('data-expression', 'light');
     await expect(page.locator('html')).not.toHaveAttribute('data-turning', /./);

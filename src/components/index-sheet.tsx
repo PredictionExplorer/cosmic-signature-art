@@ -15,6 +15,7 @@ import {
   TRAIT_KEYS,
   type CompactWork,
   type Expression,
+  type Hanging,
   type TraitKey,
 } from '@/lib/art/collection-traits';
 import { workFolio, workNumber } from '@/lib/art/number';
@@ -29,14 +30,14 @@ import {
 } from '@/lib/i18n/routing';
 import { NAVIGATION, NAVIGATION_LABEL } from '@/lib/navigation';
 import { useMediaPolicy } from './media-policy';
+import { useDayExpression } from './venue-day';
 import { useMotion } from './motion-provider';
 import { PreviewImage } from './preview-image';
 import { closeSheet, useOpenSheet } from './sheets-store';
+import { EXPRESSION_KEY } from '@/lib/storage-keys';
 import styles from './index-sheet.module.css';
 
 export type { Expression };
-/** The session remembers the chosen expression beside the motion preference; a new visit opens on Ink. */
-export const EXPRESSION_KEY = 'cosmic-art-expression-v1';
 const TRAIT_LABEL: Record<TraitKey, keyof Messages> = {
   structure: 'structure',
   underlay: 'underlay',
@@ -123,17 +124,30 @@ export function collectionHref(
   // A search is a view of the number ordering; choosing an ordering leaves it, as the page does.
   if ('order' in changes && !('q' in changes)) next.delete('q');
   for (const [key, value] of Object.entries(changes)) {
-    if (value === null || value === '' || value === 'number' || value === 'ink') next.delete(key);
+    if (value === null || value === '' || value === 'number' || value === 'both') next.delete(key);
     else next.set(key, value);
   }
   const query = next.toString();
   return localizedPath(locale, `/collection${query ? `?${query}` : ''}`);
 }
 
-export function readExpression(params: URLSearchParams, remembered?: string | null): Expression {
-  if (params.get('expression') === 'light') return 'light';
-  if (params.get('expression') === 'ink') return 'ink';
-  return remembered === 'light' ? 'light' : 'ink';
+/** The collection's hanging, as its URL names it: one expression alone, or both across the seam. */
+export function readHanging(params: URLSearchParams): Hanging {
+  const value = params.get('expression');
+  return value === 'ink' || value === 'light' ? value : 'both';
+}
+
+/**
+ * The expression the sheet shows a work in behind its numeral, and opens it on: the hanging's,
+ * when it hangs one alone; else the session's remembered choice; else the day's.
+ */
+export function seenExpression(
+  hanging: Hanging,
+  remembered: string | null | undefined,
+  day: Expression,
+): Expression {
+  if (hanging !== 'both') return hanging;
+  return remembered === 'ink' || remembered === 'light' ? remembered : day;
 }
 
 function rememberedExpression(): string | null {
@@ -153,10 +167,16 @@ export function IndexSheet({
   works,
   locale,
   t,
+  poolSize,
+  pinned,
 }: {
   works: CompactWork[];
   locale: Locale;
   t: Messages;
+  /** The day's-work pool's size, so the sheet knows today's expression for itself. */
+  poolSize: number;
+  /** The server's pin of the venue's day (COSMIC_VENUE_DATE), when it has one. */
+  pinned?: string;
 }) {
   const open = useOpenSheet() === 'index';
   const pathname = usePathname();
@@ -190,7 +210,16 @@ export function IndexSheet({
         closeSheet('index');
       }}
     >
-      {open ? <SheetBody works={works} locale={locale} t={t} pathname={pathname} /> : null}
+      {open ? (
+        <SheetBody
+          works={works}
+          locale={locale}
+          t={t}
+          pathname={pathname}
+          poolSize={poolSize}
+          pinned={pinned}
+        />
+      ) : null}
     </dialog>
   );
 }
@@ -201,11 +230,15 @@ function SheetBody({
   locale,
   t,
   pathname,
+  poolSize,
+  pinned,
 }: {
   works: CompactWork[];
   locale: Locale;
   t: Messages;
   pathname: string;
+  poolSize: number;
+  pinned?: string;
 }) {
   const [active, setActive] = useState<number | null>(null);
   const coarse = useSyncExternalStore(subscribeCoarse, isCoarse, fineOnServer);
@@ -218,8 +251,18 @@ function SheetBody({
     () => '',
   );
   const remembered = useSyncExternalStore(noSubscription, rememberedExpression, () => null);
-  const params = useMemo(() => new URLSearchParams(search), [search]);
-  const expression = readExpression(params, remembered);
+  const day = useDayExpression(poolSize, pinned);
+  const unlocalized = unlocalizedPath(pathname);
+  // An ordering is the page only on the collection it orders. Elsewhere the page's own query
+  // (a work's ?expression=, its view) says nothing about the collection: its links start afresh,
+  // with both expressions hung.
+  const onCollection = unlocalized === '/collection';
+  const params = useMemo(
+    () => (onCollection ? new URLSearchParams(search) : new URLSearchParams()),
+    [onCollection, search],
+  );
+  const hanging = readHanging(params);
+  const expression = seenExpression(hanging, remembered, day);
   const cycles = useMemo(() => cyclesOf(works), [works]);
   const facets = useMemo(() => facetsOf(works), [works]);
   const byId = useMemo(() => new Map(works.map((work) => [work.id, work])), [works]);
@@ -268,8 +311,10 @@ function SheetBody({
       : (compactPreviewUrl(activeWork, 'ink') ?? compactPreviewUrl(activeWork, 'light'))
     : undefined;
   const wallMaterial = activeWork && !activeWork.previews?.ink ? 'light' : expression;
+  // A work opens on the hanging's expression when one hangs alone; otherwise the work page
+  // follows the session's choice or the day's, as the sheet's wall does.
   const workHref = (id: number) =>
-    localizedPath(locale, `/art/${id}${expression === 'light' ? '?expression=light' : ''}`);
+    localizedPath(locale, `/art/${id}${hanging !== 'both' ? `?expression=${hanging}` : ''}`);
   const date = (iso?: string) =>
     iso
       ? new Intl.DateTimeFormat(locale, { dateStyle: 'long', timeZone: 'UTC' }).format(
@@ -279,10 +324,6 @@ function SheetBody({
   const chipHref = (key: string, value: string) =>
     collectionHref(locale, params, { [key]: params.get(key) === value ? null : value });
   const filtering = ['cycle', ...TRAIT_KEYS].some((key) => params.get(key));
-  const unlocalized = unlocalizedPath(pathname);
-  // An ordering is the page only on the collection it orders; elsewhere the expression is still
-  // the session's current one, since the wall and every link follow it.
-  const onCollection = unlocalized === '/collection';
   const close = () => closeSheet('index');
 
   /** A tap focuses a link in some browsers; only focus a keyboard made visible hangs a work there. */
@@ -324,16 +365,23 @@ function SheetBody({
             </Link>
           ))}
           <span className={styles.divider} aria-hidden="true" />
-          {(['ink', 'light'] as const).map((value) => (
-            <Link
-              key={value}
-              href={collectionHref(locale, params, { expression: value })}
-              aria-current={expression === value ? (onCollection ? 'page' : 'true') : undefined}
-              onClick={close}
-            >
-              {t[value]}
-            </Link>
-          ))}
+          {(['ink', 'light'] as const).map((value) => {
+            // Each word hangs its expression alone, and hangs both again once it is alone; the
+            // word is its name, the current one is marked, and its description says what it does.
+            const alone = onCollection && hanging === value;
+            const action = alone ? t.hangTogether : fill(t.hangAlone, { expression: t[value] });
+            return (
+              <Link
+                key={value}
+                href={collectionHref(locale, params, { expression: alone ? 'both' : value })}
+                aria-current={alone ? 'true' : undefined}
+                title={action}
+                onClick={close}
+              >
+                {t[value]}
+              </Link>
+            );
+          })}
         </nav>
         {unlocalized.startsWith('/auctions') ? null : (
           <nav aria-label={t.collectionViews} className={`${styles.orderings} ${styles.views}`}>
@@ -361,7 +409,7 @@ function SheetBody({
               autoComplete="off"
             />
           </label>
-          {expression === 'light' ? <input type="hidden" name="expression" value="light" /> : null}
+          {hanging !== 'both' ? <input type="hidden" name="expression" value={hanging} /> : null}
           <button type="submit">{t.find}</button>
         </form>
         <button type="button" className={styles.close} onClick={close}>
@@ -369,6 +417,7 @@ function SheetBody({
         </button>
       </div>
       <div className={styles.wall} data-material={wallMaterial} aria-hidden="true" onClick={close}>
+        {!wallSource && coarse ? <p className={styles.wallHint}>{t.indexWallHint}</p> : null}
         {wallSource ? (
           <PreviewImage
             key={wallSource}

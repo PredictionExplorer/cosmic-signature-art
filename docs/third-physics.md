@@ -188,7 +188,7 @@ This needs two things:
 - the step ↔ film-time map verified per film. Light is 1,802 frames for the 1,000,000 recorded steps, to be confirmed. The Ink films carry their own timing and pre-roll, as [art-presentation-research.md](art-presentation-research.md) warns.
 - a port of `detect_syzygies` and the braid crossing detector, verified against the published counts and the braid word.
 
-### 5.6 After the frame: fate
+### 5.6 After the frame: fate *(built)*
 
 The traits say *Eternal Dance* or *Ejection*. The generator decided this over an 8,000,000-step horizon, longer than the film. When a film resolves into its still, the venue can offer what no film shows: `After the frame`. The re-performance continues past the recorded window at the same pace. For an ejection, the escaping body leaves the drawing at the published `ejection_step`; for an eternal dance, the orbit keeps turning until the visitor leaves.
 
@@ -202,7 +202,7 @@ This is a physical index beside All the light: every work's orbit re-performed a
 
 It is the only thumbnail wall on the web whose thumbnails are physics rather than pictures.
 
-### 5.8 The Overture: the art condenses out of its physics
+### 5.8 The Overture: the art condenses out of its physics *(version 1 built)*
 
 The home page on a first visit:
 1. **0 s.** Black, and the day's work's three bodies begin their orbit, live and verified.
@@ -222,7 +222,7 @@ The generator chooses a cycle's eight orbits in stage 1, hours before the render
 
 This is the true order of making, staged as the event. Readiness and eligibility stay separate facts; there is no clock but the contract's.
 
-### 5.10 The choice
+### 5.10 The choice *(built)*
 
 The process essay's first chapter re-derives all 100,000 beginnings of the day's work in the visitor's browser and shows them as a field of energy against angular momentum, with the chosen one ringed. The Borda weights sit beside it.
 - The text is exact: every beginning passed the quick gate, every one was set in motion in the studio for up to 1,000,000 steps, and one was chosen.
@@ -246,7 +246,7 @@ This is a public page beside Verify a download. Enter any token number, and the 
 
 - **Home:**
   1. the Overture (first visit only);
-  2. the day's work in Ink, with the crossing to Light;
+  2. the day's work in the day's expression, with the crossing to the other (Ink first until 4 November 2026; see [third-physics-phase-d.md](third-physics-phase-d.md) §2);
   3. the score of its film;
   4. All the light, as the door to the collection;
   5. the statement;
@@ -308,7 +308,7 @@ Each phase ships behind a flag, on its own branch, with the existing seven-proje
 
 **Phase C — the indexes (2–3 weeks).** *Built 30 October 2026; see [third-physics-phase-c.md](third-physics-phase-c.md).* All the light, with naming, pull-out and the cycle replay; the Orrery; both added to the Index sheet.
 
-**Phase D — the events (3–4 weeks).**
+**Phase D — the events (3–4 weeks).** *Begun 4 November 2026 with two equal expressions and phones; see [third-physics-phase-d.md](third-physics-phase-d.md).*
 - The Overture, version 1 then version 2 with drift registration.
 - After the frame.
 - The choice in the process essay.
@@ -341,7 +341,7 @@ Each phase ships behind a flag, on its own branch, with the existing seven-proje
 ## 11. Decisions for the owner
 
 1. **Direction.** Adopt Third Physics on top of Two Grounds, including the rule changes in §7.
-2. **The Overture.** Should it replace the Dusk as the home's one timed event on first visits?
+2. **The Overture.** Should it replace the Dusk as the home's one timed event on first visits? *Yes (owner, 4 November 2026); version 1 is built, [third-physics-phase-d.md](third-physics-phase-d.md) §7.*
 3. **Derived views.** Should All the light and the When lens be public, labelled as analysis?
 4. **Pipeline.** Will the generator team publish the stream offset (or initial state) and early traits, and consider a WebAssembly build of `sim.rs`?
 5. **Order of work.** The recommendation is Phase A then B, because the re-performance underpins everything else and the crossing is the most visible change.

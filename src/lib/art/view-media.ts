@@ -7,11 +7,11 @@ import type { ArtInterpretation, Artwork } from './types';
  * spread shows a still, offers the ladder its width can select, and may play its excerpt or
  * settling clip under the lease, so everything else only weighs the payload down.
  *
- * - `card`: a browsing plate. Keeps the still, the preview, the ladder and the Ink motion
- *   it may play; drops the complete films, the opening clip, the master and the loupe's
- *   windows.
- * - `still`: a plate that never moves (a Light view, a hang's leaf, a spread without the
- *   lease). Keeps the images and the ladder only.
+ * - `card`: a browsing plate. Keeps the still, the preview, the ladder and the motion it may
+ *   play (Ink's excerpt and settling clip, Light's settling clip); drops the complete films,
+ *   the opening clip, the master and the loupe's windows.
+ * - `still`: a plate that never moves (a hang's leaf, a spread without the lease). Keeps the
+ *   images and the ladder only.
  */
 export type MediaView = 'card' | 'still';
 
@@ -31,7 +31,7 @@ export function mediaForView(media: ArtInterpretation, view: MediaView): ArtInte
     availability: media.availability,
   };
   if (media.rungs) trimmed.rungs = media.rungs;
-  if (view === 'card' && media.id === 'ink') {
+  if (view === 'card' && (media.id === 'ink' || media.id === 'light')) {
     if (media.previewFilm) trimmed.previewFilm = media.previewFilm;
     if (media.settlingFilm) trimmed.settlingFilm = media.settlingFilm;
   }

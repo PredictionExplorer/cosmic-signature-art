@@ -1,14 +1,31 @@
 import { parentPort } from 'node:worker_threads';
-import { generationOf, publishedOf } from './orbit-verify.mjs';
+import { generationOf, publishedFateOf, publishedOf } from './orbit-verify.mjs';
 
-const { compare, rederive } = await import('../../src/lib/physics/orbit.ts');
+const { compare, compareFate, deriveFate, rederive } =
+  await import('../../src/lib/physics/orbit.ts');
 
 parentPort.on('message', (record) => {
   try {
-    const derived = rederive(generationOf(record), { stride: 1_000_000 });
+    const generation = generationOf(record);
+    const derived = rederive(generation, { stride: 1_000_000 });
+    // The fate runs on from the window's first step to the record's horizon.
+    const published = publishedFateOf(record);
+    const fate = deriveFate(
+      {
+        masses: derived.masses,
+        dt: generation.dt,
+        positions: derived.windowStart.positions,
+        velocities: derived.windowStart.velocities,
+      },
+      {
+        steps: generation.steps,
+        threshold: published.escapeThreshold,
+        horizonSteps: published.horizonSteps,
+      },
+    );
     parentPort.postMessage({
       id: record.id,
-      comparisons: compare(publishedOf(record), derived),
+      comparisons: [...compare(publishedOf(record), derived), compareFate(published, fate)],
       profileDraws: derived.profileDraws,
       attempt: derived.attempt,
       milliseconds: derived.milliseconds,

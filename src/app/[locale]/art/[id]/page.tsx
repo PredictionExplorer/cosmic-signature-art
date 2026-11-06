@@ -27,6 +27,8 @@ import { OrbitScore } from '@/components/orbit-score';
 import { workOrbit } from '@/lib/art/orbit-records';
 import recordStyles from '@/components/artwork-record.module.css';
 import { artworkViewParams } from '@/lib/art/view';
+import { knownExpressions, openingExpression, openingOn } from '@/lib/art/opening';
+import { expressionOfTheDay } from '@/lib/art/work-of-the-day';
 
 export async function generateMetadata({
   params,
@@ -47,14 +49,6 @@ export async function generateMetadata({
     workNumber(tokenId),
     indexedWork(tokenId)?.description ?? t.statementLine,
     indexedWork(tokenId) ? null : artworkSharingImage(artwork, `${workNumber(tokenId)} · ${t.ink}`),
-  );
-}
-
-/** The expression the plate opens on: the request's, else Ink, else the first published. */
-function openingExpression(work: Artwork, requested?: string) {
-  return (
-    work.media.find((item) => item.id === requested)?.id ??
-    (work.media.some((item) => item.id === 'ink') ? 'ink' : work.media[0]?.id)
   );
 }
 
@@ -110,21 +104,19 @@ export default async function ArtworkPage({
   const requestedExpression = view.get('expression') ?? undefined;
   // A curated work paints at once from the identity-verified registry while its live
   // record streams, but only when the registry holds the expression the plate opens on:
-  // Ink is the first encounter, and a registry with Light alone must not decide otherwise.
-  // The record for any other work must arrive before the page can exist.
+  // the request's, else the day's (src/lib/art/opening.ts). A registry without that
+  // expression must not decide otherwise. The record for any other work must arrive before
+  // the page can exist.
   const indexed = indexedWork(tokenId);
   const registry = getCuratedArtwork(tokenId);
   // Only an expression the registry or the index publishes may shape the opening; anything
-  // else is dropped here, so the plate still opens on Ink from the registry's own bytes.
-  const published = (expression: string) =>
-    registry?.media.some((item) => item.id === expression) ||
-    (expression === 'ink' && !!indexed?.media.ink) ||
-    (expression === 'light' && !!indexed?.media.light);
+  // else is dropped here, so the plate still opens from the registry's own bytes.
+  const published = knownExpressions(registry, indexed);
   const initialExpression =
     requestedExpression && (!indexed && !registry ? true : published(requestedExpression))
       ? requestedExpression
       : undefined;
-  const opening = initialExpression ?? (indexed?.media.ink || !indexed ? 'ink' : 'light');
+  const opening = initialExpression ?? openingExpression(published) ?? expressionOfTheDay();
   const curated = registry?.media.some((item) => item.id === opening && item.still)
     ? registry
     : undefined;
@@ -145,7 +137,7 @@ export default async function ArtworkPage({
         </Link>
       </main>
     );
-  const expression = openingExpression(work, initialExpression);
+  const expression = openingOn(work, initialExpression);
   // Both grounds paint from the HTML: the Turn's twin is decoded before the key is honoured.
   const inlinePreviews = curated
     ? {
@@ -163,10 +155,12 @@ export default async function ArtworkPage({
         locale={locale}
         initialStill={initialStill}
         initialExpression={initialExpression}
+        openingExpression={expression}
         inlinePreviews={inlinePreviews}
         live={curated ? live.then((result) => result.artwork) : undefined}
         traits={{ structure: indexed?.traits.structure, underlay: indexed?.traits.underlay }}
         neighbours={neighboursFor(tokenId)}
+        afterTheFrame={!!orbit}
       />
       {orbit ? <OrbitScore key={tokenId} orbit={orbit} t={t} locale={locale} /> : null}
       <div className="section-wrap">

@@ -249,6 +249,7 @@ export const zhTW: Messages = {
   statement: '自述',
   index: '索引',
   indexSheet: '藏品索引',
+  indexWallHint: '輕觸編號，作品便掛在這裡；再觸一次即可進入。',
   closeIndex: '關閉索引',
   keys: '按鍵',
   keysSheet: '鍵盤快速鍵',
@@ -286,6 +287,8 @@ export const zhTW: Messages = {
   // 版面與翻轉
   showLight: '顯示光的表達',
   showInk: '顯示墨的表達',
+  hangAlone: '僅{expression}',
+  hangTogether: '墨與光並置',
   noInkPublished: '尚未發布墨的表達',
   previousWork: '上一件作品',
   nextWork: '下一件作品',
@@ -359,6 +362,22 @@ export const zhTW: Messages = {
   // 過程，重新分章
   chapterChoice: '遴選',
   chapterChoiceCopy: '十萬條候選軌道被評分；一條被選中。',
+  // The choice, derived here (src/components/choice-field.tsx)
+  choiceFieldCaption:
+    '每個點都是由種子抽取的 {total} 組初始條件之一，即三個天體在第一步之前的質量、位置和速度；橫向按總能量、縱向按角動量排布，兩軸均為對數刻度。',
+  choiceFieldWaiting: '當你來到這裡，{total} 組初始條件便在此推導。',
+  choiceFieldProgress: '推導初始條件 · {done} / {total}',
+  choiceFieldDerived: '{total} 組初始條件已全部在此瀏覽器中推導完成，用時 {seconds} 秒。',
+  choiceFieldUnavailable: '這個瀏覽器無法推導這些初始條件。遴選按已發布的原樣顯示，未經核對。',
+  choiceFieldAllPassed:
+    '全部 {total} 組都通過了工作室的快速篩選：能量不高於 {energy}，角動量不低於 {momentum}。',
+  choiceFieldSomePassed:
+    '工作室的快速篩選（能量不高於 {energy}，角動量不低於 {momentum}）從 {total} 組中剔除了 {failed} 組；{passed} 組通過。',
+  choiceFieldSearch:
+    '隨後，每一組都在工作室中運行至多 {steps} 步並評分；整個搜尋至多 {search} 步，無法在瀏覽器中執行。被圈出的第 {index} 號被選中。',
+  choiceFieldMassesExact: '它在此推導出的質量與已發布的紀錄一致，精確到最後一位。',
+  choiceFieldMassesDiffer: '它在此推導出的質量與已發布的紀錄不同。',
+  choiceFieldSummary: '{gate}{search}{masses}',
   chapterSpectrum: '光譜',
   playSweep: '播放光譜掃描',
   sweepCopy: '已發布的十秒光譜掃描讓作品的調色盤穿過可見光，從 380 到 700 nm。',
@@ -532,6 +551,16 @@ export const zhTW: Messages = {
   orbitDerivedValue: '此處：{value}',
   orbitNote:
     '影片與靜態影像是作品的紀錄渲染。這幅圖是它們之下的軌道，由你的瀏覽器按生成器自己的順序計算：它的隨機流、第 {index} 號候選的選擇，以及四階 Yoshida 積分器的 {steps} 步。',
+  afterTheFrame: '畫面之後',
+  afterTheFrameNote:
+    '越過記錄的時段，同樣的物理以影片的速度繼續運行。這不是作品：這是作品的軌道接下來的樣子。',
+  orbitFate: '命運',
+  orbitFateEjection: '天體 {body} 在第 {step} 步逃逸',
+  orbitFateDance: '在 {steps} 步內始終束縛',
+  orbitBeyond: '畫面之後 · 第 {step} 步 · 影片之後 {clock}',
+  orbitEscaped: '天體 {body} 已在第 {step} 步逃逸',
+  orbitHeld: '這支舞持續了全部 {steps} 步',
+  toTheEjection: '前往逃逸',
   // The crossing and the When lens (src/components/when-lens.tsx)
   whenLens: '時刻',
   whenLight: '每一筆被畫出的時刻',

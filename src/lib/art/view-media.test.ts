@@ -38,11 +38,14 @@ describe('media for a view', () => {
     expect(card).not.toHaveProperty('master');
   });
 
-  it('gives a Light card and any still view the images and the ladder alone', () => {
+  it('gives a Light card its settling clip, as Ink has, and any still view the images alone', () => {
     const lightCard = mediaForView(light(), 'card');
     expect(lightCard.rungs).toEqual(light().rungs);
-    expect(lightCard).not.toHaveProperty('settlingFilm');
-    expect(lightCard).not.toHaveProperty('previewFilm');
+    expect(lightCard.settlingFilm?.id).toBe('settling');
+    expect(lightCard.settlingFilm).toEqual(light().settlingFilm);
+    expect(lightCard.films).toEqual([]);
+    expect(lightCard).not.toHaveProperty('openingFilm');
+    expect(mediaForView(light(), 'still')).not.toHaveProperty('settlingFilm');
     const still = mediaForView(ink(), 'still');
     expect(still).not.toHaveProperty('settlingFilm');
     expect(still).not.toHaveProperty('previewFilm');
