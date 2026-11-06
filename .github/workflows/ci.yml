@@ -9,12 +9,9 @@ concurrency:
   group: gallery-${{ github.ref }}
   cancel-in-progress: true
 jobs:
-  verify:
+  checks:
     runs-on: ubuntu-latest
-    timeout-minutes: 60
-    env:
-      # One venue day for the build and the browser suite: its work and its expression.
-      COSMIC_VENUE_DATE: '2026-11-06'
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
       - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
@@ -31,16 +28,89 @@ jobs:
       - run: npm run test:coverage
       - run: npm run test:scripts
       - run: npm run test:fonts
+      - uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v5
+        if: always()
+        with:
+          name: unit-coverage
+          path: coverage/
+          retention-days: 14
+
+  # The browser suite, one project to a runner. On one runner its seven projects took 41 to 57
+  # minutes and outgrew the hour a job is given; apart, the longest takes about ten, and each
+  # runner installs only its own engine.
+  browsers:
+    name: browsers (${{ matrix.project }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { project: chromium-desktop, engine: chromium }
+          - { project: firefox-desktop, engine: firefox }
+          - { project: webkit-desktop, engine: webkit }
+          - { project: chromium-mobile, engine: chromium }
+          - { project: webkit-mobile, engine: webkit }
+          - { project: chromium-reduced-motion, engine: chromium }
+          - { project: webkit-reduced-motion, engine: webkit }
+    env:
+      # One venue day for the build and the browser suite: its work and its expression.
+      COSMIC_VENUE_DATE: '2026-11-06'
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
       - run: npm run build
+      # A slow package mirror once took 41 minutes over this step. It should fail the job, not
+      # spend it.
+      - run: npx playwright install --with-deps ${{ matrix.engine }}
+        timeout-minutes: 10
+      - run: npm run test:e2e -- --project=${{ matrix.project }}
+      - uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v5
+        if: always()
+        with:
+          name: browsers-${{ matrix.project }}
+          path: |
+            playwright-report/
+            test-results/
+          retention-days: 14
+
+  auction:
+    name: auction harness
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
       - run: npx playwright install --with-deps chromium firefox webkit
-      - run: npm run test:e2e
+        timeout-minutes: 10
       - run: npm run test:auction-ui
       - uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v5
         if: always()
         with:
-          name: gallery-verification
-          path: |
-            coverage/
-            playwright-report/
-            test-results/
+          name: auction-harness
+          path: test-results/auction-harness/
           retention-days: 14
+
+  # One check that stands for every job, so a pull request reads green only when all of them
+  # passed. It runs even when one failed or was cancelled, and then fails itself.
+  verify:
+    if: always()
+    needs: [checks, browsers, auction]
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Every job passed
+        if: contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled') || contains(needs.*.result, 'skipped')
+        env:
+          RESULTS: ${{ toJSON(needs) }}
+        run: |
+          echo "$RESULTS"
+          exit 1
