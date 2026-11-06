@@ -52,9 +52,12 @@
   color: var(--muted);
   white-space: nowrap;
 }
+/* The state is a word, not a reading: Literata's true small capitals (Plex Mono has none, and
+   the browser would only shrink its capitals). The clock beside it stays mono. */
 .state {
+  font-family: var(--font-book);
   font-variant-caps: all-small-caps;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.06em;
   flex-basis: 100%;
   text-align: end;
   line-height: 1.5;

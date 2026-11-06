@@ -181,7 +181,10 @@
 .word {
   line-height: 1.6;
 }
+/* The derived value is said, not read off the instrument: Literata's true italic (the venue
+   ships Plex Mono upright only, and a slanted mono would be a fake). */
 .derivedValue {
+  font-family: var(--font-book);
   font-style: italic;
 }
 .proof td.check {
