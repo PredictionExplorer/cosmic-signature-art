@@ -154,10 +154,6 @@ async function noOverflow(page: Page) {
 test('the plate is painted from an inline preview before the full still arrives', async ({
   page,
 }) => {
-  test.skip(
-    test.info().project.name === 'webkit-reduced-motion',
-    "Headless WebKit under reduced-motion emulation fires no requestAnimationFrame before load, so React's streamed Suspense reveal waits for the held still; the preview-first contract is proved by every other project.",
-  );
   // Hold the full still in flight: the ladder must stand on its first rung meanwhile.
   let release!: () => void;
   const held = new Promise<void>((resolve) => {
@@ -474,10 +470,6 @@ test('a finger carries the seam: past 40 % the Turn completes, short of it the s
 test('a slower expression keeps the current work visible and the latest choice wins', async ({
   page,
 }) => {
-  test.skip(
-    test.info().project.name === 'webkit-reduced-motion',
-    "The held Light still now also holds the twin layer's eager image and so the page's load; headless WebKit under reduced-motion emulation reveals the streamed page only after load. Every other project proves the contract.",
-  );
   let release!: () => void;
   const held = new Promise<void>((resolve) => {
     release = resolve;
