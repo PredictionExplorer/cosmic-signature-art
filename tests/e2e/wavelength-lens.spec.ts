@@ -75,6 +75,16 @@ test('the Wavelength lens holds 031’s sweep where the keys choose: readout, sl
 }) => {
   // Each held wavelength is a seek through full-size frames, decoded in software on CI.
   test.slow();
+  // Every film the page asks to play, by its source: the sweep must never be among them.
+  await page.addInitScript(() => {
+    const play = HTMLMediaElement.prototype.play;
+    const asked: string[] = [];
+    Object.assign(window, { __playsAsked: asked });
+    HTMLMediaElement.prototype.play = function (this: HTMLMediaElement) {
+      asked.push(this.currentSrc || this.getAttribute('src') || '');
+      return play.call(this);
+    };
+  });
   const sweeps: string[] = [];
   page.on('request', (request) => {
     if (/\/videos\/web\/spectral_sweep\.mp4$/.test(new URL(request.url()).pathname))
@@ -111,13 +121,16 @@ test('the Wavelength lens holds 031’s sweep where the keys choose: readout, sl
   await heldAt(dialog, min + 10);
   await page.keyboard.press('End');
   await heldAt(dialog, max);
-  // It held frames; it never played one after another.
+  // It held frames; it never played one after another. The page never asked the sweep to play.
+  // (Its played ranges are no witness: WebKit on Linux counts a frame sought while paused.)
+  expect(await video.evaluate((element) => (element as HTMLVideoElement).paused)).toBe(true);
   expect(
-    await video.evaluate((element) => {
-      const film = element as HTMLVideoElement;
-      return { paused: film.paused, played: film.played.length };
-    }),
-  ).toEqual({ paused: true, played: 0 });
+    await page.evaluate(() =>
+      (window as unknown as { __playsAsked: string[] }).__playsAsked.filter((source) =>
+        /\/videos\/web\/spectral_sweep\.mp4$/.test(source),
+      ),
+    ),
+  ).toEqual([]);
   await page.keyboard.press('?');
   await expect(dialog.getByLabel(t.roomKeys)).toContainText(t.keyWavelength);
   await page.keyboard.press('?');
