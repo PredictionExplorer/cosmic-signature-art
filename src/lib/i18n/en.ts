@@ -319,6 +319,8 @@ export const en = {
   lightMedium: 'Light: luminous orbit ribbons on black.',
   filmsWord: 'films',
   spectralSweep: 'spectral sweep',
+  /** The sweep as a word in a list of films (the room's sources); spectralSweep runs in text. */
+  sweepFilm: 'Spectral sweep',
   mintedTo: 'Minted to',
   heldBy: 'held by',
   recordAsOf: 'Arbitrum record as of {date}',
@@ -540,6 +542,28 @@ export const en = {
   verifyTooLarge:
     'This file is too large to verify in the browser. Run the command below and compare the result with the published hashes.',
   verifyFailed: 'The file could not be read.',
+  // Verify an orbit (src/components/orbit-verifier.tsx, orbit-picker.tsx)
+  verifyOrbit: 'Verify an orbit',
+  verifyOrbitIntro:
+    'Choose a work by its number. This browser derives its orbit again from the seed, with the generator’s own arithmetic, and prints the comparison with the published record, line by line.',
+  verifyOrbitNumber: 'Work number',
+  verifyOrbitGo: 'Verify',
+  verifyOrbitUnknown: '{work} has no published record.',
+  verifyOrbitWorks: 'Every work with a published record',
+  verifyOrbitOf: 'Verify the orbit of {work}',
+  verifyOrbitWorkIntro:
+    'This browser derives the orbit of {work} again from its seed, then checks every measurement in its published record, line by line.',
+  verifyOrbitLineByLine: 'The derivation, line by line',
+  verifyOrbitWaiting: 'The derivation begins here once the page is ready.',
+  verifyOrbitSeedLine: 'Seed {seed}',
+  verifyOrbitFateRun: 'Past the window, for the fate · up to step {steps}',
+  verifyOrbitAt: '{seconds} s',
+  verifyOrbitTook: 'Checked here in {seconds} s.',
+  verifyOrbitUnchecked: 'unchecked',
+  verifyOrbitSomeUnchecked: '{count} of {total} measurements could not be checked in this browser.',
+  verifyOrbitAnother: 'Verify another',
+  verifyOrbitNote:
+    'The arithmetic is the generator’s own: its random stream, read as far as candidate {index}; {steps} steps of a fourth-order Yoshida integrator; then on past the window for the fate. It uses only addition, subtraction, multiplication, division and the square root, each defined exactly by the standard, so any browser reaches the same bits. Nothing is sent anywhere.',
   publishedHashes: 'Published hashes',
   sharingCollection: 'Collection · {count} works',
   // The orbit, re-performed (src/components/orbit-score.tsx)
@@ -590,6 +614,10 @@ export const en = {
   orbitEscaped: 'Body {body} has escaped, at step {step}',
   orbitHeld: 'The dance held through all {steps} steps',
   toTheEjection: 'To the ejection',
+  // The score in the film's transport (src/components/film-score-band.tsx)
+  filmPhysics: 'bodies {pair} · {distance} apart',
+  toClosestApproach: 'Closest approach',
+  closestApproachAt: 'Open the film just before the closest approach, {clock} in',
   // The crossing and the When lens (src/components/when-lens.tsx)
   whenLens: 'When',
   whenLight: 'When each mark was drawn',
@@ -601,6 +629,14 @@ export const en = {
   analysisNotWork: 'Analysis, not the work',
   keyWhen: 'When: each mark coloured by its moment in the film',
   whenUnavailable: 'This browser could not draw the When lens; the still stands in.',
+  // The Wavelength lens (src/components/wavelength-lens.tsx)
+  wavelengthLens: 'Wavelength',
+  wavelengthCaption: 'The sweep at one wavelength',
+  wavelengthValue: '{n} nanometres',
+  wavelengthAlt: '{plate} · the spectral sweep held at {n} nm. Analysis, not the work.',
+  wavelengthLoading: 'Loading the sweep…',
+  keyWavelength: 'Wavelength: the spectral sweep held at one wavelength; ← → choose it',
+  wavelengthUnavailable: 'The spectral sweep cannot be shown here; the still stands in.',
   // The indexes: the Orrery and All the light (src/components/orrery.tsx, all-the-light.tsx)
   orrery: 'Orrery',
   orreryTitle: 'The Orrery',

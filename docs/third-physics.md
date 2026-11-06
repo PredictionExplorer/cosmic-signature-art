@@ -154,7 +154,7 @@ Each invention is given with what the visitor meets, why only this art can have 
 
 ![Night blooms from the orbit's core](../concepts/third-physics-v1/screenshots/03-crossing-night-spreads.jpg)
 
-### 5.3 Three lenses: When, Wavelength, Detail *(When built)*
+### 5.3 Three lenses: When, Wavelength, Detail *(built)*
 
 Museums show a painting in infrared and X-ray. This venue gets three truthful lenses on every plate:
 - **When**, the arrival map coloured from early to late over the marks themselves;
@@ -176,7 +176,7 @@ Each lens is labelled *analysis, not the work* and is never used on a sharing ca
 
 ![All the light](../concepts/third-physics-v1/screenshots/06-all-the-light.jpg)
 
-### 5.5 The score: the transport becomes physics
+### 5.5 The score: the transport becomes physics *(built)*
 
 The 1 px time line under every playing film becomes the orbit's score:
 - the three pairwise separations, at 1 px;
@@ -187,6 +187,8 @@ A visitor can jump the film to *the closest approach*. During playback the label
 This needs two things:
 - the step ↔ film-time map verified per film. Light is 1,802 frames for the 1,000,000 recorded steps, to be confirmed. The Ink films carry their own timing and pre-roll, as [art-presentation-research.md](art-presentation-research.md) warns.
 - a port of `detect_syzygies` and the braid crossing detector, verified against the published counts and the braid word.
+
+*As built:* both are settled for Light. Its map is confirmed at 1,802 frames, and the port's measurements are the record's to the last bit. The score runs under the Light film on the plate and in the room. The Ink films keep their plain time line until their own timing is mapped. See [third-physics-phase-e.md](third-physics-phase-e.md) §1.
 
 ### 5.6 After the frame: fate *(built)*
 
@@ -236,7 +238,7 @@ The artist's newer interpretations of the same frozen orbit are a cloth simulati
 - The Two Grounds tokens become a ground registry.
 - Nothing ships as a promise: a material appears on a work only when its package exists.
 
-### 5.12 Verify an orbit
+### 5.12 Verify an orbit *(built)*
 
 This is a public page beside Verify a download. Enter any token number, and the browser re-derives its orbit and prints the comparison, line by line. It is the collection's description sentence made into a tool.
 
@@ -314,7 +316,12 @@ Each phase ships behind a flag, on its own branch, with the existing seven-proje
 - The choice in the process essay.
 - Opening night physics-first, once the pipeline publishes traits early.
 
-**Phase E — many physics.** The ground registry and the shelf, each material shipping when its package is published.
+**Phase E — the score, the lenses and Verify an orbit.** *Built 5 November 2026; see [third-physics-phase-e.md](third-physics-phase-e.md).*
+- The score in the Light film's transport, on the plate and in the room, with the physics of the moment and the closest approach.
+- The Wavelength lens in the room.
+- Verify an orbit, for any work with a record.
+
+**Phase F — many physics.** The ground registry and the shelf, each material shipping when its package is published.
 
 ---
 

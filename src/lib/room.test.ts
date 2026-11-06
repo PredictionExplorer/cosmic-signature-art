@@ -45,6 +45,18 @@ describe('the room by route and view', () => {
     expect(roomFor('/process', '?order=spectrum')).toBe('night');
   });
 
+  it('stands Verify an orbit on the night, its door and every work', () => {
+    expect(roomFor('/verify/orbit')).toBe('night');
+    expect(roomFor('/ko/verify/orbit/31')).toBe('night');
+    expect(paint('/verify/orbit/31', '?expression=ink')).toEqual({
+      room: 'night',
+      color: '#000000',
+    });
+    expect(paint('/zh-HK/verify/orbit')).toEqual({ room: 'night', color: '#000000' });
+    // Only the route itself: a word that merely begins the same way keeps its paper.
+    expect(roomFor('/verifying')).toBe('paper');
+  });
+
   it('paints the same answer before hydration', () => {
     expect(paint('/collection')).toEqual({ room: 'paper', color: '#f1ebdf' });
     expect(paint('/collection', '?order=spectrum')).toEqual({ room: 'night', color: '#000000' });

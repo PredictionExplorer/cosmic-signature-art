@@ -27,6 +27,14 @@ const cycles: OrreryCycle[] = [
 
 let observers: { callback: IntersectionObserverCallback; targets: Element[] }[] = [];
 let workers: FakeWorker[] = [];
+/** The page's animation frames, waiting until the test draws one. */
+let frames = new Map<number, FrameRequestCallback>();
+let nextFrame = 1;
+function drawFrame() {
+  const due = [...frames.values()];
+  frames = new Map();
+  act(() => due.forEach((callback) => callback(0)));
+}
 class FakeWorker {
   onmessage: ((event: MessageEvent<OrreryReply>) => void) | null = null;
   onerror: ((event: ErrorEvent) => void) | null = null;
@@ -90,6 +98,12 @@ beforeEach(() => {
     },
   );
   vi.stubGlobal('Worker', FakeWorker);
+  frames = new Map();
+  vi.stubGlobal('requestAnimationFrame', (callback: FrameRequestCallback) => {
+    frames.set(nextFrame, callback);
+    return nextFrame++;
+  });
+  vi.stubGlobal('cancelAnimationFrame', (handle: number) => frames.delete(handle));
 });
 afterEach(() => {
   cleanup();
@@ -166,6 +180,49 @@ describe('the Orrery', () => {
     unmount();
     expect(workers[0].terminated).toBe(true);
     expect(container.querySelectorAll('canvas')).toHaveLength(0);
+  });
+
+  it('lends the worker the page’s frames, one at a time, and none once it is gone', () => {
+    offscreen();
+    const { container, unmount } = render(<Page />);
+    const asked = () => ofType('frame').length;
+    // The cells are handed over; the worker is asked for a frame on the page's next.
+    expect(asked()).toBe(0);
+    drawFrame();
+    expect(asked()).toBe(1);
+    // Unanswered, it is asked for nothing more, however many frames the page draws.
+    drawFrame();
+    drawFrame();
+    expect(asked()).toBe(1);
+    workers[0].reply({ type: 'framed', more: true });
+    drawFrame();
+    expect(asked()).toBe(2);
+    // With nothing to draw it rests, until a cell comes into view.
+    workers[0].reply({ type: 'framed', more: false });
+    drawFrame();
+    expect(asked()).toBe(2);
+    const visibility = observers.find((observer) => observer.targets.length === 3)!;
+    act(() =>
+      visibility.callback(
+        [
+          { target: visibility.targets[0], isIntersecting: true },
+        ] as unknown as IntersectionObserverEntry[],
+        {} as IntersectionObserver,
+      ),
+    );
+    drawFrame();
+    expect(asked()).toBe(3);
+    // A change of motion wakes it too, though its answer came before it knew.
+    motion.paused = true;
+    render(<Page />, { container });
+    workers[0].reply({ type: 'framed', more: false });
+    drawFrame();
+    expect(asked()).toBe(4);
+    // Gone, it leaves no frame waiting.
+    workers[0].reply({ type: 'framed', more: true });
+    expect(frames.size).toBe(1);
+    unmount();
+    expect(frames.size).toBe(0);
   });
 
   it('shows every work’s still when the worker fails or cannot draw', () => {

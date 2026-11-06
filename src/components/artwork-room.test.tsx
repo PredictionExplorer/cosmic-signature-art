@@ -1,11 +1,15 @@
 import { Activity, StrictMode, useRef, useState } from 'react';
 import { act, cleanup, fireEvent, render, screen, within } from '@testing-library/react';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import { getCuratedArtwork } from '@/lib/art/catalog';
 import type { Artwork } from '@/lib/art/types';
 import { en } from '@/lib/i18n/en';
 import { fill } from '@/lib/i18n/format';
 import { ArtworkRoom } from './artwork-room';
+import { filmOrbit } from '@/lib/art/orbit-windows';
+import { pairName, physicsAt, type FilmScore } from '@/lib/physics/film-score';
+import { lightFilmDuration } from '@/lib/physics/light-film';
+import { scoreWindow } from '@/lib/physics/score-window';
 
 // The room reads the venue's motion state; the tests begin where the context default does.
 const motion = { paused: true, reducedMotion: true, theatre: 'playing' as const, toggle: () => {} };
@@ -414,6 +418,20 @@ describe('immersive artwork room', () => {
     expect(video.currentTime).toBe(20);
   });
 
+  it('reads a film’s clock from that film alone: another film starts at its own beginning', () => {
+    const { room } = openRoom(true);
+    const video = room.querySelector('video')!;
+    Object.defineProperty(video, 'duration', { configurable: true, value: 30 });
+    video.currentTime = 12;
+    fireEvent.timeUpdate(video);
+    expect(within(room).getByText('00:12 · 00:30')).toBeInTheDocument();
+    const sources = within(room).getByRole('group', { name: en.sources });
+    fireEvent.click(within(sources).getByRole('button', { name: longStudy }));
+    // Until the study reports its own time, the readout and the transport read its start.
+    expect(within(room).getByText('00:00 · 00:00')).toBeInTheDocument();
+    expect(within(room).getByRole('slider', { name: en.filmPosition })).toHaveValue('0');
+  });
+
   it('lists every published film as a word with its length and releases the previous decoder on change', () => {
     const { room } = openRoom(true);
     const normal = room.querySelector('video')!;
@@ -460,6 +478,19 @@ describe('immersive artwork room', () => {
     Object.defineProperty(study, 'duration', { value: 115.8 });
     fireEvent.loadedMetadata(study);
     expect(study.currentTime).toBe(0);
+  });
+
+  it('continues the plate’s time through Strict Mode’s effect replay, before the film has metadata', () => {
+    render(
+      <StrictMode>
+        <Harness initialFilm startAt={12.5} />
+      </StrictMode>,
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'Enter room' }));
+    const video = screen.getByRole('dialog').querySelector('video')!;
+    Object.defineProperty(video, 'duration', { value: 30 });
+    fireEvent.loadedMetadata(video);
+    expect(video.currentTime).toBe(12.5);
   });
 
   it('keeps playheads separate between normal and longer films', () => {
@@ -783,6 +814,69 @@ describe('immersive artwork room', () => {
     expect(room.querySelector('canvas')).toBeNull();
   });
 
+  describe('the Light film’s score', () => {
+    const orbit = filmOrbit(31)!;
+    let measured: FilmScore;
+    // № 031's window measured once, with its own budget: see the viewer's score tests.
+    beforeAll(() => {
+      measured = scoreWindow(orbit.window);
+    }, 30_000);
+    const filmScore = () => ({ score: measured, hues: orbit.bodyHues });
+    const room = (props: Partial<Parameters<typeof ArtworkRoom>[0]> = {}) => {
+      render(
+        <ArtworkRoom
+          artwork={preserved}
+          t={en}
+          expression="light"
+          onExpressionChange={() => {}}
+          initialFilm
+          filmScore={filmScore()}
+          onClose={() => {}}
+          {...props}
+        />,
+      );
+      return screen.getByRole('dialog');
+    };
+
+    it('lies beneath the complete film’s transport, and its readout says the physics of the moment', () => {
+      const dialog = room();
+      const video = dialog.querySelector('video')!;
+      expect(video).toHaveAttribute('src', expect.stringMatching(/\/videos\/web\/main\.mp4$/));
+      Object.defineProperty(video, 'duration', { configurable: true, value: 30.03 });
+      video.currentTime = 7.5;
+      fireEvent.timeUpdate(video);
+      const band = dialog.querySelector('[data-film-score]')!;
+      expect(band).toHaveAttribute('aria-hidden', 'true');
+      expect(band.querySelector('[data-film-score-progress]')).toHaveAttribute(
+        'data-film-score-progress',
+        String(Math.round((7.5 / lightFilmDuration(orbit.window.steps)) * 1000) / 10),
+      );
+      const moment = physicsAt(filmScore().score, 7.5);
+      expect(
+        within(dialog).getByText(
+          `00:07 · 00:30 · ${fill(en.filmPhysics, {
+            pair: pairName(moment.pair),
+            distance: moment.distance.toFixed(1),
+          })}`,
+        ),
+      ).toBeInTheDocument();
+      // The still stands in: no film, no transport, no score.
+      fireEvent.click(within(dialog).getByRole('button', { name: en.still }));
+      expect(dialog.querySelector('[data-film-score]')).toBeNull();
+    });
+
+    it('belongs to the complete Light film alone, and never to a sale surface', () => {
+      const ink = room({ expression: 'ink' });
+      expect(ink.querySelector('video')).not.toBeNull();
+      expect(ink.querySelector('[data-film-score]')).toBeNull();
+      cleanup();
+      const sale = room({ derivedViews: false });
+      expect(sale.querySelector('video')).not.toBeNull();
+      expect(sale.querySelector('[data-film-score]')).toBeNull();
+      expect(within(sale).getByText('00:00 · 00:00')).toBeInTheDocument();
+    });
+  });
+
   it('shows the room’s keys on ? and lets Escape close the hint before the room', () => {
     const { room } = openRoom();
     fireEvent.keyDown(room, { key: '?' });
@@ -959,5 +1053,220 @@ describe('immersive artwork room', () => {
     expect(onSelect).toHaveBeenCalledWith('ink');
     rerender(<ArtworkRoom {...props} expressionFailed />);
     expect(within(room).getByRole('status')).toHaveTextContent(en.expressionFailed);
+  });
+});
+
+/** 031 with its published Light sweep, measured: the whole spectrum, 632 nm dominant. */
+const sweepFilm = {
+  id: 'sweep',
+  label: 'Spectral sweep',
+  src: '/sweep-031.mp4',
+  durationSeconds: 10,
+  mimeType: 'video/mp4' as const,
+  variantKey: '31:light:sweep',
+  delivery: 'original-web' as const,
+  span: { start: 0, end: 63, dominantNm: 632 },
+};
+const sweeping: Artwork = {
+  ...artwork,
+  media: artwork.media.map((media) =>
+    media.id === 'light' ? { ...media, films: [...media.films, sweepFilm] } : media,
+  ),
+};
+
+function openWith(work: Artwork, derivedViews?: boolean) {
+  render(<Harness work={work} derivedViews={derivedViews} />);
+  fireEvent.click(screen.getByRole('button', { name: 'Enter room' }));
+  return screen.getByRole('dialog');
+}
+/** The sweep's head has arrived and the held frame is decoded. */
+function decoded(video: HTMLVideoElement) {
+  Object.defineProperty(video, 'readyState', { configurable: true, get: () => 2 });
+  fireEvent(video, new Event('loadedmetadata'));
+  fireEvent(video, new Event('seeked'));
+}
+
+describe('the Wavelength lens in the room', () => {
+  it('holds the Light sweep at the work’s own wavelength, labelled analysis, and moves on the keys', () => {
+    const room = openWith(sweeping);
+    // The sweep is a film of Light: Ink offers no word, and N there does nothing.
+    expect(within(room).queryByRole('button', { name: en.wavelengthLens })).toBeNull();
+    fireEvent.keyDown(room, { key: 'n' });
+    expect(room.querySelector('video')).toBeNull();
+    fireEvent.keyDown(room, { key: 'l' });
+    const word = within(room).getByRole('button', { name: en.wavelengthLens });
+    expect(word).toHaveAttribute('aria-pressed', 'false');
+    // Nothing is fetched until the lens is asked for.
+    expect(room.querySelector('video')).toBeNull();
+    fireEvent.keyDown(room, { key: 'n' });
+    expect(word).toHaveAttribute('aria-pressed', 'true');
+    const video = room.querySelector('video')!;
+    expect(video).toHaveAttribute('src', '/sweep-031.mp4');
+    expect(video).toHaveAttribute('aria-label', expect.stringContaining('632 nm'));
+    const slider = within(room).getByRole('slider', { name: en.wavelengthLens });
+    expect(slider).toHaveAttribute('aria-valuenow', '632');
+    expect(slider).toHaveAttribute('aria-valuetext', fill(en.wavelengthValue, { n: 632 }));
+    expect(slider).toHaveAttribute('aria-valuemin', '383');
+    expect(slider).toHaveAttribute('aria-valuemax', '697');
+    // A quiet loading state until the first held frame is decoded.
+    expect(word).toHaveAttribute('aria-busy', 'true');
+    expect(within(room).getByRole('status')).toHaveTextContent(
+      `${en.wavelengthLoading} · ${en.analysisNotWork}`,
+    );
+    decoded(video);
+    expect(word).not.toHaveAttribute('aria-busy');
+    expect(within(room).getByRole('status')).toHaveTextContent(
+      `${en.wavelengthCaption} · ${en.analysisNotWork}`,
+    );
+    // From anywhere in the room the arrows step it, Shift by ten, Home and End to the ends.
+    fireEvent.keyDown(room, { key: 'ArrowLeft' });
+    expect(slider).toHaveAttribute('aria-valuenow', '631');
+    fireEvent.keyDown(room, { key: 'ArrowLeft', shiftKey: true });
+    expect(slider).toHaveAttribute('aria-valuenow', '621');
+    fireEvent.keyDown(room, { key: 'Home' });
+    expect(slider).toHaveAttribute('aria-valuenow', '383');
+    fireEvent.keyDown(room, { key: 'End' });
+    expect(slider).toHaveAttribute('aria-valuenow', '697');
+    // A key on the rule itself moves it once, not once for the rule and again for the room.
+    fireEvent.keyDown(slider, { key: 'ArrowLeft' });
+    expect(slider).toHaveAttribute('aria-valuenow', '696');
+    expect(video).toHaveAttribute('aria-label', expect.stringContaining('696 nm'));
+    // A held N acts once; N again returns to the still and releases the film.
+    fireEvent.keyDown(room, { key: 'n', repeat: true });
+    expect(word).toHaveAttribute('aria-pressed', 'true');
+    fireEvent.keyDown(room, { key: 'N' });
+    expect(word).toHaveAttribute('aria-pressed', 'false');
+    expect(room.querySelector('video')).toBeNull();
+    expect(video).not.toHaveAttribute('src');
+    expect(within(room).getByRole('img')).toBeInTheDocument();
+    // The wavelength is remembered while the room is open; the film, fetched again, loads again.
+    fireEvent.click(word);
+    expect(within(room).getByRole('slider')).toHaveAttribute('aria-valuenow', '696');
+    expect(word).toHaveAttribute('aria-busy', 'true');
+    expect(within(room).getByRole('status')).toHaveTextContent(en.wavelengthLoading);
+    // It never plays: under Pause and reduced motion, as everywhere, it only holds a frame.
+    expect(vi.mocked(HTMLMediaElement.prototype.play).mock.contexts).not.toContain(
+      room.querySelector('video'),
+    );
+    fireEvent.keyDown(room, { key: '?' });
+    expect(within(room).getByLabelText(en.roomKeys)).toHaveTextContent(en.keyWavelength);
+  });
+
+  it('steps aside for When, the loupe and the films, as they step aside for it', () => {
+    const room = openWith(sweeping);
+    fireEvent.keyDown(room, { key: 'l' });
+    const word = within(room).getByRole('button', { name: en.wavelengthLens });
+    const when = within(room).getByRole('button', { name: en.whenLens });
+    fireEvent.click(word);
+    fireEvent.keyDown(room, { key: 't' });
+    expect(when).toHaveAttribute('aria-pressed', 'true');
+    expect(word).toHaveAttribute('aria-pressed', 'false');
+    expect(within(room).queryByRole('slider')).toBeNull();
+    fireEvent.keyDown(room, { key: 'n' });
+    expect(word).toHaveAttribute('aria-pressed', 'true');
+    expect(when).toHaveAttribute('aria-pressed', 'false');
+    fireEvent.keyDown(room, { key: 'z' });
+    expect(word).toHaveAttribute('aria-pressed', 'false');
+    expect(room.firstElementChild).toHaveAttribute('data-loupe');
+    fireEvent.keyDown(room, { key: 'n' });
+    expect(room.firstElementChild).not.toHaveAttribute('data-loupe');
+    fireEvent.click(within(room).getByRole('button', { name: new RegExp(`^${en.sweepFilm}`) }));
+    expect(word).toHaveAttribute('aria-pressed', 'false');
+    expect(room.querySelector('video')).toHaveAttribute('src', '/sweep-031.mp4');
+    expect(within(room).queryByRole('slider', { name: en.wavelengthLens })).toBeNull();
+    // Ink has no sweep: the lens rests there and returns with Light.
+    fireEvent.keyDown(room, { key: 'n' });
+    fireEvent.keyDown(room, { key: 'i' });
+    expect(within(room).queryByRole('slider', { name: en.wavelengthLens })).toBeNull();
+    fireEvent.keyDown(room, { key: 'l' });
+    expect(within(room).getByRole('slider', { name: en.wavelengthLens })).toBeInTheDocument();
+  });
+
+  it('gives the focus its slider held back to its word as it leaves, and leaves Space to the slider', () => {
+    const room = openWith(sweeping);
+    fireEvent.keyDown(room, { key: 'l' });
+    const word = within(room).getByRole('button', { name: en.wavelengthLens });
+    fireEvent.click(word);
+    const slider = within(room).getByRole('slider', { name: en.wavelengthLens });
+    slider.focus();
+    // Space on the slider is not the film's: the lens stays.
+    fireEvent.keyDown(slider, { key: ' ' });
+    expect(word).toHaveAttribute('aria-pressed', 'true');
+    expect(slider.isConnected).toBe(true);
+    // Z from the slider opens the loupe: the slider goes, and its focus returns to the word,
+    // inside the dialog that hears the room's keys.
+    fireEvent.keyDown(slider, { key: 'z' });
+    expect(room.firstElementChild).toHaveAttribute('data-loupe');
+    expect(slider.isConnected).toBe(false);
+    expect(word).toHaveFocus();
+    fireEvent.keyDown(document.activeElement!, { key: 'n' });
+    expect(within(room).getByRole('slider', { name: en.wavelengthLens })).toBeInTheDocument();
+  });
+
+  it('is never offered on a sale surface, by word, by key or in the key sheet', () => {
+    const room = openWith(sweeping, false);
+    fireEvent.keyDown(room, { key: 'l' });
+    expect(room).toHaveAttribute('data-material', 'light');
+    expect(within(room).queryByRole('button', { name: en.wavelengthLens })).toBeNull();
+    fireEvent.keyDown(room, { key: 'n' });
+    expect(within(room).queryByRole('slider')).toBeNull();
+    expect(room.querySelector('video')).toBeNull();
+    fireEvent.keyDown(room, { key: '?' });
+    expect(within(room).getByLabelText(en.roomKeys)).not.toHaveTextContent(en.keyWavelength);
+  });
+
+  it('offers no word where the work has no sweep, as on the home before any live record', () => {
+    const room = openWith(artwork);
+    fireEvent.keyDown(room, { key: 'l' });
+    expect(room).toHaveAttribute('data-material', 'light');
+    expect(within(room).queryByRole('button', { name: en.wavelengthLens })).toBeNull();
+    fireEvent.keyDown(room, { key: 'n' });
+    expect(within(room).queryByRole('slider')).toBeNull();
+    expect(room.querySelector('video')).toBeNull();
+    fireEvent.keyDown(room, { key: '?' });
+    expect(within(room).getByLabelText(en.roomKeys)).not.toHaveTextContent(en.keyWavelength);
+  });
+
+  it('keeps the word where the sweep is one it cannot read, and says so once', () => {
+    const unmeasured: Artwork = {
+      ...sweeping,
+      media: sweeping.media.map((media) => ({
+        ...media,
+        films: media.films.map((item) => ({ ...item, span: undefined })),
+      })),
+    };
+    const room = openWith(unmeasured);
+    fireEvent.keyDown(room, { key: 'l' });
+    const word = within(room).getByRole('button', { name: en.wavelengthLens });
+    word.focus();
+    fireEvent.click(word);
+    // The word rests but keeps the focus the visitor gave it; the still stands in.
+    expect(word).toHaveAttribute('aria-disabled', 'true');
+    expect(word).toHaveFocus();
+    expect(word).toHaveAttribute('aria-pressed', 'false');
+    expect(within(room).getByRole('status')).toHaveTextContent(en.wavelengthUnavailable);
+    expect(room.querySelector('video')).toBeNull();
+    expect(within(room).getByRole('img')).toBeInTheDocument();
+    fireEvent.keyDown(room, { key: 'n' });
+    expect(within(room).queryByRole('slider')).toBeNull();
+  });
+
+  it('returns to the still and says so when the sweep cannot be read', () => {
+    const room = openWith(sweeping);
+    fireEvent.keyDown(room, { key: 'l' });
+    const word = within(room).getByRole('button', { name: en.wavelengthLens });
+    fireEvent.click(word);
+    fireEvent(room.querySelector('video')!, new Event('error'));
+    expect(word).toHaveAttribute('aria-pressed', 'false');
+    expect(word).toHaveAttribute('aria-disabled', 'true');
+    expect(within(room).getByRole('status')).toHaveTextContent(en.wavelengthUnavailable);
+    expect(room.querySelector('video')).toBeNull();
+    expect(within(room).getByRole('img')).toBeInTheDocument();
+    // The word and N stay quiet; the films still play.
+    fireEvent.click(word);
+    fireEvent.keyDown(room, { key: 'n' });
+    expect(within(room).queryByRole('slider')).toBeNull();
+    fireEvent.keyDown(room, { key: 'f' });
+    expect(room.querySelector('video')).toBeInTheDocument();
   });
 });

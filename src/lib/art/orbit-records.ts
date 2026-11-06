@@ -94,6 +94,11 @@ export function loadOrbitRecords(raw: unknown): Map<number, OrbitRecord> {
 
 const records = loadOrbitRecords(data);
 
+/** Every work with an orbit record, by number: the works Verify an orbit can derive. */
+export function orbitIds(): number[] {
+  return [...records.keys()].sort((a, b) => a - b);
+}
+
 export function workOrbit(id: number): WorkOrbit | undefined {
   const record = records.get(id);
   if (!record) return undefined;

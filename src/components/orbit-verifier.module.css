@@ -1,0 +1,155 @@
+/*
+  Verify an orbit: the derivation as a transcript on the night. Each line is stamped with the
+  moment it began in this browser, in the instrument face; the record follows as label, value
+  and check, the fate last, and the verdict closes it in the book face. Phones first: a row of
+  the record sets its label beside its check and its value beneath, at the full width a long
+  number or a braid word needs; given the room, the three stand side by side.
+*/
+.verifier {
+  container-type: inline-size;
+  display: grid;
+  align-content: start;
+  min-width: 0;
+}
+.title {
+  padding-bottom: 9px;
+  border-bottom: 1px solid var(--rule);
+  font-size: var(--fs-folio);
+  font-weight: 400;
+  line-height: 1.5;
+  letter-spacing: 0.08em;
+  font-variant-caps: all-small-caps;
+  color: var(--muted);
+}
+.waiting,
+.lines {
+  margin: 0;
+  padding: 9px 0 0;
+  font-family: var(--font-mono);
+  font-size: var(--fs-folio);
+  line-height: 18px;
+  font-variant-numeric: tabular-nums lining-nums;
+}
+.waiting {
+  color: var(--muted);
+}
+.lines {
+  list-style: none;
+  display: grid;
+  row-gap: 9px;
+}
+/* The moment a line began, right-aligned in its own column so the words keep one edge. */
+.lines li {
+  display: grid;
+  grid-template-columns: 7ch minmax(0, 1fr);
+  column-gap: 12px;
+  align-items: baseline;
+}
+.lines li > span {
+  overflow-wrap: anywhere;
+}
+.at {
+  font-size: inherit;
+  text-align: right;
+  white-space: nowrap;
+  color: var(--muted);
+}
+.record {
+  margin-top: 36px;
+}
+.recordTitle {
+  padding-bottom: 9px;
+  font-family: var(--font-mono);
+  font-size: var(--fs-folio);
+  font-weight: 400;
+  line-height: 1.5;
+  color: var(--muted);
+}
+.rows {
+  display: grid;
+  border-bottom: 1px solid var(--rule);
+}
+.row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-areas:
+    'label check'
+    'value value'
+    'derived derived';
+  column-gap: 12px;
+  padding: 6px 0 9px;
+  border-top: 1px solid var(--rule);
+  font-family: var(--font-mono);
+  font-size: var(--fs-folio);
+  line-height: 18px;
+  font-variant-numeric: tabular-nums lining-nums;
+}
+.label {
+  grid-area: label;
+  color: var(--muted);
+}
+.value,
+.derived {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+.value {
+  grid-area: value;
+}
+.word {
+  line-height: 1.6;
+}
+.derived {
+  grid-area: derived;
+  font-style: italic;
+}
+.check {
+  grid-area: check;
+  margin: 0;
+  justify-self: end;
+  font-family: var(--font-book);
+  font-size: var(--fs-control);
+  line-height: 18px;
+  letter-spacing: 0.06em;
+  font-variant-caps: all-small-caps;
+  white-space: nowrap;
+}
+.row[data-exact='false'] .check {
+  font-style: italic;
+}
+@container (min-width: 560px) {
+  .row {
+    grid-template-columns: minmax(10em, 0.75fr) minmax(0, 1.25fr) auto;
+    grid-template-areas:
+      'label value check'
+      'label derived check';
+    align-items: baseline;
+  }
+}
+/* The time taken, then the verdict: the one line this page says aloud. */
+.summary {
+  display: grid;
+  gap: 9px;
+  margin-top: 27px;
+}
+.took {
+  font-family: var(--font-mono);
+  font-size: var(--fs-folio);
+  line-height: 18px;
+  font-variant-numeric: tabular-nums lining-nums;
+  color: var(--muted);
+}
+.verdict {
+  max-width: 26em;
+  font-size: var(--fs-subtitle);
+  font-style: italic;
+  font-weight: 300;
+  line-height: 1.2857;
+  text-wrap: balance;
+}
+.words {
+  display: flex;
+  flex-wrap: wrap;
+  column-gap: 27px;
+  margin-top: 18px;
+}

@@ -19,7 +19,7 @@ Phase C of [Third Physics](third-physics.md) adds the collection's two other ind
 - Pause, reduced motion and the auction hush draw each orbit whole, once.
 - Pointing at a work, or focusing it, shows its own Light still in the cell.
 - Where a canvas cannot be handed to a worker, or the worker fails, every work's Light still stands in, and the page says so.
-- A hidden page draws nothing, and a silence in the frames (a hidden tab, a busy thread) is a pause: every cell resumes where it stood.
+- A hidden page draws nothing, and a silence in the frames (a hidden tab, a busy thread) is, after a quarter second, a pause: every cell resumes where it stood.
 
 **Both are reached from the Index sheet**, under "The whole collection at once", with the one on view marked. The group is not offered on a sale page. The Orrery is in the sitemap. All the light, a derived image, is not: the plan keeps derived images out of sitemaps (§9). On both pages, the running head takes the night while the page stands beneath it.
 
@@ -29,7 +29,7 @@ Phase C of [Third Physics](third-physics.md) adds the collection's two other ind
 |---|---|
 | Where each recorded window begins: the state, the plane, exact | `src/lib/art/orbit-windows.json` (90 KB), built by `scripts/build-orbit-windows.mjs` (`npm run art:windows`), bound by `orbit-windows.ts` (server only) |
 | The window performed again, and its closest approach | `WindowPerformance` and `closestApproachOf` in `src/lib/physics/orbit.ts` |
-| The Orrery's engine and its worker | `src/lib/physics/orrery.ts`, `orrery.worker.ts` |
+| The Orrery's engine, its worker, and the page's beat | `src/lib/physics/orrery.ts`, `orrery.worker.ts`, `orrery-pace.ts` |
 | The Orrery | `src/components/orrery.tsx` and `.module.css`; `src/app/[locale]/collection/orrery/page.tsx` |
 | The skies and the naming grid | `public/art/light/` (2.5 MB in all), built by `scripts/build-all-the-light.mjs` (`npm run art:light`); the registry `src/lib/art/all-the-light.json`, bound by `all-the-light.ts` (server only) |
 | Naming the orbits under a point | `src/lib/art/sky-names.ts` |
@@ -66,9 +66,10 @@ Phase C of [Third Physics](third-physics.md) adds the collection's two other ind
     - the hold, and the restart;
     - drawing whole under a still preference;
     - a short budget (150,000 steps a frame) shared so that a cell slows rather than jumps;
-    - a minute without frames taken as a pause, every cell resuming where it stood;
+    - a minute without frames taken as a pause after a quarter second, every cell resuming where it stood, and a page drawing a frame every 400 ms still seeing each orbit go on;
     - a performance ending on the very picture the whole drawing makes, at 24, 60 and 144 frames a second;
     - starting again when a canvas changes size or motion changes.
+  - The Orrery's pace, on a frame clock of the test's own: a frame asked of the worker on each of the page's frames, never while one is unanswered, none while there is nothing to draw, and none once the page is gone. The worker draws only when asked, and keeps no clock of its own.
   - The Orrery's component: the cells by cycle, one worker given a canvas per orbit and the motion preference, the plates on pointer and focus (and not under a landing finger), the stills when the worker fails or cannot draw, every cell out of view while the page is hidden, the drawn-whole marks cleared when motion changes, and the head's night.
   - All the light:
     - naming the brightest orbits of the sky on view, at once, and lighting them once the pointer rests;
@@ -100,6 +101,7 @@ Phase C of [Third Physics](third-physics.md) adds the collection's two other ind
 - **Node can run the physics as it is.** Node's type stripping takes no parameter properties and no extensionless imports, so the window's performance lives in `orbit.ts`, which still has no imports, and the build scripts import that file directly.
 - **Light adds one film frame at a time.** The Light film adds each frame's marks as one exposure, and the Orrery and the work page's orbit section now stroke one path for each film frame, whether an orbit is drawn whole or performed. Before, an orbit drawn whole was one path and a performed one was a path per screen frame. Under additive light those are different pictures where an orbit crosses itself, and the performed one depended on the display's refresh rate.
 - **A frame is bounded by time, not only by steps.** CI's runners have no GPU. There, a frame of 150,000 steps and their strokes took far longer than a display frame, and a still cell's whole million-step window took longer still, so the worker never rested. In WebKit the page stopped answering once the orbits began, and in Firefox a full-page screenshot of the paused Orrery timed out. Each frame now stops after 6 ms, looking at the clock every 2,000 steps, and always moves at least one cell. A slow machine therefore performs the orbits more slowly, as a cell short of the step budget already did. Under a still preference a cell is integrated over as many frames as it needs, and its film frames are painted together once it is whole: the same picture, and still never seen being drawn.
+- **The page keeps the Orrery's beat.** On CI, WebKit's page froze a second or two after the orbits began, four times in one pull request's two runs: the running head never took the night, a screenshot and a link never finished, and closing the browser took half a minute. In WebKit, a worker's animation frames come from a timer of its own, 15 ms apart, whatever the page manages to show (`WorkerAnimationController`). Every frame a cell commits is also a separate task on the page's thread (`PlaceholderRenderingContext`), so a page short of time had nothing to slow the worker down. The worker now draws only when the page asks: on the page's own animation frame, never while a frame is unanswered, and not at all when nothing is in view or every cell is drawn whole (`orrery-pace.ts`). A silence between frames is performed for a quarter second at most, so a page that draws only a few frames a second still sees the orbits move. In a Linux container running CI's WebKit build, holding the page's thread for 600 ms after the orbits had begun left it answering in about 50 ms; it now answers in about 25. The freeze itself appeared there in one test of 56, too rarely to show that pacing ends it.
 - **A finger has no hover.** A numeral that lit its orbit as a finger landed on it changed the page under the tap, and WebKit on a phone held back the click, so choosing took two taps. The Orrery's cells had the same flaw with their plates. Touch now lights and shows nothing on landing, and a tap acts at once.
 - **WebKit lets go of a smooth scroll when the page shifts under it.** Choosing from the phone's index scrolls the sky into view. The naming line changes its height as it names the choice, and WebKit's scroll anchoring corrects for that, which cancelled the scroll. The scroll now begins a frame after the choice is laid out, and the choice's own line is kept even when empty.
 - **"Number" is the page only on the collection.** The Index sheet marked "Number" as the current page everywhere. An ordering is now the page only on the collection it orders. Elsewhere the session's expression is still marked, as the current item, since the sheet's wall and links follow it.
@@ -134,3 +136,4 @@ Built on 30 October 2026 on `claude/third-physics-phase-c`, on top of the Phase 
 - The unit suite passes: 940 tests, 92.7 % of statements, with the coverage thresholds held.
 - The full browser suite passes in the six local projects, against a production build: 1,275 passed, 45 skipped by design, none failed, in 14.5 minutes. Firefox runs on CI.
 - After CI's first browser run, with each frame bounded by time: type-check, lint and format pass, and so does the unit suite (943 tests). In the six local projects, against a production build, the index and crossing specs pass (96 passed, 18 skipped by design), and so does the accessibility spec on both new routes (96 passed).
+- With the page keeping the Orrery's beat (4 November): type-check, lint and format pass, and so does the unit suite (956 tests). In the six local projects, against a production build, every Orrery and Index sheet test in the index spec passes, and so does the accessibility spec on the Orrery in all eight locales (48 passed). Four All the light tests in WebKit failed once while the machine was heavily loaded, finding two sky layers marked as shown, and passed when run again.

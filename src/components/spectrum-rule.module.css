@@ -1,0 +1,103 @@
+/* The visible spectrum as a typeset rule, 380 to 700 nm, with the work's dominant wavelength
+   ticked: one hairline between its two ends, in the venue's tabular mono. */
+.rule {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  font-family: var(--font-mono);
+  font-size: var(--fs-folio);
+  font-variant-numeric: tabular-nums lining-nums;
+}
+.end {
+  white-space: nowrap;
+}
+/* The figures on the line are upright numerals, like every other figure in the venue. */
+.line {
+  position: relative;
+  display: block;
+  flex: 1;
+  height: 1px;
+  background: var(--spectrum-line, var(--rule));
+  font-style: normal;
+}
+.tick {
+  position: absolute;
+  top: -4px;
+  width: 1px;
+  height: 9px;
+  background: currentColor;
+  transform: translateX(-50%);
+}
+.tick > span {
+  position: absolute;
+  top: 12px;
+  left: 0;
+  transform: translateX(-50%);
+  white-space: nowrap;
+  font-weight: 400;
+}
+/* A narrow strip keeps the tick and lets its figure go; the slider keeps both. */
+@media (max-width: 767px) {
+  .rule:not([data-labels='always']) .tick > span {
+    display: none;
+  }
+}
+
+/* As a slider (the Wavelength lens): the whole band answers the hand, not the hairline, so a
+   phone drags it as easily as a mouse; the rule's own colour is the room's. */
+.slider {
+  --spectrum-line: var(--room-line, var(--rule));
+  position: relative;
+  display: block;
+  padding-block: 27px 24px;
+  color: var(--room-muted, currentColor);
+  cursor: pointer;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+/* The band of the spectrum this work's sweep travels, in the room's ink. */
+.reach {
+  position: absolute;
+  inset-block: 0;
+  background: var(--room-ink, currentColor);
+}
+/* The wavelength held: a mark through the rule, its figure above it in the room's ink. Near
+   either end the figure slides to stay over the line. */
+.held {
+  position: absolute;
+  top: -9px;
+  left: calc(var(--at) * 100%);
+  width: 1px;
+  height: 19px;
+  background: var(--room-ink, currentColor);
+  transform: translateX(-50%);
+}
+.held::after {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--room-ink, currentColor);
+  content: '';
+  transform: translate(-50%, -50%);
+}
+.readout {
+  position: absolute;
+  bottom: 15px;
+  left: calc(var(--at) * 100%);
+  color: var(--room-ink, currentColor);
+  white-space: nowrap;
+  transform: translateX(calc(var(--at) * -100%));
+}
+/* The keyboard's ring is the mark's own, as the room's transport rings its thumb. */
+.slider:focus-visible {
+  outline: none;
+}
+.slider:focus-visible .held::after {
+  outline: 1px solid var(--room-ink, currentColor);
+  outline-offset: 3px;
+}

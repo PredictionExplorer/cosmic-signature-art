@@ -1,6 +1,7 @@
 'use client';
+import Link from 'next/link';
 import { useEffect, useEffectEvent, useMemo, useRef, useState } from 'react';
-import type { Locale } from '@/lib/i18n/routing';
+import { localizedPath, type Locale } from '@/lib/i18n/routing';
 import type { Messages } from '@/lib/i18n/en';
 import { clock, fill } from '@/lib/i18n/format';
 import type { WorkOrbit } from '@/lib/art/orbit-records';
@@ -12,6 +13,7 @@ import type {
   Rederivation,
 } from '@/lib/physics/orbit';
 import { Continuation, restingStep } from '@/lib/physics/continuation';
+import { pairName } from '@/lib/physics/film-score';
 import type { OrbitReply, OrbitRequest } from '@/lib/physics/orbit.worker';
 import {
   lightFilmDuration,
@@ -23,11 +25,20 @@ import { principalPlane, type Plane } from '@/lib/physics/plane';
 import { AFTER_THE_FRAME_EVENT } from '@/lib/venue-events';
 import { useMotion } from './motion-provider';
 import { lendPlateTone, returnPlateTone } from './room-ground';
+import { drawScore } from './score-drawing';
+import {
+  derivedValue,
+  measurementLabels,
+  orbitWorker,
+  progressText,
+  recordValues,
+  seedShort,
+  verdict,
+} from './orbit-proof';
 import styles from './orbit-score.module.css';
 
 /** Every hundredth step is drawn: ten thousand points per body for a million-step window. */
 const STRIDE = 100;
-const MINUS = '−';
 /** To the ejection starts this many seconds of the film's pace before the escape. */
 const LEAD_SECONDS = 4;
 /**
@@ -63,15 +74,6 @@ type Fate =
   | { phase: 'failed' };
 /** After the frame: where the performance starts, and a count so a repeat starts afresh. */
 type Beyond = { from: 'end' | 'approach'; run: number };
-
-/** The worker is a module of its own; tests replace the global Worker. */
-function orbitWorker(): Worker {
-  return new Worker(new URL('../lib/physics/orbit.worker.ts', import.meta.url), { type: 'module' });
-}
-
-const exact = (value: number) => (value < 0 ? `${MINUS}${-value}` : String(value));
-const pairWords = (pair: readonly number[]) => pair.map((body) => body + 1).join('–');
-const seedShort = (seed: string) => `${seed.slice(0, 6)}…${seed.slice(-4)}`;
 
 /**
  * The orbit, re-performed: the work's orbit derived from its seed in this browser, drawn at
@@ -348,14 +350,6 @@ export function OrbitScore({
     // the braid crossings as ticks, and the playhead.
     const scoreWidth = eventCanvas.width;
     const scoreHeight = eventCanvas.height;
-    const separations = result.samples.separations;
-    let lo = Infinity;
-    let hi = -Infinity;
-    for (let i = 0; i < count * 3; i++) {
-      const value = Math.log(separations[i]);
-      lo = Math.min(lo, value);
-      hi = Math.max(hi, value);
-    }
     const at = (step: number) => (step / (steps - 1)) * scoreWidth;
     const lane = scoreHeight - 12 * ratio;
     const scoreStill = document.createElement('canvas');
@@ -363,32 +357,28 @@ export function OrbitScore({
     scoreStill.height = scoreHeight;
     const base = scoreStill.getContext('2d');
     if (!base) return;
-    const pairs = [
-      [0, 1],
-      [0, 2],
-      [1, 2],
-    ];
-    pairs.forEach(([a, b], k) => {
-      base.strokeStyle = `oklch(0.8 0.07 ${(hues[a] + hues[b]) / 2} / 0.55)`;
-      base.lineWidth = ratio;
-      base.beginPath();
-      for (let sample = 0; sample < count; sample += 2) {
-        const px = at(sample * STRIDE);
-        const py =
-          2 * ratio +
-          (1 - (Math.log(separations[sample * 3 + k]) - lo) / (hi - lo || 1)) * (lane - 4 * ratio);
-        if (sample === 0) base.moveTo(px, py);
-        else base.lineTo(px, py);
-      }
-      base.stroke();
-    });
-    const tick = (step: number, length: number, alpha: number) => {
-      base.fillStyle = `rgb(241 235 223 / ${alpha})`;
-      base.fillRect(Math.round(at(step)), scoreHeight - length * ratio, ratio, length * ratio);
-    };
-    for (const crossing of result.braid.events) tick(crossing.step, 3, 0.4);
-    for (const step of result.syzygies) tick(step, 7, 0.8);
-    tick(result.closestApproach.step, 11, 1);
+    drawScore(
+      base,
+      {
+        separations: result.samples.separations,
+        count,
+        stride: STRIDE,
+        closestApproach: result.closestApproach,
+        syzygies: result.syzygies,
+        crossings: result.braid.events.map((crossing) => crossing.step),
+      },
+      hues,
+      {
+        ratio,
+        x: at,
+        lane: { top: 2 * ratio, height: lane - 4 * ratio },
+        base: scoreHeight,
+        ticks: { crossing: 3, syzygy: 7, closest: 11 },
+        lineAlpha: 0.55,
+        ink: 'rgb(241 235 223)',
+        every: 2,
+      },
+    );
     /** The score with its playhead, or dimmed without one while the orbit runs past it. */
     const scoreAt = (step: number | null) => {
       score.clearRect(0, 0, scoreWidth, scoreHeight);
@@ -593,7 +583,7 @@ export function OrbitScore({
             : nearClosest
               ? fill(t.orbitClosestNow, {
                   distance: oneDecimal.format(closest.distance),
-                  pair: pairWords(closest.pair),
+                  pair: pairName(closest.pair),
                 })
               : fill(t.orbitPlaying, {
                   step: number.format(step),
@@ -657,46 +647,13 @@ export function OrbitScore({
     m2: oneDecimal.format(published.masses[1]),
     m3: oneDecimal.format(published.masses[2]),
     distance: oneDecimal.format(closest.distance),
-    pair: pairWords(closest.pair),
+    pair: pairName(closest.pair),
     step: number.format(closest.step),
     seconds: oneDecimal.format(lightFilmSeconds(closest.step, steps)),
   });
 
-  const labels: Record<MeasurementKey, string> = {
-    mass1: fill(t.orbitMass, { n: 1 }),
-    mass2: fill(t.orbitMass, { n: 2 }),
-    mass3: fill(t.orbitMass, { n: 3 }),
-    totalEnergy: t.orbitEnergy,
-    angularMomentum: t.orbitMomentum,
-    closestDistance: t.orbitClosest,
-    closestWhere: t.orbitClosestWhere,
-    syzygies: t.orbitSyzygies,
-    braidCrossings: t.orbitBraidCrossings,
-    braidWord: t.orbitBraidWord,
-    fate: t.orbitFate,
-  };
-  const recordValues: Record<MeasurementKey, string> = {
-    mass1: exact(published.masses[0]),
-    mass2: exact(published.masses[1]),
-    mass3: exact(published.masses[2]),
-    totalEnergy: exact(published.totalEnergy),
-    angularMomentum: exact(published.angularMomentum),
-    closestDistance: exact(closest.distance),
-    closestWhere: fill(t.orbitBodiesAt, {
-      pair: pairWords(closest.pair),
-      step: number.format(closest.step),
-    }),
-    syzygies: number.format(published.syzygyCount),
-    braidCrossings: number.format(published.braid.crossings),
-    braidWord: `${published.braid.word}${published.braid.truncated ? ' …' : ''}`,
-    fate:
-      orbit.fate.outcome === 'ejection'
-        ? fill(t.orbitFateEjection, {
-            body: (orbit.fate.escaper ?? 0) + 1,
-            step: number.format(orbit.fate.ejectionStep ?? 0),
-          })
-        : fill(t.orbitFateDance, { steps: number.format(orbit.fate.horizonSteps) }),
-  };
+  const labels = measurementLabels(t);
+  const record = recordValues(orbit, t, number);
   // Each row is marked as it is checked; the fate is checked last, since it runs on past the
   // window to the horizon, and the summary speaks once every row has been.
   const comparisons =
@@ -723,31 +680,12 @@ export function OrbitScore({
       : state.phase === 'waiting'
         ? t.orbitWaiting
         : state.phase === 'deriving'
-          ? progress?.phase === 'beginnings'
-            ? fill(t.orbitProgressBeginnings, {
-                done: number.format(progress.done),
-                total: number.format(progress.total),
-              })
-            : progress?.phase === 'warm-up'
-              ? fill(t.orbitProgressWarmUp, {
-                  index: number.format(orbit.generation.selectedIndex),
-                  done: number.format(progress.done),
-                  total: number.format(progress.total),
-                })
-              : progress?.phase === 'window'
-                ? fill(t.orbitProgressWindow, {
-                    done: number.format(progress.done),
-                    total: number.format(progress.total),
-                  })
-                : progress?.phase === 'braid'
-                  ? fill(t.orbitProgressBraid, {
-                      done: number.format(progress.done),
-                      total: number.format(progress.total),
-                    })
-                  : fill(t.orbitProgressBeginnings, {
-                      done: 0,
-                      total: number.format(orbit.generation.selectedIndex),
-                    })
+          ? progressText(
+              progress ?? { phase: 'beginnings', done: 0, total: orbit.generation.selectedIndex },
+              orbit.generation,
+              t,
+              number,
+            )
           : finished
             ? playingLine(steps, film)
             : playingLine(0, 0);
@@ -763,14 +701,7 @@ export function OrbitScore({
               orbit.generation.candidatesPerAttempt * (orbit.generation.retryCount + 1),
             ),
             steps: number.format(orbit.generation.warmupSteps + steps),
-          })} ${
-            differing.length
-              ? fill(t.orbitSomeDiffer, {
-                  count: differing.length,
-                  total: comparisons?.length ?? 0,
-                })
-              : t.orbitAllExact
-          }`
+          })} ${verdict(comparisons ?? [], t)}`
         : null;
   const line = beyond ? readout : ((still ? null : readout) ?? progressLine);
   const approach = derivedFate?.approach;
@@ -857,11 +788,9 @@ export function OrbitScore({
                 <tr key={key} data-key={key} data-exact={row ? String(row.exact) : undefined}>
                   <th scope="row">{labels[key]}</th>
                   <td className={key === 'braidWord' ? styles.word : undefined}>
-                    <span>{recordValues[key]}</span>
+                    <span>{record[key]}</span>
                     {row && !row.exact ? (
-                      <span className={styles.derivedValue}>
-                        {fill(t.orbitDerivedValue, { value: row.derived.replace(/^-/, MINUS) })}
-                      </span>
+                      <span className={styles.derivedValue}>{derivedValue(row, t)}</span>
                     ) : null}
                   </td>
                   <td className={styles.check}>
@@ -880,6 +809,12 @@ export function OrbitScore({
             index: number.format(orbit.generation.selectedIndex),
             steps: number.format(orbit.generation.warmupSteps + steps),
           })}
+        </p>
+        {/* The same derivation, printed whole on a page of its own (Verify an orbit). */}
+        <p className={styles.verify}>
+          <Link className="word-link" href={localizedPath(locale, `/verify/orbit/${orbit.id}`)}>
+            {t.verifyOrbitLineByLine}
+          </Link>
         </p>
       </div>
     </section>

@@ -2,13 +2,12 @@
 import { useEffect, useRef, useState } from 'react';
 import { ArtworkMedia } from '@/components/artwork-media';
 import { useMotion } from '@/components/motion-provider';
+import { SpectrumRule } from '@/components/spectrum-rule';
 import { workNumber } from '@/lib/art/number';
 import type { ArtFilm, ArtInterpretation } from '@/lib/art/types';
 import type { Messages } from '@/lib/i18n/en';
 import styles from './process.module.css';
 import { clock } from '@/lib/i18n/format';
-
-const SPECTRUM = { from: 380, to: 700 };
 
 /**
  * The published spectral sweep, on intent only: the Light still rests until the visitor asks,
@@ -52,10 +51,6 @@ export function SweepPlayer({
   useEffect(() => {
     if (theatre === 'hushed') video.current?.pause();
   }, [theatre]);
-  const tick =
-    wavelengthNm === undefined
-      ? undefined
-      : Math.min(1, Math.max(0, (wavelengthNm - SPECTRUM.from) / (SPECTRUM.to - SPECTRUM.from)));
   const alt = `${workNumber(artworkId)} · ${t.light} · ${t.spectralSweep}`;
   return (
     <div className={styles.stage} data-sweep-state={playing ? 'film' : ended ? 'still' : 'rest'}>
@@ -97,17 +92,7 @@ export function SweepPlayer({
           {workNumber(artworkId)} · {t.spectralSweep}
         </span>
         <span className={styles.readout}>
-          <span className={styles.spectrumRule} aria-hidden="true">
-            <span className={styles.spectrumEnd}>{SPECTRUM.from} nm</span>
-            <i>
-              {tick !== undefined ? (
-                <b style={{ left: `${tick * 100}%` }}>
-                  <span>{wavelengthNm} nm</span>
-                </b>
-              ) : null}
-            </i>
-            <span className={styles.spectrumEnd}>{SPECTRUM.to} nm</span>
-          </span>
+          <SpectrumRule dominantNm={wavelengthNm} className={styles.spectrumRule} />
           {playing || ended ? <span className="numeral folio">{clock(time.current)}</span> : null}
         </span>
         <span className="strip-words">

@@ -26,7 +26,7 @@ export const ORRERY = {
   chunk: 2000,
   /** The margin around the orbit, as a share of the cell's smaller side. */
   margin: 0.07,
-  /** A silence longer than this between a cell's frames (a hidden page, a busy thread) is a pause. */
+  /** The most of a silence between a cell's frames that is performed; the rest is a pause. */
   gapMs: 250,
 } as const;
 
@@ -90,7 +90,7 @@ interface Cell {
   whole: boolean;
 }
 
-/** The messages the Orrery's page sends its worker. */
+/** The messages the Orrery's page sends its worker; a frame is drawn only when asked for. */
 export type OrreryRequest =
   | {
       type: 'cells';
@@ -105,10 +105,15 @@ export type OrreryRequest =
     }
   | { type: 'visible'; id: number; visible: boolean }
   | { type: 'moving'; moving: boolean }
-  | { type: 'size'; id: number; width: number; height: number };
+  | { type: 'size'; id: number; width: number; height: number }
+  | { type: 'frame' };
 
-/** The worker's messages: a cell drawn whole under a still preference, or no way to draw. */
-export type OrreryReply = { type: 'drawn'; id: number } | { type: 'failed' };
+/**
+ * The worker's messages: a frame drawn, and whether there is more to draw; a cell drawn whole
+ * under a still preference; or no way to draw.
+ */
+export type OrreryReply =
+  { type: 'framed'; more: boolean } | { type: 'drawn'; id: number } | { type: 'failed' };
 
 export class OrreryEngine {
   private readonly cells = new Map<number, Cell>();
@@ -230,10 +235,12 @@ export class OrreryEngine {
     for (let k = 0; k < cells.length && budget > 0 && (k === 0 || !spent()); k++) {
       const [, cell] = cells[(this.turn + k) % cells.length];
       const steps = cell.replay.window.steps;
-      // A silence since the cell last advanced (a hidden page, a busy thread) is a pause: its
-      // clocks move on by it, so it resumes where it stood instead of owing the silence.
+      // A silence since the cell last advanced (a busy thread, a page drawing slowly) is
+      // performed for a moment at most; the rest is a pause, by which its clocks move on. So it
+      // resumes where it stood instead of owing the silence, and a page that draws only a few
+      // frames a second still sees every orbit go on, more slowly.
       if (cell.lastFrame !== null && now - cell.lastFrame > ORRERY.gapMs) {
-        const away = now - cell.lastFrame;
+        const away = now - cell.lastFrame - ORRERY.gapMs;
         if (cell.startedAt !== null) cell.startedAt += away;
         if (cell.heldSince !== null) cell.heldSince += away;
       }

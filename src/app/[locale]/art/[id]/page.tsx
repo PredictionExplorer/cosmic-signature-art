@@ -25,6 +25,7 @@ import type { HistoryQuery } from '@/components/artwork-history';
 import { ArtworkEntry } from '@/components/artwork-entry';
 import { OrbitScore } from '@/components/orbit-score';
 import { workOrbit } from '@/lib/art/orbit-records';
+import { filmOrbit } from '@/lib/art/orbit-windows';
 import recordStyles from '@/components/artwork-record.module.css';
 import { artworkViewParams } from '@/lib/art/view';
 import { knownExpressions, openingExpression, openingOn } from '@/lib/art/opening';
@@ -161,6 +162,7 @@ export default async function ArtworkPage({
         traits={{ structure: indexed?.traits.structure, underlay: indexed?.traits.underlay }}
         neighbours={neighboursFor(tokenId)}
         afterTheFrame={!!orbit}
+        orbit={filmOrbit(tokenId)}
       />
       {orbit ? <OrbitScore key={tokenId} orbit={orbit} t={t} locale={locale} /> : null}
       <div className="section-wrap">

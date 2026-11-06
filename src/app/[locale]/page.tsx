@@ -5,7 +5,7 @@ import { getCuratedArtwork } from '@/lib/art/catalog';
 import { inlineCuratedPreview } from '@/lib/art/inline-preview';
 import { expressionOfTheDay, venueNow, workOfTheDay } from '@/lib/art/work-of-the-day';
 import { openingOn } from '@/lib/art/opening';
-import { performedOrbits } from '@/lib/art/orbit-windows';
+import { filmOrbit, performedOrbits } from '@/lib/art/orbit-windows';
 import { getInterpretation, type Artwork } from '@/lib/art/types';
 import { metadata } from '@/lib/site';
 import { ArtworkViewer } from '@/components/artwork-viewer';
@@ -65,6 +65,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
           ink: inlineCuratedPreview(work.id, 'ink'),
           light: inlineCuratedPreview(work.id, 'light'),
         }}
+        orbit={filmOrbit(work.id)}
       />
       <Overture work={overtureOf(work)} />
       {/* Screen 3: the statement line, the one screen without a work. */}
