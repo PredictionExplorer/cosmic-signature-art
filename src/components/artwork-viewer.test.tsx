@@ -1,5 +1,5 @@
 import { act, cleanup, fireEvent, render, screen, within } from '@testing-library/react';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import { ArtworkViewer } from './artwork-viewer';
 import { getCuratedArtwork } from '@/lib/art/catalog';
 import { artworkFromIndex } from '@/lib/art/collection-cards';
@@ -1011,9 +1011,14 @@ describe('the settling plate', () => {
 describe('the score in the Light film’s transport', () => {
   const orbit = filmOrbit(31)!;
   const clip = work.media.find((item) => item.id === 'light')!.settlingFilm!;
-  let measured: FilmScore | undefined;
-  /** № 031's window measured as the worker measures it, once for the file. */
-  const scoreOf = () => (measured ??= scoreWindow(orbit.window));
+  let measured: FilmScore;
+  // № 031's window measured as the worker measures it, once for these tests. A million steps
+  // take seconds under CI's coverage, so the measuring has its own budget, as the physics
+  // tests' do, rather than spending the first test's.
+  beforeAll(() => {
+    measured = scoreWindow(orbit.window);
+  }, 30_000);
+  const scoreOf = () => measured;
   const oneDecimal = new Intl.NumberFormat('en', {
     minimumFractionDigits: 1,
     maximumFractionDigits: 1,
