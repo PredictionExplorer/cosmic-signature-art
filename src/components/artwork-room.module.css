@@ -211,10 +211,11 @@
   cursor: default;
   opacity: 0.6;
 }
-/* The loupe draws its own ring inside its clipped canvas (loupe.module.css). */
+/* The loupe draws its own ring inside its clipped canvas (loupe.module.css), and the
+   Wavelength rule rings its own mark (spectrum-rule.module.css). */
 .room button:focus-visible,
 .room input:focus-visible,
-.room [tabindex]:not([data-loupe]):focus-visible {
+.room [tabindex]:not([data-loupe], [role='slider']):focus-visible {
   outline: 1px solid currentColor;
   outline-offset: 3px;
 }
@@ -232,8 +233,9 @@
   align-items: center;
   gap: 18px;
   min-height: 27px;
-  padding: 0 max(var(--gutter), env(safe-area-inset-right)) max(12px, env(safe-area-inset-bottom))
-    max(var(--gutter), env(safe-area-inset-left));
+  /* 12 px above the transport's line, wherever the device sets the line: clear of the score. */
+  padding: 0 max(var(--gutter), env(safe-area-inset-right))
+    calc(env(safe-area-inset-bottom, 0px) + 12px) max(var(--gutter), env(safe-area-inset-left));
   color: var(--room-muted);
   font-size: var(--fs-folio);
 }
@@ -276,12 +278,22 @@
 .readout {
   position: absolute;
   right: max(var(--gutter), env(safe-area-inset-right));
-  bottom: max(12px, env(safe-area-inset-bottom));
+  bottom: calc(env(safe-area-inset-bottom, 0px) + 12px);
   font-family: var(--font-mono);
   font-size: var(--fs-folio);
   font-variant-numeric: tabular-nums lining-nums;
   color: var(--room-muted);
   pointer-events: none;
+}
+/* The Light film's score (film-score-band.tsx) lies beneath the transport's line, which it
+   carries: the hand drags the thumb across the orbit's encounters. */
+.room .score {
+  bottom: env(safe-area-inset-bottom, 0px);
+  color: var(--room-ink);
+}
+/* The thumb moves at once, so the lit edge does too, never trailing the hand. */
+.room .score canvas {
+  transition: none;
 }
 /* The transport: one pixel at the viewport's bottom edge; the hand finds a 44 px grip above it. */
 .transport {

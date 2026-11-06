@@ -1,9 +1,11 @@
 import type { ReactNode } from 'react';
+import Link from 'next/link';
 import type { ArtFilm, ArtInterpretation, Artwork } from '@/lib/art/types';
 import type { Messages } from '@/lib/i18n/en';
 import { expressionWord, filmLabel, formatBytes } from '@/lib/i18n/format';
-import type { Locale } from '@/lib/i18n/routing';
+import { localizedPath, type Locale } from '@/lib/i18n/routing';
 import { indexedAssetUrl, indexedWork, type IndexedWork } from '@/lib/art/collection-index';
+import { workOrbit } from '@/lib/art/orbit-records';
 import { CopyButton } from './copy-button';
 import { VerifyDownload, type VerifiableFile } from './verify-download';
 import styles from './artwork-record.module.css';
@@ -253,6 +255,12 @@ export function ArtworkSources({
         {!work.media.length ? <p className={styles.note}>{t.noMediaFiles}</p> : null}
       </div>
       {verifiable.length ? <VerifyDownload files={verifiable} t={t} /> : null}
+      {/* Beside Verify a download, the orbit's own check: a page of this venue, so no arrow. */}
+      {workOrbit(work.id) ? (
+        <p className={styles.verifyOrbit}>
+          <Link href={localizedPath(locale, `/verify/orbit/${work.id}`)}>{t.verifyOrbit}</Link>
+        </p>
+      ) : null}
       <ul className={styles.records}>
         {work.provenance.metadataUrl ? (
           <li>

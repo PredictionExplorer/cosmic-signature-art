@@ -22,6 +22,7 @@
     "art:ladder": "node scripts/build-still-ladder.mjs",
     "art:inline": "node scripts/build-inline-previews.mjs",
     "test:e2e": "playwright test",
+    "pretest:auction-ui": "npm run fonts",
     "test:auction-ui": "playwright test --config tests/auction-harness/playwright.config.ts",
     "test:auction-ui:types": "tsc --noEmit -p tests/auction-harness/tsconfig.json",
     "test:auction:local": "node scripts/run-local-auction-rehearsal.mjs",
@@ -36,7 +37,8 @@
     "art:orbits": "node --experimental-strip-types scripts/build-orbit-records.mjs",
     "art:windows": "node --experimental-strip-types scripts/build-orbit-windows.mjs",
     "art:arrival": "node scripts/build-arrival-maps.mjs",
-    "art:light": "node scripts/build-all-the-light.mjs"
+    "art:light": "node scripts/build-all-the-light.mjs",
+    "art:sweep": "node scripts/build-sweep-spans.mjs"
   },
   "dependencies": {
     "@fontsource-variable/literata": "^5.3.0",

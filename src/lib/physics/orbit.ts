@@ -705,7 +705,8 @@ const SYZYGY_GAP = 500;
 const BRAID_MERGE = 300;
 const BRAID_WORD_TOKENS = 48;
 const AXIS_STRIDE = 97;
-const PAIRS = [
+/** The three pairs, in the order every measurement lists them: bodies 1–2, 1–3, 2–3. */
+export const PAIRS = [
   [0, 1],
   [0, 2],
   [1, 2],
@@ -808,6 +809,53 @@ export function rederive(
   const windowStart = { P: Float64Array.from(P), V: Float64Array.from(V) };
 
   const steps = generation.steps;
+  const { closestApproach, syzygies, braid, samples } = measureWindow(
+    moving.masses,
+    generation.dt,
+    steps,
+    { positions: windowStart.P, velocities: windowStart.V },
+    { stride, onProgress },
+  );
+
+  return {
+    masses: [bodies.masses[0], bodies.masses[1], bodies.masses[2]],
+    totalEnergy: energy,
+    angularMomentum,
+    closestApproach,
+    syzygies,
+    braid,
+    profileDraws,
+    attempt,
+    samples,
+    windowStart: { positions: windowStart.P, velocities: windowStart.V },
+    milliseconds: { beginnings: derived - started, orbit: performance.now() - derived },
+  };
+}
+
+/** What a recorded window measures: the samples drawn, the closest approach, syzygies and braid. */
+export interface WindowMeasures {
+  closestApproach: ClosestApproach;
+  syzygies: number[];
+  braid: { word: string; crossings: number; truncated: boolean; events: BraidCrossing[] };
+  samples: { stride: number; count: number; positions: Float32Array; separations: Float32Array };
+}
+
+/**
+ * A recorded window measured as the generator measures it, from the bodies at its first step:
+ * each pair's closest approach, the syzygies and, in a second pass over the same steps, the
+ * braid. The state handed in is copied, never moved. `rederive` measures its window this way,
+ * and so does a page that holds the window's verified first state (src/lib/art/orbit-windows.ts).
+ */
+export function measureWindow(
+  masses: readonly number[],
+  dt: number,
+  steps: number,
+  start: { positions: ArrayLike<number>; velocities: ArrayLike<number> },
+  { stride = 100, onProgress }: { stride?: number; onProgress?: (progress: Progress) => void } = {},
+): WindowMeasures {
+  const P = Float64Array.from(start.positions);
+  const V = Float64Array.from(start.velocities);
+  const step = integrator(masses, P, V, dt);
   const count = Math.ceil(steps / stride);
   const positions = new Float32Array(count * 9);
   const separations = new Float32Array(count * 3);
@@ -891,8 +939,8 @@ export function rederive(
   vy /= norm;
 
   // compute_braid: a second pass over the same window, projected on that axis
-  P.set(windowStart.P);
-  V.set(windowStart.V);
+  P.set(start.positions);
+  V.set(start.velocities);
   const events: BraidCrossing[] = [];
   const lastCrossing = [-Infinity, -Infinity, -Infinity];
   const previous = [0, 0, 0];
@@ -929,17 +977,10 @@ export function rederive(
     .join(' ');
 
   return {
-    masses: [bodies.masses[0], bodies.masses[1], bodies.masses[2]],
-    totalEnergy: energy,
-    angularMomentum,
     closestApproach: closest,
     syzygies,
     braid: { word, crossings: events.length, truncated: events.length > BRAID_WORD_TOKENS, events },
-    profileDraws,
-    attempt,
     samples: { stride, count, positions, separations },
-    windowStart: { positions: windowStart.P, velocities: windowStart.V },
-    milliseconds: { beginnings: derived - started, orbit: performance.now() - derived },
   };
 }
 

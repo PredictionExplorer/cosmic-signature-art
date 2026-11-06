@@ -1,0 +1,130 @@
+/*
+  Verify an orbit, as a page of night (src/lib/room.ts): the work's identity in the margin and
+  the derivation beside it, or on the door, the number field beside every number there is.
+  Phones first, one column at 390 px; from a desk's width the margin and the work stand side
+  by side, the transcript growing down its own column.
+*/
+.page {
+  padding: 36px var(--gutter) calc(var(--baseline) * 10);
+}
+.sheet {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 45px;
+  align-items: start;
+}
+.head {
+  display: grid;
+  gap: 18px;
+  align-content: start;
+  min-width: 0;
+  max-width: var(--measure);
+}
+.back {
+  margin-bottom: -9px;
+}
+.title {
+  font-size: var(--fs-chapter);
+  font-weight: 300;
+  line-height: 1.05;
+  letter-spacing: -0.01em;
+  text-wrap: balance;
+}
+.numeral {
+  font-variant-numeric: tabular-nums lining-nums;
+}
+.lead {
+  color: var(--muted);
+}
+/* The seed in full: what the chain holds, and all the derivation starts from. */
+.seed {
+  display: grid;
+  gap: 3px;
+}
+.seed dt {
+  font-size: var(--fs-folio);
+  line-height: 1.5;
+  letter-spacing: 0.08em;
+  font-variant-caps: all-small-caps;
+  color: var(--muted);
+}
+/* The line is the code's own: a reading strut would space a wrapped seed like prose. */
+.seed dd {
+  font-size: var(--fs-folio);
+  line-height: 18px;
+}
+.seed code {
+  overflow-wrap: anywhere;
+}
+.note {
+  max-width: var(--measure);
+  font-size: var(--fs-control);
+  line-height: 1.5;
+  color: var(--muted);
+}
+
+/* The door: every number with a record, a ledger of hairlines, each a link to its derivation. */
+.works {
+  min-width: 0;
+}
+.worksTitle {
+  padding-bottom: 9px;
+  border-bottom: 1px solid var(--rule);
+  font-size: var(--fs-folio);
+  font-weight: 400;
+  line-height: 1.5;
+  letter-spacing: 0.08em;
+  font-variant-caps: all-small-caps;
+  color: var(--muted);
+}
+.numbers {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(64px, 1fr));
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.numbers a {
+  display: flex;
+  align-items: center;
+  min-height: 44px;
+  border-bottom: 1px solid var(--rule);
+  font-family: var(--font-mono);
+  font-size: var(--fs-control);
+  font-variant-numeric: tabular-nums lining-nums;
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.3em;
+  text-decoration-color: transparent;
+  transition: text-decoration-color var(--t-blink) var(--ease-settle);
+}
+.numbers a:hover,
+.numbers a:active,
+.numbers a:focus-visible {
+  text-decoration-color: currentColor;
+}
+
+@media (min-width: 1024px) {
+  .page {
+    padding-top: 54px;
+  }
+  .sheet {
+    grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr);
+    grid-template-areas:
+      'head work'
+      'note work';
+    grid-template-rows: auto 1fr;
+    column-gap: clamp(45px, 5vw, 90px);
+    row-gap: 27px;
+  }
+  .head {
+    grid-area: head;
+  }
+  .work {
+    grid-area: work;
+    min-width: 0;
+  }
+  .sheet > .note {
+    grid-area: note;
+  }
+}

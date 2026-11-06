@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { getCuratedArtwork } from '@/lib/art/catalog';
 import { indexedWork } from '@/lib/art/collection-index';
 import { en } from '@/lib/i18n/en';
+import { ja } from '@/lib/i18n/ja';
 import type { Artwork } from '@/lib/art/types';
 import {
   ArtworkSources,
@@ -71,8 +72,12 @@ describe('published artwork files', () => {
       'href',
       work.provenance.recordUrl,
     );
-    // Every link in this section leaves the venue and says so.
-    for (const link of within(section).getAllByRole('link')) expect(link).toHaveTextContent('↗');
+    // Every link in this section leaves the venue and says so, but Verify an orbit, which stays.
+    const verifyOrbit = within(section).getByRole('link', { name: en.verifyOrbit });
+    expect(verifyOrbit).toHaveAttribute('href', '/verify/orbit/31');
+    expect(verifyOrbit).not.toHaveTextContent('↗');
+    for (const link of within(section).getAllByRole('link'))
+      if (link !== verifyOrbit) expect(link).toHaveTextContent('↗');
     // Every hash has one word to copy it in full, and the published hashes can be checked against a download.
     expect(
       within(inkFiles).getByRole('button', { name: `${en.copyAddress} ${ink.stillSha256}` }),
@@ -96,6 +101,16 @@ describe('published artwork files', () => {
       within(verify).getByText(`${en.ink} · ${en.masterFile} · images/source/ember.png`),
     ).toBeInTheDocument();
     expect(within(verify).getByText(ink.masterSha256!, { selector: 'code' })).toBeInTheDocument();
+  });
+
+  it('offers Verify an orbit beside Verify a download, in the reader’s language, only with a record', () => {
+    const { unmount } = render(<ArtworkSources work={artwork()} locale="ja" t={ja} />);
+    const verify = screen.getByRole('link', { name: ja.verifyOrbit });
+    expect(verify).toHaveAttribute('href', '/ja/verify/orbit/31');
+    expect(verify.closest('p')?.previousElementSibling).toHaveTextContent(ja.verifyDownload);
+    unmount();
+    render(<ArtworkSources work={{ ...artwork(), id: 100_000 }} locale="en" t={en} />);
+    expect(screen.queryByRole('link', { name: en.verifyOrbit })).not.toBeInTheDocument();
   });
 
   it('never borrows the index’s sizes for a different seed', () => {

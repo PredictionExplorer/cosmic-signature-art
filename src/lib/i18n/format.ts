@@ -52,6 +52,6 @@ export function filmLabel(film: ArtFilm, t: Messages): string {
       : film.id === 'slow'
         ? t.extendedStudy
         : film.id === 'sweep'
-          ? t.spectralSweep
+          ? t.sweepFilm
           : film.label;
 }

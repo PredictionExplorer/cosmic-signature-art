@@ -221,41 +221,10 @@
 .sweepVisible {
   opacity: 1;
 }
+/* The visible spectrum (src/components/spectrum-rule.tsx), set into the strip's readout. */
 .spectrumRule {
-  display: flex;
-  align-items: center;
-  gap: 9px;
   flex: 1 1 160px;
   max-width: 420px;
-  font-family: var(--font-mono);
-  font-size: var(--fs-folio);
-  font-variant-numeric: tabular-nums lining-nums;
-}
-.spectrumEnd {
-  white-space: nowrap;
-}
-.spectrumRule i {
-  position: relative;
-  display: block;
-  flex: 1;
-  height: 1px;
-  background: var(--rule);
-}
-.spectrumRule b {
-  position: absolute;
-  top: -4px;
-  width: 1px;
-  height: 9px;
-  background: currentColor;
-  transform: translateX(-50%);
-}
-.spectrumRule b > span {
-  position: absolute;
-  top: 12px;
-  left: 0;
-  transform: translateX(-50%);
-  white-space: nowrap;
-  font-weight: 400;
 }
 
 /* The coda: the thesis, on paper. */
@@ -337,8 +306,5 @@
   }
   .readout :global(.progress-track) {
     max-width: none;
-  }
-  .spectrumRule b > span {
-    display: none;
   }
 }

@@ -22,6 +22,7 @@ const SERVER_ONLY_MODULES = [
   'plate-details',
   'server',
   'still-ladder',
+  'sweep-spans',
   'work-of-the-day',
 ];
 const importPattern = new RegExp(

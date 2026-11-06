@@ -321,6 +321,7 @@ export const ja: Messages = {
   lightMedium: '光：黒の上に輝く軌道のリボン。',
   filmsWord: 'フィルム',
   spectralSweep: 'スペクトル・スイープ',
+  sweepFilm: 'スペクトル・スイープ',
   mintedTo: '発行先',
   heldBy: '所有',
   recordAsOf: '{date} 時点の Arbitrum の記録',
@@ -540,6 +541,29 @@ export const ja: Messages = {
   verifyTooLarge:
     'このファイルは大きすぎてブラウザでは検証できません。下のコマンドを実行し、結果を公開されたハッシュと比べてください。',
   verifyFailed: 'ファイルを読み込めませんでした。',
+  // Verify an orbit (src/components/orbit-verifier.tsx, orbit-picker.tsx)
+  verifyOrbit: '軌道を検証',
+  verifyOrbitIntro:
+    '番号で作品を選んでください。このブラウザが生成器と同じ計算でシードから軌道をもう一度導き出し、公開された記録との照合を一行ずつ示します。',
+  verifyOrbitNumber: '作品番号',
+  verifyOrbitGo: '検証する',
+  verifyOrbitUnknown: '{work} には公開された記録がありません。',
+  verifyOrbitWorks: '公開された記録のあるすべての作品',
+  verifyOrbitOf: '{work} の軌道を検証',
+  verifyOrbitWorkIntro:
+    'このブラウザがシードから {work} の軌道をもう一度導き出し、公開された記録の測定値を一行ずつ照合します。',
+  verifyOrbitLineByLine: '導出を、一行ずつ',
+  verifyOrbitWaiting: 'ページの準備が整うと、ここで導出が始まります。',
+  verifyOrbitSeedLine: 'シード {seed}',
+  verifyOrbitFateRun: '記録区間の先、運命へ · 第 {steps} ステップまで',
+  verifyOrbitAt: '{seconds} 秒',
+  verifyOrbitTook: 'この場で {seconds} 秒で照合しました。',
+  verifyOrbitUnchecked: '未照合',
+  verifyOrbitSomeUnchecked:
+    '{total} 項目のうち {count} 項目は、このブラウザでは照合できませんでした。',
+  verifyOrbitAnother: 'ほかの軌道を検証',
+  verifyOrbitNote:
+    '計算は生成器そのものの手順です。乱数の流れを第 {index} 番の候補まで読み、四次の吉田積分法で {steps} ステップ進め、運命を知るために記録区間の先まで続けます。使うのは加算・減算・乗算・除算と平方根だけで、いずれも規格が厳密に定めているため、どのブラウザでも同じビットに至ります。どこにも何も送信しません。',
   publishedHashes: '公開されたハッシュ',
   sharingCollection: 'コレクション · {count} 作品',
   // The orbit, re-performed (src/components/orbit-score.tsx)
@@ -589,6 +613,9 @@ export const ja: Messages = {
   orbitEscaped: '天体 {body} が第 {step} ステップで脱出しました',
   orbitHeld: '{steps} ステップのあいだ、舞は続きました',
   toTheEjection: '脱出へ',
+  filmPhysics: '天体 {pair} · 距離 {distance}',
+  toClosestApproach: '最接近へ',
+  closestApproachAt: '最接近の少し手前から全編を開きます（{clock}）',
   // The crossing and the When lens (src/components/when-lens.tsx)
   whenLens: '時刻',
   whenLight: 'それぞれの線が描かれた時刻',
@@ -599,6 +626,14 @@ export const ja: Messages = {
   analysisNotWork: '作品ではなく分析',
   keyWhen: '時刻：映像のなかで現れた時刻で、それぞれの部分を色分け',
   whenUnavailable: 'このブラウザでは時刻の図を描けませんでした。静止画を表示しています。',
+  // The Wavelength lens (src/components/wavelength-lens.tsx)
+  wavelengthLens: '波長',
+  wavelengthCaption: 'ひとつの波長のスイープ',
+  wavelengthValue: '{n} ナノメートル',
+  wavelengthAlt: '{plate} · {n} nm で止めたスペクトル・スイープ。作品ではなく分析。',
+  wavelengthLoading: 'スイープを読み込んでいます…',
+  keyWavelength: '波長：スペクトル・スイープをひとつの波長で止める。← → で選ぶ',
+  wavelengthUnavailable: 'ここではスペクトル・スイープを表示できません。静止画を表示しています。',
   // The indexes: the Orrery and All the light (src/components/orrery.tsx, all-the-light.tsx)
   orrery: 'オーラリー',
   orreryTitle: 'オーラリー',

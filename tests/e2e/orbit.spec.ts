@@ -1,6 +1,8 @@
 import { expect, test } from '@playwright/test';
 import { catalogs } from '../../src/lib/i18n/messages';
+import { fill } from '../../src/lib/i18n/format';
 import { AFTER_THE_FRAME_EVENT } from '../../src/lib/venue-events';
+import { playAmbientMotion, standInFilm } from './helpers';
 
 const t = catalogs.en;
 
@@ -106,4 +108,54 @@ test('a resolved film offers After the frame, which goes down to the orbit and o
   await expect(orbit).toBeInViewport();
   // The word moves the visitor, not the address.
   expect(new URL(page.url()).hash).toBe('');
+});
+
+/**
+ * The score (third-physics.md §5.5): while the Light film plays, its time line becomes the
+ * orbit's score, measured here from the verified window, and the strip reads the physics of the
+ * moment. The options open the complete film just before the closest approach, which № 031's
+ * bodies 1–3 reach at step 255,842, first drawn by the film's frame 460: 00:07.
+ */
+test('the Light film’s transport is its orbit’s score, and opens on the closest approach', async ({
+  page,
+  isMobile,
+}, info) => {
+  test.slow();
+  // The complete film is the published original; a local film of the same length stands in.
+  await standInFilm(page, /\/videos\/web\/main\.mp4(?:\?|$)/, 'public/art/31-ink-preview.mp4');
+  await page.goto('/art/31?expression=light');
+  const plate = page.locator('[data-artwork-stage="page"]:visible [data-layer-state="current"]');
+  // Reduced motion plays no film on the plate: the score waits for a film, the word does not.
+  if (!info.project.name.includes('reduced-motion')) {
+    await playAmbientMotion(page);
+    // A phone's plate rests on its excerpt, which carries no transport; its word plays the film.
+    if (isMobile) await plate.getByRole('button', { name: t.film, exact: true }).click();
+    const band = plate.locator('[data-film-score]');
+    await expect(band).toBeVisible({ timeout: 60_000 });
+    await expect(plate.locator('.time-line')).toHaveCount(0);
+    // The settling clip is the film's last eight seconds: the score is lit past its 22nd.
+    const lit = band.locator('[data-film-score-progress]');
+    expect(Number(await lit.getAttribute('data-film-score-progress'))).toBeGreaterThan(70);
+    await expect(plate.locator('[data-film-physics]')).toHaveText(
+      /^bodies [1-3]–[1-3] · \d+\.\d apart$/,
+    );
+    // It lies along the plate's own foot, on its night.
+    const screen = (await plate.locator('[data-plate-ground="night"]').boundingBox())!;
+    const box = (await band.boundingBox())!;
+    expect(box.height).toBe(9);
+    expect(Math.abs(box.y + box.height - (screen.y + screen.height))).toBeLessThanOrEqual(1);
+  }
+  await plate.getByRole('button', { name: t.ways, exact: true }).click();
+  const closest = plate.getByRole('button', { name: `${t.toClosestApproach} 00:07` });
+  await expect(closest).toHaveAccessibleDescription(fill(t.closestApproachAt, { clock: '00:07' }));
+  await closest.click();
+  const film = page.getByRole('dialog').locator('video');
+  await expect(film).toHaveAttribute('src', /\/videos\/web\/main\.mp4$/);
+  // Two seconds before the closest approach (7.67 s), so the visitor sees it happen.
+  await expect
+    .poll(() => film.evaluate((video) => (video as HTMLVideoElement).currentTime), {
+      timeout: 30_000,
+    })
+    .toBeGreaterThanOrEqual(5.6);
+  expect(await film.evaluate((video) => (video as HTMLVideoElement).currentTime)).toBeLessThan(10);
 });

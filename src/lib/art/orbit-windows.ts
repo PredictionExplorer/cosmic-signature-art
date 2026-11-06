@@ -2,6 +2,7 @@ import { z } from 'zod';
 import data from './orbit-windows.json' with { type: 'json' };
 import { workOrbit } from './orbit-records';
 import type { OrbitWindow } from '@/lib/physics/orbit';
+import type { FilmOrbit } from '@/lib/physics/film-score';
 
 /**
  * Where each work's orbit stands at the first step of its recorded window, and the plane it is
@@ -86,4 +87,12 @@ export function performedOrbits(ids: readonly number[]): PerformedOrbit[] {
     const bound = bindWindow(windows.get(id), id);
     return bound ? [bound] : [];
   });
+}
+
+/** A work's Light film's score, as its viewer needs it (film-score.ts); nothing without a window. */
+export function filmOrbit(id: number): FilmOrbit | undefined {
+  const [performed] = performedOrbits([id]);
+  const record = workOrbit(id);
+  if (!performed || !record) return undefined;
+  return { ...performed, closestApproach: record.published.closestApproach };
 }

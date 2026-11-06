@@ -319,6 +319,7 @@ export const uk: Messages = {
   lightMedium: 'Світло: сяйливі орбітальні стрічки на чорному.',
   filmsWord: 'фільми',
   spectralSweep: 'спектральний прохід',
+  sweepFilm: 'Спектральний прохід',
   mintedTo: 'Викарбовано для',
   heldBy: 'зберігає',
   recordAsOf: 'Запис Arbitrum станом на {date}',
@@ -542,6 +543,28 @@ export const uk: Messages = {
   verifyTooLarge:
     'Цей файл надто великий, щоб перевірити його в браузері. Виконайте команду нижче й порівняйте результат з опублікованими хешами.',
   verifyFailed: 'Файл не вдалося прочитати.',
+  // Verify an orbit (src/components/orbit-verifier.tsx, orbit-picker.tsx)
+  verifyOrbit: 'Перевірити орбіту',
+  verifyOrbitIntro:
+    'Оберіть твір за номером. Цей браузер наново виведе його орбіту із зерна власною арифметикою генератора й рядок за рядком надрукує порівняння з опублікованим записом.',
+  verifyOrbitNumber: 'Номер твору',
+  verifyOrbitGo: 'Перевірити',
+  verifyOrbitUnknown: '{work} не має опублікованого запису.',
+  verifyOrbitWorks: 'Усі твори з опублікованим записом',
+  verifyOrbitOf: 'Перевірити орбіту {work}',
+  verifyOrbitWorkIntro:
+    'Цей браузер наново виводить орбіту {work} з її зерна, а тоді рядок за рядком звіряє кожне вимірювання з опублікованим записом.',
+  verifyOrbitLineByLine: 'Виведення, рядок за рядком',
+  verifyOrbitWaiting: 'Виведення почнеться тут, щойно сторінка буде готова.',
+  verifyOrbitSeedLine: 'Зерно {seed}',
+  verifyOrbitFateRun: 'Поза вікном, щоб дізнатися долю · до кроку {steps}',
+  verifyOrbitAt: '{seconds} с',
+  verifyOrbitTook: 'Перевірено тут за {seconds} с.',
+  verifyOrbitUnchecked: 'не перевірено',
+  verifyOrbitSomeUnchecked: '{count} з {total} вимірювань не вдалося перевірити в цьому браузері.',
+  verifyOrbitAnother: 'Перевірити іншу',
+  verifyOrbitNote:
+    'Це власна арифметика генератора: його випадковий потік, прочитаний до кандидата {index}; {steps} кроків інтегратора Йошиди четвертого порядку; далі — поза вікном, до долі. Вона вживає лише додавання, віднімання, множення, ділення й квадратний корінь, і кожну з цих дій стандарт визначає точно, тож будь-який браузер доходить тих самих бітів. Нічого нікуди не надсилається.',
   publishedHashes: 'Опубліковані хеші',
   sharingCollection: 'Колекція · роботи: {count}',
   // The orbit, re-performed (src/components/orbit-score.tsx)
@@ -591,6 +614,9 @@ export const uk: Messages = {
   orbitEscaped: 'Тіло {body} вилетіло на кроці {step}',
   orbitHeld: 'Танець тривав усі {steps} кроків',
   toTheEjection: 'До вильоту',
+  filmPhysics: 'тіла {pair} · відстань {distance}',
+  toClosestApproach: 'До зближення',
+  closestApproachAt: 'Фільм відкривається трохи раніше за найтісніше зближення, на {clock}',
   // The crossing and the When lens (src/components/when-lens.tsx)
   whenLens: 'Коли',
   whenLight: 'Коли було намальовано кожен штрих',
@@ -603,6 +629,14 @@ export const uk: Messages = {
   keyWhen: 'Коли: кожен штрих забарвлено за моментом його появи у фільмі',
   whenUnavailable:
     'Цей браузер не зміг намалювати вигляд «Коли»; замість нього показано зображення.',
+  // The Wavelength lens (src/components/wavelength-lens.tsx)
+  wavelengthLens: 'Довжина хвилі',
+  wavelengthCaption: 'Прохід на одній довжині хвилі',
+  wavelengthValue: '{n} нм',
+  wavelengthAlt: '{plate} · спектральний прохід, зупинений на {n} нм. Аналіз, а не твір.',
+  wavelengthLoading: 'Завантажуємо прохід…',
+  keyWavelength: 'Довжина хвилі: спектральний прохід на одній довжині хвилі; ← → обирають її',
+  wavelengthUnavailable: 'Спектральний прохід тут недоступний; замість нього показано зображення.',
   // The indexes: the Orrery and All the light (src/components/orrery.tsx, all-the-light.tsx)
   orrery: 'Оррері',
   orreryTitle: 'Оррері',

@@ -307,6 +307,7 @@ export const zhHK: Messages = {
   lightMedium: '光：黑色之上的發光軌道絲帶。',
   filmsWord: '影片',
   spectralSweep: '光譜掃描',
+  sweepFilm: '光譜掃描',
   mintedTo: '鑄造至',
   heldBy: '持有者',
   recordAsOf: 'Arbitrum 記錄，截至 {date}',
@@ -513,6 +514,28 @@ export const zhHK: Messages = {
   verifyTooLarge:
     '此檔案過大，無法在瀏覽器中驗證。請執行下面的指令，並將結果與已發佈的雜湊值比對。',
   verifyFailed: '無法讀取該檔案。',
+  // Verify an orbit (src/components/orbit-verifier.tsx, orbit-picker.tsx)
+  verifyOrbit: '核驗軌道',
+  verifyOrbitIntro:
+    '按編號選擇一件作品。這個瀏覽器會用生成器自己的算法，由種子重新推導它的軌道，並逐行列出與已發佈紀錄的比對。',
+  verifyOrbitNumber: '作品編號',
+  verifyOrbitGo: '核驗',
+  verifyOrbitUnknown: '{work} 沒有已發佈的紀錄。',
+  verifyOrbitWorks: '具有已發佈紀錄的全部作品',
+  verifyOrbitOf: '核驗 {work} 的軌道',
+  verifyOrbitWorkIntro:
+    '這個瀏覽器由種子重新推導 {work} 的軌道，再逐行核對已發佈紀錄中的每一項測量。',
+  verifyOrbitLineByLine: '推導過程，逐行列出',
+  verifyOrbitWaiting: '頁面就緒後，推導便在這裏開始。',
+  verifyOrbitSeedLine: '種子 {seed}',
+  verifyOrbitFateRun: '越過紀錄區間，求其命運 · 直至第 {steps} 步',
+  verifyOrbitAt: '{seconds} 秒',
+  verifyOrbitTook: '在此核對，用時 {seconds} 秒。',
+  verifyOrbitUnchecked: '未核對',
+  verifyOrbitSomeUnchecked: '{total} 項測量中有 {count} 項無法在這個瀏覽器中核對。',
+  verifyOrbitAnother: '核驗另一條軌道',
+  verifyOrbitNote:
+    '算法是生成器自己的：它的隨機流讀到第 {index} 號候選；四階 Yoshida 積分器的 {steps} 步；再越過紀錄區間，推算命運。只用加、減、乘、除與平方根，每一種運算都由標準精確規定，因此任何瀏覽器都會得到相同的位元。不會向任何地方發送數據。',
   publishedHashes: '已發佈的雜湊值',
   sharingCollection: '館藏 · {count} 件作品',
   // The orbit, re-performed (src/components/orbit-score.tsx)
@@ -561,6 +584,9 @@ export const zhHK: Messages = {
   orbitEscaped: '天體 {body} 已在第 {step} 步逃逸',
   orbitHeld: '這支舞持續了全部 {steps} 步',
   toTheEjection: '前往逃逸',
+  filmPhysics: '天體 {pair} · 相距 {distance}',
+  toClosestApproach: '前往最接近時刻',
+  closestApproachAt: '從最接近時刻前不久開啟影片，於 {clock}',
   // The crossing and the When lens (src/components/when-lens.tsx)
   whenLens: '時刻',
   whenLight: '每一筆被畫出的時刻',
@@ -571,6 +597,14 @@ export const zhHK: Messages = {
   analysisNotWork: '分析，而非作品',
   keyWhen: '時刻：按每一筆在影片中出現的時刻着色',
   whenUnavailable: '此瀏覽器未能繪製時刻視圖，改為顯示靜態影像。',
+  // The Wavelength lens (src/components/wavelength-lens.tsx)
+  wavelengthLens: '波長',
+  wavelengthCaption: '停在單一波長的光譜掃描',
+  wavelengthValue: '{n} 納米',
+  wavelengthAlt: '{plate} · 停在 {n} nm 的光譜掃描。分析，而非作品。',
+  wavelengthLoading: '正在載入光譜掃描…',
+  keyWavelength: '波長：讓光譜掃描停在單一波長；用 ← → 選擇',
+  wavelengthUnavailable: '此處未能顯示光譜掃描，改為顯示靜態影像。',
   // The indexes: the Orrery and All the light (src/components/orrery.tsx, all-the-light.tsx)
   orrery: '軌道儀',
   orreryTitle: '軌道儀',

@@ -2,6 +2,7 @@
 
 import { useEffect, useId, useRef, useState, type ReactNode } from 'react';
 import type { Messages } from '@/lib/i18n/en';
+import { fill } from '@/lib/i18n/format';
 import styles from './artwork-options.module.css';
 
 /** Secondary viewing actions share one quiet, keyboard-accessible disclosure. */
@@ -9,11 +10,14 @@ export function ArtworkOptions({
   t,
   onStudy,
   onSit,
+  closest,
   readout,
 }: {
   t: Messages;
   onStudy?: (trigger: HTMLButtonElement | null) => void;
   onSit?: () => void;
+  /** The Light film opened at its closest approach (third-physics.md §5.5), and when that is. */
+  closest?: { clock: string; onOpen: (trigger: HTMLButtonElement | null) => void };
   readout?: ReactNode;
 }) {
   const [open, setOpen] = useState(false);
@@ -92,6 +96,21 @@ export function ArtworkOptions({
               }}
             >
               {t.sit}
+            </button>
+          ) : null}
+          {closest ? (
+            <button
+              type="button"
+              title={fill(t.closestApproachAt, { clock: closest.clock })}
+              onClick={() => {
+                setOpen(false);
+                closest.onOpen(trigger.current);
+              }}
+              data-closest-approach
+            >
+              <span className={styles.closest}>
+                {t.toClosestApproach} <span className={styles.clock}>{closest.clock}</span>
+              </span>
             </button>
           ) : null}
           {readout ? <div className={styles.readout}>{readout}</div> : null}

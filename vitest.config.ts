@@ -8,6 +8,11 @@ export default defineConfig({
     environment: 'jsdom',
     setupFiles: ['./tests/setup.ts'],
     include: ['src/**/*.test.{ts,tsx}'],
+    // A test's budget is there to catch a hang. CI's shared runner, measuring coverage, takes four
+    // to five times as long over this suite as a developer's machine, so its budget is sized to
+    // the runner rather than left at the five seconds meant for a laptop. The physics tests keep
+    // their own, longer budgets.
+    testTimeout: process.env.CI ? 15_000 : 5_000,
     coverage: {
       provider: 'v8',
       include: ['src/lib/**/*.ts', 'src/components/**/*.tsx'],
