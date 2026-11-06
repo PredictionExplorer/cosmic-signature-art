@@ -22,6 +22,7 @@
     "art:ladder": "node scripts/build-still-ladder.mjs",
     "art:inline": "node scripts/build-inline-previews.mjs",
     "test:e2e": "playwright test",
+    "pretest:auction-ui": "npm run fonts",
     "test:auction-ui": "playwright test --config tests/auction-harness/playwright.config.ts",
     "test:auction-ui:types": "tsc --noEmit -p tests/auction-harness/tsconfig.json",
     "test:auction:local": "node scripts/run-local-auction-rehearsal.mjs",
