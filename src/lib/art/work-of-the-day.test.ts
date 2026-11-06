@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { DAY_WORK_POOL, expressionOfTheDay, venueNow, workOfTheDay } from './work-of-the-day';
 import { getCuratedArtwork } from './catalog';
 import { getInterpretation } from './types';
@@ -71,13 +71,27 @@ describe('expression of the day', () => {
 });
 
 describe("the venue's today", () => {
+  afterEach(() => {
+    vi.useRealTimers();
+    vi.unstubAllEnvs();
+  });
+
   it('is the clock unless a date pins it, and refuses a pin that is not a date', () => {
-    const before = Date.now();
-    const now = venueNow(undefined).getTime();
-    expect(now).toBeGreaterThanOrEqual(before);
-    expect(venueNow('').getTime()).toBeGreaterThanOrEqual(before);
+    // CI pins the venue's date for the whole job; the clock is read here without the pin.
+    vi.stubEnv('COSMIC_VENUE_DATE', undefined);
+    vi.setSystemTime(new Date('2031-03-04T05:06:07Z'));
+    expect(venueNow().toISOString()).toBe('2031-03-04T05:06:07.000Z');
+    expect(venueNow('').toISOString()).toBe('2031-03-04T05:06:07.000Z');
     expect(venueNow('2026-11-06').toISOString()).toBe('2026-11-06T00:00:00.000Z');
     expect(expressionOfTheDay(venueNow('2026-11-06'))).toBe('ink');
     expect(() => venueNow('tomorrow')).toThrow(/COSMIC_VENUE_DATE/);
+  });
+
+  it('takes its pin from the environment, as the build and the browser suite set it', () => {
+    vi.stubEnv('COSMIC_VENUE_DATE', '2026-11-06');
+    vi.setSystemTime(new Date('2031-03-04T05:06:07Z'));
+    expect(venueNow().toISOString()).toBe('2026-11-06T00:00:00.000Z');
+    expect(workOfTheDay()).toBe(workOfTheDay(new Date('2026-11-06T12:00:00Z')));
+    expect(expressionOfTheDay()).toBe('ink');
   });
 });
