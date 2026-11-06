@@ -166,6 +166,12 @@ It found three defects in the score, one in the lens, and smaller things in all 
 - The production build passes.
 - Every browser spec passes on the six local projects. Two collection tests failed once under four parallel workers, and pass alone, repeated. This phase touches nothing in the collection, and CI runs two workers.
 
+**Found on CI.**
+- **WebKit on Linux counts a frame sought while paused as played.** The lens only ever seeks, yet the sweep reported played ranges. The spec now records every film the page asks to play, and the sweep is never among them.
+- **The test of the venue's clock read CI's date pin.** CI pins the venue's date for the whole job, the unit tests included. The test of the unpinned clock read the pin, and passed only while the pinned day was still ahead: it failed every pull request from midnight UTC on 6 November. It now clears the pin and sets the clock, and a second test reads the pin from the environment.
+- **The score tests measured an orbit inside their first test's budget.** Measuring №031's window took about five seconds under CI's coverage, the whole of a test's default budget. The window is now measured once before the tests that read it, with its own budget, as the physics tests' are.
+- **CI's budget is sized to its runner.** CI took four to five times as long over the suite as a developer's machine, and a dozen tests from earlier phases already took half their five seconds or more. CI now allows fifteen.
+
 ## 5. Open
 
 - **True 404s with the venue's own page.** Unknown works and unknown numbers on the verifier answer the venue's not-found page as a soft 404 (200, `noindex`), because the locale's loading boundary has begun to stream. The proxy could refuse them before anything renders, and a site-wide `global-not-found` would give that refusal the venue's own page.
