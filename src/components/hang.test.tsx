@@ -4,6 +4,11 @@ import { en } from '@/lib/i18n/en';
 import { getCuratedArtwork } from '@/lib/art/catalog';
 import { Hang } from './hang';
 
+// The plates read the motion preference; the quiet room holds their films on the stills.
+vi.mock('./motion-provider', () => ({
+  useMotion: () => ({ paused: true, reducedMotion: true, theatre: 'playing', toggle: () => {} }),
+}));
+
 const works = [23, 31, 35].map((id) => getCuratedArtwork(id)!);
 
 beforeAll(() => {

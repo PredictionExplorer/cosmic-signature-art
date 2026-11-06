@@ -6,6 +6,7 @@ import { messages } from '@/lib/i18n/messages';
 import { ART_API_ORIGIN, ART_MEDIA_ORIGINS } from '@/lib/art/constants';
 import { compactWorks } from '@/lib/art/collection-index';
 import { CJK_STYLESHEETS, LITERATA_PRELOADS } from '@/lib/fonts';
+import { revealScript } from '@/lib/reveal';
 import { roomScript, type Room } from '@/lib/room';
 import { MotionProvider } from '@/components/motion-provider';
 import { RoomGround } from '@/components/room-ground';
@@ -71,6 +72,8 @@ export function VenueDocument({
       <body>
         {cjk ? <link rel="stylesheet" href={cjk} precedence="default" /> : null}
         {room ? null : <script dangerouslySetInnerHTML={{ __html: roomScript(venueDay) }} />}
+        {/* Ahead of React's streaming runtime: reveals what WebKit would hold back until load. */}
+        <script dangerouslySetInnerHTML={{ __html: revealScript }} />
         <MotionProvider>
           <Suspense fallback={null}>
             <RoomGround />
