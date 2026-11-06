@@ -42,7 +42,8 @@ for (const locale of locales) {
 test('the quiet pages belong to the venue: the 404 hangs the work next door on black', async ({
   page,
 }) => {
-  await page.goto('/art/not-a-work');
+  const response = await page.goto('/art/not-a-work');
+  expect(response?.status()).toBe(404);
   await expect(page.getByRole('heading', { level: 1 })).toHaveText(catalogs.en.notFound);
   await expect(page.locator('html')).toHaveAttribute('data-room', 'night');
   const plate = page.getByRole('main').locator('.art-media');

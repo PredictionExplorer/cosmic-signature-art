@@ -179,9 +179,23 @@ function PauseGlyph({ paused }: { paused: boolean }) {
  * Index, motion and language. A second, inert copy in the other ground is clipped at the seam while the
  * Turn travels (globals.css reads <html data-turning> and --seam), so the head inverts with it.
  */
-export function RunningHead({ locale, t }: { locale: Locale; t: Messages }) {
+export function RunningHead({
+  locale,
+  t,
+  address,
+}: {
+  locale: Locale;
+  t: Messages;
+  /**
+   * The visitor's own address, where the route is not it: the venue's 404 is rendered for an
+   * address no route answers (src/app/global-not-found.tsx), and its language menu points at
+   * the address that was asked for.
+   */
+  address?: string;
+}) {
   const { paused, toggle } = useMotion();
-  const pathname = unlocalizedPath(usePathname());
+  const routed = usePathname();
+  const pathname = unlocalizedPath(address ?? routed);
   const sheet = useOpenSheet();
   const current = (path: string) =>
     pathname === path || pathname.startsWith(`${path}/`) ? 'page' : undefined;
