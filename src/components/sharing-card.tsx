@@ -430,12 +430,15 @@ export function PairCard({
                 style={{ width: '100%', height: '100%', objectFit: 'contain' }}
               />
             </div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 12, height: 102 }}>
+            {/* Both leaves reserve the label line and three lines beneath it, so the plates hang at
+                one height across the seam and a sentence never runs past the frame. */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 12, height: 156 }}>
               {leaf.label ? <CardLabel label={leaf.label} /> : null}
               {below ? (
                 <div
                   style={{
-                    display: 'flex',
+                    display: 'block',
+                    lineClamp: 3,
                     fontFamily: index === 0 ? 'Literata' : 'IBM Plex Mono',
                     fontSize: 24,
                     lineHeight: 1.4,

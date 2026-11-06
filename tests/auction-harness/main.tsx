@@ -1,8 +1,7 @@
 import { createRoot } from 'react-dom/client';
-import '@fontsource-variable/literata/opsz.css';
-import '@fontsource-variable/literata/opsz-italic.css';
+// The venue's faces, served from public/fonts by scripts/build-font-subsets.mjs (npm run fonts).
 import '@fontsource/ibm-plex-mono/400.css';
-import '@fontsource/ibm-plex-mono/500.css';
+import '../../src/app/typefaces.css';
 import '../../src/app/globals.css';
 import { LiveAuction } from '@/components/live-auction';
 import { AuctionLot } from '@/components/auction-lot';

@@ -2,6 +2,7 @@
 import Link from 'next/link';
 import { workFolio, workNumber } from '@/lib/art/number';
 import { fill } from '@/lib/i18n/format';
+import { bindNumbers, SEPARATOR, unbroken } from '@/lib/typography';
 import type { Messages } from '@/lib/i18n/en';
 import { localizedPath, type Locale } from '@/lib/i18n/routing';
 import styles from './artwork-viewer.module.css';
@@ -78,10 +79,15 @@ export function ArtworkNeighbours({
             href={neighbourHref(locale, spectral.id, expression)}
             data-neighbour="spectral"
           >
-            {t.nextByWavelength} · {workNumber(spectral.id)} ·{' '}
-            {fill(spectral.direction === 'redder' ? t.nmRedder : t.nmBluer, {
-              n: spectral.deltaNm,
-            })}
+            {t.nextByWavelength}
+            {SEPARATOR}
+            {unbroken(workNumber(spectral.id))}
+            {SEPARATOR}
+            {bindNumbers(
+              fill(spectral.direction === 'redder' ? t.nmRedder : t.nmBluer, {
+                n: spectral.deltaNm,
+              }),
+            )}
           </Link>
         ) : null}
         {lot ? (

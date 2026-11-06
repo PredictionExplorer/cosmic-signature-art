@@ -100,7 +100,10 @@
   font-weight: 400;
   margin: 0;
 }
+/* A timeline's dates are the instrument's: mono, tabular, on the floor. */
 .event time {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums lining-nums;
   font-size: var(--fs-folio);
   color: var(--muted);
 }

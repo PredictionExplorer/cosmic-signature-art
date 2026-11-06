@@ -10,12 +10,11 @@
   color: var(--muted);
   margin-bottom: 54px;
 }
+/* The wordmark stands on one line wherever the screen allows, wider than the text column if it
+   must; on a phone it balances over two. */
 .wordmark {
-  font-size: var(--fs-entry);
-  font-weight: 200;
-  font-variant-caps: all-small-caps;
-  letter-spacing: 0.06em;
-  line-height: 1;
+  width: max-content;
+  max-width: calc(100vw - 2 * var(--gutter));
 }
 .subtitle {
   margin-top: 18px;
@@ -23,11 +22,6 @@
 }
 .counts {
   margin-top: 36px;
-  font-family: var(--font-mono);
-  font-size: var(--fs-folio);
-  font-variant-numeric: tabular-nums lining-nums;
-  color: var(--muted);
-  line-height: 1.5;
   max-width: var(--measure);
 }
 .sections {

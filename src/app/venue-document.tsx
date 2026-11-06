@@ -1,11 +1,11 @@
 import type { Metadata, Viewport } from 'next';
 import { Suspense } from 'react';
-import { preconnect, prefetchDNS } from 'react-dom';
+import { preconnect, prefetchDNS, preload } from 'react-dom';
 import type { Locale } from '@/lib/i18n/routing';
 import { messages } from '@/lib/i18n/messages';
 import { ART_API_ORIGIN, ART_MEDIA_ORIGINS } from '@/lib/art/constants';
 import { compactWorks } from '@/lib/art/collection-index';
-import { CJK_STYLESHEETS } from '@/lib/fonts';
+import { CJK_STYLESHEETS, LITERATA_PRELOADS } from '@/lib/fonts';
 import { revealScript } from '@/lib/reveal';
 import { roomScript, type Room } from '@/lib/room';
 import { MotionProvider } from '@/components/motion-provider';
@@ -16,10 +16,8 @@ import { IndexSheet } from '@/components/index-sheet';
 import { KeySheet } from '@/components/key-sheet';
 import { KeyboardVocabulary } from '@/components/keys';
 import { DEPLOYMENT_URL } from '@/lib/site';
-import '@fontsource-variable/literata/opsz.css';
-import '@fontsource-variable/literata/opsz-italic.css';
 import '@fontsource/ibm-plex-mono/400.css';
-import '@fontsource/ibm-plex-mono/500.css';
+import './typefaces.css';
 import './globals.css';
 import { DAY_WORK_POOL } from '@/lib/art/work-of-the-day';
 
@@ -65,6 +63,9 @@ export function VenueDocument({
   // Artwork and films are fetched without CORS, so the warmed connection must match.
   preconnect(ART_API_ORIGIN);
   for (const origin of ART_MEDIA_ORIGINS) if (origin !== ART_API_ORIGIN) prefetchDNS(origin);
+  // The type the first paint reads in arrives with the page (src/lib/fonts.ts).
+  for (const href of LITERATA_PRELOADS[locale])
+    preload(href, { as: 'font', type: 'font/woff2', crossOrigin: 'anonymous' });
   const cjk = CJK_STYLESHEETS[locale];
   return (
     <html lang={locale} data-scroll-behavior="smooth" data-room={room} suppressHydrationWarning>

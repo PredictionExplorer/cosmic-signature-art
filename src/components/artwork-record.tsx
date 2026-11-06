@@ -6,6 +6,7 @@ import { expressionWord, filmLabel, formatBytes } from '@/lib/i18n/format';
 import { localizedPath, type Locale } from '@/lib/i18n/routing';
 import { indexedAssetUrl, indexedWork, type IndexedWork } from '@/lib/art/collection-index';
 import { workOrbit } from '@/lib/art/orbit-records';
+import { NBSP, SEPARATOR, unbroken } from '@/lib/typography';
 import { CopyButton } from './copy-button';
 import { VerifyDownload, type VerifiableFile } from './verify-download';
 import styles from './artwork-record.module.css';
@@ -67,13 +68,32 @@ export function RecordDate({ value, locale }: { value: string; locale: Locale })
   );
 }
 
-/** A date and time in UTC, the way the record states when it was read. */
+const CLOCK_PARTS = new Set<Intl.DateTimeFormatPartTypes>(['hour', 'minute', 'dayPeriod']);
+
+/**
+ * A date and time in UTC, the way the record states when it was read. The zone follows the
+ * clock, wherever the locale puts the clock (before the date in Vietnamese, after its day
+ * period in Korean), and the line may break between the date and the clock but never inside
+ * the clock: 11:15 PM UTC stays whole.
+ */
 export function recordTime(value: Date, locale: Locale) {
-  return `${new Intl.DateTimeFormat(locale, {
+  const parts = new Intl.DateTimeFormat(locale, {
     dateStyle: 'medium',
     timeStyle: 'short',
     timeZone: 'UTC',
-  }).format(value)} UTC`;
+  }).formatToParts(value);
+  const first = parts.findIndex((part) => CLOCK_PARTS.has(part.type));
+  let last = first;
+  for (let index = first; index < parts.length; index += 1) {
+    if (CLOCK_PARTS.has(parts[index].type)) last = index;
+    else if (parts[index].type !== 'literal') break;
+  }
+  const text = (from: number, to: number) =>
+    parts
+      .slice(from, to)
+      .map((part) => part.value)
+      .join('');
+  return `${text(0, first)}${unbroken(`${text(first, last + 1)} UTC`)}${text(last + 1, parts.length)}`;
 }
 
 export function shortHash(hash: string) {
@@ -135,7 +155,13 @@ export function ArtworkSources({
   const indexed = indexedWork(work.id);
   const sameSeed = !!indexed && !!work.seed && indexed.seed === work.seed;
   const expressionName = (media: ArtInterpretation) => expressionWord(media, t);
-  const line = (parts: (string | undefined)[]) => parts.filter(Boolean).join(' · ');
+  // Each fact stays whole ("3,456 × 2,234 px", "8.1 MB", "sha256 4179…66e4"); a line breaks only
+  // between facts, after a separator.
+  const line = (parts: (string | undefined)[]) =>
+    parts
+      .filter((part): part is string => Boolean(part))
+      .map(unbroken)
+      .join(SEPARATOR);
   /** The manifest path of a published file, "videos/web/ember.mp4", from its seed-package URL. */
   const manifestPath = (url?: string) => {
     if (!url || !work.seed) return undefined;
@@ -191,8 +217,8 @@ export function ArtworkSources({
                           : undefined,
                         stillBytes ? formatBytes(stillBytes, locale) : undefined,
                         stillHash ? `sha256 ${shortHash(stillHash)}` : undefined,
-                      ])}{' '}
-                      ↗
+                      ])}
+                      {NBSP}↗
                     </a>
                     {stillHash ? (
                       <CopyButton className={styles.copy} value={stillHash} {...copy} />
@@ -206,8 +232,8 @@ export function ArtworkSources({
                         t.masterFile,
                         fileFormat(media.master),
                         media.masterSha256 ? `sha256 ${shortHash(media.masterSha256)}` : undefined,
-                      ])}{' '}
-                      ↗
+                      ])}
+                      {NBSP}↗
                     </a>
                     {media.masterSha256 ? (
                       <CopyButton className={styles.copy} value={media.masterSha256} {...copy} />
@@ -241,8 +267,8 @@ export function ArtworkSources({
                             ? formatBytes(indexedFilm.bytes, locale)
                             : undefined,
                           hash ? `sha256 ${shortHash(hash)}` : undefined,
-                        ])}{' '}
-                        ↗
+                        ])}
+                        {NBSP}↗
                       </a>
                       {hash ? <CopyButton className={styles.copy} value={hash} {...copy} /> : null}
                     </li>

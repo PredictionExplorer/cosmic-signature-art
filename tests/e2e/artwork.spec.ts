@@ -132,7 +132,8 @@ test('the neighbours carry the visitor on by number and by wavelength, in the ex
     '/art/30?expression=ink',
   );
   const star = page.locator('[data-neighbour="spectral"]');
-  await expect(star).toHaveText(/Next by wavelength · № \d{3} · \d+ nm (?:redder|bluer)/);
+  // Separators hold to the phrase before them, № and a unit to their figures (no-break spaces).
+  await expect(star).toHaveText(/Next by wavelength\s· №\s\d{3}\s· \d+\snm (?:redder|bluer)/);
   await page.keyboard.press('ArrowRight');
   await expect(page).toHaveURL(/\/art\/32\?expression=ink$/);
   await expect(page).toHaveTitle(/№ 032/);

@@ -35,8 +35,8 @@ const nextConfig: NextConfig = {
         headers: [{ key: 'Cache-Control', value: 'public, max-age=31536000, immutable' }],
       },
       {
-        // Generated per build from the vendor's slices; their names are not content-hashed.
-        source: '/fonts/cjk/:path*',
+        // Generated per build from the vendor's files; their names are not content-hashed.
+        source: '/fonts/:face(cjk|literata)/:path*',
         headers: [
           { key: 'Cache-Control', value: 'public, max-age=86400, stale-while-revalidate=2592000' },
         ],

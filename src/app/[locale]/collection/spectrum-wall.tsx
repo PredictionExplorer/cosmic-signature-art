@@ -5,6 +5,7 @@ import { workFolio, workNumber } from '@/lib/art/number';
 import type { Messages } from '@/lib/i18n/en';
 import { localizedPath, type Locale } from '@/lib/i18n/routing';
 import { PreviewImage } from '@/components/preview-image';
+import { withUnit } from '@/lib/typography';
 import {
   HANG_GAP,
   HANG_HEIGHT,
@@ -75,7 +76,7 @@ export function SpectrumWall({
             data-count={group.works.length}
             style={{ '--x': `${group.x}cqw`, '--y': `${group.y}cqw` } as CSSProperties}
           >
-            <span className={styles.nm}>{group.nm} nm</span>
+            <span className={styles.nm}>{withUnit(String(group.nm), 'nm')}</span>
             <ul className={styles.stack}>
               {group.works.map((work) => (
                 <li key={work.id}>

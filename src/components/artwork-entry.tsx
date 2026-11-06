@@ -11,6 +11,7 @@ import { workFolio, workNumber } from '@/lib/art/number';
 import { getInterpretation, type Artwork, type ArtworkResult } from '@/lib/art/types';
 import { ArtworkSources, ChainAddress, RecordDate, recordTime } from './artwork-record';
 import { ArtworkHistorySection, type HistoryQuery } from './artwork-history';
+import { NBSP, SEPARATOR, withUnit } from '@/lib/typography';
 import recordStyles from './artwork-record.module.css';
 import styles from './artwork-entry.module.css';
 
@@ -112,8 +113,9 @@ function Mark({ n, t }: { n: number; t: Messages }) {
   );
 }
 
+/** The middle dot between items: it may end a line, never open one (src/lib/typography.ts). */
 function Separator() {
-  return <span className={styles.separator}> · </span>;
+  return <span className={styles.separator}>{SEPARATOR}</span>;
 }
 
 /** The entry as typeset text: generated per work, every fact the publisher's own. */
@@ -169,7 +171,7 @@ export function EntryView({
 
   const filmDurations = (frame?.films ?? [])
     .filter((film) => film.id !== 'sweep' && film.durationSeconds)
-    .map((film) => `${nf.format(Math.round(film.durationSeconds!))} s`);
+    .map((film) => withUnit(nf.format(Math.round(film.durationSeconds!)), 's'));
   const sweep = light?.films.find((film) => film.id === 'sweep');
   const traits: ReactNode[] = [];
   if (details?.structure) traits.push(<bdi key="structure">{details.structure}</bdi>);
@@ -188,7 +190,7 @@ export function EntryView({
         <Mark n={spectralNote} t={t} />
         {details.wavelengthNm !== undefined ? (
           <>
-            , <span className="numeral">{nf.format(details.wavelengthNm)} nm</span>
+            , <span className="figures">{withUnit(nf.format(details.wavelengthNm), 'nm')}</span>
             <Mark n={wavelengthNote} t={t} />
           </>
         ) : null}
@@ -197,7 +199,7 @@ export function EntryView({
   else if (details?.wavelengthNm !== undefined)
     traits.push(
       <span key="wavelength">
-        <span className="numeral">{nf.format(details.wavelengthNm)} nm</span>
+        <span className="figures">{withUnit(nf.format(details.wavelengthNm), 'nm')}</span>
         <Mark n={wavelengthNote} t={t} />
       </span>,
     );
@@ -205,14 +207,18 @@ export function EntryView({
   if (details?.chaos !== undefined)
     traits.push(
       <span key="chaos">
-        {t.chaos} <span className="numeral">{nf.format(details.chaos)} / 100</span>
+        {t.chaos}
+        {NBSP}
+        <span className="figures">{`${nf.format(details.chaos)}${NBSP}/${NBSP}100`}</span>
         <Mark n={chaosNote} t={t} />
       </span>,
     );
   if (details?.syzygies !== undefined)
     traits.push(
       <span key="syzygies">
-        {t.syzygies} <span className="numeral">{nf.format(details.syzygies)}</span>
+        {t.syzygies}
+        {NBSP}
+        <span className="figures">{nf.format(details.syzygies)}</span>
         <Mark n={syzygyNote} t={t} />
       </span>,
     );
@@ -292,10 +298,10 @@ export function EntryView({
       <>
         {t.anchoringActive}
         {work.anchoring.participant ? (
-          <>
-            {' '}
+          // One inline run, so the parentheses close on the address and not on the line's gaps.
+          <span className={styles.aside}>
             (<ChainAddress address={work.anchoring.participant} compact copy={copy} />)
-          </>
+          </span>
         ) : null}
       </>,
     );
@@ -374,7 +380,9 @@ export function EntryView({
           <p>
             {cycle !== undefined ? (
               <>
-                {t.cycle} <span className="numeral">{nf.format(cycle)}</span>
+                {t.cycle}
+                {NBSP}
+                <span className="figures">{nf.format(cycle)}</span>
               </>
             ) : null}
             {cycle !== undefined && imprinted ? <Separator /> : null}
@@ -390,20 +398,22 @@ export function EntryView({
         </p>
         {frame?.width && frame.height ? (
           <p>
-            <span className="numeral">
-              {nf.format(frame.width)} × {nf.format(frame.height)} px
+            <span className="figures">
+              {withUnit(`${nf.format(frame.width)}${NBSP}×${NBSP}${nf.format(frame.height)}`, 'px')}
             </span>
             {filmDurations.length ? (
               <>
                 <Separator />
-                {t.filmsWord} <span className="numeral">{filmDurations.join(', ')}</span>
+                {t.filmsWord} <span className="figures">{filmDurations.join(', ')}</span>
               </>
             ) : null}
             {sweep?.durationSeconds ? (
               <>
                 <Separator />
                 {t.spectralSweep}{' '}
-                <span className="numeral">{nf.format(Math.round(sweep.durationSeconds))} s</span>
+                <span className="figures">
+                  {withUnit(nf.format(Math.round(sweep.durationSeconds)), 's')}
+                </span>
               </>
             ) : null}
           </p>

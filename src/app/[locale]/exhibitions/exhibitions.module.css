@@ -11,7 +11,7 @@
 }
 .title {
   font-size: var(--fs-chapter);
-  font-weight: 200;
+  font-weight: var(--weight-hairline);
   line-height: 1.05;
   letter-spacing: -0.01em;
   text-wrap: balance;

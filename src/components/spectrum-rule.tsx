@@ -8,6 +8,7 @@ import {
   type Ref,
 } from 'react';
 import { SPECTRUM_FROM_NM, SPECTRUM_TO_NM, spectrumAt } from '@/lib/art/spectral-sweep';
+import { withUnit } from '@/lib/typography';
 import styles from './spectrum-rule.module.css';
 
 /** An arrow key moves the held wavelength one nanometre; with Shift, or a page key, ten. */
@@ -68,16 +69,16 @@ function Rule({
       aria-hidden="true"
       data-labels={labels}
     >
-      <span className={styles.end}>{SPECTRUM_FROM_NM} nm</span>
+      <span className={styles.end}>{withUnit(String(SPECTRUM_FROM_NM), 'nm')}</span>
       <i ref={lineRef} className={styles.line}>
         {children}
         {dominantNm !== undefined ? (
           <b className={styles.tick} style={{ left: `${spectrumAt(dominantNm) * 100}%` }}>
-            <span>{dominantNm} nm</span>
+            <span>{withUnit(String(dominantNm), 'nm')}</span>
           </b>
         ) : null}
       </i>
-      <span className={styles.end}>{SPECTRUM_TO_NM} nm</span>
+      <span className={styles.end}>{withUnit(String(SPECTRUM_TO_NM), 'nm')}</span>
     </span>
   );
 }
@@ -181,7 +182,7 @@ export function WavelengthSlider({
         />
         <span className={styles.held} style={at(value)} />
         <span className={styles.readout} style={at(value)}>
-          {value} nm
+          {withUnit(String(value), 'nm')}
         </span>
       </Rule>
     </div>
