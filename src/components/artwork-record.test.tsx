@@ -31,12 +31,15 @@ describe('chain addresses', () => {
     );
     expect(compactAddress(holder)).toBe('0x1111…1111');
     expect(shortHash('4179abcd'.padEnd(64, '0').replace(/0000$/, '66e4'))).toBe('4179…66e4');
+    // The clock never breaks inside itself; the line may break between the date and the clock.
     expect(recordTime(new Date('2026-10-26T08:04:00Z'), 'en')).toMatch(
-      /Oct 26, 2026, 8:04 AM UTC$/,
+      /Oct 26, 2026, 8:04\u00a0AM\u00a0UTC$/,
     );
+    expect(recordTime(new Date('2026-10-26T08:04:00Z'), 'ja')).toMatch(/ 8:04\u00a0UTC$/);
   });
 });
 
+// A file's facts keep their spaces unbroken (no-break spaces), so link names are matched on \s.
 describe('published artwork files', () => {
   it('states each file with its dimensions, size and hash from the publisher, linking the original', () => {
     const work = artwork();
@@ -47,15 +50,19 @@ describe('published artwork files', () => {
     const inkFiles = within(section)
       .getByRole('heading', { name: en.ink, level: 3 })
       .closest('article')!;
-    const still = within(inkFiles).getByRole('link', { name: /^Still · WebP · 3,456 × 2,234 px/ });
+    const still = within(inkFiles).getByRole('link', {
+      name: /^Still\s·\sWebP\s·\s3,456\s×\s2,234\spx/,
+    });
     expect(still).toHaveAttribute('href', ink.sourceUrl);
     expect(still).toHaveTextContent(`515 kB · sha256 ${shortHash(ink.stillSha256!)} ↗`);
     // The master's hash comes from the still ladder, which hashed the file it cut the rungs from.
     const master = within(inkFiles).getByRole('link', {
-      name: new RegExp(`^Master file · PNG · sha256 ${shortHash(ink.masterSha256!)} ↗$`),
+      name: new RegExp(
+        `^Master\\sfile\\s·\\sPNG\\s·\\ssha256\\s${shortHash(ink.masterSha256!)}\\s↗$`,
+      ),
     });
     expect(master).toHaveAttribute('href', ink.master);
-    const film = within(inkFiles).getByRole('link', { name: /^Film · 30 s/ });
+    const film = within(inkFiles).getByRole('link', { name: /^Film\s·\s30\ss/ });
     expect(film).toHaveAttribute('href', ink.films[0].sourceUrl);
     expect(film).not.toHaveAttribute('href', ink.films[0].src);
     expect(film).toHaveTextContent(`100.8 MB · sha256 ${shortHash(facts.films.main.sha256!)} ↗`);
@@ -101,7 +108,7 @@ describe('published artwork files', () => {
   it('never borrows the index’s sizes for a different seed', () => {
     const work = { ...artwork(), seed: `0x${'ab'.repeat(32)}` as `0x${string}` };
     render(<ArtworkSources work={work} locale="en" t={en} />);
-    const still = screen.getAllByRole('link', { name: /^Still · WebP/ })[0];
+    const still = screen.getAllByRole('link', { name: /^Still\s·\sWebP/ })[0];
     expect(still).not.toHaveTextContent('MB');
     expect(still).not.toHaveTextContent('kB');
   });
@@ -128,7 +135,7 @@ describe('published artwork files', () => {
     ];
     render(<ArtworkSources work={work} locale="en" t={en} />);
     expect(screen.getByRole('heading', { name: 'Spatial study' })).toBeVisible();
-    expect(screen.getByRole('link', { name: /^Film ↗$/ })).toHaveAttribute(
+    expect(screen.getByRole('link', { name: /^Film\s↗$/ })).toHaveAttribute(
       'href',
       work.media[0].films[0].src,
     );
@@ -171,12 +178,11 @@ describe('published artwork files', () => {
       [en.longStudy, 'medium'],
       [en.extendedStudy, 'slow'],
     ]) {
-      expect(screen.getByRole('link', { name: new RegExp(`^${label} ·`) })).toHaveAttribute(
-        'href',
-        `https://a1.cosmicsignature.com/original/${id}.mp4`,
-      );
+      expect(
+        screen.getByRole('link', { name: new RegExp(`^${label.replace(/ /g, '\\s')}\\s·`) }),
+      ).toHaveAttribute('href', `https://a1.cosmicsignature.com/original/${id}.mp4`);
     }
-    expect(screen.getByRole('link', { name: /^Spectral sweep · 10 s ↗$/ })).toHaveAttribute(
+    expect(screen.getByRole('link', { name: /^Spectral\ssweep\s·\s10\ss\s↗$/ })).toHaveAttribute(
       'href',
       light.films[0].src,
     );

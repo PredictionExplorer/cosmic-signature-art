@@ -7,6 +7,7 @@ import type { ArtFilm, ArtInterpretation } from '@/lib/art/types';
 import type { Messages } from '@/lib/i18n/en';
 import styles from './process.module.css';
 import { clock } from '@/lib/i18n/format';
+import { withUnit } from '@/lib/typography';
 
 const SPECTRUM = { from: 380, to: 700 };
 
@@ -98,15 +99,15 @@ export function SweepPlayer({
         </span>
         <span className={styles.readout}>
           <span className={styles.spectrumRule} aria-hidden="true">
-            <span className={styles.spectrumEnd}>{SPECTRUM.from} nm</span>
+            <span className={styles.spectrumEnd}>{withUnit(String(SPECTRUM.from), 'nm')}</span>
             <i>
               {tick !== undefined ? (
                 <b style={{ left: `${tick * 100}%` }}>
-                  <span>{wavelengthNm} nm</span>
+                  <span>{withUnit(String(wavelengthNm), 'nm')}</span>
                 </b>
               ) : null}
             </i>
-            <span className={styles.spectrumEnd}>{SPECTRUM.to} nm</span>
+            <span className={styles.spectrumEnd}>{withUnit(String(SPECTRUM.to), 'nm')}</span>
           </span>
           {playing || ended ? <span className="numeral folio">{clock(time.current)}</span> : null}
         </span>

@@ -31,7 +31,7 @@
 }
 .selection {
   grid-area: selection;
-  font-weight: 200;
+  font-weight: var(--weight-hairline);
   text-wrap: balance;
   margin-bottom: 18px;
 }
@@ -44,14 +44,22 @@
   line-height: 1.5;
   margin-bottom: 45px;
 }
+/* The entry's lines are a catalogue's data block (dates, dimensions, custody), so their figures
+   are lining; the glossary beside them is prose, and takes old-style. */
 .lines {
   grid-area: lines;
   font-size: var(--fs-reading);
   line-height: 1.5;
-  font-variant-numeric: oldstyle-nums proportional-nums;
+  font-variant-numeric: lining-nums proportional-nums;
 }
 .lines > * + * {
   margin-top: 9px;
+}
+/* The entry's sentences are the cataloguer's, in the book face; only the machine's strings in
+   them (an address, the seed) stay mono, a step smaller so their wide, even letters keep the
+   line's colour, and the same size wherever they stand. */
+.lines p code {
+  font-size: 0.9em;
 }
 .lines > :global(.notice) {
   margin-bottom: 18px;
@@ -84,8 +92,17 @@
   align-items: baseline;
   gap: 0 6px;
 }
+/* A parenthesised address reads as one run: no gap inside its brackets. */
+.aside {
+  display: inline;
+  white-space: nowrap;
+}
+/* The note's mark and number are the cataloguer's apparatus, in the book face: lining figures
+   at the 12 px floor, raised by hand. Literata's own superiors would be drawn smaller than the
+   floor at the reading size, so they are not used here. */
 .mark {
-  font-family: var(--font-mono);
+  font-family: var(--font-book);
+  font-variant-numeric: lining-nums proportional-nums;
   font-size: var(--fs-folio);
   line-height: 0;
   vertical-align: baseline;
@@ -140,6 +157,7 @@
   overflow-wrap: anywhere;
 }
 .notes {
+  font-variant-numeric: oldstyle-nums proportional-nums;
   grid-area: notes;
   font-size: var(--fs-control);
   line-height: 1.6;
@@ -163,7 +181,7 @@
   padding-top: 0;
 }
 .noteNumber {
-  font-family: var(--font-mono);
+  font-family: var(--font-book);
   font-size: var(--fs-folio);
   font-variant-numeric: tabular-nums lining-nums;
   color: var(--muted);

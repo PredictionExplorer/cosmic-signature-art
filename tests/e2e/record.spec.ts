@@ -25,10 +25,11 @@ test('an artwork is typed as a catalogue entry from the publisher’s record, wi
   // The one h1 is the entry's first line; the numeral grammar is "Signature 031".
   await expect(entry.getByRole('heading', { level: 1 })).toHaveText(/^Signature 031/);
   await expect(entry.getByText(/candidate orbits\. Number [\d,]+ was chosen\./)).toBeVisible();
-  await expect(entry.getByText(/^Cycle 1 · /)).toBeVisible();
+  // A label keeps its figure, a figure its unit, a separator the phrase before it: no-break spaces.
+  await expect(entry.getByText(/^Cycle\s1\s· /)).toBeVisible();
   await expect(entry).toContainText(t.spectralClass);
   await expect(entry).toContainText(t.syzygies);
-  await expect(entry).toContainText(/\d+ nm/);
+  await expect(entry).toContainText(/\d+\snm/);
   // The glossary stands in the margin, Signature and expression defined first.
   const glossary = entry.getByRole('complementary', { name: t.glossary });
   await expect(glossary.getByRole('listitem').first()).toHaveText(new RegExp(t.glossarySignature));

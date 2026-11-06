@@ -32,7 +32,7 @@ function artwork(): Artwork {
 
 beforeEach(() => vi.mocked(getArtworkDetails).mockReset());
 
-/** A paragraph matched on its whole text, since the entry's lines mix words and mono numerals. */
+/** A paragraph matched on its whole text, since the entry's lines mix words, figures and mono. */
 function paragraph(pattern: RegExp) {
   return screen.getByText(
     (_, element) => element?.tagName === 'P' && pattern.test(element.textContent ?? ''),
@@ -59,9 +59,10 @@ describe('the entry', () => {
     expect(
       screen.getByText(/Borda count · chaos weight 1 · equilibrium weight 5\.843/),
     ).toBeVisible();
-    expect(paragraph(/^Cycle 1/)).toHaveTextContent('August 11, 2026');
+    // A label and its number, a number and its unit, never part: their spaces are no-break spaces.
+    expect(paragraph(/^Cycle\u00a01\u00a0· /)).toHaveTextContent('August 11, 2026');
     expect(screen.getByText(/Three-body orbit\./)).toHaveTextContent(en.inkMedium);
-    expect(paragraph(/^3,456 × 2,234 px/)).toHaveTextContent('films 30 s');
+    expect(paragraph(/^3,456\u00a0×\u00a02,234\u00a0px\u00a0· films 30\u00a0s/)).toBeVisible();
     const traits = screen.getByText(/Orbit Ribbons/).closest('p')!;
     expect(traits).toHaveTextContent('Harmonic Weave');
     expect(traits).toHaveTextContent('Spectral class M');

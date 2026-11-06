@@ -4,6 +4,7 @@ import { localizedPath, type Locale } from '@/lib/i18n/routing';
 import { fill } from '@/lib/i18n/format';
 import { NAVIGATION, NAVIGATION_LABEL } from '@/lib/navigation';
 import { collectionIndex } from '@/lib/art/collection-index';
+import { bindNumbers } from '@/lib/typography';
 import { Wordmark } from './running-head';
 import styles from './colophon.module.css';
 
@@ -18,8 +19,8 @@ export function Colophon({ locale, t }: { locale: Locale; t: Messages }) {
         <Link className="brand" href={localizedPath(locale)} aria-label="Cosmic Signature">
           <Wordmark t={t} />
         </Link>
-        <p>{t.colophonPlates}</p>
-        <p>{t.colophonFilms}</p>
+        <p>{bindNumbers(t.colophonPlates)}</p>
+        <p>{bindNumbers(t.colophonFilms)}</p>
         <p>{t.processNote}</p>
         <p>{fill(t.recordAsOf, { date: recordDate })}</p>
         <p>{t.colophonType}</p>
