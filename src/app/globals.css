@@ -77,8 +77,13 @@
   --fs-chapter: clamp(44px, 35.55px + 2.254vw, 68px);
   --fs-entry: clamp(64px, 49.21px + 3.944vw, 106px);
   --fs-cover: clamp(84px, 55.83px + 7.512vw, 164px);
+  /* The display's hairline: Literata at its lightest, which a CJK face's lightest weight
+     (src/lib/fonts.ts) meets in every locale; Japanese and Korean faces start at 400, so the
+     Latin beside them rises to 300 there. */
+  --weight-hairline: 200;
   --baseline: 9px;
-  --measure: 36em;
+  /* About 68 characters of Literata at the reading size; 32 characters of a CJK face. */
+  --measure: 32em;
   /* The chrome on an art screen: a running head, a label strip, and nothing else. */
   --head: 48px;
   --strip: 56px;
@@ -157,6 +162,10 @@ html:lang(ja) {
   --font-mono:
     'IBM Plex Mono', 'Plex Mono Menlo', 'Plex Mono Courier', 'Shippori Mincho B1',
     'Hiragino Mincho ProN', 'Yu Mincho', monospace;
+  /* No small kana or prolonged sound mark opens a line. */
+  line-break: strict;
+  /* Shippori Mincho B1 and Gowun Batang begin at 400; the Latin display rises to meet them. */
+  --weight-hairline: 300;
 }
 html:lang(ko) {
   --font-book:
@@ -164,14 +173,25 @@ html:lang(ko) {
   --font-mono:
     'IBM Plex Mono', 'Plex Mono Menlo', 'Plex Mono Courier', 'Gowun Batang', AppleMyungjo, Batang,
     monospace;
+  /* Korean breaks between words, as it is written, never inside one. */
+  word-break: keep-all;
+  --weight-hairline: 300;
 }
 html:is(:lang(zh), :lang(ja), :lang(ko)) {
-  --measure: 32em;
+  /* Han, kana and Hangul have no italic: a slanted ideograph is a distortion, not a style. An
+     italic line keeps Literata's true italic for its Latin and sets its CJK upright. */
+  font-synthesis-style: none;
 }
-html:is(:lang(zh), :lang(ja), :lang(ko)) :is(h1, h2, h3, .display, .hanging-numeral) {
+/* The wordmark is Latin in every locale and keeps its own setting. */
+html:is(:lang(zh), :lang(ja), :lang(ko)) :is(h1, h2, h3, .display):not(.wordmark) {
   letter-spacing: 0;
   line-height: 1.25;
   text-transform: none;
+}
+/* Japanese display lines and short catalogue lines break between phrases, not inside a word
+   (Chromium; elsewhere as written). */
+html:lang(ja) :is(h1, h2, h3, .display, .chapter, .subtitle, .cover, .counts) {
+  word-break: auto-phrase;
 }
 html:is(:lang(zh), :lang(ja), :lang(ko)) :is(.eyebrow, .small-caps) {
   letter-spacing: 0;
@@ -180,6 +200,11 @@ html:is(:lang(zh), :lang(ja), :lang(ko)) :is(.eyebrow, .small-caps) {
 }
 html:is(:lang(zh), :lang(ja), :lang(ko)) .reading {
   line-height: 1.9;
+}
+/* Vietnamese stacks its tone marks above and below the letter: a display line needs the room,
+   or the dot under one line meets the grave over the next. */
+html:lang(vi) :is(h1, h2, h3, .display, .chapter, .cover):not(.wordmark) {
+  line-height: 1.2;
 }
 
 * {
@@ -274,9 +299,11 @@ h1 {
 h2 {
   font-size: var(--fs-subtitle);
 }
+/* Negative tracking is for display sizes; at the reading size Literata's own spacing is right. */
 h3 {
   font-size: var(--fs-reading);
   font-weight: 400;
+  letter-spacing: 0;
 }
 em {
   font-style: italic;
@@ -285,8 +312,15 @@ em {
 p {
   line-height: 1.5;
 }
+/* Running text never ends on a lone word where the browser can help it (Chromium, Safari). The
+   zero specificity lets any component keep its own wrapping. */
+:where(p, li, dd, figcaption, blockquote) {
+  text-wrap: pretty;
+  hanging-punctuation: first last;
+}
+/* The instrument face: hashes, addresses, clocks, readouts. A date in a sentence is the
+   cataloguer's, set in the book face; a clock or a timeline's date asks for mono itself. */
 code,
-time,
 .mono,
 .numeral {
   font-family: var(--font-mono);
@@ -295,6 +329,11 @@ time,
 }
 code {
   font-size: var(--fs-folio);
+}
+/* Figures in the book face that are read as data (a dimension, a duration, a count): lining
+   and tabular, beside prose's old-style figures. */
+.figures {
+  font-variant-numeric: lining-nums tabular-nums;
 }
 ::selection {
   background: color-mix(in srgb, var(--type) 18%, var(--ground));
@@ -337,26 +376,28 @@ html {
   font-size: var(--fs-chapter);
   line-height: 1.06;
 }
+/* A numeral standing alone is display type: proportional lining figures, kerned as drawn, so
+   031 does not open a tabular gap before its narrow 1. Columns of numbers stay tabular. */
 .entry-numeral {
   font-family: var(--font-latin);
   font-size: var(--fs-entry);
   line-height: 1;
-  font-weight: 200;
-  font-variant-numeric: tabular-nums lining-nums;
+  font-weight: var(--weight-hairline);
+  font-variant-numeric: lining-nums proportional-nums;
   letter-spacing: -0.02em;
 }
 .cover {
   font-size: var(--fs-cover);
   line-height: 0.99;
-  font-weight: 200;
+  font-weight: var(--weight-hairline);
 }
 /* The hanging numeral beside a plate: 44 px light figures with 6 px of leading in a 56 px strip. */
 .hanging-numeral {
   font-family: var(--font-latin);
   font-size: var(--fs-plate);
   line-height: 1;
-  font-weight: 200;
-  font-variant-numeric: tabular-nums lining-nums;
+  font-weight: var(--weight-hairline);
+  font-variant-numeric: lining-nums proportional-nums;
   letter-spacing: -0.01em;
 }
 .small-caps,
@@ -368,6 +409,25 @@ html {
   font-variant-numeric: oldstyle-nums proportional-nums;
   letter-spacing: 0.08em;
   font-weight: 400;
+}
+/* The wordmark at display size, typeset not drawn: Literata's small capitals, the same in
+   every locale (the statement page and the home's type screen). */
+.wordmark {
+  font-family: var(--font-latin);
+  font-size: var(--fs-entry);
+  font-weight: 200;
+  font-variant-caps: all-small-caps;
+  letter-spacing: 0.05em;
+  line-height: 1;
+  text-wrap: balance;
+}
+/* The collection's counts beneath it: a catalogue line in the book face, its figures old-style. */
+.counts {
+  font-size: var(--fs-control);
+  line-height: 1.6;
+  color: var(--muted);
+  font-variant-numeric: oldstyle-nums proportional-nums;
+  text-wrap: balance;
 }
 .muted {
   color: var(--muted);

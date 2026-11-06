@@ -127,3 +127,20 @@ test('a CJK locale links its own sliced display face and the Latin pages load no
     expect.arrayContaining(['Literata', 'Literata Han', 'IBM Plex Mono', 'Shippori Mincho B1']),
   );
 });
+
+test('CJK lines stay upright in an italic and Korean words stay whole', async ({ page }) => {
+  await page.goto('/ja/statement');
+  const subtitle = page.getByRole('main').locator('.subtitle').first();
+  await expect(subtitle).toBeVisible();
+  // An italic line keeps Literata's true italic for its Latin and never slants the kana.
+  expect(await subtitle.evaluate((element) => getComputedStyle(element).fontStyle)).toBe('italic');
+  expect(
+    await subtitle.evaluate((element) =>
+      getComputedStyle(element).getPropertyValue('font-synthesis-style'),
+    ),
+  ).toBe('none');
+  await page.goto('/ko/statement');
+  expect(
+    await page.locator('html').evaluate((element) => getComputedStyle(element).wordBreak),
+  ).toBe('keep-all');
+});
