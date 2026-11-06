@@ -72,6 +72,17 @@
   line-height: 1;
   pointer-events: none;
 }
+/* The physics of the moment while the Light film plays (third-physics.md §5.5), in the
+   readout's figures. It leads the words and is set to their end, so a distance growing a
+   digit moves nothing beside it. */
+.physics {
+  font-family: var(--font-mono);
+  font-size: var(--fs-folio);
+  font-variant-numeric: tabular-nums lining-nums;
+  color: var(--muted);
+  white-space: nowrap;
+  text-align: end;
+}
 /* The home's one line, italic at 15 px, signed. */
 .line {
   font-size: var(--fs-control);
@@ -208,6 +219,14 @@
     top: 100%;
     padding-bottom: 0;
     line-height: 1.5;
+  }
+  /* The physics takes the live state's place there: the words keep their one line. */
+  .physics {
+    position: absolute;
+    inset-inline-end: 0;
+    top: 100%;
+    line-height: 1.5;
+    pointer-events: none;
   }
   .neighbours {
     grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);

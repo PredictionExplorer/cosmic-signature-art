@@ -21,6 +21,7 @@ export function Plate({
   words,
   settled = true,
   strip = true,
+  foot,
   children,
   className = '',
 }: {
@@ -35,6 +36,8 @@ export function Plate({
   /** The still has settled; the strip's centre may rise. */
   settled?: boolean;
   strip?: boolean;
+  /** What stands along the plate's foot, beneath the strip: its film's time line, or score. */
+  foot?: ReactNode;
   children: ReactNode;
   className?: string;
 }) {
@@ -86,6 +89,7 @@ export function Plate({
           <div className={`strip-words ${styles.words}`}>{words}</div>
         </div>
       ) : null}
+      {foot}
     </div>
   );
 }

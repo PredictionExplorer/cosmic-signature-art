@@ -75,4 +75,16 @@ describe('secondary artwork controls', () => {
     expect(trigger).toHaveAttribute('aria-expanded', 'false');
     expect(trigger).toHaveFocus();
   });
+
+  it('offers the closest approach with where it falls in the film, and hands over its trigger', () => {
+    const open = vi.fn();
+    render(<ArtworkOptions t={en} closest={{ clock: '00:07', onOpen: open }} />);
+    const trigger = screen.getByRole('button', { name: en.ways });
+    fireEvent.click(trigger);
+    const closest = screen.getByRole('button', { name: `${en.toClosestApproach} 00:07` });
+    expect(closest).toHaveAccessibleDescription(en.closestApproachAt.replace('{clock}', '00:07'));
+    fireEvent.click(closest);
+    expect(open).toHaveBeenCalledWith(trigger);
+    expect(trigger).toHaveAttribute('aria-expanded', 'false');
+  });
 });

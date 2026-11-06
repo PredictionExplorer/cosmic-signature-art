@@ -79,7 +79,7 @@ test('Film from a still starts the intended film with one explicit word', async 
     .poll(() => plate.locator('video').evaluate((element) => (element as HTMLVideoElement).paused))
     .toBe(false);
   await expect(plate.getByRole('button', { name: 'Still', exact: true })).toBeVisible();
-  // The one time line runs at the viewport's bottom edge while the film plays.
+  // The one time line runs along the plate's foot, the viewport's on a desk, while it plays.
   await expect(page.locator('.time-line')).toBeVisible();
   await plate.getByRole('button', { name: 'Still', exact: true }).click();
   await expect(plate.getByRole('button', { name: 'Film', exact: true })).toBeVisible();

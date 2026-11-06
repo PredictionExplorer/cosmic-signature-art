@@ -3,32 +3,21 @@ import { OrreryEngine, type OrreryReply, type OrreryRequest, type Surface } from
 /**
  * The Orrery's worker: every cell's physics and drawing, off the main thread. The page hands it
  * one OffscreenCanvas per work and says which are in view, whether motion is welcome and when a
- * cell changes size; the worker draws on its own frame clock and sleeps when nothing is in view.
+ * cell changes size. It draws a frame each time the page asks for one and says whether there is
+ * more to draw; it keeps no beat of its own (src/lib/physics/orrery-pace.ts).
  */
 const scope = self as unknown as {
   onmessage: ((event: MessageEvent<OrreryRequest>) => void) | null;
   postMessage(message: OrreryReply): void;
-  requestAnimationFrame?: (callback: (time: number) => void) => number;
 };
 
 let engine: OrreryEngine | null = null;
-let scheduled = false;
-
-function schedule() {
-  if (scheduled || !engine) return;
-  scheduled = true;
-  const tick = () => {
-    scheduled = false;
-    if (engine?.frame(performance.now())) schedule();
-  };
-  // A worker's animation frames follow the page's; a worker without them keeps a 60 Hz beat.
-  if (scope.requestAnimationFrame) scope.requestAnimationFrame(tick);
-  else setTimeout(tick, 16);
-}
 
 scope.onmessage = ({ data }) => {
   const now = performance.now();
-  if (data.type === 'cells') {
+  if (data.type === 'frame')
+    scope.postMessage({ type: 'framed', more: engine?.frame(now) ?? false });
+  else if (data.type === 'cells') {
     engine = new OrreryEngine(data.ratio, data.moving, {
       onDrawn: (id) => scope.postMessage({ type: 'drawn', id }),
     });
@@ -45,5 +34,4 @@ scope.onmessage = ({ data }) => {
   } else if (data.type === 'visible') engine?.visible(data.id, data.visible, now);
   else if (data.type === 'moving') engine?.setMoving(data.moving);
   else if (data.type === 'size') engine?.resize(data.id, data.width, data.height);
-  schedule();
 };

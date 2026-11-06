@@ -13,6 +13,19 @@ export function twinOf(expression: Expression): Expression {
 }
 export type MediaSource = 'local-archive' | 'published-manifest' | 'legacy-url';
 
+/**
+ * Where a spectral sweep travels, in the generator's own terms: the first and last of its 64
+ * five-nanometre bins (from 380 nm) that the sweep crosses, the bins with light each widened by
+ * two. Measured from the published bins and bound to the film's hash, it maps the film's time
+ * to wavelength (src/lib/art/spectral-sweep.ts).
+ */
+export interface SweepSpan {
+  start: number;
+  end: number;
+  /** The work's dominant wavelength in nanometres, as its published metadata states it. */
+  dominantNm?: number;
+}
+
 export interface ArtFilm {
   id: string;
   label: string;
@@ -27,6 +40,8 @@ export interface ArtFilm {
   /** The source's frame rate, carried by the frame-exact plate clips. */
   frameRate?: number;
   frames?: number;
+  /** A spectral sweep's span, bound to this film's hash; without it its wavelengths are unknown. */
+  span?: SweepSpan;
   poster?: string;
   sha256?: string;
   sourceSha256?: string;

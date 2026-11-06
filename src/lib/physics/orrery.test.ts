@@ -242,13 +242,33 @@ describe('the Orrery', () => {
     }
     play(engine, 0, 1000);
     const before = ids.map((id) => engine.stepOf(id)!);
-    // A minute with no frames at all, as in a hidden tab.
+    // A minute with no frames at all, as from a thread busy elsewhere: a moment of it is
+    // performed, and no more.
     engine.frame(61_000);
     const after = ids.map((id) => engine.stepOf(id)!);
-    ids.forEach((_, k) => expect(after[k] - before[k]).toBeLessThanOrEqual(100));
+    const moment = stepsDrawnAt(ORRERY.gapMs / 1000, long.steps);
+    ids.forEach((_, k) => expect(after[k] - before[k]).toBeLessThanOrEqual(moment));
     // A second later every cell has gone on by about a second of the film; none stands frozen.
     play(engine, 61_000, 62_000);
     ids.forEach((id, k) => expect(engine.stepOf(id)! - after[k]).toBeGreaterThan(5000));
+  });
+
+  it('goes on at the pace of a page that draws only a few frames a second', () => {
+    // A hundred steps a film frame, and a page that draws a frame every 400 ms.
+    const long: OrbitWindow = { ...window, steps: 180_000 };
+    const engine = new OrreryEngine(1, true, timeless);
+    engine.add(1, surface(), long, hues);
+    engine.visible(1, true, 0);
+    engine.frame(0);
+    let last = engine.stepOf(1)!;
+    for (let now = 400; now <= 4000; now += 400) {
+      engine.frame(now);
+      // Each frame performs a moment of the film: slower than the film, never standing still.
+      expect(engine.stepOf(1)!).toBeGreaterThan(last);
+      last = engine.stepOf(1)!;
+    }
+    expect(last).toBeGreaterThanOrEqual(stepsDrawnAt((10 * ORRERY.gapMs) / 1000, long.steps));
+    expect(last).toBeLessThan(stepsDrawnAt(4, long.steps));
   });
 
   it('ends a performance on the very picture the whole drawing makes, at any display’s pace', () => {

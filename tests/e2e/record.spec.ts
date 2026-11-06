@@ -82,7 +82,11 @@ test('an artwork is typed as a catalogue entry from the publisher’s record, wi
     'href',
     'https://a1.cosmicsignature.com/metadata/31',
   );
-  for (const link of await sources.getByRole('link').all()) await expect(link).toContainText('↗');
+  // Every link here leaves the venue and says so, but Verify an orbit, which stays.
+  const verifyOrbit = sources.getByRole('link', { name: t.verifyOrbit, exact: true });
+  await expect(verifyOrbit).toHaveAttribute('href', '/verify/orbit/31');
+  await expect(verifyOrbit).not.toContainText('↗');
+  await expect(sources.getByRole('link').filter({ hasNotText: '↗' })).toHaveCount(1);
   // Verify a download: the published hashes in full, and a chosen file hashed in the browser.
   const download = sources.locator('details', { hasText: t.verifyDownload });
   await download.locator('summary').click();

@@ -5,6 +5,7 @@ import {
   useCallback,
   useEffect,
   useEffectEvent,
+  useMemo,
   useRef,
   useState,
   useSyncExternalStore,
@@ -62,11 +63,22 @@ import { ArtworkGatefold } from './artwork-gatefold';
 import { useSit } from './sit';
 import { useCompactWall } from './compact-wall';
 import { excerptRange } from './collection-preview';
+import { useFilmScore } from './film-score-store';
+import { FilmScoreBand } from './film-score-band';
 import styles from './artwork-viewer.module.css';
-import { clock } from '@/lib/i18n/format';
+import { clock, fill } from '@/lib/i18n/format';
+import {
+  closestApproachSeconds,
+  pairName,
+  physicsAt,
+  type FilmOrbit,
+} from '@/lib/physics/film-score';
+import { lightFilmDuration } from '@/lib/physics/light-film';
 
 /** After a film resolves into its still, nothing moves for --t-rest; then "Again". */
 const REST_MS = 8000;
+/** The closest approach opens the film this many seconds before it, so it is seen to happen. */
+const CLOSEST_LEAD_SECONDS = 2;
 
 export type Presentation = 'gallery' | 'auction' | 'home';
 
@@ -94,6 +106,12 @@ type ArtworkViewerProps = {
    * its still, the strip offers After the frame, which goes on down to it.
    */
   afterTheFrame?: boolean;
+  /**
+   * The work's orbit, for its Light film's score (third-physics.md §5.5): the time line becomes
+   * the orbit's separations and events, the strip reads the physics of the moment, and the
+   * options open the film at the closest approach. Analysis, so never on a sale's page.
+   */
+  orbit?: FilmOrbit;
 };
 
 export function ArtworkViewer(props: ArtworkViewerProps) {
@@ -155,6 +173,7 @@ function ArtworkViewerSession({
   neighbours,
   wing = presentation !== 'auction',
   afterTheFrame = false,
+  orbit: offeredOrbit,
 }: ArtworkViewerProps) {
   const router = useRouter();
   const [liveArtwork, setLiveArtwork] = useState<Artwork | null>(null);
@@ -179,6 +198,8 @@ function ArtworkViewerSession({
   // Playback and arrival state of the committed expression.
   const [still, setStill] = useState(initialStill);
   const [room, setRoom] = useState<'still' | 'film' | null>(null);
+  /** Where the room's film opens when a word asked for a moment of it: the closest approach. */
+  const [roomStart, setRoomStart] = useState<number | null>(null);
   const [restart, setRestart] = useState(0);
   const [playRequest, setPlayRequest] = useState(0);
   const [explicitFilm, setExplicitFilm] = useState(false);
@@ -257,6 +278,8 @@ function ArtworkViewerSession({
         }
         window.dispatchEvent(new Event(SEAM_EVENT));
         setTime({ current: 0, duration: 0 });
+        // A moment asked of one expression's film is not the other's.
+        setRoomStart(null);
         setPlaying(false);
         setFailed(false);
         setRestart(0);
@@ -411,6 +434,33 @@ function ArtworkViewerSession({
   // Again is offered once the film has resolved and rested, or when this visit already saw it
   // resolve; an excerpt that rested offers the film instead.
   const showAgain = restedNow && (ended || homeResolved) && !excerpt;
+
+  /*
+    The score (third-physics.md §5.5). While the Light film plays, on the plate or in the room,
+    its orbit is measured off the main thread; the time line then becomes the score, and the
+    strip says which bodies are nearest and how far apart at the moment on screen. The Light
+    film and the score share one clock (light-film.ts); the Ink films keep their own.
+  */
+  const orbit = presentation === 'auction' ? undefined : offeredOrbit;
+  const lightScored = expression === 'light' && !!orbit;
+  const score = useFilmScore(
+    orbit,
+    // The room may be entered on the still and its complete film chosen there.
+    lightScored && ((!!inlineFilm && !excerpt && (playing || ended)) || room !== null),
+  );
+  const filmScore = lightScored ? score : null;
+  const oneDecimal = useMemo(
+    () => new Intl.NumberFormat(locale, { minimumFractionDigits: 1, maximumFractionDigits: 1 }),
+    [locale],
+  );
+  // The closest approach is the record's, so the room can open on it before any measuring.
+  const closestAt =
+    lightScored && orbit && media?.films.some((film) => film.id === 'normal')
+      ? closestApproachSeconds({
+          steps: orbit.window.steps,
+          closestApproach: orbit.closestApproach,
+        })
+      : null;
   // The home opens on the opening clip and hands over to the complete film at the same frame.
   const openingFilm = home && !compact && !settlingPlate ? media?.openingFilm : undefined;
   const [handoverWaiting, setHandoverWaiting] = useState(false);
@@ -478,8 +528,9 @@ function ArtworkViewerSession({
         ? t.light
         : (artwork.media.find((item) => item.id === id)?.label ?? id);
 
-  function openRoom(film: boolean, trigger: HTMLElement | null) {
+  function openRoom(film: boolean, trigger: HTMLElement | null, at: number | null = null) {
     returnFocusRef.current = trigger;
+    setRoomStart(at);
     cancelPending();
     seam.end();
     setTurning(null);
@@ -502,6 +553,7 @@ function ArtworkViewerSession({
         returnFocusRef.current = study;
     }
     setRoom(null);
+    setRoomStart(null);
   }
   function requestFilm() {
     setFailed(false);
@@ -679,6 +731,19 @@ function ArtworkViewerSession({
           </Link>
         </>
       );
+    // The physics of the moment, while the Light film plays its own frames (not an excerpt).
+    const moment =
+      current && layer === 'light' && filmScore && !excerpt && !idle
+        ? physicsAt(filmScore, time.current)
+        : null;
+    const physicsWord = moment ? (
+      <span className={styles.physics} data-film-physics>
+        {fill(t.filmPhysics, {
+          pair: pairName(moment.pair),
+          distance: oneDecimal.format(moment.distance),
+        })}
+      </span>
+    ) : null;
     const filmWord = inlineFilm ? (
       <button
         type="button"
@@ -709,6 +774,7 @@ function ArtworkViewerSession({
       ) : null;
     return (
       <>
+        {physicsWord}
         {turnWord}
         {filmWord}
         {beyondWord}
@@ -718,6 +784,15 @@ function ArtworkViewerSession({
             t={t}
             onStudy={!home ? (trigger) => openRoom(false, trigger) : undefined}
             onSit={inlineFilm && !showAgain ? sitDown : undefined}
+            closest={
+              current && layer === 'light' && closestAt !== null
+                ? {
+                    clock: clock(closestAt),
+                    onOpen: (trigger) =>
+                      openRoom(true, trigger, Math.max(0, closestAt - CLOSEST_LEAD_SECONDS)),
+                  }
+                : undefined
+            }
             readout={
               inlineFilm && time.duration && !excerpt ? (
                 <span className={styles.clock}>
@@ -759,6 +834,23 @@ function ArtworkViewerSession({
     return <span>{[...parts, label(layer)].join(' · ')}</span>;
   }
 
+  // The film's transport, at the foot of its plate: the score where the Light film has one,
+  // otherwise its time line. A phone's excerpt is a preview, and carries neither.
+  const transport =
+    inlineFilm && !excerpt && (playing || (ended && !restedNow)) ? (
+      filmScore && orbit ? (
+        <FilmScoreBand
+          score={filmScore}
+          hues={orbit.bodyHues}
+          progress={time.current / lightFilmDuration(filmScore.steps)}
+        />
+      ) : (
+        <div className="time-line" aria-hidden="true">
+          <i style={{ width: `${time.duration ? (time.current / time.duration) * 100 : 0}%` }} />
+        </div>
+      )
+    ) : null;
+
   function layer(id: Expression) {
     const item = getInterpretation(artwork, id);
     if (!item) return null;
@@ -785,6 +877,7 @@ function ArtworkViewerSession({
           settled={settledLayers.includes(id)}
           centre={centre(id)}
           words={<div className={styles.wordsRow}>{words(id)}</div>}
+          foot={current ? transport : null}
           className={current ? 'viewer-plate' : ''}
         >
           <ArtworkTransition
@@ -851,6 +944,7 @@ function ArtworkViewerSession({
           settled={settled}
           centre={<span>{label(expression)}</span>}
           words={<div className={styles.wordsRow}>{words('ink')}</div>}
+          foot={transport}
           className="viewer-plate"
         >
           <ArtworkMedia
@@ -954,11 +1048,6 @@ function ArtworkViewerSession({
             turn
           )}
         </ArtworkStage>
-        {inlineFilm && (playing || (ended && !restedNow)) ? (
-          <div className="time-line" aria-hidden="true">
-            <i style={{ width: `${time.duration ? (time.current / time.duration) * 100 : 0}%` }} />
-          </div>
-        ) : null}
         {pendingExpression ? (
           <p className={styles.status} role="status">
             {t.preparingExpression}
@@ -994,11 +1083,12 @@ function ArtworkViewerSession({
           expressionFailed={!!failedExpression}
           onExpressionChange={selectExpression}
           initialFilm={room === 'film'}
-          startAt={ended ? 0 : time.current}
+          startAt={roomStart ?? (ended ? 0 : time.current)}
           locale={locale}
           onClose={closeRoom}
           returnFocusRef={returnFocusRef}
           derivedViews={presentation !== 'auction'}
+          filmScore={filmScore && orbit ? { score: filmScore, hues: orbit.bodyHues } : null}
         />
       ) : null}
     </>

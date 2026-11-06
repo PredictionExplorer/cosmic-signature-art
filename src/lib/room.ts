@@ -5,8 +5,11 @@ import { EXPRESSION_KEY, HOME_RESOLVED_KEY, MOTION_KEY, OVERTURE_KEY } from './s
 /** The venue's two grounds, both taken from the work: the Ink sheet's paper and the Light field's black. */
 export type Room = 'paper' | 'night';
 export const ROOM_COLORS: Record<Room, string> = { paper: '#f1ebdf', night: '#000000' };
-/** Routes whose first screen is the night ground; the running head takes their material. */
-export const NIGHT_ROUTES: readonly string[] = ['/process'];
+/**
+ * Routes whose first screen is the night ground; the running head takes their material. Verify
+ * an orbit stands on the night the orbit section draws on.
+ */
+export const NIGHT_ROUTES: readonly string[] = ['/process', '/verify'];
 
 /** Views of the collection that open on black: the Spectrum wall and the Light section. */
 function nightView(path: string, search: string): boolean {

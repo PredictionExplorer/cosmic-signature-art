@@ -204,6 +204,34 @@
   flex: 1;
   border-bottom: 0;
 }
+/* Verify an orbit: one more row under Verify a download, its word on the same edge, and no
+   arrow, for it stays in the venue. Alone, it carries the disclosure's rules itself. */
+.verifyOrbit {
+  margin-top: 36px;
+  border-top: 1px solid var(--rule);
+  border-bottom: 1px solid var(--rule);
+  font-size: var(--fs-control);
+}
+details + .verifyOrbit {
+  margin-top: 0;
+  border-top: 0;
+}
+.verifyOrbit a {
+  display: flex;
+  align-items: center;
+  min-height: 44px;
+  padding-left: 1.2em;
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.3em;
+  text-decoration-color: transparent;
+  transition: text-decoration-color var(--t-blink) var(--ease-settle);
+}
+.verifyOrbit a:hover,
+.verifyOrbit a:active,
+.verifyOrbit a:focus-visible {
+  text-decoration-color: currentColor;
+}
 .records {
   margin-top: 27px;
   display: flex;

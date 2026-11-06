@@ -1,0 +1,45 @@
+/*
+  The Light film's score, where its 1 px time line was (third-physics.md §5.5): along the foot
+  of the plate's screen, beneath its words, on the plate's own night, and never in the hand's
+  way. The whole orbit stands dimmed; the part the film has drawn is lit, and the light follows
+  the film at the time line's own pace. The ticks and the base take the type's colour; the
+  pairs take the work's hues.
+*/
+.band {
+  position: absolute;
+  inset: auto 0 0;
+  /* Beneath the hanging numeral's foot, which stands about ten pixels above the screen's. */
+  height: 9px;
+  color: var(--type);
+  pointer-events: none;
+  transition: opacity var(--t-chrome) var(--ease-settle);
+}
+/* It arrives over its time line once the score is measured, a moment after the film starts. */
+@starting-style {
+  .band {
+    opacity: 0;
+  }
+}
+.band canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+.dim {
+  opacity: 0.32;
+}
+.lit {
+  transition: clip-path var(--t-chrome) linear;
+}
+/* Sit: the score fades with the strip while the film plays to its still. */
+:global(html[data-sit]) .band {
+  opacity: 0;
+  transition-duration: var(--t-sit);
+}
+@media (prefers-reduced-motion: reduce) {
+  .band,
+  .lit {
+    transition: none;
+  }
+}

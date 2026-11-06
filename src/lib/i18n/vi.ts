@@ -323,6 +323,7 @@ export const vi: Messages = {
   lightMedium: 'Ánh sáng: những dải quỹ đạo phát sáng trên nền đen.',
   filmsWord: 'phim',
   spectralSweep: 'quét quang phổ',
+  sweepFilm: 'Quét quang phổ',
   mintedTo: 'Đúc cho',
   heldBy: 'đang giữ bởi',
   recordAsOf: 'Bản ghi Arbitrum tính đến {date}',
@@ -543,6 +544,29 @@ export const vi: Messages = {
   verifyTooLarge:
     'Tệp này quá lớn để xác minh trong trình duyệt. Hãy chạy lệnh bên dưới và so kết quả với các mã băm đã công bố.',
   verifyFailed: 'Không đọc được tệp.',
+  // Verify an orbit (src/components/orbit-verifier.tsx, orbit-picker.tsx)
+  verifyOrbit: 'Xác minh một quỹ đạo',
+  verifyOrbitIntro:
+    'Chọn một tác phẩm theo số. Trình duyệt này suy ra lại quỹ đạo của nó từ hạt giống, bằng chính phép tính của bộ tạo, rồi in phần đối chiếu với hồ sơ đã công bố, từng dòng một.',
+  verifyOrbitNumber: 'Số tác phẩm',
+  verifyOrbitGo: 'Xác minh',
+  verifyOrbitUnknown: '{work} không có hồ sơ đã công bố.',
+  verifyOrbitWorks: 'Mọi tác phẩm có hồ sơ đã công bố',
+  verifyOrbitOf: 'Xác minh quỹ đạo của {work}',
+  verifyOrbitWorkIntro:
+    'Trình duyệt này suy ra lại quỹ đạo của {work} từ hạt giống, rồi đối chiếu từng phép đo trong hồ sơ đã công bố, từng dòng một.',
+  verifyOrbitLineByLine: 'Quá trình suy ra, từng dòng một',
+  verifyOrbitWaiting: 'Quá trình suy ra sẽ bắt đầu tại đây khi trang đã sẵn sàng.',
+  verifyOrbitSeedLine: 'Hạt giống {seed}',
+  verifyOrbitFateRun: 'Quá khoảng được ghi lại, để biết số phận · đến bước {steps}',
+  verifyOrbitAt: '{seconds} giây',
+  verifyOrbitTook: 'Đã đối chiếu tại đây trong {seconds} giây.',
+  verifyOrbitUnchecked: 'chưa đối chiếu',
+  verifyOrbitSomeUnchecked:
+    '{count} trong số {total} phép đo không thể đối chiếu trong trình duyệt này.',
+  verifyOrbitAnother: 'Xác minh quỹ đạo khác',
+  verifyOrbitNote:
+    'Phép tính là của chính bộ tạo: dòng ngẫu nhiên của nó, đọc đến ứng viên {index}; {steps} bước của bộ tích phân Yoshida bậc bốn; rồi tiếp tục quá khoảng được ghi lại để biết số phận. Chỉ dùng phép cộng, trừ, nhân, chia và căn bậc hai, mỗi phép đều được tiêu chuẩn định nghĩa chính xác, nên trình duyệt nào cũng đi đến cùng những bit ấy. Không có gì được gửi đi.',
   publishedHashes: 'Mã băm đã công bố',
   sharingCollection: 'Bộ sưu tập · {count} tác phẩm',
   // The orbit, re-performed (src/components/orbit-score.tsx)
@@ -593,6 +617,9 @@ export const vi: Messages = {
   orbitEscaped: 'Vật thể {body} đã thoát ra, ở bước {step}',
   orbitHeld: 'Vũ điệu giữ vững qua cả {steps} bước',
   toTheEjection: 'Đến lúc thoát ra',
+  filmPhysics: 'vật thể {pair} · cách nhau {distance}',
+  toClosestApproach: 'Đến lúc gần nhất',
+  closestApproachAt: 'Mở phim ngay trước lúc gần nhất, ở {clock}',
   // The crossing and the When lens (src/components/when-lens.tsx)
   whenLens: 'Thời điểm',
   whenLight: 'Thời điểm mỗi nét được vẽ',
@@ -604,6 +631,15 @@ export const vi: Messages = {
   analysisNotWork: 'Phân tích, không phải tác phẩm',
   keyWhen: 'Thời điểm: tô màu mỗi nét theo khoảnh khắc nó xuất hiện trong phim',
   whenUnavailable: 'Trình duyệt này không vẽ được lớp thời điểm; ảnh tĩnh được hiển thị thay thế.',
+  // The Wavelength lens (src/components/wavelength-lens.tsx)
+  wavelengthLens: 'Bước sóng',
+  wavelengthCaption: 'Bản quét ở một bước sóng',
+  wavelengthValue: '{n} nanomét',
+  wavelengthAlt: '{plate} · bản quét quang phổ dừng ở {n} nm. Phân tích, không phải tác phẩm.',
+  wavelengthLoading: 'Đang tải bản quét…',
+  keyWavelength: 'Bước sóng: bản quét quang phổ dừng ở một bước sóng; ← → để chọn',
+  wavelengthUnavailable:
+    'Không thể hiển thị bản quét quang phổ ở đây; ảnh tĩnh được hiển thị thay thế.',
   // The indexes: the Orrery and All the light (src/components/orrery.tsx, all-the-light.tsx)
   orrery: 'Mô hình quỹ đạo',
   orreryTitle: 'Mô hình quỹ đạo',
