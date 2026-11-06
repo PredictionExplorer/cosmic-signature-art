@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useEffect, useEffectEvent, useRef, useState, useSyncExternalStore } from 'react';
 import type { OrbitWindow } from '@/lib/physics/orbit';
 import type { OrreryReply, OrreryRequest } from '@/lib/physics/orrery';
+import { OrreryPace } from '@/lib/physics/orrery-pace';
 import { useMotion } from './motion-provider';
 import { lendPlateTone, returnPlateTone } from './room-ground';
 import styles from './orrery.module.css';
@@ -55,8 +56,9 @@ function subscribeRatio(onChange: () => void) {
  * The Orrery: every work's orbit performed at once, hung by cycle, its numeral beneath. Each
  * cell is a canvas handed to one worker (src/lib/physics/orrery.worker.ts), which performs the
  * orbits in view at the Light film's pace and draws each whole, once, under a still preference.
- * Pointing at a work, or focusing it, shows its own Light still in the cell. A browser that
- * cannot hand canvases to a worker shows every work's Light still instead.
+ * The page keeps the worker's beat, a frame at a time (src/lib/physics/orrery-pace.ts). Pointing
+ * at a work, or focusing it, shows its own Light still in the cell. A browser that cannot hand
+ * canvases to a worker shows every work's Light still instead.
  */
 export function Orrery({
   cycles,
@@ -74,7 +76,8 @@ export function Orrery({
   fallback: string;
 }) {
   const section = useRef<HTMLElement>(null);
-  const worker = useRef<Worker | null>(null);
+  /** Tells the page's worker something, while there is one. */
+  const tell = useRef<((message: OrreryRequest) => void) | null>(null);
   const capable = useSyncExternalStore(noSubscription, canPerform, unknownOnServer);
   /** The worker could not draw (it failed, or a canvas would not give it a context). */
   const [failed, setFailed] = useState(false);
@@ -119,14 +122,21 @@ export function Orrery({
         hues: work.hues,
       });
     }
-    const send = (message: OrreryRequest, transfer: Transferable[] = []) =>
+    const pace = new OrreryPace(() =>
+      thread.postMessage({ type: 'frame' } satisfies OrreryRequest),
+    );
+    // Whatever the worker is told may give it more to draw, so the page offers it frames again.
+    const send = (message: OrreryRequest, transfer: Transferable[] = []) => {
       thread.postMessage(message, transfer);
+      pace.wake();
+    };
     send(
       { type: 'cells', ratio, moving: movingNow(), cells },
       cells.map((cell) => cell.canvas),
     );
     thread.onmessage = ({ data }: MessageEvent<OrreryReply>) => {
-      if (data.type === 'drawn') stages.get(data.id)?.setAttribute('data-drawn', '');
+      if (data.type === 'framed') pace.answered(data.more);
+      else if (data.type === 'drawn') stages.get(data.id)?.setAttribute('data-drawn', '');
       else setFailed(true);
     };
     // A worker that fails has the canvases; every work's still stands in for them.
@@ -164,13 +174,14 @@ export function Orrery({
       visibility.observe(stage);
       sizes.observe(stage);
     }
-    worker.current = thread;
+    tell.current = send;
     return () => {
       visibility.disconnect();
       sizes.disconnect();
       document.removeEventListener('visibilitychange', shown);
+      pace.stop();
       thread.terminate();
-      worker.current = null;
+      tell.current = null;
       for (const canvas of canvases) canvas.remove();
       for (const stage of stages.values()) stage.removeAttribute('data-drawn');
     };
@@ -180,7 +191,7 @@ export function Orrery({
     // Every cell begins again when motion changes: none stands drawn whole until it is again.
     for (const stage of section.current?.querySelectorAll('[data-drawn]') ?? [])
       stage.removeAttribute('data-drawn');
-    worker.current?.postMessage({ type: 'moving', moving } satisfies OrreryRequest);
+    tell.current?.({ type: 'moving', moving });
   }, [moving]);
 
   // The page is night from the top: while it stands beneath the running head, the head is too.
