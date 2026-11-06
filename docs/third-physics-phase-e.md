@@ -102,7 +102,7 @@ It was built in its own worktree and brought in whole, with two changes noted be
 
 **Changed when brought in.**
 - **Rendered on request, as a work's page is.** Each work's page was prerendered for every work in every locale: 576 pages, which added about 233 MB to the build. Nearly all of that was the venue's own frame, repeated on each page. The page is one record and a few lines, so it is now rendered when asked for (`connection()`), and nothing is built ahead or kept for a number someone made up.
-- **What an unknown number answers.** Prerendered, an unknown number was a true 404, on Next's plain page. Rendered on request, it is the venue's own not-found page, marked `noindex`, with the status 200. The page has already begun to stream behind `[locale]/loading.tsx` when the number is refused, exactly as an unknown work's page does (`/art/9999`). Limiting the numbers (`dynamicParams = false`) was tried: it has no effect on a page rendered on request. A true 404 with the venue's own page needs two things, for the works and the verifier alike: the number refused before the page streams, in the proxy, and the venue's own page for an address that matches nothing (`global-not-found`). It is noted below as open.
+- **What an unknown number answers.** Prerendered, an unknown number was a true 404, on Next's plain page. Rendered on request, it is the venue's own not-found page, marked `noindex`, with the status 200. The page has already begun to stream behind `[locale]/loading.tsx` when the number is refused, exactly as an unknown work's page does (`/art/9999`). Limiting the numbers (`dynamicParams = false`) was tried: it has no effect on a page rendered on request. A true 404 with the venue's own page needed two things, for the works and the verifier alike: the number refused before the page streams, in the proxy, and the venue's own page for an address that matches nothing (`global-not-found`). Both are now built (`src/lib/addresses.ts`, `src/app/global-not-found.tsx`). An unknown number, work or exhibition answers a true 404, with the venue's own page in the visitor's language.
 - **One name for a pair.** The proof module's pair helper and the score's were the same function. Both pages and the strip now use one (`pairName`).
 
 ## 3. The Wavelength lens as built (§5.3)
@@ -175,7 +175,6 @@ It found three defects in the score, one in the lens, and smaller things in all 
 
 ## 5. Open
 
-- **True 404s with the venue's own page.** Unknown works and unknown numbers on the verifier answer the venue's not-found page as a soft 404 (200, `noindex`), because the locale's loading boundary has begun to stream. The proxy could refuse them before anything renders, and a site-wide `global-not-found` would give that refusal the venue's own page.
 - **Real iPhone Safari** for the lens and the score: the mobile WebKit project is desktop WebKit at a phone's size.
 - **Firefox** runs on CI only; it cannot launch on this machine.
 - **The Ink films' score** waits for their own map from step to time, with their pre-roll.

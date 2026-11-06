@@ -43,8 +43,8 @@ export async function generateMetadata({ params }: { params: Params }) {
 export default async function VerifyOrbitPage({ params }: { params: Params }) {
   // Rendered when asked for, as a work's own page is: the page is one record and a few lines,
   // so it costs nothing to set, while 576 prerendered copies of the venue's frame would weigh
-  // 230 MB. Nothing is kept for a number someone made up: like an unknown work, it has the
-  // venue's own not-found, marked noindex, since the page has begun to stream by then.
+  // 230 MB. Nothing is kept for a number someone made up. The proxy refuses it before this
+  // renders, with a true 404 (src/lib/addresses.ts); the refusal below only stands behind it.
   await connection();
   const { locale, id } = await params;
   if (!isLocale(locale)) notFound();

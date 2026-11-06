@@ -4,6 +4,9 @@ const nextConfig: NextConfig = {
   distDir: process.env.NEXT_DIST_DIR || '.next',
   poweredByHeader: false,
   reactStrictMode: true,
+  // An address no route answers gets the venue's own 404 (src/app/global-not-found.tsx): the
+  // proxy sends unknown works, exhibitions and orbit numbers there, so they are true 404s.
+  experimental: { globalNotFound: true },
   images: { remotePatterns: [{ protocol: 'https', hostname: 'a1.cosmicsignature.com' }] },
   // The sharing cards read a CJK locale's sliced face by name at render time
   // (src/components/sharing-card.tsx), which no bundler can trace; the slices and their

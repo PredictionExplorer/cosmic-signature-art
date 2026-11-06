@@ -151,8 +151,10 @@ test('the sharing cards are drawn from the works’ own rungs for a work, the ho
 test('an unknown exhibition is not here, and the venue says which work is next door', async ({
   page,
 }) => {
-  // The page streams behind the loading plate, so the status is the venue's; the body is the 404.
-  await page.goto('/exhibitions/nowhere');
+  // Refused before its page can stream (src/lib/addresses.ts): a true 404, the venue's own.
+  const response = await page.goto('/exhibitions/nowhere');
+  expect(response?.status()).toBe(404);
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText(t.notFound);
   await expect(page.getByRole('main')).toContainText(/next door/);
   await expect(page.getByRole('main')).not.toContainText(t.hangTitle);
 });
