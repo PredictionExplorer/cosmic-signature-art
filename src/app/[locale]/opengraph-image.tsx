@@ -4,15 +4,21 @@ import { isLocale } from '@/lib/i18n/routing';
 import { messages } from '@/lib/i18n/messages';
 import { getCuratedArtwork } from '@/lib/art/catalog';
 import { indexedWork } from '@/lib/art/collection-index';
-import { getPlateGround } from '@/lib/art/plate-records';
 import { workOfTheDay } from '@/lib/art/work-of-the-day';
 import { workNumber } from '@/lib/art/number';
-import { getInterpretation, rungFor } from '@/lib/art/types';
-import { CARD, SharingCard, cardFonts, verifiedPicture } from '@/components/sharing-card';
+import { getInterpretation } from '@/lib/art/types';
+import {
+  CARD,
+  PairCard,
+  cardFonts,
+  cardGround,
+  expressionPicture,
+} from '@/components/sharing-card';
 
 /**
- * The venue's card, and the default for every page without one of its own: the day's work
- * in Ink on its ground with the statement line. It follows the home's five-minute cadence.
+ * The venue's card, and the default for every page without one of its own: the day's work in
+ * both expressions across the seam (third-physics-phase-d.md §2) with the statement line. It
+ * follows the home's five-minute cadence.
  */
 export const revalidate = 300;
 export const alt = 'Cosmic Signature';
@@ -24,28 +30,31 @@ export default async function Image({ params }: { params: Promise<{ locale: stri
   if (!isLocale(locale)) notFound();
   const t = messages(locale);
   const work = getCuratedArtwork(workOfTheDay());
-  const media = work ? getInterpretation(work, 'ink') : undefined;
-  const rung = rungFor(media?.rungs, 760);
-  if (!work || !media || !rung) notFound();
-  const picture = {
-    dataUrl: await verifiedPicture(rung.src, rung.sha256),
-    width: rung.width,
-    height: rung.height,
-  };
+  const ink = work ? getInterpretation(work, 'ink') : undefined;
+  const light = work ? getInterpretation(work, 'light') : undefined;
+  if (!work || !ink || !light) notFound();
+  const [inkPicture, lightPicture] = await Promise.all([
+    expressionPicture(ink, 560),
+    expressionPicture(light, 560),
+  ]);
+  if (!inkPicture || !lightPicture) notFound();
   const indexed = indexedWork(work.id);
   const label = `${workNumber(work.id)} · ${t.ink}`;
   const monogram = indexed
     ? `${t.seedShort} ${indexed.seed.slice(0, 6)}…${indexed.seed.slice(-4)}`
     : undefined;
   return new ImageResponse(
-    <SharingCard
-      ground={getPlateGround(work.id, 'ink', media.stillSha256)?.tone ?? '#f1ebdf'}
-      night={false}
-      pictures={[picture]}
-      label={label}
+    <PairCard
+      leaves={[
+        { ground: cardGround(work.id, ink), night: false, picture: inkPicture, label },
+        { ground: cardGround(work.id, light), night: true, picture: lightPicture, label: t.light },
+      ]}
       words={t.statementLine}
       monogram={monogram}
     />,
-    { ...size, fonts: await cardFonts(locale, `${label} ${t.statementLine} ${monogram ?? ''}`) },
+    {
+      ...size,
+      fonts: await cardFonts(locale, `${label} ${t.light} ${t.statementLine} ${monogram ?? ''}`),
+    },
   );
 }

@@ -140,13 +140,35 @@
     z-index: 20;
     display: flex;
     align-items: stretch;
-    justify-content: space-between;
     gap: 0;
     min-height: 44px;
     padding: 0 var(--gutter) env(safe-area-inset-bottom);
     background: var(--ground);
     color: var(--type);
     border-top: 1px solid var(--rule);
+  }
+  /* Each word keeps its width: spread across the bar while they fit, scrolled when they do not,
+     never squeezed into one another. */
+  .barWords {
+    display: flex;
+    flex: 1;
+    min-width: 0;
+    justify-content: space-between;
+    gap: 0 12px;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scrollbar-width: none;
+  }
+  .barWords::-webkit-scrollbar {
+    display: none;
+  }
+  .barWords > * {
+    flex: none;
+  }
+  .barPager {
+    display: flex;
+    flex: none;
+    margin-left: 12px;
   }
   .bar a,
   .bar button {

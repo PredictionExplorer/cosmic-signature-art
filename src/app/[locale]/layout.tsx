@@ -21,6 +21,13 @@ import '@fontsource-variable/literata/opsz-italic.css';
 import '@fontsource/ibm-plex-mono/400.css';
 import '@fontsource/ibm-plex-mono/500.css';
 import '../globals.css';
+import { DAY_WORK_POOL } from '@/lib/art/work-of-the-day';
+
+/**
+ * What the browser needs to know today's expression for itself: the day's-work pool's size and
+ * the server's pin. A layout prerendered on another day then never answers for today.
+ */
+const venueDay = { poolSize: DAY_WORK_POOL.length, pinned: process.env.COSMIC_VENUE_DATE };
 // viewportFit makes the env(safe-area-inset-*) paddings real; the room script keeps
 // theme-color in step with the ground, so black rooms are not framed by cream bars.
 export const viewport: Viewport = {
@@ -56,7 +63,7 @@ export default async function LocaleLayout({
     <html lang={locale} data-scroll-behavior="smooth" suppressHydrationWarning>
       <body>
         {cjk ? <link rel="stylesheet" href={cjk} precedence="default" /> : null}
-        <script dangerouslySetInnerHTML={{ __html: roomScript }} />
+        <script dangerouslySetInnerHTML={{ __html: roomScript(venueDay) }} />
         <MotionProvider>
           <Suspense fallback={null}>
             <RoomGround />
@@ -64,7 +71,7 @@ export default async function LocaleLayout({
           <RunningHead locale={locale} t={t} />
           {children}
           <Colophon locale={locale} t={t} />
-          <IndexSheet works={compactWorks()} locale={locale} t={t} />
+          <IndexSheet works={compactWorks()} locale={locale} t={t} {...venueDay} />
           <KeySheet t={t} />
           <KeyboardVocabulary locale={locale} />
         </MotionProvider>

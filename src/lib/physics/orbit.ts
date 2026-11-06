@@ -5,9 +5,9 @@
  * forks), the profile and Borda draws that precede the candidates (visual_profile.rs, main.rs),
  * random_body, shift_bodies_to_com and the fourth-order Yoshida step (sim.rs), and the trait
  * analyses the published record carries (traits_analysis.rs): the closest approach, the
- * syzygies and the braid word. Every operation keeps the generator's order, and only + − × ÷
- * and √ are used, which IEEE 754 and ECMAScript define exactly, so the result is the published
- * record to the last bit in every engine. The file imports nothing, so the build scripts (with
+ * syzygies, the braid word and the fate. Every operation keeps the generator's order, and only
+ * + − × ÷ and √ are used, which IEEE 754 and ECMAScript define exactly, so the result is the
+ * published record to the last bit in every engine. The file imports nothing, so the build scripts (with
  * Node's type stripping), the tests and the browser worker all run this same code.
  */
 
@@ -426,7 +426,7 @@ export interface Bodies {
   velocities: Float64Array;
 }
 
-function randomBodies(stream: SeedStream): Bodies {
+export function randomBodies(stream: SeedStream): Bodies {
   const masses: [number, number, number] = [0, 0, 0];
   const positions = new Float64Array(9);
   const velocities = new Float64Array(9);
@@ -1082,13 +1082,23 @@ export type MeasurementKey =
   | 'closestWhere'
   | 'syzygies'
   | 'braidCrossings'
-  | 'braidWord';
+  | 'braidWord'
+  | 'fate';
 
 export interface Comparison {
   key: MeasurementKey;
   derived: string;
   published: string;
   exact: boolean;
+}
+
+/** What the published record says of the orbit's fate, and the threshold it was asked with. */
+export interface PublishedFate {
+  outcome: 'ejection' | 'eternal_dance';
+  escaper: number | null;
+  ejectionStep: number | null;
+  horizonSteps: number;
+  escapeThreshold: number;
 }
 
 /** Exact text of a double: the shortest round-trip form, the same in every engine. */
@@ -1129,4 +1139,218 @@ export function compare(published: PublishedPhysics, derived: Rederivation): Com
         derived.braid.truncated === published.braid.truncated,
     },
   ];
+}
+
+// ───────────────────────── The fate ─────────────────────────
+
+/*
+  The orbit's fate, as the generator decides it (traits_analysis.rs classify_fate). From the
+  recorded window's first step the integration runs on to eight times the window, and every ten
+  thousand steps it asks whether one body, in the centre-of-mass frame, carries more energy than
+  binds it to the other two by the published threshold (escaping_body). Five such answers in a
+  row are an ejection, dated by the first of them; none within the horizon is an eternal dance.
+  The arithmetic is the generator's, in its order, so a published ejection step is met to the
+  step, and a page can perform the orbit past its window: After the frame.
+*/
+
+/** How often the generator asks, in steps, and how many answers in a row confirm an escape. */
+export const CHECK_INTERVAL = 10_000;
+export const HYSTERESIS = 5;
+const KINETIC_ENERGY_FACTOR = 0.5;
+
+/** The state a window starts from: the bodies just after the warm-up, exactly. */
+export interface WindowState {
+  masses: readonly [number, number, number];
+  dt: number;
+  positions: ArrayLike<number>;
+  velocities: ArrayLike<number>;
+}
+
+/**
+ * escaping_body: the first body whose kinetic energy, in the centre-of-mass frame, exceeds the
+ * potential binding it to the other two by more than `threshold`, or null when none does. The
+ * frame is taken on a copy, as the generator takes it.
+ */
+export function escapingBody(
+  masses: readonly [number, number, number],
+  positions: ArrayLike<number>,
+  velocities: ArrayLike<number>,
+  threshold: number,
+): number | null {
+  const local: Bodies = {
+    masses: [masses[0], masses[1], masses[2]],
+    positions: Float64Array.from(positions),
+    velocities: Float64Array.from(velocities),
+  };
+  shiftToCentreOfMass(local);
+  const { positions: p, velocities: v } = local;
+  for (let i = 0; i < 3; i++) {
+    const vx = v[i * 3];
+    const vy = v[i * 3 + 1];
+    const vz = v[i * 3 + 2];
+    const kinetic = KINETIC_ENERGY_FACTOR * masses[i] * (vx * vx + vy * vy + vz * vz);
+    let potential = 0;
+    for (let j = 0; j < 3; j++) {
+      if (i === j) continue;
+      const dx = p[i * 3] - p[j * 3];
+      const dy = p[i * 3 + 1] - p[j * 3 + 1];
+      const dz = p[i * 3 + 2] - p[j * 3 + 2];
+      const distance = Math.sqrt(dx * dx + dy * dy + dz * dz);
+      if (distance > 1e-12) potential = potential - (G * masses[i] * masses[j]) / distance;
+    }
+    if (kinetic + potential > threshold) return i;
+  }
+  return null;
+}
+
+/** An escape, as the generator records it: the body, and the first of the five answers. */
+export interface Ejection {
+  escaper: number;
+  ejectionStep: number;
+}
+
+/**
+ * The generator's question, asked in its rhythm. The horizon loop counts from the window's
+ * first step; after the step numbered `index` (from zero) it asks when `index` is a positive
+ * multiple of the interval, so a state that has taken `taken` steps is asked at index taken − 1.
+ */
+export class FateWatch {
+  /** Positive answers in a row, as the generator's hysteresis counts them. */
+  run = 0;
+  ejection: Ejection | null = null;
+  private readonly masses: readonly [number, number, number];
+  private readonly threshold: number;
+
+  constructor(masses: readonly [number, number, number], threshold: number) {
+    this.masses = masses;
+    this.threshold = threshold;
+  }
+
+  /** Whether the state after `taken` steps of the window is one the generator asks about. */
+  static asks(taken: number) {
+    const index = taken - 1;
+    return index > 0 && index % CHECK_INTERVAL === 0;
+  }
+
+  /**
+   * The bodies after `taken` steps since the window's first step; returns the ejection once
+   * the fifth answer in a row confirms it, and keeps returning it after.
+   */
+  observe(taken: number, positions: ArrayLike<number>, velocities: ArrayLike<number>) {
+    if (this.ejection || !FateWatch.asks(taken)) return this.ejection;
+    const escaper = escapingBody(this.masses, positions, velocities, this.threshold);
+    if (escaper === null) {
+      this.run = 0;
+      return null;
+    }
+    this.run += 1;
+    if (this.run >= HYSTERESIS)
+      this.ejection = {
+        escaper,
+        ejectionStep: taken - 1 - (HYSTERESIS - 1) * CHECK_INTERVAL,
+      };
+    return this.ejection;
+  }
+}
+
+/** The outcome of a fate run, with the states a page needs to perform past the window. */
+export interface DerivedFate {
+  outcome: 'ejection' | 'eternal_dance';
+  escaper: number | null;
+  ejectionStep: number | null;
+  horizonSteps: number;
+  /** The bodies after the recorded window, where After the frame begins. */
+  windowEnd: { positions: Float64Array; velocities: Float64Array; watchRun: number };
+  /**
+   * The bodies `lead` steps before the ejection (never inside the window), so a page can go
+   * straight to the escape and perform it from there; null for an eternal dance.
+   */
+  approach: {
+    taken: number;
+    positions: Float64Array;
+    velocities: Float64Array;
+    watchRun: number;
+  } | null;
+}
+
+/**
+ * classify_fate from a window's first step: the recorded window, then on to the horizon,
+ * asking every interval. `lead` is how many steps before the ejection the approach is kept.
+ */
+export function deriveFate(
+  window: WindowState,
+  {
+    steps,
+    threshold,
+    horizonSteps,
+    lead = 0,
+  }: {
+    steps: number;
+    threshold: number;
+    horizonSteps: number;
+    lead?: number;
+  },
+  onProgress?: (taken: number) => void,
+): DerivedFate {
+  const P = Float64Array.from(window.positions);
+  const V = Float64Array.from(window.velocities);
+  const step = integrator(window.masses, P, V, window.dt);
+  const watch = new FateWatch(window.masses, threshold);
+  let windowEnd: DerivedFate['windowEnd'] | null = null;
+  // The states every `lead` steps back are kept as a ring of one: the latest multiple of the
+  // interval that is at least `lead` before the asking point, so the approach is exact.
+  const snapshots: { taken: number; P: Float64Array; V: Float64Array; run: number }[] = [];
+  for (let taken = 1; taken <= horizonSteps; taken++) {
+    step();
+    if (taken === steps)
+      windowEnd = { positions: P.slice(), velocities: V.slice(), watchRun: watch.run };
+    if (taken >= steps && lead > 0 && taken % CHECK_INTERVAL === 0) {
+      snapshots.push({ taken, P: P.slice(), V: V.slice(), run: watch.run });
+      if (snapshots.length > Math.ceil(lead / CHECK_INTERVAL) + HYSTERESIS + 1) snapshots.shift();
+    }
+    const ejection = watch.observe(taken, P, V);
+    if (onProgress && taken % 250_000 === 0) onProgress(taken);
+    if (ejection) {
+      const target = Math.max(steps, ejection.ejectionStep - lead);
+      const kept = snapshots.filter((snapshot) => snapshot.taken <= target).at(-1);
+      return {
+        outcome: 'ejection',
+        escaper: ejection.escaper,
+        ejectionStep: ejection.ejectionStep,
+        horizonSteps,
+        windowEnd: windowEnd ?? {
+          positions: P.slice(),
+          velocities: V.slice(),
+          watchRun: watch.run,
+        },
+        approach: kept
+          ? { taken: kept.taken, positions: kept.P, velocities: kept.V, watchRun: kept.run }
+          : null,
+      };
+    }
+  }
+  return {
+    outcome: 'eternal_dance',
+    escaper: null,
+    ejectionStep: null,
+    horizonSteps,
+    windowEnd: windowEnd ?? { positions: P.slice(), velocities: V.slice(), watchRun: watch.run },
+    approach: null,
+  };
+}
+
+/** The fate's text for the proof: who escapes and when, or how long the dance held. */
+function fateText(
+  fate: Pick<PublishedFate, 'outcome' | 'escaper' | 'ejectionStep' | 'horizonSteps'>,
+) {
+  return fate.outcome === 'ejection'
+    ? `ejection ${fate.escaper}@${fate.ejectionStep}`
+    : `eternal_dance through ${fate.horizonSteps}`;
+}
+
+/** The published fate beside the one re-derived here, as one more row of the proof. */
+export function compareFate(published: PublishedFate, derived: DerivedFate): Comparison {
+  const theirs = fateText(published);
+  const ours = fateText(derived);
+  return { key: 'fate', derived: ours, published: theirs, exact: ours === theirs };
 }

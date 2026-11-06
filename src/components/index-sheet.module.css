@@ -85,6 +85,18 @@
   background: var(--paper);
   overflow: hidden;
 }
+/* Under a finger the empty wall says how to hang a work on it. */
+.wallHint {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 0 var(--gutter);
+  color: var(--muted);
+  font-size: var(--fs-control);
+  text-align: center;
+  text-wrap: balance;
+}
 .wall[data-material='light'] {
   background: #000;
 }
@@ -206,8 +218,16 @@
     margin-left: 0;
     flex-basis: 100%;
   }
+  /* The field takes the row: the label is the flex item that holds it. */
+  .search label {
+    display: flex;
+    flex: 1;
+    min-width: 0;
+  }
   .search input {
     flex: 1;
+    min-width: 0;
+    width: auto;
   }
   .lower {
     max-height: 60dvh;

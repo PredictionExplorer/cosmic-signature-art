@@ -1,4 +1,6 @@
 import { locales, unlocalizedPath } from './i18n/routing';
+import { DAY_MS } from './art/day';
+import { EXPRESSION_KEY, HOME_RESOLVED_KEY, MOTION_KEY, OVERTURE_KEY } from './storage-keys';
 
 /** The venue's two grounds, both taken from the work: the Ink sheet's paper and the Light field's black. */
 export type Room = 'paper' | 'night';
@@ -28,18 +30,45 @@ export function roomForPath(pathname: string): Room {
 
 /**
  * Inline script for the first paint: sets <html data-room> and the theme colour before
- * hydration, so the running head is never the wrong material for a frame. Mirrors roomFor.
+ * hydration, so the running head is never the wrong material for a frame. Mirrors roomFor,
+ * and on the home and a work, whose first screen is a plate, it paints the ground of the
+ * expression the plate opens on: the URL's, else the session's remembered choice, else the
+ * day's, by the arithmetic of src/lib/art/day.ts on the day's-work pool's size and the
+ * server's pin. The wing takes the ground over at hydration (src/components/wing.tsx).
+ *
+ * It also decides the Overture (src/components/overture.tsx): a first visit to the home, with
+ * nothing asked of the plate in the URL and motion welcome, paints black and marks
+ * <html data-overture="pending">, so the running head and the plate wait under the black from
+ * the first frame. The home's arrival is then the Overture's, so it opens on the still.
  */
-export const roomScript = [
-  '(function(){',
-  `var l=${JSON.stringify(locales)},r=${JSON.stringify(NIGHT_ROUTES)};`,
-  "var s=location.pathname.split('/');if(l.indexOf(s[1])>-1)s.splice(1,1);",
-  "var p=s.join('/')||'/';",
-  'var q=new URLSearchParams(location.search);',
-  "var n=r.some(function(x){return p===x||p.indexOf(x+'/')===0})||",
-  "(p==='/collection'&&(q.get('order')==='spectrum'||q.get('expression')==='light'));",
-  "document.documentElement.setAttribute('data-room',n?'night':'paper');",
-  'var m=document.querySelector(\'meta[name="theme-color"]\');',
-  `if(m)m.setAttribute('content',n?'${ROOM_COLORS.night}':'${ROOM_COLORS.paper}');`,
-  '})()',
-].join('');
+export function roomScript({ poolSize, pinned }: { poolSize: number; pinned?: string }): string {
+  return [
+    '(function(){',
+    `var l=${JSON.stringify(locales)},r=${JSON.stringify(NIGHT_ROUTES)};`,
+    "var s=location.pathname.split('/');if(l.indexOf(s[1])>-1)s.splice(1,1);",
+    "var p=s.join('/')||'/';",
+    'var q=new URLSearchParams(location.search);',
+    "var n=r.some(function(x){return p===x||p.indexOf(x+'/')===0})||",
+    "(p==='/collection'&&(q.get('order')==='spectrum'||q.get('expression')==='light'));",
+    "if(!n&&(p==='/'||/^\\/art\\/[^/]+$/.test(p))){",
+    "var e=q.get('expression');",
+    "if(e!=='ink'&&e!=='light'){",
+    `try{e=sessionStorage.getItem(${JSON.stringify(EXPRESSION_KEY)})}catch(x){e=null}`,
+    "if(e!=='ink'&&e!=='light'){",
+    `var d=Math.floor((${pinned ? `Date.parse(${JSON.stringify(pinned)})` : 'Date.now()'})/${DAY_MS}),`,
+    `z=${Math.max(1, poolSize)},t=((d%z)+z)%z+Math.floor(d/z);`,
+    "e=((t%2)+2)%2===0?'light':'ink'}}",
+    "n=e==='light'}",
+    // The Overture: storage that cannot be read never traps a visitor behind the black.
+    "if(p==='/'&&!q.get('expression')&&!location.hash){var o=false;",
+    `try{o=!localStorage.getItem(${JSON.stringify(OVERTURE_KEY)})&&`,
+    `sessionStorage.getItem(${JSON.stringify(MOTION_KEY)})!=='paused'&&`,
+    "!matchMedia('(prefers-reduced-motion: reduce)').matches}catch(x){o=false}",
+    "if(o){document.documentElement.setAttribute('data-overture','pending');n=true;",
+    `try{sessionStorage.setItem(${JSON.stringify(HOME_RESOLVED_KEY)},'resolved')}catch(x){}}}`,
+    "document.documentElement.setAttribute('data-room',n?'night':'paper');",
+    'var m=document.querySelector(\'meta[name="theme-color"]\');',
+    `if(m)m.setAttribute('content',n?'${ROOM_COLORS.night}':'${ROOM_COLORS.paper}');`,
+    '})()',
+  ].join('');
+}

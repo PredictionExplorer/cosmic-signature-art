@@ -20,9 +20,9 @@ export interface Neighbours {
   lot?: boolean;
 }
 
-/** The remembered expression travels with every step to a neighbouring work. */
+/** The expression on view travels with every step to a neighbouring work, Ink or Light. */
 export function neighbourHref(locale: Locale, id: number, expression: string) {
-  return localizedPath(locale, `/art/${id}${expression === 'light' ? '?expression=light' : ''}`);
+  return localizedPath(locale, `/art/${id}?expression=${encodeURIComponent(expression)}`);
 }
 
 /** Beat 9: `← 030 · 032 →` with the neighbours' previews, the next star by wavelength, and the sale. */

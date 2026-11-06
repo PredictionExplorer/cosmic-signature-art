@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { fireEvent, render, screen } from '@testing-library/react';
+import { act, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { getCuratedArtwork } from '@/lib/art/catalog';
 import { getPlateGround } from '@/lib/art/plate-records';
@@ -164,7 +164,9 @@ describe('the sequence rows', () => {
 
 describe('the plate sequence', () => {
   it('keeps ordinary selections static unless browsing motion is explicitly enabled', () => {
-    const { container } = render(<PlateSequence works={works} locale="en" t={en} />);
+    const { container } = render(
+      <PlateSequence works={works} locale="en" t={en} expression="ink" />,
+    );
     expect(coordinator.use).toHaveBeenLastCalledWith({ enabled: false, ids: [31] });
     expect(container.querySelector('[data-collection-preview]')).toBeNull();
     expect(container.querySelector('video')).toBeNull();
@@ -177,7 +179,9 @@ describe('the plate sequence', () => {
   });
 
   it('only grants eligibility to a verified compact Ink excerpt outside a row of stills', () => {
-    const { container } = render(<PlateSequence works={works} locale="en" t={en} animated />);
+    const { container } = render(
+      <PlateSequence works={works} locale="en" t={en} animated expression="ink" />,
+    );
     expect(coordinator.use).toHaveBeenLastCalledWith({ enabled: true, ids: [31] });
     // The third row falls on the rhythm's row of three: stills only, no preview session.
     expect(container.querySelectorAll('[data-collection-preview]')).toHaveLength(2);
@@ -187,24 +191,27 @@ describe('the plate sequence', () => {
     expect(container.querySelector('video')).toBeNull();
     // A row of three stills never moves, even when every work has an excerpt.
     const stills = [1, 2, 3].map((id) => clone(id, 0));
-    render(<PlateSequence works={stills} locale="en" t={en} animated rhythm={[3]} />);
+    render(
+      <PlateSequence works={stills} locale="en" t={en} animated rhythm={[3]} expression="ink" />,
+    );
     expect(coordinator.use).toHaveBeenLastCalledWith({ enabled: true, ids: [] });
     expect(card(1)).toHaveAttribute('data-preview-available', 'false');
   });
 
   it('names every card by its number and expression and carries the expression in the link', () => {
-    render(<PlateSequence works={works} locale="ja" t={en} animated />);
+    render(<PlateSequence works={works} locale="ja" t={en} animated expression="ink" />);
     expect(card(31)).toHaveAttribute('aria-label', '№ 031 · Ink');
-    expect(card(31)).toHaveAttribute('href', '/ja/art/31');
+    expect(card(31)).toHaveAttribute('href', '/ja/art/31?expression=ink');
     expect(card(35)).toHaveAttribute('aria-label', '№ 035 · Light');
     expect(card(35)).toHaveAttribute('href', '/ja/art/35?expression=light');
     expect(card(31)).toHaveTextContent('031');
     expect(card(31)).not.toHaveTextContent('Signature');
   });
 
-  it('shows Light for every work when the view asks for it, and stops the Ink lease', () => {
+  it('shows Light for every work when the view asks for it, moving only a verified Light clip', () => {
     render(<PlateSequence works={works} locale="ja" t={en} animated expression="light" />);
-    expect(coordinator.use).toHaveBeenLastCalledWith({ enabled: false, ids: [31] });
+    // These copies carry no Light settling clip, so nothing is eligible to move.
+    expect(coordinator.use).toHaveBeenLastCalledWith({ enabled: true, ids: [] });
     for (const id of [31, 23, 35]) {
       expect(card(id)).toHaveAttribute('href', `/ja/art/${id}?expression=light`);
       expect(card(id)).toHaveAttribute('data-preview-available', 'false');
@@ -212,7 +219,7 @@ describe('the plate sequence', () => {
   });
 
   it('routes keyboard focus to the shared coordinator without replacing the artwork link', () => {
-    render(<PlateSequence works={works} locale="en" t={en} animated />);
+    render(<PlateSequence works={works} locale="en" t={en} animated expression="ink" />);
     fireEvent.focus(card(31));
     expect(coordinator.intent).toHaveBeenLastCalledWith(31, 'focus');
     fireEvent.blur(card(31));
@@ -230,7 +237,9 @@ describe('the plate sequence', () => {
       fail: coordinator.fail,
       rest: coordinator.rest,
     });
-    const { container } = render(<PlateSequence works={works} locale="en" t={en} animated />);
+    const { container } = render(
+      <PlateSequence works={works} locale="en" t={en} animated expression="ink" />,
+    );
     expect(card(31)).toHaveAttribute('data-motion', 'active');
     expect(card(31)).toHaveTextContent(`${en.settling} 00:22–00:30`);
     expect(card(31)).not.toHaveTextContent(en.excerpt);
@@ -252,23 +261,23 @@ describe('the plate sequence', () => {
       fail: coordinator.fail,
       rest: coordinator.rest,
     });
-    render(<PlateSequence works={works} locale="en" t={en} animated />);
+    render(<PlateSequence works={works} locale="en" t={en} animated expression="ink" />);
     expect(card(31)).toHaveTextContent(`${en.excerpt} 00:06–00:14`);
     const ink = getCuratedArtwork(31)!.media.find((media) => media.id === 'ink')!;
     expect(sequenceFilm({ ...ink, previewFilm: undefined }, true)).toBeUndefined();
     expect(sequenceFilm({ ...ink, previewFilm: undefined }, false)?.id).toBe('settling');
     expect(sequenceFilm({ ...ink, settlingFilm: undefined }, false)?.id).toBe('catalogue');
-    expect(
-      sequenceFilm(
-        getCuratedArtwork(31)!.media.find((m) => m.id === 'light'),
-        false,
-      ),
-    ).toBeUndefined();
+    // Light moves as Ink does: its settling clip, light enough for a phone's wall too.
+    const light = getCuratedArtwork(31)!.media.find((m) => m.id === 'light')!;
+    const clip = { ...ink.films[0], id: 'settling', src: '/art/clips/31-light-settling.mp4' };
+    expect(sequenceFilm({ ...light, settlingFilm: clip }, false)?.id).toBe('settling');
+    expect(sequenceFilm({ ...light, settlingFilm: clip }, true)?.id).toBe('settling');
+    expect(sequenceFilm({ ...light, settlingFilm: undefined }, false)).toBeUndefined();
   });
 
   it('hangs a row of two on the eye line from each sheet’s measured centre, and the full plate as it is', () => {
     const page = [31, 35, 23].map((id) => ({ ...getCuratedArtwork(id)!, cycle: 1 }));
-    render(<PlateSequence works={page} locale="en" t={en} rhythm={[2, 1]} />);
+    render(<PlateSequence works={page} locale="en" t={en} rhythm={[2, 1]} expression="ink" />);
     for (const id of [31, 35]) {
       const ink = getCuratedArtwork(id)!.media.find((media) => media.id === 'ink')!;
       const centre = getPlateGround(id, 'ink', ink.stillSha256)!.centre.y;
@@ -300,7 +309,9 @@ describe('the plate sequence', () => {
     const rows = container.querySelectorAll('[data-shape]');
     expect(rows[0]).toHaveAttribute('data-material', 'light');
     expect(rows[0]).toHaveStyle({ '--plate-ground': '#000000' });
-    const inkRows = render(<PlateSequence works={page} locale="en" t={en} rhythm={[1, 2]} />);
+    const inkRows = render(
+      <PlateSequence works={page} locale="en" t={en} rhythm={[1, 2]} expression="ink" />,
+    );
     expect(inkRows.container.querySelector('[data-shape="1"]')).toHaveAttribute(
       'data-material',
       'ink',
@@ -309,12 +320,114 @@ describe('the plate sequence', () => {
 
   it('opens each cycle with a strip that reads the cycle, its count and its date', () => {
     const page = [clone(48, 2), clone(47, 1), clone(46, 1)];
-    render(<PlateSequence works={page} locale="en" t={en} chapters="all" cycles={cycles} />);
+    render(
+      <PlateSequence
+        works={page}
+        locale="en"
+        t={en}
+        chapters="all"
+        cycles={cycles}
+        expression="ink"
+      />,
+    );
     const strips = screen.getAllByRole('heading', { level: 2 });
     expect(strips.map((strip) => strip.textContent)).toEqual([
       'Cycle 224 worksimprinted October 5, 2026',
       'Cycle 124 worksimprinted August 11, 2026',
     ]);
     expect(strips[0].querySelector('time')).toHaveAttribute('dateTime', '2026-10-05T10:14:37.000Z');
+  });
+});
+
+describe('the pairs across the seam', () => {
+  /** A copy of 031 whose Ink and Light both carry a verified settling clip. */
+  function moving(id: number): Artwork {
+    const archived = getCuratedArtwork(31)!;
+    return {
+      ...archived,
+      id,
+      cycle: 1,
+      media: archived.media.map((media) => ({
+        ...media,
+        previewFilm: undefined,
+        settlingFilm: {
+          ...media.films[0],
+          id: 'settling',
+          src: `/art/clips/${id}-${media.id}-settling.mp4`,
+          durationSeconds: 8,
+          startSeconds: 22,
+        },
+      })),
+    };
+  }
+  const half = (id: number, expression: 'Ink' | 'Light') =>
+    screen.getByRole('link', { name: `№ ${String(id).padStart(3, '0')} · ${expression}` });
+
+  it('hangs each work’s Ink on the paper leaf beside its Light on the night leaf, each opening its own', () => {
+    const { container } = render(<PlateSequence works={works} locale="ja" t={en} />);
+    expect(container.querySelector('[data-hanging="both"]')).toBeInTheDocument();
+    expect(half(31, 'Ink')).toHaveAttribute('href', '/ja/art/31?expression=ink');
+    expect(half(31, 'Light')).toHaveAttribute('href', '/ja/art/31?expression=light');
+    expect(half(31, 'Ink').closest('[data-ground]')).toHaveAttribute('data-ground', 'paper');
+    expect(half(31, 'Light').closest('[data-ground]')).toHaveAttribute('data-ground', 'night');
+    // A work that publishes no Ink keeps its place on the paper leaf, and says so.
+    const leaves = container.querySelectorAll('[data-shape] > [data-ground="paper"]');
+    expect([...leaves].some((leaf) => leaf.textContent?.includes(en.noInkPublished))).toBe(true);
+    expect(half(35, 'Light')).toHaveAttribute('href', '/ja/art/35?expression=light');
+    expect(screen.queryByRole('link', { name: '№ 035 · Ink' })).toBeNull();
+  });
+
+  it('hangs a pair’s halves on one line: no eye line pulls one above the other', () => {
+    const page = [31, 23].map((id) => ({ ...getCuratedArtwork(id)!, cycle: 1 }));
+    render(<PlateSequence works={page} locale="en" t={en} rhythm={[2]} />);
+    for (const id of [31, 23])
+      for (const expression of ['Ink', 'Light'] as const)
+        expect(half(id, expression)).not.toHaveAttribute('style');
+    expect(half(31, 'Ink').querySelector('img')).toHaveAttribute(
+      'sizes',
+      '(max-width: 767px) 50vw, 23vw',
+    );
+  });
+
+  it('moves a pair as one: both halves settle together, and it rests once each has', () => {
+    coordinator.use.mockReturnValue({
+      gridRef: { current: null },
+      activeId: 61,
+      intent: coordinator.intent,
+      clearIntent: coordinator.clearIntent,
+      fail: coordinator.fail,
+      rest: coordinator.rest,
+    });
+    const { container } = render(
+      <PlateSequence works={[moving(61)]} locale="en" t={en} animated />,
+    );
+    expect(coordinator.use).toHaveBeenLastCalledWith({ enabled: true, ids: [61] });
+    expect(half(61, 'Ink')).toHaveAttribute('data-motion', 'active');
+    expect(half(61, 'Light')).toHaveAttribute('data-motion', 'active');
+    const films = container.querySelectorAll('video');
+    expect(films).toHaveLength(2);
+    // Each film holds its last frame and fades before it reports its end.
+    vi.useFakeTimers();
+    try {
+      fireEvent.ended(films[0]);
+      act(() => vi.advanceTimersByTime(10_000));
+      expect(coordinator.rest).not.toHaveBeenCalled();
+      fireEvent.ended(films[1]);
+      act(() => vi.advanceTimersByTime(10_000));
+      expect(coordinator.rest).toHaveBeenCalledWith(61);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('reads each cycle across the seam: the cycle and its count on paper, the date at night', () => {
+    const page = [clone(48, 2), clone(47, 1)];
+    render(<PlateSequence works={page} locale="en" t={en} chapters="all" cycles={cycles} />);
+    const strips = screen.getAllByRole('heading', { level: 2 });
+    expect(strips[0].querySelector('[data-ground="paper"]')).toHaveTextContent('Cycle 2');
+    expect(strips[0].querySelector('[data-ground="night"] time')).toHaveAttribute(
+      'dateTime',
+      '2026-10-05T10:14:37.000Z',
+    );
   });
 });

@@ -7,6 +7,10 @@ export type Expression = 'light' | 'ink';
 export function isExpression(id: InterpretationId): id is Expression {
   return id === 'light' || id === 'ink';
 }
+/** The other expression of the same orbit. */
+export function twinOf(expression: Expression): Expression {
+  return expression === 'light' ? 'ink' : 'light';
+}
 export type MediaSource = 'local-archive' | 'published-manifest' | 'legacy-url';
 
 export interface ArtFilm {

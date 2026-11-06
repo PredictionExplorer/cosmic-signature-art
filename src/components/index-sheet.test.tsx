@@ -1,16 +1,18 @@
 import { act, fireEvent, render, screen, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { compactWorks } from '@/lib/art/collection-index';
+import { fill } from '@/lib/i18n/format';
 import { en } from '@/lib/i18n/en';
 import {
   collectionHref,
   cyclesOf,
-  EXPRESSION_KEY,
   facetsOf,
   IndexSheet,
-  readExpression,
+  readHanging,
+  seenExpression,
 } from './index-sheet';
 import { closeSheet, openSheet, useOpenSheet } from './sheets-store';
+import { EXPRESSION_KEY } from '@/lib/storage-keys';
 
 let pathname = '/collection';
 vi.mock('next/navigation', () => ({ usePathname: () => pathname }));
@@ -28,14 +30,18 @@ function Probe() {
   const sheet = useOpenSheet();
   return <output data-testid="sheet">{sheet ?? 'none'}</output>;
 }
-function renderSheet(locale: 'en' | 'ja' = 'en') {
+/** Days the venue's arithmetic answers for a pool of three: an Ink day and a Light day. */
+const DAYS = { ink: '2026-11-06', light: '2026-11-05' } as const;
+/** An Ink day unless a case says otherwise. */
+function renderSheet(locale: 'en' | 'ja' = 'en', day: 'ink' | 'light' = 'ink') {
   return render(
     <>
-      <IndexSheet works={works} locale={locale} t={en} />
+      <IndexSheet works={works} locale={locale} t={en} poolSize={3} pinned={DAYS[day]} />
       <Probe />
     </>,
   );
 }
+const alone = (expression: string) => fill(en.hangAlone, { expression });
 function numeral(id: number) {
   return screen.getByRole('link', { name: `№ ${String(id).padStart(3, '0')}` });
 }
@@ -91,6 +97,10 @@ describe('the index helpers', () => {
       '/collection?order=spectrum&expression=light&fate=Ejection',
     );
     expect(collectionHref('ja', current, { order: 'number', expression: 'ink' })).toBe(
+      '/ja/collection?expression=ink&fate=Ejection',
+    );
+    // Both across the seam is the collection's own hanging, so it names no expression.
+    expect(collectionHref('ja', current, { order: 'number', expression: 'both' })).toBe(
       '/ja/collection?fate=Ejection',
     );
     expect(collectionHref('en', current, { order: 'number', q: 'moon' })).toBe(
@@ -102,11 +112,18 @@ describe('the index helpers', () => {
     expect(collectionHref('en', new URLSearchParams(), {})).toBe('/collection');
   });
 
-  it('reads the expression from the URL first, then the session, and opens on Ink otherwise', () => {
-    expect(readExpression(new URLSearchParams('expression=light'))).toBe('light');
-    expect(readExpression(new URLSearchParams('expression=ink'), 'light')).toBe('ink');
-    expect(readExpression(new URLSearchParams(), 'light')).toBe('light');
-    expect(readExpression(new URLSearchParams(), null)).toBe('ink');
+  it('reads the hanging from the URL: one expression alone, or both across the seam', () => {
+    expect(readHanging(new URLSearchParams('expression=light'))).toBe('light');
+    expect(readHanging(new URLSearchParams('expression=ink'))).toBe('ink');
+    expect(readHanging(new URLSearchParams())).toBe('both');
+    expect(readHanging(new URLSearchParams('expression=silk'))).toBe('both');
+  });
+
+  it('shows a work in the hanging alone, else the session’s choice, else the day’s', () => {
+    expect(seenExpression('ink', 'light', 'light')).toBe('ink');
+    expect(seenExpression('both', 'light', 'ink')).toBe('light');
+    expect(seenExpression('both', null, 'light')).toBe('light');
+    expect(seenExpression('both', 'unknown', 'ink')).toBe('ink');
   });
 });
 
@@ -165,21 +182,32 @@ describe('the Index of numbers', () => {
       'href',
       '/ja/collection?order=spectrum&expression=light',
     );
-    expect(within(orderings).getByRole('link', { name: en.ink })).toHaveAttribute(
-      'href',
-      '/ja/collection?order=cycle',
-    );
-    expect(within(orderings).getByRole('link', { name: en.light })).toHaveAttribute(
-      'aria-current',
-      'page',
-    );
+    const ink = within(orderings).getByRole('link', { name: en.ink });
+    expect(ink).toHaveAttribute('href', '/ja/collection?order=cycle&expression=ink');
+    expect(ink).toHaveAttribute('title', alone(en.ink));
+    expect(ink).not.toHaveAttribute('aria-current');
+    // Light hangs alone: its word is marked, and hangs both again.
+    const light = within(orderings).getByRole('link', { name: en.light });
+    expect(light).toHaveAttribute('aria-current', 'true');
+    expect(light).toHaveAttribute('title', en.hangTogether);
+    expect(light).toHaveAttribute('href', '/ja/collection?order=cycle');
   });
 
-  it('remembers the session’s expression when the URL names none', () => {
+  it('hangs the session’s expression on the wall when the URL names none, and leaves the work page to it', () => {
     sessionStorage.setItem(EXPRESSION_KEY, 'light');
     renderSheet();
     act(() => openSheet('index'));
-    expect(numeral(0)).toHaveAttribute('href', '/art/0?expression=light');
+    expect(numeral(0)).toHaveAttribute('href', '/art/0');
+    fireEvent.pointerEnter(numeral(31), { pointerType: 'mouse' });
+    expect(wall()!.closest('[data-material]')).toHaveAttribute('data-material', 'light');
+  });
+
+  it('hangs the day’s expression on the wall for a visitor who has not chosen one', () => {
+    renderSheet('en', 'light');
+    act(() => openSheet('index'));
+    fireEvent.pointerEnter(numeral(31), { pointerType: 'mouse' });
+    expect(wall()?.src).toMatch(/images\/web\/preview\.webp$/);
+    expect(wall()!.closest('[data-material]')).toHaveAttribute('data-material', 'light');
   });
 
   it('under a finger, the first tap hangs the work and the second enters it', () => {
@@ -274,15 +302,39 @@ describe('the Index of numbers', () => {
     expect(within(views).getByRole('link', { name: en.allTheLight })).not.toHaveAttribute(
       'aria-current',
     );
-    // Away from the collection no ordering is the page; the session's expression stays marked.
+    // Away from the collection no ordering is the page, and no expression hangs alone there.
     const orderings = screen.getByRole('navigation', { name: en.ordering });
     expect(within(orderings).getByRole('link', { name: en.orderNumber })).not.toHaveAttribute(
       'aria-current',
     );
-    expect(within(orderings).getByRole('link', { name: en.ink })).toHaveAttribute(
+    expect(within(orderings).getByRole('link', { name: en.ink })).not.toHaveAttribute(
       'aria-current',
-      'true',
     );
+  });
+
+  it('reads nothing of the collection from a work page’s own query', () => {
+    // A work opened in Light names its expression; the collection's links start afresh from it.
+    pathname = '/art/35';
+    window.history.replaceState(null, '', '/art/35?expression=light&view=still');
+    renderSheet();
+    act(() => openSheet('index'));
+    const orderings = screen.getByRole('navigation', { name: en.ordering });
+    expect(within(orderings).getByRole('link', { name: en.orderNumber })).toHaveAttribute(
+      'href',
+      '/collection',
+    );
+    for (const [word, expression] of [
+      [en.ink, 'ink'],
+      [en.light, 'light'],
+    ] as const) {
+      const choice = within(orderings).getByRole('link', { name: word });
+      expect(choice).toHaveAttribute('href', `/collection?expression=${expression}`);
+      expect(choice).not.toHaveAttribute('aria-current');
+    }
+    // The wall and the numerals follow the visit's choice or the day's, not the page's query.
+    expect(numeral(31)).toHaveAttribute('href', '/art/31');
+    fireEvent.pointerEnter(numeral(31), { pointerType: 'mouse' });
+    expect(wall()!.closest('[data-material]')).toHaveAttribute('data-material', 'ink');
   });
 
   it('never offers the derived views where a work is for sale', () => {
@@ -301,7 +353,7 @@ describe('the Index of numbers', () => {
     pathname = '/art/31';
     view.rerender(
       <>
-        <IndexSheet works={works} locale="en" t={en} />
+        <IndexSheet works={works} locale="en" t={en} poolSize={3} pinned={DAYS.ink} />
         <Probe />
       </>,
     );

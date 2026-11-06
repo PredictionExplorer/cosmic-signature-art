@@ -29,7 +29,7 @@
 }
 .row {
   display: grid;
-  grid-template-columns: minmax(0, 15vw) minmax(0, 1fr);
+  grid-template-columns: minmax(0, 24vw) minmax(0, 1fr);
   gap: 27px var(--gutter);
   align-items: start;
   padding: 27px 0;
@@ -40,11 +40,23 @@
 .row:last-child {
   border-bottom: 1px solid var(--rule);
 }
+/* The first work as its pair: the Ink half on paper beside the Light half on night. */
 .rowPlate {
-  display: block;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-self: start;
   min-width: 0;
 }
-.rowPlate > :global(.art-media) {
+.rowLeaf {
+  display: grid;
+  place-items: center;
+  padding: 6px;
+  background: var(--paper);
+}
+.rowLeaf[data-ground='night'] {
+  background: var(--night);
+}
+.rowLeaf > :global(.art-media) {
   width: 100%;
 }
 .rowWords {
@@ -172,8 +184,9 @@
   .spread {
     padding-top: calc(var(--baseline) * 5);
   }
+  /* On a phone the pair takes the row's width above its words, so each half can be read. */
   .row {
-    grid-template-columns: minmax(0, 30vw) minmax(0, 1fr);
+    grid-template-columns: minmax(0, 1fr);
     gap: 18px;
   }
   .measures {

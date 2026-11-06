@@ -22,7 +22,7 @@ import {
 import { artworkFromIndex } from '@/lib/art/collection-cards';
 import { artworkForView } from '@/lib/art/view-media';
 import { workFolio } from '@/lib/art/number';
-import { PlateSequence } from '@/components/plate-sequence';
+import { PlateSequence, type Hanging } from '@/components/plate-sequence';
 import { CollectionRoom } from './collection-room';
 import { CollectionBar } from './collection-bar';
 import { SpectrumWall } from './spectrum-wall';
@@ -31,7 +31,6 @@ import styles from './collection.module.css';
 /** A page of the collection hangs eighteen works in the sequence's rhythm. */
 const PAGE = 18;
 type Order = 'number' | 'cycle' | 'spectrum';
-type Expression = 'ink' | 'light';
 type Search = Record<string, string | string[] | undefined>;
 const ORDER_LABEL: Record<Order, keyof Messages> = {
   number: 'orderNumber',
@@ -68,8 +67,9 @@ function readQuery(value?: string): string | undefined {
 function readOrder(value?: string): Order {
   return value === 'cycle' || value === 'spectrum' ? value : 'number';
 }
-function readExpression(value?: string): Expression {
-  return value === 'light' ? 'light' : 'ink';
+/** The collection hangs both expressions across the seam unless one is asked for alone. */
+function readExpression(value?: string): Hanging {
+  return value === 'light' || value === 'ink' ? value : 'both';
 }
 /** Only short, printable values become criteria; anything else is simply no filter. */
 function readFilter(search: Search): WorkFilter {
@@ -85,7 +85,7 @@ function readFilter(search: Search): WorkFilter {
 
 type ViewParams = {
   order: Order;
-  expression: Expression;
+  expression: Hanging;
   filter: WorkFilter;
   query?: string;
   offset?: number;
@@ -94,7 +94,7 @@ type ViewParams = {
 function href(locale: Locale, view: ViewParams, anchor = false): string {
   const params = new URLSearchParams();
   if (view.order !== 'number') params.set('order', view.order);
-  if (view.expression === 'light') params.set('expression', 'light');
+  if (view.expression !== 'both') params.set('expression', view.expression);
   if (view.filter.cycle !== undefined) params.set('cycle', String(view.filter.cycle));
   for (const key of TRAIT_KEYS) {
     const value = view.filter.traits?.[key];
@@ -181,7 +181,18 @@ export default async function Collection({
     href: href(locale, { ...view, order: value, query: undefined }),
     current: order === value && !searching,
   }));
-  const otherExpression: Expression = expression === 'ink' ? 'light' : 'ink';
+  // Each expression's word hangs it alone, and hangs both again once it is alone: the word is
+  // its name, the one hung alone is marked current, and its description says what it does.
+  const expressions =
+    order === 'spectrum'
+      ? []
+      : (['ink', 'light'] as const).map((value) => ({
+          label: t[value],
+          action:
+            expression === value ? t.hangTogether : fill(t.hangAlone, { expression: t[value] }),
+          href: href(locale, { ...view, expression: expression === value ? 'both' : value }),
+          current: expression === value,
+        }));
   const activeChips = [
     ...(filter.cycle !== undefined
       ? [
@@ -238,14 +249,15 @@ export default async function Collection({
                 {ordering.label}
               </Link>
             ))}
-            {order !== 'spectrum' ? <span className={styles.divider} aria-hidden="true" /> : null}
-            {(order === 'spectrum' ? [] : (['ink', 'light'] as const)).map((value) => (
+            {expressions.length ? <span className={styles.divider} aria-hidden="true" /> : null}
+            {expressions.map((choice) => (
               <Link
-                key={value}
-                href={href(locale, { ...view, expression: value })}
-                aria-current={expression === value ? 'page' : undefined}
+                key={choice.href}
+                href={choice.href}
+                aria-current={choice.current ? 'true' : undefined}
+                title={choice.action}
               >
-                {t[value]}
+                {choice.label}
               </Link>
             ))}
           </nav>
@@ -293,7 +305,9 @@ export default async function Collection({
               />
             </Suspense>
           ) : works.length ? (
+            // Each hanging is its own wall, with its own lease watching its own cards.
             <PlateSequence
+              key={expression}
               works={works.map((work) => artworkForView(artworkFromIndex(work), 'card'))}
               locale={locale}
               t={t}
@@ -324,12 +338,7 @@ export default async function Collection({
         <CollectionBar
           t={t}
           orderings={orderings}
-          expressionHref={
-            order === 'spectrum'
-              ? undefined
-              : href(locale, { ...view, expression: otherExpression })
-          }
-          expressionWord={t[otherExpression]}
+          expressions={expressions}
           previousHref={previousHref}
           nextHref={nextHref}
         />
@@ -351,7 +360,7 @@ async function SearchResults({
   t: Messages;
   offset: number;
   query: string;
-  expression: Expression;
+  expression: Hanging;
   view: ViewParams;
 }) {
   const result = await getCollection({ offset, limit: PAGE, query, includeMedia: true });
@@ -364,6 +373,7 @@ async function SearchResults({
       ) : null}
       {result.items.length ? (
         <PlateSequence
+          key={expression}
           works={result.items.map((work) => artworkForView(work, 'card'))}
           locale={locale}
           t={t}

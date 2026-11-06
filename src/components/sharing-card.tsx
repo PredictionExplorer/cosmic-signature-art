@@ -5,6 +5,8 @@ import { join } from 'node:path';
 import type { ImageResponse } from 'next/og';
 import { DEPLOYMENT_URL } from '@/lib/site';
 import type { Locale } from '@/lib/i18n/routing';
+import { getPlateGround } from '@/lib/art/plate-records';
+import { rungFor, type ArtInterpretation } from '@/lib/art/types';
 
 /**
  * The sharing card: the work on its own measured ground, the one label line, the wordmark
@@ -191,6 +193,46 @@ export interface CardPicture {
   height: number;
 }
 
+/** A file the card may draw when the ladder has no rung: the publisher's preview, with its hash. */
+export interface CardFallback {
+  src?: string;
+  sha256?: string;
+  width?: number;
+  height?: number;
+}
+
+/**
+ * An expression drawn for a card: the smallest verified rung at least `width` wide, else the
+ * fallback file, each checked against its recorded hash. Nothing when neither can be verified.
+ */
+export async function expressionPicture(
+  media: ArtInterpretation,
+  width: number,
+  fallback?: CardFallback,
+): Promise<CardPicture | undefined> {
+  const rung = rungFor(media.rungs, width);
+  if (rung)
+    return {
+      dataUrl: await verifiedPicture(rung.src, rung.sha256),
+      width: rung.width,
+      height: rung.height,
+    };
+  if (!fallback?.src || !fallback.sha256) return undefined;
+  return {
+    dataUrl: await verifiedPicture(fallback.src, fallback.sha256),
+    width: fallback.width ?? 640,
+    height: fallback.height ?? 414,
+  };
+}
+
+/** The measured ground an expression's plate letterboxes in: the sheet's tone, or the field's black. */
+export function cardGround(workId: number, media: ArtInterpretation): string {
+  return (
+    getPlateGround(workId, media.id, media.stillSha256)?.tone ??
+    (media.id === 'light' ? '#000000' : '#f1ebdf')
+  );
+}
+
 /** The venue's two grounds give the card its type colours. */
 function palette(night: boolean) {
   return night ? { type: '#f1ebdf', muted: '#b8b5ad' } : { type: '#22231f', muted: '#68685e' };
@@ -271,16 +313,7 @@ export function SharingCard({
           Cosmic Signature
         </div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
-          <div style={{ display: 'flex', fontSize: 36, fontWeight: 300, lineHeight: 1.2 }}>
-            {label.startsWith('№') ? (
-              <>
-                <span style={{ fontFamily: 'Literata Numero' }}>№</span>
-                <span style={{ marginLeft: 12 }}>{label.slice(1).trimStart()}</span>
-              </>
-            ) : (
-              label
-            )}
-          </div>
+          <CardLabel label={label} />
           {words ? (
             <div
               style={{
@@ -305,6 +338,117 @@ export function SharingCard({
           {monogram ?? ''}
         </div>
       </div>
+    </div>
+  );
+}
+
+/** The one label line at the card's 36 px stop; the numero sign is drawn from its own slice. */
+function CardLabel({ label }: { label: string }) {
+  return (
+    <div style={{ display: 'flex', fontSize: 36, fontWeight: 300, lineHeight: 1.2 }}>
+      {label.startsWith('№') ? (
+        <>
+          <span style={{ fontFamily: 'Literata Numero' }}>№</span>
+          <span style={{ marginLeft: 12 }}>{label.slice(1).trimStart()}</span>
+        </>
+      ) : (
+        label
+      )}
+    </div>
+  );
+}
+
+/** One leaf of the pair card: a plate on its measured ground, and its line. */
+export interface CardLeaf {
+  ground: string;
+  night: boolean;
+  picture: CardPicture;
+  label?: string;
+}
+
+/**
+ * The pair card (third-physics-phase-d.md §2): two plates across the seam, the Ink leaf on
+ * paper and the Light leaf on night, each on its own measured ground with its line beneath;
+ * the wordmark and the words stand on the paper leaf, the seed's monogram on the night leaf.
+ * Nothing is tinted or cropped; each plate is contain-fitted in its half of the frame.
+ */
+export function PairCard({
+  leaves,
+  words,
+  monogram,
+}: {
+  leaves: [CardLeaf, CardLeaf];
+  /** The words beneath the first leaf's line: the structure and underlay, or a sentence. */
+  words?: string;
+  /** "Seed 0x4a0d…f5b5", set in mono beneath the second leaf's line. */
+  monogram?: string;
+}) {
+  return (
+    <div style={{ width: '100%', height: '100%', display: 'flex', fontFamily: 'Literata' }}>
+      {leaves.map((leaf, index) => {
+        const colours = palette(leaf.night);
+        const below = index === 0 ? words : monogram;
+        return (
+          <div
+            key={index}
+            style={{
+              flex: 1,
+              display: 'flex',
+              flexDirection: 'column',
+              minWidth: 0,
+              padding: 42,
+              background: leaf.ground,
+              color: colours.type,
+            }}
+          >
+            <div
+              style={{
+                display: 'flex',
+                height: 30,
+                fontSize: 24,
+                fontWeight: 400,
+                letterSpacing: '0.12em',
+                textTransform: 'uppercase',
+              }}
+            >
+              {index === 0 ? 'Cosmic Signature' : ''}
+            </div>
+            <div
+              style={{
+                flex: 1,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                minHeight: 0,
+                margin: '18px 0',
+              }}
+            >
+              <img
+                src={leaf.picture.dataUrl}
+                width={leaf.picture.width}
+                height={leaf.picture.height}
+                style={{ width: '100%', height: '100%', objectFit: 'contain' }}
+              />
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 12, height: 102 }}>
+              {leaf.label ? <CardLabel label={leaf.label} /> : null}
+              {below ? (
+                <div
+                  style={{
+                    display: 'flex',
+                    fontFamily: index === 0 ? 'Literata' : 'IBM Plex Mono',
+                    fontSize: 24,
+                    lineHeight: 1.4,
+                    color: colours.muted,
+                  }}
+                >
+                  {below}
+                </div>
+              ) : null}
+            </div>
+          </div>
+        );
+      })}
     </div>
   );
 }
