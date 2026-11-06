@@ -36,23 +36,31 @@ jobs:
           retention-days: 14
 
   # The browser suite, one project to a runner. On one runner its seven projects took 41 to 57
-  # minutes and outgrew the hour a job is given; apart, the longest takes about ten, and each
-  # runner installs only its own engine.
+  # minutes and outgrew the hour a job is given; apart, the longest takes about ten.
+  #
+  # The browser jobs run in Playwright's own image, which carries the browsers and every system
+  # package they need. Installed on the runner, those packages came from Ubuntu's mirror, which
+  # on some runners crawled at 20 to 50 kB/s: one install took 41 minutes, and others ran out
+  # of their ten. The image's tag must match @playwright/test in package-lock.json; if it does
+  # not, the first launch fails and names the browser it cannot find.
   browsers:
     name: browsers (${{ matrix.project }})
     runs-on: ubuntu-latest
     timeout-minutes: 30
+    container:
+      image: mcr.microsoft.com/playwright:v1.64.1-noble
+      options: --user 1001 --ipc=host --init
     strategy:
       fail-fast: false
       matrix:
-        include:
-          - { project: chromium-desktop, engine: chromium }
-          - { project: firefox-desktop, engine: firefox }
-          - { project: webkit-desktop, engine: webkit }
-          - { project: chromium-mobile, engine: chromium }
-          - { project: webkit-mobile, engine: webkit }
-          - { project: chromium-reduced-motion, engine: chromium }
-          - { project: webkit-reduced-motion, engine: webkit }
+        project:
+          - chromium-desktop
+          - firefox-desktop
+          - webkit-desktop
+          - chromium-mobile
+          - webkit-mobile
+          - chromium-reduced-motion
+          - webkit-reduced-motion
     env:
       # One venue day for the build and the browser suite: its work and its expression.
       COSMIC_VENUE_DATE: '2026-11-06'
@@ -64,10 +72,6 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run build
-      # A slow package mirror once took 41 minutes over this step. It should fail the job, not
-      # spend it.
-      - run: npx playwright install --with-deps ${{ matrix.engine }}
-        timeout-minutes: 10
       - run: npm run test:e2e -- --project=${{ matrix.project }}
       - uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v5
         if: always()
@@ -82,6 +86,10 @@ jobs:
     name: auction harness
     runs-on: ubuntu-latest
     timeout-minutes: 20
+    # The browsers' own image, as for the browser suite above.
+    container:
+      image: mcr.microsoft.com/playwright:v1.64.1-noble
+      options: --user 1001 --ipc=host --init
     steps:
       - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
       - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
@@ -89,8 +97,6 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
-      - run: npx playwright install --with-deps chromium firefox webkit
-        timeout-minutes: 10
       - run: npm run test:auction-ui
       - uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v5
         if: always()
