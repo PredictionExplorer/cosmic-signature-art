@@ -7,11 +7,13 @@ import Statement, { collectionCounts, generateMetadata } from './page';
 describe('the statement', () => {
   it('reads its counts from the index rather than from copy', () => {
     const summaries = cycles();
-    const line = collectionCounts('en', en);
+    // Each phrase keeps its figure: its spaces are no-break spaces, read here as plain spaces.
+    const line = collectionCounts('en', en).replace(/\u00a0/g, ' ');
     expect(line).toContain(en.livingCollection);
     expect(line).toContain(`Cycle ${summaries[0].cycle} to Cycle ${summaries.at(-1)!.cycle}`);
     expect(line).toContain(`${collectionIndex.total} works`);
     expect(line).toContain('since June 2026');
+    expect(collectionCounts('en', en)).toContain(`Cycle\u00a0${summaries[0].cycle}`);
   });
 
   it('sets the wordmark, the six sections, the byline and the one way onward', async () => {

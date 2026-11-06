@@ -20,21 +20,8 @@
   max-width: var(--measure);
   justify-items: start;
 }
-.wordmark {
-  font-size: var(--fs-entry);
-  line-height: 1;
-  font-weight: 200;
-  font-variant-caps: all-small-caps;
-  letter-spacing: 0.04em;
-}
 .subtitle {
   color: var(--type);
-}
-.counts {
-  font-size: var(--fs-reading);
-  line-height: 1.5;
-  color: var(--muted);
-  font-variant-numeric: lining-nums tabular-nums;
 }
 .line {
   margin-top: 9px;

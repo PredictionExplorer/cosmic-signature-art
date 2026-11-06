@@ -8,6 +8,7 @@ import { artworkForView } from '@/lib/art/view-media';
 import { workFolio, workNumber } from '@/lib/art/number';
 import type { Expression } from '@/lib/art/types';
 import { SpreadPlates } from './home-spread-plates';
+import { bindFigures, SEPARATOR } from '@/lib/typography';
 import styles from './home-screens.module.css';
 import { PreviewImage } from './preview-image';
 
@@ -31,15 +32,15 @@ export function HomeStatement({ locale, t }: { locale: Locale; t: Messages }) {
       ? t.oneWork
       : fill(t.worksCount, { count: new Intl.NumberFormat(locale).format(collectionIndex.total) }),
     opened ? fill(t.since, { date: opened }) : undefined,
-  ].filter(Boolean);
+  ].filter((part): part is string => Boolean(part));
   return (
     <section className={`${styles.screen} ${styles.statement}`} aria-labelledby="home-statement">
       <div className={styles.statementBlock}>
-        <h1 id="home-statement" className={styles.wordmark}>
+        <h1 id="home-statement" className="wordmark">
           Cosmic Signature
         </h1>
         <p className={`subtitle ${styles.subtitle}`}>{t.shapeOfMotion}</p>
-        <p className={styles.counts}>{counts.join(' · ')}</p>
+        <p className="counts">{counts.map(bindFigures).join(SEPARATOR)}</p>
         <p className={`reading ${styles.line}`}>{t.statementLine}</p>
         <p className={styles.byline}>{t.statementSigned}</p>
         <Link className="text-link" href={localizedPath(locale, '/collection')}>

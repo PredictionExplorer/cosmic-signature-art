@@ -5,6 +5,7 @@ import { messages } from '@/lib/i18n/messages';
 import { fill } from '@/lib/i18n/format';
 import { metadata } from '@/lib/site';
 import { collectionIndex, cycles } from '@/lib/art/collection-index';
+import { bindFigures, SEPARATOR } from '@/lib/typography';
 import styles from './statement.module.css';
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }) {
@@ -42,7 +43,8 @@ export function collectionCounts(locale: Locale, t: ReturnType<typeof messages>)
         }).format(new Date(earliest)),
       }),
     );
-  return parts.join(' · ');
+  // Each phrase keeps its figure; the line breaks only between phrases or inside a long one.
+  return parts.map(bindFigures).join(SEPARATOR);
 }
 
 export default async function Statement({ params }: { params: Promise<{ locale: string }> }) {
@@ -52,9 +54,9 @@ export default async function Statement({ params }: { params: Promise<{ locale: 
   return (
     <main id="main" className={styles.page}>
       <p className={styles.epigraph}>{t.oneMotion}</p>
-      <h1 className={styles.wordmark}>Cosmic Signature</h1>
+      <h1 className={`wordmark ${styles.wordmark}`}>Cosmic Signature</h1>
       <p className={`subtitle ${styles.subtitle}`}>{t.shapeOfMotion}</p>
-      <p className={styles.counts}>{collectionCounts(locale, t)}</p>
+      <p className={`counts ${styles.counts}`}>{collectionCounts(locale, t)}</p>
       <div className={styles.sections}>
         {sections.map((n) => (
           <section key={n} className={styles.section} aria-label={`§ ${n}`} data-section={n}>
