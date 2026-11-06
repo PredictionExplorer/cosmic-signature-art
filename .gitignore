@@ -11,8 +11,9 @@ playwright-report/
 *.tsbuildinfo
 .DS_Store
 
-# Generated CJK font slices (scripts/build-font-subsets.mjs)
+# Generated font cuts and CJK slices (scripts/build-font-subsets.mjs)
 public/fonts/cjk/
+public/fonts/literata/
 
 # The index builder's lock and temporary file (scripts/build-collection-index.mjs)
 src/lib/art/collection-index.json.lock

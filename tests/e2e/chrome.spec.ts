@@ -101,6 +101,12 @@ test('a CJK locale links its own sliced display face and the Latin pages load no
   await page.goto('/auctions');
   await page.evaluate(() => document.fonts.ready);
   expect(requests).toEqual([]);
+  // The Latin roman the first paint reads in arrives with the page.
+  await expect(
+    page.locator(
+      'link[rel="preload"][as="font"][href="/fonts/literata/literata-latin-roman.woff2"]',
+    ),
+  ).toHaveCount(1);
   await page.goto('/ja/auctions');
   await expect(page.locator('link[rel="stylesheet"][href="/fonts/cjk/ja.css"]')).toHaveCount(1);
   await expect.poll(() => requests.some((url) => url.endsWith('/fonts/cjk/ja.css'))).toBe(true);
@@ -115,7 +121,9 @@ test('a CJK locale links its own sliced display face and the Latin pages load no
         .filter((family, index, all) => all.indexOf(family) === index)
     );
   });
+  // The wordmark in Literata itself, Latin words in Japanese lines in Literata set to the kana
+  // ('Literata Han'), the instrument in Plex Mono, the Japanese in its own Mincho.
   expect(loaded).toEqual(
-    expect.arrayContaining(['Literata Variable', 'IBM Plex Mono', 'Shippori Mincho B1']),
+    expect.arrayContaining(['Literata', 'Literata Han', 'IBM Plex Mono', 'Shippori Mincho B1']),
   );
 });

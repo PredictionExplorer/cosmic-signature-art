@@ -3,9 +3,11 @@
 /*
   Two Grounds. The venue is made of exactly two grounds, both taken from the work: the Ink
   sheet's paper and the Light field's black. One book face (Literata) and one instrument
-  face (IBM Plex Mono); a scale derived from the plate's own proportion (1.547, applied every
-  two steps) on a 9 px baseline, with 12 px as the floor in every locale. Motion is named
-  here once; every transition and animation on the site references one of these tokens.
+  face (IBM Plex Mono), declared in typefaces.css with their matched stand-ins; a scale
+  derived from the plate's own proportion (1.547, applied every two steps) on a 9 px baseline,
+  with 12 px as the floor in every locale. Motion is named here once; every transition and
+  animation on the site references one of these tokens. The typography is set out in
+  docs/typography.md.
 */
 @theme {
   --color-paper: #f1ebdf;
@@ -13,8 +15,13 @@
   --color-ink: #22231f;
   --color-cream: #f1ebdf;
   --color-subtle: #68685e;
-  --font-book: 'Literata Variable', Literata, Georgia, 'Times New Roman', serif;
-  --font-mono: 'IBM Plex Mono', 'SFMono-Regular', Menlo, Consolas, monospace;
+  /* Literata itself: the wordmark and the standalone numerals, the same in every locale. */
+  --font-latin: Literata, 'Literata Georgia', 'Literata Times', Georgia, 'Times New Roman', serif;
+  /* The book face of the locale: Literata, or Literata set into a CJK face (below). */
+  --font-book: var(--font-latin);
+  --font-mono:
+    'IBM Plex Mono', 'Plex Mono Menlo', 'Plex Mono Courier', 'SFMono-Regular', Menlo, Consolas,
+    monospace;
   /* Aliases so a stray `font-serif` or `font-sans` utility still resolves to the book face. */
   --font-serif: var(--font-book);
   --font-sans: var(--font-book);
@@ -83,7 +90,9 @@
   font-size: var(--fs-reading);
   line-height: 1.5;
   font-optical-sizing: auto;
-  font-variant-numeric: oldstyle-nums proportional-nums;
+  /* Figures are lining by default: a work's number, a date in a label, a control. Running prose
+     (.reading, the entry's lines, the counts, the glossary) and small capitals take old-style. */
+  font-variant-numeric: lining-nums proportional-nums;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
   background: var(--ground);
@@ -113,22 +122,48 @@ html[data-room='night'] {
   }
 }
 
-/* CJK display faces per locale; the identifier, clocks and hashes stay in Plex Mono everywhere. */
+/*
+  CJK. Each locale reads in its own serif (src/lib/fonts.ts). Latin words and figures stay in
+  Literata, set at 92 % into the CJK line ('Literata Han', 'Literata Hangul': typefaces.css);
+  the instrument's strings stay in Plex Mono, and a Han, kana or Hangul character inside one
+  falls to the locale's serif, never to the system's gothic. While a face loads, the stand-ins
+  are serifs too.
+*/
 html:lang(zh) {
-  --font-book: 'Literata Variable', 'Noto Serif SC', 'Songti SC', 'PingFang SC', serif;
+  --font-book:
+    'Literata Han', 'Literata Han Georgia', 'Noto Serif SC', 'Songti SC', STSong, SimSun, serif;
+  --font-mono:
+    'IBM Plex Mono', 'Plex Mono Menlo', 'Plex Mono Courier', 'Noto Serif SC', 'Songti SC', STSong,
+    SimSun, monospace;
 }
 html:lang(zh-TW) {
-  --font-book: 'Literata Variable', 'Noto Serif TC', 'Songti TC', 'PingFang TC', serif;
+  --font-book:
+    'Literata Han', 'Literata Han Georgia', 'Noto Serif TC', 'Songti TC', PMingLiU, serif;
+  --font-mono:
+    'IBM Plex Mono', 'Plex Mono Menlo', 'Plex Mono Courier', 'Noto Serif TC', 'Songti TC', PMingLiU,
+    monospace;
 }
 html:lang(zh-HK) {
-  --font-book: 'Literata Variable', 'Noto Serif HK', 'Songti TC', 'PingFang HK', serif;
+  --font-book:
+    'Literata Han', 'Literata Han Georgia', 'Noto Serif HK', 'Songti TC', MingLiU_HKSCS, serif;
+  --font-mono:
+    'IBM Plex Mono', 'Plex Mono Menlo', 'Plex Mono Courier', 'Noto Serif HK', 'Songti TC',
+    MingLiU_HKSCS, monospace;
 }
 html:lang(ja) {
   --font-book:
-    'Literata Variable', 'Shippori Mincho B1', 'Hiragino Mincho ProN', 'Yu Mincho', serif;
+    'Literata Han', 'Literata Han Georgia', 'Shippori Mincho B1', 'Hiragino Mincho ProN',
+    'Yu Mincho', serif;
+  --font-mono:
+    'IBM Plex Mono', 'Plex Mono Menlo', 'Plex Mono Courier', 'Shippori Mincho B1',
+    'Hiragino Mincho ProN', 'Yu Mincho', monospace;
 }
 html:lang(ko) {
-  --font-book: 'Literata Variable', 'Gowun Batang', 'Apple SD Gothic Neo', Batang, serif;
+  --font-book:
+    'Literata Hangul', 'Literata Hangul Georgia', 'Gowun Batang', AppleMyungjo, Batang, serif;
+  --font-mono:
+    'IBM Plex Mono', 'Plex Mono Menlo', 'Plex Mono Courier', 'Gowun Batang', AppleMyungjo, Batang,
+    monospace;
 }
 html:is(:lang(zh), :lang(ja), :lang(ko)) {
   --measure: 32em;
@@ -303,6 +338,7 @@ html {
   line-height: 1.06;
 }
 .entry-numeral {
+  font-family: var(--font-latin);
   font-size: var(--fs-entry);
   line-height: 1;
   font-weight: 200;
@@ -316,7 +352,7 @@ html {
 }
 /* The hanging numeral beside a plate: 44 px light figures with 6 px of leading in a 56 px strip. */
 .hanging-numeral {
-  font-family: var(--font-book);
+  font-family: var(--font-latin);
   font-size: var(--fs-plate);
   line-height: 1;
   font-weight: 200;
@@ -328,6 +364,8 @@ html {
   font-size: var(--fs-folio);
   line-height: 1.5;
   font-variant-caps: all-small-caps;
+  /* Old-style figures stand at the small capitals' height: OCTOBER 27, 2026 reads as one line. */
+  font-variant-numeric: oldstyle-nums proportional-nums;
   letter-spacing: 0.08em;
   font-weight: 400;
 }
@@ -512,7 +550,7 @@ html[data-turning='overture'] .head-overlay {
 }
 /* Typeset, not drawn: the wordmark is Literata small caps tracked 0.12 em. */
 .brand-name {
-  font-family: var(--font-book);
+  font-family: var(--font-latin);
   font-size: var(--fs-folio);
   font-variant-caps: all-small-caps;
   letter-spacing: 0.12em;
