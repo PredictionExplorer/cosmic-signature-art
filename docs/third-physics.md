@@ -139,6 +139,12 @@ Each invention is given with what the visitor meets, why only this art can have 
 - ship each work's chosen initial state in the registry, so motion starts at once while the full derivation verifies in the background;
 - run a CI job that re-derives all 72 works in Node, Chromium, WebKit and Firefox and fails on any bit of difference.
 
+**On the plate** *(built 6 November 2026; see [third-physics-phase-d.md](third-physics-phase-d.md) §7)*. With the frames the Overture brought, the drawing lies over the still of the expression the page shows, and each body is drawn where the films put it. The still is untouched.
+- **On Light** each body comes to stand at the head of its own stroke.
+- **On Ink** each comes to rest in the hollow it left in the sumi. The Ink edition stirs with the bodies where the Light film draws them, so one frame places them on both expressions. Every Ink still is checked for it: 196 of the collection's 216 bodies stand in a hollow of their own, and random places almost never do.
+
+Without a frame, the orbit is drawn as Phase A drew it, in the plane of its greatest extent.
+
 ### 5.2 The crossing, in the order it was made *(built for every work)*
 
 **The visitor meets** this when pressing `Light`. Night does not wipe across the plate: it blooms out of the orbit's core, where the film first drew. The ribbons arrive along their own paths, and the room's walls darken last as the front leaves the sheet. The running head and label invert letter by letter as the front crosses them. Pressing `Ink` brings the paper back in the order the sumi came to rest.
@@ -260,7 +266,7 @@ This is a public page beside Verify a download. Enter any token number, and the 
   The Dusk retires: the Overture is the single timed event.
 - **Work page:**
   1. the plate and the crossing;
-  2. the score with its verification;
+  2. the orbit, re-performed on the plate, with its score and its verification;
   3. the three lenses;
   4. the gatefold;
   5. the entry;

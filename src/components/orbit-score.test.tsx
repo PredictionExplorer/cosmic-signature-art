@@ -3,6 +3,10 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { messages } from '@/lib/i18n/messages';
 import { workOrbit, type WorkOrbit } from '@/lib/art/orbit-records';
 import { performedOrbits } from '@/lib/art/orbit-windows';
+import { getCuratedArtwork } from '@/lib/art/catalog';
+import { orbitPlate, type OrbitPlate } from '@/lib/art/orbit-plate';
+import { plateFrame } from '@/lib/art/orbit-frames';
+import type { FramedSamples } from '@/lib/physics/framing';
 import { lightFilmDuration } from '@/lib/physics/light-film';
 import {
   compare,
@@ -14,6 +18,7 @@ import {
 import type { OrbitReply, OrbitRequest } from '@/lib/physics/orbit.worker';
 import { AFTER_THE_FRAME_EVENT } from '@/lib/venue-events';
 import { OrbitScore } from './orbit-score';
+import { forgetExpression, rememberExpression } from './turn';
 
 const lendPlateTone = vi.hoisted(() => vi.fn());
 const returnPlateTone = vi.hoisted(() => vi.fn());
@@ -35,6 +40,8 @@ let workers: FakeWorker[] = [];
 let frames = new Map<number, FrameRequestCallback>();
 let frameIds = 0;
 let drawCalls: string[] = [];
+/** Every call on a drawing context, with its arguments. */
+let calls: { name: string; args: unknown[] }[] = [];
 let clockNow = 0;
 let scrolled: ScrollIntoViewOptions[] = [];
 
@@ -65,6 +72,7 @@ const context = new Proxy(
         ? () => ({ addColorStop() {} })
         : (...args: unknown[]) => {
             drawCalls.push(String(property));
+            calls.push({ name: String(property), args });
             return args;
           },
     set: () => true,
@@ -76,7 +84,9 @@ beforeEach(() => {
   workers = [];
   frames = new Map();
   drawCalls = [];
+  calls = [];
   clockNow = 0;
+  forgetExpression();
   scrolled = [];
   Object.assign(motion, { paused: true, reducedMotion: true, theatre: 'playing' });
   lendPlateTone.mockClear();
@@ -526,5 +536,180 @@ describe('After the frame', () => {
     act(() => window.dispatchEvent(new Event(AFTER_THE_FRAME_EVENT)));
     expect(scrolled).toEqual([{ block: 'start', behavior: 'smooth' }]);
     expect(section(container)).toHaveAttribute('data-beyond', 'running');
+  });
+});
+
+describe('the orbit on the plate', () => {
+  const plate031 = orbitPlate(getCuratedArtwork(31)!)!;
+  /** The window on its plate as the worker places it: every stride, then the still's step. */
+  function framedOf(copies = 1): FramedSamples {
+    const count = 10_000;
+    return {
+      stride: 100,
+      count,
+      copies,
+      pixels: Float32Array.from({ length: (count + 1) * copies * 6 }, (_, i) =>
+        i % 2 ? 1_117 + Math.cos(i) * 400 : 1_728 + Math.sin(i) * 600,
+      ),
+    };
+  }
+  const placedOn = (framed: FramedSamples, worker = workers[0]) =>
+    worker.reply({ type: 'framed', framed });
+  const stage = (container: HTMLElement) => container.querySelector('figure > div')!;
+  const still = (container: HTMLElement) => container.querySelector('figure img');
+  const arcs = (radius: number) =>
+    calls.filter((call) => call.name === 'arc' && call.args[2] === radius);
+
+  it('lays the drawing over the still the page shows, and asks the worker to place it', () => {
+    const { container } = render(
+      <OrbitScore orbit={orbit} t={t} locale="en" plate={plate031} opening="ink" both />,
+    );
+    expect(section(container)).toHaveAttribute('data-drawing', 'plate');
+    expect(section(container)).toHaveAttribute('data-material', 'ink');
+    expect(stage(container)).toHaveAttribute('data-material', 'ink');
+    // The still is the work's own, untouched, beneath the drawing: an image, never a canvas.
+    expect(still(container)).toHaveAttribute('src', plate031.stills.ink!.src);
+    expect(still(container)).toHaveAttribute('srcset', plate031.stills.ink!.srcSet);
+    expect(still(container)).toHaveAttribute('alt', '');
+    // Lazy until the section is a screen away; then fetched, as the derivation begins.
+    expect(still(container)).toHaveAttribute('loading', 'lazy');
+    expect(
+      screen.getByText(
+        /drawn over the Ink still where they stirred the ink, at the Light film’s pace; each comes to rest in the hollow it left\. .* Analysis, not the work\.$/,
+      ),
+    ).toBeInTheDocument();
+    approach();
+    expect(still(container)).toHaveAttribute('loading', 'eager');
+    expect(workers[0].posted[0].frame).toEqual(plate031.frame);
+    derive();
+    // The measurements are in; nothing is drawn over the still until the window is placed.
+    expect(drawCalls).not.toContain('stroke');
+    placedOn(framedOf());
+    expect(drawCalls).toContain('stroke');
+  });
+
+  it('brings each body to rest where the still shows it, at the size the Ink edition gave it', () => {
+    render(<OrbitScore orbit={orbit} t={t} locale="en" plate={plate031} opening="ink" both />);
+    approach();
+    derive();
+    const framed = framedOf();
+    placedOn(framed);
+    // jsdom lays nothing out: the canvas is one pixel, so the plate is 1/3,456 of the frame.
+    const rings = arcs(0.025);
+    expect(rings).toHaveLength(3);
+    rings.forEach(({ args: [x, y] }, body) => {
+      expect(x).toBeCloseTo(framed.pixels[framed.count * 6 + body * 2] / 3456, 9);
+      expect(y).toBeCloseTo(framed.pixels[framed.count * 6 + body * 2 + 1] / 2234, 9);
+    });
+    // Each centre marked, and the closest approach ringed once, no larger than the plate allows.
+    expect(arcs(1.5)).toHaveLength(3);
+    expect(arcs(0.04)).toHaveLength(1);
+  });
+
+  it('draws every copy of a kaleidoscope on Light, and only the first on Ink', () => {
+    const { rerender } = render(
+      <OrbitScore orbit={orbit} t={t} locale="en" plate={plate031} opening="light" both />,
+    );
+    approach();
+    derive();
+    placedOn(framedOf(12));
+    // Light: thirty-six lights at rest, and the closest approach ringed in each of twelve copies.
+    expect(calls.filter((call) => call.name === 'arc' && call.args[2] === 0.035)).toHaveLength(36);
+    expect(arcs(0.04)).toHaveLength(12);
+    calls = [];
+    act(() => rememberExpression('ink'));
+    rerender(<OrbitScore orbit={orbit} t={t} locale="en" plate={plate031} opening="light" both />);
+    expect(arcs(0.025)).toHaveLength(3);
+    expect(arcs(0.04)).toHaveLength(1);
+  });
+
+  it('turns with the plate: the visitor’s choice, else the page’s opening', () => {
+    const { container } = render(
+      <OrbitScore orbit={orbit} t={t} locale="en" plate={plate031} opening="ink" both />,
+    );
+    act(() => rememberExpression('light'));
+    expect(section(container)).toHaveAttribute('data-material', 'light');
+    expect(still(container)).toHaveAttribute('src', plate031.stills.light!.src);
+    expect(
+      screen.getByText(
+        /drawn over the Light still where its film drew them, at the film’s pace; each ends where its stroke ends\./,
+      ),
+    ).toBeInTheDocument();
+    cleanup();
+    // A work with one expression opens on it, whatever was chosen elsewhere.
+    const alone = render(
+      <OrbitScore orbit={orbit} t={t} locale="en" plate={plate031} opening="ink" />,
+    );
+    expect(section(alone.container)).toHaveAttribute('data-material', 'ink');
+  });
+
+  it('draws in the orbit’s own plane without a plate, or a still that bears it out', () => {
+    const { container } = render(<OrbitScore orbit={orbit} t={t} locale="en" />);
+    expect(section(container)).toHaveAttribute('data-drawing', 'plane');
+    expect(section(container)).not.toHaveAttribute('data-material');
+    expect(still(container)).toBeNull();
+    expect(screen.getByText(/drawn in the plane of their greatest extent/)).toBeInTheDocument();
+    cleanup();
+    // An Ink still whose hollows do not bear the bodies out is never drawn on.
+    const lightOnly: OrbitPlate = { ...plate031, stills: { light: plate031.stills.light } };
+    const inked = render(
+      <OrbitScore orbit={orbit} t={t} locale="en" plate={lightOnly} opening="ink" both />,
+    );
+    expect(section(inked.container)).toHaveAttribute('data-drawing', 'plane');
+    expect(still(inked.container)).toBeNull();
+  });
+
+  it('falls back to the plane when the window could not be placed on its plate', () => {
+    const { container } = render(
+      <OrbitScore orbit={orbit} t={t} locale="en" plate={plate031} opening="light" both />,
+    );
+    approach();
+    derive();
+    placedOn(null as unknown as FramedSamples);
+    expect(section(container)).toHaveAttribute('data-drawing', 'plane');
+    expect(still(container)).toBeNull();
+    expect(drawCalls).toContain('stroke');
+    // A worker that fails after measuring leaves the plane too.
+    cleanup();
+    workers = [];
+    observers = [];
+    const failed = render(
+      <OrbitScore orbit={orbit} t={t} locale="en" plate={plate031} opening="light" both />,
+    );
+    approach();
+    derive();
+    workers[0].reply({ type: 'failed', message: 'no' });
+    expect(section(failed.container)).toHaveAttribute('data-drawing', 'plane');
+    // So does a browser that cannot derive it at all: no still waits for a drawing.
+    cleanup();
+    observers = [];
+    vi.stubGlobal('Worker', undefined);
+    const unable = render(
+      <OrbitScore orbit={orbit} t={t} locale="en" plate={plate031} opening="light" both />,
+    );
+    approach();
+    expect(section(unable.container)).toHaveAttribute('data-drawing', 'plane');
+    expect(still(unable.container)).toBeNull();
+  });
+
+  it('carries the orbit on past the frame over the same still, to the escape', () => {
+    // № 054 is not among the curated works: its plate as the page would make it.
+    const plate054: OrbitPlate = {
+      frame: plateFrame(54)!,
+      stills: { ink: { src: '/art/stills/54-ink-1920.webp', width: 1920, height: 1242 } },
+    };
+    const { container } = render(
+      <OrbitScore orbit={soonest} t={t} locale="en" plate={plate054} opening="ink" both />,
+    );
+    approach();
+    derive(derivation(soonest), workers[0], soonest);
+    placedOn(framedOf());
+    fated(soonest);
+    fireEvent.click(afterTheFrame());
+    framesUntil(() => section(container).getAttribute('data-beyond') === 'rested', 20);
+    expect(section(container)).toHaveAttribute('data-drawing', 'plate');
+    expect(screen.getByText('Body 2 has escaped, at step 1,090,000')).toBeVisible();
+    // Past the frame the bodies are outlined on the paper still, as in the window.
+    expect(arcs(0.025).length).toBeGreaterThanOrEqual(3);
   });
 });

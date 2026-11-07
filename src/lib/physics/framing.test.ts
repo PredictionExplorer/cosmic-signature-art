@@ -7,6 +7,8 @@ import { plateFrame } from '@/lib/art/orbit-frames';
 import { performedOrbits } from '@/lib/art/orbit-windows';
 import {
   FramedWindow,
+  HeldPlacement,
+  framedSamples,
   project,
   shoemakeRotation,
   sliceOf,
@@ -15,6 +17,7 @@ import {
   traceFromPixels,
 } from './framing';
 import { lightFilmFrames } from './light-film';
+import { integrator } from './orbit';
 
 const framed = (id: number) => {
   const [performed] = performedOrbits([id]);
@@ -103,6 +106,69 @@ describe('a window on its plate, against the generator', () => {
     window.run(2_000_000, 500_000);
     expect(window.done).toBe(true);
     expect(window.step).toBe(1_000_000);
+  }, 30_000);
+});
+
+describe('a window drawn on its plate', () => {
+  /** The bodies' state after `steps` steps of a window, by the generator's own integrator. */
+  function stateAt(id: number, steps: number) {
+    const [performed] = performedOrbits([id]);
+    const { window } = performed;
+    const positions = Float64Array.from(window.positions);
+    const velocities = Float64Array.from(window.velocities);
+    const step = integrator(window.masses, positions, velocities, window.dt);
+    for (let taken = 0; taken < steps; taken++) step();
+    return { window, positions, velocities };
+  }
+
+  it('samples every stride where the window places its bodies, then the still’s last step', () => {
+    // № 008 turns its strokes six ways and mirrors them: twelve copies of three bodies.
+    const [performed] = performedOrbits([8]);
+    const frame = plateFrame(8)!;
+    const samples = framedSamples(performed.window, frame, 100_000);
+    expect(samples).toMatchObject({ stride: 100_000, count: 10, copies: 12 });
+    expect(samples.pixels).toHaveLength(11 * 12 * 6);
+    const window = new FramedWindow(performed.window, frame);
+    const width = 12 * 6;
+    for (const sample of [0, 3, 9]) {
+      window.run(sample * 100_000, 1);
+      expect([...samples.pixels.subarray(sample * width, (sample + 1) * width)]).toEqual([
+        ...window.place(),
+      ]);
+    }
+    window.run(999_999, 1);
+    expect([...samples.pixels.subarray(10 * width)]).toEqual([...window.place()]);
+  }, 30_000);
+
+  it('holds the camera where the film ended for the orbit carried on past it', () => {
+    // In position space the held placement of the still's state is the window's own, exactly.
+    const { window, positions, velocities } = stateAt(31, 999_999);
+    const frame = plateFrame(31)!;
+    const framed = new FramedWindow(window, frame);
+    framed.run(999_999, 1_000_000);
+    const held = new HeldPlacement(frame, window);
+    expect([...held.place(positions, velocities)]).toEqual([...framed.place()]);
+    // Past the window the camera stays put: a later state moves only as its bodies move.
+    const step = integrator(window.masses, positions, velocities, window.dt);
+    step();
+    const next = held.place(positions, velocities);
+    for (let i = 0; i < 6; i++) expect(Math.abs(next[i] - framed.pixels[i])).toBeLessThan(1);
+  }, 30_000);
+
+  it('takes a phase-space body’s velocity from the step ahead, as the window does', () => {
+    // № 033 draws its hodograph: the bodies' velocities, not their positions. At the window's
+    // last step the window looks a step back; the orbit carried on looks a step ahead.
+    const { window, positions, velocities } = stateAt(33, 999_999);
+    const frame = plateFrame(33)!;
+    const framed = new FramedWindow(window, frame);
+    framed.run(999_999, 1_000_000);
+    const last = [...framed.place()];
+    const before = [...positions];
+    const placed = new HeldPlacement(frame, window).place(positions, velocities);
+    expect([...positions]).toEqual(before);
+    // A step's change of velocity, in the frame: hundredths of a pixel.
+    for (let i = 0; i < 6; i++) expect(Math.abs(placed[i] - last[i])).toBeLessThan(0.1);
+    expect([...placed]).not.toEqual(last);
   }, 30_000);
 });
 

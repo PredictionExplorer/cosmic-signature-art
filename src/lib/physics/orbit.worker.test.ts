@@ -1,5 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { workOrbit } from '@/lib/art/orbit-records';
+import { plateFrame } from '@/lib/art/orbit-frames';
+import { framedSamples } from './framing';
 import type { OrbitReply, OrbitRequest } from './orbit.worker';
 
 afterEach(() => {
@@ -66,6 +68,36 @@ describe('the orbit worker', () => {
       message.fate.approach!.positions.buffer,
       message.fate.approach!.velocities.buffer,
     ]);
+  }, 30_000);
+
+  it('places the derived window on its plate when given the frame, and hands it over', async () => {
+    const { scope, replies } = await workerScope();
+    const orbit = workOrbit(0)!;
+    const frame = plateFrame(0)!;
+    scope.onmessage!({
+      data: { generation: orbit.generation, published: orbit.published, stride: 10_000, frame },
+    } as MessageEvent<OrbitRequest>);
+    const kinds = replies.map(({ message }) => message.type);
+    expect(kinds.slice(-2)).toEqual(['done', 'framed']);
+    const done = replies.at(-2)!.message;
+    const { message, transfer } = replies.at(-1)!;
+    if (done.type !== 'done' || message.type !== 'framed') throw new Error('not framed');
+    // What is drawn is what was derived: the derived window's own first state, replayed.
+    const { windowStart, masses } = done.result;
+    const expected = framedSamples(
+      {
+        masses,
+        dt: orbit.generation.dt,
+        steps: orbit.generation.steps,
+        positions: windowStart.positions,
+        velocities: windowStart.velocities,
+      },
+      frame,
+      10_000,
+    );
+    expect(message.framed).toMatchObject({ stride: 10_000, count: 100, copies: 1 });
+    expect([...message.framed!.pixels]).toEqual([...expected.pixels]);
+    expect(transfer).toEqual([message.framed!.pixels.buffer]);
   }, 30_000);
 
   it('says why it failed instead of throwing', async () => {
