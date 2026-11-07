@@ -13,9 +13,9 @@ vi.mock('./motion-provider', () => ({ useMotion: () => motion }));
 const [a, b, c] = performedOrbits([0, 31, 40]);
 const work = (orbit: typeof a, plate = true) => ({
   id: orbit.id,
-  numeral: `№ ${String(orbit.id).padStart(3, '0')}`,
+  numeral: `№\u00a0${String(orbit.id).padStart(3, '0')}`,
   href: `/art/${orbit.id}`,
-  label: `№ ${String(orbit.id).padStart(3, '0')} · its orbit, performed`,
+  label: `№\u00a0${String(orbit.id).padStart(3, '0')} · its orbit, performed`,
   window: orbit.window,
   hues: orbit.bodyHues,
   plate: plate ? `https://example.test/${orbit.id}.webp` : undefined,
@@ -129,8 +129,8 @@ describe('the Orrery', () => {
     const first = screen.getByRole('region', { name: 'Cycle 0 · June 2026' });
     const links = within(first).getAllByRole('link');
     expect(links.map((link) => link.getAttribute('aria-label'))).toEqual([
-      '№ 000 · its orbit, performed',
-      '№ 031 · its orbit, performed',
+      '№\u00a0000 · its orbit, performed',
+      '№\u00a0031 · its orbit, performed',
     ]);
     expect(links[1]).toHaveAttribute('href', '/art/31');
     expect(screen.getByRole('region', { name: 'Cycle 1 · July 2026' })).toBeInTheDocument();
@@ -289,16 +289,16 @@ describe('the Orrery', () => {
     offscreen();
     const { container } = render(<Page />);
     expect(container.querySelectorAll('img')).toHaveLength(0);
-    const link = screen.getByRole('link', { name: '№ 031 · its orbit, performed' });
+    const link = screen.getByRole('link', { name: '№\u00a0031 · its orbit, performed' });
     // A finger landing changes nothing under the tap, so the tap enters the work at once.
     fireEvent.pointerEnter(link, { pointerType: 'touch' });
     expect(link.querySelector('img')).toBeNull();
     fireEvent.pointerEnter(link, { pointerType: 'mouse' });
     expect(link.querySelector('img')).toHaveAttribute('src', 'https://example.test/31.webp');
-    fireEvent.focus(screen.getByRole('link', { name: '№ 000 · its orbit, performed' }));
+    fireEvent.focus(screen.getByRole('link', { name: '№\u00a0000 · its orbit, performed' }));
     expect(container.querySelectorAll('img')).toHaveLength(2);
     // A work the publisher gave no preview has none to show.
-    fireEvent.focus(screen.getByRole('link', { name: '№ 040 · its orbit, performed' }));
+    fireEvent.focus(screen.getByRole('link', { name: '№\u00a0040 · its orbit, performed' }));
     expect(container.querySelectorAll('img')).toHaveLength(2);
   });
 

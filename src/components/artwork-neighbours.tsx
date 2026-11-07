@@ -2,7 +2,7 @@
 import Link from 'next/link';
 import { workFolio, workNumber } from '@/lib/art/number';
 import { fill } from '@/lib/i18n/format';
-import { bindNumbers, SEPARATOR, unbroken } from '@/lib/typography';
+import { bindNumbers, SEPARATOR } from '@/lib/typography';
 import type { Messages } from '@/lib/i18n/en';
 import { localizedPath, type Locale } from '@/lib/i18n/routing';
 import styles from './artwork-viewer.module.css';
@@ -81,7 +81,7 @@ export function ArtworkNeighbours({
           >
             {t.nextByWavelength}
             {SEPARATOR}
-            {unbroken(workNumber(spectral.id))}
+            {workNumber(spectral.id)}
             {SEPARATOR}
             {bindNumbers(
               fill(spectral.direction === 'redder' ? t.nmRedder : t.nmBluer, {

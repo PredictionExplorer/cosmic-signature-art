@@ -21,7 +21,7 @@ const FIRST_FRAME_MS = 60_000;
 
 async function workReady(page: Page, path: string) {
   await page.goto(path, { waitUntil: 'domcontentloaded' });
-  await expect(page).toHaveTitle(/№ 031/);
+  await expect(page).toHaveTitle(/№\s031/);
   const still = page.locator(`${current} img.art-still`);
   await expect(still).toBeVisible();
   await expect

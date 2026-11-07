@@ -18,8 +18,8 @@ describe('the gatefold', () => {
     expect(section).toHaveAttribute('data-view', 'spread');
     const images = within(section).getAllByRole('img');
     expect(images.map((image) => image.getAttribute('alt'))).toEqual([
-      '№ 031 · Ink',
-      '№ 031 · Light',
+      '№\u00a0031 · Ink',
+      '№\u00a0031 · Light',
     ]);
     for (const image of images) {
       expect(image).toHaveAttribute('loading', 'lazy');

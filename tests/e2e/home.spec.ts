@@ -34,7 +34,7 @@ test.describe('localized home', () => {
       await expect(page.locator(`${current} .hanging-numeral`)).toHaveText(folio);
       await expect(page.locator(`${current} img.art-still`)).toHaveAttribute(
         'alt',
-        `№ ${folio} · ${t.ink}`,
+        `№\u00a0${folio} · ${t.ink}`,
       );
       if (!isMobile) {
         await expect(page.locator(current).getByText(t.statementLine)).toBeVisible();

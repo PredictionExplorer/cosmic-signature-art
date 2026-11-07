@@ -30,7 +30,7 @@ describe('Verify an orbit, the door', () => {
     const links = within(list).getAllByRole('link');
     expect(links).toHaveLength(orbitIds().length);
     expect(links).toHaveLength(72);
-    const thirtyOne = within(list).getByRole('link', { name: '№ 031' });
+    const thirtyOne = within(list).getByRole('link', { name: '№\u00a0031' });
     expect(thirtyOne).toHaveTextContent(/^031$/);
     expect(thirtyOne).toHaveAttribute('href', '/verify/orbit/31');
   });
@@ -71,7 +71,7 @@ describe('Verify an orbit, one work', () => {
 
   it('is named for its work, and is not found by any other spelling or number', async () => {
     const metadata = await workMetadata(params({ locale: 'ja', id: '31' }));
-    expect(metadata.title).toBe('№ 031 の軌道を検証');
+    expect(metadata.title).toBe('№\u00a0031 の軌道を検証');
     expect(metadata.alternates?.canonical).toBe('https://cosmic.art/ja/verify/orbit/31');
     for (const id of ['031', '999', 'abc', '-1', '3.1'])
       await expect(VerifyOrbitPage(params({ locale: 'en', id }))).rejects.toThrow('NEXT_NOT_FOUND');

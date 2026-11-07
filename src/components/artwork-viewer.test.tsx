@@ -195,7 +195,7 @@ describe('the plate and its strip', () => {
     expect(layer('light')).toHaveAttribute('data-layer-state', 'twin');
     expect(layer('light')).toHaveAttribute('inert');
     expect(layer('light')).toHaveAttribute('aria-hidden', 'true');
-    expect(currentStill()).toHaveAttribute('alt', '№ 031 · Ink');
+    expect(currentStill()).toHaveAttribute('alt', '№\u00a0031 · Ink');
     expect(within(layer('light') as HTMLElement).getByAltText('№ 031 · Light')).toBeInTheDocument();
     expect(document.querySelectorAll('.hanging-numeral')[0]).toHaveTextContent('031');
     expect(
@@ -604,7 +604,7 @@ describe('the room and the keys', () => {
     study.focus();
     fireEvent.click(study);
     const dialog = screen.getByRole('dialog');
-    expect(dialog).toHaveAccessibleName(`№ 031 · ${en.viewingRoom}`);
+    expect(dialog).toHaveAccessibleName(`№\u00a0031 · ${en.viewingRoom}`);
     expect(dialog.querySelector('video')).toBeNull();
     fireEvent.keyDown(window, { key: 'L' });
     expect(root().hasAttribute('data-turning')).toBe(false);
@@ -648,7 +648,7 @@ describe('the room and the keys', () => {
         lot: true,
       },
     });
-    expect(screen.getByRole('link', { name: `${en.previousWork} · № 030` })).toHaveAttribute(
+    expect(screen.getByRole('link', { name: `${en.previousWork} · №\u00a0030` })).toHaveAttribute(
       'href',
       '/art/30?expression=ink',
     );
@@ -658,7 +658,7 @@ describe('the room and the keys', () => {
     expect(screen.getByRole('link', { name: /Collect/ })).toHaveAttribute('href', '/auctions/31');
     fireEvent.click(word(en.light));
     await travel();
-    expect(screen.getByRole('link', { name: `${en.nextWork} · № 032` })).toHaveAttribute(
+    expect(screen.getByRole('link', { name: `${en.nextWork} · №\u00a0032` })).toHaveAttribute(
       'href',
       '/art/32?expression=light',
     );

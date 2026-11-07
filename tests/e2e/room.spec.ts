@@ -10,7 +10,7 @@ const frameSelector = `${roomSelector} > div`;
 
 async function artworkReady(page: Page, path = '/art/31?view=still') {
   await page.goto(path, { waitUntil: 'domcontentloaded' });
-  await expect(page).toHaveTitle(/№ 031/);
+  await expect(page).toHaveTitle(/№\s031/);
   await expect(page.locator(pageStage)).toHaveAttribute('data-expression', 'ink');
   const still = page.locator(`${current} img.art-still`);
   await expect(still).toBeVisible();
@@ -203,8 +203,8 @@ test('the gatefold hangs both plates at equal scale and offers a seam the keyboa
   await gatefold.scrollIntoViewIfNeeded();
   const plates = gatefold.getByRole('img');
   await expect(plates).toHaveCount(2);
-  await expect(plates.nth(0)).toHaveAttribute('alt', '№ 031 · Ink');
-  await expect(plates.nth(1)).toHaveAttribute('alt', '№ 031 · Light');
+  await expect(plates.nth(0)).toHaveAttribute('alt', '№\u00a0031 · Ink');
+  await expect(plates.nth(1)).toHaveAttribute('alt', '№\u00a0031 · Light');
   const widths = await plates.evaluateAll((elements) =>
     elements.map((element) => element.getBoundingClientRect().width),
   );

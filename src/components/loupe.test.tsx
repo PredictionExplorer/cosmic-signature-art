@@ -82,8 +82,8 @@ describe('the loupe', () => {
   const windows = [{ x: 960, y: 320, width: 1152, height: 736, share: 0.4 }];
 
   it('draws the published still itself as a focusable, labelled window', () => {
-    render(<Loupe media={ink} windows={windows} label="№ 031 · Ink · Detail" />);
-    const group = screen.getByRole('group', { name: '№ 031 · Ink · Detail' });
+    render(<Loupe media={ink} windows={windows} label={'№\u00a0031 · Ink · Detail'} />);
+    const group = screen.getByRole('group', { name: '№\u00a0031 · Ink · Detail' });
     expect(group).toHaveAttribute('tabindex', '0');
     // The group carries the name once; the image beneath it is unnamed.
     const image = group.querySelector('img')!;

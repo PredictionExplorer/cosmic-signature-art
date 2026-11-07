@@ -138,7 +138,7 @@ afterEach(() => {
   document.documentElement.removeAttribute('data-plate-material');
 });
 
-const lotName = (n: number, id: number) => `Lot ${n} · № ${String(id).padStart(3, '0')}`;
+const lotName = (n: number, id: number) => `Lot ${n} · №\u00a0${String(id).padStart(3, '0')}`;
 
 describe('the catalogue keeps financial access independent of media', () => {
   it('hangs every lot with its chain line when every media request fails', async () => {
@@ -439,7 +439,7 @@ describe('the lots as plates', () => {
       'data-expression',
       'ink',
     );
-    expect(within(first).getByRole('img')).toHaveAttribute('alt', '№ 031 · Ink');
+    expect(within(first).getByRole('img')).toHaveAttribute('alt', '№\u00a0031 · Ink');
     expect(first).toHaveTextContent(
       '№ 031 · Cycle 1 · Orbit Ribbons · Harmonic Weave · Eternal Dance',
     );
