@@ -585,6 +585,21 @@ export function chosenBeginning(
   throw new Error('No attempt holds a candidate with the published masses');
 }
 
+/**
+ * The main stream as the Borda search leaves it: past the profile, the weights and every
+ * candidate of the first attempt. Retries draw from their own forks, so however many ran, the
+ * camera's drift (drift.ts) reads on from here.
+ */
+export function streamAfterSearch(
+  generation: Pick<OrbitGeneration, 'seed' | 'candidatesPerAttempt' | 'weightsRandomized'>,
+): SeedStream {
+  const main = seedStream(seedBytes(generation.seed));
+  drawProfileAndWeights(main, generation.weightsRandomized);
+  for (let candidate = 0; candidate < generation.candidatesPerAttempt; candidate++)
+    for (let draw = 0; draw < DRAWS_PER_CANDIDATE; draw++) main.nextF64();
+  return main;
+}
+
 // ───────────────────────── The integrator ─────────────────────────
 
 const W1 = 1.3512071919596578;
