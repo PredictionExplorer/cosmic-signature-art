@@ -241,7 +241,10 @@ describe('Verify an orbit', () => {
       'href',
       '/verify/orbit',
     );
-    expect(screen.getByRole('link', { name: 'Go to № 031' })).toHaveAttribute('href', '/art/31');
+    expect(screen.getByRole('link', { name: 'Go to №\u00a0031' })).toHaveAttribute(
+      'href',
+      '/art/31',
+    );
   });
 
   it('states an escape as the record dates it', () => {
@@ -296,7 +299,7 @@ describe('Verify an orbit', () => {
     expect(section(container)).toHaveAttribute('data-phase', 'failed');
     expect(section(container)).toHaveAttribute('aria-busy', 'false');
     expect(workers[0].terminated).toBe(true);
-    expect(screen.getByRole('link', { name: 'Go to № 031' })).toBeVisible();
+    expect(screen.getByRole('link', { name: 'Go to №\u00a0031' })).toBeVisible();
   });
 
   it('says so in a browser without workers', () => {

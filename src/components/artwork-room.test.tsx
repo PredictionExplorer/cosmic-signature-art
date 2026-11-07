@@ -291,7 +291,7 @@ describe('immersive artwork room', () => {
     const originalPriority = document.body.style.getPropertyPriority('overflow');
     document.documentElement.style.setProperty('overflow', 'clip');
     const { room, opener } = openRoom();
-    expect(room).toHaveAccessibleName(`№ 031 · ${en.viewingRoom}`);
+    expect(room).toHaveAccessibleName(`№\u00a0031 · ${en.viewingRoom}`);
     expect(screen.getByRole('button', { name: en.close })).toHaveFocus();
     expect(document.body.style.overflow).toBe('hidden');
     expect(document.documentElement.style.overflow).toBe('hidden');
@@ -672,7 +672,7 @@ describe('immersive artwork room', () => {
     const frame = room.firstElementChild as HTMLElement;
     fireEvent.click(within(room).getByRole('button', { name: en.detail }));
     expect(frame).toHaveAttribute('data-loupe');
-    const loupe = within(room).getByRole('group', { name: `№ 031 · Ink · ${en.detail}` });
+    const loupe = within(room).getByRole('group', { name: `№\u00a0031 · Ink · ${en.detail}` });
     expect(loupe).toHaveAttribute('data-loupe');
     expect(loupe.querySelector('img')).toHaveAttribute('width', '3456');
     expect(room.querySelector('video')).toBeNull();
@@ -722,7 +722,7 @@ describe('immersive artwork room', () => {
     fireEvent.click(lens);
     expect(lens).toHaveAttribute('aria-pressed', 'true');
     const drawn = within(room).getByRole('img', {
-      name: fill(en.whenAlt, { plate: '№ 031 · Ink', caption: en.whenInk }),
+      name: fill(en.whenAlt, { plate: '№\u00a0031 · Ink', caption: en.whenInk }),
     });
     expect(drawn.tagName).toBe('CANVAS');
     expect(drawn).toHaveAttribute('data-room-media');

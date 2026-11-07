@@ -27,7 +27,7 @@ describe('the sharing card', () => {
   });
 
   it('sets the card in the static faces the site also ships, with a slice for the numero sign', async () => {
-    const fonts = await cardFonts('en', '№ 031 · Ink');
+    const fonts = await cardFonts('en', '№\u00a0031 · Ink');
     expect(names(fonts)).toEqual([
       'Literata 400',
       'Literata 300',
@@ -74,7 +74,7 @@ describe('the sharing card', () => {
   });
 
   it("loads each CJK locale's own face for the glyphs on the card, and Literata's Vietnamese slice", async () => {
-    const ja = await cardFonts('ja', `№ 031 · ${catalogs.ja.ink} ${catalogs.ja.seedShort}`);
+    const ja = await cardFonts('ja', `№\u00a0031 · ${catalogs.ja.ink} ${catalogs.ja.seedShort}`);
     expect(names(ja).slice(0, 4)).toEqual(names(await cardFonts('en')));
     expect(
       names(ja)
@@ -109,13 +109,13 @@ describe('the sharing card', () => {
     for (const [locale, label, words, monogram] of [
       [
         'ja',
-        `№ 031 · ${catalogs.ja.ink}`,
+        `№\u00a0031 · ${catalogs.ja.ink}`,
         'Orbit Ribbons · Harmonic Weave',
         `${catalogs.ja.seedShort} 0x4a0d…f5b5`,
       ],
       [
         'vi',
-        `№ 031 · ${catalogs.vi.ink}`,
+        `№\u00a0031 · ${catalogs.vi.ink}`,
         catalogs.vi.statementLine,
         `${catalogs.vi.seedShort} 0x4a0d…f5b5`,
       ],
@@ -147,7 +147,7 @@ describe('the sharing card', () => {
         ground="#efe9dd"
         night={false}
         pictures={[{ dataUrl: 'data:image/png;base64,AA==', width: 1280, height: 828 }]}
-        label="№ 031 · Ink"
+        label={'№\u00a0031 · Ink'}
         words="Orbit Ribbons · Harmonic Weave"
         monogram="Seed 0x4a0d…f5b5"
       />,

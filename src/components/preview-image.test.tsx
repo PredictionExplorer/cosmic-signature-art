@@ -8,23 +8,28 @@ afterEach(() => vi.useRealTimers());
 describe('preview image', () => {
   it('asks again after a failed load, with the same bytes, and gives up after the last attempt', () => {
     const failure = vi.fn();
-    render(<PreviewImage src="/art/23-ink-640.webp" alt="№ 023 · Ink" onFailure={failure} />);
-    const first = screen.getByRole('img', { name: '№ 023 · Ink' });
+    render(
+      <PreviewImage src="/art/23-ink-640.webp" alt={'№\u00a0023 · Ink'} onFailure={failure} />,
+    );
+    const first = screen.getByRole('img', { name: '№\u00a0023 · Ink' });
     expect(first).toHaveAttribute('data-attempt', '1');
     fireEvent.error(first);
     act(() => vi.advanceTimersByTime(1200));
-    const second = screen.getByRole('img', { name: '№ 023 · Ink' });
+    const second = screen.getByRole('img', { name: '№\u00a0023 · Ink' });
     expect(second).not.toBe(first);
     expect(second).toHaveAttribute('src', '/art/23-ink-640.webp');
     expect(second).toHaveAttribute('data-attempt', '2');
     fireEvent.error(second);
     act(() => vi.advanceTimersByTime(2400));
-    const third = screen.getByRole('img', { name: '№ 023 · Ink' });
+    const third = screen.getByRole('img', { name: '№\u00a0023 · Ink' });
     expect(third).toHaveAttribute('data-attempt', String(PREVIEW_ATTEMPTS));
     expect(failure).not.toHaveBeenCalled();
     fireEvent.error(third);
     act(() => vi.advanceTimersByTime(10_000));
-    expect(screen.getByRole('img', { name: '№ 023 · Ink' })).toHaveAttribute('data-failed', '');
+    expect(screen.getByRole('img', { name: '№\u00a0023 · Ink' })).toHaveAttribute(
+      'data-failed',
+      '',
+    );
     expect(failure).toHaveBeenCalledTimes(1);
   });
 

@@ -42,7 +42,7 @@ async function imageReady(image: Locator) {
 async function artworkReady(page: Page, path = '/art/31?view=still') {
   // Both grounds paint eagerly, so a held still would hold `load`; readiness is asserted below.
   await page.goto(path, { waitUntil: 'domcontentloaded' });
-  await expect(page).toHaveTitle(/№ 031/);
+  await expect(page).toHaveTitle(/№\s031/);
   const stage = page.locator(pageStage);
   await expect(stage).toHaveAttribute('data-expression', 'ink');
   await imageReady(page.locator(`${current} img.art-still`));
@@ -203,7 +203,7 @@ test('the plate is painted from an inline preview before the full still arrives'
     'data-film-state',
     'still',
   );
-  await expect(still).toHaveAttribute('alt', '№ 031 · Ink');
+  await expect(still).toHaveAttribute('alt', '№\u00a0031 · Ink');
 });
 
 test('without WebGL, the straight seam carries Light in from the right and Ink back from the left, and remembers the choice', async ({
@@ -233,7 +233,7 @@ test('without WebGL, the straight seam carries Light in from the right and Ink b
   expect(await seamInset(page)).toBe(0);
   const lightStill = page.locator(`${current} img.art-still`);
   await imageReady(lightStill);
-  await expect(lightStill).toHaveAttribute('alt', '№ 031 · Light');
+  await expect(lightStill).toHaveAttribute('alt', '№\u00a0031 · Light');
   expect(
     [light.still, light.sourceUrl].map((source) => new URL(source, page.url()).href),
   ).toContain(await lightStill.evaluate((image) => (image as HTMLImageElement).src));
@@ -249,7 +249,7 @@ test('without WebGL, the straight seam carries Light in from the right and Ink b
   await expect(stage).toHaveAttribute('data-expression', 'ink', { timeout: 5000 });
   await expect(page.locator('html')).toHaveAttribute('data-room', 'paper');
   expect(await seamInset(page)).toBe(100);
-  await expect(page.locator(`${current} img.art-still`)).toHaveAttribute('alt', '№ 031 · Ink');
+  await expect(page.locator(`${current} img.art-still`)).toHaveAttribute('alt', '№\u00a0031 · Ink');
   await noOverflow(page);
 });
 
@@ -321,7 +321,10 @@ test('keys are silent while focus is in a field, and the remembered expression f
   // The next work of the visit opens on the remembered expression, without a Turn.
   await page.goto('/art/35?view=still');
   await expect(page.locator(pageStage)).toHaveAttribute('data-expression', 'light');
-  await expect(page.locator(`${current} img.art-still`)).toHaveAttribute('alt', '№ 035 · Light');
+  await expect(page.locator(`${current} img.art-still`)).toHaveAttribute(
+    'alt',
+    '№\u00a0035 · Light',
+  );
   // A new visit always opens on Ink.
   const fresh = await context.browser()!.newContext();
   const next = await fresh.newPage();
@@ -365,7 +368,7 @@ test('the night wing is drawn by the hand where the browser can, and is a hard e
     // The hard edge: a second screen in black with the same Light plate.
     const fallback = wing.locator('> div').nth(1);
     await expect(fallback).toBeVisible();
-    await expect(fallback.locator('img.art-still')).toHaveAttribute('alt', '№ 031 · Light');
+    await expect(fallback.locator('img.art-still')).toHaveAttribute('alt', '№\u00a0031 · Light');
     // Compact phones already show both materials. Bring Light to the viewing line rather
     // than relying on an offscreen, full-height fallback to trigger a scroll.
     await fallback.evaluate((element) =>
@@ -416,7 +419,7 @@ test('the paper wing beneath a Light plate is drawn back from the left by the ha
     // The hard edge: a second screen on paper with the same work's Ink plate.
     const fallback = wing.locator('> div').nth(1);
     await expect(fallback).toBeVisible();
-    await expect(fallback.locator('img.art-still')).toHaveAttribute('alt', '№ 031 · Ink');
+    await expect(fallback.locator('img.art-still')).toHaveAttribute('alt', '№\u00a0031 · Ink');
     await fallback.evaluate((element) =>
       element.scrollIntoView({ block: 'start', behavior: 'instant' }),
     );
@@ -579,7 +582,7 @@ test('Study opens a contained still, releases ambient playback and restores focu
   await expect(dialog).toHaveAccessibleName(`№ 031 · ${t.viewingRoom}`);
   const still = dialog.locator('img');
   await imageReady(still);
-  await expect(still).toHaveAttribute('alt', '№ 031 · Ink');
+  await expect(still).toHaveAttribute('alt', '№\u00a0031 · Ink');
   await expect(dialog.locator('video')).toHaveCount(0);
   await expect
     .poll(async () =>
@@ -740,7 +743,7 @@ test('expression changes in the room stay contained, commit to the plate, and ke
     'data-expression',
     'light',
   );
-  await expect(dialog.locator('img')).toHaveAttribute('alt', '№ 031 · Light');
+  await expect(dialog.locator('img')).toHaveAttribute('alt', '№\u00a0031 · Light');
   await imageReady(dialog.locator('img'));
   await expect(dialog.locator('video')).toHaveCount(0);
   for (let index = 0; index < 10; index += 1) {

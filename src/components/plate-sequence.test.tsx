@@ -94,7 +94,7 @@ const cycles = [
 ];
 
 function card(id: number) {
-  return screen.getByRole('link', { name: new RegExp(`^№ ${String(id).padStart(3, '0')} ·`) });
+  return screen.getByRole('link', { name: new RegExp(`^№\u00a0${String(id).padStart(3, '0')} ·`) });
 }
 
 beforeEach(() => {
@@ -200,9 +200,9 @@ describe('the plate sequence', () => {
 
   it('names every card by its number and expression and carries the expression in the link', () => {
     render(<PlateSequence works={works} locale="ja" t={en} animated expression="ink" />);
-    expect(card(31)).toHaveAttribute('aria-label', '№ 031 · Ink');
+    expect(card(31)).toHaveAttribute('aria-label', '№\u00a0031 · Ink');
     expect(card(31)).toHaveAttribute('href', '/ja/art/31?expression=ink');
-    expect(card(35)).toHaveAttribute('aria-label', '№ 035 · Light');
+    expect(card(35)).toHaveAttribute('aria-label', '№\u00a0035 · Light');
     expect(card(35)).toHaveAttribute('href', '/ja/art/35?expression=light');
     expect(card(31)).toHaveTextContent('031');
     expect(card(31)).not.toHaveTextContent('Signature');
@@ -361,7 +361,7 @@ describe('the pairs across the seam', () => {
     };
   }
   const half = (id: number, expression: 'Ink' | 'Light') =>
-    screen.getByRole('link', { name: `№ ${String(id).padStart(3, '0')} · ${expression}` });
+    screen.getByRole('link', { name: `№\u00a0${String(id).padStart(3, '0')} · ${expression}` });
 
   it('hangs each work’s Ink on the paper leaf beside its Light on the night leaf, each opening its own', () => {
     const { container } = render(<PlateSequence works={works} locale="ja" t={en} />);
@@ -374,7 +374,7 @@ describe('the pairs across the seam', () => {
     const leaves = container.querySelectorAll('[data-shape] > [data-ground="paper"]');
     expect([...leaves].some((leaf) => leaf.textContent?.includes(en.noInkPublished))).toBe(true);
     expect(half(35, 'Light')).toHaveAttribute('href', '/ja/art/35?expression=light');
-    expect(screen.queryByRole('link', { name: '№ 035 · Ink' })).toBeNull();
+    expect(screen.queryByRole('link', { name: '№\u00a0035 · Ink' })).toBeNull();
   });
 
   it('hangs a pair’s halves on one line: no eye line pulls one above the other', () => {

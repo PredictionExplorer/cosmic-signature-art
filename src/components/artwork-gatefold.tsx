@@ -7,7 +7,7 @@ import {
   type PointerEvent as ReactPointerEvent,
 } from 'react';
 import { getPlateGround } from '@/lib/art/plate-records';
-import { workFolio } from '@/lib/art/number';
+import { workFolio, workNumber } from '@/lib/art/number';
 import { getInterpretation, type ArtInterpretation, type Artwork } from '@/lib/art/types';
 import { fill } from '@/lib/i18n/format';
 import type { Messages } from '@/lib/i18n/en';
@@ -75,8 +75,8 @@ export function ArtworkGatefold({
   const caption = fill(t.gatefoldCaption, { n: folio });
   const sizes = '(max-width: 767px) 100vw, (min-width: 1700px) 50vw, 92vw';
   const percent = new Intl.NumberFormat(locale, { maximumFractionDigits: 0 });
-  const inkAlt = `№ ${folio} · ${t.ink}`;
-  const lightAlt = `№ ${folio} · ${t.light}`;
+  const inkAlt = `${workNumber(artwork.id)} · ${t.ink}`;
+  const lightAlt = `${workNumber(artwork.id)} · ${t.light}`;
 
   const seamFromPointer = (event: ReactPointerEvent<HTMLElement>) => {
     const bounds = seamFrame.current?.getBoundingClientRect();

@@ -15,7 +15,7 @@ test('the plate, the room and the keys preserve identity; Escape returns focus',
 }) => {
   await page.goto('/art/31');
   await pauseAmbientMotion(page);
-  await expect(page).toHaveTitle(/№ 031/);
+  await expect(page).toHaveTitle(/№\s031/);
   const plate = page.locator(current);
   await artworkImageSource(plate.locator('img.art-still'), 31, 'ink', true);
   // The strip: the folio, the label from the published traits, and the words.
@@ -136,10 +136,10 @@ test('the neighbours carry the visitor on by number and by wavelength, in the ex
   await expect(star).toHaveText(/Next by wavelength\s· №\s\d{3}\s· \d+\snm (?:redder|bluer)/);
   await page.keyboard.press('ArrowRight');
   await expect(page).toHaveURL(/\/art\/32\?expression=ink$/);
-  await expect(page).toHaveTitle(/№ 032/);
+  await expect(page).toHaveTitle(/№\s032/);
   await expect(page.locator(current).locator('img.art-still')).toHaveAttribute(
     'alt',
-    '№ 032 · Ink',
+    '№\u00a0032 · Ink',
   );
 });
 
@@ -153,10 +153,10 @@ test('language switching preserves the current artwork route', async ({ page, is
   await page.locator('.language-menu a[hreflang="ja"]').click();
   await expect(page).toHaveURL(/\/ja\/art\/31\?view=still$/);
   await expect(page.locator('html')).toHaveAttribute('lang', 'ja');
-  await expect(page).toHaveTitle(/№ 031/);
+  await expect(page).toHaveTitle(/№\s031/);
   await expect(page.locator(current).locator('img.art-still')).toHaveAttribute(
     'alt',
-    `№ 031 · ${catalogs.ja.ink}`,
+    `№\u00a0031 · ${catalogs.ja.ink}`,
   );
 });
 

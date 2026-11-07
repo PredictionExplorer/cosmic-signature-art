@@ -34,7 +34,7 @@ function Sheet({
       <AuctionSheet
         open={open}
         onClose={onClose}
-        label="№ 031 · The bid sheet"
+        label={'№\u00a0031 · The bid sheet'}
         closeLabel={en.close}
         handleLabel={en.sheetHandle}
         hush={hush}
@@ -55,7 +55,7 @@ describe('the auction sheet', () => {
   it('opens as a modal that silences the keys, hushes the theatre and hands it back on close', () => {
     const onClose = vi.fn();
     const view = render(<Sheet open hush onClose={onClose} />);
-    const dialog = screen.getByRole('dialog', { name: '№ 031 · The bid sheet' });
+    const dialog = screen.getByRole('dialog', { name: '№\u00a0031 · The bid sheet' });
     expect(dialog).toHaveAttribute('data-keys-suppressed', '');
     expect(dialog).toHaveAttribute('open');
     expect(screen.getByText('inside')).toBeVisible();

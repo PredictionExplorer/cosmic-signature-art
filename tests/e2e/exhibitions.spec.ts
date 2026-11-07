@@ -145,7 +145,7 @@ test('the sharing cards are drawn from the works’ own rungs for a work, the ho
   const alt = await page
     .goto('/art/31')
     .then(() => page.locator('meta[property="og:image:alt"]').first().getAttribute('content'));
-  expect(alt).toBe('№ 031 · Ink · Light');
+  expect(alt).toBe('№\u00a0031 · Ink · Light');
 });
 
 test('an unknown exhibition is not here, and the venue says which work is next door', async ({
