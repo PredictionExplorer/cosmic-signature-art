@@ -1,0 +1,3887 @@
+{
+  "schemaVersion": 1,
+  "derivedOn": "2026-11-07",
+  "parameters": {
+    "fps": 60,
+    "trace": {
+      "width": 576,
+      "height": 372,
+      "slices": 16,
+      "threshold": 2
+    },
+    "filmStride": 37,
+    "traceStride": 97,
+    "accept": {
+      "film": 0.25,
+      "lead": 3,
+      "traceLead": 1.5
+    }
+  },
+  "frames": [
+    {
+      "id": 0,
+      "seed": "0x2a345aa3f8a0419fc11cd031c98c49d171f3dd2151d9c06fd327e9254e1db962",
+      "traitsSha256": "3d763ab59be11f274148affa37ef33844f22266e4e552bc322a94a60af26cf64",
+      "projection": "position",
+      "symmetry": "none",
+      "stack": "time_chords+harmonic_weave@0.24",
+      "preferredStack": "orbit_ribbons+nebula_veil@0.58",
+      "wildcard": true,
+      "width": 3456,
+      "height": 2234,
+      "view": {
+        "candidate": 1,
+        "triple": ["0.9239877367122541", "0.7316358225415825", "0.7436860917720919"],
+        "scores": ["0.8990276617062801", "1", "0.97091539688792", "0.7595480467258796"]
+      },
+      "velocityScale": "1",
+      "drift": {
+        "scale": "1.0365287317446252",
+        "arcFraction": "0.18949100159950327",
+        "eccentricity": "0.43527540354348265",
+        "inclination": "2.5836781670499667",
+        "ascendingNode": "0.7252383878013434",
+        "argumentOfPeriapsis": "1.4508201256061812",
+        "initialMeanAnomaly": "2.1916595638244827",
+        "semiMajor": "207.99131305936578",
+        "semiMinor": "187.2540285078515"
+      },
+      "box": {
+        "minX": "-627.2625431202133",
+        "maxX": "150.7527964250507",
+        "minY": "-113.52804628953119",
+        "maxY": "389.390434191985",
+        "width": "778.015339545264",
+        "height": "502.91848048151616"
+      },
+      "film": {
+        "sha256": "5ddfc8c6c5b8aec3da943f26f87d45c07a802dfc8049305c3fc53ad7e1ce739a",
+        "frames": 1802,
+        "agreement": 0.8313,
+        "otherViews": 0.0065
+      },
+      "trace": {
+        "src": "/art/traces/0-light-2e130d2854391751.webp",
+        "sha256": "2e130d2854391751e4a24c7387a80bc62ce2615251f5229f113c4c7dd6a48411",
+        "bytes": 9494,
+        "agreement": 0.8871,
+        "otherViews": 0.0536
+      }
+    },
+    {
+      "id": 1,
+      "seed": "0x36794583b610f71be4a51d19a01af5bfe05b673c31d86f3f0c3310c3e4261fce",
+      "traitsSha256": "5784e0e78d9e8e357daebc074c9acee36d98dc5c3ed16dfa6a00c31c09047480",
+      "projection": "phase_portrait",
+      "symmetry": "dih4",
+      "stack": "orbit_ribbons+stipple_constellation@0.19",
+      "preferredStack": "orbit_ribbons+stipple_constellation@0.19",
+      "wildcard": true,
+      "width": 3456,
+      "height": 2234,
+      "view": {
+        "candidate": 2,
+        "triple": ["0.9588399352699046", "0.6085854239491142", "0.10421695679021512"],
+        "scores": [
+          "0.9164316204585797",
+          "0.9953868123284846",
+          "0.9955222531370447",
+          "0.9846694443887158"
+        ]
+      },
+      "velocityScale": "14.919749479941297",
+      "drift": {
+        "scale": "1.2485573973037143",
+        "arcFraction": "0.6306673618901324",
+        "eccentricity": "0.4187985081391527",
+        "inclination": "2.5985375085366904",
+        "ascendingNode": "4.9832899005083275",
+        "argumentOfPeriapsis": "0.9098593082720168",
+        "initialMeanAnomaly": "0.11916429458125899",
+        "semiMajor": "225.9175123701096",
+        "semiMinor": "205.1509909270127"
+      },
+      "box": {
+        "minX": "-583.9967157760889",
+        "maxX": "639.4181864686866",
+        "minY": "-314.0857510700163",
+        "maxY": "476.7443680314966",
+        "width": "1223.4149022447755",
+        "height": "790.8301191015129"
+      },
+      "film": {
+        "sha256": "3c7e40c44b00b69c3de1493512d10a58e9e8344a475ddc402289e6a6e5289a55",
+        "frames": 1802,
+        "agreement": 0.7603,
+        "otherViews": 0.0256
+      },
+      "trace": {
+        "src": "/art/traces/1-light-1ed6cff6b083d2be.webp",
+        "sha256": "1ed6cff6b083d2be58df10d47ced7947bd3d64cdb1b7db3a7dc034d9b8e0f48a",
+        "bytes": 11746,
+        "agreement": 0.9025,
+        "otherViews": 0.1068
+      }
+    },
+    {
+      "id": 2,
+      "seed": "0xadbf95ffe328567a552743028b0f8b204fe6ca747fdbce42ede267a8eee7bf0e",
+      "traitsSha256": "cf29b4ae6018b950c326cd19f6f6040c9461d55059e99dbdb7bb14cb86cc26a4",
+      "projection": "position",
+      "symmetry": "none",
+      "stack": "orbit_ribbons+nebula_veil@0.18",
+      "preferredStack": "orbit_ribbons+nebula_veil@0.18",
+      "wildcard": false,
+      "width": 3456,
+      "height": 2234,
+      "view": {
+        "candidate": 2,
+        "triple": ["0.9950073197595418", "0.7524665727879146", "0.09855044773446318"],
+        "scores": [
+          "0.8330296904863597",
+          "0.8958160157744348",
+          "0.9091175312392875",
+          "0.906106444382856"
+        ]
+      },
+      "velocityScale": "1",
+      "drift": {
+        "scale": "1.2138427161762133",
+        "arcFraction": "0.0682867526470639",
+        "eccentricity": "0.4915143006434941",
+        "inclination": "0.7015452579967251",
+        "ascendingNode": "4.372406656273809",
+        "argumentOfPeriapsis": "5.161294913383318",
+        "initialMeanAnomaly": "2.581220000597578",
+        "semiMajor": "198.5179113435777",
+        "semiMinor": "172.8831949032078"
+      },
+      "box": {
+        "minX": "-43.83771953465855",
+        "maxX": "470.946465908368",
+        "minY": "-165.93711854916612",
+        "maxY": "166.82557539751252",
+        "width": "514.7841854430266",
+        "height": "332.7626939466786"
+      },
+      "film": {
+        "sha256": "8fea2e3b3042dae032950042c7e7ae3bdcefc0c4d3cb8f8ec9a0bd5c848998c6",
+        "frames": 1802,
+        "agreement": 0.8521,
+        "otherViews": 0.0143
+      },
+      "trace": {
+        "src": "/art/traces/2-light-6a7647c957c3c661.webp",
+        "sha256": "6a7647c957c3c661b0c6d0e4c7e0f81618c7e6047a161d6a7eea5648404f2cf1",
+        "bytes": 13248,
+        "agreement": 0.8774,
+        "otherViews": 0.0582
+      }
+    },
+    {
+      "id": 3,
+      "seed": "0x203581755eca174027d8d64b53dcb54d320fd2195fae1c7fbf152dfe83c69855",
+      "traitsSha256": "585931adbe59939dda945df3e3c08eaf560dcb31730fc42b59577d9bc44f146b",
+      "projection": "position",
+      "symmetry": "none",
+      "stack": "harmonic_weave+time_chords@0.19",
+      "preferredStack": "harmonic_weave+time_chords@0.19",
+      "wildcard": false,
+      "width": 3456,
+      "height": 2234,
+      "view": {
+        "candidate": 1,
+        "triple": ["0.43307825733568933", "0.22898368570520167", "0.34124111638510596"],
+        "scores": [
+          "0.6796312247004004",
+          "0.8270996105640241",
+          "0.7290177319893747",
+          "0.7547506738261431"
+        ]
+      },
+      "velocityScale": "1",
+      "drift": {
+        "scale": "1.0994255305246612",
+        "arcFraction": "0.46701552786632894",
+        "eccentricity": "0.4845397164302011",
+        "inclination": "0.29562985491506094",
+        "ascendingNode": "5.803996153916455",
+        "argumentOfPeriapsis": "2.1921441900047864",
+        "initialMeanAnomaly": "-2.684287069394769",
+        "semiMajor": "286.2393515345124",
+        "semiMinor": "250.3933865363531"
+      },
+      "box": {
+        "minX": "-495.5899429059503",
+        "maxX": "779.4196681032845",
+        "minY": "-565.1357167777985",
+        "maxY": "259.0458431164811",
+        "width": "1275.0096110092347",
+        "height": "824.1815598942796"
+      },
+      "film": {
+        "sha256": "fed7006ad697f4911e9933635bc9ab75bebaad5dfaef8a9f32530f1d59516c49",
+        "frames": 1802,
+        "agreement": 0.8416,
+        "otherViews": 0.0411
+      },
+      "trace": {
+        "src": "/art/traces/3-light-ab6b0b5d9c4814fd.webp",
+        "sha256": "ab6b0b5d9c4814fda1dbf77ebf326b9412a691841e1c89641dfd4aaad37658b2",
+        "bytes": 9038,
+        "agreement": 0.9276,
+        "otherViews": 0.2247
+      }
+    },
+    {
+      "id": 4,
+      "seed": "0x082f04a131becec289fb0d93bda9442cf26a11e560c749a05d0eddf99df33d8f",
+      "traitsSha256": "d8b00f41087841dd0eef308771ff0554a57f1fc2f67e886f143467961ced3567",
+      "projection": "position",
+      "symmetry": "none",
+      "stack": "time_chords+nebula_veil@0.13",
+      "preferredStack": "time_chords+nebula_veil@0.13",
+      "wildcard": false,
+      "width": 3456,
+      "height": 2234,
+      "view": {
+        "candidate": 0,
+        "triple": ["0.30816320092830723", "0.5571604172948574", "0.030352869370287004"],
+        "scores": [
+          "0.8889076598915777",
+          "0.8703495972985331",
+          "0.8845923967117084",
+          "0.8635329090057264"
+        ]
+      },
+      "velocityScale": "1",
+      "drift": {
+        "scale": "1.1729558725251432",
+        "arcFraction": "0.646047947849904",
+        "eccentricity": "0.4321241154102175",
+        "inclination": "1.3620765394607963",
+        "ascendingNode": "3.1572529341237576",
+        "argumentOfPeriapsis": "1.3415991927934185",
+        "initialMeanAnomaly": "2.325094249604997",
+        "semiMajor": "308.59210710005755",
+        "semiMinor": "278.2927266636427"
+      },
+      "box": {
+        "minX": "-343.7129957336066",
+        "maxX": "293.99365521069745",
+        "minY": "-168.97818245684874",
+        "maxY": "243.2430728121256",
+        "width": "637.7066509443041",
+        "height": "412.22125526897435"
+      },
+      "film": {
+        "sha256": "361aa7ef0363b3ec8a47d70aeb8bb2b65fc1d106302aee6f73378bbea8f60ffc",
+        "frames": 1802,
+        "agreement": 0.8963,
+        "otherViews": 0.0133
+      },
+      "trace": {
+        "src": "/art/traces/4-light-beff838065eb345f.webp",
+        "sha256": "beff838065eb345fdb53efbc6a702dd492aa2a713ab9e80be0a7460618c9131e",
+        "bytes": 8116,
+        "agreement": 0.9333,
+        "otherViews": 0.096
+      }
+    },
+    {
+      "id": 5,
+      "seed": "0xe29887e5f8aea85d6b775ab8dc95df16a5a0ad2979ace2b539058a0040aca67d",
+      "traitsSha256": "ca379bc201a230a634c19609c5431a032c7a01deef433582fa34af105a03a404",
+      "projection": "position",
+      "symmetry": "none",
+      "stack": "orbit_ribbons+tangent_caustics@0.30",
+      "preferredStack": "orbit_ribbons+tangent_caustics@0.30",
+      "wildcard": false,
+      "width": 3456,
+      "height": 2234,
+      "view": {
+        "candidate": 3,
+        "triple": ["0.8252877227594131", "0.20038120826014338", "0.055141473279043764"],
+        "scores": ["0.9560315337984373", "0.9514970979127206", "0.9214506051528599", "1"]
+      },
+      "velocityScale": "1",
+      "drift": {
+        "scale": "1.2938554860527915",
+        "arcFraction": "1.0047489955512372",
+        "eccentricity": "0.47048722114237274",
+        "inclination": "0.49900928008550216",
+        "ascendingNode": "2.139245507314052",
+        "argumentOfPeriapsis": "1.0589280209180931",
+        "initialMeanAnomaly": "-0.15872352809900026",
+        "semiMajor": "212.53001297543162",
+        "semiMinor": "187.53793034625983"
+      },
+      "box": {
+        "minX": "-423.2170693371823",
+        "maxX": "656.7492989947136",
+        "minY": "-373.427727681789",
+        "maxY": "324.67553240312293",
+        "width": "1079.9663683318959",
+        "height": "698.1032600849119"
+      },
+      "film": {
+        "sha256": "6a9944234c7c8f13bdb18ebc8b32253e1dcdaca16098346a3c8a9e085cca17d4",
+        "frames": 1802,
+        "agreement": 0.7615,
+        "otherViews": 0.0319
+      },
+      "trace": {
+        "src": "/art/traces/5-light-14a3ae01c2341522.webp",
+        "sha256": "14a3ae01c2341522cc061c98cd46d77fa38929fca2602ed29319d1ce844e0c2c",
+        "bytes": 4884,
+        "agreement": 0.7681,
+        "otherViews": 0.1093
+      }
+    },
+    {
+      "id": 6,
+      "seed": "0x7f12ef4506339e9ccc3c665a5ae8c1878fcf241b7dcbdc4209a95a164622e204",
+      "traitsSha256": "c13307e45179d440518cb7b6be96edfab42876a2a2bf055dc2361e76f5f587ca",
+      "projection": "position",
+      "symmetry": "rot3",
+      "stack": "orbit_ribbons+harmonic_weave@0.29",
+      "preferredStack": "triangle_web+orbit_ribbons@0.21",
+      "wildcard": false,
+      "width": 3456,
+      "height": 2234,
+      "view": {
+        "candidate": 1,
+        "triple": ["0.14846547018065923", "0.8545295374084794", "0.42542405790421384"],
+        "scores": [
+          "0.8948466502496601",
+          "0.9391679730445722",
+          "0.8661511395630315",
+          "0.8615668608065281"
+        ]
+      },
+      "velocityScale": "1",
+      "drift": {
+        "scale": "1.2906622618185117",
+        "arcFraction": "0.3405665226295892",
+        "eccentricity": "0.43972281578747435",
+        "inclination": "1.330484367151888",
+        "ascendingNode": "4.718904594356914",
+        "argumentOfPeriapsis": "5.485911788928001",
+        "initialMeanAnomaly": "-0.5157023672982071",
+        "semiMajor": "162.20407149707896",
+        "semiMinor": "145.68091599722914"
+      },
+      "box": {
+        "minX": "-206.56476668056416",
+        "maxX": "272.7313878366697",
+        "minY": "-212.1651788099836",
+        "maxY": "97.65762477552003",
+        "width": "479.29615451723384",
+        "height": "309.8228035855036"
+      },
+      "film": {
+        "sha256": "2c4e1aae116c310cfe5c2c1cf129fcb5b4e7f47a9c6d2f225bfd6709fad5aadf",
+        "frames": 1802,
+        "agreement": 0.9643,
+        "otherViews": 0.1148
+      },
+      "trace": {
+        "src": "/art/traces/6-light-8c1d5ed3bbc904ec.webp",
+        "sha256": "8c1d5ed3bbc904eca0615b91d0491fa2148f904188b8f5c2f81873d3fabe8bea",
+        "bytes": 20764,
+        "agreement": 0.9841,
+        "otherViews": 0.5477
+      }
+    },
+    {
+      "id": 7,
+      "seed": "0xae7e4b937e44eddb5693b29148b6bd03f65417f7a363b60829a562ca2370ec0d",
+      "traitsSha256": "ebd57d4625ff8ba5566867f2210354f7d291ffd82dcc7d04b301c9ec6b66491e",
+      "projection": "phase_portrait",
+      "symmetry": "mirror_x",
+      "stack": "time_chords",
+      "preferredStack": "time_chords",
+      "wildcard": false,
+      "width": 3456,
+      "height": 2234,
+      "view": {
+        "candidate": 3,
+        "triple": ["0.5533866898584298", "0.5241881702786506", "0.5195406544381176"],
+        "scores": [
+          "0.8493058711078338",
+          "0.935668644342028",
+          "0.9266970657004248",
+          "0.9695138393401719"
+        ]
+      },
+      "velocityScale": "25.026185637345968",
+      "drift": {
+        "scale": "1.1131403216806666",
+        "arcFraction": "0.306375465236484",
+        "eccentricity": "0.4439200212530646",
+        "inclination": "1.1935169708750235",
+        "ascendingNode": "2.1198764800380765",
+        "argumentOfPeriapsis": "4.821650062733132",
+        "initialMeanAnomaly": "2.2334893144147454",
+        "semiMajor": "180.0649260936235",
+        "semiMinor": "161.35013225337855"
+      },
+      "box": {
+        "minX": "-321.73675914843477",
+        "maxX": "233.60899134138418",
+        "minY": "-230.62134154969988",
+        "maxY": "128.36083628428608",
+        "width": "555.3457504898189",
+        "height": "358.98217783398593"
+      },
+      "film": {
+        "sha256": "973e91866e430d255eb44e048992224bbe3bcc52c159d2b0ba7ecc0bb7d56ebb",
+        "frames": 1802,
+        "agreement": 0.6441,
+        "otherViews": 0.0175
+      },
+      "trace": {
+        "src": "/art/traces/7-light-c1103eac9fc4b55e.webp",
+        "sha256": "c1103eac9fc4b55e2dc3d371562268bb626589fe777eb39e43161152af9b18c8",
+        "bytes": 12376,
+        "agreement": 0.7512,
+        "otherViews": 0.0525
+      }
+    },
+    {
+      "id": 8,
+      "seed": "0x7f16d855c0e049505aa951db48ebd2427ee39ba812dd2e41a2e5492096673db5",
+      "traitsSha256": "7a1ba4841adccc0a4ffe79751bef19392fa59f49039dc68411ce907009a650d2",
+      "projection": "position",
+      "symmetry": "dih6",
+      "stack": "time_chords+orbit_ribbons@0.19",
+      "preferredStack": "time_chords+orbit_ribbons@0.19",
+      "wildcard": false,
+      "width": 3456,
+      "height": 2234,
+      "view": {
+        "candidate": 2,
+        "triple": ["0.9585167393909728", "0.5509516695724544", "0.5355786549569254"],
+        "scores": [
+          "0.8523449108194857",
+          "0.8533054237315946",
+          "0.8874617289326518",
+          "0.865208509715268"
+        ]
+      },
+      "velocityScale": "1",
+      "drift": {
+        "scale": "0.8621946294644862",
+        "arcFraction": "0.3943326236595508",
+        "eccentricity": "0.4215072139242367",
+        "inclination": "1.7488237825296582",
+        "ascendingNode": "5.6191633620184405",
+        "argumentOfPeriapsis": "4.9054075991952795",
+        "initialMeanAnomaly": "-1.7887950052099348",
+        "semiMajor": "146.92856791789066",
+        "semiMinor": "133.23850573002386"
+      },
+      "box": {
+        "minX": "-370.2604466381069",
+        "maxX": "307.63078544264664",
+        "minY": "-231.71888831752582",
+        "maxY": "206.47816390134085",
+        "width": "677.8912320807535",
+        "height": "438.1970522188667"
+      },
+      "film": {
+        "sha256": "f121e1739d927d7585927f81e3b18300e921c2bd7f407b2c25da9ed7ee1c246f",
+        "frames": 1802,
+        "agreement": 0.4229,
+        "otherViews": 0.0444
+      },
+      "trace": {
+        "src": "/art/traces/8-light-0fdb94c03b550b6c.webp",
+        "sha256": "0fdb94c03b550b6cf28da6aa64a31d80021cb558bd12746605ed69842de2aa4b",
+        "bytes": 27838,
+        "agreement": 0.6443,
+        "otherViews": 0.223
+      }
+    },
+    {
+      "id": 9,
+      "seed": "0x1362465d6ffe31bfc33a924a9406663e313cf417c35d8d4461e66db845d39903",
+      "traitsSha256": "d6ff074ab1ab8ff579a7d2fe99cff7484cd7283f7ef2a3a1a6d37e394ef1d948",
+      "projection": "position",
+      "symmetry": "none",
+      "stack": "time_chords+stipple_constellation@0.17",
+      "preferredStack": "time_chords+stipple_constellation@0.17",
+      "wildcard": false,
+      "width": 3456,
+      "height": 2234,
+      "view": {
+        "candidate": 0,
+        "triple": ["0.9366470613136894", "0.613288931403082", "0.755347366947917"],
+        "scores": [
+          "0.9698411500443802",
+          "0.8628627234132266",
+          "0.9147159990197657",
+          "0.9046584585223216"
+        ]
+      },
+      "velocityScale": "1",
+      "drift": {
+        "scale": "0.9692301462219813",
+        "arcFraction": "0.019216919389454048",
+        "eccentricity": "0.45828470925745796",
+        "inclination": "1.1388482692191557",
+        "ascendingNode": "2.1182454039198353",
+        "argumentOfPeriapsis": "3.401129883612319",
+        "initialMeanAnomaly": "-2.7340857929486857",
+        "semiMajor": "169.23523067677476",
+        "semiMinor": "150.4171951015317"
+      },
+      "box": {
+        "minX": "-287.5079015095005",
+        "maxX": "137.8622145039246",
+        "minY": "24.09666977737095",
+        "maxY": "299.06103296428984",
+        "width": "425.3701160134251",
+        "height": "274.9643631869189"
+      },
+      "film": {
+        "sha256": "4489df3e47966bc0f1261af742497ecc2ebb66d57b9e05466da2e9277d363efe",
+        "frames": 1802,
+        "agreement": 0.9475,
+        "otherViews": 0.0017
+      },
+      "trace": {
+        "src": "/art/traces/9-light-9a5c4c06fd450e8f.webp",
+        "sha256": "9a5c4c06fd450e8ff0acccd3107b8889fa419534005a7e9dcd834f6cf1b1667a",
+        "bytes": 14736,
+        "agreement": 0.93,
+        "otherViews": 0.021
+      }
+    },
+    {
+      "id": 10,
+      "seed": "0x4fbcf97cd52e5a670e14f706d1c01518fdd7f89d89515bc71b592912b9af59eb",
+      "traitsSha256": "e0081abe3d1547358a8baeeebc2be75905ef915dce8a1ff93fa6dd084621900a",
+      "projection": "cross_braid",
+      "symmetry": "none",
+      "stack": "orbit_ribbons+harmonic_weave@0.29",
+      "preferredStack": "triangle_web",
+      "wildcard": false,
+      "width": 3456,
+      "height": 2234,
+      "view": {
+        "candidate": 1,
+        "triple": ["0.7940058087483183", "0.6617013663184044", "0.7971251654756147"],
+        "scores": ["0.9441585774174042", "1", "0.8475446582932723", "0.8919196697550672"]
+      },
+      "velocityScale": "11.373391069684613",
+      "drift": {
+        "scale": "1.224950243804274",
+        "arcFraction": "0.1412379225077974",
+        "eccentricity": "0.4107800919359869",
+        "inclination": "2.501736382207804",
+        "ascendingNode": "1.618578209387186",
+        "argumentOfPeriapsis": "4.151338628228311",
+        "initialMeanAnomaly": "1.4598538434415707",
+        "semiMajor": "253.43996513045272",
+        "semiMinor": "231.06994843268996"
+      },
+      "box": {
+        "minX": "-191.40272486758332",
+        "maxX": "450.48519260111783",
+        "minY": "66.26376116728244",
+        "maxY": "481.18783744768706",
+        "width": "641.8879174687012",
+        "height": "414.9240762804046"
+      },
+      "film": {
+        "sha256": "bea0bda8da57ff1430c493e3ad30de57f9ab1bfe48b07b7a881d3ea4a4dd587a",
+        "frames": 1802,
+        "agreement": 0.8889,
+        "otherViews": 0.0159
+      },
+      "trace": {
+        "src": "/art/traces/10-light-c90123f98ed0d23e.webp",
+        "sha256": "c90123f98ed0d23ed8f59c04bb24b6b9ed11c7fae41702c97e92cf387e1c31d2",
+        "bytes": 15504,
+        "agreement": 0.9151,
+        "otherViews": 0.0786
+      }
+    },
+    {
+      "id": 11,
+      "seed": "0x55abfa5aa9c648d15d2f46ea2dc9ad640e32247e130962cf87604029da9c6982",
+      "traitsSha256": "a1d00a5ec54ed1793dd486fd8d9ad2ac7fff7615ad9db90d1810e6e94b60d88f",
+      "projection": "position",
+      "symmetry": "mirror_x",
+      "stack": "orbit_ribbons",
+      "preferredStack": "orbit_ribbons",
+      "wildcard": false,
+      "width": 3456,
+      "height": 2234,
+      "view": {
+        "candidate": 0,
+        "triple": ["0.6718125994912945", "0.2820607253758032", "0.5179140498202304"],
+        "scores": [
+          "0.9270310416409822",
+          "0.8512491793768943",
+          "0.9242435745972437",
+          "0.8839671888074301"
+        ]
+      },
+      "velocityScale": "1",
+      "drift": {
+        "scale": "1.21758319785077",
+        "arcFraction": "0.8653901390804958",
+        "eccentricity": "0.42757473391096756",
+        "inclination": "0.4781707507705309",
+        "ascendingNode": "1.6522228739459426",
+        "argumentOfPeriapsis": "4.7844133015116865",
+        "initialMeanAnomaly": "-1.8048552045774506",
+        "semiMajor": "136.8946501890827",
+        "semiMinor": "123.75002637167975"
+      },
+      "box": {
+        "minX": "-386.0680384229497",
+        "maxX": "287.0382679064809",
+        "minY": "-218.78240644605802",
+        "maxY": "216.32161217082503",
+        "width": "673.1063063294306",
+        "height": "435.1040186168831"
+      },
+      "film": {
+        "sha256": "b5afa51d26748dbe8a5ac38b045788e230a3e217c40e797525fbad9c2cc1be08",
+        "frames": 1802,
+        "agreement": 0.9725,
+        "otherViews": 0.1115
+      },
+      "trace": {
+        "src": "/art/traces/11-light-890fe6a0b727d134.webp",
+        "sha256": "890fe6a0b727d1346baa943f063e08253f7438fe048c4b17e4a7dc209705c01c",
+        "bytes": 24130,
+        "agreement": 0.9768,
+        "otherViews": 0.5189
+      }
+    },
+    {
+      "id": 12,
+      "seed": "0x95c22c676296e4cca545427249c75a2cc99e4e3a43abd24869c9a09ca5960f8a",
+      "traitsSha256": "fa402e18e1fe85d9bd9c8eeb783fb3ced165b20432385c45c43b5b856cd35876",
+      "projection": "position",
+      "symmetry": "none",
+      "stack": "orbit_ribbons+harmonic_weave@0.29",
+      "preferredStack": "harmonic_weave",
+      "wildcard": false,
+      "width": 3456,
+      "height": 2234,
+      "view": {
+        "candidate": 3,
+        "triple": ["0.08687777782719554", "0.778769493766075", "0.20980618202433263"],
+        "scores": [
+          "0.7484344640202613",
+          "0.9524195979756354",
+          "0.7468177602625911",
+          "0.9551439014217464"
+        ]
+      },
+      "velocityScale": "1",
+      "drift": {
+        "scale": "1.0839275283961074",
+        "arcFraction": "1.1858505234707606",
+        "eccentricity": "0.45760210802458995",
+        "inclination": "1.646309072270377",
+        "ascendingNode": "2.1669524821752755",
+        "argumentOfPeriapsis": "0.775438606857297",
+        "initialMeanAnomaly": "-1.0226800499269797",
+        "semiMajor": "225.4655025283167",
+        "semiMinor": "200.4742475920779"
+      },
+      "box": {
+        "minX": "-491.0779548374453",
+        "maxX": "491.2235388942265",
+        "minY": "-403.1896519432156",
+        "maxY": "231.78185760439862",
+        "width": "982.3014937316718",
+        "height": "634.9715095476142"
+      },
+      "film": {
+        "sha256": "f8b68a416308c688cd77c5dd3324532bcac43e74012ce0e9381f10e2c1998451",
+        "frames": 1802,
+        "agreement": 0.9971,
+        "otherViews": 0.0352
+      },
+      "trace": {
+        "src": "/art/traces/12-light-df6d634139797dd8.webp",
+        "sha256": "df6d634139797dd86259c601b27bd70d6f680b4163bf72c5a179a922a38b0065",
+        "bytes": 11220,
+        "agreement": 0.9994,
+        "otherViews": 0.1832
+      }
+    },
+    {
+      "id": 13,
+      "seed": "0x8b834c15a096e3e2ba8ecaea21627117e104bb37f844f69648c0fdf9406d3457",
+      "traitsSha256": "329b857d6abfe9bb23cf8af75b26b79720ec31db4a0874bd1cf59d4d4080584e",
+      "projection": "position",
+      "symmetry": "mirror_x",
+      "stack": "harmonic_weave+orbit_ribbons@0.46",
+      "preferredStack": "harmonic_weave+orbit_ribbons@0.46",
+      "wildcard": false,
+      "width": 3456,
+      "height": 2234,
+      "view": {
+        "candidate": 2,
+        "triple": ["0.7421001016970242", "0.24419375278572578", "0.8433060352505896"],
+        "scores": [
+          "0.8462995494901707",
+          "0.848530998592899",
+          "0.9506026368761171",
+          "0.789268949754947"
+        ]
+      },
+      "velocityScale": "1",
+      "drift": {
+        "scale": "1.2082201781504174",
+        "arcFraction": "1.0759628282239766",
+        "eccentricity": "0.45477140696223384",
+        "inclination": "2.3397757453128762",
+        "ascendingNode": "4.156449292397041",
+        "argumentOfPeriapsis": "4.563694213868833",
+        "initialMeanAnomaly": "1.6639765824307675",
+        "semiMajor": "207.32796823884559",
+        "semiMinor": "184.64798877772427"
+      },
+      "box": {
+        "minX": "-504.4950844794068",
+        "maxX": "308.56012759070563",
+        "minY": "-244.4247208686792",
+        "maxY": "281.14395498914234",
+        "width": "813.0552120701125",
+        "height": "525.5686758578215"
+      },
+      "film": {
+        "sha256": "98938dca717f0fb873914b8dfca98b22466a6af6abf7f5e559e4d18331fad9f7",
+        "frames": 1802,
+        "agreement": 0.8677,
+        "otherViews": 0.0718
+      },
+      "trace": {
+        "src": "/art/traces/13-light-dbdd74fdb22753e1.webp",
+        "sha256": "dbdd74fdb22753e1564dd35cfa898affdcb3a3a519c90121933b289b9460ab9c",
+        "bytes": 26050,
+        "agreement": 0.9052,
+        "otherViews": 0.3601
+      }
+    },
+    {
+      "id": 14,
+      "seed": "0x18952be1a43822726d7920df20bc2e1a2be06c1f907a0dc80e7469e50be3ce4b",
+      "traitsSha256": "5f624e6840bec83adf8d05693acac926632186556990846feeccbae07fbbddf0",
+      "projection": "position",
+      "symmetry": "none",
+      "stack": "time_chords+harmonic_weave@0.24",
+      "preferredStack": "time_chords+spokes@0.37",
+      "wildcard": false,
+      "width": 3456,
+      "height": 2234,
+      "view": {
+        "candidate": 3,
+        "triple": ["0.8714631589555861", "0.6894855552003882", "0.48185023259650167"],
+        "scores": ["0.9540591621934156", "0.8023065818053184", "0.8894973429447801", "1"]
+      },
+      "velocityScale": "1",
+      "drift": {
+        "scale": "1.1041738327638186",
+        "arcFraction": "0.40203266520847325",
+        "eccentricity": "0.44444867339554706",
+        "inclination": "2.0889081070540625",
+        "ascendingNode": "3.604778810606787",
+        "argumentOfPeriapsis": "3.7965444091337806",
+        "initialMeanAnomaly": "3.128878298259478",
+        "semiMajor": "183.24514234621319",
+        "semiMinor": "164.15178982451002"
+      },
+      "box": {
+        "minX": "-368.75747678320977",
+        "maxX": "181.94674135737037",
+        "minY": "-95.08401479578036",
+        "maxY": "260.8978206573608",
+        "width": "550.7042181405801",
+        "height": "355.9818354531412"
+      },
+      "film": {
+        "sha256": "ca5c80372a84d04dd798f5bd5d00b56ac36820009f144faa556a6f75b88efc03",
+        "frames": 1802,
+        "agreement": 0.5654,
+        "otherViews": 0.0368
+      },
+      "trace": {
+        "src": "/art/traces/14-light-1e83e36fdeef59d1.webp",
+        "sha256": "1e83e36fdeef59d1ba0cfacca6190b97ebd8ed27daf89e170a19e5dd22f27902",
+        "bytes": 9188,
+        "agreement": 0.6075,
+        "otherViews": 0.1574
+      }
+    },
+    {
+      "id": 15,
+      "seed": "0x7f5cf3453c81fc1b11767f9c3495712ff3962f3e6f1902c2e2768c679cb5eb01",
+      "traitsSha256": "18d10770e964d8f227a693d3314e1a2f9054ca42ecb3b73e2cfe300e9f3366aa",
+      "projection": "hodograph",
+      "symmetry": "dih3",
+      "stack": "time_chords+nebula_veil@0.18",
+      "preferredStack": "time_chords+nebula_veil@0.18",
+      "wildcard": false,
+      "width": 3456,
+      "height": 2234,
+      "view": {
+        "candidate": 1,
+        "triple": ["0.004492652599482127", "0.5303378866710284", "0.648568087829595"],
+        "scores": [
+          "0.9513823085646679",
+          "0.9534501703341465",
+          "0.9140966890460693",
+          "0.9458845362067718"
+        ]
+      },
+      "velocityScale": "21.382457099177014",
+      "drift": {
+        "scale": "0.883691946680989",
+        "arcFraction": "1.3241887410322628",
+        "eccentricity": "0.43079895558010173",
+        "inclination": "1.2434875714471914",
+        "ascendingNode": "3.7919065751219265",
+        "argumentOfPeriapsis": "5.14572800546158",
+        "initialMeanAnomaly": "-2.649663332904143",
+        "semiMajor": "197.02033980179448",
+        "semiMinor": "177.80059711356427"
+      },
+      "box": {
+        "minX": "-397.26533582470597",
+        "maxX": "448.30874704216535",
+        "minY": "-214.77362659625598",
+        "maxY": "331.8156387754426",
+        "width": "845.5740828668713",
+        "height": "546.5892653716986"
+      },
+      "film": {
+        "sha256": "bb0f3e8a3d5f4057004843dd1846377d08823d96ae069d5025e107c318a489fa",
+        "frames": 1802,
+        "agreement": 0.4945,
+        "otherViews": 0.0305
+      },
+      "trace": {
+        "src": "/art/traces/15-light-b19e78a166730ab9.webp",
+        "sha256": "b19e78a166730ab91937c8a22fc3748402397643a6386aaef706569f0400acb3",
+        "bytes": 11378,
+        "agreement": 0.7177,
+        "otherViews": 0.1059
+      }
+    },
+    {
+      "id": 16,
+      "seed": "0xf36f93da75d41f35844da6b6169ba99088ef0c8d3d1990beea4960a1b23c25db",
+      "traitsSha256": "8dfc2580756737b3693cf55bd18c262e8486f9fc3d6dfa8dad0a37c52fe19a51",
+      "projection": "position",
+      "symmetry": "none",
+      "stack": "orbit_ribbons",
+      "preferredStack": "orbit_ribbons",
+      "wildcard": false,
+      "width": 3456,
+      "height": 2234,
+      "view": {
+        "candidate": 2,
+        "triple": ["0.43722538337101974", "0.4170615854493344", "0.47760584250253907"],
+        "scores": [
+          "0.9817398086348088",
+          "0.9141233620298271",
+          "0.9948680450076564",
+          "0.9748261753346762"
+        ]
+      },
+      "velocityScale": "1",
+      "drift": {
+        "scale": "0.9952237009786046",
+        "arcFraction": "0.6961730730657623",
+        "eccentricity": "0.44161427903390066",
+        "inclination": "2.027471303152844",
+        "ascendingNode": "4.316064523638437",
+        "argumentOfPeriapsis": "3.013880056536225",
+        "initialMeanAnomaly": "-0.565073972497919",
+        "semiMajor": "156.67235109812853",
+        "semiMinor": "140.56721821011047"
+      },
+      "box": {
+        "minX": "-516.8608278331902",
+        "maxX": "478.5506260406323",
+        "minY": "-392.6720897985793",
+        "maxY": "250.7738557899969",
+        "width": "995.4114538738226",
+        "height": "643.4459455885763"
+      },
+      "film": {
+        "sha256": "3cb65671cc80bc5abb4b05ee7eacdf91999a9f3102a7c86aa5c92579334d42f9",
+        "frames": 1802,
+        "agreement": 0.9096,
+        "otherViews": 0.0213
+      },
+      "trace": {
+        "src": "/art/traces/16-light-1ae876940769d221.webp",
+        "sha256": "1ae876940769d221af4887ef155e51cf6aea92ee41f4326e992aae6ccca32ddc",
+        "bytes": 4940,
+        "agreement": 0.911,
+        "otherViews": 0.0739
+      }
+    },
+    {
+      "id": 17,
+      "seed": "0x521f97cd91656a41eebd88c365fa81626ca6d8ccf05e6c19c1cd9aba80784382",
+      "traitsSha256": "541f062ff5f3242cf6cff9cb21267c92d1949596a14ee22f787353e2f1311498",
+      "projection": "position",
+      "symmetry": "none",
+      "stack": "orbit_ribbons+harmonic_weave@0.34",
+      "preferredStack": "orbit_ribbons+harmonic_weave@0.34",
+      "wildcard": false,
+      "width": 3456,
+      "height": 2234,
+      "view": {
+        "candidate": 2,
+        "triple": ["0.03242631269562773", "0.8896985943671227", "0.7643497113428129"],
+        "scores": [
+          "0.7138067777622579",
+          "0.7634931011839278",
+          "0.8915011466617211",
+          "0.7372413396269786"
+        ]
+      },
+      "velocityScale": "1",
+      "drift": {
+        "scale": "1.0556609713003013",
+        "arcFraction": "0.6371161962414716",
+        "eccentricity": "0.412007690960194",
+        "inclination": "1.2066127025899795",
+        "ascendingNode": "3.477480043604148",
+        "argumentOfPeriapsis": "4.740373894339035",
+        "initialMeanAnomaly": "-1.9178181710844324",
+        "semiMajor": "205.93873327719623",
+        "semiMinor": "187.64733072336347"
+      },
+      "box": {
+        "minX": "-358.1181303125632",
+        "maxX": "370.4140862075463",
+        "minY": "-288.68233837501595",
+        "maxY": "182.24965575285572",
+        "width": "728.5322165201095",
+        "height": "470.9319941278717"
+      },
+      "film": {
+        "sha256": "5d4b9473ac77e7e696e39b49b23a63ba95f543c9ad7fbb29b0c5e947ef922d33",
+        "frames": 1802,
+        "agreement": 0.9346,
+        "otherViews": 0.0095
+      },
+      "trace": {
+        "src": "/art/traces/17-light-7b2fdc10af356745.webp",
+        "sha256": "7b2fdc10af356745c345bc53577818c8585dd713b73a3ffc1ec5a0b01a4f9462",
+        "bytes": 6664,
+        "agreement": 0.9611,
+        "otherViews": 0.041
+      }
+    },
+    {
+      "id": 18,
+      "seed": "0xb7bd8fb366c9ae47dab5fa448153dd537098743a48fe33af35de8ddd4d584c25",
+      "traitsSha256": "c4cadae1162d6b9efd8e9cc3675209bae5523121d01a8bfb530db96be7732d5d",
+      "projection": "position",
+      "symmetry": "none",
+      "stack": "orbit_ribbons+harmonic_weave@0.07",
+      "preferredStack": "orbit_ribbons+harmonic_weave@0.07",
+      "wildcard": false,
+      "width": 3456,
+      "height": 2234,
+      "view": {
+        "candidate": 3,
+        "triple": ["0.23912128364664323", "0.355604909000685", "0.4711132461036646"],
+        "scores": ["0.9612425235640221", "0.9871813919785882", "0.9171189547732503", "1"]
+      },
+      "velocityScale": "1",
+      "drift": {
+        "scale": "0.9379766804317573",
+        "arcFraction": "1.1493408009849846",
+        "eccentricity": "0.47378411131774933",
+        "inclination": "3.027641248629542",
+        "ascendingNode": "3.6013170319678838",
+        "argumentOfPeriapsis": "4.217105113582187",
+        "initialMeanAnomaly": "2.5604930086578452",
+        "semiMajor": "172.3710467325655",
+        "semiMinor": "151.79701536784324"
+      },
+      "box": {
+        "minX": "-513.4114642695522",
+        "maxX": "348.0018650941505",
+        "minY": "-177.77678376150288",
+        "maxY": "379.05116120334435",
+        "width": "861.4133293637028",
+        "height": "556.8279449648472"
+      },
+      "film": {
+        "sha256": "f4621ea5d9fd7470e898ac19f733549a6b5bb550c596156d11610d81c934d61e",
+        "frames": 1802,
+        "agreement": 0.744,
+        "otherViews": 0.0101
+      },
+      "trace": {
+        "src": "/art/traces/18-light-72057ad08c531c56.webp",
+        "sha256": "72057ad08c531c56563576c27c76c20d2bb3f366fc9ad56444634de0a64b4f9a",
+        "bytes": 4500,
+        "agreement": 0.7782,
+        "otherViews": 0.038
+      }
+    },
+    {
+      "id": 19,
+      "seed": "0x4c7dc283fabb2c4a4971b65cd7806b4e48d76440e3fbee3e4eef58d2269470e2",
+      "traitsSha256": "626970472498bc8028ad2671083b8f9b1a96ce24f06ba0d21d22e1c958d0448b",
+      "projection": "cross_braid",
+      "symmetry": "none",
+      "stack": "tangent_caustics",
+      "preferredStack": "tangent_caustics",
+      "wildcard": false,
+      "width": 3456,
+      "height": 2234,
+      "view": {
+        "candidate": 0,
+        "triple": ["0.25019441404350407", "0.2738886267215951", "0.3849347033466398"],
+        "scores": [
+          "0.9197790376330336",
+          "0.8814377295216894",
+          "0.9094014934029409",
+          "0.8494529239037707"
+        ]
+      },
+      "velocityScale": "6.497433902348513",
+      "drift": {
+        "scale": "1.2226647450359347",
+        "arcFraction": "0.17383765701659235",
+        "eccentricity": "0.40943404888983237",
+        "inclination": "1.858102754503511",
+        "ascendingNode": "3.2986944261424203",
+        "argumentOfPeriapsis": "3.415654497336666",
+        "initialMeanAnomaly": "-0.5879560162878219",
+        "semiMajor": "263.17245626899296",
+        "semiMinor": "240.10268433147982"
+      },
+      "box": {
+        "minX": "-270.0592234229428",
+        "maxX": "508.3816227196315",
+        "minY": "-207.90040999676305",
+        "maxY": "295.2931230710931",
+        "width": "778.4408461425743",
+        "height": "503.19353306785615"
+      },
+      "film": {
+        "sha256": "04446cd2f0226636536c4aa8738357b46633c04100e1137ba7d4aa44ad9d0e10",
+        "frames": 1802,
+        "agreement": 0.9385,
+        "otherViews": 0.0028
+      },
+      "trace": {
+        "src": "/art/traces/19-light-c101c8c769a6122a.webp",
+        "sha256": "c101c8c769a6122aa7c8e18e47c252d221a89e5cc460c02569b34d5b6e3d24ea",
+        "bytes": 4798,
+        "agreement": 0.9367,
+        "otherViews": 0.0163
+      }
+    },
+    {
+      "id": 20,
+      "seed": "0xf4bcfd7913601331aff2ff6f771f05806cd4983381a217fc02b7e4f2c497f788",
+      "traitsSha256": "ad439fd61bb227d2e6807cff9cc9d394166dc0bc365a8f6e0c642ab8fa044d43",
+      "projection": "position",
+      "symmetry": "none",
+      "stack": "time_chords",
+      "preferredStack": "time_chords",
+      "wildcard": false,
+      "width": 3456,
+      "height": 2234,
+      "view": {
+        "candidate": 0,
+        "triple": ["0.46259690390297176", "0.3830941549469275", "0.025997980701934636"],
+        "scores": [
+          "0.9368713733016152",
+          "0.9282762263199752",
+          "0.9023340185313949",
+          "0.8443025924390977"
+        ]
+      },
+      "velocityScale": "1",
+      "drift": {
+        "scale": "0.9822504612422567",
+        "arcFraction": "0.9687301739643004",
+        "eccentricity": "0.47384520513155926",
+        "inclination": "2.5672003110984316",
+        "ascendingNode": "5.81038258213573",
+        "argumentOfPeriapsis": "2.40914748964496",
+        "initialMeanAnomaly": "-0.10064516490749575",
+        "semiMajor": "210.4584416216846",
+        "semiMinor": "185.33141985174964"
+      },
+      "box": {
+        "minX": "-368.2026098836798",
+        "maxX": "543.5285829201689",
+        "minY": "-279.5046256087267",
+        "maxY": "309.84939196181676",
+        "width": "911.7311928038488",
+        "height": "589.3540175705434"
+      },
+      "film": {
+        "sha256": "881a39712d88ffff9945c2f61f912e799d6e255aea4e3a00c2bdbff4fea8e1fc",
+        "frames": 1802,
+        "agreement": 0.9281,
+        "otherViews": 0.0152
+      },
+      "trace": {
+        "src": "/art/traces/20-light-fe0bdc4207db81e8.webp",
+        "sha256": "fe0bdc4207db81e83faed8b893b10965eeb3357f1b9d9d8a9d39e57ad3e29ad0",
+        "bytes": 4998,
+        "agreement": 0.9555,
+        "otherViews": 0.0613
+      }
+    },
+    {
+      "id": 21,
+      "seed": "0x37c73b71ae24c2a263b46ca3399d91b4de4fe97f1eb4dfe608475101f69e590e",
+      "traitsSha256": "985c767ff54f155222248d50f85fd69fe1fc3a875f53919dbc004b80a48664ef",
+      "projection": "position",
+      "symmetry": "none",
+      "stack": "time_chords+harmonic_weave@0.24",
+      "preferredStack": "orbit_ribbons+nebula_veil@0.42+harmonic_weave@0.11",
+      "wildcard": false,
+      "width": 3456,
+      "height": 2234,
+      "view": {
+        "candidate": 2,
+        "triple": ["0.9277956855486138", "0.29789349178369384", "0.5183484400037459"],
+        "scores": [
+          "0.9340344668872685",
+          "0.9396207999047071",
+          "0.9551105348451951",
+          "0.7992049539574659"
+        ]
+      },
+      "velocityScale": "1",
+      "drift": {
+        "scale": "0.9597075307726347",
+        "arcFraction": "1.0672969857324404",
+        "eccentricity": "0.4227359612893393",
+        "inclination": "1.6376412594627674",
+        "ascendingNode": "4.557163305708647",
+        "argumentOfPeriapsis": "0.09666865373929209",
+        "initialMeanAnomaly": "-0.4478160843435468",
+        "semiMajor": "144.76175955055083",
+        "semiMinor": "131.19076346528308"
+      },
+      "box": {
+        "minX": "-476.80364398165545",
+        "maxX": "485.9897246196256",
+        "minY": "-304.73409461366344",
+        "maxY": "317.6271280296415",
+        "width": "962.793368601281",
+        "height": "622.3612226433049"
+      },
+      "film": {
+        "sha256": "6f330528dbb276e6128af532ca4338d115d529a05e177d4cd7442c192199e913",
+        "frames": 1802,
+        "agreement": 0.9588,
+        "otherViews": 0.0268
+      },
+      "trace": {
+        "src": "/art/traces/21-light-0ce1c793d99b411c.webp",
+        "sha256": "0ce1c793d99b411cd7cdc4160084a3b7bf493994ec979b7af008a4981da0ad2f",
+        "bytes": 8706,
+        "agreement": 0.9927,
+        "otherViews": 0.1167
+      }
+    },
+    {
+      "id": 22,
+      "seed": "0x003108837490f9fd840a44e70590173c7f95340872f60eaa13482b4ecb8fb0a8",
+      "traitsSha256": "7263806f1236e44069c123af2344a050bd3e7bf3e157945e27292be6be78bb90",
+      "projection": "position",
+      "symmetry": "none",
+      "stack": "time_chords+nebula_veil@0.25",
+      "preferredStack": "time_chords+nebula_veil@0.25",
+      "wildcard": false,
+      "width": 3456,
+      "height": 2234,
+      "view": {
+        "candidate": 1,
+        "triple": ["0.6794654613128726", "0.10755962217242386", "0.6505590354769594"],
+        "scores": [
+          "0.8576026048731998",
+          "0.8601877815743323",
+          "0.8578130784260203",
+          "0.8203380241255598"
+        ]
+      },
+      "velocityScale": "1",
+      "drift": {
+        "scale": "1.1546712582629086",
+        "arcFraction": "0.5034775834136945",
+        "eccentricity": "0.4501908728289097",
+        "inclination": "1.4123314526808333",
+        "ascendingNode": "3.4229849302733655",
+        "argumentOfPeriapsis": "0.15732469316205283",
+        "initialMeanAnomaly": "1.8985284175823418",
+        "semiMajor": "152.223681552164",
+        "semiMinor": "135.92544938248216"
+      },
+      "box": {
+        "minX": "-67.2363228174243",
+        "maxX": "381.0923564563162",
+        "minY": "-101.2109338266805",
+        "maxY": "188.59412100478255",
+        "width": "448.32867927374053",
+        "height": "289.80505483146305"
+      },
+      "film": {
+        "sha256": "4fdc0e4cfce98797e5d94331899cd1e6bdfd8312b9663fb3865bf09bc58c1afc",
+        "frames": 1802,
+        "agreement": 0.7238,
+        "otherViews": 0.007
+      },
+      "trace": {
+        "src": "/art/traces/22-light-82420153bb60c342.webp",
+        "sha256": "82420153bb60c342a52b96db8f72e61b263eed705c748ec6e2d835793626b647",
+        "bytes": 9180,
+        "agreement": 0.7377,
+        "otherViews": 0.0371
+      }
+    },
+    {
+      "id": 23,
+      "seed": "0x17d61f1c00e5d16c399a8e341e9feaea32b275e5426a4375394e74cc855affcc",
+      "traitsSha256": "a0c4aea15361edfadfc20f45acfa456eb89137800be510a24088d3b22269afec",
+      "projection": "position",
+      "symmetry": "none",
+      "stack": "orbit_ribbons",
+      "preferredStack": "orbit_ribbons",
+      "wildcard": false,
+      "width": 3456,
+      "height": 2234,
+      "view": {
+        "candidate": 1,
+        "triple": ["0.4483609302043743", "0.17215277615733265", "0.3590099562920312"],
+        "scores": [
+          "0.9369672225752924",
+          "0.9407767818578638",
+          "0.9219878301302269",
+          "0.9325664495797676"
+        ]
+      },
+      "velocityScale": "1",
+      "drift": {
+        "scale": "1.1421520212585938",
+        "arcFraction": "0.9419131893349798",
+        "eccentricity": "0.4397686570247632",
+        "inclination": "0.5256456936497202",
+        "ascendingNode": "1.8820846984733617",
+        "argumentOfPeriapsis": "0.7438949983670862",
+        "initialMeanAnomaly": "-0.1350758302263837",
+        "semiMajor": "195.19351482230155",
+        "semiMinor": "175.30546017516906"
+      },
+      "box": {
+        "minX": "-407.00012081492764",
+        "maxX": "604.9558564056895",
+        "minY": "-358.85301446478434",
+        "maxY": "295.2875101622002",
+        "width": "1011.9559772206171",
+        "height": "654.1405246269845"
+      },
+      "film": {
+        "sha256": "7403160ee1cee20dfafc8676605e65cccf3a3693b97f8ea6a4779bf69912257d",
+        "frames": 1802,
+        "agreement": 0.9878,
+        "otherViews": 0.0389
+      },
+      "trace": {
+        "src": "/art/traces/23-light-dcc89388004281a9.webp",
+        "sha256": "dcc89388004281a9f5eb575ded149dddbea5c68977f2bf3ab9c606bea1c6a13e",
+        "bytes": 5762,
+        "agreement": 0.9955,
+        "otherViews": 0.1336
+      }
+    },
+    {
+      "id": 24,
+      "seed": "0x5084a87375896c7103ba17b57264f20de35d9e6eb545314680ad5e074dfc33ad",
+      "traitsSha256": "47cb2c4717242aa78fa8899291557e9d702279d05840297bbe827a94eaeed179",
+      "projection": "position",
+      "symmetry": "none",
+      "stack": "orbit_ribbons",
+      "preferredStack": "orbit_ribbons",
+      "wildcard": false,
+      "width": 3456,
+      "height": 2234,
+      "view": {
+        "candidate": 1,
+        "triple": ["0.20899152118305764", "0.9023628731898251", "0.3335330802466202"],
+        "scores": [
+          "0.9186309510704458",
+          "0.9491262276163975",
+          "0.9337234481169959",
+          "0.9348100164166848"
+        ]
+      },
+      "velocityScale": "1",
+      "drift": {
+        "scale": "1.0968724397105023",
+        "arcFraction": "0.8991044588154553",
+        "eccentricity": "0.43287407307519266",
+        "inclination": "2.0975199465920915",
+        "ascendingNode": "0.9963792659458467",
+        "argumentOfPeriapsis": "0.04312888978426436",
+        "initialMeanAnomaly": "2.494776706181419",
+        "semiMajor": "190.00568040625998",
+        "semiMinor": "171.28145679372344"
+      },
+      "box": {
+        "minX": "-502.9044569219547",
+        "maxX": "415.09395711311106",
+        "minY": "-378.76806522796255",
+        "maxY": "214.63715958521365",
+        "width": "917.9984140350658",
+        "height": "593.4052248131762"
+      },
+      "film": {
+        "sha256": "675e3d7d27e5da50c1de757238cb5cf2395691553c3ab9a1073005c28a125353",
+        "frames": 1802,
+        "agreement": 0.9077,
+        "otherViews": 0.0581
+      },
+      "trace": {
+        "src": "/art/traces/24-light-069904775b99f7e4.webp",
+        "sha256": "069904775b99f7e4ca06f6f72b126f0fd3e2b957ff7dd3e193555d3c44d06f91",
+        "bytes": 8460,
+        "agreement": 0.9264,
+        "otherViews": 0.2
+      }
+    },
+    {
+      "id": 25,
+      "seed": "0x6b273359fbc21c34f58a546c86a88b21c2bd307797e3c4959c5eccc8e326e4fd",
+      "traitsSha256": "cbcf1144bee9a3d7f2ddb212e1e3dd557dfdb6cf0a784309c781b837742aa068",
+      "projection": "position",
+      "symmetry": "none",
+      "stack": "orbit_ribbons+stipple_constellation@0.11",
+      "preferredStack": "orbit_ribbons+stipple_constellation@0.11",
+      "wildcard": false,
+      "width": 3456,
+      "height": 2234,
+      "view": {
+        "candidate": 3,
+        "triple": ["0.806638059103154", "0.571965277209856", "0.39674081986035203"],
+        "scores": [
+          "0.9405499184449596",
+          "0.8915688151949264",
+          "0.8877339736595298",
+          "0.9435295119863888"
+        ]
+      },
+      "velocityScale": "1",
+      "drift": {
+        "scale": "0.8625584156366696",
+        "arcFraction": "0.21868014550090484",
+        "eccentricity": "0.418306817597273",
+        "inclination": "2.8745741247744703",
+        "ascendingNode": "5.42785061801812",
+        "argumentOfPeriapsis": "5.488464983815173",
+        "initialMeanAnomaly": "1.9418037357012112",
+        "semiMajor": "163.24152558617857",
+        "semiMinor": "148.27322269698035"
+      },
+      "box": {
+        "minX": "-494.8089539914797",
+        "maxX": "136.38863022170605",
+        "minY": "-225.8507346253282",
+        "maxY": "182.162981558774",
+        "width": "631.1975842131858",
+        "height": "408.0137161841022"
+      },
+      "film": {
+        "sha256": "2f4ca944bc14216e367c05145c5bbaf94ca70207421e229bb75f6f5c89704950",
+        "frames": 1802,
+        "agreement": 0.9784,
+        "otherViews": 0.0177
+      },
+      "trace": {
+        "src": "/art/traces/25-light-1ec36caac039281d.webp",
+        "sha256": "1ec36caac039281deda1093b23de90a1ff72a293c119e0a014065b6b9173e363",
+        "bytes": 18310,
+        "agreement": 0.9826,
+        "otherViews": 0.0856
+      }
+    },
+    {
+      "id": 26,
+      "seed": "0x882c7b9547f87eeb407f34b466c072265f4742e0cdb84bb990149fb0c16e4e9e",
+      "traitsSha256": "e8816b478c5c65496fee5b7d88ed0c73a84e3aaa873b53ef0beb77b634fc07c6",
+      "projection": "position",
+      "symmetry": "none",
+      "stack": "orbit_ribbons",
+      "preferredStack": "orbit_ribbons",
+      "wildcard": false,
+      "width": 3456,
+      "height": 2234,
+      "view": {
+        "candidate": 1,
+        "triple": ["0.03625672739226992", "0.927180520735401", "0.6464626462921557"],
+        "scores": [
+          "0.941866193643777",
+          "0.9969160843058097",
+          "0.9140122728346929",
+          "0.981963538660026"
+        ]
+      },
+      "velocityScale": "1",
+      "drift": {
+        "scale": "1.1779963827809528",
+        "arcFraction": "0.9637921292025674",
+        "eccentricity": "0.41389021166580103",
+        "inclination": "2.7229101227272836",
+        "ascendingNode": "3.6787186294368794",
+        "argumentOfPeriapsis": "2.531561133855714",
+        "initialMeanAnomaly": "-3.088096214125388",
+        "semiMajor": "225.29117937296095",
+        "semiMinor": "205.08859961049723"
+      },
+      "box": {
+        "minX": "-732.1535769716343",
+        "maxX": "557.3002861381765",
+        "minY": "-520.1654396098402",
+        "maxY": "313.3530587082494",
+        "width": "1289.4538631098108",
+        "height": "833.5184983180895"
+      },
+      "film": {
+        "sha256": "35297a87267ed4eb7c2e12021a10d4f60a58ff870b4b5ceef227ac3773402b62",
+        "frames": 1802,
+        "agreement": 0.9976,
+        "otherViews": 0.0415
+      },
+      "trace": {
+        "src": "/art/traces/26-light-e1cbd7768ed6a7da.webp",
+        "sha256": "e1cbd7768ed6a7da6e30a87eca2ae186071053a13846b98488b96c5c8d757a13",
+        "bytes": 4528,
+        "agreement": 0.9979,
+        "otherViews": 0.102
+      }
+    },
+    {
+      "id": 27,
+      "seed": "0xafc587b3c960ca50ba824520a3370fda7756be5f60ef6e06500fecf1ece4beb9",
+      "traitsSha256": "ee67b6dfd8be9bc5e9494d9e6f214a36eb6cdff59250eb5c68067df05ab64648",
+      "projection": "position",
+      "symmetry": "none",
+      "stack": "time_chords+harmonic_weave@0.24",
+      "preferredStack": "stipple_constellation",
+      "wildcard": true,
+      "width": 3456,
+      "height": 2234,
+      "view": {
+        "candidate": 2,
+        "triple": ["0.06792577322965235", "0.9919689115038055", "0.18882990082520099"],
+        "scores": [
+          "0.8355393174922325",
+          "0.804507446219566",
+          "0.9113861954531917",
+          "0.8205956496382101"
+        ]
+      },
+      "velocityScale": "1",
+      "drift": {
+        "scale": "1.0840621049905284",
+        "arcFraction": "0.6240530877205148",
+        "eccentricity": "0.4686968432338505",
+        "inclination": "1.5914912443758564",
+        "ascendingNode": "4.567568453095385",
+        "argumentOfPeriapsis": "5.663596759551729",
+        "initialMeanAnomaly": "2.4862980309829634",
+        "semiMajor": "169.42971633448207",
+        "semiMinor": "149.66727881812164"
+      },
+      "box": {
+        "minX": "-422.78405732713924",
+        "maxX": "454.8173237861562",
+        "minY": "-227.01038292950682",
+        "maxY": "340.28171354245563",
+        "width": "877.6013811132955",
+        "height": "567.2920964719624"
+      },
+      "film": {
+        "sha256": "06b98a1d9d1e99d15f2d20b0c42e4f7f66bed1a9e7414b414d9fbd7c9da79c96",
+        "frames": 1802,
+        "agreement": 0.4642,
+        "otherViews": 0.0318
+      },
+      "trace": {
+        "src": "/art/traces/27-light-4d9699702ae5189a.webp",
+        "sha256": "4d9699702ae5189ad87296d676662ba2cdc769f743e4443c32e5e8dea46e603c",
+        "bytes": 5886,
+        "agreement": 0.5943,
+        "otherViews": 0.0871
+      }
+    },
+    {
+      "id": 28,
+      "seed": "0xe1b2c47ad2308dbc6456a0995ec9a7572964bb4650e9f7034c427b1e4185d620",
+      "traitsSha256": "f41a746a6437deacd7ccf2cb896ce78a328680549d4dc9220d836b5324eb8544",
+      "projection": "position",
+      "symmetry": "none",
+      "stack": "time_chords+tangent_caustics@0.43",
+      "preferredStack": "time_chords+tangent_caustics@0.43",
+      "wildcard": false,
+      "width": 3456,
+      "height": 2234,
+      "view": {
+        "candidate": 2,
+        "triple": ["0.9020769219747331", "0.03812472123380136", "0.025195541106528788"],
+        "scores": [
+          "0.883338014229266",
+          "0.9308720508290387",
+          "0.9486507694000591",
+          "0.8912080327503074"
+        ]
+      },
+      "velocityScale": "1",
+      "drift": {
+        "scale": "1.2879424169686282",
+        "arcFraction": "0.3585648613781877",
+        "eccentricity": "0.42519493234206823",
+        "inclination": "0.5561898580953825",
+        "ascendingNode": "2.8637992377644452",
+        "argumentOfPeriapsis": "5.903901475615664",
+        "initialMeanAnomaly": "-0.06914374205937701",
+        "semiMajor": "257.0515677703278",
+        "semiMinor": "232.65783684467587"
+      },
+      "box": {
+        "minX": "-455.01186968981096",
+        "maxX": "426.3599405545097",
+        "minY": "-425.13738789512007",
+        "maxY": "144.59195935193216",
+        "width": "881.3718102443207",
+        "height": "569.7293472470523"
+      },
+      "film": {
+        "sha256": "e3123ab24fe733fd8726fd10e262f8d16e15985ca14b211451f49aaeb15d92c3",
+        "frames": 1802,
+        "agreement": 0.9628,
+        "otherViews": 0.0251
+      },
+      "trace": {
+        "src": "/art/traces/28-light-053a20952de2d2fd.webp",
+        "sha256": "053a20952de2d2fdbcba847065e2fe6faa5bd59856603a46737b82ca85e2493a",
+        "bytes": 6816,
+        "agreement": 0.968,
+        "otherViews": 0.0913
+      }
+    },
+    {
+      "id": 29,
+      "seed": "0xb0135869a031d80d579dead0d010120b12fd1c334be85174e0474cd359bbdc95",
+      "traitsSha256": "3b4e0860831fff4e85989249db7f51bf944d4d7bc5aba07863073d85838bcdd2",
+      "projection": "position",
+      "symmetry": "none",
+      "stack": "orbit_ribbons+harmonic_weave@0.29",
+      "preferredStack": "orbit_ribbons+triangle_web@0.46",
+      "wildcard": false,
+      "width": 3456,
+      "height": 2234,
+      "view": {
+        "candidate": 1,
+        "triple": ["0.442188358982893", "0.3234784237926577", "0.5815753069650473"],
+        "scores": ["0.9997877035371829", "1", "1", "0.973134395632269"]
+      },
+      "velocityScale": "1",
+      "drift": {
+        "scale": "1.1954060636825914",
+        "arcFraction": "1.08749657500916",
+        "eccentricity": "0.420130151926435",
+        "inclination": "0.5483437513195369",
+        "ascendingNode": "2.59672596413592",
+        "argumentOfPeriapsis": "0.7712276059513455",
+        "initialMeanAnomaly": "-0.48139540019613536",
+        "semiMajor": "213.77758101028112",
+        "semiMinor": "193.99542863729368"
+      },
+      "box": {
+        "minX": "-477.1143989130515",
+        "maxX": "525.9758192537527",
+        "minY": "-301.0357987472608",
+        "maxY": "347.373792509869",
+        "width": "1003.0902181668042",
+        "height": "648.4095912571298"
+      },
+      "film": {
+        "sha256": "f348c4841a9b7b9c22cbac9183ecbe6dd6a2b19f88d55961c26f5aa70fa815a8",
+        "frames": 1802,
+        "agreement": 0.997,
+        "otherViews": 0.0255
+      },
+      "trace": {
+        "src": "/art/traces/29-light-14c69a4976b3d819.webp",
+        "sha256": "14c69a4976b3d81987d5e0c6d36b6e7471e2d239b1c625b4b084398400711851",
+        "bytes": 6082,
+        "agreement": 0.9975,
+        "otherViews": 0.126
+      }
+    },
+    {
+      "id": 30,
+      "seed": "0xf4362bafb766d5a5dfc78b0fcd91607544a4bb6a540ca076f55dd74643a453c2",
+      "traitsSha256": "0defbc3700e100953f6737da25fbcc7fa49858a94e494995b9ba979c06d33284",
+      "projection": "position",
+      "symmetry": "none",
+      "stack": "tangent_caustics+nebula_veil@0.21",
+      "preferredStack": "tangent_caustics+nebula_veil@0.21",
+      "wildcard": false,
+      "width": 3456,
+      "height": 2234,
+      "view": {
+        "candidate": 1,
+        "triple": ["0.8459186032355432", "0.3794024246811598", "0.868609840503388"],
+        "scores": [
+          "0.8566995829307689",
+          "0.9914372945504185",
+          "0.9072896440678704",
+          "0.8649910968688251"
+        ]
+      },
+      "velocityScale": "1",
+      "drift": {
+        "scale": "1.1324473454688522",
+        "arcFraction": "0.40986813330158745",
+        "eccentricity": "0.49215904321227216",
+        "inclination": "1.3884022205790618",
+        "ascendingNode": "5.1507748336041095",
+        "argumentOfPeriapsis": "3.8775482938322345",
+        "initialMeanAnomaly": "0.9149221460795154",
+        "semiMajor": "266.7560140497454",
+        "semiMinor": "232.21252386193976"
+      },
+      "box": {
+        "minX": "-105.52123775878687",
+        "maxX": "451.9963040600825",
+        "minY": "-441.1699035908514",
+        "maxY": "-80.78385369983455",
+        "width": "557.5175418188694",
+        "height": "360.38604989101685"
+      },
+      "film": {
+        "sha256": "7ff1d822981da6af15daad0c880a8541a2ef5fc41ae7591a4a5fb37cdeb9eced",
+        "frames": 1802,
+        "agreement": 0.9515,
+        "otherViews": 0.0003
+      },
+      "trace": {
+        "src": "/art/traces/30-light-7d8a2e9c71d9718e.webp",
+        "sha256": "7d8a2e9c71d9718e398e53031907df76b31008b603f8ee66622752a7d760517b",
+        "bytes": 6484,
+        "agreement": 0.9522,
+        "otherViews": 0.0113
+      }
+    },
+    {
+      "id": 31,
+      "seed": "0x4a0d5b57e13cf40c56cddb4ee2c10f50ab7aff755e24c61a687855663713f5b5",
+      "traitsSha256": "0bb9fdac8f267ba2ac6695e439d7d5854d3ed00d2ad1e802f83bcd0cffcc6e95",
+      "projection": "position",
+      "symmetry": "none",
+      "stack": "orbit_ribbons+harmonic_weave@0.29",
+      "preferredStack": "triangle_web+time_chords@0.12",
+      "wildcard": true,
+      "width": 3456,
+      "height": 2234,
+      "view": {
+        "candidate": 1,
+        "triple": ["0.27538628230496803", "0.36498901094378267", "0.19194245061641"],
+        "scores": [
+          "0.8132298001600491",
+          "0.8283714352728794",
+          "0.7515273753193121",
+          "0.6982409438734729"
+        ]
+      },
+      "velocityScale": "1",
+      "drift": {
+        "scale": "0.8907799580148502",
+        "arcFraction": "0.10951291578983965",
+        "eccentricity": "0.4007290776873997",
+        "inclination": "1.24547477454915",
+        "ascendingNode": "1.0314902958229148",
+        "argumentOfPeriapsis": "3.163435785380056",
+        "initialMeanAnomaly": "-1.7013974558236866",
+        "semiMajor": "142.0351569981681",
+        "semiMinor": "130.132127646569"
+      },
+      "box": {
+        "minX": "-311.43276001984054",
+        "maxX": "251.77371617243406",
+        "minY": "-102.16286651671672",
+        "maxY": "261.90057903118304",
+        "width": "563.2064761922746",
+        "height": "364.06344554789973"
+      },
+      "film": {
+        "sha256": "5eacf3b911a586066b93cc4b4b33bc866d43d28c1e4511a3781061795000ab94",
+        "frames": 1802,
+        "agreement": 0.9866,
+        "otherViews": 0.008
+      },
+      "trace": {
+        "src": "/art/traces/31-light-7068e866f5002e68.webp",
+        "sha256": "7068e866f5002e68efbfd885edeb74707deeb8f7ed0f9f08f0637426ee9a42bb",
+        "bytes": 22322,
+        "agreement": 0.9885,
+        "otherViews": 0.0647
+      }
+    },
+    {
+      "id": 32,
+      "seed": "0x6dd498f93b24ea9493acfed9a8e4069a5b3e6e7c3b426fe43de472010c2636a6",
+      "traitsSha256": "fb6498d00f3b6184edcc82103b36142067c81eaefd7c7a6a46490c06318b91da",
+      "projection": "position",
+      "symmetry": "none",
+      "stack": "stipple_constellation+orbit_ribbons@0.12",
+      "preferredStack": "stipple_constellation+orbit_ribbons@0.12",
+      "wildcard": false,
+      "width": 3456,
+      "height": 2234,
+      "view": {
+        "candidate": 1,
+        "triple": ["0.08761208281298878", "0.44391575276858775", "0.19191482844678812"],
+        "scores": ["0.9957637354697214", "1", "1", "1"]
+      },
+      "velocityScale": "1",
+      "drift": {
+        "scale": "0.9244511159440509",
+        "arcFraction": "0.6495483331950587",
+        "eccentricity": "0.45054403173455826",
+        "inclination": "1.2012387249668224",
+        "ascendingNode": "3.649454795023216",
+        "argumentOfPeriapsis": "6.0800973752039615",
+        "initialMeanAnomaly": "-1.7007558044756983",
+        "semiMajor": "124.22946870428486",
+        "semiMinor": "110.90638091320446"
+      },
+      "box": {
+        "minX": "-198.46688793621772",
+        "maxX": "346.66122937190596",
+        "minY": "-169.429907961059",
+        "maxY": "182.94746879425009",
+        "width": "545.1281173081237",
+        "height": "352.3773767553091"
+      },
+      "film": {
+        "sha256": "7b9af6b0afa6f9957c6cad1bd7c2d65501fb7f3fd6ff768d0f6ab6977a6430fc",
+        "frames": 1802,
+        "agreement": 0.9725,
+        "otherViews": 0.0133
+      },
+      "trace": {
+        "src": "/art/traces/32-light-611bab67bc232787.webp",
+        "sha256": "611bab67bc2327870026476b962329f8bf700ee765eac303fcbf578a7e1a2259",
+        "bytes": 22950,
+        "agreement": 0.9819,
+        "otherViews": 0.1334
+      }
+    },
+    {
+      "id": 33,
+      "seed": "0xfecd05a4e7f537281200ed720a095da2d5d4db14867a37d2627ebdaa2d2ad1e6",
+      "traitsSha256": "06b86c026a9e73bcfccc330699036be75ad213c5791e1b369b8900e955341b18",
+      "projection": "hodograph",
+      "symmetry": "none",
+      "stack": "orbit_ribbons+time_chords@0.36",
+      "preferredStack": "orbit_ribbons+time_chords@0.36",
+      "wildcard": false,
+      "width": 3456,
+      "height": 2234,
+      "view": {
+        "candidate": 0,
+        "triple": ["0.9143251164335848", "0.36910142953234965", "0.5270725993559622"],
+        "scores": [
+          "0.9341564076968903",
+          "0.8728368763442962",
+          "0.9024536852952152",
+          "0.8728764256641619"
+        ]
+      },
+      "velocityScale": "43.1951370796163",
+      "drift": {
+        "scale": "1.0644002788373241",
+        "arcFraction": "0.5345911524160067",
+        "eccentricity": "0.46485104142514544",
+        "inclination": "1.3728337108951583",
+        "ascendingNode": "3.152825754038025",
+        "argumentOfPeriapsis": "2.694638391778494",
+        "initialMeanAnomaly": "-2.7935929817623544",
+        "semiMajor": "192.43608248722632",
+        "semiMinor": "170.38077194168608"
+      },
+      "box": {
+        "minX": "-434.5654894308835",
+        "maxX": "268.4114810836735",
+        "minY": "-228.3119659128773",
+        "maxY": "226.10080958756262",
+        "width": "702.976970514557",
+        "height": "454.4127755004399"
+      },
+      "film": {
+        "sha256": "bce86307601ea7d90f723f3e6874eb22cb365ad684056950f662f451c981d58c",
+        "frames": 1802,
+        "agreement": 0.8057,
+        "otherViews": 0.0273
+      },
+      "trace": {
+        "src": "/art/traces/33-light-1c2878a220f3645c.webp",
+        "sha256": "1c2878a220f3645ce856005e0d551c88887493a690fc7afefec490a1164e347c",
+        "bytes": 17518,
+        "agreement": 0.8488,
+        "otherViews": 0.1206
+      }
+    },
+    {
+      "id": 34,
+      "seed": "0x5bbb0a5a29213be7a45e008e31a64e4f3d5e5d84909c6e4bfc90cab43eb14e95",
+      "traitsSha256": "26c10373690f1f8afd9661771b3e233796ed948707ec504fee49b566f7a1869e",
+      "projection": "position",
+      "symmetry": "none",
+      "stack": "time_chords+stipple_constellation@0.38+nebula_veil@0.05",
+      "preferredStack": "time_chords+stipple_constellation@0.38+nebula_veil@0.05",
+      "wildcard": false,
+      "width": 3456,
+      "height": 2234,
+      "view": {
+        "candidate": 2,
+        "triple": ["0.46329312613977663", "0.6294512212452564", "0.9281286590901324"],
+        "scores": [
+          "0.9360366407681682",
+          "0.9063890367198653",
+          "0.9372536317281884",
+          "0.8838799861055346"
+        ]
+      },
+      "velocityScale": "1",
+      "drift": {
+        "scale": "0.9279540792745511",
+        "arcFraction": "0.3496901806660774",
+        "eccentricity": "0.4939196321049769",
+        "inclination": "0.3575266154154103",
+        "ascendingNode": "3.673036281310319",
+        "argumentOfPeriapsis": "4.765693648589784",
+        "initialMeanAnomaly": "2.795883740002674",
+        "semiMajor": "172.6498699860607",
+        "semiMinor": "150.1203671982206"
+      },
+      "box": {
+        "minX": "-290.10920693102236",
+        "maxX": "454.7489432293765",
+        "minY": "-383.60512871971457",
+        "maxY": "97.88014542910807",
+        "width": "744.8581501603988",
+        "height": "481.48527414882267"
+      },
+      "film": {
+        "sha256": "465226e2ceb64f7ac07517b14a60c4c5df26b37ad5db14b99c725fcb4fc6c669",
+        "frames": 1802,
+        "agreement": 0.9078,
+        "otherViews": 0.0056
+      },
+      "trace": {
+        "src": "/art/traces/34-light-929135b47023d71f.webp",
+        "sha256": "929135b47023d71f57ee714bfb8e9281e69efe8fe7c1bf8924ad1c631799b3a0",
+        "bytes": 7918,
+        "agreement": 0.9283,
+        "otherViews": 0.0289
+      }
+    },
+    {
+      "id": 35,
+      "seed": "0xf5a6f1d364517c39dd5f1d0fdbeeb0cfb7a73a26e5e17a17f91e7b7f16e0ef36",
+      "traitsSha256": "ccdf317cfbb2d6c6037a2243b183f12477d8bfb97c3ec461d0920dea110d62b6",
+      "projection": "cross_braid",
+      "symmetry": "none",
+      "stack": "time_chords+harmonic_weave@0.24",
+      "preferredStack": "spokes+time_chords@0.56",
+      "wildcard": true,
+      "width": 3456,
+      "height": 2234,
+      "view": {
+        "candidate": 2,
+        "triple": ["0.33033304309161515", "0.9642175536231854", "0.06076162754272487"],
+        "scores": [
+          "0.8813914613502175",
+          "0.8367646727087141",
+          "0.9866760649932033",
+          "0.9749647490002005"
+        ]
+      },
+      "velocityScale": "4.425447763016405",
+      "drift": {
+        "scale": "1.161259099561276",
+        "arcFraction": "0.3613969566678373",
+        "eccentricity": "0.46865383488344453",
+        "inclination": "0.22952001042210096",
+        "ascendingNode": "0.05747691602227091",
+        "argumentOfPeriapsis": "5.329402378961325",
+        "initialMeanAnomaly": "-2.679916846408852",
+        "semiMajor": "195.21958636732037",
+        "semiMinor": "172.45344932142774"
+      },
+      "box": {
+        "minX": "-661.9898166123646",
+        "maxX": "245.9806668373527",
+        "minY": "-244.84689151031154",
+        "maxY": "342.0761582659236",
+        "width": "907.9704834497173",
+        "height": "586.9230497762351"
+      },
+      "film": {
+        "sha256": "912982c589c5a6d2f1bb6534c5280577abe40ab878889764587108bd7f9d0118",
+        "frames": 1802,
+        "agreement": 0.7861,
+        "otherViews": 0.025
+      },
+      "trace": {
+        "src": "/art/traces/35-light-9a5420bebc68969c.webp",
+        "sha256": "9a5420bebc68969c2c53db4f5b6ff0b98d1951e95665330a26f3cb6ac48fd212",
+        "bytes": 7860,
+        "agreement": 0.8917,
+        "otherViews": 0.0998
+      }
+    },
+    {
+      "id": 36,
+      "seed": "0xfb56077944020a3562a3dc2320e37b2149601b297ded3147c8c8c31dcd9b9179",
+      "traitsSha256": "a6c52ea78a74d4c79fabeb0ad7a79b90805f7e9d7ea7abf3f57f9cb4ed7432dd",
+      "projection": "position",
+      "symmetry": "none",
+      "stack": "time_chords+harmonic_weave@0.24",
+      "preferredStack": "nebula_veil",
+      "wildcard": false,
+      "width": 3456,
+      "height": 2234,
+      "view": {
+        "candidate": 2,
+        "triple": ["0.4638528918670356", "0.2676100905207007", "0.4766833334906074"],
+        "scores": [
+          "0.8806134952113621",
+          "0.841403906271914",
+          "0.9021146642063975",
+          "0.883286339887971"
+        ]
+      },
+      "velocityScale": "1",
+      "drift": {
+        "scale": "1.1030602039892752",
+        "arcFraction": "0.9091323883078298",
+        "eccentricity": "0.47496260724797823",
+        "inclination": "0.07285518815705351",
+        "ascendingNode": "1.9535981930590016",
+        "argumentOfPeriapsis": "3.030043538825464",
+        "initialMeanAnomaly": "-0.2712268795629118",
+        "semiMajor": "165.19720672001705",
+        "semiMinor": "145.3745295001051"
+      },
+      "box": {
+        "minX": "-420.5389073508354",
+        "maxX": "342.7678739779378",
+        "minY": "-170.67798414195772",
+        "maxY": "322.73270726095876",
+        "width": "763.3067813287732",
+        "height": "493.4106914029165"
+      },
+      "film": {
+        "sha256": "571c6c53044951e60510fb14eb2b7b477f23b0c3e0e59b140faeb18fdd394462",
+        "frames": 1802,
+        "agreement": 0.9919,
+        "otherViews": 0.0382
+      },
+      "trace": {
+        "src": "/art/traces/36-light-08cdeb51845363c4.webp",
+        "sha256": "08cdeb51845363c46e125023322a0d0c59aa255b7d924526869c52c3c9d46a48",
+        "bytes": 11054,
+        "agreement": 0.9953,
+        "otherViews": 0.1585
+      }
+    },
+    {
+      "id": 37,
+      "seed": "0xd485462e33dfa28a96e4596012f5a5027443f2d7992490ddc9c2bb65e1f465f7",
+      "traitsSha256": "0584c472e7c7c97e112e3933fd90f6536ed7daf7831b00d21472a891e64ff299",
+      "projection": "position",
+      "symmetry": "none",
+      "stack": "time_chords+harmonic_weave@0.24",
+      "preferredStack": "triangle_web",
+      "wildcard": false,
+      "width": 3456,
+      "height": 2234,
+      "view": {
+        "candidate": 0,
+        "triple": ["0.10469287160565503", "0.9465681843302121", "0.459646514352506"],
+        "scores": [
+          "0.976500936413312",
+          "0.9399286143699364",
+          "0.8410398679002352",
+          "0.7893702355186605"
+        ]
+      },
+      "velocityScale": "1",
+      "drift": {
+        "scale": "1.0293873814483079",
+        "arcFraction": "0.024029301973104655",
+        "eccentricity": "0.405872539206255",
+        "inclination": "2.874340298955023",
+        "ascendingNode": "3.0229716927363404",
+        "argumentOfPeriapsis": "4.987727711396066",
+        "initialMeanAnomaly": "-1.2704720428034948",
+        "semiMajor": "169.9411649154974",
+        "semiMinor": "155.31427650925363"
+      },
+      "box": {
+        "minX": "12.428165608979885",
+        "maxX": "380.4454741426668",
+        "minY": "-84.22239186196666",
+        "maxY": "153.66842621218166",
+        "width": "368.0173085336869",
+        "height": "237.8908180741483"
+      },
+      "film": {
+        "sha256": "ce44ee473408d6859bf8ffd7c2a2597a4e887dd91048a9b62ee7d042836f2bbf",
+        "frames": 1802,
+        "agreement": 0.7101,
+        "otherViews": 0.008
+      },
+      "trace": {
+        "src": "/art/traces/37-light-1347ff274b9770ef.webp",
+        "sha256": "1347ff274b9770ef2043ed74474cc142de176d45b7fd5e25dda6c2ac2b0aa326",
+        "bytes": 21528,
+        "agreement": 0.7355,
+        "otherViews": 0.0636
+      }
+    },
+    {
+      "id": 38,
+      "seed": "0x6fb8e9b6e2e57ad9a4da10357ad1cd81a21361382a29155a072abe265006c27c",
+      "traitsSha256": "825f34b3e2b05ab889be1058b33d63dc39c63ddea1b0818a1aee81a13318f9e8",
+      "projection": "position",
+      "symmetry": "none",
+      "stack": "time_chords+harmonic_weave@0.24",
+      "preferredStack": "time_chords+spokes@0.39",
+      "wildcard": false,
+      "width": 3456,
+      "height": 2234,
+      "view": {
+        "candidate": 3,
+        "triple": ["0.8858522298921486", "0.9875585526655267", "0.40041025227466104"],
+        "scores": [
+          "0.9373726361794273",
+          "0.9104276032099872",
+          "0.9167731519617922",
+          "0.9487789533918607"
+        ]
+      },
+      "velocityScale": "1",
+      "drift": {
+        "scale": "1.0501869692688137",
+        "arcFraction": "0.17431173913822715",
+        "eccentricity": "0.42396772912199937",
+        "inclination": "0.7111739509235011",
+        "ascendingNode": "1.1971487655260102",
+        "argumentOfPeriapsis": "4.497061681810067",
+        "initialMeanAnomaly": "2.9030961955004972",
+        "semiMajor": "166.233173485285",
+        "semiMinor": "150.55361108355268"
+      },
+      "box": {
+        "minX": "-412.71753656912733",
+        "maxX": "74.78306171427785",
+        "minY": "-102.58041866267274",
+        "maxY": "212.54583613047748",
+        "width": "487.50059828340517",
+        "height": "315.1262547931502"
+      },
+      "film": {
+        "sha256": "b2e3241d4985fbec36439049cdb3c585359661bc9ee432f21ce80e9fe64eaf72",
+        "frames": 1802,
+        "agreement": 0.9171,
+        "otherViews": 0.0098
+      },
+      "trace": {
+        "src": "/art/traces/38-light-c320dbc0b16b4831.webp",
+        "sha256": "c320dbc0b16b4831d0ed6eb9fa9642e63d1541d746f9c244f40125955916661a",
+        "bytes": 10926,
+        "agreement": 0.9562,
+        "otherViews": 0.0592
+      }
+    },
+    {
+      "id": 39,
+      "seed": "0x56d7e21a3dd131a46f7541b0d4fc85faf7996a325f090d5f18d53d099cade7b8",
+      "traitsSha256": "b77477c67d0165a1499c1d25af46412af17a25e07a5e688c1ebb56ee5aa12fce",
+      "projection": "position",
+      "symmetry": "none",
+      "stack": "orbit_ribbons+harmonic_weave@0.20",
+      "preferredStack": "orbit_ribbons+harmonic_weave@0.20",
+      "wildcard": false,
+      "width": 3456,
+      "height": 2234,
+      "view": {
+        "candidate": 2,
+        "triple": ["0.31455997987907575", "0.3304246240225644", "0.12261082422055858"],
+        "scores": [
+          "0.8829168323785972",
+          "0.8154342229266123",
+          "0.8945456361042073",
+          "0.8596522044000697"
+        ]
+      },
+      "velocityScale": "1",
+      "drift": {
+        "scale": "1.081993681202739",
+        "arcFraction": "1.1847595859662523",
+        "eccentricity": "0.41497364568646317",
+        "inclination": "2.01269265487704",
+        "ascendingNode": "1.5069612787443265",
+        "argumentOfPeriapsis": "4.26943758555486",
+        "initialMeanAnomaly": "1.6258561245579362",
+        "semiMajor": "223.99454446535435",
+        "semiMinor": "203.79772506642897"
+      },
+      "box": {
+        "minX": "-524.6256236333573",
+        "maxX": "615.8548993140513",
+        "minY": "-304.142800642267",
+        "maxY": "433.0775373972327",
+        "width": "1140.4805229474086",
+        "height": "737.2203380394997"
+      },
+      "film": {
+        "sha256": "11c595bf1dbe799ce3bad571e8e0b9a4a9193c91192457339d12dcca451f24c2",
+        "frames": 1802,
+        "agreement": 0.9902,
+        "otherViews": 0.0323
+      },
+      "trace": {
+        "src": "/art/traces/39-light-c9fa3a2967adb443.webp",
+        "sha256": "c9fa3a2967adb443a5eb4f269182249ed3de6f2b0f26c8845f68d6fdfe534905",
+        "bytes": 9280,
+        "agreement": 0.9885,
+        "otherViews": 0.1588
+      }
+    },
+    {
+      "id": 40,
+      "seed": "0xcdab48977fb18d3c9c46d1e9405c6342cdc58a500013fe856ffb142d31cef6dc",
+      "traitsSha256": "ce7cdfc453f07e4c459a1ba4a93360fa8b281ce364b71735f3664c6f78bd0e94",
+      "projection": "position",
+      "symmetry": "mirror_x",
+      "stack": "time_chords",
+      "preferredStack": "time_chords",
+      "wildcard": false,
+      "width": 3456,
+      "height": 2234,
+      "view": {
+        "candidate": 0,
+        "triple": ["0.17717842634148576", "0.5143317758219834", "0.35188201861708246"],
+        "scores": [
+          "0.9325689085400484",
+          "0.8465648842367945",
+          "0.9065408582224965",
+          "0.844029629181436"
+        ]
+      },
+      "velocityScale": "1",
+      "drift": {
+        "scale": "1.1548868367492031",
+        "arcFraction": "0.045278283973548085",
+        "eccentricity": "0.4181283605777175",
+        "inclination": "1.4688426440064468",
+        "ascendingNode": "6.233337080143942",
+        "argumentOfPeriapsis": "2.939715924057531",
+        "initialMeanAnomaly": "-2.9722588712342892",
+        "semiMajor": "154.76419617046935",
+        "semiMinor": "140.58593143578543"
+      },
+      "box": {
+        "minX": "-18.273527793419383",
+        "maxX": "395.087672855607",
+        "minY": "-172.06532681536518",
+        "maxY": "95.13632892824738",
+        "width": "413.3612006490264",
+        "height": "267.20165574361255"
+      },
+      "film": {
+        "sha256": "74114e43f4e3867fe7316d5e73067b4f78bfa523490acefbe1ffd8b8ec11ed8d",
+        "frames": 1802,
+        "agreement": 0.7457,
+        "otherViews": 0.0166
+      },
+      "trace": {
+        "src": "/art/traces/40-light-c9277e4812e0f8db.webp",
+        "sha256": "c9277e4812e0f8db3eba1d679d56876ef577c6e599a453ceab71e78b3af7fe4c",
+        "bytes": 27688,
+        "agreement": 0.7849,
+        "otherViews": 0.1336
+      }
+    },
+    {
+      "id": 41,
+      "seed": "0xb96b34a0a5fa29b0c30f5f8ba1168629b2a8bf6bf75dace7c28321193d9b178c",
+      "traitsSha256": "fbfcda6e55b029832b9d0f0381305cddb8cddb205e2220a0ed44d7fa99a338ae",
+      "projection": "position",
+      "symmetry": "none",
+      "stack": "orbit_ribbons+harmonic_weave@0.29",
+      "preferredStack": "spokes",
+      "wildcard": false,
+      "width": 3456,
+      "height": 2234,
+      "view": {
+        "candidate": 2,
+        "triple": ["0.3839494865271894", "0.9686277199239184", "0.8980990203876018"],
+        "scores": ["0.7043657830672202", "0.8361632200651922", "1", "0.6819310384044648"]
+      },
+      "velocityScale": "1",
+      "drift": {
+        "scale": "1.028030824588905",
+        "arcFraction": "0.15036056267349748",
+        "eccentricity": "0.4299459715612912",
+        "inclination": "0.7941814538051466",
+        "ascendingNode": "3.2523573544515254",
+        "argumentOfPeriapsis": "3.197077819174875",
+        "initialMeanAnomaly": "1.5009424830543807",
+        "semiMajor": "127.71950318309337",
+        "semiMinor": "115.31214327833705"
+      },
+      "box": {
+        "minX": "-318.72351713831574",
+        "maxX": "3.596537221723345",
+        "minY": "-60.10542248699639",
+        "maxY": "148.24614042976498",
+        "width": "322.3200543600391",
+        "height": "208.35156291676137"
+      },
+      "film": {
+        "sha256": "a3a052179a8677211f6684c08c135ac6684d5f78ebd85992ab90aacfd59c8fdb",
+        "frames": 1802,
+        "agreement": 0.9979,
+        "otherViews": 0.0194
+      },
+      "trace": {
+        "src": "/art/traces/41-light-97d21dbc6ba021b5.webp",
+        "sha256": "97d21dbc6ba021b508154905c78e9ead71e4a05cb074da6805e59bda58610862",
+        "bytes": 24598,
+        "agreement": 0.9959,
+        "otherViews": 0.1293
+      }
+    },
+    {
+      "id": 42,
+      "seed": "0x70f7093200501942444ac597e61579d75d2a9185f51ddce457e0cc50d28dbf37",
+      "traitsSha256": "767dde864c04336ae7f106b92e693e6f7f61ee091424cd32dfd86ae9d0906ea7",
+      "projection": "position",
+      "symmetry": "none",
+      "stack": "orbit_ribbons+stipple_constellation@0.46",
+      "preferredStack": "orbit_ribbons+stipple_constellation@0.46",
+      "wildcard": false,
+      "width": 3456,
+      "height": 2234,
+      "view": {
+        "candidate": 3,
+        "triple": ["0.6820178885372906", "0.25880198865199494", "0.3047494749696702"],
+        "scores": [
+          "0.885487680430419",
+          "0.8659852404656536",
+          "0.8714353984414602",
+          "0.9085002139338084"
+        ]
+      },
+      "velocityScale": "1",
+      "drift": {
+        "scale": "1.09783014850961",
+        "arcFraction": "1.0437131411553673",
+        "eccentricity": "0.437601917120218",
+        "inclination": "2.6452000335568124",
+        "ascendingNode": "0.2561807303499212",
+        "argumentOfPeriapsis": "2.821657670842885",
+        "initialMeanAnomaly": "-2.2199692356910568",
+        "semiMajor": "257.15058149548054",
+        "semiMinor": "231.22178424960583"
+      },
+      "box": {
+        "minX": "-474.6025552840021",
+        "maxX": "717.3988226870342",
+        "minY": "-294.58272877924617",
+        "maxY": "475.9413101059665",
+        "width": "1192.0013779710364",
+        "height": "770.5240388852127"
+      },
+      "film": {
+        "sha256": "12ab21820d9a9c44595d530f0223e43f75d954bfafd369ffbd59f6c7f16174dd",
+        "frames": 1802,
+        "agreement": 0.7699,
+        "otherViews": 0.0207
+      },
+      "trace": {
+        "src": "/art/traces/42-light-4041587eca742835.webp",
+        "sha256": "4041587eca742835d972c3a5e94ebca1da9d689430e332429740af5d8f25e723",
+        "bytes": 4188,
+        "agreement": 0.805,
+        "otherViews": 0.079
+      }
+    },
+    {
+      "id": 43,
+      "seed": "0x7a3dc84c82a0a2c7955ea5d6d4d7adef8a11fe4cddd2ba293752d71fd06ddf8f",
+      "traitsSha256": "97c7d66840cb57628e6992ded6536b6da28bff5f69aba54837e3ff259d8a66b4",
+      "projection": "cross_braid",
+      "symmetry": "none",
+      "stack": "time_chords+orbit_ribbons@0.36",
+      "preferredStack": "time_chords+orbit_ribbons@0.36",
+      "wildcard": false,
+      "width": 3456,
+      "height": 2234,
+      "view": {
+        "candidate": 0,
+        "triple": ["0.7165030389604374", "0.7148721138549623", "0.7774079951274793"],
+        "scores": [
+          "0.8968440595691642",
+          "0.8755661036981514",
+          "0.8825493712025138",
+          "0.8840893458401806"
+        ]
+      },
+      "velocityScale": "7.739604230596078",
+      "drift": {
+        "scale": "0.8506434515875432",
+        "arcFraction": "0.9128656052632952",
+        "eccentricity": "0.48738777619560436",
+        "inclination": "0.16469012213689893",
+        "ascendingNode": "1.0815754967639664",
+        "argumentOfPeriapsis": "3.8661184756672538",
+        "initialMeanAnomaly": "1.722180407767003",
+        "semiMajor": "135.92625453551466",
+        "semiMinor": "118.68885307004857"
+      },
+      "box": {
+        "minX": "-405.0620457338624",
+        "maxX": "396.0079099152044",
+        "minY": "-204.9193718000617",
+        "maxY": "312.90189004022056",
+        "width": "801.0699556490669",
+        "height": "517.8212618402822"
+      },
+      "film": {
+        "sha256": "360cde442cf27a21c2f15a291a4c63052df77b3878a4337c77e501c65b121966",
+        "frames": 1802,
+        "agreement": 0.9443,
+        "otherViews": 0.0123
+      },
+      "trace": {
+        "src": "/art/traces/43-light-a789a98d2eb99dab.webp",
+        "sha256": "a789a98d2eb99dabd1666cad4b3d97c7079ed5860424bc085003c1185f34c0ba",
+        "bytes": 5326,
+        "agreement": 0.97,
+        "otherViews": 0.0414
+      }
+    },
+    {
+      "id": 44,
+      "seed": "0x69e0f4c123a0a888f182a7780f53ad0f9d97d0492d005d205244e2e3b8e079c4",
+      "traitsSha256": "919a5e404a1686016d976901e92ca4a62ecbc395577dae2ccd4c0dff942c7114",
+      "projection": "position",
+      "symmetry": "none",
+      "stack": "time_chords+orbit_ribbons@0.14",
+      "preferredStack": "time_chords+orbit_ribbons@0.14",
+      "wildcard": false,
+      "width": 3456,
+      "height": 2234,
+      "view": {
+        "candidate": 3,
+        "triple": ["0.8970692040201235", "0.9936435107325688", "0.050360364276021495"],
+        "scores": [
+          "0.8792724531433261",
+          "0.8628004774395901",
+          "0.8610835672319896",
+          "0.8795767262259633"
+        ]
+      },
+      "velocityScale": "1",
+      "drift": {
+        "scale": "1.2253194582133808",
+        "arcFraction": "0.3899176433302874",
+        "eccentricity": "0.4492342839697881",
+        "inclination": "1.9214929971683061",
+        "ascendingNode": "3.213671902805487",
+        "argumentOfPeriapsis": "1.3351859807717217",
+        "initialMeanAnomaly": "0.059858561242826624",
+        "semiMajor": "149.81820218850538",
+        "semiMinor": "133.84967784035845"
+      },
+      "box": {
+        "minX": "-101.92203492505355",
+        "maxX": "268.6587467976153",
+        "minY": "-116.50880957874747",
+        "maxY": "123.03906842138049",
+        "width": "370.58078172266886",
+        "height": "239.54787800012795"
+      },
+      "film": {
+        "sha256": "c32808d302515f4bfb0e46bb7d312509128ce295821d0375589e7e2b4cbe5ef6",
+        "frames": 1802,
+        "agreement": 0.8986,
+        "otherViews": 0.0192
+      },
+      "trace": {
+        "src": "/art/traces/44-light-97e1f569ece5f939.webp",
+        "sha256": "97e1f569ece5f939f6a9a4b2b3a8e81396310269a67d194dec8c4b1ffc9ddac1",
+        "bytes": 11534,
+        "agreement": 0.9278,
+        "otherViews": 0.0579
+      }
+    },
+    {
+      "id": 45,
+      "seed": "0x7fc88c81e4f2a1c79eab4ac335d45cf6124be4cbf2350c4626bb6c23b43bad6f",
+      "traitsSha256": "b5f5f2a6ff0cb46c40021666fd3ed989e6285850c862727f2618cc501a0934b0",
+      "projection": "position",
+      "symmetry": "none",
+      "stack": "orbit_ribbons",
+      "preferredStack": "orbit_ribbons",
+      "wildcard": false,
+      "width": 3456,
+      "height": 2234,
+      "view": {
+        "candidate": 1,
+        "triple": ["0.9848404679270024", "0.32181178941403016", "0.48485277263043586"],
+        "scores": ["0.9321719862239558", "1", "0.8825740944658577", "0.924448548152028"]
+      },
+      "velocityScale": "1",
+      "drift": {
+        "scale": "1.2898172325824693",
+        "arcFraction": "0.6133120153990722",
+        "eccentricity": "0.42636944092214446",
+        "inclination": "2.464333388757199",
+        "ascendingNode": "3.486252411430997",
+        "argumentOfPeriapsis": "0.9901904557742864",
+        "initialMeanAnomaly": "-1.3654707496399539",
+        "semiMajor": "229.8719619158014",
+        "semiMinor": "207.9304795110066"
+      },
+      "box": {
+        "minX": "-376.15359383222085",
+        "maxX": "568.9538338372679",
+        "minY": "-302.7379207755461",
+        "maxY": "308.1908967631222",
+        "width": "945.1074276694887",
+        "height": "610.9288175386683"
+      },
+      "film": {
+        "sha256": "2e7503993938a72d740f9e95b0e80de8e2cc75d8189c8ecf36f51225c6131725",
+        "frames": 1802,
+        "agreement": 0.9962,
+        "otherViews": 0.0161
+      },
+      "trace": {
+        "src": "/art/traces/45-light-296849f1a2db0ee0.webp",
+        "sha256": "296849f1a2db0ee0d21a91a3148ac1cdc8d4797229020e96218825b4f6d2d2d8",
+        "bytes": 5906,
+        "agreement": 0.999,
+        "otherViews": 0.084
+      }
+    },
+    {
+      "id": 46,
+      "seed": "0xde37ad470f34709af38b247150babc6825575a6b954374f5941831a2b96796ec",
+      "traitsSha256": "fff98fe21f79a756c1dc21c047d34353ca9e2c223ac06ffb345957d6737d944e",
+      "projection": "position",
+      "symmetry": "rot3",
+      "stack": "time_chords+harmonic_weave@0.24",
+      "preferredStack": "stipple_constellation",
+      "wildcard": false,
+      "width": 3456,
+      "height": 2234,
+      "view": {
+        "candidate": 0,
+        "triple": ["0.8514771974395161", "0.29503844104680754", "0.058728590498613537"],
+        "scores": ["1", "0.8511635269603988", "1", "0.8335714938685043"]
+      },
+      "velocityScale": "1",
+      "drift": {
+        "scale": "1.1302929949840548",
+        "arcFraction": "0.05384351497919652",
+        "eccentricity": "0.4895662187974674",
+        "inclination": "0.672687270910389",
+        "ascendingNode": "1.9760161183469693",
+        "argumentOfPeriapsis": "0.09927272842397342",
+        "initialMeanAnomaly": "-0.1324251654709725",
+        "semiMajor": "156.8731328712709",
+        "semiMinor": "136.78805727047296"
+      },
+      "box": {
+        "minX": "-273.790458683472",
+        "maxX": "191.66466555902696",
+        "minY": "-63.72818937310366",
+        "maxY": "237.14760563781732",
+        "width": "465.45512424249904",
+        "height": "300.87579501092097"
+      },
+      "film": {
+        "sha256": "cf6c1b1c89468fb36568d27b7c9e4d0604c016a1c2571a0e69fe9872655e49fd",
+        "frames": 1802,
+        "agreement": 0.5902,
+        "otherViews": 0.0533
+      },
+      "trace": {
+        "src": "/art/traces/46-light-9aed333d3127cef5.webp",
+        "sha256": "9aed333d3127cef5651c4dd7db171577d8be7ace7f7c839fc5e0c7becc6227f0",
+        "bytes": 13316,
+        "agreement": 0.7394,
+        "otherViews": 0.2183
+      }
+    },
+    {
+      "id": 47,
+      "seed": "0x38b23b92766de4c8989e563ea11b3b3aab1965a546a84c6780a715df3b3df0b1",
+      "traitsSha256": "0a38baa5ee9a2f1f093cbfe482caf183776f071d2515ec15e7f12d263ef6fafc",
+      "projection": "position",
+      "symmetry": "none",
+      "stack": "orbit_ribbons+harmonic_weave@0.29",
+      "preferredStack": "orbit_ribbons+nebula_veil@0.62",
+      "wildcard": true,
+      "width": 3456,
+      "height": 2234,
+      "view": {
+        "candidate": 1,
+        "triple": ["0.6924707199682131", "0.8645568173837308", "0.2949643831640584"],
+        "scores": [
+          "0.9476860476259036",
+          "0.970086663036583",
+          "0.9526839456441054",
+          "0.9123685048439232"
+        ]
+      },
+      "velocityScale": "1",
+      "drift": {
+        "scale": "1.0811331901201295",
+        "arcFraction": "0.2810701123088052",
+        "eccentricity": "0.4127510067290832",
+        "inclination": "1.640713879925531",
+        "ascendingNode": "3.7104234207269244",
+        "argumentOfPeriapsis": "5.181680427027346",
+        "initialMeanAnomaly": "0.08622431420469479",
+        "semiMajor": "163.83641072396074",
+        "semiMinor": "149.2293949709729"
+      },
+      "box": {
+        "minX": "-273.54440080085925",
+        "maxX": "99.43504079504751",
+        "minY": "-166.3879929212074",
+        "maxY": "74.71040769373926",
+        "width": "372.97944159590674",
+        "height": "241.09840061494666"
+      },
+      "film": {
+        "sha256": "2636d004177f9b650ff25fa3f8b711bc50fe4a69b3d815842b2daa31810c7c60",
+        "frames": 1802,
+        "agreement": 0.9001,
+        "otherViews": 0.0337
+      },
+      "trace": {
+        "src": "/art/traces/47-light-51ba6c7fa808e5e6.webp",
+        "sha256": "51ba6c7fa808e5e60140e1da23ecb526db8a8a890f34737440a883c8b45f5e2c",
+        "bytes": 32736,
+        "agreement": 0.8996,
+        "otherViews": 0.1698
+      }
+    },
+    {
+      "id": 48,
+      "seed": "0x09e2fdfc0261b33baa2d71294977cff267c25cd234b9e07ad133c622a974e65b",
+      "traitsSha256": "02491f22ec32b6895e33feff0d05f8c33bac965a656394fee87b11cb3fdf54fe",
+      "projection": "position",
+      "symmetry": "none",
+      "stack": "time_chords+harmonic_weave@0.24",
+      "preferredStack": "duet+nebula_veil@0.37",
+      "wildcard": false,
+      "width": 3456,
+      "height": 2234,
+      "view": {
+        "candidate": 3,
+        "triple": ["0.004722533628185302", "0.10252540768979662", "0.24059008324451583"],
+        "scores": [
+          "0.9494338432192523",
+          "0.9633745438360319",
+          "0.7743610498151813",
+          "0.9934379072291685"
+        ]
+      },
+      "velocityScale": "1",
+      "drift": {
+        "scale": "1.1779991297597765",
+        "arcFraction": "0.9330730659057945",
+        "eccentricity": "0.47948019188992785",
+        "inclination": "0.9901394674360892",
+        "ascendingNode": "2.0058623534333524",
+        "argumentOfPeriapsis": "2.260345156725124",
+        "initialMeanAnomaly": "-1.365176715984999",
+        "semiMajor": "176.1847768565312",
+        "semiMinor": "154.61142706179217"
+      },
+      "box": {
+        "minX": "-431.0173904055107",
+        "maxX": "430.22254626805",
+        "minY": "-175.4274053796029",
+        "maxY": "381.2884564632022",
+        "width": "861.2399366735607",
+        "height": "556.7158618428051"
+      },
+      "film": {
+        "sha256": "7c9be1d1c1ac2dac2b57e41fdd100103e6b1fdb1bec0acb6255683e469dc8469",
+        "frames": 1802,
+        "agreement": 0.6007,
+        "otherViews": 0.0136
+      },
+      "trace": {
+        "src": "/art/traces/48-light-12ea14d4a04881e7.webp",
+        "sha256": "12ea14d4a04881e736ce425e19ce790b8819c8be18b4f020b0184493b44d30bb",
+        "bytes": 5308,
+        "agreement": 0.6816,
+        "otherViews": 0.0598
+      }
+    },
+    {
+      "id": 49,
+      "seed": "0xb068e7e284206250807bc52a4d50d2f76d66826596bd3393e1b966f9d5ffc5ea",
+      "traitsSha256": "5e50f20e51c1c7d10d5eddfc0e2cfb8cdd736b1247cb376c8556558aeb1aa849",
+      "projection": "position",
+      "symmetry": "none",
+      "stack": "time_chords+harmonic_weave@0.14",
+      "preferredStack": "time_chords+harmonic_weave@0.14",
+      "wildcard": false,
+      "width": 3456,
+      "height": 2234,
+      "view": {
+        "candidate": 3,
+        "triple": ["0.20914679101011177", "0.46731185164441646", "0.22814539371280737"],
+        "scores": [
+          "0.8961498878142603",
+          "0.929714192460265",
+          "0.9324238948320728",
+          "0.9624783398322198"
+        ]
+      },
+      "velocityScale": "1",
+      "drift": {
+        "scale": "0.9177678102219679",
+        "arcFraction": "0.08933207005691043",
+        "eccentricity": "0.444628566104419",
+        "inclination": "1.0950347786740249",
+        "ascendingNode": "2.0506880523094457",
+        "argumentOfPeriapsis": "2.617938853423688",
+        "initialMeanAnomaly": "0.9407123090198617",
+        "semiMajor": "191.84608917685537",
+        "semiMinor": "171.83942801079976"
+      },
+      "box": {
+        "minX": "-272.94801219131216",
+        "maxX": "351.24467461116865",
+        "minY": "-165.07658859085592",
+        "maxY": "238.409077588757",
+        "width": "624.1926868024808",
+        "height": "403.4856661796129"
+      },
+      "film": {
+        "sha256": "e567e8fedf1405eb0d61733e5b4544fe00ae7ccd7824bad0a8824b4ae7cae0ca",
+        "frames": 1802,
+        "agreement": 0.4125,
+        "otherViews": 0.0053
+      },
+      "trace": {
+        "src": "/art/traces/49-light-f98f5bdefd5f132f.webp",
+        "sha256": "f98f5bdefd5f132ff0583d4a9776110a8d3b1c28bb8fe12e8c22d593daa4d521",
+        "bytes": 6340,
+        "agreement": 0.5476,
+        "otherViews": 0.0201
+      }
+    },
+    {
+      "id": 50,
+      "seed": "0xaea416d13cefdc488d8f64b2f720f429fc140bb3960e2676361ef01492b9d3b8",
+      "traitsSha256": "c5ced1a8533c77a4839d8cd4823c5f5ca80f80729b391344c95bffb429a4f223",
+      "projection": "cross_braid",
+      "symmetry": "none",
+      "stack": "orbit_ribbons",
+      "preferredStack": "orbit_ribbons",
+      "wildcard": false,
+      "width": 3456,
+      "height": 2234,
+      "view": {
+        "candidate": 2,
+        "triple": ["0.12377329352415307", "0.06573604800763166", "0.20210736037339433"],
+        "scores": [
+          "0.9151891058220482",
+          "0.9187229436014733",
+          "0.9534334208243315",
+          "0.9519419035448403"
+        ]
+      },
+      "velocityScale": "3.312385054903294",
+      "drift": {
+        "scale": "1.0069521525254912",
+        "arcFraction": "1.0668937927452788",
+        "eccentricity": "0.41925645725977934",
+        "inclination": "1.050357170327411",
+        "ascendingNode": "6.131210777244479",
+        "argumentOfPeriapsis": "2.891556877106041",
+        "initialMeanAnomaly": "-2.003149073396163",
+        "semiMajor": "213.39640968086366",
+        "semiMinor": "193.73573847734986"
+      },
+      "box": {
+        "minX": "-371.4864477136474",
+        "maxX": "522.7588910194727",
+        "minY": "-334.6102564458175",
+        "maxY": "243.44069457553383",
+        "width": "894.2453387331201",
+        "height": "578.0509510213514"
+      },
+      "film": {
+        "sha256": "e444b95c36c523db1e24676fa92894512e65499142c356cf14b3330636f6c83c",
+        "frames": 1802,
+        "agreement": 0.989,
+        "otherViews": 0.0242
+      },
+      "trace": {
+        "src": "/art/traces/50-light-4fea2256962be61f.webp",
+        "sha256": "4fea2256962be61fdd1ad074f01d39e918400847d18967edef4d27b629307845",
+        "bytes": 11072,
+        "agreement": 0.9946,
+        "otherViews": 0.1107
+      }
+    },
+    {
+      "id": 51,
+      "seed": "0x3c99a74aa7a31db0e267ffa0c0d26a410ca11d8780ded3696d15372fba14a8ae",
+      "traitsSha256": "00bd7b160e89aa4ee0549648a3b3fcbbe86b432c419b746254a25b94a2846da8",
+      "projection": "position",
+      "symmetry": "none",
+      "stack": "time_chords+triangle_web@0.27",
+      "preferredStack": "time_chords+triangle_web@0.27",
+      "wildcard": false,
+      "width": 3456,
+      "height": 2234,
+      "view": {
+        "candidate": 2,
+        "triple": ["0.07479966853318001", "0.2120512496597063", "0.7272924538799108"],
+        "scores": [
+          "0.7592138745176621",
+          "0.7361375786543038",
+          "0.8595701024322929",
+          "0.7396436652753235"
+        ]
+      },
+      "velocityScale": "1",
+      "drift": {
+        "scale": "1.0405904325176887",
+        "arcFraction": "0.38556977666315945",
+        "eccentricity": "0.4362221542856686",
+        "inclination": "2.1772132167499367",
+        "ascendingNode": "1.2177916894267748",
+        "argumentOfPeriapsis": "6.2377474595336775",
+        "initialMeanAnomaly": "0.8477135492361496",
+        "semiMajor": "177.71177206707344",
+        "semiMinor": "159.91198387624152"
+      },
+      "box": {
+        "minX": "-405.828685880445",
+        "maxX": "409.7343992831502",
+        "minY": "-399.6717711507918",
+        "maxY": "127.51802406201821",
+        "width": "815.5630851635951",
+        "height": "527.18979521281"
+      },
+      "film": {
+        "sha256": "f2125aa6e16f2a51ba30c0fc6485f7069f84049a3fdbe6a9f920bbc6f03f491f",
+        "frames": 1802,
+        "agreement": 0.9266,
+        "otherViews": 0.0202
+      },
+      "trace": {
+        "src": "/art/traces/51-light-cf62b069c21456c0.webp",
+        "sha256": "cf62b069c21456c0167b130ea23adc2925f2d1d4bef9740590305a573689e3b1",
+        "bytes": 11438,
+        "agreement": 0.9526,
+        "otherViews": 0.1275
+      }
+    },
+    {
+      "id": 52,
+      "seed": "0x0343cf7f15c9e696d9d1762dad65913cb28d20d2e14815d7ff3aaa12d82e1c84",
+      "traitsSha256": "26fe0e77f4e2c1b127e85ad1316cf156783952aaa718ba2ae9641db2bdad2ff4",
+      "projection": "position",
+      "symmetry": "none",
+      "stack": "orbit_ribbons+harmonic_weave@0.40",
+      "preferredStack": "orbit_ribbons+harmonic_weave@0.40",
+      "wildcard": false,
+      "width": 3456,
+      "height": 2234,
+      "view": {
+        "candidate": 0,
+        "triple": ["0.9338937171610566", "0.15489548293596705", "0.8266175049977749"],
+        "scores": ["1", "0.8669835959887672", "0.9528016398725287", "1"]
+      },
+      "velocityScale": "1",
+      "drift": {
+        "scale": "0.9420938192865446",
+        "arcFraction": "0.17188890974557397",
+        "eccentricity": "0.44368551354917324",
+        "inclination": "2.2755423524604907",
+        "ascendingNode": "5.757104084984572",
+        "argumentOfPeriapsis": "2.9102320676430042",
+        "initialMeanAnomaly": "2.898251214274846",
+        "semiMajor": "210.47574585004955",
+        "semiMinor": "188.62469088059458"
+      },
+      "box": {
+        "minX": "-21.859833379460895",
+        "maxX": "632.2839243403082",
+        "minY": "-366.88585387934836",
+        "maxY": "55.960545063349585",
+        "width": "654.143757719769",
+        "height": "422.84639894269793"
+      },
+      "film": {
+        "sha256": "895908d65e19b1e826d514a815d0dc9b46bc6b7de2e2dcbb2dd76700f857a7b6",
+        "frames": 1802,
+        "agreement": 0.938,
+        "otherViews": 0.0371
+      },
+      "trace": {
+        "src": "/art/traces/52-light-e45657e499933e11.webp",
+        "sha256": "e45657e499933e11a43e9fea308d4a8617456e871a79a39375e10714f192a2ee",
+        "bytes": 23670,
+        "agreement": 0.9469,
+        "otherViews": 0.1789
+      }
+    },
+    {
+      "id": 53,
+      "seed": "0xe74d53c964137b9f28d18dfa3c7ecd7bd7f631664edc4f0b5ffd827abeb49f7d",
+      "traitsSha256": "a3e1a80e75069af8f4f1cd3f1316fdc81be10e0429c13e14c0d2344d419702fc",
+      "projection": "position",
+      "symmetry": "none",
+      "stack": "time_chords+harmonic_weave@0.24",
+      "preferredStack": "triangle_web+spokes@0.20",
+      "wildcard": false,
+      "width": 3456,
+      "height": 2234,
+      "view": {
+        "candidate": 0,
+        "triple": ["0.7608554830201111", "0.3878998387805156", "0.03420338968971956"],
+        "scores": ["1", "0.901836554663447", "0.9246241567305982", "0.8424720851070628"]
+      },
+      "velocityScale": "1",
+      "drift": {
+        "scale": "1.136852162807001",
+        "arcFraction": "1.025595720786446",
+        "eccentricity": "0.4976705174060606",
+        "inclination": "2.140738656751947",
+        "ascendingNode": "2.6560290165485765",
+        "argumentOfPeriapsis": "5.73121658091878",
+        "initialMeanAnomaly": "0.6409290590086787",
+        "semiMajor": "206.41756324429946",
+        "semiMinor": "179.0396092581648"
+      },
+      "box": {
+        "minX": "-333.38296513481157",
+        "maxX": "499.312932978781",
+        "minY": "-249.94140048361078",
+        "maxY": "288.3232512483817",
+        "width": "832.6958981135926",
+        "height": "538.2646517319924"
+      },
+      "film": {
+        "sha256": "93d3d586023c6072cbec6c4038c9a1abcdefc02f3b242514c6d59220bebda983",
+        "frames": 1802,
+        "agreement": 0.8965,
+        "otherViews": 0.0262
+      },
+      "trace": {
+        "src": "/art/traces/53-light-ccfa18328472a116.webp",
+        "sha256": "ccfa18328472a1160682bd193863dda5907759c7de42a92058e473cf391e941a",
+        "bytes": 8306,
+        "agreement": 0.9208,
+        "otherViews": 0.0777
+      }
+    },
+    {
+      "id": 54,
+      "seed": "0x55892fe4212e84dac6d35e696b9a084c3b6b52c57d1f8bccac01a5d52d28725c",
+      "traitsSha256": "f6ebb5b27e92673c8e0b395de4959682a8ad8152527758d166dc9337fa65a8d6",
+      "projection": "cross_braid",
+      "symmetry": "none",
+      "stack": "orbit_ribbons",
+      "preferredStack": "orbit_ribbons",
+      "wildcard": false,
+      "width": 3456,
+      "height": 2234,
+      "view": {
+        "candidate": 2,
+        "triple": ["0.7098795665251003", "0.4997229748335642", "0.08890403919757575"],
+        "scores": [
+          "0.9367785670000673",
+          "0.9088312159491915",
+          "0.9956108949040793",
+          "0.9382302755175624"
+        ]
+      },
+      "velocityScale": "7.492581900128549",
+      "drift": {
+        "scale": "0.8530846033576569",
+        "arcFraction": "0.26321106478533607",
+        "eccentricity": "0.43860775417894327",
+        "inclination": "0.703183784117246",
+        "ascendingNode": "4.3410227442396945",
+        "argumentOfPeriapsis": "0.7969718352241634",
+        "initialMeanAnomaly": "-2.479934448735668",
+        "semiMajor": "153.08359102656559",
+        "semiMinor": "137.57294827823537"
+      },
+      "box": {
+        "minX": "-426.17888881731807",
+        "maxX": "131.303825458125",
+        "minY": "-133.60513333001748",
+        "maxY": "226.7584036177081",
+        "width": "557.4827142754431",
+        "height": "360.3635369477256"
+      },
+      "film": {
+        "sha256": "f656d57b2d1ae56f6fa85f93b330006d27abe2a0a8777ffaa1a40ea71a0e1fdf",
+        "frames": 1802,
+        "agreement": 0.8849,
+        "otherViews": 0.0039
+      },
+      "trace": {
+        "src": "/art/traces/54-light-27a72e1ae6c76d2a.webp",
+        "sha256": "27a72e1ae6c76d2ac6cb644aff09ce36d1fa8c02488ca14b3dd2cf453496e423",
+        "bytes": 9002,
+        "agreement": 0.879,
+        "otherViews": 0.0253
+      }
+    },
+    {
+      "id": 55,
+      "seed": "0x213abfda7f0448c3c4e24dead41c791f4fd68a6fe200fa1d1b61cc4cf5279153",
+      "traitsSha256": "c308dd8f6a68a9ed59b9d26475b9db4c3577d2280dfcd0d0c9b7bca40b7d16aa",
+      "projection": "position",
+      "symmetry": "none",
+      "stack": "tangent_caustics+harmonic_weave@0.24",
+      "preferredStack": "tangent_caustics+harmonic_weave@0.24",
+      "wildcard": false,
+      "width": 3456,
+      "height": 2234,
+      "view": {
+        "candidate": 1,
+        "triple": ["0.020893054998419595", "0.247215950314319", "0.11310810054760363"],
+        "scores": [
+          "0.6846183250475462",
+          "0.8919921883514195",
+          "0.8587912512420111",
+          "0.8205360674363663"
+        ]
+      },
+      "velocityScale": "1",
+      "drift": {
+        "scale": "1.2303931390705531",
+        "arcFraction": "0.3058769474226053",
+        "eccentricity": "0.43318279639824786",
+        "inclination": "0.6370862387127656",
+        "ascendingNode": "2.376606971208696",
+        "argumentOfPeriapsis": "0.31415617690810377",
+        "initialMeanAnomaly": "-0.0973002800188616",
+        "semiMajor": "170.04847882159936",
+        "semiMinor": "153.26572927730086"
+      },
+      "box": {
+        "minX": "-380.1470112894474",
+        "maxX": "380.42814935157236",
+        "minY": "-310.0739591324033",
+        "maxY": "181.5709797773299",
+        "width": "760.5751606410197",
+        "height": "491.6449389097332"
+      },
+      "film": {
+        "sha256": "d74ce03adfbb5123c8b9f200bcfa28cfd9fe035ef92df563e04c8894e2c52941",
+        "frames": 1802,
+        "agreement": 0.9005,
+        "otherViews": 0.0162
+      },
+      "trace": {
+        "src": "/art/traces/55-light-70bddfaeb992f368.webp",
+        "sha256": "70bddfaeb992f36850cf7f78ca33caeb4bc33992eb48eed690c8c75276f00d5b",
+        "bytes": 9236,
+        "agreement": 0.903,
+        "otherViews": 0.1016
+      }
+    },
+    {
+      "id": 56,
+      "seed": "0x1b2f078c1c0e78e2df328ff2bf0322c61e5287e1f4beec8718d7c9a2a9ae0332",
+      "traitsSha256": "07829e2bcf8274daad8b485a9bab9489521298158a9784ee7c04d021088809ef",
+      "projection": "position",
+      "symmetry": "none",
+      "stack": "time_chords+harmonic_weave@0.24",
+      "preferredStack": "nebula_veil+harmonic_weave@0.21",
+      "wildcard": false,
+      "width": 3456,
+      "height": 2234,
+      "view": {
+        "candidate": 0,
+        "triple": ["0.435546797234253", "0.582584610269248", "0.5187528059419276"],
+        "scores": ["1", "1", "0.8560557360914105", "1"]
+      },
+      "velocityScale": "1",
+      "drift": {
+        "scale": "0.9249313315464853",
+        "arcFraction": "1.0744481156648678",
+        "eccentricity": "0.46110678129720817",
+        "inclination": "0.19652816105003165",
+        "ascendingNode": "0.17723605235518755",
+        "argumentOfPeriapsis": "2.7229185842076973",
+        "initialMeanAnomaly": "-1.3503550501597401",
+        "semiMajor": "218.45098331491954",
+        "semiMinor": "193.84131236055347"
+      },
+      "box": {
+        "minX": "-552.6862599377823",
+        "maxX": "719.5365150479097",
+        "minY": "-426.02031844099474",
+        "maxY": "396.35979710241855",
+        "width": "1272.222774985692",
+        "height": "822.3801155434132"
+      },
+      "film": {
+        "sha256": "fe05ca76c2ba6145a0c9a52d67753c1d927e41e18212097d3ae3ae807a9c40a5",
+        "frames": 1802,
+        "agreement": 0.651,
+        "otherViews": 0.0276
+      },
+      "trace": {
+        "src": "/art/traces/56-light-ab86c20b26378ff5.webp",
+        "sha256": "ab86c20b26378ff558a8ab5a07bd86ca6098910db9fd3cf9560f6dc44dc7a782",
+        "bytes": 4408,
+        "agreement": 0.7696,
+        "otherViews": 0.1431
+      }
+    },
+    {
+      "id": 57,
+      "seed": "0x7df5e0ba6194375eb61373957010113588235381653eece5e6de9972947b1710",
+      "traitsSha256": "314e9f4f378c5e618d62aef2d85fe40d9db396ba26ed3e52a1475364503f0e70",
+      "projection": "position",
+      "symmetry": "none",
+      "stack": "orbit_ribbons+nebula_veil@0.25",
+      "preferredStack": "orbit_ribbons+nebula_veil@0.25",
+      "wildcard": false,
+      "width": 3456,
+      "height": 2234,
+      "view": {
+        "candidate": 3,
+        "triple": ["0.3895391665895211", "0.3075543511349015", "0.4600780581195511"],
+        "scores": [
+          "0.858971926585552",
+          "0.8625577556573769",
+          "0.8543932467162576",
+          "0.8843504669213237"
+        ]
+      },
+      "velocityScale": "1",
+      "drift": {
+        "scale": "1.0227859583317747",
+        "arcFraction": "0.022114537890873063",
+        "eccentricity": "0.4268086352843828",
+        "inclination": "2.970735215504122",
+        "ascendingNode": "0.9957071272060927",
+        "argumentOfPeriapsis": "4.59345939248652",
+        "initialMeanAnomaly": "-0.6445386081426214",
+        "semiMajor": "196.1515151273486",
+        "semiMinor": "177.38804653978286"
+      },
+      "box": {
+        "minX": "-395.4838212049608",
+        "maxX": "164.10212915489308",
+        "minY": "-285.7230474919897",
+        "maxY": "76.00004657742971",
+        "width": "559.5859503598539",
+        "height": "361.7230940694194"
+      },
+      "film": {
+        "sha256": "4a5437724cd1a57282922179f8e34ed8522988fb904138e930e6718c4ea2c232",
+        "frames": 1802,
+        "agreement": 0.9917,
+        "otherViews": 0.0169
+      },
+      "trace": {
+        "src": "/art/traces/57-light-d7f412abaf508156.webp",
+        "sha256": "d7f412abaf5081562c7acf1058fc6553de6d8335cb491df3ee09fe2e9aad03d9",
+        "bytes": 23096,
+        "agreement": 0.9989,
+        "otherViews": 0.0969
+      }
+    },
+    {
+      "id": 58,
+      "seed": "0xdd560625a4fde92fb72cf2f405a28a717e1fbc7965d89165c996f68307a4e39c",
+      "traitsSha256": "956c7c1872f035d70fc4c17fed8fbe75933352bcca0ba78d66fc81bac27a61be",
+      "projection": "position",
+      "symmetry": "none",
+      "stack": "time_chords+harmonic_weave@0.44",
+      "preferredStack": "time_chords+harmonic_weave@0.44",
+      "wildcard": false,
+      "width": 3456,
+      "height": 2234,
+      "view": {
+        "candidate": 2,
+        "triple": ["0.0843010542792384", "0.12000780803493782", "0.5331936857541"],
+        "scores": ["0.9231937863657687", "0.9926518615171451", "1", "0.9137451321103592"]
+      },
+      "velocityScale": "1",
+      "drift": {
+        "scale": "1.2170527556791917",
+        "arcFraction": "1.0257465578458094",
+        "eccentricity": "0.4516110006931133",
+        "inclination": "0.7979004011930425",
+        "ascendingNode": "0.5248228030827041",
+        "argumentOfPeriapsis": "4.01301091328781",
+        "initialMeanAnomaly": "1.3672190770745454",
+        "semiMajor": "172.66330978697133",
+        "semiMinor": "154.05278505530953"
+      },
+      "box": {
+        "minX": "-362.5371504982612",
+        "maxX": "401.5539841412356",
+        "minY": "-186.2929160036072",
+        "maxY": "307.62479082065084",
+        "width": "764.0911346394968",
+        "height": "493.91770682425806"
+      },
+      "film": {
+        "sha256": "74d98acd9405c815d40df63ef4802bfd7d34f5cb030c25b3e3f5b0d3b90c247d",
+        "frames": 1802,
+        "agreement": 0.8171,
+        "otherViews": 0.026
+      },
+      "trace": {
+        "src": "/art/traces/58-light-0595bb02b6856d89.webp",
+        "sha256": "0595bb02b6856d89c9b7fbc79a4a7dc7bc9377d17faa1a61bdf0dcac0478f276",
+        "bytes": 10082,
+        "agreement": 0.8659,
+        "otherViews": 0.1565
+      }
+    },
+    {
+      "id": 59,
+      "seed": "0x820a8c7ca90059eebc268a363d7a20d2c134ba8dce3c1b015ad47deb7386b431",
+      "traitsSha256": "3bb3a3159375344730917432c16ef23ead023b1784d422efb943283e327a49c7",
+      "projection": "position",
+      "symmetry": "none",
+      "stack": "tangent_caustics",
+      "preferredStack": "tangent_caustics",
+      "wildcard": false,
+      "width": 3456,
+      "height": 2234,
+      "view": {
+        "candidate": 1,
+        "triple": ["0.917727768410616", "0.2816938361354985", "0.2758204040275335"],
+        "scores": [
+          "0.9385304055034696",
+          "0.9796931851226997",
+          "0.9410961829997115",
+          "0.9444330161326262"
+        ]
+      },
+      "velocityScale": "1",
+      "drift": {
+        "scale": "0.9770375617930589",
+        "arcFraction": "1.1872263578760303",
+        "eccentricity": "0.4991096145038332",
+        "inclination": "2.473056031470512",
+        "ascendingNode": "1.1291407280009742",
+        "argumentOfPeriapsis": "5.6345624988674015",
+        "initialMeanAnomaly": "-0.9249346470538868",
+        "semiMajor": "184.29345157999848",
+        "semiMinor": "159.69743709941147"
+      },
+      "box": {
+        "minX": "-480.9192650943582",
+        "maxX": "375.72521857001897",
+        "minY": "-380.7377310233947",
+        "maxY": "173.0075746786361",
+        "width": "856.6444836643772",
+        "height": "553.7453057020308"
+      },
+      "film": {
+        "sha256": "e699ee8fc047260419c9ba4afd430478392933bc00c069c01ebbb1b601335516",
+        "frames": 1802,
+        "agreement": 0.545,
+        "otherViews": 0.0053
+      },
+      "trace": {
+        "src": "/art/traces/59-light-1ce3c01ae30cd1c4.webp",
+        "sha256": "1ce3c01ae30cd1c4abbcbaefd64c09021cd1315584383a1dfb6834a6822fc2ca",
+        "bytes": 3644,
+        "agreement": 0.5505,
+        "otherViews": 0.0382
+      }
+    },
+    {
+      "id": 60,
+      "seed": "0x16533d1ae83d689ec7073396bbdca9ccba2481a94528b96a31f5362586832e7e",
+      "traitsSha256": "28988ecf7242dcfcc5bbab2515d1ac0224014d303f3c2a7aed453fddfeb200e4",
+      "projection": "position",
+      "symmetry": "none",
+      "stack": "time_chords",
+      "preferredStack": "time_chords",
+      "wildcard": false,
+      "width": 3456,
+      "height": 2234,
+      "view": {
+        "candidate": 2,
+        "triple": ["0.20641776980115192", "0.11424915197132597", "0.9917299311721642"],
+        "scores": [
+          "0.8685744238769053",
+          "0.8561682087571117",
+          "0.9433456273361284",
+          "0.9249339423688584"
+        ]
+      },
+      "velocityScale": "1",
+      "drift": {
+        "scale": "0.8880848591788283",
+        "arcFraction": "0.6517070182186255",
+        "eccentricity": "0.4122309360288554",
+        "inclination": "0.09063457553374052",
+        "ascendingNode": "1.2370539468673152",
+        "argumentOfPeriapsis": "0.5002778281833596",
+        "initialMeanAnomaly": "1.6509443138876465",
+        "semiMajor": "167.51748110199344",
+        "semiMinor": "152.62172454252376"
+      },
+      "box": {
+        "minX": "-355.67493609649864",
+        "maxX": "564.9719226719826",
+        "minY": "-467.9998807501879",
+        "maxY": "127.11733061809534",
+        "width": "920.6468587684813",
+        "height": "595.1172113682833"
+      },
+      "film": {
+        "sha256": "ab47bcae9d3db6431167717e9c891aa2abf26b956618d72a342d1f853343061c",
+        "frames": 1802,
+        "agreement": 0.5106,
+        "otherViews": 0.0147
+      },
+      "trace": {
+        "src": "/art/traces/60-light-4d3ac6599d59f7ff.webp",
+        "sha256": "4d3ac6599d59f7ffe75377ac43f32b26acc4a3e1452474d8f597cb13083502c8",
+        "bytes": 4044,
+        "agreement": 0.5742,
+        "otherViews": 0.0582
+      }
+    },
+    {
+      "id": 61,
+      "seed": "0x7b80589e25e55d01498ee7677d4be975ab226d9cdb9e8d7bd6157b0f59a8ff9d",
+      "traitsSha256": "70798289702bc64ac1c7f4bab18e46601bae1be95d03a29f6bee554c30c0a782",
+      "projection": "position",
+      "symmetry": "none",
+      "stack": "time_chords+orbit_ribbons@0.40",
+      "preferredStack": "time_chords+orbit_ribbons@0.40",
+      "wildcard": false,
+      "width": 3456,
+      "height": 2234,
+      "view": {
+        "candidate": 2,
+        "triple": ["0.6990989574737944", "0.28710871429854923", "0.8155220417059934"],
+        "scores": [
+          "0.8522515023250559",
+          "0.9313830463401708",
+          "0.9460847855737704",
+          "0.850386569731513"
+        ]
+      },
+      "velocityScale": "1",
+      "drift": {
+        "scale": "1.073880629044545",
+        "arcFraction": "1.0052545561509119",
+        "eccentricity": "0.49215347364824774",
+        "inclination": "1.4911416883056159",
+        "ascendingNode": "0.22453685193578987",
+        "argumentOfPeriapsis": "6.159580327892057",
+        "initialMeanAnomaly": "0.5214009418483481",
+        "semiMajor": "195.89826669675907",
+        "semiMinor": "170.53109614595928"
+      },
+      "box": {
+        "minX": "-393.2917231000832",
+        "maxX": "224.670913924239",
+        "minY": "-239.96338766667213",
+        "maxY": "159.49509934499906",
+        "width": "617.9626370243221",
+        "height": "399.4584870116712"
+      },
+      "film": {
+        "sha256": "4cdb3e0c08ec5903ecba7145def0bce0a7d7d37bdea99a48bac253441bb2d102",
+        "frames": 1802,
+        "agreement": 0.9294,
+        "otherViews": 0.0242
+      },
+      "trace": {
+        "src": "/art/traces/61-light-053f06b27b8ead55.webp",
+        "sha256": "053f06b27b8ead55786611a797a9eba47412ccd5fc1bdf44571e1a8387038078",
+        "bytes": 11564,
+        "agreement": 0.9532,
+        "otherViews": 0.0844
+      }
+    },
+    {
+      "id": 62,
+      "seed": "0xf632bb5f87281006cc881d3fa2d7026fb7df4709b45055f2e05722fd875b06db",
+      "traitsSha256": "8a85e2f45ad805118e8fc5c8c3c5f235e372cded0ddbe4a8c9b4c7a8c311a6d7",
+      "projection": "position",
+      "symmetry": "none",
+      "stack": "time_chords",
+      "preferredStack": "time_chords",
+      "wildcard": false,
+      "width": 3456,
+      "height": 2234,
+      "view": {
+        "candidate": 2,
+        "triple": ["0.4433304578927294", "0.33186567337021083", "0.5832769428544231"],
+        "scores": [
+          "0.838944351914511",
+          "0.8907470523548827",
+          "0.9128467420468551",
+          "0.828730535455982"
+        ]
+      },
+      "velocityScale": "1",
+      "drift": {
+        "scale": "1.0924459623167586",
+        "arcFraction": "0.975211508362413",
+        "eccentricity": "0.403213178794888",
+        "inclination": "2.469294270536032",
+        "ascendingNode": "1.8941758151507209",
+        "argumentOfPeriapsis": "0.5420204530390975",
+        "initialMeanAnomaly": "-0.025293492343831048",
+        "semiMajor": "268.94300482901633",
+        "semiMinor": "246.11137812737533"
+      },
+      "box": {
+        "minX": "-790.5457641812893",
+        "maxX": "601.1957928061213",
+        "minY": "-565.6937201556009",
+        "maxY": "333.94477472572873",
+        "width": "1391.7415569874106",
+        "height": "899.6384948813296"
+      },
+      "film": {
+        "sha256": "a0ecfa6954d57b597a229b322ba0845e87f892e68e9614bccc6391d5f9a4aaf9",
+        "frames": 1802,
+        "agreement": 0.7045,
+        "otherViews": 0.009
+      },
+      "trace": {
+        "src": "/art/traces/62-light-1e78318087a23b6c.webp",
+        "sha256": "1e78318087a23b6cb808d616f7589609b418b000e079bcf16a02348caa8b6635",
+        "bytes": 2492,
+        "agreement": 0.7183,
+        "otherViews": 0.0338
+      }
+    },
+    {
+      "id": 63,
+      "seed": "0x82f72ed838e70d9f85e6f647b12e145de51d6e6c429b48857a72007f1ece332b",
+      "traitsSha256": "d30088bd8996ab8775558b02c94be64d8428f28cd51af805bfb133447cebe161",
+      "projection": "position",
+      "symmetry": "none",
+      "stack": "time_chords+harmonic_weave@0.24",
+      "preferredStack": "orbit_ribbons+harmonic_weave@0.20+nebula_veil@0.08",
+      "wildcard": false,
+      "width": 3456,
+      "height": 2234,
+      "view": {
+        "candidate": 3,
+        "triple": ["0.7210315858670806", "0.8762440734303052", "0.07293562938978308"],
+        "scores": [
+          "0.7741935138265356",
+          "0.8963126126114246",
+          "0.9214710751453432",
+          "0.9948676390881799"
+        ]
+      },
+      "velocityScale": "1",
+      "drift": {
+        "scale": "1.1495751140804527",
+        "arcFraction": "0.6424102387376811",
+        "eccentricity": "0.4455451443583538",
+        "inclination": "1.4441362770657418",
+        "ascendingNode": "4.003417591624554",
+        "argumentOfPeriapsis": "4.688745174229759",
+        "initialMeanAnomaly": "-2.727124727966115",
+        "semiMajor": "163.74395236105764",
+        "semiMinor": "146.59332452901535"
+      },
+      "box": {
+        "minX": "-313.1200310623383",
+        "maxX": "318.2670337736572",
+        "minY": "-195.88147895930547",
+        "maxY": "212.2547197801662",
+        "width": "631.3870648359955",
+        "height": "408.13619873947164"
+      },
+      "film": {
+        "sha256": "c862d63d39a65cb1d4916eaa3270a352ecabf897adbfae6ad273f2716d38b439",
+        "frames": 1802,
+        "agreement": 0.6177,
+        "otherViews": 0.0201
+      },
+      "trace": {
+        "src": "/art/traces/63-light-437cb0714a9b4e7f.webp",
+        "sha256": "437cb0714a9b4e7fb6a6f1711110934565b721c6c3a00fc80afa6fe3fbc90aa6",
+        "bytes": 9654,
+        "agreement": 0.6633,
+        "otherViews": 0.1433
+      }
+    },
+    {
+      "id": 64,
+      "seed": "0x8eec181f2742e6b90e3a46507ce22633f134248e202a58189f5e97095c749871",
+      "traitsSha256": "a92f465dd3723b777f466b10d16fa795cac30ed2d294a589a8e03d5b18e56ad0",
+      "projection": "hodograph",
+      "symmetry": "none",
+      "stack": "orbit_ribbons",
+      "preferredStack": "orbit_ribbons",
+      "wildcard": false,
+      "width": 3456,
+      "height": 2234,
+      "view": {
+        "candidate": 2,
+        "triple": ["0.8795157688355612", "0.7483782229343132", "0.08044690365026032"],
+        "scores": [
+          "0.9423960103516235",
+          "0.9596601687225987",
+          "0.9874492891868825",
+          "0.9296903084690958"
+        ]
+      },
+      "velocityScale": "32.82441744395983",
+      "drift": {
+        "scale": "0.9940596559957819",
+        "arcFraction": "0.028331622986811328",
+        "eccentricity": "0.42320804954178065",
+        "inclination": "1.0073468026716212",
+        "ascendingNode": "3.476894779839102",
+        "argumentOfPeriapsis": "3.3052224098796947",
+        "initialMeanAnomaly": "-2.670674375657628",
+        "semiMajor": "165.61181209837653",
+        "semiMinor": "150.0496892399428"
+      },
+      "box": {
+        "minX": "-443.7485655136568",
+        "maxX": "124.41072453859786",
+        "minY": "-288.73975335973984",
+        "maxY": "78.52525068445485",
+        "width": "568.1592900522546",
+        "height": "367.2650040441947"
+      },
+      "film": {
+        "sha256": "51bf2148824e2123018a0b9bcfdb3fc4f56be9c86156deaa185c2812aafa4cea",
+        "frames": 1802,
+        "agreement": 0.7352,
+        "otherViews": 0.0161
+      },
+      "trace": {
+        "src": "/art/traces/64-light-e734f7bfe6727c30.webp",
+        "sha256": "e734f7bfe6727c301bec7e1080ef731ec0f27b2f8f9aa99da2dd747689b8715e",
+        "bytes": 18992,
+        "agreement": 0.7758,
+        "otherViews": 0.0811
+      }
+    },
+    {
+      "id": 65,
+      "seed": "0x3e20a409a7cb7eba0092cac8bf1d07cb1cfb51b3c63f4e9e61fa4a71e73860e6",
+      "traitsSha256": "52f0871d18a57aa010959644b2fc73c5299ed46587a06470e0b2a6e6686fdf49",
+      "projection": "position",
+      "symmetry": "none",
+      "stack": "orbit_ribbons+time_chords@0.12",
+      "preferredStack": "orbit_ribbons+time_chords@0.12",
+      "wildcard": false,
+      "width": 3456,
+      "height": 2234,
+      "view": {
+        "candidate": 0,
+        "triple": ["0.9338149036212529", "0.45968399005412275", "0.6792534584821726"],
+        "scores": ["1", "0.9602061701681974", "0.9901330103780848", "1"]
+      },
+      "velocityScale": "1",
+      "drift": {
+        "scale": "1.2102894859256574",
+        "arcFraction": "1.0741231871528074",
+        "eccentricity": "0.40031304172861953",
+        "inclination": "1.308369150515869",
+        "ascendingNode": "4.552333970989619",
+        "argumentOfPeriapsis": "2.1008619204016985",
+        "initialMeanAnomaly": "3.057713529339461",
+        "semiMajor": "256.2040069123355",
+        "semiMinor": "234.77983143673467"
+      },
+      "box": {
+        "minX": "-601.9682291455076",
+        "maxX": "423.8674334511204",
+        "minY": "-366.9186633349241",
+        "maxY": "296.19385698940084",
+        "width": "1025.835662596628",
+        "height": "663.1125203243249"
+      },
+      "film": {
+        "sha256": "e60f6630f35778a5a69d87f0d6834d31b2b2ef1ec3c09246b7beec5c1884e055",
+        "frames": 1802,
+        "agreement": 0.9993,
+        "otherViews": 0.0416
+      },
+      "trace": {
+        "src": "/art/traces/65-light-5f063896bc96b1b8.webp",
+        "sha256": "5f063896bc96b1b8735c6a8d733fa6e4ac0b613b4a5b77f3c2a58f4a8c86fb3b",
+        "bytes": 9314,
+        "agreement": 0.9979,
+        "otherViews": 0.2317
+      }
+    },
+    {
+      "id": 66,
+      "seed": "0x7ea99800619e5e7bda53ad62d4b322f3f1532fdaa6dfcf3e79c701b36d2ae369",
+      "traitsSha256": "2d47a420dbcf84d375e0db0b4ce43efbc48f5049f0c5a48a8659965758f5754f",
+      "projection": "position",
+      "symmetry": "none",
+      "stack": "time_chords+harmonic_weave@0.24",
+      "preferredStack": "duet+time_chords@0.30",
+      "wildcard": false,
+      "width": 3456,
+      "height": 2234,
+      "view": {
+        "candidate": 0,
+        "triple": ["0.3320927016392213", "0.21915425063152563", "0.3074346110791066"],
+        "scores": [
+          "0.9759486478765778",
+          "0.9590856480010135",
+          "0.9107880261975706",
+          "0.9605220727892381"
+        ]
+      },
+      "velocityScale": "1",
+      "drift": {
+        "scale": "0.9259896448196647",
+        "arcFraction": "0.3247063164489417",
+        "eccentricity": "0.4326444160232328",
+        "inclination": "2.154041682016781",
+        "ascendingNode": "2.2237497112734803",
+        "argumentOfPeriapsis": "2.0345715097409283",
+        "initialMeanAnomaly": "0.6395353935601586",
+        "semiMajor": "220.93670437263216",
+        "semiMinor": "199.18872146600472"
+      },
+      "box": {
+        "minX": "-340.46839111445524",
+        "maxX": "230.47988141811706",
+        "minY": "-317.2102722984765",
+        "maxY": "51.85756359208093",
+        "width": "570.9482725325723",
+        "height": "369.06783589055743"
+      },
+      "film": {
+        "sha256": "88d86634a4cf9256d2168805703323bb8fd6d3896052f19aa2bdd4218c4b1021",
+        "frames": 1802,
+        "agreement": 0.6395,
+        "otherViews": 0.0106
+      },
+      "trace": {
+        "src": "/art/traces/66-light-93422edca180eb5a.webp",
+        "sha256": "93422edca180eb5abd812fe3e5664e0846414022b42891db8d6459bda3949e4f",
+        "bytes": 9698,
+        "agreement": 0.7549,
+        "otherViews": 0.0619
+      }
+    },
+    {
+      "id": 67,
+      "seed": "0x096b3fe491ce5fee66edae6f601047fcc8af8cbdb1d68a4ad04eaacc20557414",
+      "traitsSha256": "3a30e0d371c8cea4e4fc67dab9e50aa05d7c91ce66f7ff7310d0ca5971e07112",
+      "projection": "position",
+      "symmetry": "none",
+      "stack": "orbit_ribbons",
+      "preferredStack": "orbit_ribbons",
+      "wildcard": false,
+      "width": 3456,
+      "height": 2234,
+      "view": {
+        "candidate": 3,
+        "triple": ["0.14432878751261663", "0.28925879362248474", "0.5231956463889871"],
+        "scores": [
+          "0.9271564780617746",
+          "0.9097598702446932",
+          "0.8766261484457855",
+          "0.9302938138312927"
+        ]
+      },
+      "velocityScale": "1",
+      "drift": {
+        "scale": "0.945655267877067",
+        "arcFraction": "0.5811784506023515",
+        "eccentricity": "0.47732563840722725",
+        "inclination": "2.512583027174924",
+        "ascendingNode": "6.003433561953154",
+        "argumentOfPeriapsis": "5.561530717808396",
+        "initialMeanAnomaly": "0.7011451720092681",
+        "semiMajor": "138.92961962295226",
+        "semiMinor": "122.08113627245247"
+      },
+      "box": {
+        "minX": "-363.50530318390986",
+        "maxX": "181.5379928785727",
+        "minY": "-237.62023444482676",
+        "maxY": "114.70231283630343",
+        "width": "545.0432960624826",
+        "height": "352.3225472811302"
+      },
+      "film": {
+        "sha256": "99d418ff7bf2de354b07a9c79e0cb65e298cc41238191583243b698830fbc5b7",
+        "frames": 1802,
+        "agreement": 0.7954,
+        "otherViews": 0.037
+      },
+      "trace": {
+        "src": "/art/traces/67-light-f448ba5d7d29be1d.webp",
+        "sha256": "f448ba5d7d29be1d2e04cec62b0c2658bcc50075bc659f7581d8518f73e56b3a",
+        "bytes": 12958,
+        "agreement": 0.8095,
+        "otherViews": 0.2536
+      }
+    },
+    {
+      "id": 68,
+      "seed": "0xd6d0f838253b016e56856aaf1f9f9be5c461d073ceca6573478e224f31e96cb4",
+      "traitsSha256": "b8650cf8970c8c81a9d0563240af97f2c5ff94c1b42cb977602a4605bc6bebb7",
+      "projection": "position",
+      "symmetry": "none",
+      "stack": "orbit_ribbons+harmonic_weave@0.29",
+      "preferredStack": "harmonic_weave+nebula_veil@0.21",
+      "wildcard": false,
+      "width": 3456,
+      "height": 2234,
+      "view": {
+        "candidate": 0,
+        "triple": ["0.9969290846651728", "0.4353256870929027", "0.26654114987463984"],
+        "scores": ["1", "0.8538933689390411", "1", "1"]
+      },
+      "velocityScale": "1",
+      "drift": {
+        "scale": "0.9427246302455904",
+        "arcFraction": "0.08149054567706938",
+        "eccentricity": "0.48852562625037466",
+        "inclination": "0.8840809672052861",
+        "ascendingNode": "1.286543572829603",
+        "argumentOfPeriapsis": "3.3687254581616215",
+        "initialMeanAnomaly": "2.4765873196102888",
+        "semiMajor": "201.16371791233905",
+        "semiMinor": "175.5253109979703"
+      },
+      "box": {
+        "minX": "-312.46739229264597",
+        "maxX": "412.0349272256455",
+        "minY": "-30.894203378031577",
+        "maxY": "437.43281681984547",
+        "width": "724.5023195182914",
+        "height": "468.32702019787706"
+      },
+      "film": {
+        "sha256": "68b40bf6b6e76a012cad5d661e41a20b239d3b4dd4d5066abe902ae3eb68a5a3",
+        "frames": 1802,
+        "agreement": 0.933,
+        "otherViews": 0.0399
+      },
+      "trace": {
+        "src": "/art/traces/68-light-f9703afd16890934.webp",
+        "sha256": "f9703afd168909346e89afab9aa6ad294a516afc07b6371856fa9d47b3a195f0",
+        "bytes": 15966,
+        "agreement": 0.9534,
+        "otherViews": 0.1851
+      }
+    },
+    {
+      "id": 69,
+      "seed": "0x83e1cf74f14f5219fd9e3eac51532ce53d1e4420eb6a357b5a6f12878523108e",
+      "traitsSha256": "1ea5756a546dc2dc2f8529672e6425423b012a0c18fa2cf8be388d5f83dee5ed",
+      "projection": "position",
+      "symmetry": "none",
+      "stack": "orbit_ribbons",
+      "preferredStack": "orbit_ribbons",
+      "wildcard": false,
+      "width": 3456,
+      "height": 2234,
+      "view": {
+        "candidate": 3,
+        "triple": ["0.8129360631828341", "0.8180247755614577", "0.2297408625572196"],
+        "scores": ["0.9405907168798631", "0.9562476998032448", "0.8610211603832634", "1"]
+      },
+      "velocityScale": "1",
+      "drift": {
+        "scale": "1.149127416373369",
+        "arcFraction": "0.9487740922998059",
+        "eccentricity": "0.47072629012018563",
+        "inclination": "1.0191018377496222",
+        "ascendingNode": "3.431967969003841",
+        "argumentOfPeriapsis": "0.7409139664524508",
+        "initialMeanAnomaly": "-0.5604394485162842",
+        "semiMajor": "185.6909982632912",
+        "semiMinor": "163.83132360426453"
+      },
+      "box": {
+        "minX": "-296.7284033314189",
+        "maxX": "391.16675526033146",
+        "minY": "-145.2230355760414",
+        "maxY": "299.4406751571676",
+        "width": "687.8951585917504",
+        "height": "444.66371073320903"
+      },
+      "film": {
+        "sha256": "9e87a377b16b5eb783ae280e9fe891b663ca9d168acad18e5e4d9b15c595e2fc",
+        "frames": 1802,
+        "agreement": 0.9021,
+        "otherViews": 0.0795
+      },
+      "trace": {
+        "src": "/art/traces/69-light-64fc8fb679fec398.webp",
+        "sha256": "64fc8fb679fec398272bc1ceee874277ee752b275cce5a26f31b4a291ad44e14",
+        "bytes": 11380,
+        "agreement": 0.905,
+        "otherViews": 0.3775
+      }
+    },
+    {
+      "id": 70,
+      "seed": "0xc6eb8adccc594aa92650d007ddad8b939d51c030b95abd9a2be05e5546527572",
+      "traitsSha256": "c055df2c1f789bc4c14007a8e24c3114e2b55a73e57f64d5b3e9fd68ed0bc0a8",
+      "projection": "position",
+      "symmetry": "none",
+      "stack": "orbit_ribbons+harmonic_weave@0.29",
+      "preferredStack": "harmonic_weave",
+      "wildcard": false,
+      "width": 3456,
+      "height": 2234,
+      "view": {
+        "candidate": 0,
+        "triple": ["0.6759221103345207", "0.5516883984405417", "0.8165295299785572"],
+        "scores": ["1", "1", "1", "1"]
+      },
+      "velocityScale": "1",
+      "drift": {
+        "scale": "0.8672974863309887",
+        "arcFraction": "1.1242461020534462",
+        "eccentricity": "0.43635991689998",
+        "inclination": "1.4313360647299052",
+        "ascendingNode": "2.312303267626301",
+        "argumentOfPeriapsis": "0.6871931379558962",
+        "initialMeanAnomaly": "-1.5081053185038473",
+        "semiMajor": "195.4865569808123",
+        "semiMinor": "175.89337064327432"
+      },
+      "box": {
+        "minX": "-383.7806520946608",
+        "maxX": "485.11962918095037",
+        "minY": "-297.87482810251373",
+        "maxY": "263.79277269890855",
+        "width": "868.9002812756112",
+        "height": "561.6676008014223"
+      },
+      "film": {
+        "sha256": "7749318b3722fc93bdb621371868907de7d83f67f68365d2cacaf272fe3ef9d7",
+        "frames": 1802,
+        "agreement": 0.895,
+        "otherViews": 0.0246
+      },
+      "trace": {
+        "src": "/art/traces/70-light-9683ddad63b0fbd9.webp",
+        "sha256": "9683ddad63b0fbd9f61697ae80d928ef124d3e780fca14d42c8da10ec18a9db4",
+        "bytes": 10174,
+        "agreement": 0.9259,
+        "otherViews": 0.1235
+      }
+    },
+    {
+      "id": 71,
+      "seed": "0x3a75145359c9144bc6da79fce8e4f4b83f02ddf77aa7b64d1e6e7ec3163e4af4",
+      "traitsSha256": "07559be33d1a7ae86f1c94e59f2e9692b73c86284a045cfdeb7e52f00f1126b6",
+      "projection": "position",
+      "symmetry": "none",
+      "stack": "orbit_ribbons+harmonic_weave@0.29",
+      "preferredStack": "duet+time_chords@0.17",
+      "wildcard": false,
+      "width": 3456,
+      "height": 2234,
+      "view": {
+        "candidate": 1,
+        "triple": ["0.5499632265110224", "0.026836456487985435", "0.8805566722922833"],
+        "scores": ["0.8263462512377016", "1", "0.8787790875317198", "0.9402552243664661"]
+      },
+      "velocityScale": "1",
+      "drift": {
+        "scale": "0.9618883507112789",
+        "arcFraction": "0.07297970157401423",
+        "eccentricity": "0.4412239869687022",
+        "inclination": "0.7883865532509019",
+        "ascendingNode": "0.4186482330871464",
+        "argumentOfPeriapsis": "4.740102152769858",
+        "initialMeanAnomaly": "2.5364327214233198",
+        "semiMajor": "157.8038182163472",
+        "semiMinor": "141.6126746134037"
+      },
+      "box": {
+        "minX": "-267.8987794412068",
+        "maxX": "237.79496549540582",
+        "minY": "-22.288017315067705",
+        "maxY": "304.5985064662959",
+        "width": "505.6937449366126",
+        "height": "326.88652378136356"
+      },
+      "film": {
+        "sha256": "869fa84deea00f07af924ae5957efe46af5658c81516a6377bf930c07bf60cf5",
+        "frames": 1802,
+        "agreement": 0.9282,
+        "otherViews": 0.0128
+      },
+      "trace": {
+        "src": "/art/traces/71-light-f0e501a1f4feb473.webp",
+        "sha256": "f0e501a1f4feb4731fb4993a9d2fe65298cbc0fd15f0e45cc3a4941ebebe7b88",
+        "bytes": 14436,
+        "agreement": 0.9492,
+        "otherViews": 0.075
+      }
+    }
+  ]
+}

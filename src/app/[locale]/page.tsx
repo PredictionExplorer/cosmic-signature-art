@@ -6,6 +6,7 @@ import { inlineCuratedPreview } from '@/lib/art/inline-preview';
 import { expressionOfTheDay, venueNow, workOfTheDay } from '@/lib/art/work-of-the-day';
 import { openingOn } from '@/lib/art/opening';
 import { filmOrbit, performedOrbits } from '@/lib/art/orbit-windows';
+import { plateFrame } from '@/lib/art/orbit-frames';
 import { getInterpretation, type Artwork } from '@/lib/art/types';
 import { metadata } from '@/lib/site';
 import { ArtworkViewer } from '@/components/artwork-viewer';
@@ -27,7 +28,10 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
   return metadata(locale, '/', `${t.shape} ${t.ofMotion}`, t.statementLine, null);
 }
 
-/** The day's work as the Overture performs it: its recorded window, and its Light and order. */
+/**
+ * The day's work as the Overture performs it: its recorded window, its Light and order, and
+ * where the window falls on the Light film, so the bodies draw the plate itself.
+ */
 function overtureOf(work: Artwork): OvertureWork | null {
   const [performed] = performedOrbits([work.id]);
   const light = getInterpretation(work, 'light');
@@ -37,6 +41,7 @@ function overtureOf(work: Artwork): OvertureWork | null {
     bodyHues: performed.bodyHues,
     rungs: light.rungs,
     arrival: light.arrival.src,
+    frame: plateFrame(work.id, light) ?? null,
   };
 }
 

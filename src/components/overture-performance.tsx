@@ -1,8 +1,10 @@
 'use client';
 import { useEffect, useEffectEvent, useLayoutEffect, useRef } from 'react';
 import { WindowPerformance, type OrbitWindow, type PlanePoints } from '@/lib/physics/orbit';
+import { FramedWindow, type PlateFrame } from '@/lib/physics/framing';
 import { lightFilmDuration, stepsDrawnAt } from '@/lib/physics/light-film';
 import {
+  framePoint,
   overtureLayout,
   overtureShare,
   plateTransform,
@@ -24,6 +26,21 @@ export interface OvertureWork {
   /** The Light still's ladder, ascending by width, and its arrival map. */
   rungs: readonly StillRung[];
   arrival: string;
+  /**
+   * Where the window falls on the Light film (src/lib/art/orbit-frames.ts). With it the bodies
+   * draw on the plate itself; without it the score is drawn beside the plate, in its own plane.
+   */
+  frame?: PlateFrame | null;
+}
+
+/**
+ * The bodies as the Overture draws them, wherever they are drawn: every drawn body's place on
+ * the score's canvas now, and a run on to a step that hands over each sample's places. A work
+ * with symmetry draws each body once a copy, so there are three places a copy.
+ */
+interface Tracer {
+  now(): [number, number][];
+  run(target: number, sample: (places: [number, number][]) => void): void;
 }
 
 /** Every hundredth step is drawn, as the orbit section draws it. */
@@ -59,14 +76,56 @@ const boxOf = (rect: DOMRect): Box => ({
   height: rect.height,
 });
 
+/** The bodies in the window's own plane, fitted to the score's canvas (version 1). */
+function planeTracer(window: OrbitWindow, width: number, height: number): Tracer {
+  const [u0, u1, v0, v1] = window.plane.bounds;
+  const margin = 0.06 * Math.min(width, height);
+  const scale = Math.min(
+    (width - 2 * margin) / (u1 - u0 || 1),
+    (height - 2 * margin) / (v1 - v0 || 1),
+  );
+  const ox = (width - (u1 - u0) * scale) / 2 - u0 * scale;
+  const oy = (height - (v1 - v0) * scale) / 2 - v0 * scale;
+  const replay = new WindowPerformance(window);
+  const point: PlanePoints = { u: new Float64Array(3), v: new Float64Array(3) };
+  const now = (): [number, number][] => {
+    replay.project(point);
+    return [0, 1, 2].map((body) => [ox + point.u[body] * scale, oy + point.v[body] * scale]);
+  };
+  return { now, run: (target, sample) => replay.run(target, STRIDE, () => sample(now())) };
+}
+
+/** The bodies where the film drew them, on a canvas laid over the plate (version 2). */
+function frameTracer(
+  window: OrbitWindow,
+  frame: PlateFrame,
+  width: number,
+  height: number,
+): Tracer {
+  const framed = new FramedWindow(window, frame);
+  const box = { width, height };
+  const places = (pixels: Float64Array) => {
+    const out: [number, number][] = [];
+    for (let i = 0; i < pixels.length; i += 2)
+      out.push(framePoint(pixels[i], pixels[i + 1], frame, box));
+    return out;
+  };
+  return {
+    now: () => places(framed.place()),
+    run: (target, sample) => framed.run(target, STRIDE, (_, pixels) => sample(places(pixels))),
+  };
+}
+
 /**
  * The Overture, performed (third-physics.md §5.8). Over the black of the first paint the day's
  * work's three bodies run their recorded window, replayed from its verified first step, while
- * beside them the Light still condenses in its arrival order, on one clock: when the score has
- * drawn a share of the window the still has come to the same share of its order. The plate then
- * grows into its place on the home, the black lifts over the home's own Light plate, and the
- * plate lands on the expression the home opens on (artwork-viewer.tsx); the running head comes
- * last. Any input ends it at once, on the page as it would have opened.
+ * the Light still condenses in its arrival order, on one clock: when the score has drawn a share
+ * of the window the still has come to the same share of its order. With the work's frame the
+ * bodies are drawn on the plate itself, where its film drew them, and the still condenses under
+ * them; without it, beside the plate in the orbit's own plane. The plate then stands in its
+ * place on the home, the black lifts over the home's own Light plate, and the plate lands on the
+ * expression the home opens on (artwork-viewer.tsx); the running head comes last. Any input ends
+ * it at once, on the page as it would have opened.
  */
 export default function OverturePerformance({
   work,
@@ -184,7 +243,10 @@ export default function OverturePerformance({
     setOverturePhase('playing');
 
     const gutter = parseFloat(getComputedStyle(html).getPropertyValue('--gutter')) || 20;
-    const layout = overtureLayout({ width: innerWidth, height: innerHeight }, art, gutter);
+    const framing = work.frame ?? null;
+    const layout = overtureLayout({ width: innerWidth, height: innerHeight }, art, gutter, {
+      registered: framing !== null,
+    });
     const place = (node: HTMLElement, box: Box) =>
       Object.assign(node.style, {
         left: `${box.x}px`,
@@ -194,7 +256,8 @@ export default function OverturePerformance({
       });
     // The plate is laid out in its own place and only ever scaled down, so it lands sharp.
     place(plateBox, art);
-    plateBox.style.transform = plateTransform(art, layout.plate);
+    plateBox.style.transform =
+      layout.arrangement === 'registered' ? 'none' : plateTransform(art, layout.plate);
     place(scoreBox, layout.score);
     overlay.setAttribute('data-arrangement', layout.arrangement);
     stillCanvas.width = Math.round(art.width * ratio);
@@ -204,33 +267,23 @@ export default function OverturePerformance({
       canvas.height = Math.round(layout.score.height * ratio);
     }
 
-    // The score: the window's plane fitted to its box, as the orbit section fits it.
-    const [u0, u1, v0, v1] = work.window.plane.bounds;
+    // The score: on the plate where the film drew it, or the window's plane fitted to its box
+    // as the orbit section fits it. Each drawn body is a body of the orbit in one copy.
     const width = trailCanvas.width;
     const height = trailCanvas.height;
-    const margin = 0.06 * Math.min(width, height);
-    const scale = Math.min(
-      (width - 2 * margin) / (u1 - u0 || 1),
-      (height - 2 * margin) / (v1 - v0 || 1),
-    );
-    const ox = (width - (u1 - u0) * scale) / 2 - u0 * scale;
-    const oy = (height - (v1 - v0) * scale) / 2 - v0 * scale;
+    const tracer = framing
+      ? frameTracer(work.window, framing, width, height)
+      : planeTracer(work.window, width, height);
     const hues = work.bodyHues;
     const radius = work.window.masses.map((mass) => Math.cbrt(mass) * 0.6 * ratio);
-    const replay = new WindowPerformance(work.window);
     const steps = work.window.steps;
     const film = lightFilmDuration(steps);
-    const point: PlanePoints = { u: new Float64Array(3), v: new Float64Array(3) };
-    const here = (): [number, number][] => {
-      replay.project(point);
-      return [0, 1, 2].map((body) => [ox + point.u[body] * scale, oy + point.v[body] * scale]);
-    };
     /** Where each body was last drawn, so each frame's path continues the one before. */
-    let last = here();
+    let last = tracer.now();
     const glows = () => {
       light.clearRect(0, 0, width, height);
-      for (let body = 0; body < 3; body++) {
-        const [cx, cy] = last[body];
+      last.forEach(([cx, cy], drawn) => {
+        const body = drawn % 3;
         const reach = radius[body] * 4;
         const glow = light.createRadialGradient(cx, cy, 0, cx, cy, reach);
         glow.addColorStop(0, `oklch(0.96 0.04 ${hues[body]})`);
@@ -240,7 +293,7 @@ export default function OverturePerformance({
         light.beginPath();
         light.arc(cx, cy, reach, 0, Math.PI * 2);
         light.fill();
-      }
+      });
     };
     glows();
     trail.globalCompositeOperation = 'lighter';
@@ -248,21 +301,17 @@ export default function OverturePerformance({
     trail.lineJoin = 'round';
     /** The window drawn on to `target`: a path a body a frame, light added as the film adds it. */
     const drawTo = (target: number) => {
-      const paths = last.map((place) => [place]);
-      replay.run(target, STRIDE, () => {
-        const places = here();
-        for (let body = 0; body < 3; body++) paths[body].push(places[body]);
-      });
-      last = here();
-      for (let body = 0; body < 3; body++) {
-        paths[body].push(last[body]);
-        trail.strokeStyle = `oklch(0.84 0.075 ${hues[body]} / 0.2)`;
+      const paths = last.map((at) => [at]);
+      tracer.run(target, (places) => places.forEach((at, drawn) => paths[drawn].push(at)));
+      last = tracer.now();
+      paths.forEach((path, drawn) => {
+        path.push(last[drawn]);
+        trail.strokeStyle = `oklch(0.84 0.075 ${hues[drawn % 3]} / 0.2)`;
         trail.beginPath();
-        trail.moveTo(...paths[body][0]);
-        for (let index = 1; index < paths[body].length; index++)
-          trail.lineTo(...paths[body][index]);
+        trail.moveTo(...path[0]);
+        for (let index = 1; index < path.length; index++) trail.lineTo(...path[index]);
         trail.stroke();
-      }
+      });
       glows();
     };
 
@@ -284,7 +333,10 @@ export default function OverturePerformance({
       trailCanvas.style.opacity = '0';
       frame = requestAnimationFrame(tick);
     };
-    /** The score gives way and the plate grows into its place; then the black lifts. */
+    /**
+     * The score gives way and the plate grows into its place, where a registered plate stands
+     * already; then the black lifts.
+     */
     const land = () => {
       overlay.setAttribute('data-landing', '');
       plateBox.style.transform = 'none';

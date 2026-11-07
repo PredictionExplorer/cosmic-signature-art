@@ -181,8 +181,54 @@ Each PR passes the seven-project Playwright matrix, axe, the 12 px floor, the mo
 - **Never left hidden.** A performance taken down mid-play gives the page back. A failure inside the still's arrival ends it, and its listeners are attached only once nothing can throw.
 - **Smaller things.** The plate's word now takes the keyboard and the screen reader to the orbit. The field's status is busy while it derives, so a screen reader speaks the outcome rather than every count. The word is offered on a desk only, where the strip has room. A browser test that could not fail now presses a link beneath the black.
 
+**The Overture**, version 2: the bodies draw the plate. *Built 6 November 2026.*
+- **The frame is the generator's own.** The plate's frame is the generator's path from the simulation to the film, ported beside the orbit (`src/lib/physics/`), in the generator's order:
+  - **The projection** (`app.rs`). Eleven works draw phase space: six cross braids, three hodographs and two phase portraits.
+  - **The view** (`app.rs`). The generator photographs each orbit from the best of four seeded angles: Shoemake rotations from the seed's `cosmic-view/v1` fork, each proxy-rendered in the work's layer stack and scored. The scorer is ported line for line (`view-score.ts`).
+  - **The camera's drift** (`drift.rs` and `drift_config.rs`, in `drift.ts`). The main stream is read on past the Borda search, 2.1 million draws, to the drift's size, sweep and eccentricity. The trait file publishes these three, and all 72 works match to the last bit. The ellipse's orientation and starting phase are the next four draws.
+  - **The fit** (`render/context.rs`). The box of every drifted step, padded by a twentieth and widened to 3,456 × 2,234.
+  - **The symmetry** (`batch_drawing.rs`). Nine works draw every stroke again about the frame's centre: four mirrored, two turned three times, three dihedral. Turned copies shrink so the frame's diagonal stays inside.
+  - **The profile's choices.** The layer stack's exact alphas, the symmetry and the projection come from the profile's `cosmic-structure/v2` fork. Each matches the trait file's label for every work.
+  - **The files.** `framing.ts` draws with a frame and is all the Overture loads; `frame-derivation.ts` derives one.
+- **Checked against the generator itself.** A scratch build of CS-Image-Generation at 4dc6d64 printed, for all 72 works, the four view scores, the box and the bodies' pixels from the generator's own code. That build was an example binary outside both repositories. The port agrees on all of it:
+  - every work chooses the same view;
+  - the scores are the same to the last bit, but for two that differ by one ulp (`Math.log` against the system's `ln`);
+  - the boxes agree to 1e-15;
+  - the pixels are the same single-precision values.
+
+  Eight works tie at the score's ceiling of 1 and keep the first view, as the generator's strict comparison does.
+- **Checked against the films.** `npm run art:frames` (`scripts/build-orbit-frames.mjs`) derives each frame, and frames the window from the three views the generator passed over too. It then decodes the published Light film once, through the verified cache, at 576 × 372. Frame by frame it takes the bodies placed at every 37th step the film's frame drew, and counts those standing on or beside a cell that gains light in that very frame:
+  - the frame's own bodies: 41–99.9 %;
+  - any view passed over: never more than 11.5 %;
+  - the frame always leads the best of the others by 8.4 times or more.
+
+  The registry is written only when every work's bodies meet the film's new light in at least a quarter of the samples, and lead every other view by three times on the film and by one and a half times on its trace.
+- **The trace.** What the film gained, and when, is kept for each work as a lossless 576 × 372 WebP: sixteen bits a cell, one for each sixteenth of the film. The 72 traces (`public/art/traces/`) are 2.5–33 KB each, 849 KB together, and are never shown. Every indexed work is replayed in its frame against its trace:
+  - in Node (`framing.test.ts`);
+  - in each engine's desk project (`tests/e2e/frames.spec.ts`), with the very files Node runs, types stripped, on a blank page of its own origin.
+
+  Each meets the build's agreement, at least 1.8 times any other view's. The page also re-derives № 023 and № 001 from their seeds.
+- **The registry.** `src/lib/art/orbit-frames.json` (135 KB, read on the server) keeps every double as its exact decimal. A frame binds to its work only while the orbit record's seed and trait hash, and the Light film's hash, agree.
+- **Re-derived on every run.** `npm run test:scripts` re-derives all 72 frames from their seeds. Every choice and every draw must match to the bit. The scores, the drift's ellipse and the box must match within a trillionth of the frame (`FIT_TOLERANCE`), because sines, cosines and logarithms feed them and machines round those apart.
+- **A rebuild keeps the stored digits.** When a rebuild frames a work the same, it keeps the digits already stored, so another machine does not rewrite meaningless last bits.
+- **The performance.** With a frame, the score is drawn on the plate itself, in its own place, on a desk and a phone alike:
+  - the three bodies stand where the film drew them; a kaleidoscopic work draws them once in each copy;
+  - their trails add their light to the still's;
+  - beneath them the still condenses in its arrival order, on the same clock;
+  - the plate does not grow into its place, because it is there already, and the page comes up around it as the trails give way.
+
+  Without a frame (a stale registry, or a work not yet measured) version 1 plays as before. Reduced motion, returning visitors, Pause and any input are unchanged.
+
+**Found while building version 2.**
+- **The frame is more than the drift.** The view is chosen before the drift, by a proxy render, and the fit comes after it. Without the scorer the drift lands on nothing: each wrong view's bodies meet the film's new light in a few per cent of frames.
+- **The arrival maps order regions, not strokes.** Their softening gives a late mark beside early ones an early time. The condensation keeps their order, and only the trails are registered.
+- **The trace tells views apart by their lead.** How often the right frame meets its trace depends on the work: chords spread their light away from the bodies, and symmetry's copies share it out. One right view (№ 049, 54.8 %) met it no more often than another work's wrong one (№ 006). The build's first rule, a level of 60 %, refused four true frames, so it now asks for a lead.
+- **Node's type stripping needs `.ts` in imports between physics files.** The tsconfig now allows them (`allowImportingTsExtensions`, with `noEmit`).
+- **Worker threads inherit `process.argv`.** A worker that imported the build script would run its main. The film's measure therefore lives in `scripts/lib/film-measure.mjs`.
+- **V8 rounds sines and cosines apart from machine to machine.** CI (x86-64) re-derived five of the 72 frames an arm64 Mac had written, and their boxes (and one drift's semi-axes) differed by one to six ulps. The likely cause is that arm64 builds of V8 fuse multiplies and adds inside `Math.sin` and `Math.cos`, and x86-64 builds do not. Every choice, draw and score matched. "To the last bit" therefore holds for what the stream draws and for the plain arithmetic, not for the fit, which is checked within a trillionth of the frame.
+
 **Open.**
 - **WebKit swaps a large streamed page in after load.** It holds the page behind the route's fallback and renders the streamed `main` again after hydration: on the home, a work page and the Ukrainian process essay. This was reported while building The choice, predates this phase, and wants its own fix.
 - **A prefetch of `/exhibitions` answers 404** on the English home. It also predates this phase.
-- **Version 2 of the Overture** registers the score with the plate (drift and framing), so the bodies draw the plate itself.
+- **The work page's orbit** is still drawn in its own plane (Phase A). With the frames it could be drawn on the plate.
 - **Opening night** (§5.9) waits for the pipeline to publish traits early.
