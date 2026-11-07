@@ -58,9 +58,9 @@ Phase A of [Third Physics](third-physics.md) puts the physics beneath every work
 
 ## Limits, and what is next
 
-- The drawing is the orbit in its own plane. It is not registered to the Light still: that needs the camera drift and framing ported (Phase D, the Overture).
-- The score is the section's own transport. It does not yet drive the plate's film or jump it to an event (§5.5 of the plan).
+- The drawing is the orbit in its own plane. It is not registered to the Light still: that needs the camera drift and framing ported (Phase D, the Overture). *The drift and the framing are ported now, for the Overture's version 2 (PR #19). The work page's drawing does not use them yet ([third-physics-phase-d.md](third-physics-phase-d.md) §7).*
+- The score is the section's own transport. It does not yet drive the plate's film or jump it to an event (§5.5 of the plan). *Phase E put the score in the Light film's own transport, on the plate and in the room, and the closest approach opens the room's film two seconds before it (PR #12; [third-physics-phase-e.md](third-physics-phase-e.md) §1).*
 - A work whose search used aesthetic retries would be matched to its attempt by its masses. No work in the collection has retries.
 - The rule for the profile draws belongs to generator 1.x. A future pipeline version must be checked again; the build fails loudly if it is not.
 
-Phase B, the crossing in the order the work was made, is next.
+Phase B, the crossing in the order the work was made, is next. *It shipped on 29–30 October 2026 (PR #3); see [third-physics-phase-b.md](third-physics-phase-b.md).*

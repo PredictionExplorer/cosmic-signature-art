@@ -31,7 +31,7 @@ Every route was photographed screen by screen. The share of each screen covered 
 - The Index sheet leaves a band of about 250 px empty and clips its search field's placeholder.
 - The glossary's footnote markers in the entry are targets of 7 × 16 px.
 - All the light hangs its sky 358 px wide. A single tap both names and chooses, so a finger cannot browse the names the way a pointer can.
-- The Orrery's cells, three to a row, are faint on a phone. The Orrery's WebKit freeze is being fixed in its own session, so its phone pass waits for that fix.
+- The Orrery's cells, three to a row, are faint on a phone. The Orrery's WebKit freeze was being fixed in its own session, so its phone pass waited for that fix. The fix has since landed in PR #13 (8063dc5).
 - The auction landing has no work on it.
 
 ## 2. The rule: two equal expressions
@@ -62,7 +62,7 @@ One policy module decides the opening expression, and every surface asks it. Tes
 - **All the light on touch.** A finger held on the sky names the orbits beneath it as it moves, and lifting it chooses. A tap still chooses at once. The sky hangs edge to edge.
 - **The auction landing** is left as it is, pending the owner. The vision made the sale's title spread the one screen without a work. Before a contract exists there are no lots, and works that are not for sale on a sale page could mislead. Section 6 asks the owner.
 - **The collection's bar** keeps clear of the home indicator (`env(safe-area-inset-bottom)`).
-- **The Orrery's phone pass** (two to a row, trails legible at the phone's pixel ratio) waits for the freeze fix's PR.
+- **The Orrery's phone pass** (two to a row, trails legible at the phone's pixel ratio) is still to do. The freeze fix it waited for landed in PR #13 (8063dc5).
 
 ## 4. The events
 
@@ -139,7 +139,7 @@ Each PR passes the seven-project Playwright matrix, axe, the 12 px floor, the mo
 
 **Still to do on phones.**
 - A finger held on All the light to browse names before choosing.
-- The Orrery's phone pass, after the freeze fix lands.
+- The Orrery's phone pass. The freeze fix it waited for landed in PR #13 (8063dc5).
 
 ## 7. Parts 2 to 4 as built: the events
 
@@ -228,7 +228,15 @@ Each PR passes the seven-project Playwright matrix, axe, the 12 px floor, the mo
 - **V8 rounds sines and cosines apart from machine to machine.** CI (x86-64) re-derived five of the 72 frames an arm64 Mac had written, and their boxes (and one drift's semi-axes) differed by one to six ulps. The likely cause is that arm64 builds of V8 fuse multiplies and adds inside `Math.sin` and `Math.cos`, and x86-64 builds do not. Every choice, draw and score matched. "To the last bit" therefore holds for what the stream draws and for the plain arithmetic, not for the fit, which is checked within a trillionth of the frame.
 
 **Open.**
-- **WebKit swaps a large streamed page in after load.** It holds the page behind the route's fallback and renders the streamed `main` again after hydration: on the home, a work page and the Ukrainian process essay. This was reported while building The choice, predates this phase, and wants its own fix.
-- **A prefetch of `/exhibitions` answers 404** on the English home. It also predates this phase.
+- **WebKit swaps a large streamed page in after load.** *Resolved by PR #16 (e15f8fd).* WebKit held the page behind the route's fallback and rendered the streamed `main` again after hydration: on the home, a work page and the Ukrainian process essay. This was reported while building The choice and predates this phase. It had two causes:
+  - **The second render.** Once the shell hydrated, the motion provider's context took a new value, and React renders on the client any streamed boundary that has not yet been revealed. WebKit's reveals always came after hydration (below); held back that long, Chromium's did the same. `useMotion()` now reads the motion store itself, with no context, so the streamed `main` hydrates in place.
+  - **The wait for load.** During a navigation WebKit grants no animation frame until the page has something to paint or has loaded, and React reveals a streamed boundary on a frame. `src/lib/reveal.ts`, inlined by `src/app/venue-document.tsx`, reveals the waiting boundaries itself while no frame has come.
+
+  `tests/e2e/hydration.spec.ts` holds every reveal until the shell has hydrated, and requires each streamed node of the three pages to hydrate in place. The first-paint tests now run in webkit-reduced-motion too.
+- **A prefetch of `/exhibitions` answers 404** on the English home. It also predates this phase. *Resolved on 6 November 2026.*
+  - **The cause.** Next's router predicts the route of an address it has not yet fetched from the routes it has learned. Once it had learned the home's, `/[locale]`, from an address that carries its locale (the language menu's `/uk`, or `/en` itself), it took English addresses for the home in a locale of their name: `/exhibitions`, `/process`, `/statement` and `/privacy`, which the proxy rewrites to `/en/…`.
+  - **The cost.** It asked each of them for the home's own segment and got a 404, then asked for the locale's layout again and again. On main's production build one page in Chromium made 18,312 such requests in 20 seconds and had not stopped; WebKit did the same.
+  - **The fix.** The home closes its parameter (`dynamicParams = false` in `src/app/[locale]/page.tsx`), and the router predicts no route with a closed parameter, so it asks the server for each address's route. Each address is then asked twice, for its route and its page. `tests/e2e/not-found.spec.ts` fails without it.
+  - An address the proxy never sees, such as `/foo.bar`, now gets the venue's own 404 page rather than Next's bare one.
 - **The work page's orbit** is still drawn in its own plane (Phase A). With the frames it could be drawn on the plate.
 - **Opening night** (§5.9) waits for the pipeline to publish traits early.

@@ -125,8 +125,8 @@ The follow-up pull request's first runs on CI's Ubuntu runner found problems tha
 
 - The plate's front is soft and the head's and strip's are hard. A soft head would need a mask that tracks text, which clip-path cannot do.
 - The page's wall between the plate and the night wing is not part of the Turn. It takes the room's ground when the Turn commits, as before.
-- Wavelength, the second lens, is not built. The published spectral sweep and bins are its material.
-- Phase C, the indexes (All the light and the Orrery), is next.
+- Wavelength, the second lens, is not built. The published spectral sweep and bins are its material. *Built in Phase E (PR #12): it holds the sweep's frame for one wavelength, and each work's range is read from its bins ([third-physics-phase-e.md](third-physics-phase-e.md) §3).*
+- Phase C, the indexes (All the light and the Orrery), is next. *Built on 30 October 2026 (PR #6); see [third-physics-phase-c.md](third-physics-phase-c.md).*
 
 ## Run of record
 
