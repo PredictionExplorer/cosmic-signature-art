@@ -13,8 +13,9 @@ import type { SeedStream } from './orbit';
   ported: no work uses them, and a work that did would be refused by the frame's build.
 
   Only + − × ÷ and √ are exact in ECMAScript; the drift's sines, cosines and Kepler solve may
-  differ from the generator's libm in the last bit, a few billionths of a pixel on the plate.
-  The draws themselves are exact, and so is everything published.
+  differ in the last bit from the generator's libm, and from one machine's V8 to another's: a
+  few ulps, far below a billionth of a pixel on the plate. The draws themselves are exact on
+  every machine, and so is everything published.
 */
 
 /** The largest sweep a drift may take, in turns (drift.rs MAX_ARC_FRACTION). */

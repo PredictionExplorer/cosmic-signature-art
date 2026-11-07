@@ -26,6 +26,8 @@ import { overWorkers } from './lib/orbit-verify.mjs';
 import { decimal } from './build-orbit-records.mjs';
 import { orbitWindowOf } from './build-orbit-windows.mjs';
 
+const { frameDifferences } = await import('../src/lib/physics/frame-derivation.ts');
+
 /**
  * Orbit frames: where each work's recorded window falls on its Light film, so the Overture's
  * bodies can draw the plate itself (third-physics.md §5.8, version 2).
@@ -241,6 +243,55 @@ export function refusal(reply, accept = PARAMETERS.accept) {
   return null;
 }
 
+/** A stored entry as frame-derivation.ts compares frames: the frame, its view and the scores. */
+export const frameRecordOf = (entry) => ({
+  frame: plateFrameOf(entry),
+  candidate: entry.view.candidate,
+  scores: entry.view.scores.map(Number),
+});
+
+/** An agreement measured again may move by a sample or two of the tens of thousands taken. */
+const AGREEMENT_TOLERANCE = 2e-4;
+
+/**
+ * The stored entry, when a rebuild frames the same work the same: the same record, film and
+ * trace, every choice and draw exact, the fit within FIT_TOLERANCE (frame-derivation.ts) and the
+ * agreements within a sample or two. Otherwise the rebuilt entry. Another machine's V8 rounds
+ * sines and cosines apart in the last bit, so without this a rebuild there would rewrite digits
+ * that mean nothing.
+ */
+export function settle(previous, next) {
+  if (!previous) return next;
+  const labels = (entry) =>
+    JSON.stringify([
+      entry.id,
+      entry.seed,
+      entry.traitsSha256,
+      entry.projection,
+      entry.symmetry,
+      entry.stack,
+      entry.preferredStack,
+      entry.wildcard,
+      entry.width,
+      entry.height,
+      entry.film.sha256,
+      entry.film.frames,
+      entry.trace.src,
+      entry.trace.sha256,
+      entry.trace.bytes,
+    ]);
+  const agreements = ['film', 'trace'].every((source) =>
+    ['agreement', 'otherViews'].every(
+      (key) => Math.abs(previous[source][key] - next[source][key]) <= AGREEMENT_TOLERANCE,
+    ),
+  );
+  const same =
+    labels(previous) === labels(next) &&
+    agreements &&
+    frameDifferences(frameRecordOf(previous), frameRecordOf(next)).length === 0;
+  return same ? previous : next;
+}
+
 export function mergeFrames(existing, measured) {
   const byId = new Map(existing.map((entry) => [entry.id, entry]));
   for (const entry of measured) byId.set(entry.id, entry);
@@ -387,7 +438,9 @@ async function main() {
         }),
       );
     }
-    const frames = requestedIds.length ? mergeFrames(registry.frames, measured) : measured;
+    const stored = new Map(registry.frames.map((entry) => [entry.id, entry]));
+    const settled = measured.map((entry) => settle(stored.get(entry.id), entry));
+    const frames = requestedIds.length ? mergeFrames(registry.frames, settled) : settled;
     const derivedOn = decideDerivedOn(
       registry.derivedOn,
       registry.frames,

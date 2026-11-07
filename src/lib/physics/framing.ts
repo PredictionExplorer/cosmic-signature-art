@@ -19,8 +19,9 @@ import { lightFilmFrame, lightFilmFrames } from './light-film.ts';
 
   A frame is derived once, offline, from the seed and checked against the Light film's own
   frame differences (scripts/build-orbit-frames.mjs); this module is what draws with it. Its
-  sines and cosines may differ from the generator's libm in the last bit, a few billionths of a
-  pixel on the plate.
+  sines and cosines may differ in the last bit from the generator's libm, and from one machine's
+  V8 to another's (arm64 fuses multiplies and adds, x86-64 does not): a few ulps, far below a
+  billionth of a pixel on the plate.
 */
 
 /** apply_projection's spaces, by the labels the trait files carry. */

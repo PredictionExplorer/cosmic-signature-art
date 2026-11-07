@@ -208,7 +208,9 @@ Each PR passes the seven-project Playwright matrix, axe, the 12 px floor, the mo
   - in each engine's desk project (`tests/e2e/frames.spec.ts`), with the very files Node runs, types stripped, on a blank page of its own origin.
 
   Each meets the build's agreement, at least 1.8 times any other view's. The page also re-derives № 023 and № 001 from their seeds.
-- **The registry.** `src/lib/art/orbit-frames.json` (135 KB, read on the server) keeps every double as its exact decimal. A frame binds to its work only while the orbit record's seed and trait hash, and the Light film's hash, agree. `npm run test:scripts` re-derives all 72 from their seeds.
+- **The registry.** `src/lib/art/orbit-frames.json` (135 KB, read on the server) keeps every double as its exact decimal. A frame binds to its work only while the orbit record's seed and trait hash, and the Light film's hash, agree.
+- **Re-derived on every run.** `npm run test:scripts` re-derives all 72 frames from their seeds. Every choice and every draw must match to the bit. The scores, the drift's ellipse and the box must match within a trillionth of the frame (`FIT_TOLERANCE`), because sines, cosines and logarithms feed them and machines round those apart.
+- **A rebuild keeps the stored digits.** When a rebuild frames a work the same, it keeps the digits already stored, so another machine does not rewrite meaningless last bits.
 - **The performance.** With a frame, the score is drawn on the plate itself, in its own place, on a desk and a phone alike:
   - the three bodies stand where the film drew them; a kaleidoscopic work draws them once in each copy;
   - their trails add their light to the still's;
@@ -223,6 +225,7 @@ Each PR passes the seven-project Playwright matrix, axe, the 12 px floor, the mo
 - **The trace tells views apart by their lead.** How often the right frame meets its trace depends on the work: chords spread their light away from the bodies, and symmetry's copies share it out. One right view (№ 049, 54.8 %) met it no more often than another work's wrong one (№ 006). The build's first rule, a level of 60 %, refused four true frames, so it now asks for a lead.
 - **Node's type stripping needs `.ts` in imports between physics files.** The tsconfig now allows them (`allowImportingTsExtensions`, with `noEmit`).
 - **Worker threads inherit `process.argv`.** A worker that imported the build script would run its main. The film's measure therefore lives in `scripts/lib/film-measure.mjs`.
+- **V8 rounds sines and cosines apart from machine to machine.** CI (x86-64) re-derived five of the 72 frames an arm64 Mac had written, and their boxes (and one drift's semi-axes) differed by one to six ulps. The likely cause is that arm64 builds of V8 fuse multiplies and adds inside `Math.sin` and `Math.cos`, and x86-64 builds do not. Every choice, draw and score matched. "To the last bit" therefore holds for what the stream draws and for the plain arithmetic, not for the fit, which is checked within a trillionth of the frame.
 
 **Open.**
 - **WebKit swaps a large streamed page in after load.** It holds the page behind the route's fallback and renders the streamed `main` again after hydration: on the home, a work page and the Ukrainian process essay. This was reported while building The choice, predates this phase, and wants its own fix.

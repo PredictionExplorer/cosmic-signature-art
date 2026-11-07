@@ -1,5 +1,6 @@
 import { beforeAll, describe, expect, it } from 'vitest';
 import registry from '@/lib/art/orbit-frames.json' with { type: 'json' };
+import { frameOf, loadOrbitFrames } from '@/lib/art/orbit-frames';
 import { workOrbit } from '@/lib/art/orbit-records';
 import { performedOrbits } from '@/lib/art/orbit-windows';
 import {
@@ -9,6 +10,8 @@ import {
   fitBox,
   preferredStructure,
   profileChoices,
+  frameDifferences,
+  FIT_TOLERANCE,
   type DerivedFrame,
   type FramingTraits,
 } from './frame-derivation';
@@ -112,20 +115,57 @@ describe('the view (app.rs apply_view_orientation)', () => {
 const ONE_DERIVATION = process.env.CI ? 120_000 : 30_000;
 const EVERY_VIEW = process.env.CI ? 240_000 : 60_000;
 
-/** A derived frame as the registry keeps it, to the last bit: this engine is the build's. */
+const parsed = loadOrbitFrames(registry);
+
+/**
+ * A derived frame as the registry keeps it: every choice and draw to the bit, the fit within
+ * FIT_TOLERANCE, since V8 rounds sines, cosines and logarithms apart in the last bit from one
+ * machine to another (frame-derivation.ts).
+ */
 function expectRegistered(derived: DerivedFrame, entry: Entry) {
   expect(derived.checks.every((row) => row.exact)).toBe(true);
-  expect(derived.view.candidate).toBe(entry.view.candidate);
-  expect(derived.view.scores).toEqual(entry.view.scores.map(Number));
-  const { frame } = derived;
-  expect(frame.view).toEqual(entry.view.triple.map(Number));
-  expect(frame.velocityScale).toBe(Number(entry.velocityScale));
-  expect(frame.drift.orientation.initialMeanAnomaly).toBe(Number(entry.drift.initialMeanAnomaly));
-  expect(frame.drift.semiMajor).toBe(Number(entry.drift.semiMajor));
-  expect(frame.box).toEqual(
-    Object.fromEntries(Object.entries(entry.box).map(([key, value]) => [key, Number(value)])),
-  );
+  const stored = parsed.get(entry.id)!;
+  expect(
+    frameDifferences(
+      { frame: frameOf(stored), candidate: stored.view.candidate, scores: stored.view.scores },
+      { frame: derived.frame, candidate: derived.view.candidate, scores: derived.view.scores },
+    ),
+  ).toEqual([]);
 }
+
+describe('two derivations of one frame', () => {
+  const stored = parsed.get(15)!;
+  const record = () => ({
+    frame: structuredClone(frameOf(stored)),
+    candidate: stored.view.candidate,
+    scores: [...stored.view.scores],
+  });
+
+  it('are one frame when only the last bits of the fit differ, as CI’s x86-64 found', () => {
+    const elsewhere = record();
+    // CI derived № 015's box.maxX as …524 where an arm64 Mac wrote …535: two ulps.
+    elsewhere.frame.box.maxX = 448.30874704216524;
+    elsewhere.frame.drift.semiMajor *= 1 + Number.EPSILON;
+    expect(frameDifferences(record(), elsewhere)).toEqual([]);
+  });
+
+  it('differ in any choice or draw, or in a fit moved past a trillionth of the frame', () => {
+    const changed = (change: (copy: ReturnType<typeof record>) => void) => {
+      const copy = record();
+      change(copy);
+      return frameDifferences(record(), copy);
+    };
+    expect(changed((copy) => (copy.candidate = (copy.candidate + 1) % 4))).toEqual(['candidate']);
+    expect(changed((copy) => (copy.frame.symmetry = 'rot3'))).toEqual(['symmetry']);
+    expect(changed((copy) => (copy.frame.drift.config.scale *= 1 + Number.EPSILON))).toEqual([
+      'drift.scale',
+    ]);
+    expect(
+      changed((copy) => (copy.frame.box.minY -= 10 * FIT_TOLERANCE * copy.frame.box.width)),
+    ).toEqual(['box.minY']);
+    expect(changed((copy) => copy.scores.pop())).toEqual(['scores']);
+  });
+});
 
 describe('a frame, derived', () => {
   // № 023, the suite's day's work: derived once, framed from all four views, for every test that
@@ -143,9 +183,10 @@ describe('a frame, derived', () => {
 
   it('scores № 023’s four seeded views exactly as the generator did, and keeps the second', () => {
     // frame_oracle.rs: score_trajectory's totals for the four candidates, in their order.
-    expect(twentyThree.view.scores).toEqual([
-      0.9369672225752924, 0.9407767818578638, 0.9219878301302269, 0.9325664495797676,
-    ]);
+    // To the bit on this Mac, as on CI; another machine's logarithms may round a few ulps apart.
+    [0.9369672225752924, 0.9407767818578638, 0.9219878301302269, 0.9325664495797676].forEach(
+      (score, k) => expect(Math.abs(twentyThree.view.scores[k] - score)).toBeLessThanOrEqual(1e-15),
+    );
     expect(twentyThree.view.candidate).toBe(1);
   });
 

@@ -509,3 +509,58 @@ export function deriveFrame(
     ...(views && { views }),
   };
 }
+
+// ───────────────────────── Two derivations of one frame ─────────────────────────
+
+/**
+ * How far apart two machines may derive a frame's fit, as a share of the frame. V8 rounds
+ * Math.sin, Math.cos and Math.log differently in the last bit on arm64, which fuses multiplies
+ * and adds, and on x86-64. CI (x86-64) derived five of the 72 boxes that an arm64 Mac wrote up to
+ * six ulps apart: 3 × 10⁻¹⁶ of the frame at most, a trillionth of a pixel. A trillionth of the
+ * frame, a few billionths of a pixel, leaves room for every other machine.
+ */
+export const FIT_TOLERANCE = 1e-12;
+
+/** A frame with the view the generator chose and the four views' scores. */
+export interface FrameRecord {
+  frame: PlateFrame;
+  candidate: number;
+  scores: readonly number[];
+}
+
+/**
+ * The fields in which two derivations of a frame differ. The choices (the view, the projection,
+ * the symmetry) and everything the stream draws are the same on every machine, to the bit. The
+ * scores, the drift's ellipse and the box, which sines, cosines and logarithms feed, agree within
+ * FIT_TOLERANCE of the frame.
+ */
+export function frameDifferences(a: FrameRecord, b: FrameRecord): string[] {
+  const differing: string[] = [];
+  const exact = (key: string, x: unknown, y: unknown) => {
+    if (!Object.is(x, y)) differing.push(key);
+  };
+  const near = (key: string, x: number, y: number, scale: number) => {
+    if (!(Math.abs(x - y) <= FIT_TOLERANCE * Math.abs(scale))) differing.push(key);
+  };
+  exact('candidate', a.candidate, b.candidate);
+  for (const key of ['width', 'height', 'projection', 'symmetry', 'velocityScale'] as const)
+    exact(key, a.frame[key], b.frame[key]);
+  a.frame.view.forEach((value, i) => exact(`view.${i}`, value, b.frame.view[i]));
+  for (const key of ['scale', 'arcFraction', 'eccentricity'] as const)
+    exact(`drift.${key}`, a.frame.drift.config[key], b.frame.drift.config[key]);
+  for (const key of [
+    'inclination',
+    'ascendingNode',
+    'argumentOfPeriapsis',
+    'initialMeanAnomaly',
+  ] as const)
+    exact(`drift.${key}`, a.frame.drift.orientation[key], b.frame.drift.orientation[key]);
+  if (a.scores.length !== b.scores.length) differing.push('scores');
+  else a.scores.forEach((score, i) => near(`scores.${i}`, score, b.scores[i], 1));
+  for (const key of ['semiMajor', 'semiMinor'] as const)
+    near(`drift.${key}`, a.frame.drift[key], b.frame.drift[key], a.frame.drift.semiMajor);
+  const span = Math.max(a.frame.box.width, a.frame.box.height);
+  for (const key of ['minX', 'maxX', 'minY', 'maxY', 'width', 'height'] as const)
+    near(`box.${key}`, a.frame.box[key], b.frame.box[key], span);
+  return differing;
+}

@@ -5,6 +5,7 @@ import {
   PARAMETERS,
   decideDerivedOn,
   frameEntry,
+  frameRecordOf,
   framingTraitsOf,
   framingTraitsOfEntry,
   generationOf,
@@ -14,9 +15,14 @@ import {
   plateFrameOf,
   refusal,
   serializeFrames,
+  settle,
 } from './build-orbit-frames.mjs';
 import { orbitWindowOf } from './build-orbit-windows.mjs';
 import { createFilmMeasure } from './lib/film-measure.mjs';
+
+const { frameDifferences } = await import('../src/lib/physics/frame-derivation.ts');
+/** A copy of a registry entry, which is plain JSON. */
+const copy = (entry) => JSON.parse(JSON.stringify(entry));
 
 const read = async (name) =>
   JSON.parse(await readFile(new URL(`../src/lib/art/${name}`, import.meta.url), 'utf8'));
@@ -258,7 +264,34 @@ test('the frames serialize stably, keep their date while unchanged, and name the
   );
 });
 
-test('every committed frame is re-derived from its seed, to the last bit', async () => {
+test('a rebuild that frames a work the same keeps the stored digits', async () => {
+  const { frames } = await read('orbit-frames.json');
+  const stored = frames.find((entry) => entry.id === 15);
+  // Another machine's last bits: CI derived № 015's box.maxX as …524 where this one wrote …535.
+  const nudged = copy(stored);
+  nudged.box.maxX = '448.30874704216524';
+  nudged.trace.agreement = stored.trace.agreement + 1e-4;
+  assert.equal(settle(stored, nudged), stored);
+  assert.equal(settle(undefined, nudged), nudged);
+  // A choice, a hash or a fit that moved is a new entry.
+  const moved = (change) => {
+    const entry = copy(stored);
+    change(entry);
+    return settle(stored, entry) === entry;
+  };
+  assert.ok(moved((entry) => (entry.view.candidate = (entry.view.candidate + 1) % 4)));
+  assert.ok(moved((entry) => (entry.trace.sha256 = 'f'.repeat(64))));
+  assert.ok(moved((entry) => (entry.box.maxX = String(Number(entry.box.maxX) + 1e-6))));
+  assert.ok(moved((entry) => (entry.film.agreement -= 0.01)));
+});
+
+/*
+  As Phase A re-derives every orbit. Every choice and everything the stream draws must be the
+  committed frame's to the bit; the scores, the drift's ellipse and the box, which sines, cosines
+  and logarithms feed, within a trillionth of the frame, since V8 rounds those functions apart in
+  the last bit on arm64 and x86-64 (frame-derivation.ts, FIT_TOLERANCE).
+*/
+test('every committed frame is re-derived from its seed: its choices to the bit, its fit within a trillionth', async () => {
   const { records } = await read('orbit-records.json');
   const { windows } = await read('orbit-windows.json');
   const { frames } = await read('orbit-frames.json');
@@ -285,16 +318,15 @@ test('every committed frame is re-derived from its seed, to the last bit', async
   // them time a decoder in fractions of a second.
   const replies = await measureFrames(jobs, { width: 2 });
   const differing = replies.flatMap((answer) => {
-    const entry = frames.find((frame) => frame.id === answer.id);
     if (answer.failure) return [{ id: answer.id, failure: answer.failure }];
-    const derived = frameEntry(recordOf.get(answer.id), framingTraitsOfEntry(entry), answer, {
-      film: { ...entry.film, agreements: [0, 0, 0, 0] },
-      trace: { ...entry.trace, agreements: [0, 0, 0, 0] },
-    });
-    const keep = ({ view, velocityScale, drift, box }) => ({ view, velocityScale, drift, box });
-    return JSON.stringify(keep(derived)) === JSON.stringify(keep(entry))
-      ? []
-      : [{ id: answer.id, stored: keep(entry), derived: keep(derived) }];
+    const entry = frames.find((frame) => frame.id === answer.id);
+    const derived = {
+      frame: answer.frame,
+      candidate: answer.view.candidate,
+      scores: answer.view.scores,
+    };
+    const fields = frameDifferences(frameRecordOf(entry), derived);
+    return fields.length ? [{ id: answer.id, fields, derived }] : [];
   });
   assert.deepEqual(differing, []);
 });
