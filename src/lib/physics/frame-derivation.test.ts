@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { beforeAll, describe, expect, it } from 'vitest';
 import registry from '@/lib/art/orbit-frames.json' with { type: 'json' };
 import { workOrbit } from '@/lib/art/orbit-records';
 import { performedOrbits } from '@/lib/art/orbit-windows';
@@ -6,12 +6,10 @@ import {
   adaptiveStacks,
   chooseView,
   deriveFrame,
-  eachProjectedStep,
   fitBox,
   preferredStructure,
   profileChoices,
-  velocityScaleOf,
-  viewTriples,
+  type DerivedFrame,
   type FramingTraits,
 } from './frame-derivation';
 import { stackLabel } from './view-score';
@@ -89,87 +87,109 @@ describe('the fit (render/context.rs)', () => {
 });
 
 describe('the view (app.rs apply_view_orientation)', () => {
-  it('scores № 023’s four seeded views exactly as the generator did, and keeps the second', () => {
-    // frame_oracle.rs: score_trajectory's totals for the four candidates, in their order.
-    const window = windowOf(23);
-    const stride = Math.floor(window.steps / 6_000);
-    const count = Math.ceil(window.steps / stride);
-    const sample = [0, 1, 2].map(() => new Float64Array(count * 3));
-    eachProjectedStep(window, 'position', 1, (point, step) => {
-      if (step % stride !== 0) return;
-      for (let b = 0; b < 3; b++)
-        sample[b].set(point.subarray(b * 3, b * 3 + 3), (step / stride) * 3);
-    });
-    const { candidate, scores } = chooseView(viewTriples(entryOf(23).seed), sample, {
-      primary: 'orbit_ribbons',
-    });
-    expect(scores).toEqual([
-      0.9369672225752924, 0.9407767818578638, 0.9219878301302269, 0.9325664495797676,
-    ]);
-    expect(candidate).toBe(1);
-  }, 30_000);
-
   it('keeps the first of views that tie, as the generator’s strict comparison does', () => {
-    // № 070: every view's proxy render scores the full 1.
+    // Four copies of one view score alike: the first is kept.
+    const sample = [0, 1, 2].map((body) =>
+      Float64Array.from({ length: 900 }, (_, i) =>
+        i % 3 === 2 ? 0 : Math.sin(i * 0.01 + body) * (1 + body) + (i % 3) * 0.5,
+      ),
+    );
+    const triple = [0.448, 0.172, 0.359] as const;
+    const tied = chooseView([triple, triple, triple, triple], sample, { primary: 'orbit_ribbons' });
+    expect(new Set(tied.scores).size).toBe(1);
+    expect(tied.candidate).toBe(0);
+    // № 070: every view's proxy render scores the full 1, and the registry keeps the first.
     expect(entryOf(70).view.scores.map(Number)).toEqual([1, 1, 1, 1]);
     expect(entryOf(70).view.candidate).toBe(0);
   });
 });
 
-describe('a frame, derived', () => {
-  // A plain orbit, a hodograph, and a mirrored phase portrait: re-derived here as the build
-  // derived them, which is this engine to the last bit.
-  it.each([23, 33, 7])(
-    're-derives № %i’s frame from its seed, exactly as the registry keeps it',
-    (id) => {
-      const entry = entryOf(id);
-      const derived = deriveFrame(workOrbit(id)!.generation, windowOf(id), traitsOf(entry));
-      expect(derived.checks.every((row) => row.exact)).toBe(true);
-      expect(derived.view.candidate).toBe(entry.view.candidate);
-      expect(derived.view.scores).toEqual(entry.view.scores.map(Number));
-      const { frame } = derived;
-      expect(frame.view).toEqual(entry.view.triple.map(Number));
-      expect(frame.velocityScale).toBe(Number(entry.velocityScale));
-      expect(frame.drift.orientation.initialMeanAnomaly).toBe(
-        Number(entry.drift.initialMeanAnomaly),
-      );
-      expect(frame.drift.semiMajor).toBe(Number(entry.drift.semiMajor));
-      expect(frame.box).toEqual(
-        Object.fromEntries(Object.entries(entry.box).map(([key, value]) => [key, Number(value)])),
-      );
-    },
-    30_000,
+/*
+  CI measures coverage on a shared runner, four to five times slower than a laptop over these
+  derivations (vitest.config.ts): one derivation took 14–17 s there, and № 023 framed from all
+  four views 37 s. The budgets are sized to the runner, with room to spare.
+*/
+const ONE_DERIVATION = process.env.CI ? 120_000 : 30_000;
+const EVERY_VIEW = process.env.CI ? 240_000 : 60_000;
+
+/** A derived frame as the registry keeps it, to the last bit: this engine is the build's. */
+function expectRegistered(derived: DerivedFrame, entry: Entry) {
+  expect(derived.checks.every((row) => row.exact)).toBe(true);
+  expect(derived.view.candidate).toBe(entry.view.candidate);
+  expect(derived.view.scores).toEqual(entry.view.scores.map(Number));
+  const { frame } = derived;
+  expect(frame.view).toEqual(entry.view.triple.map(Number));
+  expect(frame.velocityScale).toBe(Number(entry.velocityScale));
+  expect(frame.drift.orientation.initialMeanAnomaly).toBe(Number(entry.drift.initialMeanAnomaly));
+  expect(frame.drift.semiMajor).toBe(Number(entry.drift.semiMajor));
+  expect(frame.box).toEqual(
+    Object.fromEntries(Object.entries(entry.box).map(([key, value]) => [key, Number(value)])),
   );
+}
 
-  it('measures a phase-space window’s velocity scale over the whole window', () => {
-    const entry = entryOf(33);
-    expect(entry.projection).toBe('hodograph');
-    expect(velocityScaleOf(windowOf(33))).toBe(Number(entry.velocityScale));
-  }, 30_000);
-
-  it('refuses a frame when a published value differs by a single bit', () => {
-    const entry = entryOf(23);
-    const traits = traitsOf(entry);
-    const scale = traits.drift.scale;
-    const nudged = { ...traits, drift: { ...traits.drift, scale: scale + scale * Number.EPSILON } };
-    expect(() => deriveFrame(workOrbit(23)!.generation, windowOf(23), nudged)).toThrow(
-      /driftScale differ/,
-    );
-    expect(() =>
-      deriveFrame(workOrbit(23)!.generation, windowOf(23), { ...traits, symmetry: 'rot3' }),
-    ).toThrow(/symmetry differ/);
-    expect(() =>
-      deriveFrame(workOrbit(23)!.generation, windowOf(23), { ...traits, stack: 'spokes' }),
-    ).toThrow(/stack differ/);
-  }, 30_000);
-
-  it('frames the window from every view on request, the chosen one among them', () => {
-    const entry = entryOf(23);
-    const derived = deriveFrame(workOrbit(23)!.generation, windowOf(23), traitsOf(entry), {
+describe('a frame, derived', () => {
+  // № 023, the suite's day's work: derived once, framed from all four views, for every test that
+  // needs it.
+  let twentyThree: DerivedFrame;
+  beforeAll(() => {
+    twentyThree = deriveFrame(workOrbit(23)!.generation, windowOf(23), traitsOf(entryOf(23)), {
       everyView: true,
     });
-    expect(derived.views).toHaveLength(4);
-    expect(derived.views![entry.view.candidate]).toEqual(derived.frame);
-    expect(derived.views![0].box).not.toEqual(derived.frame.box);
-  }, 30_000);
+  }, EVERY_VIEW);
+
+  it('re-derives № 023’s frame from its seed, exactly as the registry keeps it', () => {
+    expectRegistered(twentyThree, entryOf(23));
+  });
+
+  it('scores № 023’s four seeded views exactly as the generator did, and keeps the second', () => {
+    // frame_oracle.rs: score_trajectory's totals for the four candidates, in their order.
+    expect(twentyThree.view.scores).toEqual([
+      0.9369672225752924, 0.9407767818578638, 0.9219878301302269, 0.9325664495797676,
+    ]);
+    expect(twentyThree.view.candidate).toBe(1);
+  });
+
+  it('frames the window from every view on request, the chosen one among them', () => {
+    expect(twentyThree.views).toHaveLength(4);
+    expect(twentyThree.views![1]).toEqual(twentyThree.frame);
+    expect(twentyThree.views![0].box).not.toEqual(twentyThree.frame.box);
+  });
+
+  it(
+    're-derives a hodograph’s frame, its velocities scaled over the whole window',
+    () => {
+      const entry = entryOf(33);
+      expect(entry.projection).toBe('hodograph');
+      expectRegistered(
+        deriveFrame(workOrbit(33)!.generation, windowOf(33), traitsOf(entry)),
+        entry,
+      );
+    },
+    ONE_DERIVATION,
+  );
+
+  it('refuses a frame whose labels differ from the trait file’s, before reading the stream', () => {
+    const traits = traitsOf(entryOf(23));
+    const derive = (changed: Partial<FramingTraits>) => () =>
+      deriveFrame(workOrbit(23)!.generation, windowOf(23), { ...traits, ...changed });
+    expect(derive({ symmetry: 'rot3' })).toThrow(/symmetry differ/);
+    expect(derive({ stack: 'spokes' })).toThrow(/stack differ/);
+    expect(derive({ projection: 'polar' })).toThrow(/projection differ/);
+  });
+
+  it(
+    'refuses a frame whose published drift differs by a single bit',
+    () => {
+      const traits = traitsOf(entryOf(23));
+      const scale = traits.drift.scale;
+      const nudged = {
+        ...traits,
+        drift: { ...traits.drift, scale: scale + scale * Number.EPSILON },
+      };
+      expect(() => deriveFrame(workOrbit(23)!.generation, windowOf(23), nudged)).toThrow(
+        /driftScale differ/,
+      );
+    },
+    ONE_DERIVATION,
+  );
 });

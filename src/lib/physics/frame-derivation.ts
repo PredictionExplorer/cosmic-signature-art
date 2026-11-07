@@ -445,6 +445,15 @@ export function deriveFrame(
     // Only the elliptical drift is ported, the one every collection work was drawn with.
     check('drift', traits.drift.enabled ? traits.drift.mode : 'none', 'elliptical'),
   ];
+  const refuseOn = (rows: FrameCheck[]) => {
+    const failed = rows.filter((row) => !row.exact);
+    if (failed.length)
+      throw new Error(
+        `The frame is not derived: ${failed.map((row) => row.key).join(', ')} differ`,
+      );
+  };
+  // A label that differs refuses the frame before the stream's two million draws are read.
+  refuseOn(checks);
   const main = streamAfterSearch(generation);
   const config = randomDriftConfig(main);
   checks.push(
@@ -452,9 +461,9 @@ export function deriveFrame(
     check('driftArcFraction', config.arcFraction, traits.drift.arcFraction),
     check('driftEccentricity', config.eccentricity, traits.drift.eccentricity),
   );
-  const failed = checks.filter((row) => !row.exact);
-  if (failed.length || !projection)
-    throw new Error(`The frame is not derived: ${failed.map((row) => row.key).join(', ')} differ`);
+  refuseOn(checks);
+  // The projection check above has refused an unknown one.
+  if (!projection) throw new Error('The frame is not derived: projection differ');
   const orientation = driftOrientation(main);
   const velocityScale = projection === 'position' ? 1 : velocityScaleOf(start);
 
