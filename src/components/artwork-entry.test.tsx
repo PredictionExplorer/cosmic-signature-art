@@ -115,7 +115,7 @@ describe('the entry', () => {
     );
     expect(structured).toMatchObject({
       '@type': 'VisualArtwork',
-      name: '№ 031',
+      name: '№\u00a0031',
       alternateName: 'Cosmic Signature 031',
       creator: { name: 'Cosmic Signature' },
       dateCreated: '2026-08-11',

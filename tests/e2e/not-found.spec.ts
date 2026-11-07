@@ -80,7 +80,7 @@ test('the venue’s 404 is its own page, in the visitor’s language, on black',
   await expect(page.locator('.site-header')).toBeVisible();
   await expect(page.locator('.site-footer')).toBeAttached();
   const plate = page.getByRole('main').locator('.art-media');
-  await expect(plate.locator('img.art-still')).toHaveAttribute('alt', `№ 031 · ${uk.light}`);
+  await expect(plate.locator('img.art-still')).toHaveAttribute('alt', `№\u00a0031 · ${uk.light}`);
   // Its language menu points at the address the visitor asked for, not the one no route answers.
   await expect(page.locator('.site-header a[hreflang="ja"]')).toHaveAttribute(
     'href',

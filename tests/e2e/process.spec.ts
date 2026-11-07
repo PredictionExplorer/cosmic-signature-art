@@ -85,7 +85,10 @@ test('the essay opens on night, pins the day’s Light film, crosses a hard edge
   await light.scrollIntoViewIfNeeded();
   await imageLoaded(light.locator('img.art-still'));
   await expect(light).toHaveCSS('background-color', 'rgb(0, 0, 0)');
-  await expect(light.locator('img.art-still')).toHaveAttribute('alt', `№ ${folio(day)} · Light`);
+  await expect(light.locator('img.art-still')).toHaveAttribute(
+    'alt',
+    `№\u00a0${folio(day)} · Light`,
+  );
   await artworkImageSource(light.locator('img.art-still'), day, 'light', true);
   const seed = archive.records.find((item) => item.id === day)!.seed;
   if (await light.locator('video').count()) {
@@ -105,7 +108,7 @@ test('the essay opens on night, pins the day’s Light film, crosses a hard edge
   await expect(page.locator('#ink')).toHaveCSS('background-color', 'rgb(241, 235, 223)');
   const tone = plates.records.find((record) => record.id === day)!.ink.tone;
   await expect(ink).toHaveCSS('background-color', rgb(tone));
-  await expect(ink.locator('img.art-still')).toHaveAttribute('alt', `№ ${folio(day)} · Ink`);
+  await expect(ink.locator('img.art-still')).toHaveAttribute('alt', `№\u00a0${folio(day)} · Ink`);
   await artworkImageSource(ink.locator('img.art-still'), day, 'ink');
   // The running head follows the ground beneath the viewport's centre: paper here.
   await expect(header).toHaveCSS('background-color', 'rgb(241, 235, 223)');

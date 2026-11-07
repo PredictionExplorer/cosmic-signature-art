@@ -67,7 +67,7 @@ test.describe('All the light', () => {
       // Pointing dims the sky and lights the orbits that pass there, brightest first.
       await page.mouse.move(centre.x, centre.y);
       await page.mouse.move(centre.x + 3, centre.y + 2);
-      await expect(readout(page)).toHaveText(/^Through this point · № \d{3}( · № \d{3})*$/);
+      await expect(readout(page)).toHaveText(/^Through this point · №\s\d{3}( · №\s\d{3})*$/);
       // The stills are lit once the pointer rests.
       await expect(frame(page)).toHaveAttribute('data-naming', '');
       await expect.poll(() => frame(page).locator('img').count()).toBeGreaterThan(1);

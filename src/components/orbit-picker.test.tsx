@@ -26,6 +26,8 @@ describe('the number field', () => {
   it('reads a number however it is written', () => {
     expect(typedDigits('031')).toBe('031');
     expect(typedDigits('№ 031')).toBe('031');
+    // A name copied from the page keeps its no-break space.
+    expect(typedDigits('№\u00a0031')).toBe('031');
     expect(typedDigits('#54 ')).toBe('54');
     expect(typedDigits('abc')).toBe('');
   });
@@ -44,7 +46,7 @@ describe('the number field', () => {
     expect(router.push).not.toHaveBeenCalled();
     expect(screen.getByText('№ 099 has no published record.')).toBeVisible();
     expect(field()).toHaveAttribute('aria-invalid', 'true');
-    expect(field()).toHaveAccessibleDescription('№ 099 has no published record.');
+    expect(field()).toHaveAccessibleDescription('№\u00a0099 has no published record.');
     fireEvent.change(field(), { target: { value: '9' } });
     expect(screen.queryByText('№ 099 has no published record.')).not.toBeInTheDocument();
     expect(field()).not.toHaveAttribute('aria-invalid');

@@ -34,7 +34,7 @@ describe('a hang', () => {
       '/art/35?expression=light',
     ]);
     expect(leaves.map((leaf) => leaf.dataset.material)).toEqual(['light', 'ink', 'light']);
-    expect(leaves[1]).toHaveAccessibleName('№ 031 · Ink');
+    expect(leaves[1]).toHaveAccessibleName('№\u00a0031 · Ink');
     expect(leaves[1].style.getPropertyValue('--plate-ground')).toBe('#efe9dd');
     expect(leaves.every((leaf) => leaf.dataset.state === 'even')).toBe(true);
     const stills = leaves.map((leaf) => leaf.querySelector('img.art-still')!.getAttribute('src'));

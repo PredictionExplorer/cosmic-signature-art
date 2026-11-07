@@ -43,7 +43,7 @@ function renderSheet(locale: 'en' | 'ja' = 'en', day: 'ink' | 'light' = 'ink') {
 }
 const alone = (expression: string) => fill(en.hangAlone, { expression });
 function numeral(id: number) {
-  return screen.getByRole('link', { name: `№ ${String(id).padStart(3, '0')}` });
+  return screen.getByRole('link', { name: `№\u00a0${String(id).padStart(3, '0')}` });
 }
 function wall() {
   return document.querySelector('[data-material] img') as HTMLImageElement | null;
@@ -133,7 +133,7 @@ describe('the Index of numbers', () => {
     const dialog = screen.getByRole('dialog', { hidden: true });
     expect(dialog).toHaveAttribute('id', 'index-sheet');
     expect(dialog).not.toHaveAttribute('open');
-    expect(screen.queryByRole('link', { name: '№ 031', hidden: true })).toBeNull();
+    expect(screen.queryByRole('link', { name: '№\u00a0031', hidden: true })).toBeNull();
     act(() => openSheet('index'));
     expect(dialog).toHaveAttribute('open');
     expect(document.documentElement.style.overflow).toBe('hidden');

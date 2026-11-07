@@ -62,8 +62,8 @@ describe('home screen 4: the spread', () => {
       '/ja/art/35?expression=light',
     ]);
     expect(links.map((link) => link.getAttribute('aria-label'))).toEqual([
-      '№ 031 · Ink',
-      '№ 035 · Light',
+      '№\u00a0031 · Ink',
+      '№\u00a0035 · Light',
     ]);
     expect(links[0].closest('[data-ground]')).toHaveAttribute('data-ground', 'paper');
     expect(links[1].closest('[data-ground]')).toHaveAttribute('data-ground', 'night');
@@ -71,7 +71,7 @@ describe('home screen 4: the spread', () => {
     expect(links.every((link) => link.getAttribute('data-preview-available') === 'true')).toBe(
       true,
     );
-    const images = within(spread).getAllByRole('img', { name: /№ 03[15] · (Ink|Light)/ });
+    const images = within(spread).getAllByRole('img', { name: /№\u00a003[15] · (Ink|Light)/ });
     expect(
       images.map((image) => new URL(image.getAttribute('src')!, 'http://localhost').pathname),
     ).toEqual(['/art/31-ink-640.webp', '/art/35-light-640.webp']);
@@ -99,7 +99,7 @@ describe('home screen 4: the spread', () => {
       within(spread)
         .getAllByRole('link')
         .map((link) => link.getAttribute('aria-label')),
-    ).toEqual(['№ 035 · Ink', '№ 031 · Light']);
+    ).toEqual(['№\u00a0035 · Ink', '№\u00a0031 · Light']);
   });
 });
 
@@ -128,7 +128,7 @@ describe('home screen 5: this cycle', () => {
         .map((link) => link.getAttribute('href')),
     ).toEqual(summary.ids.map((id) => `/art/${id}?expression=light`));
     const first = within(links[0]).getByRole('img');
-    expect(first).toHaveAttribute('alt', `№ ${String(summary.ids[0]).padStart(3, '0')} · Ink`);
+    expect(first).toHaveAttribute('alt', `№\u00a0${String(summary.ids[0]).padStart(3, '0')} · Ink`);
     expect(first).toHaveAttribute('loading', 'lazy');
     expect(first.getAttribute('src')).toMatch(
       /^https:\/\/a1\.cosmicsignature\.com\/images\/new\/cosmicsignature\/0x[a-f0-9]{64}\/images\/web\/ember_preview\.webp$/,

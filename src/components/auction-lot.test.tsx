@@ -90,7 +90,7 @@ describe('the lot strip', () => {
     await act(async () => {
       fireEvent.click(collect);
     });
-    const sheet = screen.getByRole('dialog', { name: `№ 031 · ${en.bidSheet}` });
+    const sheet = screen.getByRole('dialog', { name: `№\u00a0031 · ${en.bidSheet}` });
     expect(sheet).toHaveAttribute('open');
     expect(screen.getByText('the live panel')).toBeVisible();
     expect(screen.getByText(en.auctionAtAGlance)).toBeVisible();

@@ -6,7 +6,8 @@ describe('work numbering', () => {
     expect(workFolio(31)).toBe('031');
     expect(workFolio(1234)).toBe('1234');
   });
-  it('names a work with the numero sign', () => {
-    expect(workNumber(31)).toBe('№ 031');
+  it('names a work with the numero sign, bound to its folio by a no-break space', () => {
+    expect(workNumber(31)).toBe('№\u00a0031');
+    expect(workNumber(1234)).toBe('№\u00a01234');
   });
 });

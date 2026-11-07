@@ -283,10 +283,19 @@ credits Literata and IBM Plex Mono.
    floor.
 2. **No family swap is recommended** (§1). If a commercial book face is ever wanted, the vision's
    open question 4 stands.
-3. **`№ 031` as one unbreakable unit.** `workNumber()` joins `№` and the folio with a plain space,
-   so in running text the sign can end a line without its number. It should be a no-break space; the
-   change is one line, but about 160 test expectations spell the name with a plain space, so it is a
-   change of its own. The wavelength link already binds it.
+3. **`№ 031` as one unbreakable unit (done, 6 November 2026).** `workNumber()` joins `№` and the
+   folio with a no-break space (U+00A0, the `NBSP` of `src/lib/typography.ts`), so in running text
+   the sign never ends a line without its number. Every place that sets the name gets it from that
+   one function, in all eight locales: page text, `alt`s and `aria-label`s, page titles, the cards'
+   `og:image:alt` and the entry's JSON-LD `name`. The gatefold's two `alt`s, which spelled the name
+   by hand, now call it, and the wavelength link no longer binds the name itself. No URL, file name
+   or hash is built from the name: the sitemap lists addresses only, and the venue has no feed. The
+   sharing cards draw the sign from its own face and trim the space after it, so they are drawn as
+   before. The choice field's `№ 22,083` is a candidate's number, not a work's, and is already set
+   `nowrap`. In tests the space is written `\u00a0` wherever a matcher compares raw text (`toBe`,
+   attribute values, testing-library's accessible names, Playwright's `toHaveAttribute`), and `\s`
+   in Playwright's RegExps. jest-dom's `toHaveTextContent`, testing-library's text queries and
+   Playwright's string and role-name matchers fold it into a plain space, so those keep one.
 4. **The live bid panel** keeps its own px sizes (12, 14, 15, 18 and `clamp()`), which predate the
    scale. Its substance is frozen by policy, so this audit did not touch it beyond its clock (mono, as
    the instrument's). Aligning 14 → 15 and 18 → the reading stop would be a one-line change each.

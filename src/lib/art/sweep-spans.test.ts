@@ -121,6 +121,6 @@ describe('the sweep spans', () => {
       id: 31,
       media: [{ ...light, films: [{ ...sweep, span: { start: 0, end: 63 } }] }],
     } as unknown as Artwork;
-    expect(artworkSharingImage(artwork, '№ 031')?.url).toBe('/light.webp');
+    expect(artworkSharingImage(artwork, '№\u00a0031')?.url).toBe('/light.webp');
   });
 });

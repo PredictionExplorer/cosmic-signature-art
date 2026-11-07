@@ -57,7 +57,10 @@ describe('your activity', () => {
     expect(facts).toHaveTextContent('Committed0.4 ETH');
     expect(facts).toHaveTextContent('Refundable credit0.25 ETH');
     expect(facts).toHaveTextContent('№ 066 · 2 ETH');
-    expect(screen.getByRole('link', { name: '№ 067' })).toHaveAttribute('href', '/auctions/67');
+    expect(screen.getByRole('link', { name: '№\u00a0067' })).toHaveAttribute(
+      'href',
+      '/auctions/67',
+    );
   });
 
   it('refuses a malformed address and reports an unreadable chain', async () => {

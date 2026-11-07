@@ -48,7 +48,7 @@ test('the quiet pages belong to the venue: the 404 hangs the work next door on b
   await expect(page.locator('html')).toHaveAttribute('data-room', 'night');
   const plate = page.getByRole('main').locator('.art-media');
   await expect(plate).toHaveAttribute('data-material', 'light');
-  await expect(plate.locator('img.art-still')).toHaveAttribute('alt', '№ 031 · Light');
+  await expect(plate.locator('img.art-still')).toHaveAttribute('alt', '№\u00a0031 · Light');
   await page.getByRole('main').getByRole('link', { name: '№ 031 is next door.' }).click();
   await expect(page).toHaveURL(/\/art\/31$/);
   await noHorizontalOverflow(page);

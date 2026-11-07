@@ -58,7 +58,7 @@ describe('the sharing cards', () => {
     const [ink, light] = card.leaves;
     expect(ink.ground).toBe('#efe9dd');
     expect(ink.night).toBe(false);
-    expect(ink.label).toBe(`№ 031 · ${catalogs.ja.ink}`);
+    expect(ink.label).toBe(`№\u00a0031 · ${catalogs.ja.ink}`);
     expect(light.ground).toBe('#000000');
     expect(light.night).toBe(true);
     expect(light.label).toBe(catalogs.ja.light);
@@ -79,7 +79,7 @@ describe('the sharing cards', () => {
     });
     expect(fonts).toHaveBeenLastCalledWith('ja', expect.stringContaining(catalogs.ja.light));
     const [meta] = await work.generateImageMetadata(params({ locale: 'en', id: '31' }));
-    expect(meta.alt).toBe('№ 031 · Ink · Light');
+    expect(meta.alt).toBe('№\u00a0031 · Ink · Light');
   });
 
   it('is not drawn for a work that is not indexed or a locale the venue does not speak', async () => {
@@ -97,7 +97,9 @@ describe('the sharing cards', () => {
     const response = await home.default(params({ locale: 'vi' }));
     const card = pair(response);
     const [ink, light] = card.leaves;
-    expect(ink.label).toBe(`№ ${String(workOfTheDay()).padStart(3, '0')} · ${catalogs.vi.ink}`);
+    expect(ink.label).toBe(
+      `№\u00a0${String(workOfTheDay()).padStart(3, '0')} · ${catalogs.vi.ink}`,
+    );
     expect(ink.night).toBe(false);
     expect(light.label).toBe(catalogs.vi.light);
     expect(light.night).toBe(true);

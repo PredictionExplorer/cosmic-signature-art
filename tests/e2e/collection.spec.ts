@@ -30,7 +30,7 @@ test('the first screen of the Ink hang is a plate in the sequence’s rhythm, un
   await expect(cards).toHaveCount(18);
   const first = cards.first();
   await expect(first).toHaveAttribute('href', `/art/${index.total - 1}?expression=ink`);
-  await expect(first).toHaveAttribute('aria-label', `№ ${folio(index.total - 1)} · ${t.ink}`);
+  await expect(first).toHaveAttribute('aria-label', `№\u00a0${folio(index.total - 1)} · ${t.ink}`);
   await expect(first).toContainText(folio(index.total - 1));
   await expect(first).not.toContainText('Signature');
   const rows = page.locator('#works [data-shape]');
@@ -248,7 +248,7 @@ test('the Spectrum wall hangs every Light preview on black along the nanometre r
   await expect(hangs.first()).toHaveAttribute('href', `/art/${violet[0].id}?expression=light`);
   await expect(hangs.first()).toHaveAttribute(
     'aria-label',
-    `№ ${folio(violet[0].id)} · ${t.light} · 380 nm`,
+    `№\u00a0${folio(violet[0].id)} · ${t.light} · 380 nm`,
   );
   const red = measured.filter((work) => work.wavelengthNm === 700).sort((a, b) => a.id - b.id);
   await expect(hangs.last()).toHaveAttribute('href', `/art/${red.at(-1)!.id}?expression=light`);

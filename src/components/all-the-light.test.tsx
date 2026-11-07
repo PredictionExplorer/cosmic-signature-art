@@ -14,7 +14,7 @@ const t = messages('en');
 const work = (id: number, cycle: number): LightWork => ({
   id,
   cycle,
-  numeral: `№ ${String(id).padStart(3, '0')}`,
+  numeral: `№\u00a0${String(id).padStart(3, '0')}`,
   href: `/art/${id}?expression=light`,
   src: `/light/${id}.webp`,
   srcSet: `/light/${id}.webp 1280w`,
@@ -166,7 +166,7 @@ const lit = (container: HTMLElement) =>
     .map((image) => image.getAttribute('src'))
     .filter((src) => src?.startsWith('/light/'));
 const numeral = (id: number) =>
-  screen.getByRole('button', { name: `Show № ${String(id).padStart(3, '0')} alone` });
+  screen.getByRole('button', { name: `Show №\u00a0${String(id).padStart(3, '0')} alone` });
 async function pickCycle(name: string) {
   fireEvent.click(screen.getByRole('button', { name }));
   await act(async () => {});
@@ -242,7 +242,7 @@ describe('All the light', () => {
     await act(async () => {
       fireEvent.click(frame(container), { clientX: 60, clientY: 30 });
     });
-    expect(screen.getByRole('img', { name: '№ 004 · Light' })).toBeInTheDocument();
+    expect(screen.getByRole('img', { name: '№\u00a0004 · Light' })).toBeInTheDocument();
   });
 
   it('names nothing for a pointer that left before the grid came, and asks again after a failure', async () => {
@@ -274,11 +274,11 @@ describe('All the light', () => {
     await act(async () => {
       fireEvent.click(frame(container), { clientX: 60, clientY: 30 });
     });
-    const alone = screen.getByRole('img', { name: '№ 030 · Light' });
+    const alone = screen.getByRole('img', { name: '№\u00a0030 · Light' });
     expect(alone).toHaveAttribute('src', '/light/30.webp');
     expect(frame(container)).toHaveAttribute('data-alone');
     expect(readout()).toHaveTextContent('№ 030 alone, as its own untouched still');
-    expect(screen.getByRole('link', { name: 'Go to № 030 →' })).toHaveAttribute(
+    expect(screen.getByRole('link', { name: 'Go to №\u00a0030 →' })).toHaveAttribute(
       'href',
       '/art/30?expression=light',
     );
@@ -298,7 +298,7 @@ describe('All the light', () => {
     act(() => {
       fireEvent.keyDown(document, { key: 'Escape' });
     });
-    expect(screen.queryByRole('img', { name: '№ 030 · Light' })).toBeNull();
+    expect(screen.queryByRole('img', { name: '№\u00a0030 · Light' })).toBeNull();
     expect(readout()).toHaveTextContent(t.allTheLightPoint);
     // A click where nothing passes chooses nothing; a click on a lone orbit returns.
     await act(async () => {
@@ -340,7 +340,7 @@ describe('All the light', () => {
     expect(readout()).toHaveTextContent(t.allTheLightPoint);
     fireEvent.click(nine);
     expect(nine).toHaveAttribute('aria-pressed', 'true');
-    expect(screen.getByRole('img', { name: '№ 006 · Light' })).toBeInTheDocument();
+    expect(screen.getByRole('img', { name: '№\u00a0006 · Light' })).toBeInTheDocument();
     // Where the index lies below the sky, the sky comes up to meet the choice.
     expect(scrolled).toHaveBeenCalledWith({ block: 'nearest', behavior: 'smooth' });
     // The choice's words leave with it; a focus on them returns to the numeral.
@@ -350,7 +350,7 @@ describe('All the light', () => {
     expect(nine).toHaveFocus();
     expect(nine).toHaveAttribute('aria-pressed', 'false');
     fireEvent.click(nine);
-    act(() => screen.getByRole('link', { name: 'Go to № 006 →' }).focus());
+    act(() => screen.getByRole('link', { name: 'Go to №\u00a0006 →' }).focus());
     act(() => {
       fireEvent.keyDown(document, { key: 'Escape' });
     });
@@ -358,7 +358,7 @@ describe('All the light', () => {
     expect(readout()).toHaveTextContent(/^№ 006$/);
     fireEvent.click(nine);
     fireEvent.click(nine);
-    expect(screen.queryByRole('img', { name: '№ 006 · Light' })).toBeNull();
+    expect(screen.queryByRole('img', { name: '№\u00a0006 · Light' })).toBeNull();
   });
 
   it('changes the sky only once the next is decoded, so it never passes through black', async () => {
