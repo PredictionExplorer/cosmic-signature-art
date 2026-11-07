@@ -200,11 +200,17 @@ test('a decoder that is missing or stalls rejects instead of crashing or hanging
     eachFrame('/nowhere.mp4', () => {}, { program: 'cosmic-no-such-decoder' }),
     /ENOENT/,
   );
-  // A decoder that never ends on its own: the kill timer stops it, and the read rejects.
+  // A decoder that never ends on its own: the kill timer stops it, and the read rejects. The
+  // timer leaves the decoder time to start and send frames while the other pipelines' tests
+  // keep every core busy beside this one; at 200 ms it was sometimes killed before its first.
   let frames = 0;
   await endlessDecoder((program) =>
     assert.rejects(
-      eachFrame('/nowhere.mp4', () => (frames += 1), { parameters: small, program, timeout: 200 }),
+      eachFrame('/nowhere.mp4', () => (frames += 1), {
+        parameters: small,
+        program,
+        timeout: 2_000,
+      }),
       /failed \(SIGKILL\)/,
     ),
   );
