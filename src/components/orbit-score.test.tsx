@@ -571,12 +571,15 @@ describe('the orbit on the plate', () => {
     expect(still(container)).toHaveAttribute('src', plate031.stills.ink!.src);
     expect(still(container)).toHaveAttribute('srcset', plate031.stills.ink!.srcSet);
     expect(still(container)).toHaveAttribute('alt', '');
+    // Lazy until the section is a screen away; then fetched, as the derivation begins.
+    expect(still(container)).toHaveAttribute('loading', 'lazy');
     expect(
       screen.getByText(
         /drawn over the Ink still where they stirred the ink, at the Light film’s pace; each comes to rest in the hollow it left\. .* Analysis, not the work\.$/,
       ),
     ).toBeInTheDocument();
     approach();
+    expect(still(container)).toHaveAttribute('loading', 'eager');
     expect(workers[0].posted[0].frame).toEqual(plate031.frame);
     derive();
     // The measurements are in; nothing is drawn over the still until the window is placed.

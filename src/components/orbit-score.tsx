@@ -840,7 +840,9 @@ export function OrbitScore({
               : undefined
           }
         >
-          {/* The work's still, untouched: the drawing lies over it and never alters a pixel. */}
+          {/* The work's still, untouched: the drawing lies over it and never alters a pixel. It is
+              fetched once the section is a screen away, as its derivation begins, rather than at
+              each browser's own lazy margin, which Firefox keeps close to the viewport. */}
           {plateStill ? (
             <img
               key={material}
@@ -852,7 +854,7 @@ export function OrbitScore({
               height={plateStill.height}
               alt=""
               decoding="async"
-              loading="lazy"
+              loading={near ? 'eager' : 'lazy'}
             />
           ) : null}
           <canvas ref={trails} className={styles.layer} aria-hidden="true" />

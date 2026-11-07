@@ -169,6 +169,10 @@ test('the plate keeps the still’s proportions and turns with the page’s plat
     'light',
   );
   await expect(orbit).toHaveAttribute('data-material', 'light');
+  // Back down at the section, its plate is the Light still: the image was asked for at once,
+  // since the section had come near, not at the browser's lazy margin.
+  await expect(orbit.locator('figure img')).toHaveAttribute('loading', 'eager');
+  await orbit.scrollIntoViewIfNeeded();
   await expect
     .poll(() =>
       orbit.locator('figure img').evaluate((image) => (image as HTMLImageElement).currentSrc),
