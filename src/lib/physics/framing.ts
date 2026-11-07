@@ -55,7 +55,10 @@ export interface PlateFrame {
 }
 
 /** A recorded window's first state and how it steps: all a frame needs of the orbit. */
-export type WindowStart = Pick<OrbitWindow, 'masses' | 'dt' | 'steps' | 'positions' | 'velocities'>;
+export type WindowStart = Pick<OrbitWindow, 'masses' | 'dt' | 'steps'> & {
+  positions: ArrayLike<number>;
+  velocities: ArrayLike<number>;
+};
 
 /** One step's projection of raw positions `at`, with their velocities, into `out`. */
 export function project(
@@ -245,35 +248,155 @@ export class FramedWindow {
       project(frame.projection, this.P, this.velocity, frame.velocityScale, this.point);
     }
     this.path.offset(this.step, this.offset);
-    const f = Math.fround;
-    const cx = f(frame.width * 0.5);
-    const cy = f(frame.height * 0.5);
-    const plain = frame.symmetry === 'none';
-    for (let b = 0; b < 3; b++) {
-      rotateBody(this.rotation, this.point, b, this.viewed);
-      const x = this.viewed[b * 3] + this.offset[0];
-      const y = this.viewed[b * 3 + 1] + this.offset[1];
-      // RenderContext::to_pixel, in single precision as the renderer keeps it.
-      const px = f(((x - frame.box.minX) / frame.box.width) * frame.width);
-      const py = f(((y - frame.box.minY) / frame.box.height) * frame.height);
-      if (plain) {
-        // A work without symmetry draws each stroke once, untransformed.
-        this.pixels[b * 2] = px;
-        this.pixels[b * 2 + 1] = py;
-        continue;
-      }
-      this.copies.forEach((copy, c) => {
-        let dx = f(px - cx);
-        const dy = f(py - cy);
-        if (copy.mirror) dx = -dx;
-        const rx = f(f(f(dx * copy.cos) - f(dy * copy.sin)) * copy.scale);
-        const ry = f(f(f(dx * copy.sin) + f(dy * copy.cos)) * copy.scale);
-        this.pixels[(c * 3 + b) * 2] = f(cx + rx);
-        this.pixels[(c * 3 + b) * 2 + 1] = f(cy + ry);
-      });
-    }
-    return this.pixels;
+    return placeOnPlate(
+      frame,
+      this.rotation,
+      this.copies,
+      this.point,
+      this.offset,
+      this.viewed,
+      this.pixels,
+    );
   }
+}
+
+/**
+ * Projected bodies (`point`: x, y, z for each, in the projection's space) placed on the plate:
+ * seen from the frame's view (`rotation`), carried by the camera's `offset`, fitted to the frame
+ * in the renderer's single precision, and drawn again in every symmetry copy, into `pixels` as
+ * `pixels[(copy × 3 + body) × 2]` and the y after it. `viewed` is scratch for nine numbers.
+ */
+export function placeOnPlate(
+  frame: PlateFrame,
+  rotation: readonly number[],
+  copies: readonly SymmetryCopy[],
+  point: ArrayLike<number>,
+  offset: ArrayLike<number>,
+  viewed: Float64Array,
+  pixels: Float64Array,
+): Float64Array {
+  const f = Math.fround;
+  const cx = f(frame.width * 0.5);
+  const cy = f(frame.height * 0.5);
+  const plain = frame.symmetry === 'none';
+  for (let b = 0; b < 3; b++) {
+    rotateBody(rotation, point, b, viewed);
+    const x = viewed[b * 3] + offset[0];
+    const y = viewed[b * 3 + 1] + offset[1];
+    // RenderContext::to_pixel, in single precision as the renderer keeps it.
+    const px = f(((x - frame.box.minX) / frame.box.width) * frame.width);
+    const py = f(((y - frame.box.minY) / frame.box.height) * frame.height);
+    if (plain) {
+      // A work without symmetry draws each stroke once, untransformed.
+      pixels[b * 2] = px;
+      pixels[b * 2 + 1] = py;
+      continue;
+    }
+    copies.forEach((copy, c) => {
+      let dx = f(px - cx);
+      const dy = f(py - cy);
+      if (copy.mirror) dx = -dx;
+      const rx = f(f(f(dx * copy.cos) - f(dy * copy.sin)) * copy.scale);
+      const ry = f(f(f(dx * copy.sin) + f(dy * copy.cos)) * copy.scale);
+      pixels[(c * 3 + b) * 2] = f(cx + rx);
+      pixels[(c * 3 + b) * 2 + 1] = f(cy + ry);
+    });
+  }
+  return pixels;
+}
+
+/**
+ * Bodies carried on past their recorded window (After the frame), placed on its plate as the
+ * window's were: the same projection, view, fit and symmetry, with the camera held where the
+ * film's frame ended, at the window's last step. The generator never drifted its camera past
+ * the window, so the plate does not either. `place` takes any state the orbit passes through.
+ */
+export class HeldPlacement {
+  readonly frame: PlateFrame;
+  readonly copies: SymmetryCopy[];
+  private readonly dt: number;
+  private readonly rotation: number[];
+  private readonly offset = new Float64Array(3);
+  private readonly point = new Float64Array(9);
+  private readonly velocity = new Float64Array(9);
+  private readonly viewed = new Float64Array(9);
+  private readonly peekP = new Float64Array(9);
+  private readonly peekV = new Float64Array(9);
+  private readonly peek: () => void;
+
+  // Node strips this file's types without transforming it, so no parameter properties here.
+  constructor(frame: PlateFrame, start: Pick<WindowStart, 'masses' | 'dt' | 'steps'>) {
+    this.frame = frame;
+    this.dt = start.dt;
+    this.copies = symmetryCopies(frame.symmetry, frame.width, frame.height);
+    this.rotation = shoemakeRotation(frame.view);
+    new DriftPath(frame.drift, start.steps, start.dt).offset(start.steps - 1, this.offset);
+    this.peek = integrator(start.masses, this.peekP, this.peekV, start.dt);
+  }
+
+  /** The bodies at `positions`, moving at `velocities`, on the plate: into `pixels`. */
+  place(
+    positions: ArrayLike<number>,
+    velocities: ArrayLike<number>,
+    pixels: Float64Array = new Float64Array(this.copies.length * 6),
+  ): Float64Array {
+    const { frame } = this;
+    if (frame.projection === 'position') this.point.set(positions);
+    else {
+      // The difference to the next step, taken on a copy, as the window's own placement takes it.
+      this.peekP.set(positions);
+      this.peekV.set(velocities);
+      this.peek();
+      for (let i = 0; i < 9; i++) this.velocity[i] = (this.peekP[i] - positions[i]) / this.dt;
+      project(frame.projection, positions, this.velocity, frame.velocityScale, this.point);
+    }
+    return placeOnPlate(
+      frame,
+      this.rotation,
+      this.copies,
+      this.point,
+      this.offset,
+      this.viewed,
+      pixels,
+    );
+  }
+}
+
+/**
+ * A recorded window placed on its plate at every `stride`-th step, as a page draws it: each
+ * sample's pixels, every copy's three bodies (FramedWindow's order), and then one more, the
+ * bodies at the window's last step, where its still shows them. Replayed from the window's
+ * first state, so it passes through the recorded steps bit for bit; in single precision, as
+ * the renderer placed them.
+ */
+export interface FramedSamples {
+  stride: number;
+  /** The samples, the last step's not counted: steps 0, stride, 2 × stride, … */
+  count: number;
+  /** Symmetry copies drawn at each sample: three bodies each. */
+  copies: number;
+  /** `(count + 1) × copies × 6` numbers: x, y of each copy's three bodies, sample by sample. */
+  pixels: Float32Array;
+}
+
+export function framedSamples(
+  start: WindowStart,
+  frame: PlateFrame,
+  stride: number,
+): FramedSamples {
+  const framed = new FramedWindow(start, frame);
+  const copies = framed.copies.length;
+  const width = copies * 6;
+  const count = Math.ceil(start.steps / stride);
+  const pixels = new Float32Array((count + 1) * width);
+  framed.run(start.steps - 1, stride, (step, placed) =>
+    pixels.set(placed, (step / stride) * width),
+  );
+  const last = framed.place();
+  // A window whose last step falls on the stride samples it there too.
+  if ((start.steps - 1) % stride === 0) pixels.set(last, (count - 1) * width);
+  pixels.set(last, count * width);
+  return { stride, count, copies, pixels };
 }
 
 // ───────────────────────── The film's record, and the agreement ─────────────────────────

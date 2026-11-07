@@ -575,6 +575,10 @@ export const vi: Messages = {
     'Được suy ra từ hạt giống ngay trong trình duyệt này, rồi đối chiếu với hồ sơ đã công bố.',
   orbitCaption:
     'Ba vật thể, khối lượng {m1}, {m2} và {m3}, được vẽ trên mặt phẳng nơi chúng trải rộng nhất, theo nhịp của phim Ánh sáng. Hai vật thể {pair} gần nhau nhất ở bước {step}, cách nhau {distance}, tức giây thứ {seconds} của phim.',
+  orbitCaptionLight:
+    'Ba vật thể, khối lượng {m1}, {m2} và {m3}, được vẽ lên ảnh tĩnh Ánh sáng, đúng nơi phim đã vẽ chúng, theo nhịp của phim; mỗi vật thể dừng ở nơi nét vẽ của nó kết thúc. Hai vật thể {pair} gần nhau nhất ở bước {step}, cách nhau {distance}, tức giây thứ {seconds} của phim. Phân tích, không phải tác phẩm.',
+  orbitCaptionInk:
+    'Ba vật thể, khối lượng {m1}, {m2} và {m3}, được vẽ lên ảnh tĩnh Mực, đúng nơi chúng đã khuấy mực, theo nhịp của phim Ánh sáng; mỗi vật thể dừng lại trong khoảng trống mà nó để lại. Hai vật thể {pair} gần nhau nhất ở bước {step}, cách nhau {distance}, tức giây thứ {seconds} của phim Ánh sáng. Phân tích, không phải tác phẩm.',
   orbitWaiting: 'Khi bạn đến đây, quỹ đạo sẽ được suy ra ngay tại chỗ.',
   orbitUnavailable:
     'Trình duyệt này không thể suy ra quỹ đạo. Hồ sơ được hiển thị đúng như đã công bố, chưa đối chiếu.',

@@ -1,7 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import { workOrbit } from '@/lib/art/orbit-records';
 import { performedOrbits } from '@/lib/art/orbit-windows';
+import { plateFrame } from '@/lib/art/orbit-frames';
 import { Continuation, restingStep } from './continuation';
+import { HeldPlacement } from './framing';
 import { CHECK_INTERVAL, HYSTERESIS, deriveFate, escapingBody, type DerivedFate } from './orbit';
 
 /** № 054 ejects soonest: 90,000 steps after its window, so its fate is a tenth of a second. */
@@ -76,6 +78,42 @@ describe('After the frame’s physics', () => {
     const u =
       (x - plane.mean[0]) * e1[0] + (y - plane.mean[1]) * e1[1] + (z - plane.mean[2]) * e1[2];
     expect(continued.path[0]).toBeCloseTo(u, 3);
+  });
+
+  it('samples every copy of every body on the plate, the camera held where the film ended', () => {
+    // № 054 ejects soonest and draws a cross braid: positions, one coordinate borrowed.
+    const placement = new HeldPlacement(plateFrame(54)!, performed.window);
+    const continued = new Continuation({
+      masses: orbit.published.masses,
+      dt: orbit.generation.dt,
+      origin: { taken: steps, ...fate.windowEnd },
+      end: steps + 1_000,
+      stride: 250,
+      plate: placement,
+    });
+    expect(continued.width).toBe(placement.copies.length * 6);
+    // The first sample is the window's last state, placed as the window's own bodies are.
+    const first = placement.place(fate.windowEnd.positions, fate.windowEnd.velocities);
+    expect([...continued.path.subarray(0, continued.width)]).toEqual([...first]);
+    continued.advanceTo(steps + 1_000);
+    expect(continued.samples).toBe(5);
+    expect(continued.path).toHaveLength(5 * continued.width);
+  });
+
+  it('is drawn in a plane or on a plate, never both and never neither', () => {
+    const placement = new HeldPlacement(plateFrame(54)!, performed.window);
+    const begin = (where: { plane?: typeof plane; plate?: HeldPlacement }) =>
+      new Continuation({
+        masses: orbit.published.masses,
+        dt: orbit.generation.dt,
+        origin: { taken: steps, ...fate.windowEnd },
+        end: steps + 100,
+        stride: 100,
+        ...where,
+      });
+    expect(() => begin({})).toThrow(/plane or on a plate/);
+    expect(() => begin({ plane, plate: placement })).toThrow(/plane or on a plate/);
+    expect(begin({ plane }).width).toBe(6);
   });
 
   it('can be brought to rest where it stands, and takes no step past it', () => {

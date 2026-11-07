@@ -1,4 +1,5 @@
 import { CHECK_INTERVAL, HYSTERESIS, integrator, type DerivedFate } from './orbit';
+import type { HeldPlacement } from './framing';
 
 /** A direction or a point in the simulation's space. */
 type Triple = readonly [number, number, number];
@@ -6,10 +7,11 @@ type Triple = readonly [number, number, number];
 /**
  * After the frame's physics (third-physics.md §5.6): the orbit carried on past its recorded
  * window from a state the fate run kept, step by step with the generator's own integrator, and
- * sampled every `stride` steps in the plane the window is drawn in. Started from the window's
- * end it passes through every state the fate run passed through, bit for bit, so an ejection
- * happens here at the step the generator dated. It knows nothing of canvases or of the page's
- * clock: the orbit section paces it and draws it.
+ * sampled every `stride` steps where the window is drawn: on its plate, where the films put the
+ * bodies (framing.ts), or else in its own plane. Started from the window's end it passes through
+ * every state the fate run passed through, bit for bit, so an ejection happens here at the step
+ * the generator dated. It knows nothing of canvases or of the page's clock: the orbit section
+ * paces it and draws it.
  */
 export class Continuation {
   /** Steps since the window's first step, as the record counts them. */
@@ -19,14 +21,19 @@ export class Continuation {
   /** The step the performance rests at; the page may bring it forward (restHere). */
   end: number;
   readonly stride: number;
-  /** Every `stride`-th step in the drawing's plane: u then v for each of the three bodies. */
+  /**
+   * Every `stride`-th step where the window is drawn, `width` numbers a sample: in its plane, u
+   * then v for each of the three bodies; on its plate, x then y for each body of every copy.
+   */
   readonly path: Float32Array;
+  readonly width: number;
   samples = 0;
   private readonly positions: Float64Array;
   private readonly velocities: Float64Array;
   private readonly step: () => void;
-  private readonly mean: Triple;
-  private readonly axes: readonly [Triple, Triple];
+  private readonly plane: { mean: Triple; axes: readonly [Triple, Triple] } | null;
+  private readonly plate: HeldPlacement | null;
+  private readonly placed: Float64Array;
   /** Seconds performed at the film's pace, and when the trails last faded. */
   private seconds = 0;
   private faded = 0;
@@ -38,6 +45,7 @@ export class Continuation {
     end,
     stride,
     plane,
+    plate,
   }: {
     masses: readonly number[];
     dt: number;
@@ -45,9 +53,12 @@ export class Continuation {
     origin: { taken: number; positions: ArrayLike<number>; velocities: ArrayLike<number> };
     end: number;
     stride: number;
-    /** The window's drawing plane: its centre and two axes (plane.ts). */
-    plane: { mean: Triple; axes: readonly [Triple, Triple] };
+    /** The window's drawing plane: its centre and two axes (plane.ts)… */
+    plane?: { mean: Triple; axes: readonly [Triple, Triple] };
+    /** …or its plate, with the camera held where the film's frame ended (framing.ts). */
+    plate?: HeldPlacement;
   }) {
+    if (!plane === !plate) throw new Error('A continuation is drawn in a plane or on a plate');
     this.taken = origin.taken;
     this.from = origin.taken;
     this.end = Math.max(origin.taken, end);
@@ -55,9 +66,11 @@ export class Continuation {
     this.positions = Float64Array.from(origin.positions);
     this.velocities = Float64Array.from(origin.velocities);
     this.step = integrator(masses, this.positions, this.velocities, dt);
-    this.mean = plane.mean;
-    this.axes = plane.axes;
-    this.path = new Float32Array((Math.floor((this.end - this.from) / stride) + 1) * 6);
+    this.plane = plane ?? null;
+    this.plate = plate ?? null;
+    this.width = plate ? plate.copies.length * 6 : 6;
+    this.placed = new Float64Array(this.width);
+    this.path = new Float32Array((Math.floor((this.end - this.from) / stride) + 1) * this.width);
     this.sample();
   }
 
@@ -100,14 +113,19 @@ export class Continuation {
   }
 
   private sample() {
-    const [e1, e2] = this.axes;
-    const offset = this.samples * 6;
-    for (let body = 0; body < 3; body++) {
-      const dx = this.positions[body * 3] - this.mean[0];
-      const dy = this.positions[body * 3 + 1] - this.mean[1];
-      const dz = this.positions[body * 3 + 2] - this.mean[2];
-      this.path[offset + body * 2] = dx * e1[0] + dy * e1[1] + dz * e1[2];
-      this.path[offset + body * 2 + 1] = dx * e2[0] + dy * e2[1] + dz * e2[2];
+    const offset = this.samples * this.width;
+    if (this.plate)
+      this.path.set(this.plate.place(this.positions, this.velocities, this.placed), offset);
+    else if (this.plane) {
+      const { mean, axes } = this.plane;
+      const [e1, e2] = axes;
+      for (let body = 0; body < 3; body++) {
+        const dx = this.positions[body * 3] - mean[0];
+        const dy = this.positions[body * 3 + 1] - mean[1];
+        const dz = this.positions[body * 3 + 2] - mean[2];
+        this.path[offset + body * 2] = dx * e1[0] + dy * e1[1] + dz * e1[2];
+        this.path[offset + body * 2 + 1] = dx * e2[0] + dy * e2[1] + dz * e2[2];
+      }
     }
     this.samples += 1;
   }

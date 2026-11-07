@@ -150,3 +150,8 @@ export function plateFrame(
 ): PlateFrame | undefined {
   return bindFrame(frames.get(id), id, light);
 }
+
+/** The Light film a work's frame was measured against: what anything placed by the frame binds to. */
+export function frameFilmSha256(id: number): string | undefined {
+  return frames.get(id)?.film.sha256;
+}

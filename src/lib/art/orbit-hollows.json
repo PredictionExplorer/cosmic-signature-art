@@ -1,0 +1,3065 @@
+{
+  "schemaVersion": 1,
+  "derivedOn": "2026-11-07",
+  "parameters": {
+    "rungWidth": 1920,
+    "bodyRadius": 0.025,
+    "hollow": {
+      "paperQuantile": 0.7,
+      "margin": 18,
+      "seedReach": 0.2,
+      "reach": 3,
+      "accept": {
+        "radius": [0.8, 1.6],
+        "offset": 0.3333333333333333
+      }
+    }
+  },
+  "hollows": [
+    {
+      "id": 0,
+      "seed": "0x2a345aa3f8a0419fc11cd031c98c49d171f3dd2151d9c06fd327e9254e1db962",
+      "traitsSha256": "3d763ab59be11f274148affa37ef33844f22266e4e552bc322a94a60af26cf64",
+      "filmSha256": "5ddfc8c6c5b8aec3da943f26f87d45c07a802dfc8049305c3fc53ad7e1ce739a",
+      "ink": {
+        "stillSha256": "6875af07867a53e1de1d1a82bed1da759e2b54ffc40095af4e3f24c1cd7ea07c",
+        "rung": {
+          "src": "/art/stills/0-ink-1920-288eb3fab02188d8.webp",
+          "sha256": "288eb3fab02188d8b045b48b55b310c0a44208035b3aac042d7cf90791a25e13"
+        }
+      },
+      "step": 999999,
+      "bodies": [
+        {
+          "x": 1700.09,
+          "y": 1562.29,
+          "paper": true,
+          "hollow": {
+            "offset": 0.031,
+            "radius": 1.0419
+          }
+        },
+        {
+          "x": 2485.28,
+          "y": 1100.03,
+          "paper": true,
+          "hollow": {
+            "offset": 0.0493,
+            "radius": 1.0368
+          }
+        },
+        {
+          "x": 1541.67,
+          "y": 1502.38,
+          "paper": true,
+          "hollow": {
+            "offset": 0.0404,
+            "radius": 1.0451
+          }
+        }
+      ]
+    },
+    {
+      "id": 1,
+      "seed": "0x36794583b610f71be4a51d19a01af5bfe05b673c31d86f3f0c3310c3e4261fce",
+      "traitsSha256": "5784e0e78d9e8e357daebc074c9acee36d98dc5c3ed16dfa6a00c31c09047480",
+      "filmSha256": "3c7e40c44b00b69c3de1493512d10a58e9e8344a475ddc402289e6a6e5289a55",
+      "ink": {
+        "stillSha256": "1da174966dd23bd5fb0fbf5d12c0496f0755dbfc08a09f616477e1c75860a72e",
+        "rung": {
+          "src": "/art/stills/1-ink-1920-76b3bbc86098a781.webp",
+          "sha256": "76b3bbc86098a7818b282de7844091887da2e837e398bb508cf43ae099bc7bca"
+        }
+      },
+      "step": 999999,
+      "bodies": [
+        {
+          "x": 1911.04,
+          "y": 1060.15,
+          "paper": true,
+          "hollow": {
+            "offset": 0.178,
+            "radius": 1.2309
+          }
+        },
+        {
+          "x": 2075.77,
+          "y": 1279.57,
+          "paper": true,
+          "hollow": null
+        },
+        {
+          "x": 2064.85,
+          "y": 1196.52,
+          "paper": true,
+          "hollow": null
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "seed": "0xadbf95ffe328567a552743028b0f8b204fe6ca747fdbce42ede267a8eee7bf0e",
+      "traitsSha256": "cf29b4ae6018b950c326cd19f6f6040c9461d55059e99dbdb7bb14cb86cc26a4",
+      "filmSha256": "8fea2e3b3042dae032950042c7e7ae3bdcefc0c4d3cb8f8ec9a0bd5c848998c6",
+      "ink": {
+        "stillSha256": "e8ec620860013579d22f1d0f18902503f4cbbbf5e03e207d27e964e6311b673d",
+        "rung": {
+          "src": "/art/stills/2-ink-1920-cf6f3e17bd505fc6.webp",
+          "sha256": "cf6f3e17bd505fc67f6f45f97aa8987ca4ffe6064089cddac16a4a6aa23ac89f"
+        }
+      },
+      "step": 999999,
+      "bodies": [
+        {
+          "x": 2085.7,
+          "y": 1443.11,
+          "paper": true,
+          "hollow": {
+            "offset": 0.0944,
+            "radius": 1.0576
+          }
+        },
+        {
+          "x": 2236.29,
+          "y": 1027.73,
+          "paper": true,
+          "hollow": {
+            "offset": 0.0646,
+            "radius": 1.0133
+          }
+        },
+        {
+          "x": 1175.53,
+          "y": 1787.8,
+          "paper": true,
+          "hollow": {
+            "offset": 0.0428,
+            "radius": 1.0172
+          }
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "seed": "0x203581755eca174027d8d64b53dcb54d320fd2195fae1c7fbf152dfe83c69855",
+      "traitsSha256": "585931adbe59939dda945df3e3c08eaf560dcb31730fc42b59577d9bc44f146b",
+      "filmSha256": "fed7006ad697f4911e9933635bc9ab75bebaad5dfaef8a9f32530f1d59516c49",
+      "ink": {
+        "stillSha256": "b0c56404f92877a2638de1c6762c8fa8d46c58dcebec7f15a5aa93b9f2b362a5",
+        "rung": {
+          "src": "/art/stills/3-ink-1920-a13223df7b5c57ae.webp",
+          "sha256": "a13223df7b5c57ae4361954492b6c1446a26c3428f2d85f7a83092e75f54c06d"
+        }
+      },
+      "step": 999999,
+      "bodies": [
+        {
+          "x": 1287.65,
+          "y": 2040.28,
+          "paper": true,
+          "hollow": {
+            "offset": 0.0522,
+            "radius": 1.0383
+          }
+        },
+        {
+          "x": 696.77,
+          "y": 1653.4,
+          "paper": true,
+          "hollow": {
+            "offset": 0.0055,
+            "radius": 0.9964
+          }
+        },
+        {
+          "x": 1122.76,
+          "y": 1799,
+          "paper": true,
+          "hollow": {
+            "offset": 0.0451,
+            "radius": 0.9957
+          }
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "seed": "0x082f04a131becec289fb0d93bda9442cf26a11e560c749a05d0eddf99df33d8f",
+      "traitsSha256": "d8b00f41087841dd0eef308771ff0554a57f1fc2f67e886f143467961ced3567",
+      "filmSha256": "361aa7ef0363b3ec8a47d70aeb8bb2b65fc1d106302aee6f73378bbea8f60ffc",
+      "ink": {
+        "stillSha256": "bb57fccc036a6af43597c87dbfa9c6320e72cd41010ec7909a3971a62bfdbe2c",
+        "rung": {
+          "src": "/art/stills/4-ink-1920-bdb0bedbd066234c.webp",
+          "sha256": "bdb0bedbd066234c8e90f2ed601046a73026abf7325eeffe72c0d0512a52df60"
+        }
+      },
+      "step": 999999,
+      "bodies": [
+        {
+          "x": 2117.84,
+          "y": 707.91,
+          "paper": true,
+          "hollow": {
+            "offset": 0.0246,
+            "radius": 1.0267
+          }
+        },
+        {
+          "x": 1798.95,
+          "y": 845.21,
+          "paper": true,
+          "hollow": {
+            "offset": 0.0259,
+            "radius": 0.9992
+          }
+        },
+        {
+          "x": 1880.41,
+          "y": 573.28,
+          "paper": true,
+          "hollow": {
+            "offset": 0.0169,
+            "radius": 0.9969
+          }
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "seed": "0xe29887e5f8aea85d6b775ab8dc95df16a5a0ad2979ace2b539058a0040aca67d",
+      "traitsSha256": "ca379bc201a230a634c19609c5431a032c7a01deef433582fa34af105a03a404",
+      "filmSha256": "6a9944234c7c8f13bdb18ebc8b32253e1dcdaca16098346a3c8a9e085cca17d4",
+      "ink": {
+        "stillSha256": "d80a4b5179f353cee59b8579da46b4d06ecf7647d2e2a7f60fb733b2f900b9cf",
+        "rung": {
+          "src": "/art/stills/5-ink-1920-4581c05ada245ff3.webp",
+          "sha256": "4581c05ada245ff3f4cdaf8deedf29c38054d8325496a56e03523b1bca8df026"
+        }
+      },
+      "step": 999999,
+      "bodies": [
+        {
+          "x": 892.59,
+          "y": 1465.48,
+          "paper": true,
+          "hollow": {
+            "offset": 0.0303,
+            "radius": 1.0227
+          }
+        },
+        {
+          "x": 1006.98,
+          "y": 1249.12,
+          "paper": true,
+          "hollow": null
+        },
+        {
+          "x": 1218.28,
+          "y": 1253.95,
+          "paper": true,
+          "hollow": {
+            "offset": 0.1201,
+            "radius": 1.0829
+          }
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "seed": "0x7f12ef4506339e9ccc3c665a5ae8c1878fcf241b7dcbdc4209a95a164622e204",
+      "traitsSha256": "c13307e45179d440518cb7b6be96edfab42876a2a2bf055dc2361e76f5f587ca",
+      "filmSha256": "2c4e1aae116c310cfe5c2c1cf129fcb5b4e7f47a9c6d2f225bfd6709fad5aadf",
+      "ink": {
+        "stillSha256": "4ecbd918fd01ef011e0caf52db1f77cb1a63eed980f4524bf1eecd50d370d702",
+        "rung": {
+          "src": "/art/stills/6-ink-1920-426190eeb3f0c84a.webp",
+          "sha256": "426190eeb3f0c84ad35567f2e5cb878349f89bb6924d1face176bdd3bcda93c1"
+        }
+      },
+      "step": 999999,
+      "bodies": [
+        {
+          "x": 1808.95,
+          "y": 1411.25,
+          "paper": true,
+          "hollow": {
+            "offset": 0.0064,
+            "radius": 1.0413
+          }
+        },
+        {
+          "x": 2042.79,
+          "y": 1153.58,
+          "paper": true,
+          "hollow": {
+            "offset": 0.0226,
+            "radius": 1.0166
+          }
+        },
+        {
+          "x": 1520.77,
+          "y": 1421.93,
+          "paper": true,
+          "hollow": {
+            "offset": 0.0478,
+            "radius": 1.0216
+          }
+        }
+      ]
+    },
+    {
+      "id": 7,
+      "seed": "0xae7e4b937e44eddb5693b29148b6bd03f65417f7a363b60829a562ca2370ec0d",
+      "traitsSha256": "ebd57d4625ff8ba5566867f2210354f7d291ffd82dcc7d04b301c9ec6b66491e",
+      "filmSha256": "973e91866e430d255eb44e048992224bbe3bcc52c159d2b0ba7ecc0bb7d56ebb",
+      "ink": {
+        "stillSha256": "8c5f014f51662ef34feaed223e0383f5b156bae8f2c5f6fc3afaba14ebaf4a4c",
+        "rung": {
+          "src": "/art/stills/7-ink-1920-39bba22e27157c0c.webp",
+          "sha256": "39bba22e27157c0c247f5cab068bdac18d5d196ee5d1efbbbf7b407ab27a41e5"
+        }
+      },
+      "step": 999999,
+      "bodies": [
+        {
+          "x": 2708.03,
+          "y": 632.81,
+          "paper": true,
+          "hollow": {
+            "offset": 0.0651,
+            "radius": 1.0615
+          }
+        },
+        {
+          "x": 2110.2,
+          "y": 817.98,
+          "paper": true,
+          "hollow": {
+            "offset": 0.078,
+            "radius": 1.0468
+          }
+        },
+        {
+          "x": 1283.53,
+          "y": 101.55,
+          "paper": true,
+          "hollow": {
+            "offset": 0.0256,
+            "radius": 0.9977
+          }
+        }
+      ]
+    },
+    {
+      "id": 8,
+      "seed": "0x7f16d855c0e049505aa951db48ebd2427ee39ba812dd2e41a2e5492096673db5",
+      "traitsSha256": "7a1ba4841adccc0a4ffe79751bef19392fa59f49039dc68411ce907009a650d2",
+      "filmSha256": "f121e1739d927d7585927f81e3b18300e921c2bd7f407b2c25da9ed7ee1c246f",
+      "ink": {
+        "stillSha256": "d18554d771f860c5fd5e3a255c6bb8e774cc157c21e0d2c2c5c730cd37dd7cba",
+        "rung": {
+          "src": "/art/stills/8-ink-1920-6c698b203ed785a8.webp",
+          "sha256": "6c698b203ed785a8d440b9a1214c12f44b2d55ad8a7d78c8e1f52feaae38753c"
+        }
+      },
+      "step": 999999,
+      "bodies": [
+        {
+          "x": 2263.14,
+          "y": 831.28,
+          "paper": true,
+          "hollow": {
+            "offset": 0.0396,
+            "radius": 1.0304
+          }
+        },
+        {
+          "x": 1978.65,
+          "y": 942.95,
+          "paper": true,
+          "hollow": {
+            "offset": 0.0642,
+            "radius": 1.0213
+          }
+        },
+        {
+          "x": 1863.18,
+          "y": 1144.41,
+          "paper": true,
+          "hollow": {
+            "offset": 0.0812,
+            "radius": 1.0646
+          }
+        }
+      ]
+    },
+    {
+      "id": 9,
+      "seed": "0x1362465d6ffe31bfc33a924a9406663e313cf417c35d8d4461e66db845d39903",
+      "traitsSha256": "d6ff074ab1ab8ff579a7d2fe99cff7484cd7283f7ef2a3a1a6d37e394ef1d948",
+      "filmSha256": "4489df3e47966bc0f1261af742497ecc2ebb66d57b9e05466da2e9277d363efe",
+      "ink": {
+        "stillSha256": "ed3c8760ae37af07c84dc928d030a051b27b287c2f28ab7a438d8e3708e796db",
+        "rung": {
+          "src": "/art/stills/9-ink-1920-45974d335e8c6280.webp",
+          "sha256": "45974d335e8c6280006d8892d7de3a8112a1997be3cfe9337da9a41c827efe28"
+        }
+      },
+      "step": 999999,
+      "bodies": [
+        {
+          "x": 2093.17,
+          "y": 1449.22,
+          "paper": true,
+          "hollow": {
+            "offset": 0.0336,
+            "radius": 1.0697
+          }
+        },
+        {
+          "x": 940.08,
+          "y": 1318.98,
+          "paper": true,
+          "hollow": {
+            "offset": 0.0177,
+            "radius": 1.0154
+          }
+        },
+        {
+          "x": 694.4,
+          "y": 629,
+          "paper": true,
+          "hollow": {
+            "offset": 0.0579,
+            "radius": 1.0167
+          }
+        }
+      ]
+    },
+    {
+      "id": 10,
+      "seed": "0x4fbcf97cd52e5a670e14f706d1c01518fdd7f89d89515bc71b592912b9af59eb",
+      "traitsSha256": "e0081abe3d1547358a8baeeebc2be75905ef915dce8a1ff93fa6dd084621900a",
+      "filmSha256": "bea0bda8da57ff1430c493e3ad30de57f9ab1bfe48b07b7a881d3ea4a4dd587a",
+      "ink": {
+        "stillSha256": "ae0dc2f07f7c1f7bf01f1b93124a5a1a167b15e82137c317187ff84db5cfd451",
+        "rung": {
+          "src": "/art/stills/10-ink-1920-8a149d2d80c8995a.webp",
+          "sha256": "8a149d2d80c8995af8838f901a32a92738e10ffdbcae6c0eaab242dd89b1b6ae"
+        }
+      },
+      "step": 999999,
+      "bodies": [
+        {
+          "x": 670.8,
+          "y": 1394.84,
+          "paper": true,
+          "hollow": {
+            "offset": 0.0139,
+            "radius": 1.0359
+          }
+        },
+        {
+          "x": 1998.71,
+          "y": 1574.99,
+          "paper": true,
+          "hollow": {
+            "offset": 0.0343,
+            "radius": 1.0482
+          }
+        },
+        {
+          "x": 2898.72,
+          "y": 101.55,
+          "paper": true,
+          "hollow": {
+            "offset": 0.0336,
+            "radius": 1.05
+          }
+        }
+      ]
+    },
+    {
+      "id": 11,
+      "seed": "0x55abfa5aa9c648d15d2f46ea2dc9ad640e32247e130962cf87604029da9c6982",
+      "traitsSha256": "a1d00a5ec54ed1793dd486fd8d9ad2ac7fff7615ad9db90d1810e6e94b60d88f",
+      "filmSha256": "b5afa51d26748dbe8a5ac38b045788e230a3e217c40e797525fbad9c2cc1be08",
+      "ink": {
+        "stillSha256": "163185e371b7d33cc2101316bdc9f74d8116c07e1284315730c7e438992c71b2",
+        "rung": {
+          "src": "/art/stills/11-ink-1920-3939334c17e5a158.webp",
+          "sha256": "3939334c17e5a158aa0bd6296495d2a5cb296fa0396e6e0a085cab7e833ed1a4"
+        }
+      },
+      "step": 999999,
+      "bodies": [
+        {
+          "x": 920.71,
+          "y": 828.62,
+          "paper": true,
+          "hollow": {
+            "offset": 0.0069,
+            "radius": 1.0145
+          }
+        },
+        {
+          "x": 1245.9,
+          "y": 736.85,
+          "paper": true,
+          "hollow": null
+        },
+        {
+          "x": 1241.69,
+          "y": 776.14,
+          "paper": true,
+          "hollow": null
+        }
+      ]
+    },
+    {
+      "id": 12,
+      "seed": "0x95c22c676296e4cca545427249c75a2cc99e4e3a43abd24869c9a09ca5960f8a",
+      "traitsSha256": "fa402e18e1fe85d9bd9c8eeb783fb3ced165b20432385c45c43b5b856cd35876",
+      "filmSha256": "f8b68a416308c688cd77c5dd3324532bcac43e74012ce0e9381f10e2c1998451",
+      "ink": {
+        "stillSha256": "1d08ae69616ad7075f73e9705507ea9ace416105d061811d634bfb6c214dcaa4",
+        "rung": {
+          "src": "/art/stills/12-ink-1920-e2e2669973f471e7.webp",
+          "sha256": "e2e2669973f471e70f1560dd5b678964d502f8a341abe3e4db0f498aee6c56f7"
+        }
+      },
+      "step": 999999,
+      "bodies": [
+        {
+          "x": 1265.31,
+          "y": 1281.17,
+          "paper": true,
+          "hollow": {
+            "offset": 0.0309,
+            "radius": 1.025
+          }
+        },
+        {
+          "x": 1561.98,
+          "y": 1566.19,
+          "paper": true,
+          "hollow": {
+            "offset": 0.0195,
+            "radius": 1.011
+          }
+        },
+        {
+          "x": 1954.27,
+          "y": 1697.69,
+          "paper": true,
+          "hollow": {
+            "offset": 0.0403,
+            "radius": 1.0073
+          }
+        }
+      ]
+    },
+    {
+      "id": 13,
+      "seed": "0x8b834c15a096e3e2ba8ecaea21627117e104bb37f844f69648c0fdf9406d3457",
+      "traitsSha256": "329b857d6abfe9bb23cf8af75b26b79720ec31db4a0874bd1cf59d4d4080584e",
+      "filmSha256": "98938dca717f0fb873914b8dfca98b22466a6af6abf7f5e559e4d18331fad9f7",
+      "ink": {
+        "stillSha256": "201418cc38c3ad3ec74f379f064870701a0f7572e2f1eaff504c4617f2803c6d",
+        "rung": {
+          "src": "/art/stills/13-ink-1920-0919ec8201242775.webp",
+          "sha256": "0919ec820124277569eec5836511d60692454380fcde1d47fe71d042a72e4b66"
+        }
+      },
+      "step": 999999,
+      "bodies": [
+        {
+          "x": 566.57,
+          "y": 866.31,
+          "paper": true,
+          "hollow": {
+            "offset": 0.0402,
+            "radius": 1.0357
+          }
+        },
+        {
+          "x": 1692.12,
+          "y": 669.27,
+          "paper": true,
+          "hollow": {
+            "offset": 0.0292,
+            "radius": 1.0209
+          }
+        },
+        {
+          "x": 1015.48,
+          "y": 1161.2,
+          "paper": true,
+          "hollow": {
+            "offset": 0.045,
+            "radius": 1.0205
+          }
+        }
+      ]
+    },
+    {
+      "id": 14,
+      "seed": "0x18952be1a43822726d7920df20bc2e1a2be06c1f907a0dc80e7469e50be3ce4b",
+      "traitsSha256": "5f624e6840bec83adf8d05693acac926632186556990846feeccbae07fbbddf0",
+      "filmSha256": "ca5c80372a84d04dd798f5bd5d00b56ac36820009f144faa556a6f75b88efc03",
+      "ink": {
+        "stillSha256": "812b29ae0f76fad9bc976c1c3f4c2413fade24021b030e9b5f10d0b44564e033",
+        "rung": {
+          "src": "/art/stills/14-ink-1920-cfd51ae44541a7d9.webp",
+          "sha256": "cfd51ae44541a7d9428163e547faa51bf44eb4afbe6376feb19552a3b5a6fedc"
+        }
+      },
+      "step": 999999,
+      "bodies": [
+        {
+          "x": 3055.45,
+          "y": 732.94,
+          "paper": true,
+          "hollow": {
+            "offset": 0.0148,
+            "radius": 1.0083
+          }
+        },
+        {
+          "x": 2016.43,
+          "y": 1296.97,
+          "paper": true,
+          "hollow": {
+            "offset": 0.0152,
+            "radius": 1.0258
+          }
+        },
+        {
+          "x": 2685.95,
+          "y": 1907.29,
+          "paper": true,
+          "hollow": {
+            "offset": 0.0508,
+            "radius": 1.0413
+          }
+        }
+      ]
+    },
+    {
+      "id": 15,
+      "seed": "0x7f5cf3453c81fc1b11767f9c3495712ff3962f3e6f1902c2e2768c679cb5eb01",
+      "traitsSha256": "18d10770e964d8f227a693d3314e1a2f9054ca42ecb3b73e2cfe300e9f3366aa",
+      "filmSha256": "bb0f3e8a3d5f4057004843dd1846377d08823d96ae069d5025e107c318a489fa",
+      "ink": {
+        "stillSha256": "e090073d4cb490c893b29dd03a810aaa2136beba9b553b12d8062b8f1acca86c",
+        "rung": {
+          "src": "/art/stills/15-ink-1920-44dd9ab3318e8299.webp",
+          "sha256": "44dd9ab3318e82998057c76efff222f0c68bab21860d980f81d0696f6b37701a"
+        }
+      },
+      "step": 999999,
+      "bodies": [
+        {
+          "x": 1966.54,
+          "y": 1162.27,
+          "paper": true,
+          "hollow": null
+        },
+        {
+          "x": 1860.1,
+          "y": 1354.42,
+          "paper": true,
+          "hollow": null
+        },
+        {
+          "x": 1694.79,
+          "y": 1048.87,
+          "paper": true,
+          "hollow": {
+            "offset": 0.0226,
+            "radius": 1.0333
+          }
+        }
+      ]
+    },
+    {
+      "id": 16,
+      "seed": "0xf36f93da75d41f35844da6b6169ba99088ef0c8d3d1990beea4960a1b23c25db",
+      "traitsSha256": "8dfc2580756737b3693cf55bd18c262e8486f9fc3d6dfa8dad0a37c52fe19a51",
+      "filmSha256": "3cb65671cc80bc5abb4b05ee7eacdf91999a9f3102a7c86aa5c92579334d42f9",
+      "ink": {
+        "stillSha256": "e9d97a2bbfb08832469fe63feb32995a36d81dcf405971e790935571f46d36a9",
+        "rung": {
+          "src": "/art/stills/16-ink-1920-38c01e5dfc248b9c.webp",
+          "sha256": "38c01e5dfc248b9ce8c8e5c1e33b893576024dd428b1a5ed4331ba51663c0597"
+        }
+      },
+      "step": 999999,
+      "bodies": [
+        {
+          "x": 1647.75,
+          "y": 574.5,
+          "paper": true,
+          "hollow": {
+            "offset": 0.0921,
+            "radius": 1.05
+          }
+        },
+        {
+          "x": 1433.42,
+          "y": 701.95,
+          "paper": true,
+          "hollow": {
+            "offset": 0.0717,
+            "radius": 1.0691
+          }
+        },
+        {
+          "x": 1226.27,
+          "y": 855.13,
+          "paper": true,
+          "hollow": {
+            "offset": 0.0316,
+            "radius": 0.998
+          }
+        }
+      ]
+    },
+    {
+      "id": 17,
+      "seed": "0x521f97cd91656a41eebd88c365fa81626ca6d8ccf05e6c19c1cd9aba80784382",
+      "traitsSha256": "541f062ff5f3242cf6cff9cb21267c92d1949596a14ee22f787353e2f1311498",
+      "filmSha256": "5d4b9473ac77e7e696e39b49b23a63ba95f543c9ad7fbb29b0c5e947ef922d33",
+      "ink": {
+        "stillSha256": "eecea821e51a38026b58e9639c32fa3d584072ce99a352b67087d65b0d1fac04",
+        "rung": {
+          "src": "/art/stills/17-ink-1920-671e297c589f13f1.webp",
+          "sha256": "671e297c589f13f1eec4dc55ff9108803a154bcaf0caac7663de41d33a2b22c5"
+        }
+      },
+      "step": 999999,
+      "bodies": [
+        {
+          "x": 1648.48,
+          "y": 358.7,
+          "paper": true,
+          "hollow": {
+            "offset": 0.027,
+            "radius": 0.9927
+          }
+        },
+        {
+          "x": 1315.46,
+          "y": 1127.16,
+          "paper": true,
+          "hollow": {
+            "offset": 0.0302,
+            "radius": 0.9939
+          }
+        },
+        {
+          "x": 1092.6,
+          "y": 764.24,
+          "paper": true,
+          "hollow": {
+            "offset": 0.0147,
+            "radius": 1.0182
+          }
+        }
+      ]
+    },
+    {
+      "id": 18,
+      "seed": "0xb7bd8fb366c9ae47dab5fa448153dd537098743a48fe33af35de8ddd4d584c25",
+      "traitsSha256": "c4cadae1162d6b9efd8e9cc3675209bae5523121d01a8bfb530db96be7732d5d",
+      "filmSha256": "f4621ea5d9fd7470e898ac19f733549a6b5bb550c596156d11610d81c934d61e",
+      "ink": {
+        "stillSha256": "b98b04a37fd59a91141e868ec7ee1370adb806b405cd69a61df23ecb5a57a34f",
+        "rung": {
+          "src": "/art/stills/18-ink-1920-2e527b745c060394.webp",
+          "sha256": "2e527b745c060394f89a681e8f6dd8a662bd68ca8508476de21995a2e03d71c8"
+        }
+      },
+      "step": 999999,
+      "bodies": [
+        {
+          "x": 1520.39,
+          "y": 1251.68,
+          "paper": true,
+          "hollow": {
+            "offset": 0.0346,
+            "radius": 1.103
+          }
+        },
+        {
+          "x": 992.3,
+          "y": 1179.02,
+          "paper": true,
+          "hollow": {
+            "offset": 0.0996,
+            "radius": 1.0796
+          }
+        },
+        {
+          "x": 1372.3,
+          "y": 1894.31,
+          "paper": true,
+          "hollow": {
+            "offset": 0.0245,
+            "radius": 0.9937
+          }
+        }
+      ]
+    },
+    {
+      "id": 19,
+      "seed": "0x4c7dc283fabb2c4a4971b65cd7806b4e48d76440e3fbee3e4eef58d2269470e2",
+      "traitsSha256": "626970472498bc8028ad2671083b8f9b1a96ce24f06ba0d21d22e1c958d0448b",
+      "filmSha256": "04446cd2f0226636536c4aa8738357b46633c04100e1137ba7d4aa44ad9d0e10",
+      "ink": {
+        "stillSha256": "77e58b9d91db8ceb44895e2acadfaaaff62cfa967054464be7c35737666f8498",
+        "rung": {
+          "src": "/art/stills/19-ink-1920-e89524121c8ea211.webp",
+          "sha256": "e89524121c8ea2117af1df4ab3643c6868a7f8cd2dc5dcc029450441a99db700"
+        }
+      },
+      "step": 999999,
+      "bodies": [
+        {
+          "x": 1948.83,
+          "y": 1019.48,
+          "paper": true,
+          "hollow": {
+            "offset": 0.0245,
+            "radius": 1.002
+          }
+        },
+        {
+          "x": 1039.35,
+          "y": 844.85,
+          "paper": true,
+          "hollow": {
+            "offset": 0.0361,
+            "radius": 1.0084
+          }
+        },
+        {
+          "x": 1195.22,
+          "y": 187.74,
+          "paper": true,
+          "hollow": {
+            "offset": 0.0295,
+            "radius": 1.0293
+          }
+        }
+      ]
+    },
+    {
+      "id": 20,
+      "seed": "0xf4bcfd7913601331aff2ff6f771f05806cd4983381a217fc02b7e4f2c497f788",
+      "traitsSha256": "ad439fd61bb227d2e6807cff9cc9d394166dc0bc365a8f6e0c642ab8fa044d43",
+      "filmSha256": "881a39712d88ffff9945c2f61f912e799d6e255aea4e3a00c2bdbff4fea8e1fc",
+      "ink": {
+        "stillSha256": "bb0c27c83526f9015116819028ca037ea6c2745c46cd0ef3d73692d6fa60f490",
+        "rung": {
+          "src": "/art/stills/20-ink-1920-fe91a1f6c0dbec0a.webp",
+          "sha256": "fe91a1f6c0dbec0a1f566b577a9b6bc4e47d0162ed652ebc5073a0c89eb2a99e"
+        }
+      },
+      "step": 999999,
+      "bodies": [
+        {
+          "x": 1245.31,
+          "y": 481.74,
+          "paper": true,
+          "hollow": {
+            "offset": 0.0225,
+            "radius": 0.9907
+          }
+        },
+        {
+          "x": 985.71,
+          "y": 1419.48,
+          "paper": true,
+          "hollow": {
+            "offset": 0.039,
+            "radius": 1.0269
+          }
+        },
+        {
+          "x": 1398.14,
+          "y": 351.51,
+          "paper": true,
+          "hollow": {
+            "offset": 0.0209,
+            "radius": 0.9926
+          }
+        }
+      ]
+    },
+    {
+      "id": 21,
+      "seed": "0x37c73b71ae24c2a263b46ca3399d91b4de4fe97f1eb4dfe608475101f69e590e",
+      "traitsSha256": "985c767ff54f155222248d50f85fd69fe1fc3a875f53919dbc004b80a48664ef",
+      "filmSha256": "6f330528dbb276e6128af532ca4338d115d529a05e177d4cd7442c192199e913",
+      "ink": {
+        "stillSha256": "44951ad0a30d82b68c992eae06471673a4f37336e635dff4d5e381bf669f6fb6",
+        "rung": {
+          "src": "/art/stills/21-ink-1920-585e873efa366f6f.webp",
+          "sha256": "585e873efa366f6f99e430c5e3c99666d06d20e728a8a4980b4849e551d05ebb"
+        }
+      },
+      "step": 999999,
+      "bodies": [
+        {
+          "x": 1849.92,
+          "y": 1166.29,
+          "paper": true,
+          "hollow": {
+            "offset": 0.0227,
+            "radius": 1.0172
+          }
+        },
+        {
+          "x": 1782.02,
+          "y": 998.68,
+          "paper": true,
+          "hollow": {
+            "offset": 0.0491,
+            "radius": 1.0301
+          }
+        },
+        {
+          "x": 1494.98,
+          "y": 476.03,
+          "paper": true,
+          "hollow": {
+            "offset": 0.0347,
+            "radius": 1.0148
+          }
+        }
+      ]
+    },
+    {
+      "id": 22,
+      "seed": "0x003108837490f9fd840a44e70590173c7f95340872f60eaa13482b4ecb8fb0a8",
+      "traitsSha256": "7263806f1236e44069c123af2344a050bd3e7bf3e157945e27292be6be78bb90",
+      "filmSha256": "4fdc0e4cfce98797e5d94331899cd1e6bdfd8312b9663fb3865bf09bc58c1afc",
+      "ink": {
+        "stillSha256": "71d9250de55cce3fe26dd017b826b100461dd892188364547cc3dcb8670e1558",
+        "rung": {
+          "src": "/art/stills/22-ink-1920-0a48f1f6e8ba118f.webp",
+          "sha256": "0a48f1f6e8ba118f9c6f184b9c7b7119ed63123e3f187b9fd63dc7083ddf842b"
+        }
+      },
+      "step": 999999,
+      "bodies": [
+        {
+          "x": 873.11,
+          "y": 950.33,
+          "paper": true,
+          "hollow": {
+            "offset": 0.0272,
+            "radius": 0.9927
+          }
+        },
+        {
+          "x": 1184.77,
+          "y": 874.53,
+          "paper": true,
+          "hollow": {
+            "offset": 0.0195,
+            "radius": 0.9917
+          }
+        },
+        {
+          "x": 638.92,
+          "y": 1557.09,
+          "paper": true,
+          "hollow": {
+            "offset": 0.0326,
+            "radius": 1.1508
+          }
+        }
+      ]
+    },
+    {
+      "id": 23,
+      "seed": "0x17d61f1c00e5d16c399a8e341e9feaea32b275e5426a4375394e74cc855affcc",
+      "traitsSha256": "a0c4aea15361edfadfc20f45acfa456eb89137800be510a24088d3b22269afec",
+      "filmSha256": "7403160ee1cee20dfafc8676605e65cccf3a3693b97f8ea6a4779bf69912257d",
+      "ink": {
+        "stillSha256": "9bcbf71b151094f9eada42409fe1e98a6de02247bc2c8d2a3c9b06e12105352a",
+        "rung": {
+          "src": "/art/stills/23-ink-1920-4733fb84dc7a2e65.webp",
+          "sha256": "4733fb84dc7a2e65db2594d4b190b3e4836aa89ccdb328d924b420473a213995"
+        }
+      },
+      "step": 999999,
+      "bodies": [
+        {
+          "x": 1504.64,
+          "y": 1895.23,
+          "paper": true,
+          "hollow": {
+            "offset": 0.0456,
+            "radius": 1.0048
+          }
+        },
+        {
+          "x": 1612.44,
+          "y": 1518.36,
+          "paper": true,
+          "hollow": null
+        },
+        {
+          "x": 1232.52,
+          "y": 1601.83,
+          "paper": true,
+          "hollow": {
+            "offset": 0.0722,
+            "radius": 1.0309
+          }
+        }
+      ]
+    },
+    {
+      "id": 24,
+      "seed": "0x5084a87375896c7103ba17b57264f20de35d9e6eb545314680ad5e074dfc33ad",
+      "traitsSha256": "47cb2c4717242aa78fa8899291557e9d702279d05840297bbe827a94eaeed179",
+      "filmSha256": "675e3d7d27e5da50c1de757238cb5cf2395691553c3ab9a1073005c28a125353",
+      "ink": {
+        "stillSha256": "6ae55bb3090654c64508e188b4bac0ff0db591cd3c57434324b0aa8b74e0ecd6",
+        "rung": {
+          "src": "/art/stills/24-ink-1920-0cce9a5a1b219085.webp",
+          "sha256": "0cce9a5a1b219085f55ce6a21784b55f3731c892e55c2976728fdb0deab4f7e1"
+        }
+      },
+      "step": 999999,
+      "bodies": [
+        {
+          "x": 1600.52,
+          "y": 713.78,
+          "paper": true,
+          "hollow": {
+            "offset": 0.0433,
+            "radius": 1.04
+          }
+        },
+        {
+          "x": 1369.95,
+          "y": 519.8,
+          "paper": true,
+          "hollow": {
+            "offset": 0.0221,
+            "radius": 1.0153
+          }
+        },
+        {
+          "x": 2186.53,
+          "y": 682.37,
+          "paper": true,
+          "hollow": {
+            "offset": 0.0279,
+            "radius": 1.03
+          }
+        }
+      ]
+    },
+    {
+      "id": 25,
+      "seed": "0x6b273359fbc21c34f58a546c86a88b21c2bd307797e3c4959c5eccc8e326e4fd",
+      "traitsSha256": "cbcf1144bee9a3d7f2ddb212e1e3dd557dfdb6cf0a784309c781b837742aa068",
+      "filmSha256": "2f4ca944bc14216e367c05145c5bbaf94ca70207421e229bb75f6f5c89704950",
+      "ink": {
+        "stillSha256": "10b84e60159af94f9d65363a9bb20989451bf4e45de703ff975e134d4a84b085",
+        "rung": {
+          "src": "/art/stills/25-ink-1920-e1943d8148661371.webp",
+          "sha256": "e1943d814866137172a768754497e749a0be7a310d6bf530f4bd4e81f6b95de4"
+        }
+      },
+      "step": 999999,
+      "bodies": [
+        {
+          "x": 1332.55,
+          "y": 1648.69,
+          "paper": true,
+          "hollow": null
+        },
+        {
+          "x": 1774.17,
+          "y": 775.92,
+          "paper": true,
+          "hollow": {
+            "offset": 0.0388,
+            "radius": 1.0153
+          }
+        },
+        {
+          "x": 1418.47,
+          "y": 1681.13,
+          "paper": true,
+          "hollow": null
+        }
+      ]
+    },
+    {
+      "id": 26,
+      "seed": "0x882c7b9547f87eeb407f34b466c072265f4742e0cdb84bb990149fb0c16e4e9e",
+      "traitsSha256": "e8816b478c5c65496fee5b7d88ed0c73a84e3aaa873b53ef0beb77b634fc07c6",
+      "filmSha256": "35297a87267ed4eb7c2e12021a10d4f60a58ff870b4b5ceef227ac3773402b62",
+      "ink": {
+        "stillSha256": "70f443da88c7596dbf01993f8b90c879295e5859138a49772c06956aa6b6bb66",
+        "rung": {
+          "src": "/art/stills/26-ink-1920-44f7ec526b90653a.webp",
+          "sha256": "44f7ec526b90653a46c1782db6c06fc08e4097a7c2e5a58a50702d2f469e398d"
+        }
+      },
+      "step": 999999,
+      "bodies": [
+        {
+          "x": 1944.53,
+          "y": 667.49,
+          "paper": true,
+          "hollow": {
+            "offset": 0.0414,
+            "radius": 1.0198
+          }
+        },
+        {
+          "x": 1694.41,
+          "y": 713.12,
+          "paper": true,
+          "hollow": {
+            "offset": 0.0186,
+            "radius": 1.0504
+          }
+        },
+        {
+          "x": 1275.76,
+          "y": 423.43,
+          "paper": true,
+          "hollow": {
+            "offset": 0.0174,
+            "radius": 1.0381
+          }
+        }
+      ]
+    },
+    {
+      "id": 27,
+      "seed": "0xafc587b3c960ca50ba824520a3370fda7756be5f60ef6e06500fecf1ece4beb9",
+      "traitsSha256": "ee67b6dfd8be9bc5e9494d9e6f214a36eb6cdff59250eb5c68067df05ab64648",
+      "filmSha256": "06b98a1d9d1e99d15f2d20b0c42e4f7f66bed1a9e7414b414d9fbd7c9da79c96",
+      "ink": {
+        "stillSha256": "4b88dcc43bb5beb71fc669dae2824ce2a7abe2096d299bf3e7efaa50c8a0925a",
+        "rung": {
+          "src": "/art/stills/27-ink-1920-83a0c8c0f96c4da3.webp",
+          "sha256": "83a0c8c0f96c4da3296dc483e746cceaae666ce50ccfd53aecb2c1a2c90d56b7"
+        }
+      },
+      "step": 999999,
+      "bodies": [
+        {
+          "x": 1549.73,
+          "y": 101.55,
+          "paper": true,
+          "hollow": {
+            "offset": 0.0528,
+            "radius": 1.036
+          }
+        },
+        {
+          "x": 1333.31,
+          "y": 657.47,
+          "paper": true,
+          "hollow": {
+            "offset": 0.0251,
+            "radius": 0.9939
+          }
+        },
+        {
+          "x": 1866.17,
+          "y": 685.45,
+          "paper": true,
+          "hollow": {
+            "offset": 0.0238,
+            "radius": 0.9941
+          }
+        }
+      ]
+    },
+    {
+      "id": 28,
+      "seed": "0xe1b2c47ad2308dbc6456a0995ec9a7572964bb4650e9f7034c427b1e4185d620",
+      "traitsSha256": "f41a746a6437deacd7ccf2cb896ce78a328680549d4dc9220d836b5324eb8544",
+      "filmSha256": "e3123ab24fe733fd8726fd10e262f8d16e15985ca14b211451f49aaeb15d92c3",
+      "ink": {
+        "stillSha256": "972de51080c1beb0597e172bbde2d6ecdfacaf4221de6fb515efedca0afff767",
+        "rung": {
+          "src": "/art/stills/28-ink-1920-6d104f0de631c195.webp",
+          "sha256": "6d104f0de631c195dc4298d4cf652b9d0638116d3df79eae550a7e2a0abae92f"
+        }
+      },
+      "step": 999999,
+      "bodies": [
+        {
+          "x": 2542.04,
+          "y": 884.06,
+          "paper": true,
+          "hollow": {
+            "offset": 0.0397,
+            "radius": 1.0169
+          }
+        },
+        {
+          "x": 2487.94,
+          "y": 466.38,
+          "paper": true,
+          "hollow": {
+            "offset": 0.0584,
+            "radius": 1.041
+          }
+        },
+        {
+          "x": 2177.41,
+          "y": 486.81,
+          "paper": true,
+          "hollow": {
+            "offset": 0.0476,
+            "radius": 1.1168
+          }
+        }
+      ]
+    },
+    {
+      "id": 29,
+      "seed": "0xb0135869a031d80d579dead0d010120b12fd1c334be85174e0474cd359bbdc95",
+      "traitsSha256": "3b4e0860831fff4e85989249db7f51bf944d4d7bc5aba07863073d85838bcdd2",
+      "filmSha256": "f348c4841a9b7b9c22cbac9183ecbe6dd6a2b19f88d55961c26f5aa70fa815a8",
+      "ink": {
+        "stillSha256": "6201d20cdd1e7d91a22d995852c29dd2b859af5cc97bba2da4c4a2edca2b9a2a",
+        "rung": {
+          "src": "/art/stills/29-ink-1920-6675fae27cdb9bd2.webp",
+          "sha256": "6675fae27cdb9bd29d1f093a8c07c8472c978820d3eca217756497b6629b48d8"
+        }
+      },
+      "step": 999999,
+      "bodies": [
+        {
+          "x": 1284.85,
+          "y": 840.84,
+          "paper": true,
+          "hollow": {
+            "offset": 0.045,
+            "radius": 1.0611
+          }
+        },
+        {
+          "x": 1593.6,
+          "y": 722.75,
+          "paper": true,
+          "hollow": {
+            "offset": 0.1313,
+            "radius": 1.0982
+          }
+        },
+        {
+          "x": 880.1,
+          "y": 1228.98,
+          "paper": true,
+          "hollow": {
+            "offset": 0.0738,
+            "radius": 1.1029
+          }
+        }
+      ]
+    },
+    {
+      "id": 30,
+      "seed": "0xf4362bafb766d5a5dfc78b0fcd91607544a4bb6a540ca076f55dd74643a453c2",
+      "traitsSha256": "0defbc3700e100953f6737da25fbcc7fa49858a94e494995b9ba979c06d33284",
+      "filmSha256": "7ff1d822981da6af15daad0c880a8541a2ef5fc41ae7591a4a5fb37cdeb9eced",
+      "ink": {
+        "stillSha256": "fe4fb4131265f60169fa147e1582729c3e3a489b57298114b85cb3287ba2cb75",
+        "rung": {
+          "src": "/art/stills/30-ink-1920-7bce89669b840e56.webp",
+          "sha256": "7bce89669b840e56094b877dac7c49c438e1d1a326eb055940d15805a8b9cb55"
+        }
+      },
+      "step": 999999,
+      "bodies": [
+        {
+          "x": 1410.12,
+          "y": 838.51,
+          "paper": true,
+          "hollow": {
+            "offset": 0.0221,
+            "radius": 0.9911
+          }
+        },
+        {
+          "x": 1117.49,
+          "y": 2131.95,
+          "paper": true,
+          "hollow": {
+            "offset": 0.0395,
+            "radius": 1.0022
+          }
+        },
+        {
+          "x": 2956.97,
+          "y": 1332.15,
+          "paper": true,
+          "hollow": {
+            "offset": 0.0277,
+            "radius": 1.0068
+          }
+        }
+      ]
+    },
+    {
+      "id": 31,
+      "seed": "0x4a0d5b57e13cf40c56cddb4ee2c10f50ab7aff755e24c61a687855663713f5b5",
+      "traitsSha256": "0bb9fdac8f267ba2ac6695e439d7d5854d3ed00d2ad1e802f83bcd0cffcc6e95",
+      "filmSha256": "5eacf3b911a586066b93cc4b4b33bc866d43d28c1e4511a3781061795000ab94",
+      "ink": {
+        "stillSha256": "41792188d7cf2f515667103f8a6f0d610522df82e6400c1700131b772cb466e4",
+        "rung": {
+          "src": "/art/stills/31-ink-1920-d06b3afce648acb4.webp",
+          "sha256": "d06b3afce648acb4ea95896d836745a7e29febbe831f8c234b53b0d98c4b3065"
+        }
+      },
+      "step": 999999,
+      "bodies": [
+        {
+          "x": 1964.38,
+          "y": 469.07,
+          "paper": true,
+          "hollow": {
+            "offset": 0.0355,
+            "radius": 1.0928
+          }
+        },
+        {
+          "x": 1974.28,
+          "y": 1381.3,
+          "paper": true,
+          "hollow": {
+            "offset": 0.0927,
+            "radius": 1.1059
+          }
+        },
+        {
+          "x": 1245.69,
+          "y": 469.95,
+          "paper": true,
+          "hollow": {
+            "offset": 0.0594,
+            "radius": 1.087
+          }
+        }
+      ]
+    },
+    {
+      "id": 32,
+      "seed": "0x6dd498f93b24ea9493acfed9a8e4069a5b3e6e7c3b426fe43de472010c2636a6",
+      "traitsSha256": "fb6498d00f3b6184edcc82103b36142067c81eaefd7c7a6a46490c06318b91da",
+      "filmSha256": "7b9af6b0afa6f9957c6cad1bd7c2d65501fb7f3fd6ff768d0f6ab6977a6430fc",
+      "ink": {
+        "stillSha256": "7f9c2604ffffb66a919fcc5a5cfce96ab2269837119c48f7738ea32b3781668d",
+        "rung": {
+          "src": "/art/stills/32-ink-1920-bea3071cfb90389c.webp",
+          "sha256": "bea3071cfb90389c00fe7f7f0c4f79dbb2ab7700898127633b827a54d91b72ca"
+        }
+      },
+      "step": 999999,
+      "bodies": [
+        {
+          "x": 1875.08,
+          "y": 1557.39,
+          "paper": true,
+          "hollow": null
+        },
+        {
+          "x": 3140.15,
+          "y": 882.26,
+          "paper": true,
+          "hollow": {
+            "offset": 0.0249,
+            "radius": 1.0107
+          }
+        },
+        {
+          "x": 1750.04,
+          "y": 1439.18,
+          "paper": true,
+          "hollow": null
+        }
+      ]
+    },
+    {
+      "id": 33,
+      "seed": "0xfecd05a4e7f537281200ed720a095da2d5d4db14867a37d2627ebdaa2d2ad1e6",
+      "traitsSha256": "06b86c026a9e73bcfccc330699036be75ad213c5791e1b369b8900e955341b18",
+      "filmSha256": "bce86307601ea7d90f723f3e6874eb22cb365ad684056950f662f451c981d58c",
+      "ink": {
+        "stillSha256": "f6c4ff3db775fde9451850f5d7a1740db0b15a2d832fc96e93408bb0bde09f75",
+        "rung": {
+          "src": "/art/stills/33-ink-1920-21fa77662c332c32.webp",
+          "sha256": "21fa77662c332c327ef193682bdd20234d34f0829dfb3c3f45f54294aff3c17d"
+        }
+      },
+      "step": 999999,
+      "bodies": [
+        {
+          "x": 2977.84,
+          "y": 1497.66,
+          "paper": true,
+          "hollow": {
+            "offset": 0.0099,
+            "radius": 1.0756
+          }
+        },
+        {
+          "x": 2624.58,
+          "y": 739.34,
+          "paper": true,
+          "hollow": {
+            "offset": 0.0496,
+            "radius": 1.0791
+          }
+        },
+        {
+          "x": 2179.24,
+          "y": 1355.74,
+          "paper": true,
+          "hollow": {
+            "offset": 0.0435,
+            "radius": 1.0663
+          }
+        }
+      ]
+    },
+    {
+      "id": 34,
+      "seed": "0x5bbb0a5a29213be7a45e008e31a64e4f3d5e5d84909c6e4bfc90cab43eb14e95",
+      "traitsSha256": "26c10373690f1f8afd9661771b3e233796ed948707ec504fee49b566f7a1869e",
+      "filmSha256": "465226e2ceb64f7ac07517b14a60c4c5df26b37ad5db14b99c725fcb4fc6c669",
+      "ink": {
+        "stillSha256": "111065c322c8d1dc7b7e787dbe462927e1b3ad6830b1e82968ba91adfdc28f3d",
+        "rung": {
+          "src": "/art/stills/34-ink-1920-918b7b586a183ecf.webp",
+          "sha256": "918b7b586a183ecf6a47c9be97f6ce84909ab22a968a17f470eb87d73d7b7ea9"
+        }
+      },
+      "step": 999999,
+      "bodies": [
+        {
+          "x": 2512.96,
+          "y": 2010.13,
+          "paper": true,
+          "hollow": {
+            "offset": 0.0382,
+            "radius": 1.0035
+          }
+        },
+        {
+          "x": 2362.57,
+          "y": 1623,
+          "paper": true,
+          "hollow": {
+            "offset": 0.0819,
+            "radius": 1.0802
+          }
+        },
+        {
+          "x": 1477.38,
+          "y": 1291.9,
+          "paper": true,
+          "hollow": {
+            "offset": 0.0317,
+            "radius": 1.0046
+          }
+        }
+      ]
+    },
+    {
+      "id": 35,
+      "seed": "0xf5a6f1d364517c39dd5f1d0fdbeeb0cfb7a73a26e5e17a17f91e7b7f16e0ef36",
+      "traitsSha256": "ccdf317cfbb2d6c6037a2243b183f12477d8bfb97c3ec461d0920dea110d62b6",
+      "filmSha256": "912982c589c5a6d2f1bb6534c5280577abe40ab878889764587108bd7f9d0118",
+      "ink": {
+        "stillSha256": "757ab82b1757463c7c2a3b7707509f0a988a6b8fecf42cd5331b4deab58107bf",
+        "rung": {
+          "src": "/art/stills/35-ink-1920-fa4609502ed7308a.webp",
+          "sha256": "fa4609502ed7308a5579e01aa31989a2e3bd5e22959f651ca1780e8ec99bffb9"
+        }
+      },
+      "step": 999999,
+      "bodies": [
+        {
+          "x": 2423.47,
+          "y": 266.89,
+          "paper": true,
+          "hollow": {
+            "offset": 0.0421,
+            "radius": 1.0322
+          }
+        },
+        {
+          "x": 2129.66,
+          "y": 693.97,
+          "paper": true,
+          "hollow": {
+            "offset": 0.0329,
+            "radius": 1.0402
+          }
+        },
+        {
+          "x": 2351.77,
+          "y": 724.21,
+          "paper": true,
+          "hollow": {
+            "offset": 0.0152,
+            "radius": 1.0679
+          }
+        }
+      ]
+    },
+    {
+      "id": 36,
+      "seed": "0xfb56077944020a3562a3dc2320e37b2149601b297ded3147c8c8c31dcd9b9179",
+      "traitsSha256": "a6c52ea78a74d4c79fabeb0ad7a79b90805f7e9d7ea7abf3f57f9cb4ed7432dd",
+      "filmSha256": "571c6c53044951e60510fb14eb2b7b477f23b0c3e0e59b140faeb18fdd394462",
+      "ink": {
+        "stillSha256": "dbdd960df442c6c6faafe7cf3ba6335625168a5a0635195b37424ae2ef3d5a57",
+        "rung": {
+          "src": "/art/stills/36-ink-1920-ad28fce067cd38da.webp",
+          "sha256": "ad28fce067cd38daedd8aa00972bab94c17dd99ba8d2702113e716aafa020776"
+        }
+      },
+      "step": 999999,
+      "bodies": [
+        {
+          "x": 1627.49,
+          "y": 1280.55,
+          "paper": true,
+          "hollow": {
+            "offset": 0.0107,
+            "radius": 1.0156
+          }
+        },
+        {
+          "x": 831.53,
+          "y": 589.04,
+          "paper": true,
+          "hollow": {
+            "offset": 0.0236,
+            "radius": 0.9957
+          }
+        },
+        {
+          "x": 1231.96,
+          "y": 325.95,
+          "paper": true,
+          "hollow": {
+            "offset": 0.0268,
+            "radius": 0.9969
+          }
+        }
+      ]
+    },
+    {
+      "id": 37,
+      "seed": "0xd485462e33dfa28a96e4596012f5a5027443f2d7992490ddc9c2bb65e1f465f7",
+      "traitsSha256": "0584c472e7c7c97e112e3933fd90f6536ed7daf7831b00d21472a891e64ff299",
+      "filmSha256": "ce44ee473408d6859bf8ffd7c2a2597a4e887dd91048a9b62ee7d042836f2bbf",
+      "ink": {
+        "stillSha256": "46a414194b4836e4986cba8804d19b742a125f38fc192caa9dd5b7bdee02ecbd",
+        "rung": {
+          "src": "/art/stills/37-ink-1920-ec83ae7ba6441bc8.webp",
+          "sha256": "ec83ae7ba6441bc8e0b2fc2142e8ab55b6624f0ef84d8f292c54713ec493b902"
+        }
+      },
+      "step": 999999,
+      "bodies": [
+        {
+          "x": 1400.86,
+          "y": 394.22,
+          "paper": true,
+          "hollow": {
+            "offset": 0.0388,
+            "radius": 1.0094
+          }
+        },
+        {
+          "x": 1019.1,
+          "y": 245.94,
+          "paper": true,
+          "hollow": {
+            "offset": 0.0169,
+            "radius": 1.03
+          }
+        },
+        {
+          "x": 1829.71,
+          "y": 1594.31,
+          "paper": true,
+          "hollow": {
+            "offset": 0.0084,
+            "radius": 1.0135
+          }
+        }
+      ]
+    },
+    {
+      "id": 38,
+      "seed": "0x6fb8e9b6e2e57ad9a4da10357ad1cd81a21361382a29155a072abe265006c27c",
+      "traitsSha256": "825f34b3e2b05ab889be1058b33d63dc39c63ddea1b0818a1aee81a13318f9e8",
+      "filmSha256": "b2e3241d4985fbec36439049cdb3c585359661bc9ee432f21ce80e9fe64eaf72",
+      "ink": {
+        "stillSha256": "03b1ac3f81190a7362d9040bff138e03defe1ff3863502969375694005475ba0",
+        "rung": {
+          "src": "/art/stills/38-ink-1920-f61ab18994bc2a0f.webp",
+          "sha256": "f61ab18994bc2a0f058b1ecab12315d2ea0f5445c7a639b0a3f41d4523c31024"
+        }
+      },
+      "step": 999999,
+      "bodies": [
+        {
+          "x": 744.21,
+          "y": 105.9,
+          "paper": true,
+          "hollow": {
+            "offset": 0.0235,
+            "radius": 0.9926
+          }
+        },
+        {
+          "x": 2369.93,
+          "y": 1590.03,
+          "paper": true,
+          "hollow": {
+            "offset": 0.0302,
+            "radius": 1.0083
+          }
+        },
+        {
+          "x": 2449.44,
+          "y": 1194.6,
+          "paper": true,
+          "hollow": {
+            "offset": 0.0342,
+            "radius": 1.0084
+          }
+        }
+      ]
+    },
+    {
+      "id": 39,
+      "seed": "0x56d7e21a3dd131a46f7541b0d4fc85faf7996a325f090d5f18d53d099cade7b8",
+      "traitsSha256": "b77477c67d0165a1499c1d25af46412af17a25e07a5e688c1ebb56ee5aa12fce",
+      "filmSha256": "11c595bf1dbe799ce3bad571e8e0b9a4a9193c91192457339d12dcca451f24c2",
+      "ink": {
+        "stillSha256": "b8ae39f2c27abd9481b7ccf06a5c87000cfd193b695a65f5bd5b81fe8a82d0ba",
+        "rung": {
+          "src": "/art/stills/39-ink-1920-c84e1a9ff947afb2.webp",
+          "sha256": "c84e1a9ff947afb2870de2c2052e6dcc3f06dd03431e3e463ff83b8440a8fc0a"
+        }
+      },
+      "step": 999999,
+      "bodies": [
+        {
+          "x": 1863.28,
+          "y": 1596.82,
+          "paper": true,
+          "hollow": null
+        },
+        {
+          "x": 2159.98,
+          "y": 908.1,
+          "paper": true,
+          "hollow": {
+            "offset": 0.0273,
+            "radius": 1
+          }
+        },
+        {
+          "x": 1926.57,
+          "y": 1575.22,
+          "paper": true,
+          "hollow": {
+            "offset": 0.6054,
+            "radius": 1.4263
+          }
+        }
+      ]
+    },
+    {
+      "id": 40,
+      "seed": "0xcdab48977fb18d3c9c46d1e9405c6342cdc58a500013fe856ffb142d31cef6dc",
+      "traitsSha256": "ce7cdfc453f07e4c459a1ba4a93360fa8b281ce364b71735f3664c6f78bd0e94",
+      "filmSha256": "74114e43f4e3867fe7316d5e73067b4f78bfa523490acefbe1ffd8b8ec11ed8d",
+      "ink": {
+        "stillSha256": "8e500d36d6dc509ee71fd526709c721ee41895f7f41ea7296ce33a62a52b929a",
+        "rung": {
+          "src": "/art/stills/40-ink-1920-dc1d0e5ae5fcce0a.webp",
+          "sha256": "dc1d0e5ae5fcce0af44a89ab60c8470353d0fc59c97db31f99088eaf6fd6e983"
+        }
+      },
+      "step": 999999,
+      "bodies": [
+        {
+          "x": 2752.34,
+          "y": 1912.76,
+          "paper": true,
+          "hollow": {
+            "offset": 0.0224,
+            "radius": 0.9899
+          }
+        },
+        {
+          "x": 2407.38,
+          "y": 1191.93,
+          "paper": true,
+          "hollow": {
+            "offset": 0.0241,
+            "radius": 0.9941
+          }
+        },
+        {
+          "x": 653.38,
+          "y": 1017.64,
+          "paper": true,
+          "hollow": {
+            "offset": 0.0182,
+            "radius": 1.0002
+          }
+        }
+      ]
+    },
+    {
+      "id": 41,
+      "seed": "0xb96b34a0a5fa29b0c30f5f8ba1168629b2a8bf6bf75dace7c28321193d9b178c",
+      "traitsSha256": "fbfcda6e55b029832b9d0f0381305cddb8cddb205e2220a0ed44d7fa99a338ae",
+      "filmSha256": "a3a052179a8677211f6684c08c135ac6684d5f78ebd85992ab90aacfd59c8fdb",
+      "ink": {
+        "stillSha256": "374f7169de65073b408877522e513afae929b4c2283a97c7c431903e013e7569",
+        "rung": {
+          "src": "/art/stills/41-ink-1920-3f1548bd2fdd995c.webp",
+          "sha256": "3f1548bd2fdd995c7be40cc01746ac7896bd0f2519d6a25e8f1d46374f68c0bc"
+        }
+      },
+      "step": 999999,
+      "bodies": [
+        {
+          "x": 1379.81,
+          "y": 300.12,
+          "paper": true,
+          "hollow": {
+            "offset": 0.0283,
+            "radius": 1.1041
+          }
+        },
+        {
+          "x": 1981.61,
+          "y": 858.05,
+          "paper": true,
+          "hollow": {
+            "offset": 0.0607,
+            "radius": 1.0942
+          }
+        },
+        {
+          "x": 1451.24,
+          "y": 1017.14,
+          "paper": true,
+          "hollow": {
+            "offset": 0.0372,
+            "radius": 1.0717
+          }
+        }
+      ]
+    },
+    {
+      "id": 42,
+      "seed": "0x70f7093200501942444ac597e61579d75d2a9185f51ddce457e0cc50d28dbf37",
+      "traitsSha256": "767dde864c04336ae7f106b92e693e6f7f61ee091424cd32dfd86ae9d0906ea7",
+      "filmSha256": "12ab21820d9a9c44595d530f0223e43f75d954bfafd369ffbd59f6c7f16174dd",
+      "ink": {
+        "stillSha256": "571a70a8167adb4815ef707c8e2aa342b8c063c1f54d1fa28bb2e8519d5559cc",
+        "rung": {
+          "src": "/art/stills/42-ink-1920-8cb0c015b5b9487b.webp",
+          "sha256": "8cb0c015b5b9487bb80fd4091cd066914d50a9cdaddf24ddb770fe54b7e58b7e"
+        }
+      },
+      "step": 999999,
+      "bodies": [
+        {
+          "x": 2307.09,
+          "y": 915.03,
+          "paper": true,
+          "hollow": {
+            "offset": 0.0429,
+            "radius": 1.0012
+          }
+        },
+        {
+          "x": 2124.22,
+          "y": 765.98,
+          "paper": true,
+          "hollow": {
+            "offset": 0.0178,
+            "radius": 1.0015
+          }
+        },
+        {
+          "x": 2876.02,
+          "y": 1164.74,
+          "paper": true,
+          "hollow": {
+            "offset": 0.0233,
+            "radius": 1.0295
+          }
+        }
+      ]
+    },
+    {
+      "id": 43,
+      "seed": "0x7a3dc84c82a0a2c7955ea5d6d4d7adef8a11fe4cddd2ba293752d71fd06ddf8f",
+      "traitsSha256": "97c7d66840cb57628e6992ded6536b6da28bff5f69aba54837e3ff259d8a66b4",
+      "filmSha256": "360cde442cf27a21c2f15a291a4c63052df77b3878a4337c77e501c65b121966",
+      "ink": {
+        "stillSha256": "7e45530ff72e10e0cdda5bd416f4017968139a7d080738905aa9d00d3c4ab160",
+        "rung": {
+          "src": "/art/stills/43-ink-1920-4d20b8779dd4e38b.webp",
+          "sha256": "4d20b8779dd4e38b2e8eb07be078e73dc2af1421149c57caff26ab331f7c841a"
+        }
+      },
+      "step": 999999,
+      "bodies": [
+        {
+          "x": 1783.84,
+          "y": 1293.75,
+          "paper": true,
+          "hollow": {
+            "offset": 0.0338,
+            "radius": 1.0086
+          }
+        },
+        {
+          "x": 2774.6,
+          "y": 1539.02,
+          "paper": true,
+          "hollow": {
+            "offset": 0.0498,
+            "radius": 1.0484
+          }
+        },
+        {
+          "x": 2009.09,
+          "y": 1239.24,
+          "paper": true,
+          "hollow": {
+            "offset": 0.0392,
+            "radius": 1.0109
+          }
+        }
+      ]
+    },
+    {
+      "id": 44,
+      "seed": "0x69e0f4c123a0a888f182a7780f53ad0f9d97d0492d005d205244e2e3b8e079c4",
+      "traitsSha256": "919a5e404a1686016d976901e92ca4a62ecbc395577dae2ccd4c0dff942c7114",
+      "filmSha256": "c32808d302515f4bfb0e46bb7d312509128ce295821d0375589e7e2b4cbe5ef6",
+      "ink": {
+        "stillSha256": "5fb2f3c9a97d39f55e545dc1bb1b97c05cc36940044ee95982eb3f0af9c0e2de",
+        "rung": {
+          "src": "/art/stills/44-ink-1920-27e3d0b86918df80.webp",
+          "sha256": "27e3d0b86918df80c233dbf22c0fb8e667076cd17e1000f620b17eeee1b5791d"
+        }
+      },
+      "step": 999999,
+      "bodies": [
+        {
+          "x": 2282.14,
+          "y": 534.42,
+          "paper": true,
+          "hollow": {
+            "offset": 0.0547,
+            "radius": 1.0311
+          }
+        },
+        {
+          "x": 1364.74,
+          "y": 891.7,
+          "paper": true,
+          "hollow": {
+            "offset": 0.0324,
+            "radius": 1.0537
+          }
+        },
+        {
+          "x": 2048.65,
+          "y": 236.52,
+          "paper": true,
+          "hollow": {
+            "offset": 0.0528,
+            "radius": 1.0203
+          }
+        }
+      ]
+    },
+    {
+      "id": 45,
+      "seed": "0x7fc88c81e4f2a1c79eab4ac335d45cf6124be4cbf2350c4626bb6c23b43bad6f",
+      "traitsSha256": "b5f5f2a6ff0cb46c40021666fd3ed989e6285850c862727f2618cc501a0934b0",
+      "filmSha256": "2e7503993938a72d740f9e95b0e80de8e2cc75d8189c8ecf36f51225c6131725",
+      "ink": {
+        "stillSha256": "61dac3578fb483da3f6ff35be8d10fd200def7697aac3fddd9d301140d96a830",
+        "rung": {
+          "src": "/art/stills/45-ink-1920-a8f83522d4b67b4b.webp",
+          "sha256": "a8f83522d4b67b4ba0fb332a177d7885f8ab9d237c07d1f2d305303936ecf871"
+        }
+      },
+      "step": 999999,
+      "bodies": [
+        {
+          "x": 2570.1,
+          "y": 1051.83,
+          "paper": true,
+          "hollow": {
+            "offset": 0.0549,
+            "radius": 1.064
+          }
+        },
+        {
+          "x": 1919.26,
+          "y": 678.64,
+          "paper": true,
+          "hollow": {
+            "offset": 0.0335,
+            "radius": 1.084
+          }
+        },
+        {
+          "x": 2582.94,
+          "y": 867.05,
+          "paper": true,
+          "hollow": {
+            "offset": 0.0146,
+            "radius": 0.9999
+          }
+        }
+      ]
+    },
+    {
+      "id": 46,
+      "seed": "0xde37ad470f34709af38b247150babc6825575a6b954374f5941831a2b96796ec",
+      "traitsSha256": "fff98fe21f79a756c1dc21c047d34353ca9e2c223ac06ffb345957d6737d944e",
+      "filmSha256": "cf6c1b1c89468fb36568d27b7c9e4d0604c016a1c2571a0e69fe9872655e49fd",
+      "ink": {
+        "stillSha256": "b4a9fd2d9e5a69d348f947b987d266e0bb67de7baea6421dd80de62215de8fec",
+        "rung": {
+          "src": "/art/stills/46-ink-1920-46ce29edbc905741.webp",
+          "sha256": "46ce29edbc905741e4eb8d9de978f6c3fed656bbcc2c3bedb1f909d2030d3631"
+        }
+      },
+      "step": 999999,
+      "bodies": [
+        {
+          "x": 1557.01,
+          "y": 1082.62,
+          "paper": true,
+          "hollow": null
+        },
+        {
+          "x": 1629.72,
+          "y": 664.74,
+          "paper": true,
+          "hollow": {
+            "offset": 0.0374,
+            "radius": 1.0032
+          }
+        },
+        {
+          "x": 1676.57,
+          "y": 1135.36,
+          "paper": true,
+          "hollow": null
+        }
+      ]
+    },
+    {
+      "id": 47,
+      "seed": "0x38b23b92766de4c8989e563ea11b3b3aab1965a546a84c6780a715df3b3df0b1",
+      "traitsSha256": "0a38baa5ee9a2f1f093cbfe482caf183776f071d2515ec15e7f12d263ef6fafc",
+      "filmSha256": "2636d004177f9b650ff25fa3f8b711bc50fe4a69b3d815842b2daa31810c7c60",
+      "ink": {
+        "stillSha256": "00d4a3a55e4b17a3ce6370b99ca7d4aa246955f54c156ae7e0de0d07f28ba071",
+        "rung": {
+          "src": "/art/stills/47-ink-1920-645c0694d9bc4303.webp",
+          "sha256": "645c0694d9bc430358736cd85e300a1df90abed2ab623bafb6007fc9b317a9e9"
+        }
+      },
+      "step": 999999,
+      "bodies": [
+        {
+          "x": 2707.17,
+          "y": 1142.77,
+          "paper": true,
+          "hollow": {
+            "offset": 0.0189,
+            "radius": 0.9937
+          }
+        },
+        {
+          "x": 2973.06,
+          "y": 1828.21,
+          "paper": true,
+          "hollow": {
+            "offset": 0.0248,
+            "radius": 0.9909
+          }
+        },
+        {
+          "x": 482.94,
+          "y": 1358.66,
+          "paper": true,
+          "hollow": {
+            "offset": 0.0299,
+            "radius": 0.9931
+          }
+        }
+      ]
+    },
+    {
+      "id": 48,
+      "seed": "0x09e2fdfc0261b33baa2d71294977cff267c25cd234b9e07ad133c622a974e65b",
+      "traitsSha256": "02491f22ec32b6895e33feff0d05f8c33bac965a656394fee87b11cb3fdf54fe",
+      "filmSha256": "7c9be1d1c1ac2dac2b57e41fdd100103e6b1fdb1bec0acb6255683e469dc8469",
+      "ink": {
+        "stillSha256": "04619442d327baa75f5b057c6dbe46fe6bcaee8197f1c9f69720f080f7ac2017",
+        "rung": {
+          "src": "/art/stills/48-ink-1920-4f83814e0edba40e.webp",
+          "sha256": "4f83814e0edba40ee339ee2ff36338331285498d2f0dbafd1ac8198d0e768688"
+        }
+      },
+      "step": 999999,
+      "bodies": [
+        {
+          "x": 1194.94,
+          "y": 1743.66,
+          "paper": true,
+          "hollow": {
+            "offset": 0.0237,
+            "radius": 1.0487
+          }
+        },
+        {
+          "x": 1410.3,
+          "y": 1510.86,
+          "paper": true,
+          "hollow": {
+            "offset": 0.0478,
+            "radius": 1.0482
+          }
+        },
+        {
+          "x": 1727.11,
+          "y": 1445.04,
+          "paper": true,
+          "hollow": {
+            "offset": 0.0233,
+            "radius": 1.0363
+          }
+        }
+      ]
+    },
+    {
+      "id": 49,
+      "seed": "0xb068e7e284206250807bc52a4d50d2f76d66826596bd3393e1b966f9d5ffc5ea",
+      "traitsSha256": "5e50f20e51c1c7d10d5eddfc0e2cfb8cdd736b1247cb376c8556558aeb1aa849",
+      "filmSha256": "e567e8fedf1405eb0d61733e5b4544fe00ae7ccd7824bad0a8824b4ae7cae0ca",
+      "ink": {
+        "stillSha256": "3254b065511c63cd23ace5279559cd7840da9ad7dfb3f839d857bc67deef486d",
+        "rung": {
+          "src": "/art/stills/49-ink-1920-5a6d70bed63d192d.webp",
+          "sha256": "5a6d70bed63d192d4988cff558c6e188c97ab27ed8de73f41e5c92da047a84de"
+        }
+      },
+      "step": 999999,
+      "bodies": [
+        {
+          "x": 1779.54,
+          "y": 1191.58,
+          "paper": true,
+          "hollow": {
+            "offset": 0.0561,
+            "radius": 1.0537
+          }
+        },
+        {
+          "x": 1008.28,
+          "y": 1661.42,
+          "paper": true,
+          "hollow": {
+            "offset": 0.0628,
+            "radius": 1.0523
+          }
+        },
+        {
+          "x": 2451.2,
+          "y": 1600.97,
+          "paper": true,
+          "hollow": {
+            "offset": 0.0387,
+            "radius": 1.0214
+          }
+        }
+      ]
+    },
+    {
+      "id": 50,
+      "seed": "0xaea416d13cefdc488d8f64b2f720f429fc140bb3960e2676361ef01492b9d3b8",
+      "traitsSha256": "c5ced1a8533c77a4839d8cd4823c5f5ca80f80729b391344c95bffb429a4f223",
+      "filmSha256": "e444b95c36c523db1e24676fa92894512e65499142c356cf14b3330636f6c83c",
+      "ink": {
+        "stillSha256": "41012450c056101f00163194619a549bb663a0fc7640bf2be38a8bbd5e912f73",
+        "rung": {
+          "src": "/art/stills/50-ink-1920-84126afbda92995e.webp",
+          "sha256": "84126afbda92995e7a6a3145c34659c1d424a6ccbdc5c57ad0cadaba54e53824"
+        }
+      },
+      "step": 999999,
+      "bodies": [
+        {
+          "x": 2294.71,
+          "y": 2132.45,
+          "paper": true,
+          "hollow": {
+            "offset": 0.0217,
+            "radius": 1.0158
+          }
+        },
+        {
+          "x": 2114.96,
+          "y": 1243.04,
+          "paper": true,
+          "hollow": {
+            "offset": 0.0285,
+            "radius": 1.0248
+          }
+        },
+        {
+          "x": 2166.1,
+          "y": 856.98,
+          "paper": true,
+          "hollow": {
+            "offset": 0.049,
+            "radius": 1.0336
+          }
+        }
+      ]
+    },
+    {
+      "id": 51,
+      "seed": "0x3c99a74aa7a31db0e267ffa0c0d26a410ca11d8780ded3696d15372fba14a8ae",
+      "traitsSha256": "00bd7b160e89aa4ee0549648a3b3fcbbe86b432c419b746254a25b94a2846da8",
+      "filmSha256": "f2125aa6e16f2a51ba30c0fc6485f7069f84049a3fdbe6a9f920bbc6f03f491f",
+      "ink": {
+        "stillSha256": "136a5a05fb75db8d3abcf76696ad2073df3853943438f72cc3351d15f6f313c2",
+        "rung": {
+          "src": "/art/stills/51-ink-1920-bd278da17d1faf64.webp",
+          "sha256": "bd278da17d1faf64f7fd0176c652b70db3e4c914a094865f08e87e29c5add457"
+        }
+      },
+      "step": 999999,
+      "bodies": [
+        {
+          "x": 1444.2,
+          "y": 846.01,
+          "paper": true,
+          "hollow": {
+            "offset": 0.0317,
+            "radius": 1.0027
+          }
+        },
+        {
+          "x": 1373.26,
+          "y": 582.9,
+          "paper": true,
+          "hollow": {
+            "offset": 0.021,
+            "radius": 0.9994
+          }
+        },
+        {
+          "x": 1108.78,
+          "y": 714.28,
+          "paper": true,
+          "hollow": {
+            "offset": 0.0265,
+            "radius": 1.0216
+          }
+        }
+      ]
+    },
+    {
+      "id": 52,
+      "seed": "0x0343cf7f15c9e696d9d1762dad65913cb28d20d2e14815d7ff3aaa12d82e1c84",
+      "traitsSha256": "26fe0e77f4e2c1b127e85ad1316cf156783952aaa718ba2ae9641db2bdad2ff4",
+      "filmSha256": "895908d65e19b1e826d514a815d0dc9b46bc6b7de2e2dcbb2dd76700f857a7b6",
+      "ink": {
+        "stillSha256": "4f8677ae329986186cbc3afab2082aa0298dea5fa721d353c38cfaac5e35b51e",
+        "rung": {
+          "src": "/art/stills/52-ink-1920-41f69d4e0c822f81.webp",
+          "sha256": "41f69d4e0c822f8197d4a56069b39c9662a9c2c58bef273cd0241a69e9926efc"
+        }
+      },
+      "step": 999999,
+      "bodies": [
+        {
+          "x": 1018.28,
+          "y": 1058.94,
+          "paper": true,
+          "hollow": null
+        },
+        {
+          "x": 860.49,
+          "y": 1168.86,
+          "paper": true,
+          "hollow": null
+        },
+        {
+          "x": 2834.42,
+          "y": 830.33,
+          "paper": true,
+          "hollow": {
+            "offset": 0.0309,
+            "radius": 1.0243
+          }
+        }
+      ]
+    },
+    {
+      "id": 53,
+      "seed": "0xe74d53c964137b9f28d18dfa3c7ecd7bd7f631664edc4f0b5ffd827abeb49f7d",
+      "traitsSha256": "a3e1a80e75069af8f4f1cd3f1316fdc81be10e0429c13e14c0d2344d419702fc",
+      "filmSha256": "93d3d586023c6072cbec6c4038c9a1abcdefc02f3b242514c6d59220bebda983",
+      "ink": {
+        "stillSha256": "5a9df3b7d03e0b3b526f98ec68e33493e630f4574009b4fabbec28ce37f1583e",
+        "rung": {
+          "src": "/art/stills/53-ink-1920-e4bd4b36f8ecbcff.webp",
+          "sha256": "e4bd4b36f8ecbcff2000833634905988a1a8709f355fb0670a35cd4111f8a623"
+        }
+      },
+      "step": 999999,
+      "bodies": [
+        {
+          "x": 1425.94,
+          "y": 1701.97,
+          "paper": true,
+          "hollow": {
+            "offset": 0.024,
+            "radius": 1.0018
+          }
+        },
+        {
+          "x": 992.3,
+          "y": 1488.17,
+          "paper": true,
+          "hollow": {
+            "offset": 0.0222,
+            "radius": 0.9907
+          }
+        },
+        {
+          "x": 1574.27,
+          "y": 1105.71,
+          "paper": true,
+          "hollow": {
+            "offset": 0.0238,
+            "radius": 0.9924
+          }
+        }
+      ]
+    },
+    {
+      "id": 54,
+      "seed": "0x55892fe4212e84dac6d35e696b9a084c3b6b52c57d1f8bccac01a5d52d28725c",
+      "traitsSha256": "f6ebb5b27e92673c8e0b395de4959682a8ad8152527758d166dc9337fa65a8d6",
+      "filmSha256": "f656d57b2d1ae56f6fa85f93b330006d27abe2a0a8777ffaa1a40ea71a0e1fdf",
+      "ink": {
+        "stillSha256": "e9068cd7aed00f1a3f9bad06c320f4cc643d9587674cb10dcd70bbe640ff2526",
+        "rung": {
+          "src": "/art/stills/54-ink-1920-8ee5962e9ec04e2f.webp",
+          "sha256": "8ee5962e9ec04e2f181b5aa27f97e84ab8082271cf583fc24bd9a6d0bdff3dc3"
+        }
+      },
+      "step": 999999,
+      "bodies": [
+        {
+          "x": 1532.95,
+          "y": 555.88,
+          "paper": true,
+          "hollow": {
+            "offset": 0.02,
+            "radius": 1.0452
+          }
+        },
+        {
+          "x": 1354.9,
+          "y": 386.02,
+          "paper": true,
+          "hollow": {
+            "offset": 0.0542,
+            "radius": 1.0556
+          }
+        },
+        {
+          "x": 2805.78,
+          "y": 782.69,
+          "paper": true,
+          "hollow": {
+            "offset": 0.0302,
+            "radius": 1.0523
+          }
+        }
+      ]
+    },
+    {
+      "id": 55,
+      "seed": "0x213abfda7f0448c3c4e24dead41c791f4fd68a6fe200fa1d1b61cc4cf5279153",
+      "traitsSha256": "c308dd8f6a68a9ed59b9d26475b9db4c3577d2280dfcd0d0c9b7bca40b7d16aa",
+      "filmSha256": "d74ce03adfbb5123c8b9f200bcfa28cfd9fe035ef92df563e04c8894e2c52941",
+      "ink": {
+        "stillSha256": "4d3dcc8b9ae9180e8d6df5d3e98b43485dd8d522447022f61c8ae98ea3313538",
+        "rung": {
+          "src": "/art/stills/55-ink-1920-119200513a61fbc5.webp",
+          "sha256": "119200513a61fbc5b5d774e416ea6b025600a7322c1b6c450e46ad65ec59af5f"
+        }
+      },
+      "step": 999999,
+      "bodies": [
+        {
+          "x": 1581.56,
+          "y": 926.2,
+          "paper": true,
+          "hollow": {
+            "offset": 0.0589,
+            "radius": 1.0166
+          }
+        },
+        {
+          "x": 2734.8,
+          "y": 684.5,
+          "paper": true,
+          "hollow": {
+            "offset": 0.0294,
+            "radius": 0.9919
+          }
+        },
+        {
+          "x": 2249.14,
+          "y": 180.65,
+          "paper": true,
+          "hollow": {
+            "offset": 0.0165,
+            "radius": 0.9921
+          }
+        }
+      ]
+    },
+    {
+      "id": 56,
+      "seed": "0x1b2f078c1c0e78e2df328ff2bf0322c61e5287e1f4beec8718d7c9a2a9ae0332",
+      "traitsSha256": "07829e2bcf8274daad8b485a9bab9489521298158a9784ee7c04d021088809ef",
+      "filmSha256": "fe05ca76c2ba6145a0c9a52d67753c1d927e41e18212097d3ae3ae807a9c40a5",
+      "ink": {
+        "stillSha256": "66a44f1933f1a9013a22d332d4d840651c7493cf40e3db86f45a92835d543714",
+        "rung": {
+          "src": "/art/stills/56-ink-1920-9c1541d775b8b8d5.webp",
+          "sha256": "9c1541d775b8b8d5bf9921d89b7c092b777c11ef16b26292488d6f4aa6e2c502"
+        }
+      },
+      "step": 999999,
+      "bodies": [
+        {
+          "x": 1808.18,
+          "y": 1397.85,
+          "paper": true,
+          "hollow": {
+            "offset": 0.0531,
+            "radius": 1.0529
+          }
+        },
+        {
+          "x": 1596.77,
+          "y": 2032.01,
+          "paper": true,
+          "hollow": {
+            "offset": 0.0818,
+            "radius": 1.0838
+          }
+        },
+        {
+          "x": 1793.74,
+          "y": 1579.94,
+          "paper": true,
+          "hollow": {
+            "offset": 0.0059,
+            "radius": 1.0338
+          }
+        }
+      ]
+    },
+    {
+      "id": 57,
+      "seed": "0x7df5e0ba6194375eb61373957010113588235381653eece5e6de9972947b1710",
+      "traitsSha256": "314e9f4f378c5e618d62aef2d85fe40d9db396ba26ed3e52a1475364503f0e70",
+      "filmSha256": "4a5437724cd1a57282922179f8e34ed8522988fb904138e930e6718c4ea2c232",
+      "ink": {
+        "stillSha256": "7d04dab15416e3fad7ed4edfdb5cde3bdd3f011424910c936b42063100a5a054",
+        "rung": {
+          "src": "/art/stills/57-ink-1920-77c100cecb513449.webp",
+          "sha256": "77c100cecb513449a8da36292b631816007085935529d90aeac1a4e507a8dfcf"
+        }
+      },
+      "step": 999999,
+      "bodies": [
+        {
+          "x": 1567.92,
+          "y": 1543.11,
+          "paper": true,
+          "hollow": {
+            "offset": 0.0411,
+            "radius": 1.0694
+          }
+        },
+        {
+          "x": 2615.01,
+          "y": 1318.54,
+          "paper": true,
+          "hollow": {
+            "offset": 0.0434,
+            "radius": 1.032
+          }
+        },
+        {
+          "x": 1428.58,
+          "y": 735.84,
+          "paper": true,
+          "hollow": {
+            "offset": 0.079,
+            "radius": 1.0322
+          }
+        }
+      ]
+    },
+    {
+      "id": 58,
+      "seed": "0xdd560625a4fde92fb72cf2f405a28a717e1fbc7965d89165c996f68307a4e39c",
+      "traitsSha256": "956c7c1872f035d70fc4c17fed8fbe75933352bcca0ba78d66fc81bac27a61be",
+      "filmSha256": "74d98acd9405c815d40df63ef4802bfd7d34f5cb030c25b3e3f5b0d3b90c247d",
+      "ink": {
+        "stillSha256": "970f77a18b8e23a4e07164ea29b73fb76c3081e984c9f922621b75c29f9a9ce9",
+        "rung": {
+          "src": "/art/stills/58-ink-1920-2bc0435a5b03cf3e.webp",
+          "sha256": "2bc0435a5b03cf3ebd00c8ef764e5b85796fa64b03b8b953def30ba7478d68de"
+        }
+      },
+      "step": 999999,
+      "bodies": [
+        {
+          "x": 2566.56,
+          "y": 1730.77,
+          "paper": true,
+          "hollow": {
+            "offset": 0.0168,
+            "radius": 1.0397
+          }
+        },
+        {
+          "x": 2166.67,
+          "y": 1131.73,
+          "paper": true,
+          "hollow": {
+            "offset": 0.0518,
+            "radius": 1.0177
+          }
+        },
+        {
+          "x": 2563.55,
+          "y": 1348.26,
+          "paper": true,
+          "hollow": {
+            "offset": 0.0669,
+            "radius": 1.0327
+          }
+        }
+      ]
+    },
+    {
+      "id": 59,
+      "seed": "0x820a8c7ca90059eebc268a363d7a20d2c134ba8dce3c1b015ad47deb7386b431",
+      "traitsSha256": "3bb3a3159375344730917432c16ef23ead023b1784d422efb943283e327a49c7",
+      "filmSha256": "e699ee8fc047260419c9ba4afd430478392933bc00c069c01ebbb1b601335516",
+      "ink": {
+        "stillSha256": "7a03702ac64acdbc310ecc2701a32834472218912eb8f2c302095e512726440d",
+        "rung": {
+          "src": "/art/stills/59-ink-1920-8065b4e7aea58ea1.webp",
+          "sha256": "8065b4e7aea58ea117ffa4116ad5ef63cf302e36743ddeebe948612a2a9f3627"
+        }
+      },
+      "step": 999999,
+      "bodies": [
+        {
+          "x": 2305.24,
+          "y": 1886.52,
+          "paper": true,
+          "hollow": {
+            "offset": 0.0163,
+            "radius": 1.0245
+          }
+        },
+        {
+          "x": 1995.67,
+          "y": 2047.29,
+          "paper": true,
+          "hollow": {
+            "offset": 0.0254,
+            "radius": 1.0136
+          }
+        },
+        {
+          "x": 2234.38,
+          "y": 1620.2,
+          "paper": true,
+          "hollow": {
+            "offset": 0.0485,
+            "radius": 1.0213
+          }
+        }
+      ]
+    },
+    {
+      "id": 60,
+      "seed": "0x16533d1ae83d689ec7073396bbdca9ccba2481a94528b96a31f5362586832e7e",
+      "traitsSha256": "28988ecf7242dcfcc5bbab2515d1ac0224014d303f3c2a7aed453fddfeb200e4",
+      "filmSha256": "ab47bcae9d3db6431167717e9c891aa2abf26b956618d72a342d1f853343061c",
+      "ink": {
+        "stillSha256": "5705bf370ddf5ab78f0783cbaa667b0e1273969666ef5a46e33fb70f4c473e68",
+        "rung": {
+          "src": "/art/stills/60-ink-1920-d2e932a3bd971a56.webp",
+          "sha256": "d2e932a3bd971a56da66ace85f17619662af68648656f24d655d2bb818587d55"
+        }
+      },
+      "step": 999999,
+      "bodies": [
+        {
+          "x": 1336.47,
+          "y": 1942.8,
+          "paper": true,
+          "hollow": {
+            "offset": 0.0273,
+            "radius": 1.002
+          }
+        },
+        {
+          "x": 2711.93,
+          "y": 1935.12,
+          "paper": true,
+          "hollow": {
+            "offset": 0.0458,
+            "radius": 1.0158
+          }
+        },
+        {
+          "x": 1594.06,
+          "y": 2100.96,
+          "paper": true,
+          "hollow": {
+            "offset": 0.0214,
+            "radius": 1.0053
+          }
+        }
+      ]
+    },
+    {
+      "id": 61,
+      "seed": "0x7b80589e25e55d01498ee7677d4be975ab226d9cdb9e8d7bd6157b0f59a8ff9d",
+      "traitsSha256": "70798289702bc64ac1c7f4bab18e46601bae1be95d03a29f6bee554c30c0a782",
+      "filmSha256": "4cdb3e0c08ec5903ecba7145def0bce0a7d7d37bdea99a48bac253441bb2d102",
+      "ink": {
+        "stillSha256": "dcebd7a312bef2ace87a265b9382ef1f031fce34f07c7d316c02c45a1f3f6a8b",
+        "rung": {
+          "src": "/art/stills/61-ink-1920-88ef935bc7b1b7d5.webp",
+          "sha256": "88ef935bc7b1b7d565a6b2bf064f186c9ad54536e4527c11d990f6109f9c3cca"
+        }
+      },
+      "step": 999999,
+      "bodies": [
+        {
+          "x": 1859.71,
+          "y": 2038.37,
+          "paper": true,
+          "hollow": {
+            "offset": 0.0179,
+            "radius": 1.0012
+          }
+        },
+        {
+          "x": 2658.82,
+          "y": 829.52,
+          "paper": true,
+          "hollow": {
+            "offset": 0.0264,
+            "radius": 1.0122
+          }
+        },
+        {
+          "x": 2566.36,
+          "y": 1418.43,
+          "paper": true,
+          "hollow": {
+            "offset": 0.0355,
+            "radius": 1.0087
+          }
+        }
+      ]
+    },
+    {
+      "id": 62,
+      "seed": "0xf632bb5f87281006cc881d3fa2d7026fb7df4709b45055f2e05722fd875b06db",
+      "traitsSha256": "8a85e2f45ad805118e8fc5c8c3c5f235e372cded0ddbe4a8c9b4c7a8c311a6d7",
+      "filmSha256": "a0ecfa6954d57b597a229b322ba0845e87f892e68e9614bccc6391d5f9a4aaf9",
+      "ink": {
+        "stillSha256": "606c9bcce60cb4a3c1840c3e9b2eb155b11e81685aa39e6c27a25938edbe6c2a",
+        "rung": {
+          "src": "/art/stills/62-ink-1920-3f031a0629a07e32.webp",
+          "sha256": "3f031a0629a07e326b1e6f8e31ba275d531215f9f08178cf5ab70e32c4eca3a6"
+        }
+      },
+      "step": 999999,
+      "bodies": [
+        {
+          "x": 1118.07,
+          "y": 1513.87,
+          "paper": true,
+          "hollow": {
+            "offset": 0.0425,
+            "radius": 1.013
+          }
+        },
+        {
+          "x": 1979.24,
+          "y": 1744.74,
+          "paper": true,
+          "hollow": {
+            "offset": 0.0162,
+            "radius": 0.9932
+          }
+        },
+        {
+          "x": 2171.98,
+          "y": 2132.45,
+          "paper": true,
+          "hollow": {
+            "offset": 0.0279,
+            "radius": 0.9919
+          }
+        }
+      ]
+    },
+    {
+      "id": 63,
+      "seed": "0x82f72ed838e70d9f85e6f647b12e145de51d6e6c429b48857a72007f1ece332b",
+      "traitsSha256": "d30088bd8996ab8775558b02c94be64d8428f28cd51af805bfb133447cebe161",
+      "filmSha256": "c862d63d39a65cb1d4916eaa3270a352ecabf897adbfae6ad273f2716d38b439",
+      "ink": {
+        "stillSha256": "34837164765b4e15798e68eb8b93003c7df1abbfa173a9f8aded9d92aa8286f5",
+        "rung": {
+          "src": "/art/stills/63-ink-1920-edc27b4a1278812f.webp",
+          "sha256": "edc27b4a1278812f4645e5055f70c6ef472bdd6043cf43f7c5be2d111756f40d"
+        }
+      },
+      "step": 999999,
+      "bodies": [
+        {
+          "x": 1354.75,
+          "y": 506.73,
+          "paper": true,
+          "hollow": {
+            "offset": 0.0842,
+            "radius": 1.096
+          }
+        },
+        {
+          "x": 1306.22,
+          "y": 314.4,
+          "paper": true,
+          "hollow": {
+            "offset": 0.0289,
+            "radius": 1.0876
+          }
+        },
+        {
+          "x": 1060.66,
+          "y": 415.86,
+          "paper": true,
+          "hollow": {
+            "offset": 0.0237,
+            "radius": 0.9994
+          }
+        }
+      ]
+    },
+    {
+      "id": 64,
+      "seed": "0x8eec181f2742e6b90e3a46507ce22633f134248e202a58189f5e97095c749871",
+      "traitsSha256": "a92f465dd3723b777f466b10d16fa795cac30ed2d294a589a8e03d5b18e56ad0",
+      "filmSha256": "51bf2148824e2123018a0b9bcfdb3fc4f56be9c86156deaa185c2812aafa4cea",
+      "ink": {
+        "stillSha256": "c972b12a609dccb079448c4f30f083c46e461230e3bbc15bc3c9bb2f89b2d149",
+        "rung": {
+          "src": "/art/stills/64-ink-1920-8b7bdb2fadc5a08d.webp",
+          "sha256": "8b7bdb2fadc5a08d300c9643b2ff6026e47835a6b63bb07f3c9eec1c3931aed9"
+        }
+      },
+      "step": 999999,
+      "bodies": [
+        {
+          "x": 1458.76,
+          "y": 1271.62,
+          "paper": true,
+          "hollow": {
+            "offset": 0.0362,
+            "radius": 0.9972
+          }
+        },
+        {
+          "x": 1635.87,
+          "y": 354.99,
+          "paper": true,
+          "hollow": {
+            "offset": 0.014,
+            "radius": 1.0639
+          }
+        },
+        {
+          "x": 1739.59,
+          "y": 1246.24,
+          "paper": true,
+          "hollow": {
+            "offset": 0.0263,
+            "radius": 0.9974
+          }
+        }
+      ]
+    },
+    {
+      "id": 65,
+      "seed": "0x3e20a409a7cb7eba0092cac8bf1d07cb1cfb51b3c63f4e9e61fa4a71e73860e6",
+      "traitsSha256": "52f0871d18a57aa010959644b2fc73c5299ed46587a06470e0b2a6e6686fdf49",
+      "filmSha256": "e60f6630f35778a5a69d87f0d6834d31b2b2ef1ec3c09246b7beec5c1884e055",
+      "ink": {
+        "stillSha256": "94863f8200326e4f80977f48e23e28bffb42f5d10128762f14207f024df7f0f5",
+        "rung": {
+          "src": "/art/stills/65-ink-1920-412d261d789bb888.webp",
+          "sha256": "412d261d789bb88879eb41d10fc6ca340f0bb9b1e9f8c17de8dcf6d5c2030625"
+        }
+      },
+      "step": 999999,
+      "bodies": [
+        {
+          "x": 1806.33,
+          "y": 537.9,
+          "paper": true,
+          "hollow": {
+            "offset": 0.053,
+            "radius": 1.036
+          }
+        },
+        {
+          "x": 1567.98,
+          "y": 441.18,
+          "paper": true,
+          "hollow": {
+            "offset": 0.444,
+            "radius": 1.3479
+          }
+        },
+        {
+          "x": 1586.57,
+          "y": 497.03,
+          "paper": true,
+          "hollow": {
+            "offset": 0.6102,
+            "radius": 1.3479
+          }
+        }
+      ]
+    },
+    {
+      "id": 66,
+      "seed": "0x7ea99800619e5e7bda53ad62d4b322f3f1532fdaa6dfcf3e79c701b36d2ae369",
+      "traitsSha256": "2d47a420dbcf84d375e0db0b4ce43efbc48f5049f0c5a48a8659965758f5754f",
+      "filmSha256": "88d86634a4cf9256d2168805703323bb8fd6d3896052f19aa2bdd4218c4b1021",
+      "ink": {
+        "stillSha256": "2df5b50d512412bd8315a8fac67abb70f7a37be7cf06a1ad4a851dd37f83f5f9",
+        "rung": {
+          "src": "/art/stills/66-ink-1920-d3a28157f5b5518a.webp",
+          "sha256": "d3a28157f5b5518afa2cff949cecd25ebc73e6aedd8917cc64471d864387962d"
+        }
+      },
+      "step": 999999,
+      "bodies": [
+        {
+          "x": 1164.98,
+          "y": 1985.47,
+          "paper": true,
+          "hollow": {
+            "offset": 0.0239,
+            "radius": 0.9952
+          }
+        },
+        {
+          "x": 757.95,
+          "y": 1561.72,
+          "paper": true,
+          "hollow": {
+            "offset": 0.0384,
+            "radius": 1.054
+          }
+        },
+        {
+          "x": 1081.15,
+          "y": 1670.66,
+          "paper": true,
+          "hollow": {
+            "offset": 0.0753,
+            "radius": 1.0866
+          }
+        }
+      ]
+    },
+    {
+      "id": 67,
+      "seed": "0x096b3fe491ce5fee66edae6f601047fcc8af8cbdb1d68a4ad04eaacc20557414",
+      "traitsSha256": "3a30e0d371c8cea4e4fc67dab9e50aa05d7c91ce66f7ff7310d0ca5971e07112",
+      "filmSha256": "99d418ff7bf2de354b07a9c79e0cb65e298cc41238191583243b698830fbc5b7",
+      "ink": {
+        "stillSha256": "cdffdd9c9842eaf497299c31accf0d8edb4d50c6bc52954b6f8f917966996bf0",
+        "rung": {
+          "src": "/art/stills/67-ink-1920-bc592571fc87f66d.webp",
+          "sha256": "bc592571fc87f66d11ee1fdd91fc18c5abf23265c6028fa6e64d63d337f46f5c"
+        }
+      },
+      "step": 999999,
+      "bodies": [
+        {
+          "x": 558.37,
+          "y": 2132.45,
+          "paper": true,
+          "hollow": {
+            "offset": 0.0106,
+            "radius": 1.004
+          }
+        },
+        {
+          "x": 1149.22,
+          "y": 1635.89,
+          "paper": true,
+          "hollow": {
+            "offset": 0.0662,
+            "radius": 1.0179
+          }
+        },
+        {
+          "x": 1520.6,
+          "y": 1378.94,
+          "paper": true,
+          "hollow": {
+            "offset": 0.0226,
+            "radius": 1.0063
+          }
+        }
+      ]
+    },
+    {
+      "id": 68,
+      "seed": "0xd6d0f838253b016e56856aaf1f9f9be5c461d073ceca6573478e224f31e96cb4",
+      "traitsSha256": "b8650cf8970c8c81a9d0563240af97f2c5ff94c1b42cb977602a4605bc6bebb7",
+      "filmSha256": "68b40bf6b6e76a012cad5d661e41a20b239d3b4dd4d5066abe902ae3eb68a5a3",
+      "ink": {
+        "stillSha256": "a0453c4ef0c1ad9a0ed38fefbb0d62e85e2167c8656110572db4d78d34092381",
+        "rung": {
+          "src": "/art/stills/68-ink-1920-f344d6ecad4e2e14.webp",
+          "sha256": "f344d6ecad4e2e144fae9192f8b389847e824e236ec2bb76e326b49263c2f2c9"
+        }
+      },
+      "step": 999999,
+      "bodies": [
+        {
+          "x": 2075.13,
+          "y": 2058.76,
+          "paper": true,
+          "hollow": {
+            "offset": 0.2832,
+            "radius": 1.2258
+          }
+        },
+        {
+          "x": 2108.48,
+          "y": 2060.43,
+          "paper": true,
+          "hollow": {
+            "offset": 0.3154,
+            "radius": 1.2258
+          }
+        },
+        {
+          "x": 773.9,
+          "y": 101.55,
+          "paper": true,
+          "hollow": {
+            "offset": 0.0323,
+            "radius": 1.0383
+          }
+        }
+      ]
+    },
+    {
+      "id": 69,
+      "seed": "0x83e1cf74f14f5219fd9e3eac51532ce53d1e4420eb6a357b5a6f12878523108e",
+      "traitsSha256": "1ea5756a546dc2dc2f8529672e6425423b012a0c18fa2cf8be388d5f83dee5ed",
+      "filmSha256": "9e87a377b16b5eb783ae280e9fe891b663ca9d168acad18e5e4d9b15c595e2fc",
+      "ink": {
+        "stillSha256": "3eb31228c01736ea4e52387558899f6303ff2fb8dcbe4bac53d2d4c6f422e2c6",
+        "rung": {
+          "src": "/art/stills/69-ink-1920-f459ef02586fa968.webp",
+          "sha256": "f459ef02586fa968b5408cd4bd9be8c21fc9e1078a549aae540f24f52ca8bd80"
+        }
+      },
+      "step": 999999,
+      "bodies": [
+        {
+          "x": 1099.97,
+          "y": 573.18,
+          "paper": true,
+          "hollow": {
+            "offset": 0.0329,
+            "radius": 0.9954
+          }
+        },
+        {
+          "x": 1209.23,
+          "y": 752.25,
+          "paper": true,
+          "hollow": {
+            "offset": 0.0217,
+            "radius": 0.9909
+          }
+        },
+        {
+          "x": 577.86,
+          "y": 2132.45,
+          "paper": true,
+          "hollow": {
+            "offset": 0.0207,
+            "radius": 0.9889
+          }
+        }
+      ]
+    },
+    {
+      "id": 70,
+      "seed": "0xc6eb8adccc594aa92650d007ddad8b939d51c030b95abd9a2be05e5546527572",
+      "traitsSha256": "c055df2c1f789bc4c14007a8e24c3114e2b55a73e57f64d5b3e9fd68ed0bc0a8",
+      "filmSha256": "7749318b3722fc93bdb621371868907de7d83f67f68365d2cacaf272fe3ef9d7",
+      "ink": {
+        "stillSha256": "9b9c86f0bfd074e0191817a2fce0301ffaac31d44e2b896f4fc23905e129136f",
+        "rung": {
+          "src": "/art/stills/70-ink-1920-3113c3f029e081ef.webp",
+          "sha256": "3113c3f029e081ef9afeaa6181aad1026d14b39f1e901154f23bcb30c36f0c70"
+        }
+      },
+      "step": 999999,
+      "bodies": [
+        {
+          "x": 1044.53,
+          "y": 1496.65,
+          "paper": true,
+          "hollow": {
+            "offset": 0.0245,
+            "radius": 0.9884
+          }
+        },
+        {
+          "x": 2511.78,
+          "y": 1633.73,
+          "paper": true,
+          "hollow": {
+            "offset": 0.0417,
+            "radius": 1.0083
+          }
+        },
+        {
+          "x": 820.76,
+          "y": 1486.33,
+          "paper": true,
+          "hollow": {
+            "offset": 0.0219,
+            "radius": 0.9882
+          }
+        }
+      ]
+    },
+    {
+      "id": 71,
+      "seed": "0x3a75145359c9144bc6da79fce8e4f4b83f02ddf77aa7b64d1e6e7ec3163e4af4",
+      "traitsSha256": "07559be33d1a7ae86f1c94e59f2e9692b73c86284a045cfdeb7e52f00f1126b6",
+      "filmSha256": "869fa84deea00f07af924ae5957efe46af5658c81516a6377bf930c07bf60cf5",
+      "ink": {
+        "stillSha256": "48fba7bcc78bbbe0f6bc82c34b9bc19d2b483bd0102e64864a67751abf5244c9",
+        "rung": {
+          "src": "/art/stills/71-ink-1920-b0e15a55a9f3ddda.webp",
+          "sha256": "b0e15a55a9f3dddace5063e5bc9325489091dc67795ab4b975da29bb773c64ef"
+        }
+      },
+      "step": 999999,
+      "bodies": [
+        {
+          "x": 1423.75,
+          "y": 530.22,
+          "paper": true,
+          "hollow": {
+            "offset": 0.0441,
+            "radius": 1.018
+          }
+        },
+        {
+          "x": 1542.38,
+          "y": 2132.45,
+          "paper": true,
+          "hollow": {
+            "offset": 0.0111,
+            "radius": 0.9999
+          }
+        },
+        {
+          "x": 1345.95,
+          "y": 1017.41,
+          "paper": true,
+          "hollow": {
+            "offset": 0.0283,
+            "radius": 1.0149
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -67,6 +67,38 @@
   width: 100%;
   height: 100%;
 }
+/*
+  On the plate: the stage is the still of the expression the page shows, untouched, in its own
+  proportions and on its own ground, and the drawing lies over it where the films put the bodies.
+  Light adds its light to the still's, as the film did; on paper graphite and sumi darken it, as
+  ink does. The plate never stands taller than a screen leaves room for, and the blending stays
+  inside it.
+*/
+.stage[data-drawing='plate'] {
+  flex: none;
+  width: 100%;
+  max-width: calc((100svh - 160px) * var(--plate-ratio, 1.547));
+  min-height: 0;
+  aspect-ratio: var(--plate-aspect, 3456 / 2234);
+  background: var(--plate-ground, var(--night));
+  isolation: isolate;
+}
+.stage[data-material='ink'] {
+  background: var(--plate-ground, var(--paper));
+}
+.still {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+.stage[data-material='light'] .layer {
+  mix-blend-mode: screen;
+}
+.stage[data-material='ink'] .layer {
+  mix-blend-mode: multiply;
+}
 .caption {
   max-width: 40em;
   margin-top: 9px;
@@ -239,6 +271,10 @@
     flex: none;
     min-height: 0;
     aspect-ratio: 1;
+  }
+  /* A phone's plate runs the full width, in the still's own proportions. */
+  .stage[data-drawing='plate'] {
+    max-width: none;
   }
   /* The readout keeps its two lines at the full width, and the words keep a line of their own
      beneath it from the start: neither squeezes the other, and neither moves the page when the
