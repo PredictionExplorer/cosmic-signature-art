@@ -543,6 +543,10 @@ export const zhHK: Messages = {
   orbitLine: '在這個瀏覽器中由它的種子推導，再與已發佈的紀錄核對。',
   orbitCaption:
     '三個天體，質量分別為 {m1}、{m2} 和 {m3}，在它們展開最廣的平面上，以光的影片的節奏繪出。天體 {pair} 在第 {step} 步最為接近，相距 {distance}，即影片第 {seconds} 秒。',
+  orbitCaptionLight:
+    '三個天體，質量分別為 {m1}、{m2} 和 {m3}，以影片的節奏繪在光的靜態影像之上、影片描繪它們的位置；每個天體都停在自己筆觸的盡頭。天體 {pair} 在第 {step} 步最為接近，相距 {distance}，即影片第 {seconds} 秒。分析，而非作品。',
+  orbitCaptionInk:
+    '三個天體，質量分別為 {m1}、{m2} 和 {m3}，以光的影片的節奏繪在墨的靜態影像之上、它們攪動墨的位置；每個天體都停在自己留下的空白之中。天體 {pair} 在第 {step} 步最為接近，相距 {distance}，即光的影片第 {seconds} 秒。分析，而非作品。',
   orbitWaiting: '當你來到這裏，軌道便在此推導。',
   orbitUnavailable: '這個瀏覽器無法推導軌道。紀錄按已發佈的原樣顯示，未經核對。',
   orbitProgressBeginnings: '讀取種子 · 候選 {done} / {total}',

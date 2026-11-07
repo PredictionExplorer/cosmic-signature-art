@@ -571,6 +571,11 @@ export const en = {
   orbitLine: 'Derived from its seed in this browser, then checked against the published record.',
   orbitCaption:
     'Three bodies, of masses {m1}, {m2} and {m3}, drawn in the plane of their greatest extent at the pace of the Light film. Bodies {pair} pass closest, {distance} apart, at step {step}, {seconds} seconds into the film.',
+  // On the plate (src/components/orbit-score.tsx): over the Light or the Ink still.
+  orbitCaptionLight:
+    'Three bodies, of masses {m1}, {m2} and {m3}, drawn over the Light still where its film drew them, at the film’s pace; each ends where its stroke ends. Bodies {pair} pass closest, {distance} apart, at step {step}, {seconds} seconds into the film. Analysis, not the work.',
+  orbitCaptionInk:
+    'Three bodies, of masses {m1}, {m2} and {m3}, drawn over the Ink still where they stirred the ink, at the Light film’s pace; each comes to rest in the hollow it left. Bodies {pair} pass closest, {distance} apart, at step {step}, {seconds} seconds into the Light film. Analysis, not the work.',
   orbitWaiting: 'The orbit is derived here when you reach it.',
   orbitUnavailable:
     'This browser could not derive the orbit. The record is shown as published, unchecked.',

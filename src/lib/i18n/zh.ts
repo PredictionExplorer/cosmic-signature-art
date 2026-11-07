@@ -543,6 +543,10 @@ export const zh: Messages = {
   orbitLine: '在这个浏览器中由它的种子推导，再与已发布的记录核对。',
   orbitCaption:
     '三个天体，质量分别为 {m1}、{m2} 和 {m3}，在它们展开最广的平面上，以光的影片的节奏绘出。天体 {pair} 在第 {step} 步最为接近，相距 {distance}，即影片第 {seconds} 秒。',
+  orbitCaptionLight:
+    '三个天体，质量分别为 {m1}、{m2} 和 {m3}，以影片的节奏绘在光的静态图像之上、影片描绘它们的位置；每个天体都停在自己笔触的尽头。天体 {pair} 在第 {step} 步最为接近，相距 {distance}，即影片第 {seconds} 秒。分析，而非作品。',
+  orbitCaptionInk:
+    '三个天体，质量分别为 {m1}、{m2} 和 {m3}，以光的影片的节奏绘在墨的静态图像之上、它们搅动墨的位置；每个天体都停在自己留下的空白之中。天体 {pair} 在第 {step} 步最为接近，相距 {distance}，即光的影片第 {seconds} 秒。分析，而非作品。',
   orbitWaiting: '当你来到这里，轨道便在此推导。',
   orbitUnavailable: '这个浏览器无法推导轨道。记录按已发布的原样显示，未经核对。',
   orbitProgressBeginnings: '读取种子 · 候选 {done} / {total}',

@@ -37,6 +37,7 @@
     "art:orbits": "node --experimental-strip-types scripts/build-orbit-records.mjs",
     "art:windows": "node --experimental-strip-types scripts/build-orbit-windows.mjs",
     "art:frames": "node --experimental-strip-types scripts/build-orbit-frames.mjs",
+    "art:hollows": "node --experimental-strip-types scripts/build-orbit-hollows.mjs",
     "art:arrival": "node scripts/build-arrival-maps.mjs",
     "art:light": "node scripts/build-all-the-light.mjs",
     "art:sweep": "node scripts/build-sweep-spans.mjs"

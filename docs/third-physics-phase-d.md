@@ -246,8 +246,33 @@ Each PR passes the seven-project Playwright matrix, axe, the 12 px floor, the mo
 - **Worker threads inherit `process.argv`.** A worker that imported the build script would run its main. The film's measure therefore lives in `scripts/lib/film-measure.mjs`.
 - **V8 rounds sines and cosines apart from machine to machine.** CI (x86-64) re-derived five of the 72 frames an arm64 Mac had written, and their boxes (and one drift's semi-axes) differed by one to six ulps. The likely cause is that arm64 builds of V8 fuse multiplies and adds inside `Math.sin` and `Math.cos`, and x86-64 builds do not. Every choice, draw and score matched. "To the last bit" therefore holds for what the stream draws and for the plain arithmetic, not for the fit, which is checked within a trillionth of the frame.
 
+**The work page's orbit, on the plate.** *Built 6 November 2026, on the owner's yes to its design note.*
+- **Where.** The section "The orbit, re-performed" draws on a plate. The plate is the still of the expression the page shows, untouched, in its own proportions and on its own ground. The bodies are drawn over it where the films put them, at the Light film's pace. The score, the proof table, Verify an orbit and After the frame are as they were.
+  - The page's own plate stays the work alone. Physics happens around it; it carries the films, the Turn and the crossing; and the lot page shares it.
+- **Light.** It is drawn as the Overture draws: the trails add their light to the still's and fall inside the ribbons. When the window ends, each body stands where its stroke ends. A kaleidoscope's bodies are drawn in every copy, since its film drew every stroke in each.
+- **Ink.** The Ink edition stirs its sumi with the bodies where the Light film draws them (the generator's ember design, §3). It uses the same projection, view, drift and fit, and the primary copy of a kaleidoscope. Each body is an ellipse with the area of a disc 2.5 % of the sheet's height, and holds no ink. So the still keeps a hollow where each body stood when the window ended.
+  - On the plate each body is outlined at that size in sumi, with its path in graphite and no colour. Each comes to rest in its hollow.
+- **Checked against every Ink still.** `npm run art:hollows` (`scripts/build-orbit-hollows.mjs`) replays each window in its frame to the step the still shows. It places the primary copy's bodies there, and reads the Ink still's 1,920 px rung for the hollow around each (`scripts/lib/ink-hollows.mjs`). The rung is read only once its bytes are the ones the still ladder recorded.
+  - Of the 216 bodies, 196 stand in a hollow of their own: closed, a body's size, and centred within a third of a radius.
+  - The rest share a hollow with a close neighbour or meet open paper. None stands on ink.
+  - Three places drawn at random do the same a few times in a thousand: 6 of 4,320 bodies, and 4 of 1,440 trios that would bear a still out.
+
+  The registry (`src/lib/art/orbit-hollows.json`, 85 KB, read on the server) is written only when every still bears its bodies out. An entry binds to its work only while the orbit record, the film its frame was measured against and the Ink still's hash all agree. `npm run test:scripts` measures all 72 again.
+- **What is drawn is what was derived.** Given the frame, the orbit worker replays the window it has just derived, from its own first state, on the plate (`framedSamples` in `framing.ts`). It places every hundredth step, and then the still's own step, in single precision as the renderer placed them.
+- **After the frame** goes on over the same still, from where the still left the bodies. The camera holds where the film's frame ended (`HeldPlacement`), since the generator never drifted it further. An escaping body leaves the plate.
+- **Reduced motion, Pause and the hush** draw it whole: the still, the window, and the bodies at rest where the work left them.
+- **Phones.** The plate runs the full width in the still's proportions, and the bodies are sized to the plate. The still comes from its ladder, never the 3,456 px original.
+- **Light and Ink.** The section's plate shows the expression the page's plate shows: the visitor's choice, remembered for the visit, else the page's opening. It turns with the page's Turn.
+- **The fallback.** Without a frame that binds, or on an Ink still that does not bear the bodies out, the section draws as Phase A did, in the orbit's own plane on night. A window the worker cannot place falls back the same way. A still that fails to load leaves the drawing on the plate's ground.
+- **Labelled.** The caption says where the bodies are drawn and ends "Analysis, not the work". The section is on the work page only, never on a lot.
+- **Tested.** Unit tests cover the placement, the held camera, the worker, the registry and its binding, and the section in each material and its fallbacks. In every engine's projects, `tests/e2e/orbit-plate.spec.ts` checks three things:
+  - № 031's bodies are drawn at rest where its Ink still shows paper ringed all round by ink; ninety pixels away, the paper opens out;
+  - the Light plate's lights stand at the same places;
+  - the plate keeps its proportions on a phone and turns with the page.
+
+  Phase A's checks hold on the plate: № 031 and № 071 are re-derived with every measurement exact.
+
 **Open.**
 - **WebKit swaps a large streamed page in after load.** It holds the page behind the route's fallback and renders the streamed `main` again after hydration: on the home, a work page and the Ukrainian process essay. This was reported while building The choice, predates this phase, and wants its own fix.
 - **A prefetch of `/exhibitions` answers 404** on the English home. It also predates this phase.
-- **The work page's orbit** is still drawn in its own plane (Phase A). With the frames it could be drawn on the plate.
 - **Opening night** (§5.9) waits for the pipeline to publish traits early.
