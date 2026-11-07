@@ -20,6 +20,18 @@ import { Overture, type OvertureWork } from '@/components/overture';
  */
 export const revalidate = 300;
 
+/**
+ * The home answers the eight locales its layout lists (generateStaticParams) and no other, and
+ * says so: its parameter is closed, and the router predicts no route with a closed parameter.
+ * Otherwise a router that has learned /[locale] from an address carrying its locale (/uk, /en)
+ * takes an English address such as /exhibitions, which the proxy rewrites to /en/exhibitions,
+ * for the home in a locale named "exhibitions". It asks that address for the home's own
+ * segment, a 404, and then for the locale's layout, again and again, about a thousand times a
+ * second (tests/e2e/not-found.spec.ts). The home is the only route an English address of one
+ * part can be taken for, so the setting is the home's alone.
+ */
+export const dynamicParams = false;
+
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
   if (!isLocale(locale)) return {};
