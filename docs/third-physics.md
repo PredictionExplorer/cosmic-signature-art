@@ -204,7 +204,7 @@ This is a physical index beside All the light: every work's orbit re-performed a
 
 It is the only thumbnail wall on the web whose thumbnails are physics rather than pictures.
 
-### 5.8 The Overture: the art condenses out of its physics *(version 1 built)*
+### 5.8 The Overture: the art condenses out of its physics *(built)*
 
 The home page on a first visit:
 1. **0 s.** Black, and the day's work's three bodies begin their orbit, live and verified.
@@ -213,8 +213,11 @@ The home page on a first visit:
 4. **Then.** The crossing to Ink, in the order the ink came to rest, and the running head arrives last.
 
 Any input completes the Overture instantly. Reduced motion and returning visitors get the plate at once.
-- **Version 1** synchronises the two clocks, with the score and the plate side by side.
-- **Version 2** registers them by porting the camera drift and framing (`drift.rs` plus the fit, about 600 deterministic lines, checked against the Light film's frame differences). The bodies then literally draw the plate.
+- **Version 1** synchronises the two clocks, with the score and the plate side by side. It remains for any work without a frame.
+- **Version 2** registers them: the bodies are drawn on the plate itself, where the film drew them, and the still condenses beneath them. *Built 6 November 2026; see [third-physics-phase-d.md](third-physics-phase-d.md) §7.*
+  - The frame is more than the drift. The generator photographs each orbit from the best of four seeded views, which its own proxy render scores. Some works draw phase space or turn every stroke into a kaleidoscope. Only then does the drift move the camera and the fit place the frame.
+  - All of it is ported: `drift.ts`, `view-score.ts`, `framing.ts` and `frame-derivation.ts`, about 1,700 lines. A build of the generator itself agrees on every work's view, scores and pixels.
+  - Each frame meets its Light film's frame differences. Frame by frame, 41–99.9 % of the bodies stand where the film gains light; no view the generator passed over manages more than 11.5 %.
 
 This is the one timed event of the venue and replaces the Dusk.
 
@@ -311,7 +314,7 @@ Each phase ships behind a flag, on its own branch, with the existing seven-proje
 **Phase C — the indexes (2–3 weeks).** *Built 30 October 2026; see [third-physics-phase-c.md](third-physics-phase-c.md).* All the light, with naming, pull-out and the cycle replay; the Orrery; both added to the Index sheet.
 
 **Phase D — the events (3–4 weeks).** *Begun 4 November 2026 with two equal expressions and phones; see [third-physics-phase-d.md](third-physics-phase-d.md).*
-- The Overture, version 1 then version 2 with drift registration.
+- The Overture, version 1 then version 2 with drift registration (both built).
 - After the frame.
 - The choice in the process essay.
 - Opening night physics-first, once the pipeline publishes traits early.
