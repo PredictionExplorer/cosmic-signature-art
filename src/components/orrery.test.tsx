@@ -182,6 +182,42 @@ describe('the Orrery', () => {
     expect(container.querySelectorAll('canvas')).toHaveLength(0);
   });
 
+  it('draws at the screen’s own density, three canvas pixels to a CSS pixel at most', () => {
+    offscreen();
+    const density = Object.getOwnPropertyDescriptor(window, 'devicePixelRatio');
+    const screenOf = (ratio: number) =>
+      Object.defineProperty(window, 'devicePixelRatio', { configurable: true, value: ratio });
+    // A phone's cell, two to a row.
+    vi.spyOn(HTMLElement.prototype, 'getBoundingClientRect').mockReturnValue({
+      width: 170,
+      height: 110,
+    } as DOMRect);
+    try {
+      // A phone at three: its trails are drawn at its own density, not scaled up from two.
+      screenOf(3);
+      const phone = render(<Page />);
+      expect(ofType('cells')[0].ratio).toBe(3);
+      const canvas = phone.container.querySelector('canvas')!;
+      expect([canvas.width, canvas.height]).toEqual([510, 330]);
+      phone.unmount();
+      // Denser screens are drawn at three; a desk's own density is kept as it is.
+      for (const [screen, drawn] of [
+        [4, 3],
+        [2, 2],
+        [1.5, 1.5],
+      ]) {
+        workers = [];
+        screenOf(screen);
+        const { unmount } = render(<Page />);
+        expect(ofType('cells')[0].ratio).toBe(drawn);
+        unmount();
+      }
+    } finally {
+      if (density) Object.defineProperty(window, 'devicePixelRatio', density);
+      else Reflect.deleteProperty(window, 'devicePixelRatio');
+    }
+  });
+
   it('lends the worker the page’s frames, one at a time, and none once it is gone', () => {
     offscreen();
     const { container, unmount } = render(<Page />);

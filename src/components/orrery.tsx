@@ -36,8 +36,12 @@ const canPerform = () =>
   'transferControlToOffscreen' in HTMLCanvasElement.prototype;
 /** Unknown until the client answers, so the server's markup commits to neither way. */
 const unknownOnServer = () => null;
-/** The canvases' pixels per CSS pixel, two at most; a move to another screen or a zoom changes it. */
-const pixelRatio = () => Math.min(2, window.devicePixelRatio || 1);
+/**
+ * The canvases' pixels per CSS pixel: the screen's own, three at most, so a phone's trails are
+ * drawn at its own density rather than scaled up from a coarser canvas. A move to another screen
+ * or a zoom changes it.
+ */
+const pixelRatio = () => Math.min(3, window.devicePixelRatio || 1);
 const onePerPixel = () => 1;
 function subscribeRatio(onChange: () => void) {
   if (typeof matchMedia !== 'function') return () => {};

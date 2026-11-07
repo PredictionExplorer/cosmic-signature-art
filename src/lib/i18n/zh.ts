@@ -622,6 +622,7 @@ export const zh: Messages = {
   allTheLightAlt:
     '全部的光（{span}）：{count} 件作品的光的静态图像相加而成，轨道密集处为白色，边缘留有颜色。这是派生的视图，而非作品。',
   allTheLightPoint: '指向任意一处，即可说出经过那里的轨道之名。',
+  allTheLightHold: '在任意一处长按，即可说出指下经过的轨道之名；松开手指，即单独显示最亮的一条。',
   allTheLightThrough: '经过此点 · {works}',
   allTheLightNone: '没有轨道经过这里。',
   allTheLightAlone: '单独的 {work}，即它未经改动的静态图像',
