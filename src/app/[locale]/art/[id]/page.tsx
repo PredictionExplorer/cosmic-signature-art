@@ -17,7 +17,7 @@ import {
 import { inlineCuratedPreview } from '@/lib/art/inline-preview';
 import { parseArtworkId } from '@/lib/art/validation';
 import { workNumber } from '@/lib/art/number';
-import type { Artwork, ArtworkResult } from '@/lib/art/types';
+import { getInterpretation, isExpression, type Artwork, type ArtworkResult } from '@/lib/art/types';
 import { artworkSharingImage } from '@/lib/art/sharing';
 import { ArtworkViewer } from '@/components/artwork-viewer';
 import type { Neighbour, Neighbours } from '@/components/artwork-neighbours';
@@ -26,6 +26,7 @@ import { ArtworkEntry } from '@/components/artwork-entry';
 import { OrbitScore } from '@/components/orbit-score';
 import { workOrbit } from '@/lib/art/orbit-records';
 import { filmOrbit } from '@/lib/art/orbit-windows';
+import { orbitPlate } from '@/lib/art/orbit-plate';
 import recordStyles from '@/components/artwork-record.module.css';
 import { artworkViewParams } from '@/lib/art/view';
 import { knownExpressions, openingExpression, openingOn } from '@/lib/art/opening';
@@ -146,8 +147,10 @@ export default async function ArtworkPage({
         light: inlineCuratedPreview(curated.id, 'light'),
       }
     : undefined;
-  // The orbit beneath the work, re-derived in the browser and checked against its record.
+  // The orbit beneath the work, re-derived in the browser and checked against its record, and
+  // drawn on the plate where its frame binds: over the still the page's plate shows.
   const orbit = workOrbit(tokenId);
+  const both = !!getInterpretation(work, 'ink')?.still && !!getInterpretation(work, 'light')?.still;
   return (
     <main id="main" className="work-page" data-opening-expression={expression}>
       <ArtworkViewer
@@ -164,7 +167,17 @@ export default async function ArtworkPage({
         afterTheFrame={!!orbit}
         orbit={filmOrbit(tokenId)}
       />
-      {orbit ? <OrbitScore key={tokenId} orbit={orbit} t={t} locale={locale} /> : null}
+      {orbit ? (
+        <OrbitScore
+          key={tokenId}
+          orbit={orbit}
+          t={t}
+          locale={locale}
+          plate={orbitPlate(work)}
+          opening={expression && isExpression(expression) ? expression : undefined}
+          both={both}
+        />
+      ) : null}
       <div className="section-wrap">
         {settled ? (
           <ArtworkEntry result={settled} fallback={work} locale={locale} t={t} query={query} />
