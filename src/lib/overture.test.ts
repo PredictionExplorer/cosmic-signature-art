@@ -1,8 +1,39 @@
 import { describe, expect, it } from 'vitest';
 import { FRONT_EDGE } from './crossing/timing';
-import { overtureLayout, overtureShare, plateTransform, revealAtShare } from './overture';
+import {
+  framePoint,
+  overtureLayout,
+  overtureShare,
+  plateTransform,
+  revealAtShare,
+} from './overture';
 
 describe('where the Overture stands', () => {
+  it('draws a registered score on the plate, in the plate’s own place, on a desk or a phone', () => {
+    for (const [viewport, plate] of [
+      [
+        { width: 1440, height: 1000 },
+        { x: 27, y: 52, width: 1386, height: 896 },
+      ],
+      [
+        { width: 390, height: 844 },
+        { x: 0, y: 48, width: 390, height: 252 },
+      ],
+    ] as const)
+      expect(overtureLayout(viewport, plate, 20, { registered: true })).toEqual({
+        arrangement: 'registered',
+        plate,
+        score: plate,
+      });
+  });
+
+  it('scales the film’s frame onto the box laid over the plate', () => {
+    const frame = { width: 3456, height: 2234 };
+    expect(framePoint(0, 0, frame, { width: 1386, height: 896 })).toEqual([0, 0]);
+    expect(framePoint(1728, 1117, frame, { width: 1386, height: 896 })).toEqual([693, 448]);
+    expect(framePoint(3456, 2234, frame, { width: 780, height: 504 })).toEqual([780, 504]);
+  });
+
   it('condenses a phone’s plate in its own place, with the score beneath it', () => {
     const plate = { x: 0, y: 48, width: 390, height: 252 };
     const layout = overtureLayout({ width: 390, height: 844 }, plate, 20);

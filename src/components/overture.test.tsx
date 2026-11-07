@@ -3,8 +3,11 @@ import { act, cleanup, render } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { workOrbit } from '@/lib/art/orbit-records';
 import { performedOrbits } from '@/lib/art/orbit-windows';
+import { plateFrame } from '@/lib/art/orbit-frames';
 import { getCuratedArtwork } from '@/lib/art/catalog';
 import { getInterpretation } from '@/lib/art/types';
+import { FramedWindow } from '@/lib/physics/framing';
+import { framePoint } from '@/lib/overture';
 import { OVERTURE_KEY } from '@/lib/storage-keys';
 import type { OvertureWork } from './overture-performance';
 
@@ -21,9 +24,14 @@ const work: OvertureWork = {
   arrival: light.arrival!.src,
 };
 
+/** The same work with its frame on its Light film: the Overture, version 2. */
+const registered: OvertureWork = { ...work, frame: plateFrame(31, light)! };
+
 let frames = new Map<number, FrameRequestCallback>();
 let frameIds = 0;
 let decodes: { resolve: () => void; reject: () => void }[] = [];
+/** Every call the 2D contexts were made, by name and arguments. */
+let drawn: [string | symbol, ...unknown[]][] = [];
 /** The home's plate as the page lays it out: a desk's plate filling its screen. */
 const PLATE = { left: 27, top: 52, width: 1386, height: 896 };
 
@@ -90,11 +98,16 @@ beforeEach(() => {
     value: () => new Promise<void>((resolve, reject) => decodes.push({ resolve, reject })),
   });
   // A 2D context that takes every call; jsdom has no WebGL, so the still comes up whole.
+  drawn = [];
   const context = new Proxy(
     {},
     {
       get: (_, property) =>
-        property === 'createRadialGradient' ? () => ({ addColorStop() {} }) : () => undefined,
+        property === 'createRadialGradient'
+          ? () => ({ addColorStop() {} })
+          : (...args: unknown[]) => {
+              drawn.push([property, ...args]);
+            },
       set: () => true,
     },
   );
@@ -157,6 +170,62 @@ describe('the Overture', () => {
     });
     expect(html.hasAttribute('data-overture')).toBe(false);
     expect(container).toBeEmptyDOMElement();
+  });
+
+  it('draws the bodies on the plate itself, where its film drew them, when the work has a frame', async () => {
+    const { container, store } = await overture(true, registered);
+    const overlay = container.firstElementChild as HTMLElement;
+    expect(overlay).toHaveAttribute('data-arrangement', 'registered');
+    const [score, plate] = [...overlay.children] as HTMLElement[];
+    // The plate condenses in its own place at its own size, and the score lies on it.
+    expect(plate.style.transform).toBe('none');
+    for (const box of [score, plate])
+      expect([box.style.left, box.style.top, box.style.width, box.style.height]).toEqual([
+        '27px',
+        '52px',
+        '1386px',
+        '896px',
+      ]);
+    // Each body's first light is where the frame places it at the window's first step.
+    const framed = new FramedWindow(performed.window, registered.frame!);
+    const start = framed.place();
+    const glows = drawn.filter(([call]) => call === 'arc');
+    expect(glows).toHaveLength(3);
+    glows.forEach(([, x, y], body) =>
+      expect([x, y]).toEqual(
+        framePoint(start[body * 2], start[body * 2 + 1], registered.frame!, {
+          width: 1386,
+          height: 896,
+        }),
+      ),
+    );
+    await decodeAll();
+    nextFrame(1_000);
+    nextFrame(1_000 + 3_250);
+    // Half the Overture: the paths have run on, from where each body was first placed.
+    const paths = drawn.filter(([call]) => call === 'moveTo');
+    expect(paths.length).toBeGreaterThanOrEqual(6);
+    expect(paths[0].slice(1)).toEqual(glows[0].slice(1, 3));
+    expect(drawn.filter(([call]) => call === 'lineTo').length).toBeGreaterThan(1_000);
+    nextFrame(1_000 + 6_500);
+    expect(overlay).toHaveAttribute('data-landing');
+    expect(plate.style.transform).toBe('none');
+    expect(store.overturePhase()).toBe('playing');
+  });
+
+  it('draws a kaleidoscopic work’s bodies in every copy its symmetry makes', async () => {
+    // № 006 turns every stroke three times; its still here is 031's, which the test never decodes.
+    const [six] = performedOrbits([6]);
+    const rot3: OvertureWork = {
+      ...work,
+      window: six.window,
+      bodyHues: six.bodyHues,
+      frame: plateFrame(6)!,
+    };
+    expect(rot3.frame!.symmetry).toBe('rot3');
+    await overture(true, rot3);
+    // Three bodies in each of three copies.
+    expect(drawn.filter(([call]) => call === 'arc')).toHaveLength(9);
   });
 
   it('performs once when mounted twice, as development mounts every effect twice', async () => {

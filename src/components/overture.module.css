@@ -1,7 +1,8 @@
 /*
-  The Overture (overture-performance.tsx), the black of the first paint taken over: the score
-  on one side and the plate condensing on the other, or the plate in its place with the score
-  beneath it on a phone. The pointer passes through; the press that ends it is swallowed.
+  The Overture (overture-performance.tsx), the black of the first paint taken over: the bodies
+  drawing on the plate itself as it condenses in its place, or, for a work without a frame, the
+  score on one side and the plate condensing on the other, or the plate in its place with the
+  score beneath it on a phone. The pointer passes through; the press that ends it is swallowed.
 */
 .overture {
   position: fixed;
@@ -24,6 +25,11 @@
   width: 100%;
   height: 100%;
 }
+/* Registered: the score lies on the plate, and its light adds to the still's as the film's did. */
+.overture[data-arrangement='registered'] .score {
+  z-index: 1;
+  mix-blend-mode: screen;
+}
 /* Landing: the score gives way while the plate grows into its place on the home. */
 .overture[data-landing] .score {
   opacity: 0;
@@ -31,6 +37,7 @@
 }
 /* A plate already in its place lets the page around it come up as the score goes; a plate
    still growing keeps the black, or the home's own plate would show beside it. */
+.overture[data-landing][data-arrangement='registered'],
 .overture[data-landing][data-arrangement='stacked'] {
   background-color: transparent;
   transition: background-color var(--t-overture-land) var(--ease-settle);

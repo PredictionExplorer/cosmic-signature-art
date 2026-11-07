@@ -1,12 +1,14 @@
 import { FRONT_EDGE } from './crossing/timing';
 
 /*
-  The Overture (third-physics.md §5.8), version 1: on a first visit the home opens on black, the
-  day's work's three bodies begin their recorded orbit, and the real Light still condenses beside
-  them in the order its film first drew it, on the same clock. The plate then takes its place,
-  and lands on the expression the home opens on. This module is the arithmetic of that: where
-  the score and the plate stand, and how far each has come at any moment. It knows nothing of
-  the page.
+  The Overture (third-physics.md §5.8): on a first visit the home opens on black, the day's
+  work's three bodies begin their recorded orbit, and the real Light still condenses in the order
+  its film first drew it, on the same clock. The plate then lands on the expression the home
+  opens on. Version 2 registers the two: with the work's frame on its film (framing.ts), the
+  bodies are drawn on the plate itself, where the film drew them, and the still condenses under
+  them. Version 1, the score beside the plate in the orbit's own plane, stays for a work without
+  a frame. This module is the arithmetic of that: where the score and the plate stand, and how
+  far each has come at any moment. It knows nothing of the page.
 */
 
 export interface Box {
@@ -18,10 +20,27 @@ export interface Box {
 
 /** Where the score is drawn while the Overture plays, and where the plate condenses. */
 export interface OvertureLayout {
-  /** stacked: the plate condenses in its place with the score beneath it, as on a phone. */
-  arrangement: 'stacked' | 'beside';
+  /**
+   * registered: the score is drawn on the plate, in the plate's own place and frame.
+   * stacked: the plate condenses in its place with the score beneath it, as on a phone.
+   * beside: the plate condenses smaller, beside the score, as on a desk.
+   */
+  arrangement: 'registered' | 'stacked' | 'beside';
   score: Box;
   plate: Box;
+}
+
+/**
+ * A point of the film's frame (`width` × `height` pixels, y down) in a box laid over the plate:
+ * the plate's art box keeps the still's own aspect, so the frame scales onto it whole.
+ */
+export function framePoint(
+  x: number,
+  y: number,
+  frame: { width: number; height: number },
+  box: { width: number; height: number },
+): [number, number] {
+  return [(x / frame.width) * box.width, (y / frame.height) * box.height];
 }
 
 /** Room beneath the plate, as a share of the screen, that is enough to draw the score there. */
@@ -33,15 +52,18 @@ const HEIGHT_SHARE = 0.76;
 
 /**
  * Where the score and the plate stand while the Overture plays. `plate` is the home plate's art
- * as the page lays it out. A phone's plate leaves room beneath it, so the plate condenses in
- * its own place and the score is drawn below; a desk's plate fills its screen, so the plate
- * condenses smaller, beside the score, and grows into its place as the Overture lands.
+ * as the page lays it out. A registered score is drawn on the plate itself, in its own place,
+ * on a desk and a phone alike. Otherwise a phone's plate leaves room beneath it, so the plate
+ * condenses in its own place and the score is drawn below; a desk's plate fills its screen, so
+ * the plate condenses smaller, beside the score, and grows into its place as the Overture lands.
  */
 export function overtureLayout(
   viewport: { width: number; height: number },
   plate: Box,
   gutter: number,
+  { registered = false }: { registered?: boolean } = {},
 ): OvertureLayout {
+  if (registered) return { arrangement: 'registered', plate, score: plate };
   const beneath = viewport.height - (plate.y + plate.height);
   if (beneath >= viewport.height * ROOM_BENEATH) {
     const top = plate.y + plate.height + gutter;
