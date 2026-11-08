@@ -18,10 +18,12 @@ import { stillSourceSet } from '@/lib/art/types';
 
 /*
   The gatefold (vision §6, Beat 3): the Ink plate on paper beside the Light plate on black at
-  equal scale, a spread wider than the viewport that snaps plate to plate; on a wide screen
-  both fit; on a phone it is a vertical diptych. The second view is the seam: the two plates
-  stacked, the night clipped at a line the hand or the keyboard moves, the way the Turn does.
-  Stills only, from the ladder's rungs; nothing here plays.
+  equal scale. On any screen wider than a phone both hang whole, side by side, within the page's
+  gutters: the gatefold is a comparison, and a comparison wants both in view at once. (It was a
+  strip wider than the viewport that snapped plate to plate; on a desk it showed the Ink plate
+  and a sliver of black, and nothing said it scrolled.) On a phone it is a vertical diptych. The
+  second view is the seam: the two plates stacked, the night clipped at a line the hand or the
+  keyboard moves, the way the Turn does. Stills only, from the ladder's rungs; nothing here plays.
 */
 function Still({
   media,
@@ -73,7 +75,7 @@ export function ArtworkGatefold({
   const inkTone = getPlateGround(artwork.id, 'ink', ink.stillSha256)?.tone ?? '#f1ebdf';
   const lightTone = getPlateGround(artwork.id, 'light', light.stillSha256)?.tone ?? '#000000';
   const caption = fill(t.gatefoldCaption, { n: folio });
-  const sizes = '(max-width: 767px) 100vw, (min-width: 1700px) 50vw, 92vw';
+  const sizes = '(max-width: 767px) 100vw, 46vw';
   const percent = new Intl.NumberFormat(locale, { maximumFractionDigits: 0 });
   const inkAlt = `${workNumber(artwork.id)} · ${t.ink}`;
   const lightAlt = `${workNumber(artwork.id)} · ${t.light}`;
@@ -101,15 +103,13 @@ export function ArtworkGatefold({
         </div>
       </div>
       {view === 'spread' ? (
-        // A scroll region the keyboard can reach: focus it and the arrows turn the spread, and
-        // the venue's own arrows (the neighbours) fall silent while they do.
+        // Both plates are always whole in view, so nothing here scrolls and nothing takes focus:
+        // a reader meets the view's name, then each plate by its alt.
         <div
           className={styles.spread}
           data-gatefold-spread
-          data-keys-suppressed=""
           role="group"
           aria-label={t.gatefoldSpread}
-          tabIndex={0}
         >
           <figure
             className={styles.panel}

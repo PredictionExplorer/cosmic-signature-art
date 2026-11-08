@@ -78,12 +78,26 @@ describe('the gatefold', () => {
     const seam = screen.getByRole('slider', { name: en.gatefoldSeamLabel });
     fireEvent.pointerDown(seam, { clientX: 100, pointerType: 'mouse', button: 0 });
     expect(frame.style.getPropertyValue('--gatefold-seam')).toBe('100%');
-    // The spread keeps the venue's keys quiet while it has focus; no seam line is painted.
-    fireEvent.click(screen.getByRole('button', { name: en.gatefoldSpread }));
-    expect(container.querySelector('[data-gatefold-spread]')).toHaveAttribute(
-      'data-keys-suppressed',
-      '',
+  });
+
+  it('hangs the spread whole, so it is no scroll region and takes no focus of its own', () => {
+    const { container } = render(
+      <ArtworkGatefold artwork={work} expression="ink" t={en} locale="en" />,
     );
+    const spread = screen.getByRole('group', { name: en.gatefoldSpread });
+    expect(spread).toBe(container.querySelector('[data-gatefold-spread]'));
+    // Nothing in it lies out of view, so there is nothing for a key to scroll or to quiet.
+    expect(spread).not.toHaveAttribute('tabindex');
+    expect(spread).not.toHaveAttribute('data-keys-suppressed');
+    // A reader meets the view's name, then each plate by its alt, Ink before Light.
+    expect(
+      within(spread)
+        .getAllByRole('img')
+        .map((image) => image.getAttribute('alt')),
+    ).toEqual(['№ 031 · Ink', '№ 031 · Light']);
+    // On a desk each plate is half the wall, so it asks for a half-wall rung; a phone's, its width.
+    for (const image of within(spread).getAllByRole('img'))
+      expect(image).toHaveAttribute('sizes', '(max-width: 767px) 100vw, 46vw');
   });
 
   it('renders nothing for a work without both stills, and lists the rungs before the still', () => {
