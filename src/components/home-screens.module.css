@@ -118,6 +118,19 @@
   color: var(--muted);
   font-variant-numeric: lining-nums tabular-nums;
 }
+/* A label over the heading, at the controls' size and in the type's own colour, so it is read
+   before the plates are. */
+.cycleLabel {
+  font-size: var(--fs-control);
+  color: var(--type);
+  padding-bottom: 9px;
+  border-bottom: 1px solid var(--rule-strong);
+  justify-self: start;
+}
+.cycleNote {
+  max-width: var(--measure);
+  margin-top: 9px;
+}
 .pairs {
   justify-self: stretch;
   margin-inline: calc(-1 * var(--gutter));

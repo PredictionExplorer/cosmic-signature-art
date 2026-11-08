@@ -90,18 +90,53 @@ export function HomeCycle({
   dayWork: number;
 }) {
   const cycle = indexedWork(dayWork)?.cycle;
+  if (cycle === undefined) return null;
+  return <CycleRow locale={locale} t={t} cycle={cycle} id="home-cycle" />;
+}
+
+/**
+ * A cycle hung twice across the seam, under its heading, its count and its date: the home's
+ * screen 5, and the sale's last cycle while no sale is offered. A label set above the heading
+ * names the section with it and describes every work's link, so a reader meets it at each work
+ * as well as at the top; a note says, beneath the count, what the label means.
+ */
+export function CycleRow({
+  locale,
+  t,
+  cycle,
+  id,
+  label,
+  note,
+}: {
+  locale: Locale;
+  t: Messages;
+  cycle: number;
+  /** The heading's id; the label's is the same with `-label`. */
+  id: string;
+  label?: string;
+  note?: string;
+}) {
   const summary = cycles().find((candidate) => candidate.cycle === cycle);
-  if (cycle === undefined || !summary) return null;
+  if (!summary) return null;
   const date = summary.mintedAt
     ? new Intl.DateTimeFormat(locale, { dateStyle: 'long', timeZone: 'UTC' }).format(
         new Date(summary.mintedAt),
       )
     : undefined;
   const number = new Intl.NumberFormat(locale);
+  const labelId = label ? `${id}-label` : undefined;
   return (
-    <section className={`${styles.screen} ${styles.cycle}`} aria-labelledby="home-cycle">
+    <section
+      className={`${styles.screen} ${styles.cycle}`}
+      aria-labelledby={labelId ? `${labelId} ${id}` : id}
+    >
       <header className={styles.cycleHead}>
-        <h2 id="home-cycle" className="chapter">
+        {label ? (
+          <p id={labelId} className={`eyebrow ${styles.cycleLabel}`}>
+            {label}
+          </p>
+        ) : null}
+        <h2 id={id} className="chapter">
           {t.cycle} {number.format(cycle)}
         </h2>
         <p className={styles.cycleMeta}>
@@ -110,6 +145,7 @@ export function HomeCycle({
             : fill(t.worksCount, { count: number.format(summary.count) })}
           {date ? ` · ${fill(t.imprintedOn, { date })}` : ''}
         </p>
+        {note ? <p className={`reading ${styles.cycleNote}`}>{note}</p> : null}
       </header>
       <div className={styles.pairs}>
         {(['ink', 'light'] as const).map((leaf) => (
@@ -128,6 +164,7 @@ export function HomeCycle({
                   <Link
                     href={localizedPath(locale, `/art/${id}?expression=${leaf}`)}
                     className={styles.cell}
+                    aria-describedby={labelId}
                   >
                     <span className="art-media" data-material={leaf}>
                       {preview ? (

@@ -415,6 +415,9 @@ export const en = {
   // The sale
   saleTitle: 'Sale {n}',
   saleSubtitle: 'Eight new works · Cycle {cycle}',
+  saleMeanwhileLabel: 'Not offered',
+  saleMeanwhileNote:
+    'These works are already in the collection and are not part of this sale. The sale’s eight new works are imprinted when Cycle {cycle} finalizes.',
   conditionsOfSale: 'Conditions of sale',
   // The entry's copy affordance and footnotes
   copyAddress: 'Copy',

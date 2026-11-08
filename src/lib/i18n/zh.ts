@@ -390,6 +390,9 @@ export const zh: Messages = {
   // The sale
   saleTitle: '拍卖 {n}',
   saleSubtitle: '八件新作 · 周期 {cycle}',
+  saleMeanwhileLabel: '不参与本次拍卖',
+  saleMeanwhileNote:
+    '这些作品已在藏品全集之中，不属于本次拍卖。本次拍卖的八件新作将在周期 {cycle} 完成结算时印记。',
   conditionsOfSale: '拍卖条件',
   // The entry's copy affordance and footnotes
   copyAddress: '复制',

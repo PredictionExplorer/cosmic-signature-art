@@ -409,6 +409,9 @@ export const ko: Messages = {
   // The sale
   saleTitle: '경매 {n}',
   saleSubtitle: '새 작품 여덟 점 · 사이클 {cycle}',
+  saleMeanwhileLabel: '이번 판매 출품작 아님',
+  saleMeanwhileNote:
+    '이 작품들은 이미 컬렉션에 있으며 이번 판매에 포함되지 않습니다. 이번 판매의 새 작품 여덟 점은 사이클 {cycle} 확정 시 각인됩니다.',
   conditionsOfSale: '판매 조건',
   // The entry's copy affordance and footnotes
   copyAddress: '복사',
