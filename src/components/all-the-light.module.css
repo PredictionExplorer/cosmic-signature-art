@@ -50,7 +50,13 @@
   overflow: hidden;
   background: var(--night);
   cursor: crosshair;
+  /* A finger scrolls past the sky, or rests on it to name; a long press selects and lifts out
+     nothing, and a tap leaves no grey flash on the light. */
   touch-action: manipulation;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
 }
 .layer,
 .overlay,
@@ -92,6 +98,10 @@
   margin: 12px 0 0;
   font-size: var(--fs-control);
   color: var(--muted);
+}
+/* The invitation is a pointer's; where the screen is touched, it is a finger's. */
+.holding {
+  display: none;
 }
 .state {
   margin: 0;
@@ -253,13 +263,50 @@
     gap: 0;
   }
 }
-/* A screen too short to hold the sky beneath its title gives the sky its own height. */
-/* A phone's sky runs edge to edge: the exposure is the page's subject. */
+/*
+  Where the screen is touched, a finger names, and the hand that holds the sky covers what lies
+  below the finger, so the naming line stands above the sky. Its room never shrinks: the
+  invitation's own words, unseen, keep their place while names stand in it, and two lines are
+  kept at least. A naming never moves the sky beneath the finger, in any language.
+*/
+@media (pointer: coarse) {
+  .pointing {
+    display: none;
+  }
+  .holding {
+    display: inline;
+  }
+  .figure {
+    display: flex;
+    flex-direction: column;
+  }
+  .readout {
+    order: -1;
+    display: grid;
+    align-content: end;
+    align-items: end;
+    min-height: 2lh;
+    margin: 0 0 12px;
+  }
+  .readout::before {
+    content: attr(data-room);
+    visibility: hidden;
+  }
+  .readout::before,
+  .readout > * {
+    grid-area: 1 / 1;
+  }
+}
+/* A phone's sky runs edge to edge: the exposure is the page's subject. Its line keeps the gutter. */
 @media (max-width: 767px) {
   .figure {
     margin-inline: calc(-1 * var(--gutter));
   }
+  .readout {
+    padding-inline: var(--gutter);
+  }
 }
+/* A screen too short to hold the sky beneath its title gives the sky its own height. */
 @media (max-height: 560px) {
   .frame {
     width: min(100%, calc(100svh * var(--ratio)));

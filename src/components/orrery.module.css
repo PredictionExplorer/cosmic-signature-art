@@ -115,10 +115,10 @@
 .link:focus-visible .numeral {
   color: var(--night-type);
 }
+/* On a phone two orbits hang to a row, each as wide as a cell on a desk, so its trails read. */
 @media (max-width: 767px) {
   .cells {
-    grid-template-columns: repeat(auto-fill, minmax(104px, 1fr));
-    gap: 18px 12px;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 @media (prefers-reduced-motion: reduce) {
