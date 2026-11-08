@@ -27,15 +27,44 @@ async function performs(page: Page) {
   return (await html.getAttribute('data-overture')) !== null;
 }
 
+/**
+ * Every value the gate takes, from the document's first moment: the room script sets it before
+ * anything paints. A browser that cannot draw the light lifts it at once, often before the page
+ * has loaded, so a poll after the load can miss it; this reads it back instead.
+ */
+async function watchTheGate(page: Page) {
+  await page.addInitScript(() => {
+    const taken: (string | null)[] = [];
+    Object.defineProperty(window, '__gate', { value: taken });
+    new MutationObserver((records) => {
+      // Each record holds the value before its change; the value after is the next one's, or now.
+      records.forEach((_, i) =>
+        taken.push(
+          i + 1 < records.length
+            ? records[i + 1].oldValue
+            : document.documentElement.getAttribute('data-overture'),
+        ),
+      );
+    }).observe(document, {
+      subtree: true,
+      attributes: true,
+      attributeFilter: ['data-overture'],
+      attributeOldValue: true,
+    });
+  });
+  return () => page.evaluate(() => (window as unknown as { __gate: (string | null)[] }).__gate);
+}
+
 test('a first visit opens on the plate, performs, and lands on the day’s Ink by its crossing', async ({
   page,
 }, info) => {
   test.skip(info.project.name.includes('reduced-motion'), 'Reduced motion opens on the plate.');
   test.slow();
+  const gate = await watchTheGate(page);
   await page.goto('/');
   const html = page.locator('html');
   // From the first paint the day's plate stands alone: the head waits.
-  await expect(html).toHaveAttribute('data-overture', /^(pending|playing)$/);
+  expect((await gate())[0]).toBe('pending');
   await expect(room(page)).toBeVisible();
   if (await performs(page)) {
     await expect(page.locator('.site-header')).toHaveCSS('opacity', '0');
