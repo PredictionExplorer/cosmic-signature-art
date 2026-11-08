@@ -212,6 +212,8 @@ It is the only thumbnail wall on the web whose thumbnails are physics rather tha
 
 ### 5.8 The Overture: the art condenses out of its physics *(built)*
 
+*Succeeded on the home by First Light on 8 November 2026 ([first-light.md](first-light.md) §13): the gate, the phases and the crossing to the day's Ink remain; the performance is First Light's.*
+
 The home page on a first visit:
 1. **0 s.** Black, and the day's work's three bodies begin their orbit, live and verified.
 2. **About 1 s.** The trails start to draw.

@@ -177,6 +177,8 @@ Each PR passes the seven-project Playwright matrix, axe, the 12 px floor, the mo
 - The caption states this browser's counts and the studio's search, which cannot run here: up to two million steps a beginning, 200,000,000,000 in all. It also says whether the chosen masses are the published ones, to the last bit.
 - The derivation takes 0.4 s in WebKit and 0.6 s in Chromium.
 
+*Both versions below were succeeded on the home by First Light on 8 November 2026 ([first-light.md](first-light.md) §13). Its gate, phases, crossing and input rules are kept; the black and the drawing are not.*
+
 **The Overture**, version 1.
 - **The gate is the first paint.** On a first visit to the home the inline room script marks `<html data-overture="pending">`. It requires that nothing is asked of the plate in the URL, that motion is welcome, and that this browser's local storage holds no earlier Overture. The page then paints black, with the head and the plate waiting beneath. Should the Overture never come, the black lifts itself after `--t-overture-wait`. The performance is its own chunk, so a returning visitor never downloads it.
 - **One clock.** Over the black, the day's work's bodies replay its recorded window from the verified first step, with the Orrery's `WindowPerformance`. They follow the Light film's own map from step to time, compressed to `--t-overture` (6.5 s). Beside them the Light still condenses in its arrival order, from just before its first mark to just past its last. A minimal WebGL front with the crossing's own edge draws it; without WebGL the still comes up whole, on the same clock.
