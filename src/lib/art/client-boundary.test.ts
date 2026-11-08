@@ -15,6 +15,7 @@ const SERVER_ONLY_MODULES = [
   'collection-index',
   'collection-previews',
   'derivatives',
+  'ink-clocks',
   'media',
   'orbit-frames',
   'orbit-hollows',

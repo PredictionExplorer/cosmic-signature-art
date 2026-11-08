@@ -145,7 +145,10 @@ test('Ink and Light preserve token identity and genuine media; motion is control
     await expect(page.locator(`${current} [data-film-state]`)).toHaveText(/excerpt 00:06–00:14/i);
     await expect(page.locator(`${current} video[data-relay]`)).toHaveCount(0);
   } else {
-    await expect(page.locator('.time-line')).toBeVisible();
+    // The transport: the Ink film's score on its verified clock, once the orbit is measured.
+    await expect(page.locator(`${current} [data-film-score="ink"]`)).toBeVisible({
+      timeout: 30_000,
+    });
     // The complete film is fetched behind the clip and takes over at the same frame.
     await expect(page.locator(`${current} .art-media`)).toHaveAttribute('data-handover', 'film', {
       timeout: 30_000,
