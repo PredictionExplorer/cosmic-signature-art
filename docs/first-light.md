@@ -254,13 +254,13 @@ First Light is the work's own three-dimensional event, not a room around it.
 
 ## 8. Phases
 
-| Phase                        | What ships                                                                                                                                                                                                            | Size            |
-| :--------------------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :-------------- |
-| **F0. Proof**                | First Light for one work (№ 031) on a branch: the engine, the camera, the landing on the still, on a desk and a phone. The owner judges the gasp before anything else is built. _Built 7 November 2026 (§12)._        | 1–2 weeks       |
-| **F1. First Light**          | The entry for every work with a frame; HDR canvas where available; the phone's full-bleed path; _Watch it form_; reduced-motion and returning-visitor states; performance budgets. Replaces the Overture's version 2. | 3–4 weeks       |
-| **F2. The work as a stage**  | The show-then-record work page; the orbit in the hand; the Turn as a change of material.                                                                                                                              | 3–4 weeks       |
-| **F3. Wonder**               | One part in a trillion; the collection alive (All the light in HDR, the new Orrery, shared transitions).                                                                                                              | 3 weeks         |
-| **F4. True light and sound** | HDR stills and films from the masters; the full-resolution 60 fps HLS ladder; the commissioned score with its threshold. All of these wait on the owner, the artist and the generator team.                           | depends on them |
+| Phase                        | What ships                                                                                                                                                                                                                                           | Size            |
+| :--------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :-------------- |
+| **F0. Proof**                | First Light for one work (№ 031) on a branch: the engine, the camera, the landing on the still, on a desk and a phone. The owner judges the gasp before anything else is built. _Built 7 November 2026 (§12)._                                       | 1–2 weeks       |
+| **F1. First Light**          | The entry for every work with a frame; HDR canvas where available; the phone's full-bleed path; _Watch it form_; reduced-motion and returning-visitor states; performance budgets. Replaces the Overture's version 2. _Built 8 November 2026 (§13)._ | 3–4 weeks       |
+| **F2. The work as a stage**  | The show-then-record work page; the orbit in the hand; the Turn as a change of material.                                                                                                                                                             | 3–4 weeks       |
+| **F3. Wonder**               | One part in a trillion; the collection alive (All the light in HDR, the new Orrery, shared transitions).                                                                                                                                             | 3 weeks         |
+| **F4. True light and sound** | HDR stills and films from the masters; the full-resolution 60 fps HLS ladder; the commissioned score with its threshold. All of these wait on the owner, the artist and the generator team.                                                          | depends on them |
 
 Quick wins that need no new engine, in the meantime:
 
@@ -340,6 +340,55 @@ _7 November 2026, on the branch `claude/first-light-plan`._
   - **The closest approach.** It flares, but time does not yet slow around it.
   - **Testing.** Firefox runs on CI only, and nothing has been tried on a real iPhone.
   - **The home** still opens with the Overture. First Light replaces it only on the owner's word (§11, decision 2).
+
+## 13. F1, as built
+
+_8 November 2026, on the same branch (draft PR #23)._
+
+**First Light is the home's front door.**
+
+- **The gate.** A first visit to the home (`src/lib/room.ts`) marks `<html data-overture="pending">`, as the Overture's gate did. It no longer paints black:
+  - the day's plate stands alone from the first frame, on its own ground, and is the page's Largest Contentful Paint;
+  - the running head and the strip are held back, and arrive anyway after `--t-overture-wait` should the light never come.
+- **The performance** (`src/components/first-light-overture.tsx`, loaded only on a first visit):
+  1. Once the engine is ready, the light takes the plate's place over the whole page. On an Ink day the paper gives way to the night as the light rises.
+  2. The picture opens into depth, runs back into three stars, dances (slowed about its closest approach) and folds back onto the Light still where the plate lies.
+  3. It gives the plate back.
+  4. On an Ink day the plate then crosses to Ink in the order the ink came to rest, by the Overture's own crossing, and the head arrives last.
+- **What the Overture taught, kept:**
+  - any input ends it at once, on the page as it would have opened, and presses nothing beneath;
+  - Tab moves to a visible **Skip**;
+  - a hidden tab, a new width, and Pause or reduced motion asked for mid-way all end it;
+  - it plays once per browser, under a new key, so a visitor who saw the Overture sees First Light once;
+  - it never waits more than `--t-overture-wait` for its engine and its window.
+- **Retired:** the Overture's black, its 2D drawing and its condensation (`overture-performance.tsx`, `overture-condensation.ts`, `src/lib/overture.ts`), and their tokens.
+
+**The engine and the show.**
+
+- **One show for both stages.** `src/components/first-light-show.ts` holds what the proof page and the home share: sampling, colours, the camera's moves and the frame loop.
+- **The camera** lands on the still wherever the page has put it (`containedIn`, `Lens.offset`). The proof page's still is centred; the home's stands at the top.
+- **Slow motion.** About the closest approach the window passes at a quarter of its pace (`slowedAround`). The dance's time is stretched to 6 s so the rest keeps its tempo.
+- **Pace.** On a device whose frames come slowly, the drawing buffer gives way, from twice the CSS pixels down to the CSS pixels, rather than the motion stuttering (`src/lib/first-light/quality.ts`).
+- **Save-Data.** A visitor saving data is not sent the performance unasked: not on the home, and not on the proof page.
+- **Engines behind one interface.** `Engine` (`first-light-engine.ts`) is created by `createEngine` (`first-light-engines.ts`), so WebGPU can draw where the screen shows light brighter than its white, with WebGL 2 as the fallback.
+
+**What was checked.**
+
+- Unit tests for the camera's placement, the slowed clock, the pace, the gate (Save-Data included) and the home's performance:
+  - the phases;
+  - landing on the plate's own box;
+  - Tab, a key, a press, Skip, Pause and a hidden tab;
+  - no plate, no engine, a page already moved;
+  - a window that never comes.
+- `tests/e2e/first-light-home.spec.ts` replaces the Overture's spec, and runs against a production build:
+  - a first visit opens on the plate, performs, and lands on the day's Ink by the crossing;
+  - the landing lies on the plate's own still;
+  - input ends it and presses nothing beneath;
+  - reduced motion opens on the plate.
+
+  In Chromium and WebKit, on desks, phones and with reduced motion, it passed with the proof's spec: 30 passed, 12 skipped by design.
+
+- The whole unit suite: 1,561 passed.
 
 ## Sources
 
