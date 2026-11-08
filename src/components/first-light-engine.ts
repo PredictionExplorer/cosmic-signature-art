@@ -99,7 +99,11 @@ void main() {
   vec2 uv = (rest.xy + 0.5 * uPlate) / uPlate;
   vec3 still = pow(textureLod(uStill, uv, uColourLod).rgb, vec3(2.2));
   float strongest = max(max(still.r, still.g), still.b);
-  vColour = strongest > 0.004 ? still / strongest : vec3(1.0, 0.93, 0.86);
+  vec3 hue = strongest > 0.004 ? still / strongest : vec3(1.0, 0.93, 0.86);
+  // Reading the still at a smaller size blends a trail's hue with its neighbours'; a little of
+  // the chroma that blending takes is given back, about the hue's own luminance.
+  float luminance = dot(hue, vec3(0.2126, 0.7152, 0.0722));
+  vColour = max(mix(vec3(luminance), hue, 1.25), vec3(0.0));
   float behind = max(uHead - at, 0.0);
   // Light farther from the eye is dimmer, nearer brighter: depth read as light falls off.
   // Flat, every point is at the centre plane's distance and nothing changes.
@@ -357,14 +361,14 @@ export class LightEngine implements Engine {
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
     this.still = texture;
-    // The hue is read from the still at about 320 pixels across: smoothed, never a speck.
+    // The hue is read from the still at about 520 pixels across: smoothed, never a speck.
     const width =
       'naturalWidth' in still && still.naturalWidth
         ? still.naturalWidth
         : 'width' in still
           ? Number(still.width)
           : 640;
-    this.stillLod = Math.max(0, Math.log2(width / 320));
+    this.stillLod = Math.max(0, Math.log2(width / 520));
   }
 
   private target(
