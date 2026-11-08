@@ -16,7 +16,16 @@ import { PreviewImage } from './preview-image';
  * Screen 3 of the home, the one screen with no work: the venue's name set in small caps,
  * its subtitle, the counts read from the index, and the statement's one line with its byline.
  */
-export function HomeStatement({ locale, t }: { locale: Locale; t: Messages }) {
+export function HomeStatement({
+  locale,
+  t,
+  firstLight,
+}: {
+  locale: Locale;
+  t: Messages;
+  /** The day's work's First Light, to watch it form again (docs/first-light.md §13). */
+  firstLight?: number;
+}) {
   const summary = cycles();
   const first = summary[0];
   const last = summary.at(-1);
@@ -43,9 +52,16 @@ export function HomeStatement({ locale, t }: { locale: Locale; t: Messages }) {
         <p className="counts">{counts.map(bindFigures).join(SEPARATOR)}</p>
         <p className={`reading ${styles.line}`}>{t.statementLine}</p>
         <p className={styles.byline}>{t.statementSigned}</p>
-        <Link className="text-link" href={localizedPath(locale, '/collection')}>
-          {t.collection} →
-        </Link>
+        <p className={styles.statementLinks}>
+          <Link className="text-link" href={localizedPath(locale, '/collection')}>
+            {t.collection} →
+          </Link>
+          {firstLight === undefined ? null : (
+            <Link className="text-link" href={localizedPath(locale, `/first-light/${firstLight}`)}>
+              {t.firstLightWatch} →
+            </Link>
+          )}
+        </p>
       </div>
     </section>
   );

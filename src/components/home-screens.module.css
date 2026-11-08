@@ -210,3 +210,10 @@
     gap: 18px;
   }
 }
+
+/* The statement's way on: the collection, and the day's work forming again. */
+.statementLinks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 32px;
+}

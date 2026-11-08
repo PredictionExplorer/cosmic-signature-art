@@ -12,5 +12,9 @@ export const MOTION_KEY = 'cosmic-art-motion-v1';
 /** sessionStorage: the home's arrival has resolved this visit, so it opens on the still. */
 export const HOME_RESOLVED_KEY = 'cosmic-art-home-film-v1';
 
-/** localStorage: this browser has seen the Overture, which plays on a first visit only. */
-export const OVERTURE_KEY = 'cosmic-art-overture-v1';
+/**
+ * localStorage: this browser has seen the home's one timed event, which plays on a first visit
+ * only. First Light succeeds the Overture under a new key, so a visitor who saw the Overture is
+ * shown First Light once (docs/first-light.md §4).
+ */
+export const OVERTURE_KEY = 'cosmic-art-first-light-v1';
