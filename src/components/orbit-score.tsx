@@ -51,6 +51,7 @@ import { OrbitSculpture, type Sculpture } from './orbit-sculpture';
 import { OrbitSlider } from './orbit-timeline';
 import { Scientific, TWIN_TONE, performTwin, type TwinPair } from './orbit-twin';
 import { progressText, seedShort, twinWorker, verdict } from './orbit-proof';
+import recordStyles from './artwork-record.module.css';
 import styles from './orbit-score.module.css';
 
 /** The plate's still is laid out at the figure's width: the full width on a phone. */
@@ -765,242 +766,267 @@ export function OrbitScore({
   const clockStep = stepsDrawnAt(clockState.seconds, steps);
 
   return (
-    <section
-      ref={section}
-      id="orbit"
-      tabIndex={-1}
-      className={styles.orbit}
-      aria-labelledby="orbit-title"
-      data-phase={state.phase}
-      data-exact={checked ? String(differing.length === 0) : undefined}
-      data-fate={fate.phase === 'derived' ? fate.fate.outcome : undefined}
-      data-beyond={beyond ? (rested ? 'rested' : 'running') : undefined}
-      data-twin={
-        twin
-          ? twin.phase === 'ready'
-            ? twinRested
-              ? 'rested'
-              : 'running'
-            : twin.phase
-          : undefined
-      }
-      data-drawing={plateStill ? 'plate' : 'plane'}
-      data-material={plateStill ? (material ?? undefined) : undefined}
-    >
-      <header className={styles.head}>
-        <h2 id="orbit-title" className={styles.title}>
-          {t.orbitTitle}
-        </h2>
-        <p className={styles.line}>
-          {twin
-            ? fill(t.oneInATrillionNote, { body: 1 })
-            : beyond
-              ? t.afterTheFrameNote
-              : t.orbitLine}
-        </p>
-      </header>
-      <figure className={styles.figure}>
-        <div
-          ref={stage}
-          className={styles.stage}
-          data-drawing={plateStill ? 'plate' : 'plane'}
-          data-material={plateStill ? (material ?? undefined) : undefined}
-          style={
-            plateStill && plate
-              ? ({
-                  '--plate-aspect': `${plate.frame.width} / ${plate.frame.height}`,
-                  '--plate-ratio': plate.frame.width / plate.frame.height,
-                  '--plate-ground': plateStill.tone,
-                } as CSSProperties)
-              : undefined
-          }
-        >
-          {/* The work's still, untouched: the drawing lies over it and never alters a pixel. It is
+    <>
+      {/* Act one, the show (docs/first-light.md §17): the orbit performed and held, on night. */}
+      <section
+        ref={section}
+        id="orbit"
+        tabIndex={-1}
+        className={styles.orbit}
+        style={
+          plateStill && plate
+            ? ({ '--plate-ratio': plate.frame.width / plate.frame.height } as CSSProperties)
+            : undefined
+        }
+        aria-labelledby="orbit-title"
+        data-phase={state.phase}
+        data-exact={checked ? String(differing.length === 0) : undefined}
+        data-fate={fate.phase === 'derived' ? fate.fate.outcome : undefined}
+        data-beyond={beyond ? (rested ? 'rested' : 'running') : undefined}
+        data-twin={
+          twin
+            ? twin.phase === 'ready'
+              ? twinRested
+                ? 'rested'
+                : 'running'
+              : twin.phase
+            : undefined
+        }
+        data-drawing={plateStill ? 'plate' : 'plane'}
+        data-material={plateStill ? (material ?? undefined) : undefined}
+      >
+        <header className={styles.head}>
+          <h2 id="orbit-title" className={styles.title}>
+            {t.orbitTitle}
+          </h2>
+          <p className={styles.line}>
+            {twin
+              ? fill(t.oneInATrillionNote, { body: 1 })
+              : beyond
+                ? t.afterTheFrameNote
+                : t.orbitLine}
+          </p>
+        </header>
+        <figure className={styles.figure}>
+          <div
+            ref={stage}
+            className={styles.stage}
+            data-drawing={plateStill ? 'plate' : 'plane'}
+            data-material={plateStill ? (material ?? undefined) : undefined}
+            style={
+              plateStill && plate
+                ? ({
+                    '--plate-aspect': `${plate.frame.width} / ${plate.frame.height}`,
+                    '--plate-ratio': plate.frame.width / plate.frame.height,
+                    '--plate-ground': plateStill.tone,
+                  } as CSSProperties)
+                : undefined
+            }
+          >
+            {/* The work's still, untouched: the drawing lies over it and never alters a pixel. It is
               fetched once the section is a screen away, as its derivation begins, rather than at
               each browser's own lazy margin, which Firefox keeps close to the viewport. */}
-          {plateStill ? (
-            <img
-              key={material}
-              className={styles.still}
-              src={plateStill.src}
-              srcSet={plateStill.srcSet}
-              sizes={plateStill.srcSet ? STILL_SIZES : undefined}
-              width={plateStill.width}
-              height={plateStill.height}
-              alt=""
-              decoding="async"
-              loading={near ? 'eager' : 'lazy'}
+            {plateStill ? (
+              <img
+                key={material}
+                className={styles.still}
+                src={plateStill.src}
+                srcSet={plateStill.srcSet}
+                sizes={plateStill.srcSet ? STILL_SIZES : undefined}
+                width={plateStill.width}
+                height={plateStill.height}
+                alt=""
+                decoding="async"
+                loading={near ? 'eager' : 'lazy'}
+              />
+            ) : null}
+            {/* The orbit in depth: shown only as the hand turns it, beneath the drawing it replaces. */}
+            {plateStill && space && material && !beyond && !twin ? (
+              <OrbitSculpture
+                key={`depth-${material}`}
+                handle={sculpture}
+                stage={stage}
+                space={space}
+                material={material}
+                tone={plateStill.tone}
+                colours={plateStill.colours}
+                hues={orbit.bodyHues}
+                closestStep={orbit.published.closestApproach.step}
+                still={still}
+                label={t.orbitStageLabel}
+                onReady={setTurnable}
+                onTurned={setTurned}
+                onPlayPause={playPause}
+              />
+            ) : null}
+            <canvas ref={trails} className={styles.layer} data-layer="trails" aria-hidden="true" />
+            <canvas
+              ref={continued}
+              className={styles.layer}
+              data-layer="continued"
+              aria-hidden="true"
             />
-          ) : null}
-          {/* The orbit in depth: shown only as the hand turns it, beneath the drawing it replaces. */}
-          {plateStill && space && material && !beyond && !twin ? (
-            <OrbitSculpture
-              key={`depth-${material}`}
-              handle={sculpture}
-              stage={stage}
-              space={space}
-              material={material}
-              tone={plateStill.tone}
-              colours={plateStill.colours}
-              hues={orbit.bodyHues}
-              closestStep={orbit.published.closestApproach.step}
-              still={still}
-              label={t.orbitStageLabel}
-              onReady={setTurnable}
-              onTurned={setTurned}
-              onPlayPause={playPause}
-            />
-          ) : null}
-          <canvas ref={trails} className={styles.layer} data-layer="trails" aria-hidden="true" />
-          <canvas
-            ref={continued}
-            className={styles.layer}
-            data-layer="continued"
-            aria-hidden="true"
-          />
-          <canvas ref={marks} className={styles.layer} data-layer="marks" aria-hidden="true" />
-        </div>
-        <figcaption className={styles.caption}>
-          {description}
-          {turnable && !beyond && !twin ? (
-            <span className={styles.hint}>
-              <span className={styles.hintPointer}>{t.orbitTurnHint}</span>
-              <span className={styles.hintTouch}>{t.orbitTurnHintTouch}</span>
-            </span>
-          ) : null}
-        </figcaption>
-      </figure>
-      <div className={styles.score}>
-        <div className={styles.strip}>
-          <canvas ref={events} className={styles.events} aria-hidden="true" />
-          {derived && !beyond && !twin ? (
-            <OrbitSlider
-              slider={slider}
-              frames={lightFilmFrames(steps)}
-              label={t.orbitTimeLabel}
-              valueText={playingLine(clockStep, clockState.seconds)}
-              disabled={asked}
-              onScrub={onScrub}
-            />
-          ) : null}
-        </div>
-        <div className={styles.readoutRow}>
-          <p className={styles.readout}>{line}</p>
-          <div className={styles.words}>
+            <canvas ref={marks} className={styles.layer} data-layer="marks" aria-hidden="true" />
+          </div>
+          <figcaption className={styles.caption}>
+            {description}
+            {turnable && !beyond && !twin ? (
+              <span className={styles.hint}>
+                <span className={styles.hintPointer}>{t.orbitTurnHint}</span>
+                <span className={styles.hintTouch}>{t.orbitTurnHintTouch}</span>
+              </span>
+            ) : null}
+          </figcaption>
+        </figure>
+        <div className={styles.score}>
+          <div className={styles.strip}>
+            <canvas ref={events} className={styles.events} aria-hidden="true" />
             {derived && !beyond && !twin ? (
-              <>
-                {turned ? (
-                  <button
-                    type="button"
-                    className={styles.again}
-                    onClick={() => sculpture.current?.back()}
-                  >
-                    {t.orbitGeneratorView}
-                  </button>
-                ) : null}
-                <button type="button" className={styles.again} onClick={playPause}>
-                  {clockWord}
-                </button>
-                <button type="button" className={styles.again} onClick={toClosestApproach}>
-                  {t.toClosestApproach}
-                </button>
-                {derivedFate && finished ? (
-                  <button
-                    type="button"
-                    className={styles.again}
-                    aria-pressed={false}
-                    onClick={() => goBeyond('end')}
-                  >
-                    {t.afterTheFrame}
-                  </button>
-                ) : null}
-                {derivedFate && finished && placed ? (
-                  <button
-                    type="button"
-                    className={styles.again}
-                    aria-pressed={false}
-                    onClick={goTwin}
-                  >
-                    {t.oneInATrillion}
-                  </button>
-                ) : null}
-              </>
-            ) : null}
-            {derived && twin ? (
-              <>
-                {twinRested && !still ? (
-                  <button type="button" className={styles.again} onClick={goTwin}>
-                    {t.again}
-                  </button>
-                ) : null}
-                <button
-                  type="button"
-                  className={styles.again}
-                  aria-pressed={true}
-                  onClick={leaveTwin}
-                >
-                  {t.oneInATrillion}
-                </button>
-                {derivedFate ? (
-                  <button
-                    type="button"
-                    className={styles.again}
-                    aria-pressed={false}
-                    onClick={() => goBeyond('end')}
-                  >
-                    {t.afterTheFrame}
-                  </button>
-                ) : null}
-              </>
-            ) : null}
-            {derived && beyond ? (
-              <>
-                {canApproach ? (
-                  <button
-                    type="button"
-                    className={styles.again}
-                    onClick={() => goBeyond('approach')}
-                  >
-                    {t.toTheEjection}
-                  </button>
-                ) : null}
-                {canAgain ? (
-                  <button type="button" className={styles.again} onClick={again}>
-                    {t.again}
-                  </button>
-                ) : null}
-                {derivedFate ? (
-                  <button
-                    type="button"
-                    className={styles.again}
-                    aria-pressed={!!beyond}
-                    onClick={() => (beyond ? leaveBeyond() : goBeyond('end'))}
-                  >
-                    {t.afterTheFrame}
-                  </button>
-                ) : null}
-                {placed ? (
-                  <button
-                    type="button"
-                    className={styles.again}
-                    aria-pressed={false}
-                    onClick={goTwin}
-                  >
-                    {t.oneInATrillion}
-                  </button>
-                ) : null}
-              </>
+              <OrbitSlider
+                slider={slider}
+                frames={lightFilmFrames(steps)}
+                label={t.orbitTimeLabel}
+                valueText={playingLine(clockStep, clockState.seconds)}
+                disabled={asked}
+                onScrub={onScrub}
+              />
             ) : null}
           </div>
+          <div className={styles.readoutRow}>
+            <p className={styles.readout}>{line}</p>
+            <div className={styles.words}>
+              {derived && !beyond && !twin ? (
+                <>
+                  {turned ? (
+                    <button
+                      type="button"
+                      className={styles.again}
+                      onClick={() => sculpture.current?.back()}
+                    >
+                      {t.orbitGeneratorView}
+                    </button>
+                  ) : null}
+                  <button type="button" className={styles.again} onClick={playPause}>
+                    {clockWord}
+                  </button>
+                  <button type="button" className={styles.again} onClick={toClosestApproach}>
+                    {t.toClosestApproach}
+                  </button>
+                  {derivedFate && finished ? (
+                    <button
+                      type="button"
+                      className={styles.again}
+                      aria-pressed={false}
+                      onClick={() => goBeyond('end')}
+                    >
+                      {t.afterTheFrame}
+                    </button>
+                  ) : null}
+                  {derivedFate && finished && placed ? (
+                    <button
+                      type="button"
+                      className={styles.again}
+                      aria-pressed={false}
+                      onClick={goTwin}
+                    >
+                      {t.oneInATrillion}
+                    </button>
+                  ) : null}
+                </>
+              ) : null}
+              {derived && twin ? (
+                <>
+                  {twinRested && !still ? (
+                    <button type="button" className={styles.again} onClick={goTwin}>
+                      {t.again}
+                    </button>
+                  ) : null}
+                  <button
+                    type="button"
+                    className={styles.again}
+                    aria-pressed={true}
+                    onClick={leaveTwin}
+                  >
+                    {t.oneInATrillion}
+                  </button>
+                  {derivedFate ? (
+                    <button
+                      type="button"
+                      className={styles.again}
+                      aria-pressed={false}
+                      onClick={() => goBeyond('end')}
+                    >
+                      {t.afterTheFrame}
+                    </button>
+                  ) : null}
+                </>
+              ) : null}
+              {derived && beyond ? (
+                <>
+                  {canApproach ? (
+                    <button
+                      type="button"
+                      className={styles.again}
+                      onClick={() => goBeyond('approach')}
+                    >
+                      {t.toTheEjection}
+                    </button>
+                  ) : null}
+                  {canAgain ? (
+                    <button type="button" className={styles.again} onClick={again}>
+                      {t.again}
+                    </button>
+                  ) : null}
+                  {derivedFate ? (
+                    <button
+                      type="button"
+                      className={styles.again}
+                      aria-pressed={!!beyond}
+                      onClick={() => (beyond ? leaveBeyond() : goBeyond('end'))}
+                    >
+                      {t.afterTheFrame}
+                    </button>
+                  ) : null}
+                  {placed ? (
+                    <button
+                      type="button"
+                      className={styles.again}
+                      aria-pressed={false}
+                      onClick={goTwin}
+                    >
+                      {t.oneInATrillion}
+                    </button>
+                  ) : null}
+                </>
+              ) : null}
+            </div>
+          </div>
         </div>
-      </div>
-      <OrbitRecord
-        orbit={orbit}
-        t={t}
-        locale={locale}
-        comparisons={comparisons}
-        summary={summary}
-      />
-    </section>
+      </section>
+      {/* Act two, the record: the published record, checked here, opens it on paper. */}
+      <section
+        id="proof"
+        className={styles.proofAct}
+        aria-labelledby="orbit-proof-title"
+        data-exact={checked ? String(differing.length === 0) : undefined}
+      >
+        <div className={styles.proofBody}>
+          <h2
+            id="orbit-proof-title"
+            className={`${recordStyles.sectionTitle} ${styles.proofTitle}`}
+          >
+            {t.orbitTableCaption}
+          </h2>
+          <OrbitRecord
+            orbit={orbit}
+            t={t}
+            locale={locale}
+            comparisons={comparisons}
+            summary={summary}
+            labelledBy="orbit-proof-title"
+          />
+        </div>
+      </section>
+    </>
   );
 }

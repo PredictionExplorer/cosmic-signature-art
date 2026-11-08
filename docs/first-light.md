@@ -488,6 +488,22 @@ _8 November 2026, on the branch `claude/first-light-shared-link`: the first part
 - **How it lands.** The work's plate stands alone from the first paint, and the light lands on it. On an Ink day the plate crosses back to Ink in the order the ink came to rest, as the home's does. The running head and the strip arrive last.
 - **Tested.** The room's first paint (a work the visit opens on; a later page; a request; a browser that has seen it), and `tests/e2e/first-light-shared.spec.ts` in every project.
 
+## 17. The work page in two acts, as built
+
+_8 November 2026, on the branch `claude/work-two-acts`, on the owner's "Yes, build it" (§11, decision 5)._
+
+- **Act one, the show.**
+  - The plate, the Wing, then the orbit, performed and held in the hand, on night.
+  - The orbit's stage now stands as large as the screen lets the plate stand, centred, with nothing beside it: 1,083 × 700 px on a 1440 × 900 desk, where it was about 860 px wide beside the table.
+  - On a phone it runs the full width, as before.
+- **Act two, the record.** It opens on paper with _The published record, checked here_, a heading in the record's own italic, and the table of exact values set in the entry's measure. The derivation, the entry, the history and the files follow, as one page.
+- **How it is built.**
+  - The orbit section renders two sibling sections: `#orbit`, the show, and `#proof`, the record's opening, a region named by its heading.
+  - The derivation stays in one component.
+  - The table still renders on the server, so the record never shifts.
+  - Both acts carry `data-exact` once every row is checked.
+  - The table is named by the heading (`aria-labelledby`) instead of a caption.
+
 ## Sources
 
 Gathered on 7 November 2026 by a research pass. Awwwards' own pages refuse automated reading, so its jury quotes come from search-indexed copies. F0 re-checks every platform claim on real devices.
