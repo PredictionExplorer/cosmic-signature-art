@@ -3,7 +3,7 @@ import { DEPLOYMENT_URL, SITE_URL, deploymentUrl, metadata } from './site';
 import { roomForPath, roomScript } from './room';
 
 describe('deployment origin', () => {
-  it('prefers the production domain on a Vercel production deployment', () => {
+  it('prefers the configured public site on a Vercel production deployment', () => {
     expect(
       deploymentUrl({
         VERCEL_ENV: 'production',
@@ -11,9 +11,9 @@ describe('deployment origin', () => {
         VERCEL_URL: 'cosmic-signature-art-abc123.vercel.app',
         NEXT_PUBLIC_SITE_URL: 'https://cosmic.art',
       }),
-    ).toBe('https://cosmic-signature-art.vercel.app');
+    ).toBe('https://cosmic.art');
   });
-  it('never trusts a custom production domain to resolve; the branch host stands in', () => {
+  it('uses the public production domain instead of protected branch and deployment hosts', () => {
     expect(
       deploymentUrl({
         VERCEL_ENV: 'production',
@@ -22,14 +22,27 @@ describe('deployment origin', () => {
         VERCEL_URL: 'cosmic-signature-art-abc123.vercel.app',
         NEXT_PUBLIC_SITE_URL: 'https://cosmic.art',
       }),
-    ).toBe('https://cosmic-signature-art-git-main-randomwalknft.vercel.app');
+    ).toBe('https://cosmic.art');
     expect(
       deploymentUrl({
         VERCEL_ENV: 'production',
         VERCEL_PROJECT_PRODUCTION_URL: 'cosmic.art',
         VERCEL_URL: 'cosmic-signature-art-abc123.vercel.app',
       }),
-    ).toBe('https://cosmic-signature-art-abc123.vercel.app');
+    ).toBe('https://cosmic.art');
+    expect(
+      deploymentUrl({
+        VERCEL_ENV: 'production',
+        VERCEL_BRANCH_URL: 'cosmic-signature-art-git-main-randomwalknft.vercel.app',
+        VERCEL_URL: 'cosmic-signature-art-abc123.vercel.app',
+      }),
+    ).toBe('https://cosmic.art');
+    expect(
+      deploymentUrl({
+        VERCEL_ENV: 'production',
+        VERCEL_PROJECT_PRODUCTION_URL: 'cosmic-signature-art.vercel.app',
+      }),
+    ).toBe('https://cosmic-signature-art.vercel.app');
   });
   it('lets an explicit deployment origin win everywhere', () => {
     expect(
