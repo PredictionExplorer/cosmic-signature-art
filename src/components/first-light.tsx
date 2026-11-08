@@ -1,5 +1,5 @@
 'use client';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import type { Size } from '@/lib/first-light/camera';
 import type { PlateSpace } from '@/lib/first-light/samples';
@@ -134,8 +134,9 @@ export function FirstLight({ work, words }: { work: FirstLightWork; words: First
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [work.id]);
 
-  // While it plays, any input ends it at once, on the still; so does leaving the tab.
-  useEffect(() => {
+  // While it plays, any input ends it at once, on the still; so does leaving the tab. The rules
+  // arrive in the same commit as the skip control, as on the home, so nothing slips between them.
+  useLayoutEffect(() => {
     if (state !== 'playing') return;
     const end = (event: Event) => {
       // The skip control's own click ends it too; a modifier alone does not.
