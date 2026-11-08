@@ -1,0 +1,25 @@
+{
+  "firstLoadJsGzipKiB": {
+    "/_not-found": 270,
+    "/[locale]": 345,
+    "/[locale]/art/[id]": 360,
+    "/[locale]/auctions": 300,
+    "/[locale]/auctions/[id]": 450,
+    "/[locale]/collection": 315,
+    "/[locale]/collection/all-the-light": 300,
+    "/[locale]/collection/orrery": 300,
+    "/[locale]/exhibitions": 310,
+    "/[locale]/exhibitions/[slug]": 315,
+    "/[locale]/first-light/[id]": 315,
+    "/[locale]/privacy": 295,
+    "/[locale]/process": 315,
+    "/[locale]/statement": 295,
+    "/[locale]/terms": 295,
+    "/[locale]/verify/orbit": 295,
+    "/[locale]/verify/orbit/[id]": 300
+  },
+  "paint": {
+    "largestContentfulPaintMs": 2500,
+    "cumulativeLayoutShift": 0.1
+  }
+}

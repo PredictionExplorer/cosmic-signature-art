@@ -16,6 +16,8 @@
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
     "test:scripts": "node --experimental-strip-types --test 'scripts/**/*.test.mjs'",
+    "test:budgets:js": "node scripts/check-js-budgets.mjs",
+    "test:budgets:paint": "playwright test tests/e2e/budgets.spec.ts --project=chromium-desktop --project=chromium-mobile --workers=1",
     "art:previews": "node scripts/build-collection-previews.mjs",
     "art:plates": "node scripts/build-plate-records.mjs",
     "art:clips": "node scripts/build-plate-clips.mjs",
