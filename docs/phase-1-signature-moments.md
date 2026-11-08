@@ -45,7 +45,9 @@ keys.
 the settling clips widen it) as the plate with the one line, the same orbit in Light, the
 statement screen, a spread of 031 and 035 in their own tones, and the day's cycle as a row
 of real previews, then the colophon. The Dusk, the home's one automatic event, is built and
-waits behind `NEXT_PUBLIC_HOME_DUSK=1`.
+waits behind `NEXT_PUBLIC_HOME_DUSK=1`. *On 4 November 2026 the owner chose the Overture in
+its place, and Phase D retired the Dusk with its flag
+([third-physics-phase-d.md](third-physics-phase-d.md) §7).*
 
 **The statement** at `/statement`, six paragraphs with the epigraph, and the colophon on
 every page. **The process** is re-chaptered around the day's work: the choice (with its
@@ -73,7 +75,8 @@ read of all 72 published records behind the orderings, the Index and the entries
 
 1. The statement's author and byline: the six paragraphs are a draft signed
    "Cosmic Signature · October 2026" in all eight locales.
-2. The Dusk: built, flagged off; naive-viewer testing decides whether it ships on.
+2. The Dusk: built, flagged off; naive-viewer testing decides whether it ships on. *Settled
+   (owner, 4 November 2026): the Overture replaced it, and the Dusk is retired.*
 3. "A hang: 023, 031, 035" and the editorial trails wait for a named curator (Phase 2).
 
 ## Phase 2
