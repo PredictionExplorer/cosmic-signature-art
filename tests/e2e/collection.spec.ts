@@ -198,6 +198,72 @@ test('the number ordering walks the whole collection to token zero with chapter 
   await expect(page).toHaveURL(/\/collection\?offset=36#works$/);
 });
 
+test('the pairs hang a lead and two rows of two, never three plates to a leaf', async ({
+  page,
+  isMobile,
+}) => {
+  await page.goto('/collection', { waitUntil: 'domcontentloaded' });
+  await pauseAmbientMotion(page);
+  await collectionLoaded(page);
+  const rows = page.locator('#works [data-hanging="both"] [data-shape]');
+  expect(
+    await rows.evaluateAll((nodes) => nodes.map((node) => node.getAttribute('data-shape'))),
+  ).toEqual(['1', '2', '2', '1', '2', '2', '1', '2', '2', '1', '2']);
+  // Every plate of the page is large enough to read as itself: at 1440 the least is 287 px wide,
+  // where three to a leaf had hung 172; on a phone each work is a line of its own.
+  const widths = await page
+    .locator('#works [data-hanging="both"] .work-card .art-media')
+    .evaluateAll((nodes) => nodes.map((node) => node.getBoundingClientRect().width));
+  expect(widths).toHaveLength(36);
+  const width = page.viewportSize()!.width;
+  expect(Math.min(...widths)).toBeGreaterThanOrEqual(isMobile ? 150 : width * 0.19);
+  // A row's two leaves hang the same works, so the pair's halves share their line.
+  const second = rows.nth(1);
+  const [ink, light] = await Promise.all(
+    ['paper', 'night'].map((ground) =>
+      second
+        .locator(`[data-ground="${ground}"] .work-card`)
+        .evaluateAll((cards) => cards.map((card) => Math.round(card.getBoundingClientRect().top))),
+    ),
+  );
+  expect(ink).toEqual(light);
+  expect(ink).toHaveLength(2);
+  if (!isMobile) expect(ink[0]).toBe(ink[1]);
+  await noHorizontalOverflow(page);
+});
+
+test('every cycle opens on its lead, after its strip', async ({ page }) => {
+  await page.goto('/collection?order=cycle', { waitUntil: 'domcontentloaded' });
+  await pauseAmbientMotion(page);
+  await collectionLoaded(page);
+  const opening = await page
+    .locator('#works h2[data-cycle]')
+    .evaluateAll((strips) =>
+      strips.map((strip) => [
+        strip.getAttribute('data-cycle'),
+        strip.nextElementSibling?.getAttribute('data-shape'),
+      ]),
+    );
+  expect(opening).toEqual([
+    ['0', '1'],
+    ['1', '1'],
+    ['2', '1'],
+  ]);
+  // No row hangs a place without a work: each leaf holds as many as its row's shape.
+  const short = await page
+    .locator('#works [data-shape]')
+    .evaluateAll(
+      (rows) =>
+        rows.filter((row) =>
+          [...row.querySelectorAll(':scope > [data-ground]')].some(
+            (leaf) =>
+              leaf.querySelectorAll('.work-card').length !== Number(row.getAttribute('data-shape')),
+          ),
+        ).length,
+    );
+  expect(short).toBe(0);
+});
+
 test('the cycle ordering opens every cycle with its strip; the Light view is a night section', async ({
   page,
   isMobile,

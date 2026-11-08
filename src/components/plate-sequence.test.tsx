@@ -6,6 +6,7 @@ import { getPlateGround } from '@/lib/art/plate-records';
 import type { Artwork } from '@/lib/art/types';
 import { en } from '@/lib/i18n/en';
 import {
+  PAIRED_RHYTHM,
   PlateSequence,
   RHYTHM,
   SHEET_CAPTION_PX,
@@ -138,27 +139,59 @@ describe('the sequence rows', () => {
       ...Array.from({ length: 5 }, (_, index) => clone(46 - index, 1)),
     ];
     const rows = sequenceRows(page, RHYTHM, 'boundaries');
-    // 1 · 2 · 3 fill the first six of cycle 2; the next row of one takes the seventh, then
-    // the rhythm continues into cycle 1 with a strip before it.
+    // 1 · 2 · 3 fill the first six of cycle 2; the next row of one takes the seventh. Cycle 1
+    // opens after its strip on the rhythm's lead, and its last two hang as a pair, not as two
+    // plates in a row meant for three.
     expect(rows.map((row) => [row.shape, row.works.length, row.chapter])).toEqual([
       [1, 1, undefined],
       [2, 2, undefined],
       [3, 3, undefined],
       [1, 1, undefined],
-      [2, 2, 1],
-      [1, 1, undefined],
-      [3, 2, undefined],
+      [1, 1, 1],
+      [2, 2, undefined],
+      [2, 2, undefined],
     ]);
     const straddling = [clone(49, 2), clone(48, 2), clone(47, 1)];
     expect(
-      sequenceRows(straddling, [3], 'all').map((row) => [row.works.length, row.chapter]),
+      sequenceRows(straddling, [3], 'all').map((row) => [row.shape, row.works.length, row.chapter]),
     ).toEqual([
-      [2, 2],
-      [1, 1],
+      [2, 2, 2],
+      [1, 1, 1],
     ]);
     expect(sequenceRows(straddling, [3], 'none').every((row) => row.chapter === undefined)).toBe(
       true,
     );
+  });
+
+  it('hangs pairs as a lead and two rows of two, eighteen to a page, never three to a leaf', () => {
+    const page = Array.from({ length: 18 }, (_, index) => clone(71 - index, 2));
+    const rows = sequenceRows(page, PAIRED_RHYTHM, 'boundaries');
+    expect(rows.map((row) => row.shape)).toEqual([1, 2, 2, 1, 2, 2, 1, 2, 2, 1, 2]);
+    expect(rows.flatMap((row) => row.works)).toEqual(page);
+  });
+
+  it('opens every cycle on its lead after its strip, and never hangs a place without a work', () => {
+    // The cycle ordering: every work, every cycle with its strip (third cycle shorter).
+    const all = [
+      ...Array.from({ length: 24 }, (_, index) => clone(23 - index, 0)),
+      ...Array.from({ length: 24 }, (_, index) => clone(47 - index, 1)),
+      ...Array.from({ length: 7 }, (_, index) => clone(54 - index, 2)),
+    ];
+    for (const rhythm of [PAIRED_RHYTHM, RHYTHM]) {
+      const rows = sequenceRows(all, rhythm, 'all');
+      const opening = rows.filter((row) => row.chapter !== undefined);
+      expect(opening.map((row) => [row.chapter, row.shape])).toEqual([
+        [0, 1],
+        [1, 1],
+        [2, 1],
+      ]);
+      // Every row holds exactly as many works as its shape hangs.
+      for (const row of rows) expect(row.works).toHaveLength(row.shape);
+      expect(rows.flatMap((row) => row.works)).toEqual(all);
+    }
+    // A cycle of 24 across the seam: four of lead-two-two, then a lead, a pair and a last lead.
+    const first = sequenceRows(all, PAIRED_RHYTHM, 'all').filter((row) => row.works[0].cycle === 0);
+    expect(first.map((row) => row.shape)).toEqual([1, 2, 2, 1, 2, 2, 1, 2, 2, 1, 2, 2, 1, 2, 1]);
   });
 });
 
@@ -183,8 +216,11 @@ describe('the plate sequence', () => {
       <PlateSequence works={works} locale="en" t={en} animated expression="ink" />,
     );
     expect(coordinator.use).toHaveBeenLastCalledWith({ enabled: true, ids: [31] });
-    // The third row falls on the rhythm's row of three: stills only, no preview session.
-    expect(container.querySelectorAll('[data-collection-preview]')).toHaveLength(2);
+    // 023 stands alone in its cycle and 035 ends the list, so each hangs as a lead rather than
+    // as one plate in a row meant for more: every card may take the lease, and only 031 has a
+    // clip to take it with.
+    expect(container.querySelectorAll('[data-shape="1"]')).toHaveLength(3);
+    expect(container.querySelectorAll('[data-collection-preview]')).toHaveLength(3);
     expect(card(31)).toHaveAttribute('data-preview-available', 'true');
     expect(card(23)).toHaveAttribute('data-preview-available', 'false');
     expect(card(35)).toHaveAttribute('data-preview-available', 'false');
@@ -375,6 +411,41 @@ describe('the pairs across the seam', () => {
     expect([...leaves].some((leaf) => leaf.textContent?.includes(en.noInkPublished))).toBe(true);
     expect(half(35, 'Light')).toHaveAttribute('href', '/ja/art/35?expression=light');
     expect(screen.queryByRole('link', { name: '№\u00a0035 · Ink' })).toBeNull();
+  });
+
+  it('hangs the pairs in their own rhythm, two to a leaf at most; one ground keeps the full one', () => {
+    const page = Array.from({ length: 18 }, (_, index) => clone(71 - index, 2));
+    const paired = render(<PlateSequence works={page} locale="en" t={en} />);
+    const rows = [...paired.container.querySelectorAll('[data-shape]')];
+    expect(rows.map((row) => row.getAttribute('data-shape'))).toEqual([
+      '1',
+      '2',
+      '2',
+      '1',
+      '2',
+      '2',
+      '1',
+      '2',
+      '2',
+      '1',
+      '2',
+    ]);
+    // Each leaf of a row hangs as many works as the row's shape: Ink on paper, Light on night.
+    for (const row of rows) {
+      const leaves = row.querySelectorAll(':scope > [data-ground]');
+      expect(leaves).toHaveLength(2);
+      for (const leaf of leaves)
+        expect(leaf.querySelectorAll('.work-card')).toHaveLength(
+          Number(row.getAttribute('data-shape')),
+        );
+    }
+    paired.unmount();
+    const alone = render(<PlateSequence works={page} locale="en" t={en} expression="ink" />);
+    expect(
+      [...alone.container.querySelectorAll('[data-shape]')].map((row) =>
+        row.getAttribute('data-shape'),
+      ),
+    ).toEqual(['1', '2', '3', '1', '2', '1', '3', '1', '2', '2']);
   });
 
   it('hangs a pair’s halves on one line: no eye line pulls one above the other', () => {
