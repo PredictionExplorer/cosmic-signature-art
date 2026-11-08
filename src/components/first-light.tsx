@@ -1,31 +1,22 @@
 'use client';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
-import { lensFor, type Size } from '@/lib/first-light/camera';
-import { sculptureRadius, type PlateSpace } from '@/lib/first-light/samples';
-import type { SamplesReply, SamplesRequest } from '@/lib/first-light/samples.worker';
-import { DURATION, momentAt, type Choreography } from '@/lib/first-light/timeline';
-import { lightFilmDuration, stepsDrawnAt } from '@/lib/physics/light-film';
-import type { PlateFrame, WindowStart } from '@/lib/physics/framing';
-import { rungFor, type StillRung } from '@/lib/art/types';
-import { MOTION_KEY } from '@/lib/storage-keys';
-import { LightEngine } from './first-light-engine';
+import type { Size } from '@/lib/first-light/camera';
+import type { PlateSpace } from '@/lib/first-light/samples';
+import { DURATION } from '@/lib/first-light/timeline';
+import type { Engine } from './first-light-engine';
+import { createEngine } from './first-light-engines';
+import { motionWelcome, perform, setTheStage, type ShowWork } from './first-light-show';
 import styles from './first-light.module.css';
 
 /** One work as First Light performs it: its still, and the window and frame that made it. */
-export interface FirstLightWork {
+export interface FirstLightWork extends ShowWork {
   id: number;
   /** "№ 031". */
   label: string;
   /** The still's text alternative. */
   alt: string;
   href: string;
-  /** The Light still's ladder, ascending by width. */
-  rungs: readonly StillRung[];
-  start: WindowStart;
-  frame: PlateFrame;
-  /** The step of the window's closest approach, where the bodies flare. */
-  closestStep: number;
 }
 
 export interface FirstLightWords {
@@ -46,8 +37,6 @@ export interface FirstLightWords {
  */
 type State = 'resting' | 'preparing' | 'playing' | 'ended' | 'invited' | 'unavailable';
 
-/** Every hundredth step: as the orbit section and the Overture draw a window. */
-const STRIDE = 100;
 /** The still holds the stage at least this long before its picture opens. */
 const HOLD_MS = 900;
 /** Past this, the still stays: First Light is never a loading screen. */
@@ -55,71 +44,14 @@ const PATIENCE_MS = 6000;
 /** Input that ends the performance at once, besides the keys. */
 const MOVES = ['pointerdown', 'wheel', 'touchstart'] as const;
 
-/**
- * Whether motion is welcome, read as the motion provider reads it: the session's own choice,
- * else the system's preference. The provider's hook renders the server's quiet values until it
- * hydrates, so the first effect reads the visitor's directly.
- */
-function motionWelcome(): boolean {
-  const reduced = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false;
-  let saved: string | null = null;
-  try {
-    saved = sessionStorage.getItem(MOTION_KEY);
-  } catch {
-    /* Storage is optional. */
-  }
-  const paused = saved === 'paused' ? true : saved === 'playing' ? false : reduced;
-  return !paused;
-}
-
-function decoded(src: string): Promise<HTMLImageElement> {
-  const image = new Image();
-  image.decoding = 'async';
-  image.src = src;
-  return image.decode().then(() => image);
-}
-
-function sampled(start: WindowStart, frame: PlateFrame): Promise<PlateSpace> {
-  return new Promise((resolve, reject) => {
-    const worker = new Worker(new URL('../lib/first-light/samples.worker.ts', import.meta.url), {
-      type: 'module',
-    });
-    worker.onmessage = ({ data }: MessageEvent<SamplesReply>) => {
-      worker.terminate();
-      if (data.type === 'done') resolve(data.space);
-      else reject(new Error(data.message));
-    };
-    worker.onerror = (event) => {
-      worker.terminate();
-      reject(new Error(event.message || 'The orbit could not be sampled'));
-    };
-    const request: SamplesRequest = { start, frame, stride: STRIDE };
-    worker.postMessage(request);
-  });
-}
-
-/** The camera's moves for this stage: a phone's portrait stage brings the event nearer. */
-function choreography(work: FirstLightWork, stage: Size): Choreography {
-  const { width: plateWidth, height: plateHeight } = work.frame;
-  const scale = Math.min(stage.width / plateWidth, stage.height / plateHeight);
-  const fill = Math.min(1.6, Math.max(1, (0.92 * stage.height) / (plateHeight * scale)));
-  const steps = work.start.steps;
-  const duration = lightFilmDuration(steps);
-  return {
-    open: { yaw: 0.62, pitch: -0.26, lens: 0.42, zoom: fill, drift: 0, focus: 1 },
-    travel: 0.95,
-    clock: (share) => stepsDrawnAt(share * duration, steps) / (steps - 1),
-    peak: work.closestStep / (steps - 1),
-  };
-}
-
 export function FirstLight({ work, words }: { work: FirstLightWork; words: FirstLightWords }) {
   const stageRef = useRef<HTMLElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const skipRef = useRef<HTMLButtonElement>(null);
-  const engineRef = useRef<LightEngine | null>(null);
+  const engineRef = useRef<Engine | null>(null);
   const spaceRef = useRef<PlateSpace | null>(null);
-  const frameRef = useRef(0);
+  /** Stops the show where it stands. */
+  const stopRef = useRef<() => void>(() => {});
   const focusSkip = useRef(false);
   /** Asked for before the orbit was ready: it plays the moment it is. */
   const wanted = useRef(false);
@@ -131,8 +63,8 @@ export function FirstLight({ work, words }: { work: FirstLightWork; words: First
   }, []);
 
   const finish = useCallback(() => {
-    cancelAnimationFrame(frameRef.current);
-    frameRef.current = 0;
+    stopRef.current();
+    stopRef.current = () => {};
     if (canvasRef.current) canvasRef.current.style.opacity = '0';
     setState((current) => (current === 'playing' ? 'ended' : current));
   }, []);
@@ -145,58 +77,38 @@ export function FirstLight({ work, words }: { work: FirstLightWork; words: First
       setState('unavailable');
       return;
     }
-    const plate = { width: space.width, height: space.height };
-    const radius = sculptureRadius(space);
-    let stage = sizeOf();
-    let moves = choreography(work, stage);
-    engine.resize(stage.width, stage.height, window.devicePixelRatio || 1);
-    const begun = performance.now();
-    const step = (now: number) => {
-      if (engine.lost) return finish();
-      const latest = sizeOf();
-      if (latest.width !== stage.width || latest.height !== stage.height) {
-        stage = latest;
-        moves = choreography(work, stage);
-        engine.resize(stage.width, stage.height, window.devicePixelRatio || 1);
-      }
-      const moment = momentAt(now - begun, moves);
-      engine.draw({
-        lens: lensFor(moment.shot, stage, plate, radius, 0.35, space.centre),
-        drift: moment.shot.drift,
-        drawn: moment.drawn,
-        heads: moment.heads,
-        flare: moment.flare,
-      });
-      canvas.style.opacity = String(1 - moment.still);
-      if (moment.beat === 'done') return finish();
-      frameRef.current = requestAnimationFrame(step);
-    };
+    stopRef.current = perform(engine, space, work, { canvas, stage: sizeOf, onDone: finish });
     setState('playing');
-    frameRef.current = requestAnimationFrame(step);
   }, [finish, sizeOf, work]);
 
   // Prepare once: the orbit off the main thread, the still's colours, the engine. Then, unless
   // motion is unwelcome, open the picture once the still has held the stage a moment.
   useEffect(() => {
     let cancelled = false;
+    let engine: Engine | null = null;
     const painted = performance.now();
     const welcome = motionWelcome();
     const canvas = canvasRef.current;
-    const engine = canvas ? LightEngine.create(canvas) : null;
-    if (!engine) {
-      setState('unavailable');
-      return;
-    }
-    engineRef.current = engine;
-    setState(welcome ? 'preparing' : 'invited');
-    const colours = rungFor([...work.rungs], 640);
     const patience = window.setTimeout(() => {
       if (!cancelled && !spaceRef.current) setState('unavailable');
     }, PATIENCE_MS);
-    Promise.all([sampled(work.start, work.frame), decoded(colours!.src)])
-      .then(([space, still]) => {
-        if (cancelled) return;
-        engine.setScene(space, still);
+    (canvas ? createEngine(canvas) : Promise.resolve(null))
+      .then((made) => {
+        if (cancelled) {
+          made?.dispose();
+          return null;
+        }
+        if (!made) {
+          setState('unavailable');
+          return null;
+        }
+        engine = made;
+        engineRef.current = made;
+        setState(welcome ? 'preparing' : 'invited');
+        return setTheStage(made, work);
+      })
+      .then((space) => {
+        if (cancelled || !space) return;
         spaceRef.current = space;
         window.clearTimeout(patience);
         if (!welcome && !wanted.current) return;
@@ -213,8 +125,8 @@ export function FirstLight({ work, words }: { work: FirstLightWork; words: First
     return () => {
       cancelled = true;
       window.clearTimeout(patience);
-      cancelAnimationFrame(frameRef.current);
-      engine.dispose();
+      stopRef.current();
+      engine?.dispose();
       engineRef.current = null;
       spaceRef.current = null;
     };

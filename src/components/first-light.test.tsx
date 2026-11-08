@@ -79,12 +79,12 @@ describe('First Light', () => {
     vi.useRealTimers();
   });
 
-  it('leaves the still on view where the light cannot be drawn', () => {
+  it('leaves the still on view where the light cannot be drawn', async () => {
     render(<FirstLight work={WORK} words={WORDS} />);
     const still = screen.getByRole('img', { name: '№ 031 · Light' });
     expect(still).toHaveAttribute('fetchpriority', 'high');
     expect(still.getAttribute('srcset')).toContain('/art/stills/31-light-1920.webp 1920w');
-    expect(state()).toBe('unavailable');
+    await vi.waitFor(() => expect(state()).toBe('unavailable'));
     expect(screen.queryByRole('button')).toBeNull();
     expect(screen.getByRole('link', { name: '№ 031' })).toHaveAttribute('href', '/art/31');
   });
@@ -93,7 +93,7 @@ describe('First Light', () => {
     preferReducedMotion(false);
     const engine = engineStandIn();
     render(<FirstLight work={WORK} words={WORDS} />);
-    expect(state()).toBe('preparing');
+    await vi.waitFor(() => expect(state()).toBe('preparing'));
     // The still holds the stage for most of a second before the picture opens.
     await screen.findByRole('button', { name: 'Skip' }, { timeout: 4_000 });
     expect(state()).toBe('playing');
@@ -120,8 +120,8 @@ describe('First Light', () => {
     preferReducedMotion(true);
     engineStandIn();
     render(<FirstLight work={WORK} words={WORDS} />);
-    expect(state()).toBe('invited');
-    fireEvent.click(screen.getByRole('button', { name: 'Watch it form' }));
+    // Asked for, it plays the moment the orbit is ready, or at once if it already is.
+    fireEvent.click(await screen.findByRole('button', { name: 'Watch it form' }));
     await screen.findByRole('button', { name: 'Skip' }, { timeout: 4_000 });
     expect(state()).toBe('playing');
     fireEvent.click(screen.getByRole('button', { name: 'Skip' }));
@@ -136,7 +136,7 @@ describe('First Light', () => {
     sessionStorage.setItem(MOTION_KEY, 'paused');
     engineStandIn();
     render(<FirstLight work={WORK} words={WORDS} />);
-    expect(state()).toBe('invited');
+    await vi.waitFor(() => expect(state()).toBe('invited'));
   });
 
   it('ends the moment the tab is hidden', async () => {

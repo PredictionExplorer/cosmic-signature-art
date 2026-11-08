@@ -1,5 +1,15 @@
 import { describe, expect, it } from 'vitest';
-import { FLAT, between, lensFor, smooth, stillScale, toDevice, toStage, type Shot } from './camera';
+import {
+  FLAT,
+  between,
+  containedIn,
+  lensFor,
+  smooth,
+  stillScale,
+  toDevice,
+  toStage,
+  type Shot,
+} from './camera';
 
 const PLATE = { width: 3456, height: 2234 };
 const DESK = { width: 1440, height: 852 };
@@ -96,6 +106,28 @@ describe('First Light’s camera', () => {
     // The generator's own view ignores the event's middle: its plate stays where the still is.
     const flat = lensFor(FLAT, DESK, PLATE, 0, 0.35, centre);
     expect(toDevice(flat, 0, 0, 0)).toEqual([0, 0, 1]);
+  });
+
+  it('lays the flat view on the still wherever the page has put it', () => {
+    // The home's plate stands at the top of a phone, beneath where the head will come.
+    const box = { x: 0, y: 56, width: 390, height: 520 };
+    const still = containedIn(box, PLATE);
+    expect(still.width).toBeCloseTo(390, 9);
+    expect(still.y).toBeCloseTo(56 + (520 - (390 * PLATE.height) / PLATE.width) / 2, 9);
+    const stage = { width: 390, height: 844 };
+    const flat = lensFor(FLAT, stage, PLATE, 0, 0.35, [0, 0, 0], still);
+    for (const [px, py] of [
+      [0, 0],
+      [PLATE.width, PLATE.height],
+      [2000, 700],
+    ]) {
+      const [x, y] = toStage(flat, stage, px - PLATE.width / 2, py - PLATE.height / 2, 400);
+      expect(x).toBeCloseTo(still.x + (px / PLATE.width) * still.width, 6);
+      expect(y).toBeCloseTo(still.y + (py / PLATE.height) * still.height, 6);
+    }
+    // Once the camera has found the event, the event stands at the stage's centre.
+    const found = lensFor({ ...FLAT, focus: 1 }, stage, PLATE, 0, 0.35, [10, 20, 0], still);
+    expect(toStage(found, stage, 10, 20, 0)).toEqual([195, 422]);
   });
 
   it('zooms about the centre', () => {

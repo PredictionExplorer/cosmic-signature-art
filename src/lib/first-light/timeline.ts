@@ -18,7 +18,7 @@ export const BEATS = {
   lift: 500,
   open: 1700,
   rewind: 1500,
-  dance: 5200,
+  dance: 6000,
   land: 1500,
   settle: 500,
 } as const;
@@ -127,4 +127,39 @@ export function momentAt(ms: number, c: Choreography): Moment {
     };
   }
   return { beat: 'done', shot: FLAT, drawn: 1, heads: 0, still: 1, flare: 0 };
+}
+
+/**
+ * The dance's own clock, slowed about the closest approach: from a share of the dance's time to a
+ * share of the window. Near `peak` the window passes at `rate` of its pace, as a film slows for
+ * the moment that matters; elsewhere a little quicker, so the dance keeps its length. Monotone,
+ * from 0 to 1, and as smooth as the bell it slows by.
+ */
+export function slowedAround(
+  peak: number,
+  width = 0.03,
+  rate = 0.25,
+  samples = 1024,
+): (share: number) => number {
+  // The time each slice of the window takes, at a pace that dips by a bell about the peak.
+  const elapsed = new Float64Array(samples + 1);
+  for (let i = 1; i <= samples; i++) {
+    const at = (i - 0.5) / samples;
+    const pace = 1 - (1 - rate) * Math.exp(-(((at - peak) / width) ** 2));
+    elapsed[i] = elapsed[i - 1] + 1 / pace;
+  }
+  const total = elapsed[samples];
+  return (share) => {
+    const time = Math.min(1, Math.max(0, share)) * total;
+    let low = 1;
+    let high = samples;
+    while (low < high) {
+      const middle = (low + high) >> 1;
+      if (elapsed[middle] < time) low = middle + 1;
+      else high = middle;
+    }
+    const before = elapsed[low - 1];
+    const span = elapsed[low] - before;
+    return (low - 1 + (span > 0 ? (time - before) / span : 0)) / samples;
+  };
 }

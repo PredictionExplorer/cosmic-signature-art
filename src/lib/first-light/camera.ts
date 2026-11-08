@@ -47,6 +47,25 @@ export function stillScale(stage: Size, plate: Size): number {
   return Math.min(stage.width / plate.width, stage.height / plate.height);
 }
 
+/** A box on the stage, in CSS pixels from its top left. */
+export interface Rect extends Size {
+  x: number;
+  y: number;
+}
+
+/** Where a still lies when it is contained in a box (`object-fit: contain`): centred, whole. */
+export function containedIn(box: Rect, plate: Size): Rect {
+  const scale = stillScale(box, plate);
+  const width = plate.width * scale;
+  const height = plate.height * scale;
+  return {
+    x: box.x + (box.width - width) / 2,
+    y: box.y + (box.height - height) / 2,
+    width,
+    height,
+  };
+}
+
 /** A shot resolved for a stage: what the shader needs. */
 export interface Lens {
   /** Row-major: plate space (x across, y down, z away) into the camera's (x right, y up, z out). */
@@ -59,12 +78,21 @@ export interface Lens {
   pixelScale: number;
   /** The plate-space point the camera turns about and centres on the stage. */
   focus: [number, number, number];
+  /**
+   * Where the plate's centre sits on the stage, in device coordinates: the still's own place
+   * when flat, the stage's centre once the camera has found the event.
+   */
+  offset: [number, number];
 }
 
 /**
  * The shot on this stage. The lens is narrowed as far as it must be so that nothing within
  * `radius` of the centre comes nearer than `nearest` of the camera's distance: a point never
  * passes behind the eye or swells without bound.
+ *
+ * Flat, the plate lies on `still`: where the still itself lies on the stage, contained and
+ * centred unless the page has put it elsewhere (the home's plate stands at the top). As the
+ * camera finds the event (`focus`), it carries the plate's centre to the stage's.
  */
 export function lensFor(
   shot: Shot,
@@ -73,8 +101,9 @@ export function lensFor(
   radius = 0,
   nearest = 0.35,
   centre: readonly [number, number, number] = [0, 0, 0],
+  still: Rect = containedIn({ x: 0, y: 0, ...stage }, plate),
 ): Lens {
-  const scale = stillScale(stage, plate) * shot.zoom;
+  const scale = (still.width / plate.width) * shot.zoom;
   const halfWidth = stage.width / 2 / scale;
   const halfHeight = stage.height / 2 / scale;
   // 1 − z / distance ≥ nearest for every z up to the radius.
@@ -99,6 +128,10 @@ export function lensFor(
     inverseDistance: lens / halfHeight,
     pixelScale: scale,
     focus: [centre[0] * shot.focus, centre[1] * shot.focus, centre[2] * shot.focus],
+    offset: [
+      ((still.x + still.width / 2 - stage.width / 2) / (stage.width / 2)) * (1 - shot.focus),
+      (-(still.y + still.height / 2 - stage.height / 2) / (stage.height / 2)) * (1 - shot.focus),
+    ],
   };
 }
 
@@ -110,7 +143,11 @@ export function toDevice(lens: Lens, px: number, py: number, pz: number): [numbe
   const qy = r[3] * x + r[4] * y + r[5] * z;
   const qz = r[6] * x + r[7] * y + r[8] * z;
   const w = 1 - qz * lens.inverseDistance;
-  return [(qx * lens.invHalf[0]) / w, (qy * lens.invHalf[1]) / w, 1 / w];
+  return [
+    (qx * lens.invHalf[0]) / w + lens.offset[0],
+    (qy * lens.invHalf[1]) / w + lens.offset[1],
+    1 / w,
+  ];
 }
 
 /** A plate-space point on the stage in CSS pixels from its top left, as the still's pixels lie. */

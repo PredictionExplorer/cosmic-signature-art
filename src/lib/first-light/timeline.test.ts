@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { FLAT } from './camera';
-import { BEATS, DURATION, momentAt, type Choreography } from './timeline';
+import { BEATS, DURATION, momentAt, slowedAround, type Choreography } from './timeline';
 
 const CHOREOGRAPHY: Choreography = {
   open: { yaw: 0.6, pitch: 0.25, lens: 0.42, zoom: 1.4, drift: 0, focus: 1 },
@@ -88,5 +88,34 @@ describe('First Light’s performance', () => {
     expect(wild.drawn).toBe(1);
     const shy = momentAt(BEATS.open + BEATS.rewind + 10, { ...CHOREOGRAPHY, clock: () => -3 });
     expect(shy.drawn).toBe(0);
+  });
+
+  it('slows the window about its closest approach, and keeps the dance’s length', () => {
+    const slowed = slowedAround(0.4);
+    expect(slowed(0)).toBe(0);
+    expect(slowed(1)).toBeCloseTo(1, 12);
+    // Monotone throughout.
+    let last = 0;
+    for (let share = 0.001; share <= 1; share += 0.001) {
+      const at = slowed(share);
+      expect(at).toBeGreaterThanOrEqual(last);
+      last = at;
+    }
+    // The pace about the peak is a quarter of the pace far from it.
+    const pace = (around: number) => {
+      const step = 1e-4;
+      let low = 0;
+      let high = 1;
+      for (let i = 0; i < 60; i++) {
+        const middle = (low + high) / 2;
+        if (slowed(middle) < around) low = middle;
+        else high = middle;
+      }
+      return (slowed(low + step) - slowed(low)) / step;
+    };
+    expect(pace(0.4) / pace(0.8)).toBeCloseTo(0.25, 1);
+    // A peak at either end still reaches both ends.
+    expect(slowedAround(0)(1)).toBeCloseTo(1, 12);
+    expect(slowedAround(1)(0.5)).toBeGreaterThan(0.5);
   });
 });

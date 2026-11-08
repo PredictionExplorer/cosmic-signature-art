@@ -30,6 +30,7 @@ uniform mat3 uRotation;
 uniform vec2 uInvHalf;
 uniform float uInverseDistance;
 uniform vec3 uFocus;
+uniform vec2 uOffset;
 uniform vec2 uViewport;
 uniform mat2 uCopy;
 uniform float uCopyScale;
@@ -60,7 +61,7 @@ vec3 placed(float at, int body, float driftWeight) {
 vec3 seen(vec3 p) {
   vec3 q = uRotation * (p - uFocus);
   float w = 1.0 - q.z * uInverseDistance;
-  return vec3(q.xy * uInvHalf / w * 0.5 * uViewport, 1.0 / w);
+  return vec3((q.xy * uInvHalf / w + uOffset) * 0.5 * uViewport, 1.0 / w);
 }
 `;
 
@@ -205,6 +206,23 @@ export interface Look {
 
 export const LOOK: Look = { intensity: 0.5, width: 1.7, glow: 0.65, exposure: 1.35, bodySize: 10 };
 
+/**
+ * What a show needs of an engine, whichever draws it: WebGL 2 here, or WebGPU where the screen
+ * can show light brighter than its white (first-light-engines.ts).
+ */
+export interface Engine {
+  /** The context is gone: the show gives the still back. */
+  readonly lost: boolean;
+  look: Look;
+  /** The window to draw, and the still whose light colours it. */
+  setScene(space: PlateSpace, still: TexImageSource): void;
+  /** The drawing buffer for the canvas's CSS size, at up to twice the CSS pixels. */
+  resize(width: number, height: number, ratio: number): void;
+  /** One moment of the performance, on the canvas. */
+  draw(exposure: Exposure): void;
+  dispose(): void;
+}
+
 type Program = { program: WebGLProgram; uniform: (name: string) => WebGLUniformLocation | null };
 
 interface Target {
@@ -214,7 +232,7 @@ interface Target {
   height: number;
 }
 
-export class LightEngine {
+export class LightEngine implements Engine {
   readonly canvas: HTMLCanvasElement;
   private readonly gl: WebGL2RenderingContext;
   private readonly floatTargets: boolean;
@@ -407,6 +425,7 @@ export class LightEngine {
     gl.uniform2f(program.uniform('uInvHalf'), lens.invHalf[0], lens.invHalf[1]);
     gl.uniform1f(program.uniform('uInverseDistance'), lens.inverseDistance);
     gl.uniform3f(program.uniform('uFocus'), lens.focus[0], lens.focus[1], lens.focus[2]);
+    gl.uniform2f(program.uniform('uOffset'), lens.offset[0], lens.offset[1]);
     gl.uniform2f(program.uniform('uViewport'), this.canvas.width, this.canvas.height);
     gl.uniform2f(program.uniform('uPlate'), space.width, space.height);
     const m = copy.mirror ? -1 : 1;
