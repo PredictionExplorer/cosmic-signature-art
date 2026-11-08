@@ -1,4 +1,4 @@
-import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { messages } from '@/lib/i18n/messages';
 import { fill } from '@/lib/i18n/format';
@@ -42,6 +42,7 @@ const labels: LightLabels = {
   line: fill(t.allTheLightLine, { count: 9 }),
   note: t.allTheLightNote,
   point: t.allTheLightPoint,
+  hold: t.allTheLightHold,
   through: t.allTheLightThrough,
   none: t.allTheLightNone,
   alone: t.allTheLightAlone,
@@ -171,6 +172,36 @@ async function pickCycle(name: string) {
   fireEvent.click(screen.getByRole('button', { name }));
   await act(async () => {});
 }
+/** A finger on the sky, as a touch screen reports it. */
+const finger = (x: number, y: number, pointerId = 1) => ({
+  pointerId,
+  pointerType: 'touch',
+  clientX: x,
+  clientY: y,
+});
+/** A finger comes down on the sky; the grid it asks for arrives as the test says. */
+async function press(container: HTMLElement, x: number, y: number, pointerId = 1) {
+  await act(async () => {
+    fireEvent.pointerDown(frame(container), finger(x, y, pointerId));
+  });
+}
+/** The finger rests long enough to be held. */
+const rested = () => act(() => vi.advanceTimersByTime(300));
+async function slide(container: HTMLElement, x: number, y: number, pointerId = 1) {
+  await act(async () => {
+    fireEvent.pointerMove(frame(container), finger(x, y, pointerId));
+  });
+}
+async function lift(container: HTMLElement, x: number, y: number, pointerId = 1) {
+  await act(async () => {
+    fireEvent.pointerUp(frame(container), finger(x, y, pointerId));
+  });
+}
+/** The invitation as a finger reads it (a pointer reads the other; the stylesheet shows one). */
+const invites = () => {
+  expect(readout()).toHaveTextContent(t.allTheLightHold);
+  expect(readout()).toHaveTextContent(t.allTheLightPoint);
+};
 
 describe('All the light', () => {
   it('shows the whole sky as a derived view, with its cycles and its index', () => {
@@ -193,7 +224,12 @@ describe('All the light', () => {
     );
     expect(screen.getByRole('heading', { level: 3, name: 'Cycle 0' })).toBeInTheDocument();
     expect(screen.getByRole('list', { name: 'Cycle 1' })).toHaveTextContent('№ 030');
-    expect(readout()).toHaveTextContent(t.allTheLightPoint);
+    // The invitation is written for a pointer and for a finger; the stylesheet shows the one the
+    // screen's own pointer needs.
+    expect(within(readout()).getByText(t.allTheLightPoint).tagName).toBe('SPAN');
+    expect(within(readout()).getByText(t.allTheLightHold).tagName).toBe('SPAN');
+    // The finger's invitation, its longest line, keeps its room while names stand in its place.
+    expect(readout()).toHaveAttribute('data-room', t.allTheLightHold);
     expect(container.querySelector('[data-outside]')).toBeNull();
   });
 
@@ -221,7 +257,7 @@ describe('All the light', () => {
     expect(frame(container)).not.toHaveAttribute('data-naming');
     fireEvent.pointerLeave(frame(container));
     expect(readout()).toHaveTextContent(t.allTheLightPoint);
-    // A finger does not hover: it names by choosing.
+    // A finger does not hover: passing over the sky, not held there, it names nothing.
     fireEvent.pointerMove(frame(container), { clientX: 60, clientY: 30, pointerType: 'touch' });
     settle();
     expect(lit(container)).toEqual([]);
@@ -314,6 +350,162 @@ describe('All the light', () => {
     expect(frame(container)).not.toHaveAttribute('data-alone');
   });
 
+  it('names under a held finger as it moves, and leaves the brightest alone as it lifts', async () => {
+    const { container } = view();
+    await press(container, 60, 30);
+    // Resting, not yet held: nothing is said, and the page may still scroll under the finger.
+    invites();
+    expect(fireEvent.touchMove(frame(container))).toBe(true);
+    rested();
+    // Held: what lies beneath is named and lit at once, as the finger has rested already.
+    expect(readout()).toHaveTextContent(
+      'Through this point · № 030 · № 031 · № 032 · № 004 · № 001',
+    );
+    expect(lit(container)).toEqual([
+      '/light/30.webp',
+      '/light/31.webp',
+      '/light/32.webp',
+      '/light/4.webp',
+      '/light/1.webp',
+    ]);
+    expect(frame(container)).toHaveAttribute('data-naming');
+    // Its moves are the sky's now: the page does not scroll beneath it.
+    expect(fireEvent.touchMove(frame(container))).toBe(false);
+    // Moving, it names at once, and lights once it rests again.
+    await slide(container, 390, 190);
+    expect(readout()).toHaveTextContent(/^Through this point · № 030$/);
+    settle();
+    expect(lit(container)).toEqual(['/light/30.webp']);
+    // Lifting it leaves the brightest beneath it alone, as its own still.
+    await lift(container, 390, 190);
+    expect(screen.getByRole('img', { name: '№ 030 · Light' })).toHaveAttribute(
+      'src',
+      '/light/30.webp',
+    );
+    expect(readout()).toHaveTextContent('№ 030 alone, as its own untouched still');
+    // The lift is not a tap: no click follows it where the browser allows, and one that does
+    // chooses nothing more.
+    expect(fireEvent.touchEnd(frame(container))).toBe(false);
+    await act(async () => {
+      fireEvent.click(frame(container), { clientX: 390, clientY: 190 });
+    });
+    expect(frame(container)).toHaveAttribute('data-alone');
+    // While one stands alone a finger holds nothing; it taps, and the tap gives the sky back.
+    await press(container, 300, 150);
+    rested();
+    expect(readout()).toHaveTextContent('№ 030 alone, as its own untouched still');
+    await lift(container, 300, 150);
+    expect(fireEvent.touchEnd(frame(container))).toBe(true);
+    await act(async () => {
+      fireEvent.click(frame(container), { clientX: 300, clientY: 150 });
+    });
+    expect(frame(container)).not.toHaveAttribute('data-alone');
+    invites();
+  });
+
+  it('chooses at once for a tap, and leaves a finger that moves at once to scroll', async () => {
+    const { container } = view();
+    // A tap is lifted before it rests: the click that follows chooses, as a pointer's does.
+    await press(container, 60, 30);
+    await lift(container, 60, 30);
+    expect(fireEvent.touchEnd(frame(container))).toBe(true);
+    await act(async () => {
+      fireEvent.click(frame(container), { clientX: 60, clientY: 30 });
+    });
+    expect(screen.getByRole('img', { name: '№ 030 · Light' })).toBeInTheDocument();
+    act(() => {
+      fireEvent.keyDown(document, { key: 'Escape' });
+    });
+    // A finger may tremble as it rests and still be held …
+    await press(container, 60, 30);
+    await slide(container, 66, 34);
+    rested();
+    expect(readout()).toHaveTextContent(/^Through this point · № 030/);
+    await act(async () => {
+      fireEvent.pointerCancel(frame(container), finger(66, 34));
+    });
+    invites();
+    // … but one that moves before it rests is scrolling the page: it names and chooses nothing.
+    await press(container, 60, 30);
+    await slide(container, 60, 45);
+    rested();
+    invites();
+    expect(frame(container)).not.toHaveAttribute('data-naming');
+    expect(fireEvent.touchMove(frame(container))).toBe(true);
+    await act(async () => {
+      fireEvent.pointerCancel(frame(container), finger(60, 90));
+    });
+    expect(frame(container)).not.toHaveAttribute('data-alone');
+    invites();
+  });
+
+  it('lets the sky rest for a finger that leaves it, is taken away, or is joined', async () => {
+    const { container } = view();
+    await press(container, 60, 30);
+    rested();
+    expect(frame(container)).toHaveAttribute('data-naming');
+    // Off the sky, the sky rests until the finger comes back to it.
+    await slide(container, 450, 30);
+    invites();
+    expect(frame(container)).not.toHaveAttribute('data-naming');
+    await slide(container, 60, 30);
+    expect(readout()).toHaveTextContent(/^Through this point · № 030/);
+    // Lifted off the sky, it chooses nothing, and the click its lift brings chooses nothing.
+    await slide(container, 450, 30);
+    await lift(container, 450, 30);
+    await act(async () => {
+      fireEvent.click(frame(container), { clientX: 450, clientY: 30 });
+    });
+    expect(frame(container)).not.toHaveAttribute('data-alone');
+    invites();
+    // A long press keeps the finger, opening no menu that would take it away …
+    await press(container, 60, 30);
+    rested();
+    expect(fireEvent.contextMenu(frame(container))).toBe(false);
+    // … and taken by the browser after all, a hold chooses nothing.
+    await act(async () => {
+      fireEvent.pointerCancel(frame(container), finger(60, 30));
+    });
+    invites();
+    expect(lit(container)).toEqual([]);
+    expect(fireEvent.contextMenu(frame(container))).toBe(true);
+    // A second finger makes a pinch, the browser's to zoom: the first names no more, and
+    // neither chooses as it lifts.
+    await press(container, 60, 30);
+    rested();
+    await press(container, 200, 100, 2);
+    invites();
+    expect(fireEvent.touchMove(frame(container))).toBe(true);
+    await lift(container, 60, 30);
+    await lift(container, 200, 100, 2);
+    expect(frame(container)).not.toHaveAttribute('data-alone');
+    // A finger passing over the sky without coming down on it names nothing.
+    await slide(container, 60, 30, 3);
+    settle();
+    expect(lit(container)).toEqual([]);
+  });
+
+  it('names under a finger held before the grid has come once it comes, and chooses then', async () => {
+    decodeAtOnce = false;
+    const first = view();
+    await press(first.container, 60, 30);
+    rested();
+    // Held, with no grid yet: nothing is said about the place, not even "none".
+    invites();
+    await act(async () => decoding.shift()!.resolve());
+    expect(readout()).toHaveTextContent(/^Through this point · № 030/);
+    expect(lit(first.container)).toHaveLength(5);
+    first.unmount();
+    // Lifted before the grid has come, it chooses once the grid comes.
+    const { container } = view();
+    await press(container, 390, 190);
+    rested();
+    await lift(container, 390, 190);
+    expect(screen.queryByRole('img', { name: '№ 030 · Light' })).toBeNull();
+    await act(async () => decoding.shift()!.resolve());
+    expect(screen.getByRole('img', { name: '№ 030 · Light' })).toBeInTheDocument();
+  });
+
   it('dims the cycles still to come in the index, legibly', async () => {
     view();
     await pickCycle('Cycle 0');
@@ -359,6 +551,29 @@ describe('All the light', () => {
     fireEvent.click(nine);
     fireEvent.click(nine);
     expect(screen.queryByRole('img', { name: '№\u00a0006 · Light' })).toBeNull();
+  });
+
+  it('gives the whole sky back in place when a hand presses the way back', () => {
+    const { container } = view();
+    fireEvent.click(numeral(6));
+    const back = () => screen.getByRole('button', { name: t.allTheLightReturn });
+    act(() => back().focus());
+    const focus = vi.spyOn(HTMLElement.prototype, 'focus');
+    // A tap or a click counts one: the focus still returns to the numeral, but the page keeps its
+    // place (on a phone the index lies far below) and the orbit is not named again.
+    fireEvent.click(back(), { detail: 1 });
+    expect(numeral(6)).toHaveFocus();
+    expect(focus).toHaveBeenLastCalledWith({ preventScroll: true });
+    expect(lit(container)).toEqual([]);
+    invites();
+    // From the keyboard the focus is followed there, and names the orbit it lands on.
+    fireEvent.click(numeral(6));
+    act(() => back().focus());
+    fireEvent.click(back());
+    expect(numeral(6)).toHaveFocus();
+    expect(focus).toHaveBeenLastCalledWith({ preventScroll: false });
+    expect(readout()).toHaveTextContent(/^№ 006$/);
+    expect(lit(container)).toEqual(['/light/6.webp']);
   });
 
   it('changes the sky only once the next is decoded, so it never passes through black', async () => {

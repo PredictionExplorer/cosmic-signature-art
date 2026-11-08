@@ -665,6 +665,8 @@ export const en = {
   allTheLightAlt:
     'All the light, {span}: the Light stills of {count} works added together, white where orbits crowd and coloured at their edges. A derived view, not a work.',
   allTheLightPoint: 'Point anywhere to name the orbits that pass through it.',
+  allTheLightHold:
+    'Hold a finger anywhere to name the orbits beneath it; lift it to show the brightest alone.',
   allTheLightThrough: 'Through this point · {works}',
   allTheLightNone: 'No orbit passes here.',
   allTheLightAlone: '{work} alone, as its own untouched still',

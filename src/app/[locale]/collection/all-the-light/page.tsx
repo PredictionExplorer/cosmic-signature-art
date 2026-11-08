@@ -64,6 +64,7 @@ export default async function AllTheLightPage({ params }: { params: Promise<{ lo
           line: fill(t.allTheLightLine, { count: number.format(sky.works.length) }),
           note: t.allTheLightNote,
           point: t.allTheLightPoint,
+          hold: t.allTheLightHold,
           through: t.allTheLightThrough,
           none: t.allTheLightNone,
           alone: t.allTheLightAlone,

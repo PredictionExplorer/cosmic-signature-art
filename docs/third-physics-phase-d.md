@@ -31,7 +31,7 @@ Every route was photographed screen by screen. The share of each screen covered 
 - The Index sheet leaves a band of about 250 px empty and clips its search field's placeholder.
 - The glossary's footnote markers in the entry are targets of 7 × 16 px.
 - All the light hangs its sky 358 px wide. A single tap both names and chooses, so a finger cannot browse the names the way a pointer can.
-- The Orrery's cells, three to a row, are faint on a phone. The Orrery's WebKit freeze is being fixed in its own session, so its phone pass waits for that fix.
+- The Orrery's cells, three to a row, are faint on a phone. The Orrery's WebKit freeze was being fixed in its own session, so its phone pass waited for that fix. The fix has since landed in PR #13 (8063dc5).
 - The auction landing has no work on it.
 
 ## 2. The rule: two equal expressions
@@ -59,10 +59,10 @@ One policy module decides the opening expression, and every surface asks it. Tes
 
 - **The Index sheet** is laid out for its content on a phone: no empty band, and a search field that fits.
 - **Footnote markers** get a 24 × 24 px target (WCAG 2.5.8) without moving the text.
-- **All the light on touch.** A finger held on the sky names the orbits beneath it as it moves, and lifting it chooses. A tap still chooses at once. The sky hangs edge to edge.
+- **All the light on touch.** A finger held on the sky names the orbits beneath it as it moves, and lifting it chooses. A tap still chooses at once. The sky hangs edge to edge. Built (§6).
 - **The auction landing** is left as it is, pending the owner. The vision made the sale's title spread the one screen without a work. Before a contract exists there are no lots, and works that are not for sale on a sale page could mislead. Section 6 asks the owner.
 - **The collection's bar** keeps clear of the home indicator (`env(safe-area-inset-bottom)`).
-- **The Orrery's phone pass** (two to a row, trails legible at the phone's pixel ratio) waits for the freeze fix's PR.
+- **The Orrery's phone pass**: two to a row, trails legible at the phone's pixel ratio. It waited for the freeze fix, which landed with PR #13 (8063dc5) on 6 November 2026. Built (§6).
 
 ## 4. The events
 
@@ -137,9 +137,28 @@ Each PR passes the seven-project Playwright matrix, axe, the 12 px floor, the mo
 - Should the auction landing show work before a contract exists, clearly labelled as not offered?
 - The Overture was approved on 4 November 2026 and is built (§7).
 
-**Still to do on phones.**
-- A finger held on All the light to browse names before choosing.
-- The Orrery's phone pass, after the freeze fix lands.
+**The last two on phones.** *Built 7 November 2026, after the freeze fix in PR #13 (8063dc5).*
+- **All the light on touch.**
+  - **A finger held on the sky names the orbits beneath it as it moves.** It is held once it has rested 300 ms within 10 px of where it came down. What lies beneath it is then named and lit at once, and it names as it moves, lit wherever it rests, as a pointer does.
+  - **Lifting it chooses**: the brightest beneath it stands alone. Lifted off the sky, it chooses nothing.
+  - **A tap still chooses at once.** Lifted before it has rested, its click chooses, as a pointer's does. A slow tap that has become a hold chooses the same orbit as it lifts.
+  - **A finger that moves before it rests is scrolling the page**, and names and chooses nothing. It is the grammar the vision gives the Index of numbers on touch ([world-class-gallery-vision.md](world-class-gallery-vision.md)): hold, then move, to scrub; move at once to scroll.
+  - **While a finger is held the sky keeps it.** The page does not scroll beneath it (the sky's own non-passive `touchmove`; React's are passive). The click its lift would bring is withheld (`touchend`), and the click handler ignores one that comes anyway. A long press opens no menu. A second finger is a pinch, the browser's to zoom by, and the hold lets go.
+  - **The naming line stands above the sky where the screen is touched** (`pointer: coarse`), because the hand holding the sky covers what lies below the finger. Its room never shrinks: the finger's invitation, unseen, keeps its place while names stand in it (`data-room`, drawn by a hidden `::before`), and two lines are kept at least. So no naming moves the sky under the finger, in any language.
+  - **The invitation is the finger's there**: "Hold a finger anywhere to name the orbits beneath it; lift it to show the brightest alone", in all eight languages (`allTheLightHold`). A pointer's screen keeps "Point anywhere…". The stylesheet chooses between the two, so the first paint says the right one.
+  - **The sky still hangs edge to edge** (Part 1).
+- **The Orrery's phone pass.**
+  - **Two orbits to a row** on a phone, each about as wide as a desk's cell: 170 CSS px at 390, against 111 at three to a row.
+  - **The canvases are drawn at the screen's own density, three at most.** The cap was two, so a 3× phone's trails were drawn on a coarser canvas and scaled up, soft. They are now drawn crisp. The trail keeps the venue's one weight, a CSS pixel at a fifth of its light, as on the work page and in the Overture.
+  - **The page's pacing is untouched.** The worker still draws only when the page asks (PR #13).
+- **Found while building.**
+  - **The way back scrolled a phone away.** Chromium focuses a tapped button, so "Back to all the light" handed the focus to the work's numeral far below in the index. That scrolled the sky out of view and named the orbit again. Pressed by a hand (a click whose count is above nought), the focus still returns to the numeral, but without scrolling and without naming it. From the keyboard it is followed there as before. WebKit gives a tapped button no focus, so it never showed there.
+  - **A line of names opened with its separator.** On a phone the five names wrap, and WebKit broke before a " · ". They are now joined with the venue's separator, a no-break space before the dot.
+  - **The naming line had lost its gutter** inside the edge-to-edge figure, touching the screen's edge.
+  - **The invitation is longer than any naming.** Measured in both engines at 390, 360 and 320 px, the finger's invitation takes two to four lines (three in Ukrainian, Japanese and Vietnamese at 390), and five names or a choice never more than two. A room of two lines alone would have let the sky rise a line under the finger as the hold began.
+- **Tests.**
+  - **Unit:** the hold, the scrub, the lift, the tap, the scroll, the lift off the sky, the cancelled and the pinched hold, a hold before the grid has come, and the way back by hand and by key. The Orrery's canvases are drawn at three on a 3× screen and at three on a 4× one, and at a desk's own density below.
+  - **Browser** (chromium-mobile and webkit-mobile): the sky edge to edge, with its line above it and in the gutter. In all eight languages the sky stays where it is as a finger is held and lifted. The hold, the scrub and the lift, with a real touch in Chromium and a finger's pointer events in WebKit. The way back stays in place. In Chromium the page does not move beneath a held finger, and a swipe scrolls it and names nothing. The Orrery hangs two to a row, and a 3× phone's canvases are three pixels to the point.
 
 ## 7. Parts 2 to 4 as built: the events
 
@@ -254,6 +273,14 @@ Each PR passes the seven-project Playwright matrix, axe, the 12 px floor, the mo
   Phase A's checks hold on the plate: № 031 and № 071 are re-derived with every measurement exact.
 
 **Open.**
-- **WebKit swaps a large streamed page in after load.** It holds the page behind the route's fallback and renders the streamed `main` again after hydration: on the home, a work page and the Ukrainian process essay. This was reported while building The choice, predates this phase, and wants its own fix.
-- **A prefetch of `/exhibitions` answers 404** on the English home. It also predates this phase.
+- **WebKit swaps a large streamed page in after load.** *Resolved by PR #16 (e15f8fd).* WebKit held the page behind the route's fallback and rendered the streamed `main` again after hydration: on the home, a work page and the Ukrainian process essay. This was reported while building The choice and predates this phase. It had two causes:
+  - **The second render.** Once the shell hydrated, the motion provider's context took a new value, and React renders on the client any streamed boundary that has not yet been revealed. WebKit's reveals always came after hydration (below); held back that long, Chromium's did the same. `useMotion()` now reads the motion store itself, with no context, so the streamed `main` hydrates in place.
+  - **The wait for load.** During a navigation WebKit grants no animation frame until the page has something to paint or has loaded, and React reveals a streamed boundary on a frame. `src/lib/reveal.ts`, inlined by `src/app/venue-document.tsx`, reveals the waiting boundaries itself while no frame has come.
+
+  `tests/e2e/hydration.spec.ts` holds every reveal until the shell has hydrated, and requires each streamed node of the three pages to hydrate in place. The first-paint tests now run in webkit-reduced-motion too.
+- **A prefetch of `/exhibitions` answers 404** on the English home. It also predates this phase. *Resolved on 6 November 2026.*
+  - **The cause.** Next's router predicts the route of an address it has not yet fetched from the routes it has learned. Once it had learned the home's, `/[locale]`, from an address that carries its locale (the language menu's `/uk`, or `/en` itself), it took English addresses for the home in a locale of their name: `/exhibitions`, `/process`, `/statement` and `/privacy`, which the proxy rewrites to `/en/…`.
+  - **The cost.** It asked each of them for the home's own segment and got a 404, then asked for the locale's layout again and again. On main's production build one page in Chromium made 18,312 such requests in 20 seconds and had not stopped; WebKit did the same.
+  - **The fix.** The home closes its parameter (`dynamicParams = false` in `src/app/[locale]/page.tsx`), and the router predicts no route with a closed parameter, so it asks the server for each address's route. Each address is then asked twice, for its route and its page. `tests/e2e/not-found.spec.ts` fails without it.
+  - An address the proxy never sees, such as `/foo.bar`, now gets the venue's own 404 page rather than Next's bare one.
 - **Opening night** (§5.9) waits for the pipeline to publish traits early.

@@ -668,6 +668,8 @@ export const vi: Messages = {
   allTheLightAlt:
     'Toàn bộ ánh sáng, {span}: ảnh tĩnh Ánh sáng của {count} tác phẩm cộng lại, trắng nơi các quỹ đạo dày đặc và còn màu ở rìa. Một góc nhìn phái sinh, không phải tác phẩm.',
   allTheLightPoint: 'Trỏ vào bất cứ đâu để gọi tên các quỹ đạo đi qua đó.',
+  allTheLightHold:
+    'Chạm và giữ ở bất cứ đâu để gọi tên các quỹ đạo dưới ngón tay; nhấc ngón tay lên để xem riêng quỹ đạo sáng nhất.',
   allTheLightThrough: 'Đi qua điểm này · {works}',
   allTheLightNone: 'Không có quỹ đạo nào đi qua đây.',
   allTheLightAlone: 'Riêng {work}, như ảnh tĩnh nguyên vẹn của chính nó',
