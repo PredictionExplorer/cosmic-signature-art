@@ -1,4 +1,4 @@
-import { expect, test, type APIResponse, type TestInfo } from '@playwright/test';
+import { expect, test, type APIResponse, type Response, type TestInfo } from '@playwright/test';
 import { catalogs } from '../../src/lib/i18n/messages';
 import { locales, localizedPath, type Locale } from '../../src/lib/i18n/routing';
 import { noHorizontalOverflow } from './helpers';
@@ -93,6 +93,63 @@ test('the venue’s 404 is its own page, in the visitor’s language, on black',
     .getByRole('link', { name: uk.nextDoor.replace('{work}', '№ 031') })
     .click();
   await expect(page).toHaveURL(/\/uk\/art\/31$/);
+});
+
+/** What a router's prefetch asks of an address: its route's shape ("/_tree"), or one segment. */
+function segmentOf(response: Response) {
+  return response.request().headers()['next-router-segment-prefetch'] ?? '';
+}
+
+test('an English address is never taken for the home in a locale of its name', async ({
+  page,
+}, info) => {
+  oneProjectAsks(info);
+  const answers: string[] = [];
+  page.on('response', (response) => {
+    const url = new URL(response.url());
+    if (url.searchParams.has('_rsc'))
+      answers.push(`${response.status()} ${url.pathname} ${segmentOf(response)}`);
+  });
+  await page.goto('/');
+  await expect(page.locator('html')).toHaveAttribute('data-keys', 'ready');
+  // The language menu's addresses carry their locale, so the router learns the home's route,
+  // /[locale], from them. It asks for a page's segment only once it holds the page's route.
+  const learned = page.waitForResponse(
+    (response) =>
+      new URL(response.url()).pathname === '/uk' && segmentOf(response).endsWith('/__PAGE__'),
+  );
+  await page
+    .locator('.site-header')
+    .getByRole('button', { name: `${catalogs.en.language}: EN` })
+    .click();
+  await learned;
+  await page.keyboard.press('Escape');
+  // The colophon's English addresses come into view after that. The proxy rewrites each to
+  // /en/…, so each is asked for its own page, never for the home's (/$d$locale/__PAGE__).
+  const addresses = ['/process', '/statement', '/privacy'];
+  const pages = addresses.map((address) =>
+    page.waitForResponse(
+      (response) =>
+        new URL(response.url()).pathname === address && segmentOf(response).endsWith('/__PAGE__'),
+    ),
+  );
+  await page.locator('.site-footer').scrollIntoViewIfNeeded();
+  for (const [index, response] of (await Promise.all(pages)).entries()) {
+    const address = addresses[index];
+    expect(`${response.status()} ${segmentOf(response)}`, address).toBe(
+      `200 /$d$locale${address}/__PAGE__`,
+    );
+  }
+  // A mistaken route also set the router asking for the locale's layout again and again, about
+  // a thousand times a second. Half a second on, each address has been asked twice: for its route
+  // and for its page.
+  await page.waitForTimeout(500);
+  expect(answers.filter((answer) => Number(answer.split(' ')[0]) >= 400)).toEqual([]);
+  for (const address of addresses)
+    expect(answers.filter((answer) => answer.split(' ')[1] === address).sort(), address).toEqual([
+      `200 ${address} /$d$locale${address}/__PAGE__`,
+      `200 ${address} /_tree`,
+    ]);
 });
 
 test('a typed number without a record arrives at the venue’s 404', async ({ page }) => {

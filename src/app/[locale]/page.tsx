@@ -7,6 +7,7 @@ import { expressionOfTheDay, venueNow, workOfTheDay } from '@/lib/art/work-of-th
 import { openingOn } from '@/lib/art/opening';
 import { filmOrbit, performedOrbits } from '@/lib/art/orbit-windows';
 import { plateFrame } from '@/lib/art/orbit-frames';
+import { workOrbit } from '@/lib/art/orbit-records';
 import { getInterpretation, type Artwork } from '@/lib/art/types';
 import { metadata } from '@/lib/site';
 import { ArtworkViewer } from '@/components/artwork-viewer';
@@ -20,6 +21,18 @@ import { Overture, type OvertureWork } from '@/components/overture';
  */
 export const revalidate = 300;
 
+/**
+ * The home answers the eight locales its layout lists (generateStaticParams) and no other, and
+ * says so: its parameter is closed, and the router predicts no route with a closed parameter.
+ * Otherwise a router that has learned /[locale] from an address carrying its locale (/uk, /en)
+ * takes an English address such as /exhibitions, which the proxy rewrites to /en/exhibitions,
+ * for the home in a locale named "exhibitions". It asks that address for the home's own
+ * segment, a 404, and then for the locale's layout, again and again, about a thousand times a
+ * second (tests/e2e/not-found.spec.ts). The home is the only route an English address of one
+ * part can be taken for, so the setting is the home's alone.
+ */
+export const dynamicParams = false;
+
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
   if (!isLocale(locale)) return {};
@@ -29,19 +42,21 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
 }
 
 /**
- * The day's work as the Overture performs it: its recorded window, its Light and order, and
- * where the window falls on the Light film, so the bodies draw the plate itself.
+ * The day's work as First Light performs it (docs/first-light.md §4): its recorded window, its
+ * frame on the Light film, its closest approach and its Light still. Without a frame that still
+ * binds to the film there is nothing to land on, and the home opens as it always does.
  */
 function overtureOf(work: Artwork): OvertureWork | null {
   const [performed] = performedOrbits([work.id]);
   const light = getInterpretation(work, 'light');
-  if (!performed || !light?.rungs?.length || !light.arrival) return null;
+  const frame = light ? plateFrame(work.id, light) : undefined;
+  const orbit = workOrbit(work.id);
+  if (!performed || !light?.rungs?.length || !frame || !orbit) return null;
   return {
-    window: performed.window,
-    bodyHues: performed.bodyHues,
+    start: performed.window,
+    frame,
+    closestStep: orbit.published.closestApproach.step,
     rungs: light.rungs,
-    arrival: light.arrival.src,
-    frame: plateFrame(work.id, light) ?? null,
   };
 }
 
@@ -57,6 +72,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
   const t = messages(locale);
   const now = venueNow();
   const work = getCuratedArtwork(workOfTheDay(now))!;
+  const firstLight = overtureOf(work);
   return (
     <main id="main" className="home">
       {/* No headline on the wall: the page's h1 is the statement screen's wordmark below. */}
@@ -72,9 +88,9 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
         }}
         orbit={filmOrbit(work.id)}
       />
-      <Overture work={overtureOf(work)} />
+      <Overture work={firstLight} skip={t.firstLightSkip} />
       {/* Screen 3: the statement line, the one screen without a work. */}
-      <HomeStatement locale={locale} t={t} />
+      <HomeStatement locale={locale} t={t} firstLight={firstLight ? work.id : undefined} />
       {/* Screen 4: a spread of two plates across the seam, one in each expression. */}
       <HomeSpread locale={locale} t={t} day={expressionOfTheDay(now)} />
       {/* Screen 5: the day's work's cycle as a row of real previews. */}

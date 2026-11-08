@@ -249,6 +249,10 @@ export const ja: Messages = {
   arriving: '読み込み中',
   sit: '鑑賞',
   again: 'もう一度',
+  firstLightTitle: 'ファーストライト',
+  firstLightSkip: 'スキップ',
+  firstLightWatch: '生まれる様子を見る',
+  firstLightComputed: 'このブラウザで、たった今シードから計算しました。',
   excerpt: '抜粋',
   pauseAmbientMotion: '環境モーションを一時停止',
   markLabel: '三つの天体、ひとつの軌道 — Cosmic Signature',
@@ -658,6 +662,8 @@ export const ja: Messages = {
   allTheLightAlt:
     'すべての光（{span}）：{count} 点の作品の光の静止画を足し合わせたもの。軌道が重なるところは白く、縁には色が残ります。作品ではなく、作品から導いた眺めです。',
   allTheLightPoint: 'どこかを指すと、そこを通る軌道の名が現れます。',
+  allTheLightHold:
+    'どこかを長押しすると、指の下を通る軌道の名が現れます。指を離すと、いちばん明るい軌道だけが表示されます。',
   allTheLightThrough: 'この点を通る軌道 · {works}',
   allTheLightNone: 'ここを通る軌道はありません。',
   allTheLightAlone: '{work} のみ、手を加えていないその作品自身の静止画',

@@ -2,6 +2,7 @@ import AxeBuilder from '@axe-core/playwright';
 import { expect, test, type Page } from '@playwright/test';
 import { fill } from '../../src/lib/i18n/format';
 import { catalogs } from '../../src/lib/i18n/messages';
+import { locales, localizedPath } from '../../src/lib/i18n/routing';
 import {
   imageLoaded,
   noHorizontalOverflow,
@@ -30,9 +31,15 @@ test.describe('All the light', () => {
   const sky = (page: Page) => page.locator('figure img[data-shown]');
   const frame = (page: Page) => page.locator('figure > div').first();
   const readout = (page: Page) => page.locator('figure figcaption');
+  /** The naming line's invitation: a pointer's on a desk, a finger's on a phone. */
+  const invites = (page: Page, isMobile: boolean) =>
+    expect(readout(page)).toHaveText(isMobile ? t.allTheLightHold : t.allTheLightPoint, {
+      useInnerText: true,
+    });
 
   test('is one exposure of every Light still, stated as a derived view, never a sharing card', async ({
     page,
+    isMobile,
   }) => {
     await ready(page, '/collection/all-the-light');
     await imageLoaded(sky(page));
@@ -53,6 +60,17 @@ test.describe('All the light', () => {
     await expect(readout(page)).toBeInViewport();
     if (viewport.width >= 1100)
       await expect(page.getByRole('button', { name: 'Show № 031 alone' })).toBeInViewport();
+    await invites(page, isMobile);
+    const line = (await readout(page).boundingBox())!;
+    if (isMobile) {
+      // A phone's sky hangs edge to edge, and its naming line keeps the gutter.
+      expect(box.x).toBe(0);
+      expect(Math.abs(box.width - viewport.width)).toBeLessThanOrEqual(1);
+      const words = (await readout(page).getByText(t.allTheLightHold).boundingBox())!;
+      expect(words.x).toBeGreaterThanOrEqual(16);
+      // The line stands above the sky, where the hand that holds the sky does not cover it.
+      expect(line.y + line.height).toBeLessThanOrEqual(box.y);
+    } else expect(line.y).toBeGreaterThanOrEqual(box.y + box.height);
   });
 
   test('names the orbits under a point, leaves one alone, and walks to its page', async ({
@@ -67,7 +85,7 @@ test.describe('All the light', () => {
       // Pointing dims the sky and lights the orbits that pass there, brightest first.
       await page.mouse.move(centre.x, centre.y);
       await page.mouse.move(centre.x + 3, centre.y + 2);
-      await expect(readout(page)).toHaveText(/^Through this point · №\s\d{3}( · №\s\d{3})*$/);
+      await expect(readout(page)).toHaveText(/^Through this point · №\s\d{3}(\s· №\s\d{3})*$/);
       // The stills are lit once the pointer rests.
       await expect(frame(page)).toHaveAttribute('data-naming', '');
       await expect.poll(() => frame(page).locator('img').count()).toBeGreaterThan(1);
@@ -82,7 +100,7 @@ test.describe('All the light', () => {
     // Escape gives the whole sky back; the numeral's own button chooses it again.
     await page.keyboard.press('Escape');
     await expect(alone).toHaveCount(0);
-    await expect(readout(page)).toHaveText(t.allTheLightPoint);
+    await invites(page, isMobile);
     // A finger taps; a pointer clicks. Either chooses at once.
     const fromIndex = page.getByRole('button', { name: `Show ${numeral} alone` });
     if (isMobile) await fromIndex.tap();
@@ -96,6 +114,135 @@ test.describe('All the light', () => {
       'data-expression',
       'light',
     );
+  });
+
+  test('a finger held on the sky names what lies beneath it as it moves, and lifting it chooses', async ({
+    page,
+    isMobile,
+    browserName,
+  }) => {
+    test.skip(!isMobile, 'A pointer names as it hovers, proved above.');
+    await ready(page, '/collection/all-the-light');
+    await imageLoaded(sky(page));
+    const box = (await frame(page).boundingBox())!;
+    const at = (x: number, y: number) => ({ x: box.x + box.width * x, y: box.y + box.height * y });
+    const named = /^Through this point · (№\s\d{3})(\s· №\s\d{3})*$/;
+    const brightest = async () => named.exec(await readout(page).innerText())![1];
+    const scrolled = () => page.evaluate(() => window.scrollY);
+    // A tap still chooses at once.
+    await frame(page).tap({ position: { x: box.width * 0.55, y: box.height * 0.5 } });
+    await expect(page.getByRole('img', { name: /^№\s\d{3} · Light$/ })).toBeVisible();
+    await page.keyboard.press('Escape');
+    await invites(page, true);
+    type Point = { x: number; y: number };
+    let finger: {
+      down(p: Point): Promise<unknown>;
+      move(p: Point): Promise<unknown>;
+      up(p: Point): Promise<unknown>;
+    };
+    if (browserName === 'chromium') {
+      // A real touch: the browser makes the pointer events, and scrolls the page where it may.
+      const session = await page.context().newCDPSession(page);
+      const send = (type: 'touchStart' | 'touchMove' | 'touchEnd', points: Point[]) =>
+        session.send('Input.dispatchTouchEvent', { type, touchPoints: points });
+      finger = {
+        down: (p) => send('touchStart', [p]),
+        move: (p) => send('touchMove', [p]),
+        up: () => send('touchEnd', []),
+      };
+    } else {
+      // WebKit cannot synthesise a moving touch; the pointer events a finger makes are sent.
+      const touch = ({ x, y }: Point) => ({
+        pointerId: 7,
+        pointerType: 'touch',
+        isPrimary: true,
+        button: 0,
+        clientX: x,
+        clientY: y,
+      });
+      finger = {
+        down: (p) => frame(page).dispatchEvent('pointerdown', touch(p)),
+        move: (p) => frame(page).dispatchEvent('pointermove', touch(p)),
+        up: (p) => frame(page).dispatchEvent('pointerup', touch(p)),
+      };
+    }
+    const before = await scrolled();
+    const from = at(0.3, 0.3);
+    const to = at(0.6, 0.6);
+    await finger.down(from);
+    // Once it has rested, the finger names what lies beneath it and lights it on the dimmed sky.
+    await expect(readout(page)).toHaveText(named);
+    await expect(frame(page)).toHaveAttribute('data-naming', '');
+    const first = await readout(page).innerText();
+    for (let step = 1; step <= 10; step += 1)
+      await finger.move({
+        x: from.x + ((to.x - from.x) * step) / 10,
+        y: from.y + ((to.y - from.y) * step) / 10,
+      });
+    // It names as it moves, and the page stays where it was beneath it.
+    await expect(readout(page)).toHaveText(named);
+    await expect(readout(page)).not.toHaveText(first);
+    expect(await scrolled()).toBe(before);
+    const chosen = await brightest();
+    await finger.up(to);
+    // Lifting it leaves the brightest beneath it alone; nothing the lift brings undoes that.
+    const alone = page.getByRole('img', { name: `${chosen} · Light` });
+    await expect(alone).toBeVisible();
+    await expect(readout(page)).toHaveText(`${chosen} alone, as its own untouched still`);
+    await page.waitForTimeout(600);
+    await expect(alone).toBeVisible();
+    // The way back, tapped, gives the whole sky back where the finger is, its orbit unnamed.
+    const place = await scrolled();
+    await page.getByRole('button', { name: t.allTheLightReturn }).tap();
+    await invites(page, true);
+    await expect(frame(page)).not.toHaveAttribute('data-naming');
+    await expect(frame(page)).toBeInViewport();
+    expect(await scrolled()).toBe(place);
+    if (browserName !== 'chromium') return;
+    // A finger that moves at once is scrolling: the page moves, and nothing is named or chosen.
+    const resting = await scrolled();
+    const start = at(0.5, 0.85);
+    await finger.down(start);
+    for (let step = 1; step <= 8; step += 1)
+      await finger.move({ x: start.x, y: start.y - step * 24 });
+    await finger.up(start);
+    await expect.poll(scrolled).toBeGreaterThan(resting);
+    await invites(page, true);
+    await expect(frame(page)).not.toHaveAttribute('data-naming');
+    await expect(page.getByRole('img', { name: /^№\s\d{3} · Light$/ })).toHaveCount(0);
+  });
+
+  test('in every language the sky stays where it is under a held finger', async ({
+    page,
+    isMobile,
+  }) => {
+    test.skip(!isMobile, 'Under a pointer the naming line stands below the sky.');
+    test.slow();
+    const touch = (x: number, y: number) => ({
+      pointerId: 9,
+      pointerType: 'touch',
+      isPrimary: true,
+      button: 0,
+      clientX: x,
+      clientY: y,
+    });
+    for (const locale of locales) {
+      await ready(page, localizedPath(locale, '/collection/all-the-light'));
+      await imageLoaded(sky(page));
+      // The finger's invitation is the longest the line says: three lines in some languages.
+      await expect(readout(page)).toHaveText(catalogs[locale].allTheLightHold, {
+        useInnerText: true,
+      });
+      const box = (await frame(page).boundingBox())!;
+      const [x, y] = [box.x + box.width * 0.3, box.y + box.height * 0.3];
+      // Held, five names stand where the invitation stood; lifted, one stands alone.
+      await frame(page).dispatchEvent('pointerdown', touch(x, y));
+      await expect(frame(page)).toHaveAttribute('data-naming', '');
+      expect((await frame(page).boundingBox())!.y, locale).toBe(box.y);
+      await frame(page).dispatchEvent('pointerup', touch(x, y));
+      await expect(frame(page)).toHaveAttribute('data-alone', '');
+      expect((await frame(page).boundingBox())!.y, locale).toBe(box.y);
+    }
   });
 
   test('the index lights its orbit from the keyboard, and the cycles fill the sky', async ({
@@ -222,6 +369,49 @@ test.describe('The Orrery', () => {
     await link.scrollIntoViewIfNeeded();
     await link.tap();
     await expect(page).toHaveURL(/\/art\/31$/);
+  });
+
+  test('a phone hangs two orbits to a row, each a desk’s cell wide', async ({ page, isMobile }) => {
+    test.skip(!isMobile, 'A desk hangs as many to a row as its width holds.');
+    await ready(page, '/collection/orrery');
+    const cells = page.getByRole('region', { name: /^Cycle 0 · / }).locator('[data-stage]');
+    await expect(cells).toHaveCount(24);
+    const [first, second, third] = await Promise.all(
+      [0, 1, 2].map(async (k) => (await cells.nth(k).boundingBox())!),
+    );
+    expect(second.y).toBe(first.y);
+    expect(second.x).toBeGreaterThan(first.x + first.width);
+    expect(third.y).toBeGreaterThan(first.y + first.height);
+    expect(third.x).toBe(first.x);
+    expect(first.width).toBeGreaterThanOrEqual(150);
+    await noHorizontalOverflow(page);
+  });
+
+  test.describe('on a phone of three pixels to a point', () => {
+    test.use({ deviceScaleFactor: 3 });
+    // Decided before a page is made: a desk's density is its own, proved in the unit tests.
+    test.skip(({ isMobile }) => !isMobile, 'A phone’s density.');
+    test('draws each orbit at the phone’s own density', async ({ page }) => {
+      await ready(page, '/collection/orrery');
+      // Drawn whole and still, so each canvas is committed once.
+      await pauseAmbientMotion(page);
+      await expect(orrery(page)).toHaveAttribute('data-mode', /^(performing|plates)$/);
+      test.skip(
+        (await orrery(page).getAttribute('data-mode')) === 'plates',
+        'This browser cannot hand a canvas to a worker; its plates are proved below.',
+      );
+      const cell = page.locator('[data-stage]').first();
+      await expect(cell).toHaveAttribute('data-drawn', '', { timeout: 15_000 });
+      const { width, height } = (await cell.boundingBox())!;
+      const canvas = await cell
+        .locator('canvas')
+        .evaluate((element) => [
+          (element as HTMLCanvasElement).width,
+          (element as HTMLCanvasElement).height,
+        ]);
+      expect(canvas).toEqual([Math.round(width * 3), Math.round(height * 3)]);
+      expect(await page.evaluate(() => window.devicePixelRatio)).toBe(3);
+    });
   });
 
   test('where the orbits cannot be performed, every work’s Light still stands in', async ({

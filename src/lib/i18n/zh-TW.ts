@@ -236,6 +236,10 @@ export const zhTW: Messages = {
   arriving: '載入中',
   sit: '靜觀',
   again: '再看一次',
+  firstLightTitle: '初光',
+  firstLightSkip: '略過',
+  firstLightWatch: '觀看它的形成',
+  firstLightComputed: '剛剛在這個瀏覽器中由它的種子計算得出。',
   excerpt: '片段',
   pauseAmbientMotion: '暫停環境動態',
   markLabel: '三體，一軌 — Cosmic Signature',
@@ -626,6 +630,7 @@ export const zhTW: Messages = {
   allTheLightAlt:
     '全部的光（{span}）：{count} 件作品的光的靜態影像相加而成，軌道密集處為白色，邊緣留有顏色。這是衍生的視圖，而非作品。',
   allTheLightPoint: '指向任一處，即可說出經過那裡的軌道之名。',
+  allTheLightHold: '在任一處長按，即可說出指下經過的軌道之名；放開手指，即單獨顯示最亮的一條。',
   allTheLightThrough: '經過此點 · {works}',
   allTheLightNone: '沒有軌道經過這裡。',
   allTheLightAlone: '單獨的 {work}，即它未經改動的靜態影像',

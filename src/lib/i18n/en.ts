@@ -247,6 +247,10 @@ export const en = {
   arriving: 'Arriving',
   sit: 'Sit',
   again: 'Again',
+  firstLightTitle: 'First Light',
+  firstLightSkip: 'Skip',
+  firstLightWatch: 'Watch it form',
+  firstLightComputed: 'Computed from its seed, in this browser, just now.',
   excerpt: 'Excerpt',
   pauseAmbientMotion: 'Pause ambient motion',
   markLabel: 'Three bodies, one orbit — Cosmic Signature',
@@ -661,6 +665,8 @@ export const en = {
   allTheLightAlt:
     'All the light, {span}: the Light stills of {count} works added together, white where orbits crowd and coloured at their edges. A derived view, not a work.',
   allTheLightPoint: 'Point anywhere to name the orbits that pass through it.',
+  allTheLightHold:
+    'Hold a finger anywhere to name the orbits beneath it; lift it to show the brightest alone.',
   allTheLightThrough: 'Through this point · {works}',
   allTheLightNone: 'No orbit passes here.',
   allTheLightAlone: '{work} alone, as its own untouched still',

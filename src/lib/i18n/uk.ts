@@ -247,6 +247,10 @@ export const uk: Messages = {
   arriving: 'Надходить',
   sit: 'Споглядати',
   again: 'Ще раз',
+  firstLightTitle: 'Перше світло',
+  firstLightSkip: 'Пропустити',
+  firstLightWatch: 'Побачити, як вона постає',
+  firstLightComputed: 'Обчислено з її зерна в цьому браузері щойно.',
   excerpt: 'Фрагмент',
   pauseAmbientMotion: 'Призупинити фоновий рух',
   markLabel: 'Три тіла, одна орбіта — Cosmic Signature',
@@ -660,6 +664,8 @@ export const uk: Messages = {
   allTheLightAlt:
     'Усе світло, {span}: зображення «Світло» {count} творів, складені разом, білі там, де орбіти тісняться, і кольорові на краях. Похідний вигляд, а не твір.',
   allTheLightPoint: 'Наведіть будь-куди, щоб назвати орбіти, які проходять крізь це місце.',
+  allTheLightHold:
+    'Торкніться й утримуйте будь-де, щоб назвати орбіти під пальцем; відпустіть, щоб показати найяскравішу окремо.',
   allTheLightThrough: 'Крізь цю точку · {works}',
   allTheLightNone: 'Тут не проходить жодна орбіта.',
   allTheLightAlone: '{work} окремо, як його власне незмінене зображення',

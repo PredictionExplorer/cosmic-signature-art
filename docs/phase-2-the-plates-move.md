@@ -122,6 +122,7 @@ exceptions, recorded here rather than left silent:
 ## Open for the owner (vision §8)
 
 1. A named curator for the hangs and trails; `CURATOR` and the `hungBy` strings change together.
-2. The statement's byline and the Dusk flag, as after Phase 1.
+2. The statement's byline and the Dusk flag, as after Phase 1. *The Dusk is settled: the
+   Overture replaced it (owner, 4 November 2026). The byline is still open.*
 3. The home's pool of works is derived from the opening clips; cutting opening clips for more
    works (`npm run art:clips -- --opening <ids>`) widens it without a code change.

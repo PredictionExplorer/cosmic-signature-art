@@ -13,6 +13,7 @@ import {
 } from 'react';
 import { cellAt, namesAt, type SkyGrid } from '@/lib/art/sky-names';
 import { fill } from '@/lib/i18n/format';
+import { SEPARATOR } from '@/lib/typography';
 import { useMotion } from './motion-provider';
 import { lendPlateTone, returnPlateTone } from './room-ground';
 import styles from './all-the-light.module.css';
@@ -46,7 +47,9 @@ export interface LightLabels {
   title: string;
   line: string;
   note: string;
+  /** The invitation to a pointer, and to a finger, which names by holding. */
   point: string;
+  hold: string;
   through: string;
   none: string;
   alone: string;
@@ -71,13 +74,33 @@ const SIZES = '(min-width: 1100px) calc(100vw - 525px), 100vw';
 const REPLAY_HOLD_MS = 2400;
 /** A pointer rests this long before the orbits it names are fetched and lit. */
 const NAMING_REST_MS = 120;
+/**
+ * A finger rests this long on the sky before it names. One lifted sooner is a tap, which chooses
+ * at once; one that moves sooner is scrolling the page.
+ */
+const HOLD_MS = 300;
+/** How far a resting finger may wander, in CSS pixels, before it counts as moving. */
+const HOLD_SLOP_PX = 10;
+
+/** A finger on the sky: where it came down and where it is, and whether it has rested. */
+interface Finger {
+  id: number;
+  x0: number;
+  y0: number;
+  x: number;
+  y: number;
+  held: boolean;
+  timer: ReturnType<typeof setTimeout> | null;
+}
 
 /**
  * All the light: every Light still of the collection added as light adds (a derived view, never
  * a work), built offline and kept as the whole sky and as it stood after each cycle. Pointing
  * names the orbits under the pointer and lights them, each as its own still added over the
- * dimmed sky; choosing one leaves it alone, as its own untouched still. The numerals do the
- * same from the keyboard. The page sums nothing itself and needs no WebGL.
+ * dimmed sky; choosing one leaves it alone, as its own untouched still. A finger has no hover:
+ * held on the sky it names what lies beneath it as it moves, and lifting it chooses, while a tap
+ * chooses at once. The numerals do the same from the keyboard. The page sums nothing itself and
+ * needs no WebGL.
  */
 export function AllTheLight({
   works,
@@ -96,8 +119,11 @@ export function AllTheLight({
   const atlas = useRef<SkyGrid | null>(null);
   const loading = useRef<Promise<boolean> | null>(null);
   const timers = useRef<ReturnType<typeof setTimeout>[]>([]);
-  /** The pointer over the sky: whether it is there, and where it last was. */
+  /** The pointer over the sky, or a held finger: whether it is there, and where it last was. */
   const pointer = useRef({ inside: false, x: 0, y: 0, waiting: false });
+  const finger = useRef<Finger | null>(null);
+  /** A held finger chose as it lifted, so the click its lift may bring is not a tap. */
+  const lifted = useRef(false);
   const resting = useRef<ReturnType<typeof setTimeout> | null>(null);
   /** The work standing alone, read by the handlers that finish after a fetch. */
   const lone = useRef<number | null>(null);
@@ -105,6 +131,8 @@ export function AllTheLight({
   const asking = useRef(0);
   /** Chosen from the index: the sky comes up to meet the choice once it is laid out. */
   const reveal = useRef(false);
+  /** Focus handed back to a numeral by a hand's return, which names nothing. */
+  const quiet = useRef(false);
   const { paused, reducedMotion, theatre } = useMotion();
   const moving = !paused && !reducedMotion && theatre !== 'hushed';
   const whole = skies.length - 1;
@@ -115,7 +143,8 @@ export function AllTheLight({
   const [wanted, setWanted] = useState<ReadonlySet<number>>(() => new Set([whole]));
   const [named, setNamed] = useState<number[]>([]);
   const [alone, setAlone] = useState<number | null>(null);
-  const [message, setMessage] = useState(labels.point);
+  /** What the naming line says; null while it invites, a pointer or a finger as the screen has. */
+  const [message, setMessage] = useState<string | null>(null);
   const order = useMemo(() => works.map((work) => work.id), [works]);
   const byId = useMemo(() => new Map(works.map((work) => [work.id, work])), [works]);
   const inSky = useMemo(
@@ -131,6 +160,7 @@ export function AllTheLight({
     () => () => {
       timers.current.forEach(clearTimeout);
       if (resting.current) clearTimeout(resting.current);
+      if (finger.current?.timer) clearTimeout(finger.current.timer);
     },
     [],
   );
@@ -177,7 +207,8 @@ export function AllTheLight({
     const cell = cellAt(data, (clientX - box.left) / box.width, (clientY - box.top) / box.height);
     return cell ? namesAt(data, order, cell.column, cell.row, (id) => inSky.has(id)) : [];
   };
-  const numerals = (ids: number[]) => ids.map((id) => byId.get(id)!.numeral).join(' · ');
+  // A phone's line of names wraps: it may end on a separator, never open with one.
+  const numerals = (ids: number[]) => ids.map((id) => byId.get(id)!.numeral).join(SEPARATOR);
   const say = (ids: number[]) =>
     setMessage(ids.length ? fill(labels.through, { works: numerals(ids) }) : labels.none);
 
@@ -187,15 +218,18 @@ export function AllTheLight({
     resting.current = null;
     setNamed(ids);
   };
-  /** What the pointer is over: named at once, lit once the pointer rests there. */
-  const name = () => {
+  /**
+   * What the pointer is over: named at once, lit once the pointer rests there. A finger that has
+   * just rested to be held is lit at once.
+   */
+  const name = (after = NAMING_REST_MS) => {
     if (lone.current !== null || !pointer.current.inside) return;
     const ids = namesUnder(pointer.current.x, pointer.current.y);
     if (ids === null) return;
     say(ids);
-    if (!ids.length) return light([]);
+    if (!ids.length || !after) return light(ids);
     if (resting.current) clearTimeout(resting.current);
-    resting.current = setTimeout(() => light(ids), NAMING_REST_MS);
+    resting.current = setTimeout(() => light(ids), after);
   };
   /** A numeral names its own orbit, lit at once. */
   const nameFromIndex = (id: number) => {
@@ -207,7 +241,7 @@ export function AllTheLight({
     pointer.current.inside = false;
     if (lone.current !== null) return;
     light([]);
-    setMessage(labels.point);
+    setMessage(null);
   };
   const choose = (id: number) => {
     stopReplay();
@@ -238,14 +272,21 @@ export function AllTheLight({
       cancelAnimationFrame(second);
     };
   }, [alone, moving]);
-  const back = () => {
+  /** The whole sky again. `byHand`: the return was pressed by a pointer or a finger. */
+  const back = (byHand = false) => {
     const was = lone.current;
     const focused = was !== null && !!choice.current?.contains(document.activeElement);
     lone.current = null;
     setAlone(null);
-    setMessage(labels.point);
+    setMessage(null);
+    if (!focused) return;
     // The choice's words leave with it: a focus on them returns to the numeral that names it.
-    if (focused) section.current?.querySelector<HTMLElement>(`[data-numeral="${was}"]`)?.focus();
+    // Pressed by a hand, the page stays where the hand is (on a phone the index lies far below)
+    // and the sky comes back whole, its orbit unnamed, as the words promised.
+    const numeral = section.current?.querySelector<HTMLElement>(`[data-numeral="${was}"]`);
+    quiet.current = byHand;
+    numeral?.focus({ preventScroll: byHand });
+    quiet.current = false;
   };
   /** A sky is shown once its image is decoded, so a change of sky never passes through black. */
   const showSky = (index: number) => {
@@ -279,8 +320,71 @@ export function AllTheLight({
     });
   };
 
+  /** The brightest orbit under a point stands alone; where none passes, the sky says so. */
+  const chooseAt = (clientX: number, clientY: number) => {
+    const ids = namesUnder(clientX, clientY);
+    // Without the grid there is nothing to say about the place, not even "none".
+    if (ids === null) return;
+    if (!ids.length) return say([]);
+    choose(ids[0]);
+  };
+  /** Whether a point lies on the sky as it is laid out. */
+  const onSky = (x: number, y: number) => {
+    const box = frame.current?.getBoundingClientRect();
+    return !!box && x >= box.left && x < box.right && y >= box.top && y < box.bottom;
+  };
+
+  /** A held finger names what lies beneath it; off the sky, the sky rests until it returns. */
+  const follow = (press: Finger, after?: number) => {
+    if (lone.current !== null) return;
+    const inside = onSky(press.x, press.y);
+    Object.assign(pointer.current, { inside, x: press.x, y: press.y });
+    if (inside) return name(after);
+    light([]);
+    setMessage(null);
+  };
+  /** The finger has rested: from now until it lifts, it names what lies beneath it. */
+  const hold = (press: Finger) => {
+    if (finger.current !== press) return;
+    press.held = true;
+    press.timer = null;
+    if (atlas.current) return follow(press, 0);
+    // The grid is still on its way: the finger names once it has come, wherever it then is.
+    void loadGrid().then(() => {
+      if (finger.current === press) follow(press, 0);
+    });
+  };
+  /** The finger is no longer the sky's: it scrolled, a second joined it, or the browser took it. */
+  const letGo = () => {
+    const press = finger.current;
+    if (!press) return;
+    if (press.timer) clearTimeout(press.timer);
+    finger.current = null;
+    if (press.held) rest();
+  };
+  /** A finger came down on the sky: it is held once it has rested there, unless it moves first. */
+  const onPointerDown = (event: ReactPointerEvent<HTMLDivElement>) => {
+    lifted.current = false;
+    if (event.pointerType !== 'touch') return;
+    // A second finger makes a pinch, the browser's to zoom by: the first names no more.
+    if (finger.current) return letGo();
+    if (lone.current !== null) return;
+    const { pointerId: id, clientX: x, clientY: y } = event;
+    const press: Finger = { id, x0: x, y0: y, x, y, held: false, timer: null };
+    press.timer = setTimeout(() => hold(press), HOLD_MS);
+    finger.current = press;
+    void loadGrid();
+  };
   const onPointerMove = (event: ReactPointerEvent<HTMLDivElement>) => {
-    if (event.pointerType === 'touch') return;
+    if (event.pointerType === 'touch') {
+      const press = finger.current;
+      if (!press || press.id !== event.pointerId) return;
+      Object.assign(press, { x: event.clientX, y: event.clientY });
+      if (press.held) return follow(press);
+      // A finger that moves before it has rested is scrolling the page, not naming.
+      if (Math.hypot(press.x - press.x0, press.y - press.y0) > HOLD_SLOP_PX) letGo();
+      return;
+    }
     Object.assign(pointer.current, { inside: true, x: event.clientX, y: event.clientY });
     if (lone.current !== null) return;
     if (atlas.current) return name();
@@ -292,16 +396,52 @@ export function AllTheLight({
       name();
     });
   };
+  /** Lifting a held finger chooses the brightest orbit beneath it; lifting it off the sky, none. */
+  const onPointerUp = (event: ReactPointerEvent<HTMLDivElement>) => {
+    const press = finger.current;
+    if (!press || press.id !== event.pointerId) return;
+    if (press.timer) clearTimeout(press.timer);
+    finger.current = null;
+    // Lifted before it rested: a tap, and the click that follows chooses at once.
+    if (!press.held) return;
+    lifted.current = true;
+    if (lone.current !== null) return;
+    const { clientX, clientY } = event;
+    if (!onSky(clientX, clientY)) return rest();
+    if (atlas.current) return chooseAt(clientX, clientY);
+    void loadGrid().then(() => chooseAt(clientX, clientY));
+  };
   const onClick = async (event: ReactMouseEvent<HTMLDivElement>) => {
+    // A held finger chose as it lifted; the click its lift may bring chooses nothing more.
+    if (lifted.current) {
+      lifted.current = false;
+      return;
+    }
     if (lone.current !== null) return back();
     const { clientX, clientY } = event;
     await loadGrid();
-    const ids = namesUnder(clientX, clientY);
-    // Without the grid there is nothing to say about the place, not even "none".
-    if (ids === null) return;
-    if (!ids.length) return say([]);
-    choose(ids[0]);
+    chooseAt(clientX, clientY);
   };
+
+  // A held finger's moves are the sky's, so the page does not scroll beneath it; its lift chose,
+  // so no click follows it where the browser lets that be said. React's touch listeners are
+  // passive, so these are the frame's own.
+  useEffect(() => {
+    const node = frame.current;
+    if (!node) return;
+    const keep = (event: TouchEvent) => {
+      if (finger.current?.held && event.cancelable) event.preventDefault();
+    };
+    const spent = (event: TouchEvent) => {
+      if (lifted.current && event.cancelable) event.preventDefault();
+    };
+    node.addEventListener('touchmove', keep, { passive: false });
+    node.addEventListener('touchend', spent, { passive: false });
+    return () => {
+      node.removeEventListener('touchmove', keep);
+      node.removeEventListener('touchend', spent);
+    };
+  }, []);
 
   // Escape leaves a work alone for the whole sky again, unless a dialog over the page takes it.
   const onEscape = useEffectEvent((event: KeyboardEvent) => {
@@ -349,8 +489,20 @@ export function AllTheLight({
           data-naming={named.length ? '' : undefined}
           data-alone={chosen ? '' : undefined}
           onPointerEnter={() => void loadGrid()}
+          onPointerDown={onPointerDown}
           onPointerMove={onPointerMove}
-          onPointerLeave={rest}
+          onPointerUp={onPointerUp}
+          onPointerCancel={(event) => {
+            if (finger.current?.id === event.pointerId) letGo();
+          }}
+          onPointerLeave={(event) => {
+            // A finger leaves as it lifts; its lift, not its leaving, says what comes next.
+            if (event.pointerType !== 'touch') rest();
+          }}
+          onContextMenu={(event) => {
+            // A long press opens no menu while a finger is on the sky: a menu would take it away.
+            if (finger.current) event.preventDefault();
+          }}
           onClick={onClick}
         >
           {skies.map((sky, index) =>
@@ -393,8 +545,18 @@ export function AllTheLight({
             />
           ) : null}
         </div>
-        <figcaption className={styles.readout} aria-live="polite">
-          {message}
+        {/* Where the screen is touched the line keeps the finger's invitation's room (data-room)
+            while names stand in its place, so its height never changes under a held finger. */}
+        <figcaption className={styles.readout} aria-live="polite" data-room={labels.hold}>
+          {message === null ? (
+            // The invitation speaks to a pointer, or to a finger where the screen is touched.
+            <>
+              <span className={styles.pointing}>{labels.point}</span>
+              <span className={styles.holding}>{labels.hold}</span>
+            </>
+          ) : (
+            <span>{message}</span>
+          )}
         </figcaption>
       </figure>
       {/* The choice's words keep their line when nothing is chosen, so choosing moves no more. */}
@@ -404,7 +566,12 @@ export function AllTheLight({
             <Link className={styles.word} href={chosen.href}>
               {fill(labels.visit, { work: chosen.numeral })} →
             </Link>
-            <button type="button" className={styles.word} onClick={back}>
+            <button
+              type="button"
+              className={styles.word}
+              // A click's count is nought from the keyboard, one or more from a hand.
+              onClick={(event) => back(event.detail > 0)}
+            >
               {labels.back}
             </button>
           </>
@@ -460,7 +627,9 @@ export function AllTheLight({
                         if (event.pointerType !== 'touch') nameFromIndex(work.id);
                       }}
                       onPointerLeave={rest}
-                      onFocus={() => nameFromIndex(work.id)}
+                      onFocus={() => {
+                        if (!quiet.current) nameFromIndex(work.id);
+                      }}
                       onBlur={rest}
                       onClick={() => (alone === work.id ? back() : chooseFromIndex(work.id))}
                     >

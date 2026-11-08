@@ -39,10 +39,10 @@ export function roomForPath(pathname: string): Room {
  * day's, by the arithmetic of src/lib/art/day.ts on the day's-work pool's size and the
  * server's pin. The wing takes the ground over at hydration (src/components/wing.tsx).
  *
- * It also decides the Overture (src/components/overture.tsx): a first visit to the home, with
- * nothing asked of the plate in the URL and motion welcome, paints black and marks
- * <html data-overture="pending">, so the running head and the plate wait under the black from
- * the first frame. The home's arrival is then the Overture's, so it opens on the still.
+ * It also decides the home's one timed event, First Light (src/components/overture.tsx): a first
+ * visit to the home, with nothing asked of the plate in the URL and motion welcome, marks
+ * <html data-overture="pending">. The day's plate stands alone from the first frame, on its own
+ * ground, with the running head held back; the light then performs over it.
  */
 export function roomScript({ poolSize, pinned }: { poolSize: number; pinned?: string }): string {
   return [
@@ -66,8 +66,10 @@ export function roomScript({ poolSize, pinned }: { poolSize: number; pinned?: st
     "if(p==='/'&&!q.get('expression')&&!location.hash){var o=false;",
     `try{o=!localStorage.getItem(${JSON.stringify(OVERTURE_KEY)})&&`,
     `sessionStorage.getItem(${JSON.stringify(MOTION_KEY)})!=='paused'&&`,
-    "!matchMedia('(prefers-reduced-motion: reduce)').matches}catch(x){o=false}",
-    "if(o){document.documentElement.setAttribute('data-overture','pending');n=true;",
+    "!matchMedia('(prefers-reduced-motion: reduce)').matches&&",
+    // A visitor saving data is not sent a performance unasked.
+    '!(navigator.connection&&navigator.connection.saveData)}catch(x){o=false}',
+    "if(o){document.documentElement.setAttribute('data-overture','pending');",
     `try{sessionStorage.setItem(${JSON.stringify(HOME_RESOLVED_KEY)},'resolved')}catch(x){}}}`,
     "document.documentElement.setAttribute('data-room',n?'night':'paper');",
     'var m=document.querySelector(\'meta[name="theme-color"]\');',

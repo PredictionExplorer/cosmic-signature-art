@@ -216,6 +216,8 @@ It is the only thumbnail wall on the web whose thumbnails are physics rather tha
 
 ### 5.8 The Overture: the art condenses out of its physics *(built)*
 
+*Succeeded on the home by First Light on 8 November 2026 ([first-light.md](first-light.md) §13): the gate, the phases and the crossing to the day's Ink remain; the performance is First Light's.*
+
 The home page on a first visit:
 1. **0 s.** Black, and the day's work's three bodies begin their orbit, live and verified.
 2. **About 1 s.** The trails start to draw.
@@ -325,8 +327,8 @@ Each phase ships behind a flag, on its own branch, with the existing seven-proje
 
 **Phase D — the events (3–4 weeks).** *Begun 4 November 2026 with two equal expressions and phones; see [third-physics-phase-d.md](third-physics-phase-d.md).*
 - The Overture, version 1 then version 2 with drift registration (both built).
-- After the frame.
-- The choice in the process essay.
+- After the frame (built).
+- The choice in the process essay (built).
 - Opening night physics-first, once the pipeline publishes traits early.
 
 **Phase E — the score, the lenses and Verify an orbit.** *Built 5 November 2026; see [third-physics-phase-e.md](third-physics-phase-e.md).*
@@ -361,8 +363,8 @@ Each phase ships behind a flag, on its own branch, with the existing seven-proje
 
 ## 11. Decisions for the owner
 
-1. **Direction.** Adopt Third Physics on top of Two Grounds, including the rule changes in §7.
-2. **The Overture.** Should it replace the Dusk as the home's one timed event on first visits? *Yes (owner, 4 November 2026); version 1 is built, [third-physics-phase-d.md](third-physics-phase-d.md) §7.*
-3. **Derived views.** Should All the light and the When lens be public, labelled as analysis?
+1. **Direction.** Adopt Third Physics on top of Two Grounds, including the rule changes in §7. *Adopted. Phase A began on 29 October 2026, and Phases B to E have followed (§8).*
+2. **The Overture.** Should it replace the Dusk as the home's one timed event on first visits? *Yes (owner, 4 November 2026); versions 1 and 2 are built, [third-physics-phase-d.md](third-physics-phase-d.md) §7.*
+3. **Derived views.** Should All the light and the When lens be public, labelled as analysis? *Yes. Both are public, and the Wavelength lens has joined them (Phase E). The lenses say "Analysis, not the work", and All the light says "A derived view, not a work". None is a sharing card, and tests keep each off every sale surface.*
 4. **Pipeline.** Will the generator team publish the stream offset (or initial state) and early traits, and consider a WebAssembly build of `sim.rs`?
-5. **Order of work.** The recommendation is Phase A then B, because the re-performance underpins everything else and the crossing is the most visible change.
+5. **Order of work.** The recommendation is Phase A then B, because the re-performance underpins everything else and the crossing is the most visible change. *Followed: Phase A (PR #2), then Phase B (PR #3), both built on 29–30 October 2026.*

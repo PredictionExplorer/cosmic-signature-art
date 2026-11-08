@@ -246,6 +246,10 @@ export const ko: Messages = {
   arriving: '불러오는 중',
   sit: '감상',
   again: '다시',
+  firstLightTitle: '퍼스트 라이트',
+  firstLightSkip: '건너뛰기',
+  firstLightWatch: '생겨나는 모습 보기',
+  firstLightComputed: '방금 이 브라우저에서 시드로부터 계산했습니다.',
   excerpt: '발췌',
   pauseAmbientMotion: '배경 모션 일시정지',
   markLabel: '세 천체, 하나의 궤도 — Cosmic Signature',
@@ -651,6 +655,8 @@ export const ko: Messages = {
   allTheLightAlt:
     '모든 빛({span}): 작품 {count}점의 빛 정지 이미지를 더한 것으로, 궤도가 겹치는 곳은 희고 가장자리에는 색이 남습니다. 작품이 아니라 작품에서 이끌어 낸 보기입니다.',
   allTheLightPoint: '어디든 가리키면 그곳을 지나는 궤도의 이름이 나타납니다.',
+  allTheLightHold:
+    '어디든 길게 누르면 손가락 아래를 지나는 궤도의 이름이 나타나고, 손가락을 떼면 가장 밝은 궤도만 보입니다.',
   allTheLightThrough: '이 지점을 지나는 궤도 · {works}',
   allTheLightNone: '이곳을 지나는 궤도는 없습니다.',
   allTheLightAlone: '{work}만, 손대지 않은 그 작품의 정지 이미지로',
