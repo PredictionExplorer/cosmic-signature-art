@@ -1,0 +1,80 @@
+/* First Light (docs/first-light.md §4): the still on the Light's night, and its light over it. */
+
+.stage {
+  position: relative;
+  height: calc(100svh - var(--head));
+  min-height: 320px;
+  overflow: hidden;
+  background: var(--color-night);
+  color: var(--color-cream);
+}
+
+.still,
+.light {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.still {
+  object-fit: contain;
+}
+
+/* The light is drawn over the still and shown only while it performs. */
+.light {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.foot {
+  position: absolute;
+  inset: auto 0 0;
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 0 16px 8px;
+  pointer-events: none;
+}
+
+.foot > * {
+  pointer-events: auto;
+}
+
+.caption {
+  display: grid;
+  gap: 4px;
+  max-width: 34ch;
+  padding-bottom: 12px;
+}
+
+.work {
+  font-size: 15px;
+  color: inherit;
+}
+
+.line {
+  font-size: 13px;
+  line-height: 1.45;
+  color: color-mix(in srgb, var(--color-cream) 72%, transparent);
+}
+
+.control {
+  min-height: 44px;
+  padding: 12px 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  font-size: 15px;
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.25em;
+  cursor: pointer;
+}
+
+.control:focus-visible {
+  outline: 1px solid currentColor;
+  outline-offset: 4px;
+}
