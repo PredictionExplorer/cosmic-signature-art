@@ -9,9 +9,10 @@ import { derivedValue, measurementLabels, recordValues } from './orbit-proof';
 import styles from './orbit-score.module.css';
 
 /**
- * The published record, checked here (orbit-score.tsx). Each measurement stands as the record
- * states it and is marked as the derivation in this browser reaches it, with both values where
- * they differ. The summary speaks once every row has been checked, from a slot of its own.
+ * The published record, checked here (orbit-score.tsx): the record's opening, in act two of the
+ * work page. Each measurement stands as the record states it and is marked as the derivation in
+ * this browser reaches it, with both values where they differ. The summary speaks once every row
+ * has been checked, from a slot of its own.
  */
 export function OrbitRecord({
   orbit,
@@ -19,6 +20,7 @@ export function OrbitRecord({
   locale,
   comparisons,
   summary,
+  labelledBy,
 }: {
   orbit: WorkOrbit;
   t: Messages;
@@ -26,14 +28,15 @@ export function OrbitRecord({
   /** The rows checked so far, or none before the derivation is done. */
   comparisons: Comparison[] | null;
   summary: string | null;
+  /** The heading that names the table: the record's opening (orbit-score.tsx). */
+  labelledBy: string;
 }) {
   const number = useMemo(() => new Intl.NumberFormat(locale), [locale]);
   const labels = measurementLabels(t);
   const record = recordValues(orbit, t, number);
   return (
     <div className={styles.record}>
-      <table className={styles.proof}>
-        <caption className={styles.tableCaption}>{t.orbitTableCaption}</caption>
+      <table className={styles.proof} aria-labelledby={labelledBy}>
         <thead className={styles.visuallyHidden}>
           <tr>
             <th scope="col">{t.orbitMeasurement}</th>
