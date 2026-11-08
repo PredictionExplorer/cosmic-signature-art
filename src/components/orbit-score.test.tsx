@@ -713,3 +713,120 @@ describe('the orbit on the plate', () => {
     expect(arcs(0.025).length).toBeGreaterThanOrEqual(3);
   });
 });
+
+describe('the clock in the visitor’s hands', () => {
+  const slider = () => screen.getByRole('slider', { name: t.orbitTimeLabel });
+  /** № 031 in view with motion welcome, two seconds into its performance. */
+  function playing() {
+    Object.assign(motion, { paused: false, reducedMotion: false });
+    const view_ = render(<OrbitScore orbit={orbit} t={t} locale="en" />);
+    approach();
+    view(true);
+    derive();
+    clockNow = 800 + 2_000;
+    nextFrame();
+    return view_;
+  }
+
+  it('pauses where it stands, and plays on from there', () => {
+    playing();
+    fireEvent.click(screen.getByRole('button', { name: t.pause }));
+    expect(frames.size).toBe(0);
+    expect(screen.getByText(/· 00:02 into the Light film$/)).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: t.play }));
+    expect(screen.getByRole('button', { name: t.pause })).toBeInTheDocument();
+    clockNow += 1_000;
+    nextFrame();
+    clockNow += 1_000;
+    nextFrame();
+    expect(screen.getByText(/· 00:04 into the Light film$/)).toBeInTheDocument();
+  });
+
+  it('sets the moment from the slider, forward or back, at once', () => {
+    playing();
+    // The slider holds the film's frames, and says the moment it stands at.
+    expect(slider()).toHaveAttribute('min', '0');
+    expect(slider()).toHaveAttribute('max', String(1_802 - 1));
+    fireEvent.click(screen.getByRole('button', { name: t.pause }));
+    fireEvent.change(slider(), { target: { value: '600' } });
+    expect(
+      screen.getByText(/^Step 333,555 of 1,000,000 · 00:10 into the Light film$/),
+    ).toBeInTheDocument();
+    expect(slider()).toHaveAttribute('aria-valuetext', expect.stringMatching(/00:10/));
+    // Back, the drawing is laid again from the window's first step.
+    calls = [];
+    fireEvent.change(slider(), { target: { value: '60' } });
+    expect(calls.some((call) => call.name === 'clearRect')).toBe(true);
+    expect(screen.getByText(/· 00:01 into the Light film$/)).toBeInTheDocument();
+    // Paused before, it stays paused.
+    expect(frames.size).toBe(0);
+  });
+
+  it('carries the moment with a hand on the score, and plays on when let go', () => {
+    playing();
+    const strip = slider();
+    strip.getBoundingClientRect = () =>
+      ({ left: 0, width: 1_801, top: 0, height: 54, right: 1_801, bottom: 54 }) as DOMRect;
+    fireEvent.pointerDown(strip, { pointerId: 3, pointerType: 'mouse', button: 0, clientX: 1_200 });
+    // Held, the clock stands still.
+    expect(frames.size).toBe(0);
+    expect(screen.getByText(/· 00:20 into the Light film$/)).toBeInTheDocument();
+    fireEvent.pointerMove(strip, { pointerId: 3, pointerType: 'mouse', clientX: 900 });
+    expect(screen.getByText(/· 00:15 into the Light film$/)).toBeInTheDocument();
+    fireEvent.pointerUp(strip, { pointerId: 3, pointerType: 'mouse' });
+    // It was playing, so it plays on.
+    expect(frames.size).toBeGreaterThan(0);
+  });
+
+  it('slows as the bodies pass their closest approach', () => {
+    playing();
+    fireEvent.click(screen.getByRole('button', { name: t.toClosestApproach }));
+    // From two seconds of film before it, it reaches the approach later than the film would:
+    // at the film's own pace twenty frames of a tenth of a second would do.
+    let frames_ = 0;
+    while (!screen.queryByText('Closest approach · bodies 1–3, 80.2 apart') && frames_ < 200) {
+      clockNow += 100;
+      nextFrame();
+      frames_ += 1;
+    }
+    expect(screen.getByText('Closest approach · bodies 1–3, 80.2 apart')).toBeInTheDocument();
+    expect(frames_).toBeGreaterThan(22);
+  });
+
+  it('offers Play where motion is unwelcome, plays only when asked, then offers Again', () => {
+    render(<OrbitScore orbit={orbit} t={t} locale="en" />);
+    approach();
+    view(true);
+    derive();
+    expect(frames.size).toBe(0);
+    expect(screen.queryByRole('button', { name: t.again })).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: t.play }));
+    expect(frames.size).toBeGreaterThan(0);
+    framesUntil(() => screen.queryByRole('button', { name: t.again }) !== null, 400);
+    // The closest approach rests on it, where motion is unwelcome.
+    fireEvent.click(screen.getByRole('button', { name: t.toClosestApproach }));
+    expect(frames.size).toBe(0);
+    expect(screen.getByText('Closest approach · bodies 1–3, 80.2 apart')).toBeInTheDocument();
+  });
+});
+
+describe('the orbit in the hand, in the section', () => {
+  const plate031 = orbitPlate(getCuratedArtwork(31)!)!;
+
+  it('asks for the window in depth only where it could be drawn', () => {
+    render(<OrbitScore orbit={orbit} t={t} locale="en" plate={plate031} opening="light" both />);
+    approach();
+    expect(workers[0].posted[0].space).toBeUndefined();
+    cleanup();
+    workers = [];
+    observers = [];
+    vi.stubGlobal('WebGL2RenderingContext', class {});
+    render(<OrbitScore orbit={orbit} t={t} locale="en" plate={plate031} opening="light" both />);
+    approach();
+    expect(workers[0].posted[0]).toMatchObject({ space: true, frame: plate031.frame });
+  });
+
+  it('carries a small rung of the Light still to colour the light in depth', () => {
+    expect(plate031.stills.light!.colours).toMatch(/\/31-light-(640|960|1280)-/);
+  });
+});

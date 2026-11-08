@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { performedOrbits } from '@/lib/art/orbit-windows';
 import { plateFrame } from '@/lib/art/orbit-frames';
 import { framedSamples, type WindowStart } from '@/lib/physics/framing';
-import { plateSpace, sampleAt, sampleCount, sculptureRadius } from './samples';
+import { headAt, plateSpace, sampleAt, sampleCount, sculptureRadius } from './samples';
 
 /** A work's window cut short: the same first state, so its first steps are the window's own. */
 function opening(id: number, steps: number): WindowStart {
@@ -83,6 +83,18 @@ describe('First Light in plate space', () => {
     expect(sampleAt(space, 151)).toBe(2);
     expect(sampleAt(space, 1_220)).toBe(space.count - 1);
     expect(sampleAt(space, 99_999)).toBe(space.count - 1);
+  });
+
+  it('places any step among the samples, evenly between two', () => {
+    // 1,234 steps at a stride of 100: samples at 0, 100, …, 1,200 and the last step, 1,233.
+    const space = plateSpace(opening(31, 1_234), plateFrame(31)!, 100);
+    expect(headAt(space, -5)).toBe(0);
+    expect(headAt(space, 0)).toBe(0);
+    expect(headAt(space, 150)).toBeCloseTo(1.5, 12);
+    expect(headAt(space, 1_200)).toBe(space.count - 2);
+    expect(headAt(space, 1_211)).toBeCloseTo(space.count - 2 + 11 / 33, 12);
+    expect(headAt(space, 1_233)).toBe(space.count - 1);
+    expect(headAt(space, 5_000)).toBe(space.count - 1);
   });
 
   it('refuses a stride or a window it cannot sample', () => {

@@ -621,6 +621,12 @@ export const ja: Messages = {
   orbitEscaped: '天体 {body} が第 {step} ステップで脱出しました',
   orbitHeld: '{steps} ステップのあいだ、舞は続きました',
   toTheEjection: '脱出へ',
+  orbitStageLabel: '奥行きのある軌道。矢印キーで回し、Escキーで生成器の視点に戻ります。',
+  orbitTurnHint: '軌道をドラッグすると、奥行きの中で回せます。手を離すと、生成器の視点に戻ります。',
+  orbitTurnHintTouch:
+    '軌道を長押ししてからドラッグすると、奥行きの中で回せます。指を離すと、生成器の視点に戻ります。',
+  orbitGeneratorView: '生成器の視点',
+  orbitTimeLabel: '光の映像の中の瞬間',
   filmPhysics: '天体 {pair} · 距離 {distance}',
   toClosestApproach: '最接近へ',
   closestApproachAt: '最接近の少し手前から全編を開きます（{clock}）',

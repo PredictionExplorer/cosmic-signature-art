@@ -1,4 +1,5 @@
 import type { Lens } from '@/lib/first-light/camera';
+import type { Rgb } from '@/lib/first-light/material';
 import type { PlateSpace } from '@/lib/first-light/samples';
 
 /*
@@ -10,6 +11,12 @@ import type { PlateSpace } from '@/lib/first-light/samples';
   - Points live in float textures, fetched by vertex index. Nothing about the orbit is computed
     here; samples.ts has done that, exactly.
   - A browser without WebGL 2 gets no engine. The still simply stays.
+
+  It can also lay the trails as ink on paper, for the work page's Ink plate (§14). The same target
+  then accumulates optical density, which adds as layers of ink do, and the composite gives back
+  the sheet's tone where none lies: paper · e^(−density). Ink has no glow, each body is ringed at
+  the size of the hollow it left, and only the primary symmetry copy is drawn, the one the Ink
+  edition stirred with.
 */
 
 const POINTS_WIDTH = 4096;
@@ -72,7 +79,10 @@ uniform int uBody;
 uniform float uHead;
 uniform float uHeads;
 uniform float uHeadSpan;
+uniform float uHeadGain;
 uniform float uWidth;
+uniform int uFixedColour;
+uniform vec3 uBodyColour;
 out vec3 vColour;
 out float vAcross;
 out float vBright;
@@ -94,21 +104,27 @@ void main() {
   gl_Position = vec4(position / (0.5 * uViewport), 0.0, 1.0);
   vAcross = side;
 
-  // The still's light where this point came to rest on the plate: its hue, at full strength.
-  vec3 rest = placed(at, uBody, 1.0);
-  vec2 uv = (rest.xy + 0.5 * uPlate) / uPlate;
-  vec3 still = pow(textureLod(uStill, uv, uColourLod).rgb, vec3(2.2));
-  float strongest = max(max(still.r, still.g), still.b);
-  vec3 hue = strongest > 0.004 ? still / strongest : vec3(1.0, 0.93, 0.86);
-  // Reading the still at a smaller size blends a trail's hue with its neighbours'; a little of
-  // the chroma that blending takes is given back, about the hue's own luminance.
-  float luminance = dot(hue, vec3(0.2126, 0.7152, 0.0722));
-  vColour = max(mix(vec3(luminance), hue, 1.25), vec3(0.0));
+  if (uFixedColour == 1) {
+    // Ink: each body's own absorbance, as the drawing on the plate lays it.
+    vColour = uBodyColour;
+  } else {
+    // The still's light where this point came to rest on the plate: its hue, at full strength.
+    vec3 rest = placed(at, uBody, 1.0);
+    vec2 uv = (rest.xy + 0.5 * uPlate) / uPlate;
+    vec3 still = pow(textureLod(uStill, uv, uColourLod).rgb, vec3(2.2));
+    float strongest = max(max(still.r, still.g), still.b);
+    vec3 hue = strongest > 0.004 ? still / strongest : vec3(1.0, 0.93, 0.86);
+    // Reading the still at a smaller size blends a trail's hue with its neighbours'; a little of
+    // the chroma that blending takes is given back, about the hue's own luminance.
+    float luminance = dot(hue, vec3(0.2126, 0.7152, 0.0722));
+    vColour = max(mix(vec3(luminance), hue, 1.25), vec3(0.0));
+  }
   float behind = max(uHead - at, 0.0);
-  // Light farther from the eye is dimmer, nearer brighter: depth read as light falls off.
-  // Flat, every point is at the centre plane's distance and nothing changes.
+  // Light farther from the eye is dimmer, nearer brighter: depth read as light falls off. Ink
+  // farther is paler, nearer darker. Flat, every point is at the centre plane's distance and
+  // nothing changes.
   float depth = clamp(here.z * here.z, 0.35, 1.6);
-  vBright = (1.0 + uHeads * 2.6 * exp(-behind / uHeadSpan)) * depth;
+  vBright = (1.0 + uHeads * uHeadGain * exp(-behind / uHeadSpan)) * depth;
 }`;
 
 const TRAIL_FRAGMENT = `${HEADER}
@@ -126,7 +142,9 @@ const BODY_VERTEX = `${HEADER}${PLACE}
 uniform float uHead;
 uniform float uBodySize;
 uniform float uFlare;
+uniform vec3 uBodyColours[3];
 out vec2 vOffset;
+out vec3 vTint;
 const vec2 CORNERS[6] = vec2[6](
   vec2(-1.0, -1.0), vec2(1.0, -1.0), vec2(1.0, 1.0),
   vec2(-1.0, -1.0), vec2(1.0, 1.0), vec2(-1.0, 1.0)
@@ -137,16 +155,31 @@ void main() {
   float size = uBodySize * clamp(here.z, 0.5, 3.0) * (1.0 + 0.8 * uFlare);
   gl_Position = vec4((here.xy + corner * size) / (0.5 * uViewport), 0.0, 1.0);
   vOffset = corner;
+  vTint = uBodyColours[gl_InstanceID];
 }`;
+
+/** A body's outline sits at this share of its quad; its line and centre are this fine. */
+const RING_AT = 0.8;
 
 const BODY_FRAGMENT = `${HEADER}
 uniform float uBodies;
 uniform float uFlare;
+uniform int uRing;
+uniform float uRingWidth;
 in vec2 vOffset;
+in vec3 vTint;
 out vec4 colour;
 void main() {
   float r2 = dot(vOffset, vOffset);
-  float glare = exp(-r2 * 9.0) * 6.0 + exp(-r2 * 2.2) * 0.9;
+  if (uRing == 1) {
+    // Ink: the body outlined at the size of the hollow it left, and its centre marked.
+    float edge = (sqrt(r2) - ${RING_AT.toFixed(2)}) / uRingWidth;
+    float density = exp(-edge * edge) + exp(-r2 / (uRingWidth * uRingWidth * 2.25));
+    colour = vec4(vTint * density * 2.0 * uBodies, 1.0);
+    return;
+  }
+  // The wide glare falls to nothing before the square's edge, or the square would show.
+  float glare = (exp(-r2 * 9.0) * 6.0 + exp(-r2 * 2.2) * 0.9) * (1.0 - smoothstep(0.5, 1.0, sqrt(r2)));
   colour = vec4(vec3(1.0, 0.96, 0.9) * glare * uBodies * (1.0 + 2.5 * uFlare), 1.0);
 }`;
 
@@ -178,9 +211,17 @@ uniform sampler2D uLight;
 uniform sampler2D uGlow;
 uniform float uGlowStrength;
 uniform float uExposure;
+uniform int uInk;
+uniform vec3 uPaper;
 in vec2 vUv;
 out vec4 colour;
 void main() {
+  if (uInk == 1) {
+    // Ink: the density laid on the sheet's tone, which comes back exactly where none lies.
+    vec3 density = textureLod(uLight, vUv, 0.0).rgb;
+    colour = vec4(pow(uPaper * exp(-density * uExposure), vec3(1.0 / 2.2)), 1.0);
+    return;
+  }
   vec3 light = textureLod(uLight, vUv, 0.0).rgb + texture(uGlow, vUv).rgb * uGlowStrength;
   vec3 mapped = 1.0 - exp(-light * uExposure);
   colour = vec4(pow(mapped, vec3(1.0 / 2.2)), 1.0);
@@ -211,6 +252,30 @@ export interface Look {
 export const LOOK: Look = { intensity: 0.5, width: 1.7, glow: 0.65, exposure: 1.35, bodySize: 10 };
 
 /**
+ * Ink's look: fine lines like a pencil's, each taking about half the paper's light at its core, and
+ * darker where they cross; no glow. Tuned by eye against the drawing on the Ink plate.
+ */
+export const INK_LOOK: Look = { intensity: 0.8, width: 1.3, glow: 0, exposure: 1, bodySize: 0 };
+
+/** How brightly a trail's head burns over the rest of it: light's, and ink's darker front. */
+const HEAD_GAIN = { light: 2.6, ink: 0.8 } as const;
+
+/**
+ * Ink on paper (docs/first-light.md §14): the trails laid as density on the sheet's own tone,
+ * each body ringed at the size of the hollow it left. Paper is never brighter than white, so ink
+ * is drawn in WebGL 2 alone.
+ */
+export interface InkPalette {
+  /** The sheet's tone in the engine's linear light (material.ts hexToLinear). */
+  paper: Rgb;
+  /** Each body's trail and outline, as absorbance (material.ts inkTrail, inkBody). */
+  trails: readonly [Rgb, Rgb, Rgb];
+  bodies: readonly [Rgb, Rgb, Rgb];
+  /** A body's outline, as a share of the plate's height (orbit-picture.ts INK_BODY_RADIUS). */
+  bodyRadius: number;
+}
+
+/**
  * What a show needs of an engine, whichever draws it: WebGL 2 here, or WebGPU where the screen
  * can show light brighter than its white (first-light-engines.ts).
  */
@@ -218,8 +283,8 @@ export interface Engine {
   /** The context is gone: the show gives the still back. */
   readonly lost: boolean;
   look: Look;
-  /** The window to draw, and the still whose light colours it. */
-  setScene(space: PlateSpace, still: TexImageSource): void;
+  /** The window to draw, and the still whose light colours it; ink needs none. */
+  setScene(space: PlateSpace, still?: TexImageSource): void;
   /** The drawing buffer for the canvas's CSS size, at up to twice the CSS pixels. */
   resize(width: number, height: number, ratio: number): void;
   /** One moment of the performance, on the canvas. */
@@ -255,10 +320,11 @@ export class LightEngine implements Engine {
   private stillLod = 1.5;
   private headSpan = 200;
   private contextLost = false;
-  look: Look = LOOK;
+  private readonly ink: InkPalette | null;
+  look: Look;
 
-  /** An engine on this canvas, or nothing where WebGL 2 cannot draw it. */
-  static create(canvas: HTMLCanvasElement): LightEngine | null {
+  /** An engine on this canvas, in light or in ink, or nothing where WebGL 2 cannot draw it. */
+  static create(canvas: HTMLCanvasElement, ink?: InkPalette): LightEngine | null {
     const gl = canvas.getContext('webgl2', {
       alpha: false,
       antialias: false,
@@ -269,7 +335,7 @@ export class LightEngine implements Engine {
     });
     if (!gl) return null;
     try {
-      return new LightEngine(canvas, gl);
+      return new LightEngine(canvas, gl, ink ?? null);
     } catch (failure) {
       // A driver that cannot compile the light leaves the still on view; say why, for whoever looks.
       console.warn('First Light cannot draw here:', failure);
@@ -278,9 +344,15 @@ export class LightEngine implements Engine {
   }
 
   // Node strips this file's types without transforming it, so no parameter properties here.
-  private constructor(canvas: HTMLCanvasElement, gl: WebGL2RenderingContext) {
+  private constructor(
+    canvas: HTMLCanvasElement,
+    gl: WebGL2RenderingContext,
+    ink: InkPalette | null,
+  ) {
     this.canvas = canvas;
     this.gl = gl;
+    this.ink = ink;
+    this.look = ink ? INK_LOOK : LOOK;
     this.floatTargets = Boolean(gl.getExtension('EXT_color_buffer_float'));
     this.trail = this.link(TRAIL_VERTEX, TRAIL_FRAGMENT);
     this.body = this.link(BODY_VERTEX, BODY_FRAGMENT);
@@ -342,8 +414,8 @@ export class LightEngine implements Engine {
     return texture;
   }
 
-  /** The window to draw, and the still whose light colours it. */
-  setScene(space: PlateSpace, still: TexImageSource) {
+  /** The window to draw, and the still whose light colours it; ink colours its own. */
+  setScene(space: PlateSpace, still?: TexImageSource) {
     const gl = this.gl;
     for (const texture of [this.points, this.drift, this.still])
       if (texture) gl.deleteTexture(texture);
@@ -354,6 +426,16 @@ export class LightEngine implements Engine {
     const texture = gl.createTexture()!;
     gl.bindTexture(gl.TEXTURE_2D, texture);
     gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, false);
+    if (!still) {
+      // Nothing to read colours from: one white texel keeps the sampler bound, and is never read.
+      const white = new Uint8Array([255, 255, 255, 255]);
+      gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA8, 1, 1, 0, gl.RGBA, gl.UNSIGNED_BYTE, white);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+      this.still = texture;
+      this.stillLod = 0;
+      return;
+    }
     gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA8, gl.RGBA, gl.UNSIGNED_BYTE, still);
     gl.generateMipmap(gl.TEXTURE_2D);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
@@ -452,6 +534,7 @@ export class LightEngine implements Engine {
   draw(exposure: Exposure) {
     const gl = this.gl;
     const space = this.space;
+    const ink = this.ink;
     if (!space || !this.light || !this.glowA || !this.glowB || this.lost) return;
     const ratio = this.canvas.width / Math.max(1, this.canvas.clientWidth || this.canvas.width);
     const head = Math.min(1, Math.max(0, exposure.drawn)) * (space.count - 1);
@@ -474,14 +557,19 @@ export class LightEngine implements Engine {
     gl.uniform1f(trail.uniform('uHead'), head);
     gl.uniform1f(trail.uniform('uHeads'), exposure.heads);
     gl.uniform1f(trail.uniform('uHeadSpan'), this.headSpan);
+    gl.uniform1f(trail.uniform('uHeadGain'), ink ? HEAD_GAIN.ink : HEAD_GAIN.light);
     gl.uniform1f(trail.uniform('uWidth'), this.look.width * ratio);
     // Fewer, longer trails on a small stage would pile up: the light follows the stage's scale.
     gl.uniform1f(trail.uniform('uIntensity'), this.look.intensity);
+    gl.uniform1i(trail.uniform('uFixedColour'), ink ? 1 : 0);
     const vertices = (Math.ceil(head) + 1) * 2;
-    for (const copy of space.copies) {
+    // Ink is laid in the primary copy alone, as the Ink edition stirred with it.
+    const copies = ink ? space.copies.slice(0, 1) : space.copies;
+    for (const copy of copies) {
       this.place(trail, exposure, copy);
       for (let body = 0; body < 3; body++) {
         gl.uniform1i(trail.uniform('uBody'), body);
+        if (ink) gl.uniform3f(trail.uniform('uBodyColour'), ...ink.trails[body]);
         gl.drawArrays(gl.TRIANGLE_STRIP, 0, vertices);
       }
     }
@@ -490,17 +578,45 @@ export class LightEngine implements Engine {
       const body = this.body;
       gl.useProgram(body.program);
       gl.uniform1f(body.uniform('uHead'), head);
-      gl.uniform1f(body.uniform('uBodySize'), this.look.bodySize * ratio);
-      gl.uniform1f(body.uniform('uFlare'), exposure.flare);
       gl.uniform1f(body.uniform('uBodies'), exposure.heads);
-      for (const copy of space.copies) {
+      if (ink) {
+        // Each body ringed at the size of its hollow on the plate, the line a CSS pixel wide.
+        const reach = ink.bodyRadius * space.height * exposure.lens.pixelScale * ratio;
+        const size = Math.max(1, reach / RING_AT);
+        gl.uniform1f(body.uniform('uBodySize'), size);
+        gl.uniform1f(body.uniform('uRingWidth'), Math.max(0.02, (0.9 * ratio) / size));
+        gl.uniform1f(body.uniform('uFlare'), 0);
+        gl.uniform1i(body.uniform('uRing'), 1);
+        gl.uniform3fv(body.uniform('uBodyColours[0]'), ink.bodies.flat());
+      } else {
+        gl.uniform1f(body.uniform('uBodySize'), this.look.bodySize * ratio);
+        gl.uniform1f(body.uniform('uFlare'), exposure.flare);
+        gl.uniform1i(body.uniform('uRing'), 0);
+      }
+      for (const copy of copies) {
         this.place(body, exposure, copy);
         gl.drawArraysInstanced(gl.TRIANGLES, 0, 6, 3);
       }
     }
     gl.disable(gl.BLEND);
 
-    // The glow: the light at a quarter of its size, blurred across and down, twice.
+    if (ink) {
+      // Ink has no glow: the density goes straight onto the sheet.
+      const composite = this.composite;
+      gl.useProgram(composite.program);
+      gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+      gl.viewport(0, 0, this.canvas.width, this.canvas.height);
+      gl.activeTexture(gl.TEXTURE0);
+      gl.bindTexture(gl.TEXTURE_2D, this.light.texture);
+      gl.uniform1i(composite.uniform('uLight'), 0);
+      gl.uniform1i(composite.uniform('uInk'), 1);
+      gl.uniform3f(composite.uniform('uPaper'), ...ink.paper);
+      gl.uniform1f(composite.uniform('uExposure'), this.look.exposure);
+      gl.drawArrays(gl.TRIANGLES, 0, 3);
+      return;
+    }
+
+    // The glow: the light at a quarter of its size, blurred across and down three times.
     gl.activeTexture(gl.TEXTURE0);
     gl.bindTexture(gl.TEXTURE_2D, this.light.texture);
     gl.generateMipmap(gl.TEXTURE_2D);
@@ -519,6 +635,10 @@ export class LightEngine implements Engine {
     pass(this.glowA, this.glowB, 0, 1, 0);
     pass(this.glowB, this.glowA, 2, 0, 0);
     pass(this.glowA, this.glowB, 0, 2, 0);
+    // The wider round samples every other texel, which leaves a bright point in spaced copies;
+    // a last round at single steps closes them into one smooth glow.
+    pass(this.glowB, this.glowA, 1, 0, 0);
+    pass(this.glowA, this.glowB, 0, 1, 0);
 
     // Onto the stage, tone mapped.
     const composite = this.composite;
@@ -532,6 +652,7 @@ export class LightEngine implements Engine {
     gl.bindTexture(gl.TEXTURE_2D, this.glowB.texture);
     gl.uniform1i(composite.uniform('uGlow'), 1);
     gl.uniform1f(composite.uniform('uGlowStrength'), this.look.glow);
+    gl.uniform1i(composite.uniform('uInk'), 0);
     gl.uniform1f(
       composite.uniform('uExposure'),
       this.floatTargets ? this.look.exposure : this.look.exposure * 1.6,

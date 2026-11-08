@@ -278,17 +278,17 @@ describe('GpuLightEngine', () => {
     engine.draw(moment(0.6, 1));
     expect(fake.device.queue.submit).toHaveBeenCalledTimes(1);
     // Every body's trail in both copies, as one strip each up to its head (2.4 of 4), then the
-    // bodies; a quarter-size copy and four blurs; and the stage.
+    // bodies; a quarter-size copy and six blurs; and the stage.
     expect(fake.passes.map((pass) => pass.draws)).toEqual([
       [
         [8, 6],
         [6, 6],
       ],
-      ...Array.from({ length: 6 }, () => [[3, undefined]]),
+      ...Array.from({ length: 8 }, () => [[3, undefined]]),
     ]);
 
     engine.draw(moment(0.6, 0));
-    expect(fake.passes[7].draws).toEqual([[8, 6]]);
+    expect(fake.passes[9].draws).toEqual([[8, 6]]);
   });
 
   it('is lost with its device', async () => {

@@ -3,7 +3,7 @@ import { ART_HEIGHT, ART_WIDTH } from './constants';
 import { plateFrame } from './orbit-frames';
 import { inkBearsOrbit } from './orbit-hollows';
 import { getPlateGround } from './plate-records';
-import { getInterpretation, type ArtInterpretation, type Artwork } from './types';
+import { getInterpretation, rungFor, type ArtInterpretation, type Artwork } from './types';
 
 /** A still the orbit section lays its drawing over: its ladder, its proportions and its ground. */
 export interface PlateStill {
@@ -13,7 +13,15 @@ export interface PlateStill {
   height: number;
   /** The plate's own measured ground (plate-records.ts), so the still meets it without an edge. */
   tone?: string;
+  /**
+   * A small rung of the same still, about 640 px across, whose light colours the orbit in depth
+   * (first-light-engine.ts), as First Light's is coloured.
+   */
+  colours?: string;
 }
+
+/** The orbit in depth reads its colours from a rung about this wide. */
+const COLOUR_RUNG = 640;
 
 /** Where the orbit section draws: the window's frame on the plate, and the stills it lies over. */
 export interface OrbitPlate {
@@ -35,6 +43,7 @@ function plateStill(id: number, media: ArtInterpretation | undefined): PlateStil
     width: widest?.width ?? media.width ?? ART_WIDTH,
     height: widest?.height ?? media.height ?? ART_HEIGHT,
     tone: getPlateGround(id, media.id, media.stillSha256)?.tone,
+    colours: rungFor(media.rungs, COLOUR_RUNG)?.src,
   };
 }
 

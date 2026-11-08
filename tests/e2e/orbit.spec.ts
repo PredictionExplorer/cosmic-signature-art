@@ -51,8 +51,10 @@ test('the orbit holds still for reduced motion and plays once otherwise', async 
   await expect(orbit).toHaveAttribute('data-phase', 'derived', { timeout: 30_000 });
   const again = orbit.getByRole('button', { name: t.again });
   if (info.project.name.includes('reduced-motion')) {
-    // The whole orbit is drawn at once; there is nothing to replay.
+    // The whole orbit is drawn at once, and nothing plays unasked: Play is offered, not Pause.
     await expect(again).toHaveCount(0);
+    await expect(orbit.getByRole('button', { name: t.play })).toBeVisible();
+    await expect(orbit.getByRole('button', { name: t.pause })).toHaveCount(0);
   } else {
     await expect(orbit.getByText(/into the Light film$/)).toBeVisible();
   }

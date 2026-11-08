@@ -8,8 +8,24 @@ import type { OrbitPlate } from '@/lib/art/orbit-plate';
 import type { Continuation } from '@/lib/physics/continuation';
 import type { DerivedFate } from '@/lib/physics/orbit';
 import { pairName } from '@/lib/physics/film-score';
-import { lightFilmDuration, lightFilmSeconds, stepsDrawnAt } from '@/lib/physics/light-film';
+import {
+  LIGHT_FILM,
+  lightFilmDuration,
+  lightFilmFrames,
+  lightFilmSeconds,
+  stepsDrawnAt,
+} from '@/lib/physics/light-film';
 import { principalPlane, type Plane } from '@/lib/physics/plane';
+import {
+  advance,
+  letGo,
+  pause,
+  play,
+  restingAt,
+  scrub,
+  toClosest,
+  type Transport,
+} from '@/lib/first-light/transport';
 import { AFTER_THE_FRAME_EVENT } from '@/lib/venue-events';
 import { useMotion } from './motion-provider';
 import { drawScore } from './score-drawing';
@@ -20,6 +36,8 @@ import { beyondLine, performBeyond, type Beyond } from './orbit-beyond';
 import { STRIDE, useOrbitDerivation, type Derivation } from './orbit-derivation';
 import { useOrbitPresence } from './orbit-presence';
 import { OrbitRecord } from './orbit-record';
+import { OrbitSculpture, type Sculpture } from './orbit-sculpture';
+import { OrbitSlider } from './orbit-timeline';
 import { progressText, seedShort, verdict } from './orbit-proof';
 import styles from './orbit-score.module.css';
 
@@ -27,6 +45,12 @@ import styles from './orbit-score.module.css';
 const STILL_SIZES = '(max-width: 860px) 100vw, 62vw';
 
 type State = { phase: 'waiting' } | Derivation;
+
+/** Whether this browser could draw the orbit in depth: only then is it sampled for it. */
+const canTurn = () => typeof WebGL2RenderingContext !== 'undefined';
+
+/** The clock as the words and the slider read it, a few times a second. */
+type Clock = { kind: Transport['kind']; seconds: number };
 
 /**
  * The orbit, re-performed: the work's orbit derived from its seed in this browser, drawn at
@@ -44,9 +68,15 @@ type State = { phase: 'waiting' } | Derivation;
  * After the frame (third-physics.md §5.6): the same physics runs on past the recorded window,
  * at the film's pace, with the window dimmed behind it (orbit-beyond.ts).
  *
+ * In the hand (docs/first-light.md §14): where the browser can draw it, the orbit can be taken in
+ * hand and turned in depth, and given back to the generator's view (orbit-sculpture.tsx). The
+ * score is a slider, so the moment can be set either way (orbit-timeline.tsx), and the closest
+ * approach can be played slowly, as a film slows for the moment that matters.
+ *
  * The section is assembled from its parts: where it stands to the visitor (orbit-presence.ts),
- * the derivation (orbit-derivation.ts), the drawing (orbit-painter.ts) and the record
- * (orbit-record.tsx). This component holds the performance's clock and says what is happening.
+ * the derivation (orbit-derivation.ts), the drawing (orbit-painter.ts), the orbit in depth
+ * (orbit-sculpture.tsx), the slider (orbit-timeline.tsx) and the record (orbit-record.tsx). This
+ * component holds the clock (src/lib/first-light/transport.ts) and says what is happening.
  */
 export function OrbitScore({
   orbit,
@@ -72,10 +102,24 @@ export function OrbitScore({
   const continued = useRef<HTMLCanvasElement>(null);
   const marks = useRef<HTMLCanvasElement>(null);
   const events = useRef<HTMLCanvasElement>(null);
+  const slider = useRef<HTMLInputElement>(null);
+  const sculpture = useRef<Sculpture | null>(null);
   const { near, inView, bringNear } = useOrbitPresence(section);
   const [readout, setReadout] = useState<string | null>(null);
   const [done, setDone] = useState(false);
-  const [run, setRun] = useState(0);
+  /**
+   * Where in the Light film the drawing stands. It plays on its own once the section is in view,
+   * from the window's first step, unless motion is unwelcome.
+   */
+  const transport = useRef<Transport>({ kind: 'playing', seconds: 0, slowAt: null });
+  /** The visitor has taken the clock: Play, Pause, the slider or the closest approach. */
+  const [chosen, setChosen] = useState(false);
+  const [clockState, setClockState] = useState<Clock>({ kind: 'playing', seconds: 0 });
+  /** The orbit can be taken in hand here, and is turned from the generator's view now. */
+  const [turnable, setTurnable] = useState(false);
+  const [turned, setTurned] = useState(false);
+  /** The drawing as last laid out, so the clock can move it without laying it out again. */
+  const scene = useRef<{ paint(seconds: number): void; run(): void; speak(): void } | null>(null);
   const [beyond, setBeyond] = useState<Beyond | null>(null);
   /** The plate's word asked for After the frame before the fate was known. */
   const [asked, setAsked] = useState(false);
@@ -94,11 +138,12 @@ export function OrbitScore({
     [locale],
   );
 
-  const { derivation, framed, fate } = useOrbitDerivation({
+  const { derivation, framed, fate, space } = useOrbitDerivation({
     orbit,
     near,
     pace,
     frame: plate?.frame,
+    depth: canTurn(),
     // The plate's word asked before the fate was known: go on past the frame now it is.
     onFate: () => {
       if (asked) goBeyond('end');
@@ -259,6 +304,7 @@ export function OrbitScore({
 
     trail.clearRect(0, 0, width, height);
     beyondTrail.clearRect(0, 0, width, height);
+    scene.current = null;
     if (beyond && derivedFate)
       return performBeyond({
         fate: derivedFate,
@@ -287,69 +333,110 @@ export function OrbitScore({
         onRested: () => setRested(true),
       });
     // Asked for After the frame, the window waits whole for the fate rather than starting over.
-    const whole = still || asked;
-    if (whole || !inView) {
-      // A window drawn to its end on the plate goes on to the still's step, and its bodies
-      // stand where the work left them; in the plane they leave the drawing, as Phase A had it.
-      const reached = whole ? count - 1 : drawn.current;
-      const ended = reached >= count - 1;
-      const last = ended ? picture.last : reached;
-      if (last > 0) painter.strokes(0, last);
-      painter.bodies(last, ended ? rests : true);
-      scoreAt(Math.min(steps - 1, last * STRIDE));
-      if (whole) drawn.current = count - 1;
-      return;
-    }
-    if (drawn.current > 0) painter.strokes(0, drawn.current);
-    const resumeAt = lightFilmSeconds(drawn.current * STRIDE, steps);
-    const begun = performance.now() - resumeAt * 1000;
-    let spoken = 0;
-    const tickFrame = (now: number) => {
-      const seconds = Math.min(film, (now - begun) / 1000);
+    // Where motion is unwelcome it is drawn whole, until the visitor takes the clock.
+    if (asked || (still && !chosen)) transport.current = restingAt(film, film);
+    setClockState({ kind: transport.current.kind, seconds: transport.current.seconds });
+    drawn.current = 0;
+    const filmFrames = lightFilmFrames(steps);
+
+    /**
+     * The window drawn to the moment the clock stands at. Forward, the strokes are added; back,
+     * the drawing is laid again. A window drawn to its end on the plate goes on to the still's
+     * step, and its bodies stand where the work left them; in the plane they leave the drawing,
+     * as Phase A had it.
+     */
+    const paint = (seconds: number) => {
       const step = stepsDrawnAt(seconds, steps);
       const sample = Math.min(count - 1, Math.floor(step / STRIDE));
-      if (sample > drawn.current) {
-        painter.strokes(drawn.current, sample);
-        drawn.current = sample;
+      if (sample < drawn.current) {
+        trail.clearRect(0, 0, width, height);
+        drawn.current = 0;
       }
       const complete = sample >= count - 1;
-      if (complete && rests) {
-        painter.strokes(count - 1, picture.last);
-        painter.bodies(picture.last, true);
-      } else painter.bodies(sample, !complete);
-      scoreAt(step);
-      if (now - spoken > 250 || complete) {
-        spoken = now;
-        const closest = result.closestApproach;
-        const nearClosest = step >= closest.step && step - closest.step < 2 * 60 * (steps / 1800);
-        setReadout(
-          complete
-            ? null
-            : nearClosest
-              ? fill(t.orbitClosestNow, {
-                  distance: oneDecimal.format(closest.distance),
-                  pair: pairName(closest.pair),
-                })
-              : fill(t.orbitPlaying, {
-                  step: number.format(step),
-                  total: number.format(steps),
-                  clock: clock(seconds),
-                }),
+      if (complete && drawn.current === 0) {
+        if (picture.last > 0) painter.strokes(0, picture.last);
+        painter.bodies(picture.last, rests);
+        drawn.current = picture.last;
+        scoreAt(Math.min(steps - 1, picture.last * STRIDE));
+      } else {
+        if (sample > drawn.current) {
+          painter.strokes(drawn.current, sample);
+          drawn.current = sample;
+        }
+        if (complete && rests) {
+          if (drawn.current < picture.last) {
+            painter.strokes(count - 1, picture.last);
+            drawn.current = picture.last;
+          }
+          painter.bodies(picture.last, true);
+        } else painter.bodies(sample, !complete);
+        scoreAt(step);
+      }
+      if (slider.current)
+        slider.current.value = String(
+          Math.min(filmFrames - 1, Math.floor(seconds * LIGHT_FILM.fps + 1e-9)),
         );
-      }
-      if (complete) {
-        setDone(true);
-        return;
-      }
-      frame.current = requestAnimationFrame(tickFrame);
+      sculpture.current?.at(step);
     };
-    frame.current = requestAnimationFrame(tickFrame);
+
+    /** What is happening now, a few times a second: the step and the clock, or the approach. */
+    let spoken = -Infinity;
+    const speak = (now = performance.now(), force = true) => {
+      if (!force && now - spoken <= 250) return;
+      spoken = now;
+      const { kind, seconds } = transport.current;
+      setClockState({ kind, seconds });
+      const step = stepsDrawnAt(seconds, steps);
+      const closest = result.closestApproach;
+      const nearClosest = step >= closest.step && step - closest.step < 2 * 60 * (steps / 1800);
+      setReadout(
+        seconds >= film && kind !== 'scrubbing'
+          ? null
+          : nearClosest
+            ? fill(t.orbitClosestNow, {
+                distance: oneDecimal.format(closest.distance),
+                pair: pairName(closest.pair),
+              })
+            : fill(t.orbitPlaying, {
+                step: number.format(step),
+                total: number.format(steps),
+                clock: clock(seconds),
+              }),
+      );
+    };
+
+    /** The clock running, while it plays and the section is in view. */
+    const runClock = () => {
+      cancelAnimationFrame(frame.current);
+      if (!inView || transport.current.kind !== 'playing') return;
+      let last = performance.now();
+      const tick = (now: number) => {
+        // The film's own clock: a frame that comes late, or a tab that comes back, finds the
+        // drawing where the film would be.
+        const elapsed = Math.max(0, (now - last) / 1000);
+        last = now;
+        transport.current = advance(transport.current, elapsed, film);
+        paint(transport.current.seconds);
+        const ended = transport.current.kind !== 'playing';
+        speak(now, ended);
+        if (ended) {
+          setDone(true);
+          return;
+        }
+        frame.current = requestAnimationFrame(tick);
+      };
+      frame.current = requestAnimationFrame(tick);
+    };
+
+    scene.current = { paint, run: runClock, speak: () => speak() };
+    paint(transport.current.seconds);
+    runClock();
     return () => cancelAnimationFrame(frame.current);
   });
 
   useEffect(
     () => draw(),
-    [result, plane, framed, material, still, inView, run, beyond, derivedFate, asked],
+    [result, plane, framed, material, still, inView, beyond, derivedFate, asked],
   );
 
   useEffect(() => {
@@ -367,21 +454,47 @@ export function OrbitScore({
     return () => observer.disconnect();
   }, []);
 
-  /** Again: the window from its first step, or After the frame from where it began. */
+  /**
+   * The visitor takes the clock: it is set, the drawing follows at once, and it runs on if it
+   * plays. Motion the visitor asks for is theirs, so it plays even where motion is unwelcome.
+   */
+  const takeClock = (next: Transport) => {
+    setChosen(true);
+    transport.current = next;
+    setClockState({ kind: next.kind, seconds: next.seconds });
+    if (next.kind === 'playing' && next.seconds < film) setDone(false);
+    const current = scene.current;
+    if (!current) return;
+    current.paint(next.seconds);
+    current.speak();
+    current.run();
+  };
+  /** Play and Pause; at the end, play again from the window's first step. */
+  const playPause = () =>
+    takeClock(
+      transport.current.kind === 'playing'
+        ? pause(transport.current)
+        : play(transport.current, film),
+    );
+  /** The closest approach, played slowly from a little before it; at rest on it where still. */
+  const toClosestApproach = () =>
+    takeClock(toClosest(lightFilmSeconds(orbit.published.closestApproach.step, steps), still));
+  /** The slider: a frame of the Light film, held while the hand is on it. */
+  const onScrub = (filmFrame: number, settled: boolean) => {
+    const held = scrub(transport.current, filmFrame / LIGHT_FILM.fps, film);
+    takeClock(settled ? letGo(held, film) : held);
+  };
+
+  /** Again: After the frame from where it began. */
   const again = () => {
     setReadout(null);
-    if (beyond) {
-      goBeyond(beyond.from);
-      return;
-    }
-    drawn.current = 0;
-    setDone(false);
-    setRun((value) => value + 1);
+    if (beyond) goBeyond(beyond.from);
   };
   /** Back to the frame: the recorded window, drawn whole. */
   const leaveBeyond = () => {
     live.current = null;
-    drawn.current = Math.max(0, (result?.samples.count ?? 1) - 1);
+    transport.current = restingAt(film, film);
+    setClockState({ kind: 'resting', seconds: film });
     setBeyond(null);
     setRested(false);
     setReadout(null);
@@ -455,11 +568,19 @@ export function OrbitScore({
             steps: number.format(orbit.generation.warmupSteps + steps),
           })} ${verdict(comparisons ?? [], t)}`
         : null;
-  const line = beyond ? readout : ((still ? null : readout) ?? progressLine);
+  // Where motion is unwelcome the window stands whole and the line says so, until the visitor
+  // takes the clock; then the line follows it.
+  const line = beyond ? readout : ((still && !chosen ? null : readout) ?? progressLine);
   const approach = derivedFate?.approach;
   const canApproach =
     beyond?.from === 'end' && !still && !rested && !!approach && reached < approach.taken;
-  const canAgain = !still && (beyond ? rested : done);
+  const canAgain = !still && !!beyond && rested;
+  const derived = state.phase === 'derived';
+  const playing = clockState.kind === 'playing';
+  const atEnd = clockState.seconds >= film;
+  /** The clock's word: Pause while it plays; at the end, Again for whoever has watched it. */
+  const clockWord = playing ? t.pause : atEnd && (chosen || !still) ? t.again : t.play;
+  const clockStep = stepsDrawnAt(clockState.seconds, steps);
 
   return (
     <section
@@ -514,18 +635,91 @@ export function OrbitScore({
               loading={near ? 'eager' : 'lazy'}
             />
           ) : null}
-          <canvas ref={trails} className={styles.layer} aria-hidden="true" />
-          <canvas ref={continued} className={styles.layer} aria-hidden="true" />
-          <canvas ref={marks} className={styles.layer} aria-hidden="true" />
+          {/* The orbit in depth: shown only as the hand turns it, beneath the drawing it replaces. */}
+          {plateStill && space && material && !beyond ? (
+            <OrbitSculpture
+              key={`depth-${material}`}
+              handle={sculpture}
+              stage={stage}
+              space={space}
+              material={material}
+              tone={plateStill.tone}
+              colours={plateStill.colours}
+              hues={orbit.bodyHues}
+              closestStep={orbit.published.closestApproach.step}
+              still={still}
+              label={t.orbitStageLabel}
+              onReady={setTurnable}
+              onTurned={setTurned}
+              onPlayPause={playPause}
+            />
+          ) : null}
+          <canvas ref={trails} className={styles.layer} data-layer="trails" aria-hidden="true" />
+          <canvas
+            ref={continued}
+            className={styles.layer}
+            data-layer="continued"
+            aria-hidden="true"
+          />
+          <canvas ref={marks} className={styles.layer} data-layer="marks" aria-hidden="true" />
         </div>
-        <figcaption className={styles.caption}>{description}</figcaption>
+        <figcaption className={styles.caption}>
+          {description}
+          {turnable && !beyond ? (
+            <span className={styles.hint}>
+              <span className={styles.hintPointer}>{t.orbitTurnHint}</span>
+              <span className={styles.hintTouch}>{t.orbitTurnHintTouch}</span>
+            </span>
+          ) : null}
+        </figcaption>
       </figure>
       <div className={styles.score}>
-        <canvas ref={events} className={styles.events} aria-hidden="true" />
+        <div className={styles.strip}>
+          <canvas ref={events} className={styles.events} aria-hidden="true" />
+          {derived && !beyond ? (
+            <OrbitSlider
+              slider={slider}
+              frames={lightFilmFrames(steps)}
+              label={t.orbitTimeLabel}
+              valueText={playingLine(clockStep, clockState.seconds)}
+              disabled={asked}
+              onScrub={onScrub}
+            />
+          ) : null}
+        </div>
         <div className={styles.readoutRow}>
           <p className={styles.readout}>{line}</p>
           <div className={styles.words}>
-            {state.phase === 'derived' && (finished || beyond) ? (
+            {derived && !beyond ? (
+              <>
+                {turned ? (
+                  <button
+                    type="button"
+                    className={styles.again}
+                    onClick={() => sculpture.current?.back()}
+                  >
+                    {t.orbitGeneratorView}
+                  </button>
+                ) : null}
+                <button type="button" className={styles.again} onClick={playPause}>
+                  {clockWord}
+                </button>
+                <button type="button" className={styles.again} onClick={toClosestApproach}>
+                  {t.toClosestApproach}
+                </button>
+                {derivedFate && finished ? (
+                  <button
+                    type="button"
+                    className={styles.again}
+                    aria-pressed={false}
+                    onClick={() => goBeyond('end')}
+                  >
+                    {t.afterTheFrame}
+                  </button>
+                ) : null}
+              </>
+            ) : null}
+            {derived && beyond ? (
               <>
                 {canApproach ? (
                   <button

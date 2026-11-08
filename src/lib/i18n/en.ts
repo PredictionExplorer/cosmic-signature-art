@@ -623,6 +623,15 @@ export const en = {
   orbitEscaped: 'Body {body} has escaped, at step {step}',
   orbitHeld: 'The dance held through all {steps} steps',
   toTheEjection: 'To the ejection',
+  // The orbit in the hand (src/components/orbit-sculpture.tsx, orbit-timeline.tsx)
+  orbitStageLabel:
+    'The orbit in depth. The arrow keys turn it; Escape returns it to the generator’s view.',
+  orbitTurnHint:
+    'Drag the orbit to turn it in depth. Let go, and it returns to the generator’s view.',
+  orbitTurnHintTouch:
+    'Hold the orbit, then drag, to turn it in depth. Let go, and it returns to the generator’s view.',
+  orbitGeneratorView: 'The generator’s view',
+  orbitTimeLabel: 'Moment in the Light film',
   // The score in the film's transport (src/components/film-score-band.tsx)
   filmPhysics: 'bodies {pair} · {distance} apart',
   toClosestApproach: 'Closest approach',
