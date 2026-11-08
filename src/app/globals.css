@@ -43,11 +43,9 @@
   --t-sit: 1200ms;
   --t-dawn: 2000ms;
   --t-rest: 8000ms;
-  /* The Overture (src/components/overture.tsx): one clock for the score and the still, the
-     plate growing into its place, the crossing to the day's Ink, and how long the first
-     paint's black waits for it. */
-  --t-overture: 6500ms;
-  --t-overture-land: 1200ms;
+  /* The home's one timed event, First Light (src/components/overture.tsx): the crossing to the
+     day's Ink as it lands, and how long the first paint holds the running head back for it. Its
+     own beats are the timeline's (src/lib/first-light/timeline.ts). */
   --t-overture-cross: 4000ms;
   --t-overture-wait: 4000ms;
   --t-idle: 2000ms;
@@ -919,32 +917,29 @@ html[data-sit] .site-header {
 }
 
 /*
-  The Overture (src/components/overture.tsx). From the first paint of a first visit
-  (src/lib/room.ts) the home waits under black, which takes the pointer so nothing beneath is
-  pressed blind; the Overture's own layer then is the black, and lifts it as its plate lands.
-  The running head and the plate's strip arrive last, over --t-dawn, as the plate lands. Should
-  the Overture never come, the first paint's black lifts itself after --t-overture-wait.
+  The home's one timed event, First Light (src/components/overture.tsx, docs/first-light.md §4).
+  From the first paint of a first visit (src/lib/room.ts) the day's plate stands alone: it is
+  the first thing seen and the page's Largest Contentful Paint, and the running head and the
+  plate's strip are held back. The light then performs over the plate and gives it back; the head
+  and strip arrive last, over --t-dawn, as the plate lands. Should the performance never come, they
+  arrive anyway after --t-overture-wait: nothing is ever kept waiting on it.
 */
-html[data-overture='pending'] body::after {
-  content: '';
-  position: fixed;
-  inset: 0;
-  z-index: 40;
-  background: var(--night);
-}
-html[data-overture='pending'] body::after {
-  animation: overture-wait var(--t-chrome) var(--ease-settle) var(--t-overture-wait) forwards;
-}
-@keyframes overture-wait {
-  to {
-    opacity: 0;
-    visibility: hidden;
-  }
-}
+html[data-overture='pending'] .site-header,
+html[data-overture='pending'] [data-presentation='home'] .strip,
 html[data-overture='playing'] .site-header,
 html[data-overture='playing'] [data-presentation='home'] .strip {
   opacity: 0;
   pointer-events: none;
+}
+html[data-overture='pending'] .site-header,
+html[data-overture='pending'] [data-presentation='home'] .strip {
+  animation: overture-wait var(--t-chrome) var(--ease-settle) var(--t-overture-wait) forwards;
+}
+@keyframes overture-wait {
+  to {
+    opacity: 1;
+    pointer-events: auto;
+  }
 }
 /* They arrive as the plate lands, walls the crossing to Ink then turns with the plate. */
 html[data-overture='landing'] .site-header,

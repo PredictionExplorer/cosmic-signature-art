@@ -98,15 +98,15 @@ describe('the first paint of a plate', () => {
   });
 });
 
-describe('the Overture’s first paint', () => {
+describe('First Light’s first paint', () => {
   const overture = () => document.documentElement.getAttribute('data-overture');
 
-  it('paints a first visit to the home black and asks for the Overture', () => {
+  it('asks for First Light on a first visit to the home, on the day’s own ground', () => {
     preferring(false);
-    // An Ink day's home would open on paper; the Overture opens it on black.
-    expect(paint('/', '', INK_DAY)).toEqual({ room: 'night', color: '#000000' });
+    // The day's plate is the first thing seen: an Ink day opens on paper, a Light day on night.
+    expect(paint('/', '', INK_DAY)).toEqual({ room: 'paper', color: '#f1ebdf' });
     expect(overture()).toBe('pending');
-    // The Overture is the home's arrival: the plate then opens on its still.
+    // First Light is the home's arrival: the plate then opens on its still.
     expect(sessionStorage.getItem(HOME_RESOLVED_KEY)).toBe('resolved');
     expect(paint('/uk', '', LIGHT_DAY).room).toBe('night');
     expect(overture()).toBe('pending');
@@ -127,6 +127,10 @@ describe('the Overture’s first paint', () => {
     expect(overture()).toBeNull();
     sessionStorage.clear();
     preferring(true);
+    paint('/', '', INK_DAY);
+    expect(overture()).toBeNull();
+    preferring(false);
+    vi.stubGlobal('navigator', { ...navigator, connection: { saveData: true } });
     paint('/', '', INK_DAY);
     expect(overture()).toBeNull();
     expect(sessionStorage.getItem(HOME_RESOLVED_KEY)).toBeNull();
