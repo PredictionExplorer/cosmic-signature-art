@@ -1,20 +1,53 @@
 import { useEffect, useEffectEvent, useRef, type RefObject } from 'react';
 import { rungFor, twinOf, type ArtInterpretation, type Expression } from '@/lib/art/types';
 import { bandClip, bandFront, type Field } from '@/lib/crossing/front';
-import { FRONT_EDGE, revealAt, revealEnd, spreadPerPlate } from '@/lib/crossing/timing';
+import {
+  FLOOR,
+  INK_BAND,
+  MATERIAL_EDGE,
+  PAPER_DEPTH,
+  changesMaterial,
+  groundColour,
+  groundToward,
+  markSpan,
+  materialAt,
+  type Material,
+  type Span,
+} from '@/lib/crossing/material';
+import {
+  FRONT_EDGE,
+  invertEasing,
+  parseEasing,
+  revealAt,
+  revealEnd,
+  spreadPerPlate,
+} from '@/lib/crossing/timing';
 import type { SeamController } from './turn';
 
 /*
   The crossing in the order the work was made. Over the plate and its walls, a canvas shows the
-  two published stills (or the film the outgoing layer is playing), and a pixel changes from one
-  to the other when the work's own order reaches it: Light where its film first drew it, Ink
-  where its film came to rest. Every pixel on the plate is a pixel of one of the two, untouched,
-  except across the soft edge of the front, where the two are mixed as it passes; only the order
-  is the films'. Beyond the
-  plate the wall takes the time of the nearest edge, so the room
-  follows the work: the running head above and the strip below are walls too, and each of
-  their columns turns, through its clip-path, when the same front reaches it.
+  two published stills (or the film the outgoing layer is playing).
+
+  A Turn by time between the two whole stills changes material (src/lib/crossing/material.ts).
+  The bodies stay where they are, for the stills share one frame, and what they are made of
+  changes around them: toward paper the night warms to the sheet's own tone, the light's colour
+  drains and the ink blooms in the order it came to rest; toward night the ink lifts in the
+  reverse of that order, the ground cools and the light rises in the order its film drew it.
+  The walls, the running head and the strip take the ground's colour on the same frame. At
+  either end of the Turn the canvas paints the published still itself.
+
+  Every other crossing (a finger's Turn, the Overture's landing, a plate resting partly under
+  its wing and any Turn that begins or ends there) changes pixel by pixel: a pixel changes from
+  one still to the other when the work's own order reaches it, Light where its film first drew
+  it, Ink where its film came to rest. Every pixel on the plate is a pixel of one of the two,
+  untouched, except across the soft edge of the front, where the two are mixed as it passes.
+  Beyond the plate the wall takes the time of the nearest edge, so the room follows the work:
+  the running head above and the strip below are walls too, and each of their columns turns,
+  through its clip-path, when the same front reaches it.
 */
+
+/** A number as a GLSL float literal. */
+const glsl = (value: number) => (Number.isInteger(value) ? value.toFixed(1) : String(value));
 
 const VERTEX = `
 attribute vec2 aPos;
@@ -33,6 +66,53 @@ uniform vec4 uArt;
 uniform vec2 uCanvas;
 uniform vec3 uPaper;
 uniform float uReveal, uTowardNight, uEdge, uSpread;
+// The change of material (src/lib/crossing/material.ts): how far the Turn has come in its own
+// time, each stage's share, and each order's span over its marks.
+uniform float uMaterial, uProgress, uGround, uDrain, uLit, uInkAt, uLightAt, uMaterialEdge;
+uniform vec2 uInkSpan, uLightSpan;
+
+float luma(vec3 c) {
+  return dot(c, vec3(0.2126, 0.7152, 0.0722));
+}
+
+// A pixel's place in an order, measured over the marks' own span.
+float placeIn(float time, vec2 span) {
+  return clamp((time - span.x) / max(span.y - span.x, 1e-3), 0.0, 1.0);
+}
+
+// The paper beneath the ink: the still itself as deep as the sheet goes, and beneath ink the
+// sheet's own tone, reached smoothly across the faintest washes.
+vec3 paperBeneath(vec3 ink) {
+  vec3 sheet = max(uPaper, vec3(${glsl(FLOOR)}));
+  vec3 depth = ink / sheet;
+  vec3 under = 1.0 - smoothstep(vec3(${glsl(PAPER_DEPTH - INK_BAND)}), vec3(${glsl(PAPER_DEPTH)}), depth);
+  vec3 beneath = sheet * (${glsl(PAPER_DEPTH)} + ${glsl(1 - PAPER_DEPTH)} * under);
+  return mix(beneath, ink, step(${glsl(PAPER_DEPTH)}, depth));
+}
+
+// One pixel of the change: the ground is the paper beneath the ink at the ground's share of its
+// tone; the light is lit on it as light adds; the ink is a transmittance on its paper whose
+// density grows as it blooms (Beer–Lambert), so a bloomed pixel is the Ink still again.
+vec3 material(vec3 ink, vec3 light, float atInk, float atLight) {
+  vec3 bare = paperBeneath(ink);
+  float inkAt = placeIn(atInk, uInkSpan);
+  float inkOn;
+  float lightOn;
+  if (uTowardNight > 0.5) {
+    // The ink lifts, the last of it to rest the first to go; the light rises in its own order.
+    inkOn = smoothstep(uInkAt - uMaterialEdge, uInkAt + uMaterialEdge, 1.0 - inkAt);
+    lightOn = 1.0 - smoothstep(uLightAt - uMaterialEdge, uLightAt + uMaterialEdge,
+      placeIn(atLight, uLightSpan));
+  } else {
+    // The ink blooms in its order, and takes the light's place where it does.
+    inkOn = 1.0 - smoothstep(uInkAt - uMaterialEdge, uInkAt + uMaterialEdge, inkAt);
+    lightOn = uLit * (1.0 - inkOn);
+  }
+  vec3 glow = mix(light, vec3(luma(light)), uDrain) * lightOn;
+  vec3 lit = 1.0 - (1.0 - bare * uGround) * (1.0 - glow);
+  vec3 transmit = max(ink, vec3(${glsl(FLOOR)})) / max(bare, vec3(${glsl(FLOOR)}));
+  return lit * pow(transmit, vec3(inkOn));
+}
 
 // Beyond the plate a wall takes the time of the nearest edge, averaged along that edge more
 // widely the further away it is, so the front leaves the plate as a rounded shape.
@@ -64,6 +144,15 @@ void main() {
   vec3 frame = texture2D(uFrame, qc).rgb;
   vec3 ink = mix(uPaper, mix(texture2D(uInk, qc).rgb, frame, uFrameFor.x), inside);
   vec3 light = mix(texture2D(uLight, qc).rgb, frame, uFrameFor.y) * inside;
+  if (uMaterial > 0.5) {
+    // At either end the plate is the published still itself; between, its material changes.
+    vec3 colour = uTowardNight > 0.5 ? ink : light;
+    if (uProgress >= 1.0) colour = uTowardNight > 0.5 ? light : ink;
+    else if (uProgress > 0.0)
+      colour = material(ink, light, texture2D(uMapI, qc).r, texture2D(uMapL, qc).r);
+    gl_FragColor = vec4(colour, 1.0);
+    return;
+  }
   float m;
   if (uTowardNight > 0.5) {
     m = 1.0 - front(edgeTime(uMapL, qc, away) + uSpread * away);
@@ -75,8 +164,17 @@ void main() {
 
 type Still = ImageBitmap | HTMLImageElement;
 type Rect = { x: number; y: number; width: number; height: number };
-/** How the crossing reads the picture: the order it follows, and the layer it leaves. */
-type Reading = { toward: 'night' | 'paper'; leaving: Expression };
+/**
+ * How the crossing reads the picture: the order it follows, the layer it leaves, and whether
+ * the Turn changes material, on what clock.
+ */
+type Reading = {
+  toward: 'night' | 'paper';
+  leaving: Expression;
+  material?: boolean;
+  /** The Turn's own time for the share of its travel the seam has made. */
+  clock?: (travel: number) => number;
+};
 const UNIFORMS = [
   'uInk',
   'uLight',
@@ -91,6 +189,16 @@ const UNIFORMS = [
   'uTowardNight',
   'uEdge',
   'uSpread',
+  'uMaterial',
+  'uProgress',
+  'uGround',
+  'uDrain',
+  'uLit',
+  'uInkAt',
+  'uLightAt',
+  'uMaterialEdge',
+  'uInkSpan',
+  'uLightSpan',
 ] as const;
 type Uniform = (typeof UNIFORMS)[number];
 /** Texture units, in the order the samplers are bound. */
@@ -107,12 +215,31 @@ function load(src: string): Promise<HTMLImageElement> {
  * The still's pixels as they are now: a bitmap where the browser makes one, so a page image
  * that changes its source while the maps arrive cannot change what is uploaded.
  */
-async function snapshot(image: HTMLImageElement): Promise<Still> {
+async function snapshot(image: HTMLImageElement, width = 0): Promise<Still> {
   if (typeof createImageBitmap !== 'function') return image;
+  let bitmap: ImageBitmap;
   try {
-    return await createImageBitmap(image);
+    bitmap = await createImageBitmap(image);
   } catch {
     return image;
+  }
+  // A still more than twice as wide as the work is painted (in its own pixels, which a
+  // responsive image's natural width does not report) is drawn down to the work's width first,
+  // finely, as the page draws it. The canvas samples four texels a pixel, so up to twice the
+  // width it reads every one; past that it would skip across the finest lines, and the ends of
+  // a Turn would not be the still the page shows. On a phone the 1280 rung is over three times
+  // the plate; on a desk the 1920 rung is under twice it, and is read as it is.
+  if (!(width > 0 && bitmap.width > width * 2)) return bitmap;
+  try {
+    const fitted = await createImageBitmap(bitmap, {
+      resizeWidth: Math.round(width),
+      resizeHeight: Math.max(1, Math.round((bitmap.height * width) / bitmap.width)),
+      resizeQuality: 'high',
+    });
+    bitmap.close();
+    return fitted;
+  } catch {
+    return bitmap;
   }
 }
 
@@ -144,6 +271,31 @@ function readField(image: HTMLImageElement): Field | null {
   return { data, width: canvas.width, height: canvas.height };
 }
 
+/**
+ * The marks' own span in a map's order, read from the still at the map's size; the whole order
+ * where this browser cannot read the still back.
+ */
+function spanOf(field: Field | null, still: Still, material: Expression): Span {
+  if (!field) return [0, 1];
+  try {
+    const canvas = document.createElement('canvas');
+    canvas.width = field.width;
+    canvas.height = field.height;
+    const context = canvas.getContext('2d', { willReadFrequently: true });
+    if (!context) return [0, 1];
+    context.drawImage(still, 0, 0, field.width, field.height);
+    const rgba = context.getImageData(0, 0, field.width, field.height).data;
+    return markSpan(field.data, rgba, material);
+  } catch {
+    return [0, 1];
+  }
+}
+
+/** The Turn's own clock, read back from the curve its seam travels on. */
+function turnClock(root: HTMLElement) {
+  return invertEasing(parseEasing(getComputedStyle(root).getPropertyValue('--ease-turn')));
+}
+
 /** `rgb(239, 233, 221)` as 0–1 channels; black when unreadable. */
 export function rgb(color: string): [number, number, number] {
   const match = /rgba?\(\s*([\d.]+)[,\s]+([\d.]+)[,\s]+([\d.]+)/.exec(color);
@@ -163,10 +315,16 @@ export class ArrivalCrossing {
   private end = 1;
   private spread = 0;
   private art: Rect = { x: 0, y: 0, width: 1, height: 1 };
+  /** The sheet's own tone, as 0–1 channels: the paper wall, and the ground a change warms to. */
+  private paper: [number, number, number] = [0, 0, 0];
   /** This frame's layout in viewport pixels: the work, and the bands beside the plate. */
   private view: { work: DOMRect; head: DOMRect | null; strip: DOMRect | null } | null = null;
-  /** Elements whose clip-path the front has taken, given back when the crossing rests. */
-  private clipped = new Set<HTMLElement>();
+  /**
+   * The style properties the crossing has set on the page's own elements (the front's clips,
+   * the change's grounds), each with the inline value and priority it found, given back when
+   * the crossing rests.
+   */
+  private styled = new Map<HTMLElement, Map<string, [string, string]>>();
   private preparing: Promise<boolean> | null = null;
   /** Each preparation's number: one overtaken by a lost context or a newer one builds nothing. */
   private attempt = 0;
@@ -231,7 +389,13 @@ export class ArrivalCrossing {
     });
     if (!gl || gl.isContextLost()) return false;
     const container = this.container();
-    const wide = Math.min(2, window.devicePixelRatio || 1) * (container?.clientWidth ?? 1280);
+    const ratio = Math.min(2, window.devicePixelRatio || 1);
+    const wide = ratio * (container?.clientWidth ?? 1280);
+    // The work's own width on the canvas, in device pixels, as the plate lays it now.
+    const work =
+      ratio *
+      (container?.querySelector('[data-layer="ink"] .art-media')?.getBoundingClientRect().width ??
+        0);
     const still = async (interpretation: ArtInterpretation) => {
       // The sharpest image the plate already shows, when this page may read it; the inline
       // preview is never enough, so a smaller one waits for the work's own rung.
@@ -242,10 +406,10 @@ export class ArrivalCrossing {
       ]
         .filter(readable)
         .sort((a, b) => b.naturalWidth - a.naturalWidth)[0];
-      if (shown && shown.naturalWidth >= Math.min(1280, wide)) return snapshot(shown);
+      if (shown && shown.naturalWidth >= Math.min(1280, wide)) return snapshot(shown, work);
       const rung = rungFor(interpretation.rungs, Math.min(1920, wide));
       if (!rung) throw new Error('no readable still');
-      return load(rung.src);
+      return snapshot(await load(rung.src), work);
     };
     const stills = [still(ink), still(light)] as const;
     const [inkStill, lightStill, mapI, mapL] = await Promise.all([
@@ -269,12 +433,18 @@ export class ArrivalCrossing {
         frame: this.texture(UNITS.frame, null, false),
       };
       this.fields = { ink: readField(mapI), light: readField(mapL) };
+      // A change of material paces each order over its own marks, as the When lens spans them.
+      const inkSpan = spanOf(this.fields.ink, inkStill, 'ink');
+      const lightSpan = spanOf(this.fields.light, lightStill, 'light');
       gl.uniform1i(this.uniforms.uInk ?? null, UNITS.ink);
       gl.uniform1i(this.uniforms.uLight ?? null, UNITS.light);
       gl.uniform1i(this.uniforms.uMapI ?? null, UNITS.mapI);
       gl.uniform1i(this.uniforms.uMapL ?? null, UNITS.mapL);
       gl.uniform1i(this.uniforms.uFrame ?? null, UNITS.frame);
       gl.uniform1f(this.uniforms.uEdge ?? null, FRONT_EDGE);
+      gl.uniform1f(this.uniforms.uMaterialEdge ?? null, MATERIAL_EDGE);
+      gl.uniform2f(this.uniforms.uInkSpan ?? null, inkSpan[0], inkSpan[1]);
+      gl.uniform2f(this.uniforms.uLightSpan ?? null, lightSpan[0], lightSpan[1]);
       this.spread = spreadPerPlate(light.arrival.spread, light.arrival.width, light.arrival.height);
       this.ready = true;
       return true;
@@ -312,6 +482,8 @@ export class ArrivalCrossing {
       return false;
     }
     gl.useProgram(program);
+    // Each pixel is written as computed, so a still painted at either end of a Turn is its own.
+    gl.disable(gl.DITHER);
     const buffer = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
     gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 1, -1, -1, 1, 1, 1]), gl.STATIC_DRAW);
@@ -418,7 +590,9 @@ export class ArrivalCrossing {
       this.spread,
     );
     const screen = plate.closest<HTMLElement>('[data-plate-ground]') ?? plate;
-    const [r, g, b] = rgb(getComputedStyle(screen).backgroundColor);
+    // The sheet's tone is read while the screen wears its own: a change of material paints it.
+    if (!this.styled.has(screen)) this.paper = rgb(getComputedStyle(screen).backgroundColor);
+    const [r, g, b] = this.paper;
     const { uniforms } = this;
     gl.uniform3f(uniforms.uPaper ?? null, r, g, b);
     gl.uniform4f(
@@ -461,24 +635,55 @@ export class ArrivalCrossing {
 
   /**
    * Paint the crossing at a seam position. Toward night Light arrives in the Light film's
-   * order; toward paper Ink arrives in the Ink film's. False when it cannot be painted, so the
-   * straight seam shows.
+   * order; toward paper Ink arrives in the Ink film's. A Turn that changes material changes
+   * each pixel's material in those orders, and the room's ground with it; any other changes
+   * each pixel from one still to the other. False when it cannot be painted, so the straight
+   * seam shows.
    */
-  render(seam: number, { toward, leaving }: Reading) {
+  render(seam: number, { toward, leaving, material = false, clock }: Reading) {
     const gl = this.gl;
     if (!this.ready || !gl || gl.isContextLost() || !this.measure()) return false;
+    const { uniforms } = this;
     const film = this.frame(leaving);
     gl.uniform2f(
-      this.uniforms.uFrameFor ?? null,
+      uniforms.uFrameFor ?? null,
       leaving === 'ink' ? film : 0,
       leaving === 'light' ? film : 0,
     );
+    gl.uniform1f(uniforms.uTowardNight ?? null, toward === 'night' ? 1 : 0);
+    gl.uniform1f(uniforms.uMaterial ?? null, material ? 1 : 0);
+    if (material) {
+      const change = materialAt(seam, toward, clock);
+      gl.uniform1f(uniforms.uProgress ?? null, change.progress);
+      gl.uniform1f(uniforms.uGround ?? null, change.ground);
+      gl.uniform1f(uniforms.uDrain ?? null, change.drain);
+      gl.uniform1f(uniforms.uLit ?? null, change.lit);
+      gl.uniform1f(uniforms.uInkAt ?? null, change.ink);
+      gl.uniform1f(uniforms.uLightAt ?? null, change.light);
+      gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+      this.grounds(change, toward);
+      return true;
+    }
     const reveal = revealAt(seam, toward, this.end);
-    gl.uniform1f(this.uniforms.uReveal ?? null, reveal);
-    gl.uniform1f(this.uniforms.uTowardNight ?? null, toward === 'night' ? 1 : 0);
+    gl.uniform1f(uniforms.uReveal ?? null, reveal);
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
     this.fronts(reveal, toward);
     return true;
+  }
+
+  /** Set style properties on one of the page's elements, to be given back when the crossing rests. */
+  private style(element: HTMLElement | null, properties: Record<string, string>) {
+    if (!element) return;
+    const found = this.styled.get(element) ?? new Map<string, [string, string]>();
+    for (const [name, value] of Object.entries(properties)) {
+      if (!found.has(name))
+        found.set(name, [
+          element.style.getPropertyValue(name),
+          element.style.getPropertyPriority(name),
+        ]);
+      element.style.setProperty(name, value);
+    }
+    this.styled.set(element, found);
   }
 
   /**
@@ -506,25 +711,66 @@ export class ArrivalCrossing {
         this.spread,
       );
       const box = element.getBoundingClientRect();
-      element.style.transition = 'none';
-      element.style.clipPath = bandClip(front, side, { x: box.left, y: box.top });
-      this.clipped.add(element);
+      this.style(element, {
+        transition: 'none',
+        'clip-path': bandClip(front, side, { x: box.left, y: box.top }),
+      });
     };
     clip(container.querySelector<HTMLElement>('[data-layer="light"]'), view.strip, light);
-    const root = document.documentElement;
-    if (!root.hasAttribute('data-turning')) return;
-    const to = root.getAttribute('data-turn-to');
-    const overlayNight = to ? to === 'night' : root.getAttribute('data-room') === 'paper';
+    const overlayNight = this.overlayNight();
+    if (overlayNight === null) return;
     clip(this.head(), view.head, overlayNight ? light : ink);
   }
 
-  /** The running head and the strip go back to the seam's own rules. */
-  release() {
-    this.clipped.forEach((element) => {
-      element.style.removeProperty('clip-path');
-      element.style.removeProperty('transition');
+  /**
+   * Whether the running head's overlay shows the night (else the paper): its own ground, the
+   * one the Turn travels toward, and only while a Turn travels (null otherwise).
+   */
+  private overlayNight() {
+    const root = document.documentElement;
+    if (!root.hasAttribute('data-turning')) return null;
+    const to = root.getAttribute('data-turn-to');
+    return to ? to === 'night' : root.getAttribute('data-room') === 'paper';
+  }
+
+  /**
+   * The walls beside the plate take the ground's colour on the plate's frame. Both layers'
+   * screens wear the ground beneath the strip, and the arriving layer's words come in over the
+   * departing layer's while the ground is about half-way, where either has least contrast to
+   * lose. The running head's overlay, its own ground over the departing one, shows as far as the
+   * ground has come toward it, in the sheet's own tone where that is paper.
+   */
+  private grounds(change: Material, toward: 'night' | 'paper') {
+    const container = this.container();
+    if (!container) return this.release();
+    const ground = groundColour(this.paper, change.ground);
+    container
+      .querySelectorAll<HTMLElement>('[data-layer] [data-plate-ground]')
+      .forEach((screen) => this.style(screen, { 'background-color': ground }));
+    this.style(container.querySelector<HTMLElement>('[data-layer="light"]'), {
+      transition: 'none',
+      'clip-path': 'none',
+      opacity: String(toward === 'night' ? change.words : 1 - change.words),
     });
-    this.clipped.clear();
+    const overlayNight = this.overlayNight();
+    if (overlayNight === null) return;
+    this.style(this.head(), {
+      transition: 'none',
+      'clip-path': 'none',
+      opacity: String(groundToward(change, overlayNight ? 'night' : 'paper')),
+      ...(overlayNight ? {} : { 'background-color': groundColour(this.paper, 1) }),
+    });
+  }
+
+  /** The running head, the strip and the screens go back to the seam's own rules. */
+  release() {
+    this.styled.forEach((found, element) =>
+      found.forEach(([value, priority], name) => {
+        if (value) element.style.setProperty(name, value, priority);
+        else element.style.removeProperty(name);
+      }),
+    );
+    this.styled.clear();
   }
 
   /**
@@ -555,12 +801,15 @@ export class ArrivalCrossing {
  * <html data-crossing="arrival"> lets the seam take the crossing's longer token.
  *
  * Each Turn is the crossing's only if it was ready when the Turn began, and it is read once,
- * then: the order it follows and the layer it leaves hold until the Turn ends, so a reversal,
- * a spring-back or the commit itself never switches pictures mid-way. The order is that of the
- * expression arriving: Light's toward the night, Ink's toward the paper, except where a plate
- * rests partly under its wing, which is drawn in the twin's order and so retraced in it: the
- * night wing's in Light's, the paper wing's in Ink's. Between Turns, inside the wing, the
- * crossing paints wherever the hand has drawn the twin.
+ * then: the order it follows, the layer it leaves and whether it changes material hold until
+ * the Turn ends, so a reversal, a spring-back, a finger or the commit itself never switches
+ * pictures mid-way. The order is that of the expression arriving: Light's toward the night,
+ * Ink's toward the paper, except where a plate rests partly under its wing, which is drawn in
+ * the twin's order and so retraced in it: the night wing's in Light's, the paper wing's in
+ * Ink's. A Turn by time between the two whole stills changes material; one that begins or ends
+ * partly drawn under the wing changes pixel by pixel, as the wing is drawn, so that it meets
+ * what it leaves and lands on. Between Turns, inside the wing, the crossing paints wherever the
+ * hand has drawn the twin.
  */
 export function useArrivalCrossing({
   seam,
@@ -591,10 +840,15 @@ export function useArrivalCrossing({
   });
   const reading = useEffectEvent((): Reading => {
     const leaving: Expression = expression === 'light' ? 'light' : 'ink';
+    const wing = partial();
     // Inside a partly drawn wing every crossing follows the twin's order; elsewhere the
     // expression arriving sets it.
-    const arriving = leaving !== twin || partial() !== null ? twin : twinOf(leaving);
-    return { toward: arriving === 'light' ? 'night' : 'paper', leaving };
+    const arriving = leaving !== twin || wing !== null ? twin : twinOf(leaving);
+    const toward = arriving === 'light' ? 'night' : 'paper';
+    const root = document.documentElement;
+    if (wing !== null || !changesMaterial(root.getAttribute('data-turning')))
+      return { toward, leaving };
+    return { toward, leaving, material: true, clock: turnClock(root) };
   });
   /** Between Turns: the wing's twin over the plate, the only seam that rests partway. */
   const resting = useEffectEvent(() => (expression === twin ? null : partial()));

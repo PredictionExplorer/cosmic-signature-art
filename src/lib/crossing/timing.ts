@@ -51,6 +51,26 @@ export function parseEasing(value: string): (x: number) => number {
 }
 
 /**
+ * An easing read backwards: for a share of the travel, the share of the time at which the curve
+ * reaches it. A Turn's seam moves on its curve; this gives back the Turn's own clock from where
+ * the seam is, so a change keyed to time keeps its pace through the curve's slow ends.
+ */
+export function invertEasing(easing: (x: number) => number) {
+  return (y: number) => {
+    if (y <= 0) return 0;
+    if (y >= 1) return 1;
+    let lo = 0;
+    let hi = 1;
+    for (let i = 0; i < 40; i++) {
+      const mid = (lo + hi) / 2;
+      if (easing(mid) < y) lo = mid;
+      else hi = mid;
+    }
+    return (lo + hi) / 2;
+  };
+}
+
+/**
  * The soft edge of a front, in map units: either side of it each pixel is one of the two stills,
  * untouched; across it the two are mixed as it passes, for about a tenth of a second at any one
  * pixel. The reveal also starts this far before the first arrival and ends this far past the
