@@ -375,7 +375,8 @@ function ArtworkViewerSession({
   */
   const overture = useOverturePhase();
   const followOverture = useEffectEvent((phase: OverturePhase) => {
-    if (!home || !hasBoth) {
+    // The home, or a work's own page when a shared link opens the visit on it.
+    if (!(home || presentation === 'gallery') || !hasBoth) {
       if (phase === 'landing') setOverturePhase('done');
       return;
     }

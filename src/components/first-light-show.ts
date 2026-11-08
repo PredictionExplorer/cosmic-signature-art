@@ -4,7 +4,8 @@ import type { SamplesReply, SamplesRequest } from '@/lib/first-light/samples.wor
 import { momentAt, slowedAround, type Choreography, type Moment } from '@/lib/first-light/timeline';
 import { lightFilmDuration, stepsDrawnAt } from '@/lib/physics/light-film';
 import type { PlateFrame, WindowStart } from '@/lib/physics/framing';
-import { rungFor, type StillRung } from '@/lib/art/types';
+import { rungFor } from '@/lib/art/types';
+import type { ShowWork } from '@/lib/first-light/show-work';
 import { MOTION_KEY } from '@/lib/storage-keys';
 import type { Engine } from './first-light-engine';
 import { decoded } from './decoded-image';
@@ -17,15 +18,8 @@ import { Pace } from '@/lib/first-light/quality';
   timeline's beats until the light has given the still back.
 */
 
-/** What a show needs of a work: its window, its frame, its closest approach and its still. */
-export interface ShowWork {
-  start: WindowStart;
-  frame: PlateFrame;
-  /** The step of the window's closest approach, where the bodies flare. */
-  closestStep: number;
-  /** The Light still's ladder, ascending by width. */
-  rungs: readonly StillRung[];
-}
+/** What a show needs of a work (src/lib/first-light/show-work.ts). */
+export type { ShowWork };
 
 /** Every hundredth step: as the orbit section and the Overture draw a window. */
 export const STRIDE = 100;

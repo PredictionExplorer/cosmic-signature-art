@@ -1,5 +1,6 @@
 import { expect, test, type Page } from '@playwright/test';
 import { EXPRESSION_KEY, OVERTURE_KEY } from '../../src/lib/storage-keys';
+import { performs, stored, watchTheGate } from './helpers';
 
 /**
  * First Light on the home (docs/first-light.md §4), the home's one timed event: a first visit
@@ -12,49 +13,6 @@ test.use({ storageState: { cookies: [], origins: [] } });
 
 // WebKit holds a streamed page hidden a moment after load, beside the route's fallback.
 const room = (page: Page) => page.locator('[data-presentation="home"]').filter({ visible: true });
-const stored = (page: Page, key: string, where: 'local' | 'session') =>
-  page.evaluate(
-    ([name, kind]) => (kind === 'local' ? localStorage : sessionStorage).getItem(name),
-    [key, where] as const,
-  );
-
-/** Whether the light performs here: it takes the plate, or the page stands at once. */
-async function performs(page: Page) {
-  const html = page.locator('html');
-  await expect
-    .poll(async () => (await html.getAttribute('data-overture')) ?? 'stood', { timeout: 20_000 })
-    .toMatch(/^(playing|landing|dawn|stood)$/);
-  return (await html.getAttribute('data-overture')) !== null;
-}
-
-/**
- * Every value the gate takes, from the document's first moment: the room script sets it before
- * anything paints. A browser that cannot draw the light lifts it at once, often before the page
- * has loaded, so a poll after the load can miss it; this reads it back instead.
- */
-async function watchTheGate(page: Page) {
-  await page.addInitScript(() => {
-    const taken: (string | null)[] = [];
-    Object.defineProperty(window, '__gate', { value: taken });
-    new MutationObserver((records) => {
-      // Each record holds the value before its change; the value after is the next one's, or now.
-      records.forEach((_, i) =>
-        taken.push(
-          i + 1 < records.length
-            ? records[i + 1].oldValue
-            : document.documentElement.getAttribute('data-overture'),
-        ),
-      );
-    }).observe(document, {
-      subtree: true,
-      attributes: true,
-      attributeFilter: ['data-overture'],
-      attributeOldValue: true,
-    });
-  });
-  return () => page.evaluate(() => (window as unknown as { __gate: (string | null)[] }).__gate);
-}
-
 test('a first visit opens on the plate, performs, and lands on the day’s Ink by its crossing', async ({
   page,
 }, info) => {

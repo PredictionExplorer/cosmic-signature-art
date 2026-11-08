@@ -24,6 +24,8 @@ import type { Neighbour, Neighbours } from '@/components/artwork-neighbours';
 import type { HistoryQuery } from '@/components/artwork-history';
 import { ArtworkEntry } from '@/components/artwork-entry';
 import { OrbitScore } from '@/components/orbit-score';
+import { Overture } from '@/components/overture';
+import { showWorkOf } from '@/lib/art/first-light-work';
 import { workOrbit } from '@/lib/art/orbit-records';
 import { filmOrbit } from '@/lib/art/orbit-windows';
 import { orbitPlate } from '@/lib/art/orbit-plate';
@@ -167,6 +169,8 @@ export default async function ArtworkPage({
         afterTheFrame={!!orbit}
         orbit={filmOrbit(tokenId)}
       />
+      {/* First Light, when this work is the page a first visit opens on: a shared link (§16). */}
+      <Overture work={showWorkOf(work)} skip={t.firstLightSkip} />
       {orbit ? (
         <OrbitScore
           key={tokenId}

@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { roomFor, roomScript } from './room';
 import { dayNumber, expressionOfDay } from './art/day';
-import { HOME_RESOLVED_KEY, MOTION_KEY, OVERTURE_KEY } from './storage-keys';
+import { HOME_RESOLVED_KEY, MOTION_KEY, OVERTURE_KEY, VISIT_KEY } from './storage-keys';
 
 /** Days the venue's arithmetic answers for a pool of three: an Ink day and a Light day. */
 const INK_DAY = '2026-11-06';
@@ -112,7 +112,7 @@ describe('First Light’s first paint', () => {
     expect(overture()).toBe('pending');
   });
 
-  it('never for a returning visitor, a request, a work, Pause or reduced motion', () => {
+  it('never for a returning visitor, a request, a later page of the visit, Pause or reduced motion', () => {
     preferring(false);
     localStorage.setItem(OVERTURE_KEY, 'seen');
     expect(paint('/', '', INK_DAY).room).toBe('paper');
@@ -134,6 +134,35 @@ describe('First Light’s first paint', () => {
     paint('/', '', INK_DAY);
     expect(overture()).toBeNull();
     expect(sessionStorage.getItem(HOME_RESOLVED_KEY)).toBeNull();
+  });
+
+  it('asks for First Light on a work the visit opens on, as a shared link opens one', () => {
+    preferring(false);
+    paint('/art/31', '', INK_DAY);
+    expect(overture()).toBe('pending');
+    expect(sessionStorage.getItem(VISIT_KEY)).toBe('1');
+    // The home's own arrival is the home's: a work leaves it be.
+    expect(sessionStorage.getItem(HOME_RESOLVED_KEY)).toBeNull();
+    // Any later page of the visit stands as it opens.
+    paint('/art/32', '', INK_DAY);
+    expect(overture()).toBeNull();
+    // A new visit, in any language, opens on the light again.
+    sessionStorage.clear();
+    paint('/ja/art/31', '', INK_DAY);
+    expect(overture()).toBe('pending');
+    // Not where the link asks for an expression, nor for a browser that has seen it.
+    sessionStorage.clear();
+    paint('/art/31', '?expression=light', INK_DAY);
+    expect(overture()).toBeNull();
+    sessionStorage.clear();
+    localStorage.setItem(OVERTURE_KEY, 'seen');
+    paint('/art/31', '', INK_DAY);
+    expect(overture()).toBeNull();
+    // Nor beneath a work's own pages.
+    localStorage.clear();
+    sessionStorage.clear();
+    paint('/art/31/record', '', INK_DAY);
+    expect(overture()).toBeNull();
   });
 
   it('stands aside where storage or the preference cannot be read', () => {

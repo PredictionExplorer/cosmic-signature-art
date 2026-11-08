@@ -917,8 +917,9 @@ html[data-sit] .site-header {
 }
 
 /*
-  The home's one timed event, First Light (src/components/overture.tsx, docs/first-light.md §4).
-  From the first paint of a first visit (src/lib/room.ts) the day's plate stands alone: it is
+  The venue's one timed event, First Light (src/components/overture.tsx, docs/first-light.md §4,
+  §16): on the home, or on a work a shared link opens the visit on.
+  From the first paint of a first visit (src/lib/room.ts) the plate stands alone: it is
   the first thing seen and the page's Largest Contentful Paint, and the running head and the
   plate's strip are held back. The light then performs over the plate and gives it back; the head
   and strip arrive last, over --t-dawn, as the plate lands. Should the performance never come, they
@@ -926,13 +927,16 @@ html[data-sit] .site-header {
 */
 html[data-overture='pending'] .site-header,
 html[data-overture='pending'] [data-presentation='home'] .strip,
+html[data-overture='pending'] [data-presentation='gallery'] .strip,
 html[data-overture='playing'] .site-header,
-html[data-overture='playing'] [data-presentation='home'] .strip {
+html[data-overture='playing'] [data-presentation='home'] .strip,
+html[data-overture='playing'] [data-presentation='gallery'] .strip {
   opacity: 0;
   pointer-events: none;
 }
 html[data-overture='pending'] .site-header,
-html[data-overture='pending'] [data-presentation='home'] .strip {
+html[data-overture='pending'] [data-presentation='home'] .strip,
+html[data-overture='pending'] [data-presentation='gallery'] .strip {
   animation: overture-wait var(--t-chrome) var(--ease-settle) var(--t-overture-wait) forwards;
 }
 @keyframes overture-wait {
@@ -944,8 +948,10 @@ html[data-overture='pending'] [data-presentation='home'] .strip {
 /* They arrive as the plate lands, walls the crossing to Ink then turns with the plate. */
 html[data-overture='landing'] .site-header,
 html[data-overture='landing'] [data-presentation='home'] .strip,
+html[data-overture='landing'] [data-presentation='gallery'] .strip,
 html[data-overture='dawn'] .site-header,
-html[data-overture='dawn'] [data-presentation='home'] .strip {
+html[data-overture='dawn'] [data-presentation='home'] .strip,
+html[data-overture='dawn'] [data-presentation='gallery'] .strip {
   transition: opacity var(--t-dawn) var(--ease-settle);
 }
 

@@ -1,6 +1,12 @@
 import { locales, unlocalizedPath } from './i18n/routing';
 import { DAY_MS } from './art/day';
-import { EXPRESSION_KEY, HOME_RESOLVED_KEY, MOTION_KEY, OVERTURE_KEY } from './storage-keys';
+import {
+  EXPRESSION_KEY,
+  HOME_RESOLVED_KEY,
+  MOTION_KEY,
+  OVERTURE_KEY,
+  VISIT_KEY,
+} from './storage-keys';
 
 /** The venue's two grounds, both taken from the work: the Ink sheet's paper and the Light field's black. */
 export type Room = 'paper' | 'night';
@@ -39,10 +45,12 @@ export function roomForPath(pathname: string): Room {
  * day's, by the arithmetic of src/lib/art/day.ts on the day's-work pool's size and the
  * server's pin. The wing takes the ground over at hydration (src/components/wing.tsx).
  *
- * It also decides the home's one timed event, First Light (src/components/overture.tsx): a first
- * visit to the home, with nothing asked of the plate in the URL and motion welcome, marks
- * <html data-overture="pending">. The day's plate stands alone from the first frame, on its own
- * ground, with the running head held back; the light then performs over it.
+ * It also decides the venue's one timed event, First Light (src/components/overture.tsx): a first
+ * visit, with nothing asked of the plate in the URL and motion welcome, marks
+ * <html data-overture="pending"> on the home, or on a work when the work is the page the visit
+ * opened on, as a shared link opens one (docs/first-light.md §16). The plate stands alone from
+ * the first frame, on its own ground, with the running head held back; the light then performs
+ * over it. Every page marks the visit as begun, so no later page performs.
  */
 export function roomScript({ poolSize, pinned }: { poolSize: number; pinned?: string }): string {
   return [
@@ -62,15 +70,18 @@ export function roomScript({ poolSize, pinned }: { poolSize: number; pinned?: st
     `z=${Math.max(1, poolSize)},t=((d%z)+z)%z+Math.floor(d/z);`,
     "e=((t%2)+2)%2===0?'light':'ink'}}",
     "n=e==='light'}",
-    // The Overture: storage that cannot be read never traps a visitor behind the black.
-    "if(p==='/'&&!q.get('expression')&&!location.hash){var o=false;",
+    // First Light: on the home, or on a work the visit opens on. Storage that cannot be read
+    // never holds a visitor at the gate.
+    'var w=/^\\/art\\/[^/]+$/.test(p),f=false;',
+    `try{f=!sessionStorage.getItem(${JSON.stringify(VISIT_KEY)});sessionStorage.setItem(${JSON.stringify(VISIT_KEY)},'1')}catch(x){f=false}`,
+    "if((p==='/'||(w&&f))&&!q.get('expression')&&!location.hash){var o=false;",
     `try{o=!localStorage.getItem(${JSON.stringify(OVERTURE_KEY)})&&`,
     `sessionStorage.getItem(${JSON.stringify(MOTION_KEY)})!=='paused'&&`,
     "!matchMedia('(prefers-reduced-motion: reduce)').matches&&",
     // A visitor saving data is not sent a performance unasked.
     '!(navigator.connection&&navigator.connection.saveData)}catch(x){o=false}',
     "if(o){document.documentElement.setAttribute('data-overture','pending');",
-    `try{sessionStorage.setItem(${JSON.stringify(HOME_RESOLVED_KEY)},'resolved')}catch(x){}}}`,
+    `if(p==='/')try{sessionStorage.setItem(${JSON.stringify(HOME_RESOLVED_KEY)},'resolved')}catch(x){}}}`,
     "document.documentElement.setAttribute('data-room',n?'night':'paper');",
     'var m=document.querySelector(\'meta[name="theme-color"]\');',
     `if(m)m.setAttribute('content',n?'${ROOM_COLORS.night}':'${ROOM_COLORS.paper}');`,

@@ -147,3 +147,47 @@ export async function pauseAmbientMotion(page: Page) {
   if (!initiallyPaused) await control.click();
   await expect(control).toHaveAttribute('aria-pressed', 'true');
 }
+
+/** A key the page has stored, in this tab's session or this browser's local storage. */
+export const stored = (page: Page, key: string, where: 'local' | 'session') =>
+  page.evaluate(
+    ([name, kind]) => (kind === 'local' ? localStorage : sessionStorage).getItem(name),
+    [key, where] as const,
+  );
+
+/** Whether First Light performs here: it takes the plate, or the page stands at once. */
+export async function performs(page: Page) {
+  const html = page.locator('html');
+  await expect
+    .poll(async () => (await html.getAttribute('data-overture')) ?? 'stood', { timeout: 20_000 })
+    .toMatch(/^(playing|landing|dawn|stood)$/);
+  return (await html.getAttribute('data-overture')) !== null;
+}
+
+/**
+ * Every value the gate takes, from the document's first moment: the room script sets it before
+ * anything paints. A browser that cannot draw the light lifts it at once, often before the page
+ * has loaded, so a poll after the load can miss it; this reads it back instead.
+ */
+export async function watchTheGate(page: Page) {
+  await page.addInitScript(() => {
+    const taken: (string | null)[] = [];
+    Object.defineProperty(window, '__gate', { value: taken });
+    new MutationObserver((records) => {
+      // Each record holds the value before its change; the value after is the next one's, or now.
+      records.forEach((_, i) =>
+        taken.push(
+          i + 1 < records.length
+            ? records[i + 1].oldValue
+            : document.documentElement.getAttribute('data-overture'),
+        ),
+      );
+    }).observe(document, {
+      subtree: true,
+      attributes: true,
+      attributeFilter: ['data-overture'],
+      attributeOldValue: true,
+    });
+  });
+  return () => page.evaluate(() => (window as unknown as { __gate: (string | null)[] }).__gate);
+}

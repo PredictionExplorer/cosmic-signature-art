@@ -476,6 +476,18 @@ _8 November 2026, on the branch `claude/orbit-twin`, after the owner chose to ca
 - **`orbit-twin.tsx`** performs it with two continuations in lockstep, bit for bit the worker's own.
 - **One mode at a time.** It and _After the frame_ give way to each other. The orbit in the hand and the slider stand aside while either runs.
 
+## 16. First Light on a shared link, as built
+
+_8 November 2026, on the branch `claude/first-light-shared-link`: the first part of F2's step 4._
+
+- **When.** A first visit that opens on a work, the page a shared link opens, performs First Light over that work's own plate, as the home performs it over the day's.
+  - Once per browser, as on the home (`OVERTURE_KEY`).
+  - Only on the page a visit opens on: the first-paint script marks the visit as begun on every page (`VISIT_KEY`).
+  - Never where the link asks for an expression, where motion is unwelcome, or where data is saved.
+- **Which works.** Any work whose frame still binds to its Light film. One builder, `showWorkOf` (`src/lib/art/first-light-work.ts`), now serves the home, every work page and the proof.
+- **How it lands.** The work's plate stands alone from the first paint, and the light lands on it. On an Ink day the plate crosses back to Ink in the order the ink came to rest, as the home's does. The running head and the strip arrive last.
+- **Tested.** The room's first paint (a work the visit opens on; a later page; a request; a browser that has seen it), and `tests/e2e/first-light-shared.spec.ts` in every project.
+
 ## Sources
 
 Gathered on 7 November 2026 by a research pass. Awwwards' own pages refuse automated reading, so its jury quotes come from search-indexed copies. F0 re-checks every platform claim on real devices.

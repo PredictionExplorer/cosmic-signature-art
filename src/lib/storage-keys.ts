@@ -18,3 +18,10 @@ export const HOME_RESOLVED_KEY = 'cosmic-art-home-film-v1';
  * shown First Light once (docs/first-light.md §4).
  */
 export const OVERTURE_KEY = 'cosmic-art-first-light-v1';
+
+/**
+ * sessionStorage: this visit has already shown a page. Set by the first-paint script on every
+ * page, so only the page a visit opens on, such as a work reached by a shared link, can perform
+ * First Light (docs/first-light.md §16).
+ */
+export const VISIT_KEY = 'cosmic-art-visit-v1';
