@@ -16,6 +16,7 @@ Phase C of [Third Physics](third-physics.md) adds the collection's two other ind
 **The Orrery**, at `/collection/orrery`.
 - Every work's orbit performed at once, hung by cycle, each cell over its numeral and leading to its work.
 - One worker draws on 72 canvases handed to it. Each orbit starts at the first step of its recorded window and is drawn as the work page draws it: every hundredth step, in light, at the Light film's pace. Cells out of view wait where they are. A finished window is held for three seconds, then performed again.
+  - *From 8 November 2026 each body is drawn in its own published hue over a soft glow, in cells of 260 px at least on a desk ([third-physics-phase-d.md](third-physics-phase-d.md) §8).*
 - Pause, reduced motion and the auction hush draw each orbit whole, once.
 - Pointing at a work, or focusing it, shows its own Light still in the cell.
 - Where a canvas cannot be handed to a worker, or the worker fails, every work's Light still stands in, and the page says so.
