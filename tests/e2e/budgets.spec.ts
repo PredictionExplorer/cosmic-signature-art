@@ -62,8 +62,16 @@ type LayoutShift = PerformanceEntry & {
  * Runs in the page before any of its own scripts, and records every LCP candidate and every
  * layout shift, each with a short description of the element. A candidate counts as the art
  * when it lies in an artwork's media: its inline preview, its still or its film.
+ *
+ * A candidate can leave the page before its entry is read. A plate rendered again after hydration
+ * puts new elements in place of the same media, and the entry's element is then null. So every
+ * image and film taken out of an artwork's media is remembered by its source, and a removed
+ * candidate counts as the art when its URL is one of them. An inline image's entry carries only
+ * the first 100 characters of its data: URL.
  */
 function observeVitals() {
+  const fileOf = (source: string) =>
+    source.startsWith('data:') ? 'inline' : source.split('/').pop();
   const describe = (node: Node | null | undefined) => {
     if (!(node instanceof Element)) return node ? node.nodeName : 'a removed element';
     const classes = [...node.classList]
@@ -71,9 +79,29 @@ function observeVitals() {
       .map((name) => `.${name}`)
       .join('');
     const source = (node as HTMLImageElement).currentSrc || (node as HTMLImageElement).src || '';
-    const file = source.startsWith('data:') ? 'inline' : source.split('/').pop();
+    const file = fileOf(source);
     return `${node.localName}${classes}${file ? ` (${file})` : ''}`;
   };
+  const artSources = new Set<string>();
+  new MutationObserver((records) => {
+    for (const record of records)
+      for (const node of record.removedNodes) {
+        if (!(node instanceof Element)) continue;
+        const fromArt = record.target instanceof Element && !!record.target.closest('.art-media');
+        const media = node.matches('img, video')
+          ? [node]
+          : [...node.querySelectorAll('img, video')];
+        for (const item of media as (HTMLImageElement | HTMLVideoElement)[])
+          if (fromArt || item.closest('.art-media'))
+            for (const source of [item.currentSrc, item.src, (item as HTMLVideoElement).poster])
+              if (source) artSources.add(source);
+      }
+  }).observe(document, { childList: true, subtree: true });
+  const wasArt = (url: string) =>
+    !!url &&
+    [...artSources].some(
+      (source) => source === url || (url.startsWith('data:') && source.startsWith(url)),
+    );
   const seen: Seen = { paints: [], shifts: [], lastAt: 0 };
   Object.defineProperty(window, '__vitals', { value: seen });
   new PerformanceObserver((list) => {
@@ -81,8 +109,10 @@ function observeVitals() {
       seen.paints.push({
         time: entry.startTime,
         size: entry.size,
-        art: !!entry.element?.closest('.art-media'),
-        element: describe(entry.element),
+        art: entry.element ? !!entry.element.closest('.art-media') : wasArt(entry.url),
+        element: entry.element
+          ? describe(entry.element)
+          : `a removed element${entry.url ? ` (${fileOf(entry.url)})` : ''}`,
       });
     seen.lastAt = performance.now();
   }).observe({ type: 'largest-contentful-paint', buffered: true });

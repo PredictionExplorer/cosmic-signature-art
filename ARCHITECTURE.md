@@ -209,36 +209,38 @@ English, Simplified Chinese, Traditional Chinese for Taiwan and for Hong Kong, U
 
 The targets are set in [docs/first-light.md](docs/first-light.md) §9: the still painted within a second; at the 75th percentile, LCP within 2.5 s, INP within 200 ms and CLS within 0.1. Two budgets hold the venue to them in CI. Their numbers live in one file, [`scripts/budgets.json`](scripts/budgets.json).
 
-**First-load JavaScript, per route.** `npm run test:budgets:js` (`scripts/check-js-budgets.mjs`) reads the production build. For each route it counts the framework's root main files plus the client chunks of every layout and page on the route, gzips each chunk at level 9, and holds the total to the route's budget. Next 16 no longer prints this "First Load JS" column, but still writes the chunk list to `.next/diagnostics/route-bundle-stats.json`, which is what the script reads. Script loaded later by `import()`, such as First Light's performance or the workers, is not counted, because it does not hold up the first paint. A route without a budget fails, and so does a budget for a route that is gone. Each budget is the size measured below plus about a tenth, rounded up to 5 KiB: room to grow, but not to hide a library pulled into a page by mistake.
+**First-load JavaScript, per route.** `npm run test:budgets:js` (`scripts/check-js-budgets.mjs`) reads the production build. For each route it counts the framework's root main files plus the client chunks of every layout and page on the route. It compresses each chunk as Vercel sends it to a browser, Brotli at quality 3, and holds the total to the route's budget. Next 16 no longer prints this "First Load JS" column, but still writes the chunk list to `.next/diagnostics/route-bundle-stats.json`, which is what the script reads. Script loaded later by `import()`, such as First Light's performance or the workers, is not counted, because it does not hold up the first paint. A route without a budget fails, and so does a budget for a route that is gone. Each budget is the size measured below plus about a tenth, rounded up to 5 KiB: room to grow, but not to hide a library pulled into a page by mistake.
 
-**Paint and layout.** `npm run test:budgets:paint` runs `tests/e2e/budgets.spec.ts` in Chromium, on a desk and on a phone, against a production server. It loads three pages: the home on a first visit (measured through the whole of First Light), the home for a returning visitor, and `/art/31`. Each is loaded three times in a fresh browser context. A `PerformanceObserver` records every LCP candidate and layout shift. The median LCP must be within 2,500 ms and the median CLS within 0.1, the Core Web Vitals lines for "good". The spec also checks what was painted: the largest paint must lie in the artwork's media (its inline preview, its still or its film). Text or a placeholder fails. CI runs the spec on a runner of its own, one page at a time, because a timing measured beside other tests measures them too. The browser jobs skip it with `--grep-invert @budget`.
+**Paint and layout.** `npm run test:budgets:paint` runs `tests/e2e/budgets.spec.ts` in Chromium, on a desk and on a phone, against a production server. It loads three pages: the home on a first visit (measured through the whole of First Light), the home for a returning visitor, and `/art/31`. Each is loaded three times in a fresh browser context. A `PerformanceObserver` records every LCP candidate and layout shift. The median LCP must be within 2,500 ms and the median CLS within 0.1, the Core Web Vitals lines for "good". The spec also checks what was painted: the largest paint must lie in the artwork's media (its inline preview, its still or its film). Text or a placeholder fails. Sometimes the page removes the painted element before its entry is read, as when a plate rendered again after hydration replaces its media with the same media. The spec then matches the entry's URL against the media taken out of an artwork's frame. CI runs the spec on a runner of its own, one page at a time, because a timing measured beside other tests measures them too. The browser jobs skip it with `--grep-invert @budget`.
 
-**The baseline**, measured on 8 November 2026 on an Apple M4 Max with Playwright's Chromium 156, against a production build (`COSMIC_VENUE_DATE=2026-11-06 npm run build`, then `next start`). The spec ran twice; each figure is a median of three loads, and a range gives the two runs' medians.
+**The baseline**, measured on 8 November 2026 on an Apple M4 Max with Playwright's Chromium 156, against a production build (`COSMIC_VENUE_DATE=2026-11-06 npm run build`, then `next start`). The spec ran three times; each figure is a median of three loads, and a range spans the three runs' medians.
 
 | Page                                       | Desk (1440 × 1000): LCP, element     | Phone (390 × 844): LCP, element              | CLS, desk / phone |
 | :----------------------------------------- | :----------------------------------- | :------------------------------------------- | :---------------- |
-| The home, first visit, through First Light | 740–776 ms, the Ink still (1,920 px) | 40–56 ms, the inline preview                 | 0 / 0.0089        |
-| The home, returning                        | 668 ms, the Ink still                | 40–128 ms, the inline preview or the excerpt | 0 / 0             |
-| `/art/31`                                  | 692–696 ms, the Ink still            | 152–156 ms, the excerpt's first frame        | 0 / 0             |
+| The home, first visit, through First Light | 704–776 ms, the Ink still (1,920 px) | 36–56 ms, the inline preview                 | 0 / 0.0089        |
+| The home, returning                        | 668–672 ms, the Ink still            | 40–128 ms, the inline preview or the excerpt | 0 / 0             |
+| `/art/31`                                  | 676–696 ms, the Ink still            | 68–156 ms, the inline preview or the excerpt | 0 / 0             |
 
 - **The phone's LCP is earlier.** On a phone the inline preview already fills the plate at its displayed size. The full still, painted later, is no larger, so it is not a new LCP candidate. Where the plate's catalogue excerpt starts playing, its first frame is a few pixels larger than the preview, so it can become the LCP instead. Either way, the largest paint is the art.
 - **The phone's first-visit CLS** comes from the statement section, which shifts twice by 0.0045 within a few milliseconds, at about 1 s and again at about 12 s, while First Light performs. The two bursts are seconds apart, so CLS is one of them, 0.0089.
-- **CI's margin.** With the GPU off (SwiftShader) and the CPU slowed fourfold, the desk's worst load was 1,104 ms and the phone's 488 ms. That leaves more than half the 2.5 s line for CI's slower runners.
+- **CI's margin.** With the GPU off (SwiftShader) and the CPU slowed fourfold, the desk's worst load was 1,104 ms and the phone's 488 ms. CI's own runner (four vCPUs, no GPU) first ran the spec on 8 November 2026. Its medians were 1,284 / 932 / 916 ms on the desk and 112 / 120 / 364 ms on the phone (home first visit / home returning / `/art/31`), with CLS as above. Its slowest single load was 1,316 ms, so about half the 2.5 s line is left.
 
-First-load JavaScript, gzip, from the same build:
+First-load JavaScript from the same build, in KiB as sent (Brotli, quality 3):
 
-| Route                         | gzip KiB | Budget | Route                                       | gzip KiB | Budget |
+| Route                         | Sent KiB | Budget | Route                                       | Sent KiB | Budget |
 | :---------------------------- | -------: | -----: | :------------------------------------------ | -------: | -----: |
-| `/[locale]` (the home)        |    311.7 |    345 | `/[locale]/collection`                      |    283.4 |    315 |
-| `/[locale]/art/[id]`          |    325.7 |    360 | `/[locale]/collection/all-the-light`        |    270.1 |    300 |
-| `/[locale]/auctions/[id]`     |    408.0 |    450 | `/[locale]/collection/orrery`               |    268.9 |    300 |
-| `/[locale]/auctions`          |    268.7 |    300 | `/[locale]/exhibitions`                     |    277.6 |    310 |
-| `/[locale]/first-light/[id]`  |    283.9 |    315 | `/[locale]/exhibitions/[slug]`              |    283.3 |    315 |
-| `/[locale]/verify/orbit`      |    267.2 |    295 | `/[locale]/process`                         |    284.6 |    315 |
-| `/[locale]/verify/orbit/[id]` |    269.7 |    300 | `/[locale]/statement`, `/terms`, `/privacy` |    266.3 |    295 |
-| `/_not-found`                 |    243.3 |    270 |                                             |          |        |
+| `/[locale]` (the home)        |    317.4 |    350 | `/[locale]/collection`                      |    288.4 |    320 |
+| `/[locale]/art/[id]`          |    331.9 |    370 | `/[locale]/collection/all-the-light`        |    274.9 |    305 |
+| `/[locale]/auctions/[id]`     |    416.0 |    460 | `/[locale]/collection/orrery`               |    273.6 |    305 |
+| `/[locale]/auctions`          |    273.4 |    305 | `/[locale]/exhibitions`                     |    282.3 |    315 |
+| `/[locale]/first-light/[id]`  |    289.2 |    320 | `/[locale]/exhibitions/[slug]`              |    288.3 |    320 |
+| `/[locale]/verify/orbit`      |    271.8 |    300 | `/[locale]/process`                         |    289.6 |    320 |
+| `/[locale]/verify/orbit/[id]` |    274.4 |    305 | `/[locale]/statement`, `/terms`, `/privacy` |    270.9 |    300 |
+| `/_not-found`                 |    247.2 |    275 |                                             |          |        |
 
-Of every route's total, 128.8 KiB is the root files every page loads first: React and the Next.js runtime. About 138 KiB more is the venue's locale layout, shared by every page under `[locale]`. The rest is the page's own. The sale's page is the heaviest because it carries the contract client: viem and the wallet discovery.
+Of every route's total, 131.9 KiB is the root files every page loads first: React and the Next.js runtime. About 139 KiB more is the venue's locale layout, shared by every page under `[locale]`. Most of that, 88.7 KiB, is the copy of all eight locales, which every page carries. The rest is the page's own. The sale's page is the heaviest because it carries the contract client: viem and the wallet discovery.
+
+- **Why Brotli at quality 3.** It is what Vercel sends a browser that accepts it. On 8 November 2026 every Brotli chunk cosmic.art served matched quality 3 to within a byte. Gzip, the old column's measure, would mislead here, because its window is 32 KiB. The three Chinese locales' copy came to about 31 KiB each, so gzip compressed each against the one before. Copy that pushes them past 32 KiB would add some 20 KiB of gzip to every route, while what visitors download grows by about 3 KiB.
 
 **Changing a budget.** When a route grows on purpose, raise its number in `scripts/budgets.json` in the same change and say why in the commit. When it grows by accident, `npx next analyze` shows which module did it, and `import()` moves what the first paint does not need out of the first load. The paint budgets may become stricter than the field's lines, but never looser.
 

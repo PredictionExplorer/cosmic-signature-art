@@ -1,7 +1,7 @@
 import { readFile } from 'node:fs/promises';
 import { relative, resolve, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { gzipSync } from 'node:zlib';
+import { brotliCompressSync, constants } from 'node:zlib';
 import { log, error } from 'node:console';
 
 /**
@@ -15,9 +15,13 @@ import { log, error } from 'node:console';
  * accounting to .next/diagnostics/route-bundle-stats.json (next/dist/build/route-bundle-stats.js).
  * This script reads that list and measures the chunks itself.
  *
- * How it is measured. Each chunk is gzipped at level 9, the measure the old column used and close
- * to what a CDN sends, and a route's total is the sum of its chunks. The raw size is reported
- * too, since a browser parses and compiles the unzipped bytes.
+ * How it is measured. Each chunk is compressed as Vercel sends it to a browser: Brotli at quality
+ * 3, which matched every Brotli chunk cosmic.art served on 8 November 2026 to within a byte. A
+ * route's total is the sum of its chunks. The raw size is reported too, since a browser parses and
+ * compiles the uncompressed bytes. Gzip, the old column's measure, would mislead: its window is
+ * 32 KiB, so when text that repeats (the eight locales' copy, which every page carries) grows
+ * further apart than that, gzip's size jumps by tens of KiB while what a visitor downloads barely
+ * moves.
  *
  * What is not counted. Script a page loads later by `import()`, such as First Light's performance
  * on a first visit or the orbit workers. That is deliberate: what loads later does not hold up
@@ -28,7 +32,9 @@ import { log, error } from 'node:console';
  */
 
 export const STATS_FILE = 'diagnostics/route-bundle-stats.json';
-export const BUDGETS_KEY = 'firstLoadJsGzipKiB';
+export const BUDGETS_KEY = 'firstLoadJsBrotliKiB';
+/** Brotli's quality as Vercel compresses JavaScript for a browser that accepts it. */
+export const BROTLI_QUALITY = 3;
 const KIB = 1024;
 
 /** The repository root; under a test runner whose module URLs are not file URLs, the working directory. */
@@ -40,9 +46,11 @@ function repositoryRoot() {
   }
 }
 
-/** A chunk's size on the wire, gzipped at the highest level. */
-export function gzipSize(bytes) {
-  return gzipSync(bytes, { level: 9 }).length;
+/** A chunk's size on the wire: Brotli, at the quality Vercel uses. */
+export function brotliSize(bytes) {
+  return brotliCompressSync(bytes, {
+    params: { [constants.BROTLI_PARAM_QUALITY]: BROTLI_QUALITY },
+  }).length;
 }
 
 /** Bytes as KiB, to one decimal place. */
@@ -88,7 +96,7 @@ export function parseBudgets(text, where) {
 }
 
 /**
- * Each route's first-load JavaScript, raw and gzipped. Most chunks are shared by every route
+ * Each route's first-load JavaScript, raw and compressed. Most chunks are shared by every route
  * (the framework, the locale layout), so each chunk is read and compressed once.
  */
 export async function measureRoutes(rows, readChunk) {
@@ -96,16 +104,21 @@ export async function measureRoutes(rows, readChunk) {
   const measured = [];
   for (const { route, firstLoadChunkPaths } of rows) {
     let raw = 0;
-    let gzip = 0;
+    let brotli = 0;
     for (const path of firstLoadChunkPaths) {
       if (!sizes.has(path)) {
         const bytes = await readChunk(path, route);
-        sizes.set(path, { raw: bytes.length, gzip: gzipSize(bytes) });
+        sizes.set(path, { raw: bytes.length, brotli: brotliSize(bytes) });
       }
       raw += sizes.get(path).raw;
-      gzip += sizes.get(path).gzip;
+      brotli += sizes.get(path).brotli;
     }
-    measured.push({ route, chunks: firstLoadChunkPaths.length, rawBytes: raw, gzipBytes: gzip });
+    measured.push({
+      route,
+      chunks: firstLoadChunkPaths.length,
+      rawBytes: raw,
+      brotliBytes: brotli,
+    });
   }
   return measured.sort((a, b) => a.route.localeCompare(b.route));
 }
@@ -118,7 +131,7 @@ export function checkBudgets(measured, budgets, budgetsFile = 'scripts/budgets.j
   const failures = [];
   const rows = measured.map((route) => {
     const budget = budgets[route.route];
-    const size = kib(route.gzipBytes);
+    const size = kib(route.brotliBytes);
     if (budget === undefined) {
       failures.push(
         `${route.route} has no first-load JavaScript budget. Add it to ${budgetsFile} under ` +
@@ -127,10 +140,10 @@ export function checkBudgets(measured, budgets, budgetsFile = 'scripts/budgets.j
       );
       return { ...route, budget: null, headroom: null };
     }
-    const headroom = Math.round((budget - route.gzipBytes / KIB) * 10) / 10;
+    const headroom = Math.round((budget - route.brotliBytes / KIB) * 10) / 10;
     if (headroom < 0)
       failures.push(
-        `${route.route} loads ${size} KiB of JavaScript before it can hydrate (gzip), ` +
+        `${route.route} loads ${size} KiB of JavaScript before it can hydrate (Brotli, as sent), ` +
           `${-headroom} KiB over its ${budget} KiB budget. Run \`npx next analyze\` to see what ` +
           'grew. Load what the first paint does not need with import(), or, if the growth is ' +
           `meant, raise the budget in ${budgetsFile} in the same change and say why.`,
@@ -154,13 +167,13 @@ export function formatReport(rows, heading) {
   const number = (value) => (value === null ? '—' : value.toFixed(1));
   return [
     heading,
-    line(['route'.padEnd(width), 'chunks', '  raw KiB', ' gzip KiB', '   budget', ' headroom']),
+    line(['route'.padEnd(width), 'chunks', '  raw KiB', '   br KiB', '   budget', ' headroom']),
     ...rows.map((row) =>
       line([
         row.route.padEnd(width),
         String(row.chunks).padStart(6),
         number(kib(row.rawBytes)).padStart(9),
-        number(kib(row.gzipBytes)).padStart(9),
+        number(kib(row.brotliBytes)).padStart(9),
         (row.budget === null ? '—' : String(row.budget)).padStart(9),
         number(row.headroom).padStart(9),
       ]),
@@ -221,7 +234,8 @@ export async function run({
     print(
       formatReport(
         checked,
-        `First-load JavaScript per route, gzip level 9 (${framework.name} ${framework.version}, ` +
+        `First-load JavaScript per route, Brotli at quality ${BROTLI_QUALITY} as Vercel sends it ` +
+          `(${framework.name} ${framework.version}, ` +
           `budgets in ${shown(budgetsPath)})`,
       ),
     );

@@ -5,11 +5,13 @@ import { mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { test } from 'node:test';
+import { gzipSync } from 'node:zlib';
 import {
+  BROTLI_QUALITY,
   BUDGETS_KEY,
+  brotliSize,
   checkBudgets,
   formatReport,
-  gzipSize,
   kib,
   measureRoutes,
   parseBudgets,
@@ -19,16 +21,25 @@ import {
 
 const KIB = 1024;
 
-test('a chunk is measured gzipped, which repetition shrinks and noise does not', () => {
+test('a chunk is measured as Vercel sends it, in Brotli, which repetition shrinks', () => {
+  assert.equal(BROTLI_QUALITY, 3, 'the quality cosmic.art’s chunks were sent at');
   const repetitive = Buffer.from('const art = "light";\n'.repeat(500));
-  assert.ok(gzipSize(repetitive) < repetitive.length / 10);
+  assert.ok(brotliSize(repetitive) < repetitive.length / 10);
   assert.equal(
-    gzipSize(repetitive),
-    gzipSize(Buffer.from(repetitive)),
+    brotliSize(repetitive),
+    brotliSize(Buffer.from(repetitive)),
     'the same bytes, the same size',
   );
   assert.equal(kib(1536), 1.5);
   assert.equal(kib(1000), 1);
+});
+
+test('repetition further apart than gzip’s 32 KiB window still shrinks, as on the wire', () => {
+  // Text repeated 40 KiB later, as each locale's copy repeats the shape of the one before.
+  const block = randomBytes(40 * KIB);
+  const twice = Buffer.concat([block, block]);
+  assert.ok(brotliSize(twice) < 1.1 * block.length, 'Brotli finds the repeat');
+  assert.ok(gzipSync(twice, { level: 9 }).length > 1.9 * block.length, 'gzip cannot see it');
 });
 
 test('the build’s route list is read only in the shape Next writes', () => {
@@ -84,14 +95,17 @@ test('a route’s total is the sum of its chunks, and a shared chunk is read onc
     ],
     'sorted by route',
   );
-  assert.equal(measured[0].gzipBytes, gzipSize(files['shared.js']) + gzipSize(files['home.js']));
+  assert.equal(
+    measured[0].brotliBytes,
+    brotliSize(files['shared.js']) + brotliSize(files['home.js']),
+  );
 });
 
 test('every route is held to its budget, and the file to the routes the build has', () => {
   const measured = [
-    { route: '/[locale]', chunks: 15, rawBytes: 900 * KIB, gzipBytes: 300 * KIB },
-    { route: '/[locale]/art/[id]', chunks: 15, rawBytes: 1000 * KIB, gzipBytes: 362.4 * KIB },
-    { route: '/[locale]/new', chunks: 12, rawBytes: 800 * KIB, gzipBytes: 250 * KIB },
+    { route: '/[locale]', chunks: 15, rawBytes: 900 * KIB, brotliBytes: 300 * KIB },
+    { route: '/[locale]/art/[id]', chunks: 15, rawBytes: 1000 * KIB, brotliBytes: 362.4 * KIB },
+    { route: '/[locale]/new', chunks: 12, rawBytes: 800 * KIB, brotliBytes: 250 * KIB },
   ];
   const { rows, failures } = checkBudgets(measured, {
     '/[locale]': 345,
@@ -124,17 +138,17 @@ test('the report shows every route, with its budget and headroom or a dash', () 
         route: '/[locale]',
         chunks: 15,
         rawBytes: 1024 * KIB,
-        gzipBytes: 300 * KIB,
+        brotliBytes: 300 * KIB,
         budget: 345,
         headroom: 45,
       },
-      { route: '/x', chunks: 1, rawBytes: KIB, gzipBytes: KIB, budget: null, headroom: null },
+      { route: '/x', chunks: 1, rawBytes: KIB, brotliBytes: KIB, budget: null, headroom: null },
     ],
     'Heading',
   );
   const [heading, columns, home, other] = report.split('\n');
   assert.equal(heading, 'Heading');
-  assert.match(columns, /^route\s+chunks\s+raw KiB\s+gzip KiB\s+budget\s+headroom$/);
+  assert.match(columns, /^route\s+chunks\s+raw KiB\s+br KiB\s+budget\s+headroom$/);
   assert.match(home, /^\/\[locale\]\s+15\s+1024\.0\s+300\.0\s+345\s+45\.0$/);
   assert.match(other, /^\/x\s+1\s+1\.0\s+1\.0\s+—\s+—$/);
 });
@@ -196,7 +210,7 @@ test('the check passes a build within its budgets and prints the table', async (
 });
 
 test('the check fails a route over its budget, naming it and the file to change', async () => {
-  // Random bytes do not compress: 4 KiB stays about 4 KiB gzipped.
+  // Random bytes do not compress: 4 KiB stays about 4 KiB in Brotli.
   const root = await fixture({
     chunks: { 'big.js': randomBytes(4 * KIB) },
     stats: [{ route: '/[locale]/art/[id]', firstLoadChunkPaths: ['.next/static/chunks/big.js'] }],
