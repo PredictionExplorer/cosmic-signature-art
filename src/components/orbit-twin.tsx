@@ -225,8 +225,8 @@ function exponentText(exponent: number): string {
 }
 
 /**
- * A length in the orbit's units as a × 10ⁿ, its mantissa to two figures in the reader's own
- * digits and its exponent raised, but never below the 12 px floor.
+ * A length in the orbit's units as a mantissa times a power of ten: the mantissa to two figures
+ * in the reader's own digits, and the power raised, but never below the 12 px floor.
  */
 export function Scientific({ value, locale }: { value: number; locale: string }) {
   if (!(value > 0)) return <>0</>;
