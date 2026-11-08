@@ -182,6 +182,9 @@ Each moment is the art's own truth, made visible. None is decoration.
   2. For a while the two are one line.
   3. Then they part, and the separation is read out as it grows: exponentially, as chaos does.
   4. By the end of the window the twin is a different dance, and a different work that was never chosen.
+
+  _Corrected 8 November 2026 (§15): within the recorded window a twin moved by 10⁻¹² never parts visibly. It parts past the frame, so the experiment is carried there._
+
 - **Why.** It shows in fifteen seconds why each work is singular, why its seed is its identity, and why the venue verifies to the last bit. It is labelled as analysis and offered once on each work page, never near a sale.
 
 **F. The collection, alive.**
@@ -258,7 +261,7 @@ First Light is the work's own three-dimensional event, not a room around it.
 | :--------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :-------------- |
 | **F0. Proof**                | First Light for one work (№ 031) on a branch: the engine, the camera, the landing on the still, on a desk and a phone. The owner judges the gasp before anything else is built. _Built 7 November 2026 (§12)._                                       | 1–2 weeks       |
 | **F1. First Light**          | The entry for every work with a frame; HDR canvas where available; the phone's full-bleed path; _Watch it form_; reduced-motion and returning-visitor states; performance budgets. Replaces the Overture's version 2. _Built 8 November 2026 (§13)._ | 3–4 weeks       |
-| **F2. The work as a stage**  | The show-then-record work page; the orbit in the hand; the Turn as a change of material. _The orbit in the hand built 8 November 2026 (§14)._                                                                                                                                                             | 3–4 weeks       |
+| **F2. The work as a stage**  | The show-then-record work page; the orbit in the hand; the Turn as a change of material. _The orbit in the hand built 8 November 2026 (§14)._                                                                                                        | 3–4 weeks       |
 | **F3. Wonder**               | One part in a trillion; the collection alive (All the light in HDR, the new Orrery, shared transitions).                                                                                                                                             | 3 weeks         |
 | **F4. True light and sound** | HDR stills and films from the masters; the full-resolution 60 fps HLS ladder; the commissioned score with its threshold. All of these wait on the owner, the artist and the generator team.                                                          | depends on them |
 
@@ -442,6 +445,36 @@ _8 November 2026, on the branch `claude/orbit-in-hand`: F2's first part (§5D), 
 - **Reduced motion.** Nothing plays unasked: _Play_ is offered where the window stands whole. A turned orbit returns in one step.
 
 **What it looks like.** № 031 [in both materials, flat and then turned](screenshots/orbit-in-hand.jpg): Ink above, Light below.
+
+## 15. One part in a trillion, as built
+
+_8 November 2026, on the branch `claude/orbit-twin`, after the owner chose to carry the twin past the frame._
+
+**What a probe found first.**
+
+- Ten works were followed with a twin moved by 10⁻¹² of the orbit's unit (body 1, along x) from the window's first state.
+- Within the window none parted. After its million steps the gap was 10⁻⁹ to 10⁻⁴, never a pixel of the plate.
+- The gap doubled every 33,000 to 147,000 steps, so the twin parts only past the frame, some 0.3 to 4 million steps on.
+- §5E's "by the end of the window the twin is a different dance" was wrong.
+
+**What a visitor sees.** Once the window stands whole, _One part in a trillion_ sits beside _After the frame_.
+
+- The section says which body moved, along which axis and by how much, and that this is not the work.
+- The window dims. Past the frame, the work and its twin are carried on together: the work in its own drained hues, the twin in vermilion, the red of a seal. Where they coincide they read as one line; then the twin parts and dances its own dance.
+- The line under the drawing reads the gap as it grows (a × 10ⁿ, its power at the 12 px floor), the step, and the pace: the film's own, or as many times faster as it takes to part in about ten seconds.
+- The score gives way to the gap's growth on a log scale, where steady doubling reads as a straight line, with the frame and the parting marked.
+- At rest it says where the twin parted, and about how often the gap doubled.
+- Reduced motion draws it all at once.
+
+**How it is built.**
+
+- **`src/lib/physics/twin.ts`** is pure.
+  - It replays both through the window on the plate, as the films placed them (`FramedWindow`).
+  - It then carries both past the frame with the camera held where the film ended (`HeldPlacement`), looking for the parting every 100 steps: three pixels of the plate.
+  - It keeps the gap every 1,000 steps, and fits the doubling where the growth is clean.
+- **`twin.worker.ts`** runs it only when asked.
+- **`orbit-twin.tsx`** performs it with two continuations in lockstep, bit for bit the worker's own.
+- **One mode at a time.** It and _After the frame_ give way to each other. The orbit in the hand and the slider stand aside while either runs.
 
 ## Sources
 

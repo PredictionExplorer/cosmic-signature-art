@@ -632,6 +632,17 @@ export const en = {
     'Hold the orbit, then drag, to turn it in depth. Let go, and it returns to the generator’s view.',
   orbitGeneratorView: 'The generator’s view',
   orbitTimeLabel: 'Moment in the Light film',
+  // One part in a trillion (src/components/orbit-twin.tsx)
+  oneInATrillion: 'One part in a trillion',
+  oneInATrillionNote:
+    'Body {body} moved by one part in a trillion along x, at the recorded window’s first step. Past the frame the same physics carries the work and its twin on together, until the twin parts. This is not the work: it is what a trillionth would have made of it.',
+  twinWorking: 'Moving body {body} by one part in a trillion, and following both past the frame…',
+  twinApart: 'Apart by {gap} · step {step} · {pace}',
+  twinAtFilmPace: 'at the film’s pace',
+  twinFaster: '{times} times the film’s pace',
+  twinParted: 'Parted at step {step}. The gap doubled about every {doubling} steps.',
+  twinOneLine: 'Still one line at step {step}, apart by {gap}',
+  twinUnavailable: 'This browser could not follow the twin.',
   // The score in the film's transport (src/components/film-score-band.tsx)
   filmPhysics: 'bodies {pair} · {distance} apart',
   toClosestApproach: 'Closest approach',

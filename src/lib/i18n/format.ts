@@ -8,6 +8,28 @@ export function fill(template: string, values: Record<string, string | number>):
   );
 }
 
+/**
+ * Fill `{name}` placeholders with anything, not only text: the template's own words come back as
+ * strings, in order, with each value in its place, ready to render. Unknown names stay visible.
+ */
+export function fillParts<T>(
+  template: string,
+  values: Record<string, T | string | number>,
+): (T | string)[] {
+  const parts: (T | string)[] = [];
+  let at = 0;
+  for (const match of template.matchAll(/\{(\w+)\}/g)) {
+    const [whole, name] = match;
+    if (!(name in values)) continue;
+    if (match.index > at) parts.push(template.slice(at, match.index));
+    const value = values[name];
+    parts.push(typeof value === 'number' ? String(value) : value);
+    at = match.index + whole.length;
+  }
+  if (at < template.length) parts.push(template.slice(at));
+  return parts;
+}
+
 /** A published file's size in the reader's own units: megabytes to one place, kilobytes below one. */
 export function formatBytes(bytes: number, locale: string): string {
   const megabytes = bytes / 1_000_000;
