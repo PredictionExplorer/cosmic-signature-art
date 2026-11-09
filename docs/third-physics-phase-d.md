@@ -409,3 +409,4 @@ Each was measured at a desk's 1440 × 900 at 2× and a phone's 390 × 844 at 3×
 - format, lint and type-check pass;
 - the unit suite passes with coverage, as CI runs it: 1,646 passed and 4 skipped;
 - in the six local projects, the index spec passes (80 passed, 28 skipped by design), and so do the orbit specs, which draw from the shared body light (60 passed, 6 skipped). Firefox runs on CI.
+- again with main merged in (PRs #27 and #28; the orbit section's bodies now come from `orbit-painter.ts`, drawn from the same light): the unit suite 1,711 passed and 4 skipped; in the six local projects, the index spec and the orbit specs, the orbit in the hand's among them, 161 passed and 43 skipped.
