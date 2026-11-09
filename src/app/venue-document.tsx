@@ -8,6 +8,7 @@ import { compactWorks } from '@/lib/art/collection-index';
 import { CJK_STYLESHEETS, LITERATA_PRELOADS } from '@/lib/fonts';
 import { revealScript } from '@/lib/reveal';
 import { roomScript, type Room } from '@/lib/room';
+import { ReadingPlace } from '@/components/reading-place';
 import { MotionProvider } from '@/components/motion-provider';
 import { RoomGround } from '@/components/room-ground';
 import { RunningHead } from '@/components/running-head';
@@ -81,9 +82,16 @@ export function VenueDocument({
           <RunningHead locale={locale} t={t} address={address} />
           {children}
           <Colophon locale={locale} t={t} />
-          <IndexSheet works={compactWorks()} locale={locale} t={t} {...venueDay} />
+          <IndexSheet
+            works={compactWorks()}
+            locale={locale}
+            t={t}
+            pool={DAY_WORK_POOL}
+            pinned={venueDay.pinned}
+          />
           <KeySheet t={t} />
           <KeyboardVocabulary locale={locale} />
+          <ReadingPlace />
         </MotionProvider>
       </body>
     </html>

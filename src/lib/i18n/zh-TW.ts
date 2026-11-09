@@ -184,6 +184,8 @@ export const zhTW: Messages = {
   privacyCopy:
     '畫廊不使用廣告追蹤器，也不設使用者帳號。瀏覽器會向設定的媒體託管方和 RPC 服務商請求作品及公開區塊鏈資料；這些服務能看見你的網路位址。已連線的錢包僅用於你要求的操作。動態偏好儲存在瀏覽器本機。',
   notFound: '這件作品不在這裡。',
+  notImprinted: '{work} 尚未印記。',
+  pageNotFound: '這個頁面不在這裡。',
   errorTitle: '畫廊需要片刻。',
   retry: '重試',
   openProtocol: '造訪協定',
