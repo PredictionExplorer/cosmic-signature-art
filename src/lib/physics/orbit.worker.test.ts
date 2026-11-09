@@ -2,6 +2,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { workOrbit } from '@/lib/art/orbit-records';
 import { plateFrame } from '@/lib/art/orbit-frames';
 import { framedSamples } from './framing';
+import { plateSpace } from '../first-light/samples';
 import type { OrbitReply, OrbitRequest } from './orbit.worker';
 
 afterEach(() => {
@@ -98,6 +99,60 @@ describe('the orbit worker', () => {
     expect(message.framed).toMatchObject({ stride: 10_000, count: 100, copies: 1 });
     expect([...message.framed!.pixels]).toEqual([...expected.pixels]);
     expect(transfer).toEqual([message.framed!.pixels.buffer]);
+  }, 30_000);
+
+  it('samples the derived window in depth last, when asked, and hands it over', async () => {
+    const { scope, replies } = await workerScope();
+    const orbit = workOrbit(0)!;
+    const frame = plateFrame(0)!;
+    scope.onmessage!({
+      data: {
+        generation: orbit.generation,
+        published: orbit.published,
+        stride: 10_000,
+        frame,
+        space: true,
+      },
+    } as MessageEvent<OrbitRequest>);
+    const kinds = replies.map(({ message }) => message.type);
+    expect(kinds.slice(-3)).toEqual(['done', 'framed', 'space']);
+    const done = replies.at(-3)!.message;
+    const { message, transfer } = replies.at(-1)!;
+    if (done.type !== 'done' || message.type !== 'space') throw new Error('no space');
+    // The same derived window, before the generator drew it flat.
+    const { windowStart, masses } = done.result;
+    const expected = plateSpace(
+      {
+        masses,
+        dt: orbit.generation.dt,
+        steps: orbit.generation.steps,
+        positions: windowStart.positions,
+        velocities: windowStart.velocities,
+      },
+      frame,
+      10_000,
+    );
+    expect(message.space).toMatchObject({ stride: 10_000, count: expected.count });
+    expect([...message.space!.points]).toEqual([...expected.points]);
+    expect(transfer).toEqual([
+      message.space!.points.buffer,
+      message.space!.drift.buffer,
+      message.space!.steps.buffer,
+    ]);
+  }, 30_000);
+
+  it('samples nothing in depth without a frame to sample it in', async () => {
+    const { scope, replies } = await workerScope();
+    const orbit = workOrbit(0)!;
+    scope.onmessage!({
+      data: {
+        generation: orbit.generation,
+        published: orbit.published,
+        stride: 10_000,
+        space: true,
+      },
+    } as MessageEvent<OrbitRequest>);
+    expect(replies.map(({ message }) => message.type)).not.toContain('space');
   }, 30_000);
 
   it('says why it failed instead of throwing', async () => {

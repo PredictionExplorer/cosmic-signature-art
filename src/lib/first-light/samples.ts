@@ -181,3 +181,21 @@ export function sampleAt(space: Pick<PlateSpace, 'steps' | 'count'>, step: numbe
   if (low > 0 && step - space.steps[low - 1] < space.steps[low] - step) return low - 1;
   return low;
 }
+
+/**
+ * Where a step of the window lies among the samples, as a fractional sample: the engine's head
+ * for a moment of the film. Between two samples it moves evenly with the steps.
+ */
+export function headAt(space: Pick<PlateSpace, 'steps' | 'count'>, step: number): number {
+  const { steps, count } = space;
+  if (step <= steps[0]) return 0;
+  if (step >= steps[count - 1]) return count - 1;
+  let low = 0;
+  let high = count - 1;
+  while (high - low > 1) {
+    const middle = (low + high) >> 1;
+    if (steps[middle] <= step) low = middle;
+    else high = middle;
+  }
+  return low + (step - steps[low]) / (steps[high] - steps[low]);
+}

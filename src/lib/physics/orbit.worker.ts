@@ -12,6 +12,7 @@ import {
   type Rederivation,
 } from './orbit';
 import { framedSamples, type FramedSamples, type PlateFrame } from './framing';
+import { plateSpace, type PlateSpace } from '../first-light/samples';
 
 /**
  * The orbit section's worker: a second of arithmetic off the main thread. It re-derives one
@@ -20,7 +21,8 @@ import { framedSamples, type FramedSamples, type PlateFrame } from './framing';
  * plate, where the films put the bodies, and hands those samples back too. Asked for the fate
  * as well, it then runs on past the window to the record's horizon, compares the fate, and
  * hands back the bodies at the window's end and just before an ejection, from which a page
- * performs After the frame.
+ * performs After the frame. Asked for the window in depth last of all, it samples the derived
+ * window in the generator's view space (first-light/samples.ts), for the orbit in the hand.
  */
 export interface OrbitRequest {
   generation: OrbitGeneration;
@@ -30,6 +32,8 @@ export interface OrbitRequest {
   fate?: { published: PublishedFate; lead: number };
   /** The window's frame on its plate (framing.ts): the bodies are placed where the films put them. */
   frame?: PlateFrame;
+  /** With a frame, the derived window in depth as well, for a page that can turn it. */
+  space?: boolean;
 }
 
 export type OrbitReply =
@@ -38,6 +42,8 @@ export type OrbitReply =
   /** The derived window on its plate; null when it could not be placed, and is drawn in its plane. */
   | { type: 'framed'; framed: FramedSamples | null }
   | { type: 'fate'; fate: DerivedFate; comparison: Comparison }
+  /** The derived window in depth; null when it could not be sampled, and is never turned. */
+  | { type: 'space'; space: PlateSpace | null }
   | { type: 'failed'; message: string };
 
 const scope = self as unknown as {
@@ -77,29 +83,54 @@ scope.onmessage = ({ data }) => {
       }
       scope.postMessage({ type: 'framed', framed }, framed ? [framed.pixels.buffer] : []);
     }
-    if (!data.fate) return;
-    const { published, lead } = data.fate;
-    const fate = deriveFate(
-      {
-        masses: result.masses,
-        dt: data.generation.dt,
-        positions: windowStart.positions,
-        velocities: windowStart.velocities,
-      },
-      {
-        steps: data.generation.steps,
-        threshold: published.escapeThreshold,
-        horizonSteps: published.horizonSteps,
-        lead,
-      },
-    );
-    const transfer: Transferable[] = [
-      fate.windowEnd.positions.buffer,
-      fate.windowEnd.velocities.buffer,
-    ];
-    if (fate.approach)
-      transfer.push(fate.approach.positions.buffer, fate.approach.velocities.buffer);
-    scope.postMessage({ type: 'fate', fate, comparison: compareFate(published, fate) }, transfer);
+    if (data.fate) {
+      const { published, lead } = data.fate;
+      const fate = deriveFate(
+        {
+          masses: result.masses,
+          dt: data.generation.dt,
+          positions: windowStart.positions,
+          velocities: windowStart.velocities,
+        },
+        {
+          steps: data.generation.steps,
+          threshold: published.escapeThreshold,
+          horizonSteps: published.horizonSteps,
+          lead,
+        },
+      );
+      const transfer: Transferable[] = [
+        fate.windowEnd.positions.buffer,
+        fate.windowEnd.velocities.buffer,
+      ];
+      if (fate.approach)
+        transfer.push(fate.approach.positions.buffer, fate.approach.velocities.buffer);
+      scope.postMessage({ type: 'fate', fate, comparison: compareFate(published, fate) }, transfer);
+    }
+    if (data.frame && data.space) {
+      // The same derived window, in the generator's view space before it was drawn flat. One that
+      // cannot be sampled is never turned; the record and the drawing stand as they are.
+      let space: PlateSpace | null = null;
+      try {
+        space = plateSpace(
+          {
+            masses: result.masses,
+            dt: data.generation.dt,
+            steps: data.generation.steps,
+            positions: windowStart.positions,
+            velocities: windowStart.velocities,
+          },
+          data.frame,
+          data.stride,
+        );
+      } catch {
+        space = null;
+      }
+      scope.postMessage(
+        { type: 'space', space },
+        space ? [space.points.buffer, space.drift.buffer, space.steps.buffer] : [],
+      );
+    }
   } catch (failure) {
     scope.postMessage({
       type: 'failed',

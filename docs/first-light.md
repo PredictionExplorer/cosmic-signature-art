@@ -258,7 +258,7 @@ First Light is the work's own three-dimensional event, not a room around it.
 | :--------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :-------------- |
 | **F0. Proof**                | First Light for one work (№ 031) on a branch: the engine, the camera, the landing on the still, on a desk and a phone. The owner judges the gasp before anything else is built. _Built 7 November 2026 (§12)._                                       | 1–2 weeks       |
 | **F1. First Light**          | The entry for every work with a frame; HDR canvas where available; the phone's full-bleed path; _Watch it form_; reduced-motion and returning-visitor states; performance budgets. Replaces the Overture's version 2. _Built 8 November 2026 (§13)._ | 3–4 weeks       |
-| **F2. The work as a stage**  | The show-then-record work page; the orbit in the hand; the Turn as a change of material.                                                                                                                                                             | 3–4 weeks       |
+| **F2. The work as a stage**  | The show-then-record work page; the orbit in the hand; the Turn as a change of material. _The orbit in the hand built 8 November 2026 (§14)._                                                                                                                                                             | 3–4 weeks       |
 | **F3. Wonder**               | One part in a trillion; the collection alive (All the light in HDR, the new Orrery, shared transitions).                                                                                                                                             | 3 weeks         |
 | **F4. True light and sound** | HDR stills and films from the masters; the full-resolution 60 fps HLS ladder; the commissioned score with its threshold. All of these wait on the owner, the artist and the generator team.                                                          | depends on them |
 
@@ -370,7 +370,20 @@ _8 November 2026, on the same branch (draft PR #23)._
 - **Slow motion.** About the closest approach the window passes at a quarter of its pace (`slowedAround`). The dance's time is stretched to 6 s so the rest keeps its tempo.
 - **Pace.** On a device whose frames come slowly, the drawing buffer gives way, from twice the CSS pixels down to the CSS pixels, rather than the motion stuttering (`src/lib/first-light/quality.ts`).
 - **Save-Data.** A visitor saving data is not sent the performance unasked: not on the home, and not on the proof page.
-- **Engines behind one interface.** `Engine` (`first-light-engine.ts`) is created by `createEngine` (`first-light-engines.ts`), so WebGPU can draw where the screen shows light brighter than its white, with WebGL 2 as the fallback.
+- **Engines behind one interface.** `Engine` (`first-light-engine.ts`) is created by `createEngine` (`first-light-engines.ts`): WebGPU where the screen shows light brighter than its white, and WebGL 2 beneath it.
+
+**True light (HDR), through WebGPU** (`src/components/first-light-gpu.ts`):
+
+- **Where it runs.** On a screen that reports `(dynamic-range: high)` and has WebGPU, `createEngine` loads the WebGPU engine (the chunk is never fetched elsewhere). It draws on a `rgba16float` canvas with extended tone mapping.
+- **How it was ported.**
+  - The WebGL engine's maths is ported shader for shader to WGSL: the ribbons, the still's colours (read from a 520 px copy), the glow and the bodies.
+  - In headless Chromium, the two engines given the same moments differ by about 0.1 of 255 on average, with 99 % of pixels within one to three levels.
+- **The tone map.** Only the tone map differs (`toneMap`, mirrored in the shader and tested to 4 × 10⁻⁷).
+  - Up to 80 % of white it is the WebGL curve.
+  - Past it, a smooth shoulder rises toward four times the page's white.
+  - Read back from the GPU, the bodies reach about 2.3× white and the closest approach's flare about 3.7×. The landing stays below white, so it meets the still.
+- **When it stands aside.** Before it claims the stage's canvas, it asks a spare canvas whether this browser reads a tone mapping. Without one, or on any failure, a lost device or an uncaught GPU error, WebGL 2 draws instead, or the still comes back. `?engine=webgpu` forces it, for testing.
+- **Seen.** On this Mac's HDR display, in the in-app browser, it chose itself and drew № 031 with a clean console. Light above white cannot be shown in a screenshot, and Safari's WebGPU path and a real iPhone are not yet tried.
 
 **What was checked.**
 
@@ -388,7 +401,47 @@ _8 November 2026, on the same branch (draft PR #23)._
 
   In Chromium and WebKit, on desks, phones and with reduced motion, it passed with the proof's spec: 30 passed, 12 skipped by design.
 
-- The whole unit suite: 1,561 passed.
+- The whole unit suite: 1,583 passed, with the WebGPU engine's 22: the tone map, the probe, the factory's choice and its fallback.
+- The home's, the proof's and the home page's specs, on a production build with the WebGPU engine in it: 96 passed, 12 skipped by design.
+
+## 14. The orbit in the hand, as built
+
+_8 November 2026, on the branch `claude/orbit-in-hand`: F2's first part (§5D), on the owner's approval of the F2 plan._
+
+**What a visitor can do, on every work page whose orbit lies on its plate:**
+
+- **Turn it.**
+  - Drag the orbit section's drawing, and the flat picture opens into the event's own depth and turns with the hand, about the event's middle.
+  - Let go, and it springs back to the generator's view, where it meets the still again.
+  - On a phone a hold of 300 ms takes it, so a swipe over it still scrolls the page.
+  - From the keyboard the arrows turn it, three times as far with Shift, and leave it where they put it. Escape, or the word _The generator's view_, gives it back.
+- **In both materials.**
+  - On Light: light on black, coloured by the Light still, and in HDR where the screen shows it (the WebGPU engine, §13).
+  - On Ink: graphite laid as density on the sheet's own tone, nearer lines darker. Each body is ringed at the size of the hollow it left, and only the primary copy is drawn, the one the Ink edition stirred with.
+- **Set the moment.**
+  - The score under the drawing is a slider. A hand on it sets the moment where it points; the keys move a frame, a second of film (Shift or the Page keys), or to either end.
+  - _Play_ and _Pause_ hold the performance, which now has a pause of its own (WCAG 2.2.2).
+  - _Closest approach_ plays the moment from two seconds of film before it, slowing to a quarter of the film's pace as the bodies pass.
+
+**How it is built:**
+
+- **The verified drawing stays the flat view.**
+  - The engine draws only while the orbit is turned. Its canvas lies between the still and the drawing, and its cover follows the turn: the still and the drawing give way to the event in depth over the first twenty degrees, and come back as it lands.
+  - At rest nothing of it is drawn, and the section is the drawing on the plate, pixel for pixel.
+  - A browser without WebGL 2 never offers it.
+- **What turns is what was derived.** The section's own worker samples the derived window in depth last of all, after the fate (`space`), and only where WebGL 2 could draw it.
+- **Pure modules hold the logic, each tested in Node:**
+  - `src/lib/first-light/hand.ts`: the turn, the spring, the hold, the keys;
+  - `transport.ts`: the clock, playing, slowed, scrubbed;
+  - `material.ts`: one palette for the drawing and the engine, in linear light.
+- **The engine learned ink** (`first-light-engine.ts`). The same half-float target accumulates optical density, and the composite gives back the sheet's tone exactly where none lies: paper · e^(−density). The orbit section passes the sheet's tone and the bodies' absorbances (`InkPalette`).
+- **Two refinements reach First Light everywhere.**
+  - The bodies' glare falls to nothing before its square's edge.
+  - The glow ends with a round of single steps, which closes the wider round's spaced copies of each bright point into one smooth glow.
+- **The section was split first**, in a commit with no change in behaviour: from 950 lines into its presence, derivation, drawing, After the frame and record (`orbit-*.ts(x)`).
+- **Reduced motion.** Nothing plays unasked: _Play_ is offered where the window stands whole. A turned orbit returns in one step.
+
+**What it looks like.** № 031 [in both materials, flat and then turned](screenshots/orbit-in-hand.jpg): Ink above, Light below.
 
 ## Sources
 

@@ -35,7 +35,7 @@ async function drawnWhole(page: Page, path: string, reducedMotion: boolean) {
 function atRest(page: Page, places: { x: number; y: number }[]) {
   return page.evaluate(async (bodies) => {
     const stage = document.querySelector<HTMLElement>('#orbit [data-drawing="plate"]')!;
-    const marks = stage.querySelectorAll('canvas')[2];
+    const marks = stage.querySelector<HTMLCanvasElement>('canvas[data-layer="marks"]')!;
     const { width, height } = marks;
     const drawn = marks.getContext('2d')!.getImageData(0, 0, width, height).data;
     const image = stage.querySelector('img')!;
