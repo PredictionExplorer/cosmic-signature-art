@@ -65,3 +65,26 @@ export function bodyLight(hue: number, { lightness, share, alpha }: LightTone): 
   const chroma = Math.floor(srgbChroma(lightness, hue) * share * 1000) / 1000;
   return `oklch(${lightness} ${chroma} ${hue} / ${alpha})`;
 }
+
+/*
+  A body itself, drawn in light, as the work page's orbit section draws the three bodies
+  (orbit-score.tsx): a core near white, tinged with the body's hue, inside a halo of the hue that
+  fades to nothing at its reach.
+*/
+
+/** On a plate, a body's light reaches no further than this share of the plate's height. */
+export const BODY_REACH_SHARE = 0.035;
+
+/** How far a body's light reaches, in CSS pixels: by the cube root of its mass. */
+export function bodyReach(mass: number): number {
+  return Math.cbrt(mass) * 0.6 * 4;
+}
+
+/** A body's light as radial-gradient stops, from its centre to its reach. */
+export function bodyGlow(hue: number): [offset: number, colour: string][] {
+  return [
+    [0, `oklch(0.96 0.04 ${hue})`],
+    [0.22, `oklch(0.9 0.08 ${hue} / 0.55)`],
+    [1, 'transparent'],
+  ];
+}
