@@ -204,6 +204,16 @@ export class FramedWindow {
     return this.step >= this.steps;
   }
 
+  /** The bodies where they stand now, in the orbit's own units: read them, never move them. */
+  get positions(): Readonly<Float64Array> {
+    return this.P;
+  }
+
+  /** The bodies' velocities now: read them, never move them. */
+  get velocities(): Readonly<Float64Array> {
+    return this.V;
+  }
+
   /** Back to the window's first step, exactly. */
   restart() {
     this.P.set(this.start.positions);

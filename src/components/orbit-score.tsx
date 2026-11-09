@@ -1,8 +1,17 @@
 'use client';
-import { useEffect, useEffectEvent, useMemo, useRef, useState, type CSSProperties } from 'react';
+import {
+  Fragment,
+  useEffect,
+  useEffectEvent,
+  useMemo,
+  useRef,
+  useState,
+  type CSSProperties,
+  type ReactNode,
+} from 'react';
 import type { Locale } from '@/lib/i18n/routing';
 import type { Messages } from '@/lib/i18n/en';
-import { clock, fill } from '@/lib/i18n/format';
+import { clock, fill, fillParts } from '@/lib/i18n/format';
 import type { WorkOrbit } from '@/lib/art/orbit-records';
 import type { OrbitPlate } from '@/lib/art/orbit-plate';
 import type { Continuation } from '@/lib/physics/continuation';
@@ -16,6 +25,8 @@ import {
   stepsDrawnAt,
 } from '@/lib/physics/light-film';
 import { principalPlane, type Plane } from '@/lib/physics/plane';
+import { gapAt, twinPace, type TwinRun } from '@/lib/physics/twin';
+import type { TwinReply, TwinRequest } from '@/lib/physics/twin.worker';
 import {
   advance,
   letGo,
@@ -38,7 +49,8 @@ import { useOrbitPresence } from './orbit-presence';
 import { OrbitRecord } from './orbit-record';
 import { OrbitSculpture, type Sculpture } from './orbit-sculpture';
 import { OrbitSlider } from './orbit-timeline';
-import { progressText, seedShort, verdict } from './orbit-proof';
+import { Scientific, TWIN_TONE, performTwin, type TwinPair } from './orbit-twin';
+import { progressText, seedShort, twinWorker, verdict } from './orbit-proof';
 import styles from './orbit-score.module.css';
 
 /** The plate's still is laid out at the figure's width: the full width on a phone. */
@@ -51,6 +63,10 @@ const canTurn = () => typeof WebGL2RenderingContext !== 'undefined';
 
 /** The clock as the words and the slider read it, a few times a second. */
 type Clock = { kind: Transport['kind']; seconds: number };
+
+/** One part in a trillion: the twin followed in its worker, ready to perform, or not to be had. */
+type Twin =
+  { phase: 'following' } | { phase: 'ready'; run: TwinRun; repeat: number } | { phase: 'failed' };
 
 /**
  * The orbit, re-performed: the work's orbit derived from its seed in this browser, drawn at
@@ -72,6 +88,9 @@ type Clock = { kind: Transport['kind']; seconds: number };
  * hand and turned in depth, and given back to the generator's view (orbit-sculpture.tsx). The
  * score is a slider, so the moment can be set either way (orbit-timeline.tsx), and the closest
  * approach can be played slowly, as a film slows for the moment that matters.
+ *
+ * One part in a trillion (docs/first-light.md §15): a twin of the orbit, one body moved by a
+ * trillionth, carried past the frame beside the work until it parts (orbit-twin.tsx).
  *
  * The section is assembled from its parts: where it stands to the visitor (orbit-presence.ts),
  * the derivation (orbit-derivation.ts), the drawing (orbit-painter.ts), the orbit in depth
@@ -104,6 +123,11 @@ export function OrbitScore({
   const events = useRef<HTMLCanvasElement>(null);
   const slider = useRef<HTMLInputElement>(null);
   const sculpture = useRef<Sculpture | null>(null);
+  /** The last sample drawn, and the drawing's animation frame. */
+  const drawn = useRef(0);
+  const frame = useRef(0);
+  /** The orbit past the frame as it stands, so a resize or a return carries on from it. */
+  const live = useRef<{ key: string; continuation: Continuation } | null>(null);
   const { near, inView, bringNear } = useOrbitPresence(section);
   const [readout, setReadout] = useState<string | null>(null);
   const [done, setDone] = useState(false);
@@ -118,6 +142,13 @@ export function OrbitScore({
   /** The orbit can be taken in hand here, and is turned from the generator's view now. */
   const [turnable, setTurnable] = useState(false);
   const [turned, setTurned] = useState(false);
+  /** One part in a trillion: off (null), being followed, or ready; and where it has reached. */
+  const [twin, setTwin] = useState<Twin | null>(null);
+  const [twinTaken, setTwinTaken] = useState(0);
+  const [twinRested, setTwinRested] = useState(false);
+  const twinLive = useRef<TwinPair | null>(null);
+  /** The twin is followed once; a repeat or a return performs what was found. */
+  const twinCache = useRef<TwinRun | null>(null);
   /** The drawing as last laid out, so the clock can move it without laying it out again. */
   const scene = useRef<{ paint(seconds: number): void; run(): void; speak(): void } | null>(null);
   const [beyond, setBeyond] = useState<Beyond | null>(null);
@@ -155,7 +186,8 @@ export function OrbitScore({
     : typeof Worker === 'undefined'
       ? { phase: 'failed' }
       : derivation;
-  const finished = still || done;
+  // The window stands whole: drawn at once, performed to its end, or brought there by the slider.
+  const finished = still || done || clockState.seconds >= film;
 
   const result = state.phase === 'derived' ? state.result : null;
   const derivedFate = fate.phase === 'derived' ? fate.fate : null;
@@ -175,6 +207,8 @@ export function OrbitScore({
   const placed = plateStill && framed ? framed : null;
 
   const goBeyond = (from: Beyond['from']) => {
+    setTwin(null);
+    twinLive.current = null;
     setAsked(false);
     setRested(false);
     setReached(from === 'approach' && derivedFate?.approach ? derivedFate.approach.taken : steps);
@@ -201,6 +235,72 @@ export function OrbitScore({
     return () => window.removeEventListener(AFTER_THE_FRAME_EVENT, ask);
   }, []);
 
+  /** One part in a trillion: After the frame gives way, and the twin is followed if it is new. */
+  const goTwin = () => {
+    setBeyond(null);
+    live.current = null;
+    twinLive.current = null;
+    setAsked(false);
+    setTwinRested(false);
+    setTwinTaken(steps);
+    setReadout(null);
+    setTwin((current) =>
+      twinCache.current
+        ? {
+            phase: 'ready',
+            run: twinCache.current,
+            repeat: current?.phase === 'ready' ? current.repeat + 1 : 0,
+          }
+        : { phase: 'following' },
+    );
+  };
+  /** Back to the frame: the recorded window, drawn whole. */
+  const leaveTwin = () => {
+    twinLive.current = null;
+    transport.current = restingAt(film, film);
+    setClockState({ kind: 'resting', seconds: film });
+    setTwin(null);
+    setTwinRested(false);
+    setReadout(null);
+    setDone(true);
+  };
+  const following = twin?.phase === 'following';
+  const twinFrame = plate?.frame;
+  useEffect(() => {
+    if (!following || !result || !twinFrame) return;
+    let worker: Worker;
+    try {
+      worker = twinWorker();
+    } catch {
+      queueMicrotask(() => setTwin({ phase: 'failed' }));
+      return;
+    }
+    worker.onmessage = ({ data }: MessageEvent<TwinReply>) => {
+      worker.terminate();
+      if (data.type === 'done') {
+        twinCache.current = data.run;
+        setTwin({ phase: 'ready', run: data.run, repeat: 0 });
+      } else setTwin({ phase: 'failed' });
+    };
+    worker.onerror = () => {
+      worker.terminate();
+      setTwin({ phase: 'failed' });
+    };
+    const request: TwinRequest = {
+      start: {
+        masses: result.masses,
+        dt: orbit.generation.dt,
+        steps,
+        positions: result.windowStart.positions,
+        velocities: result.windowStart.velocities,
+      },
+      frame: twinFrame,
+      horizon: orbit.fate.horizonSteps,
+    };
+    worker.postMessage(request);
+    return () => worker.terminate();
+  }, [following, result, twinFrame, orbit, steps]);
+
   /** Past the frame, the line says how far the orbit has run, and the words follow it. */
   const speakBeyond = (of: DerivedFate) => (at: Continuation) => {
     setReached(at.taken);
@@ -212,10 +312,6 @@ export function OrbitScore({
   // carries the three separations with the published events. On the plate the drawing lies over
   // the still, in its material: light added on night, graphite and sumi on paper. At the film's
   // pace when motion is welcome and the section is in view; all at once otherwise.
-  const drawn = useRef(0);
-  const frame = useRef(0);
-  /** The orbit past the frame as it stands, so a resize or a return carries on from it. */
-  const live = useRef<{ key: string; continuation: Continuation } | null>(null);
   const draw = useEffectEvent((): (() => void) | void => {
     cancelAnimationFrame(frame.current);
     const canvases = [trails.current, continued.current, marks.current, events.current];
@@ -305,6 +401,66 @@ export function OrbitScore({
     trail.clearRect(0, 0, width, height);
     beyondTrail.clearRect(0, 0, width, height);
     scene.current = null;
+    if (twin?.phase === 'ready' && derivedFate && plate && picture.kind === 'plate') {
+      const found = twin.run;
+      const speed = twinPace(found, steps, pace);
+      // The gap's growth on a log scale, from a trillionth up: steady doubling is a straight line.
+      const span = Math.max(found.until, steps);
+      const highest = found.gaps.reduce((most, gap) => Math.max(most, gap), 1e-12);
+      const top = Math.max(0, Math.ceil(Math.log10(highest)));
+      const bottom = -12;
+      const gx = (step: number) => (step / span) * scoreWidth;
+      const gy = (gap: number) =>
+        lane -
+        2 * ratio -
+        ((Math.log10(Math.max(gap, 1e-13)) - bottom) / (top - bottom)) * (lane - 4 * ratio);
+      const growth = (taken: number) => {
+        score.clearRect(0, 0, scoreWidth, scoreHeight);
+        // Where the frame ends: the recorded window lies to its left.
+        score.fillStyle = 'rgb(241 235 223 / 0.35)';
+        score.fillRect(Math.round(gx(steps)), 0, ratio, lane);
+        score.strokeStyle = TWIN_TONE.light(0.95);
+        score.lineWidth = 1.5 * ratio;
+        score.beginPath();
+        for (let i = 0; i < found.gaps.length && i * found.every <= taken; i++) {
+          if (i === 0) score.moveTo(gx(0), gy(found.gaps[0]));
+          else score.lineTo(gx(i * found.every), gy(found.gaps[i]));
+        }
+        score.stroke();
+        if (found.parted !== null && taken >= found.parted) {
+          score.fillStyle = TWIN_TONE.light(1);
+          score.beginPath();
+          score.arc(gx(found.parted), gy(gapAt(found, found.parted)), 3 * ratio, 0, Math.PI * 2);
+          score.fill();
+        }
+      };
+      return performTwin({
+        run: found,
+        fate: derivedFate,
+        key: String(twin.repeat),
+        picture,
+        plate,
+        result,
+        dt: orbit.generation.dt,
+        steps,
+        pace: speed,
+        stride: STRIDE * Math.max(1, Math.round(speed / pace)),
+        still,
+        inView,
+        beyondTrail,
+        mark,
+        width,
+        height,
+        ratio,
+        hues,
+        painter,
+        growth,
+        live: twinLive,
+        frame,
+        speak: (taken) => setTwinTaken(taken),
+        onRested: () => setTwinRested(true),
+      });
+    }
     if (beyond && derivedFate)
       return performBeyond({
         fate: derivedFate,
@@ -334,7 +490,7 @@ export function OrbitScore({
       });
     // Asked for After the frame, the window waits whole for the fate rather than starting over.
     // Where motion is unwelcome it is drawn whole, until the visitor takes the clock.
-    if (asked || (still && !chosen)) transport.current = restingAt(film, film);
+    if (asked || following || (still && !chosen)) transport.current = restingAt(film, film);
     setClockState({ kind: transport.current.kind, seconds: transport.current.seconds });
     drawn.current = 0;
     const filmFrames = lightFilmFrames(steps);
@@ -438,7 +594,7 @@ export function OrbitScore({
 
   useEffect(
     () => draw(),
-    [result, plane, framed, material, still, inView, beyond, derivedFate, asked],
+    [result, plane, framed, material, still, inView, beyond, derivedFate, asked, twin],
   );
 
   useEffect(() => {
@@ -578,7 +734,33 @@ export function OrbitScore({
         : null;
   // Where motion is unwelcome the window stands whole and the line says so, until the visitor
   // takes the clock; then the line follows it.
-  const line = beyond ? readout : ((still && !chosen ? null : readout) ?? progressLine);
+  /** One part in a trillion's line: following, how far apart they stand, or where they parted. */
+  const twinLine = ((): ReactNode => {
+    if (!twin) return null;
+    if (twin.phase === 'following') return fill(t.twinWorking, { body: 1 });
+    if (twin.phase === 'failed') return t.twinUnavailable;
+    const { run: found } = twin;
+    const parts = (template: string, values: Record<string, ReactNode | string | number>) =>
+      fillParts<ReactNode>(template, values).map((part, i) => <Fragment key={i}>{part}</Fragment>);
+    if (found.parted !== null && twinTaken >= found.parted)
+      return fill(t.twinParted, {
+        step: number.format(found.parted),
+        doubling: found.doubling ? number.format(Math.round(found.doubling / 100) * 100) : '—',
+      });
+    const gap = <Scientific value={gapAt(found, twinTaken)} locale={locale} />;
+    if (twinRested) return parts(t.twinOneLine, { step: number.format(twinTaken), gap });
+    const times = Math.round(twinPace(found, steps, pace) / pace);
+    return parts(t.twinApart, {
+      gap,
+      step: number.format(twinTaken),
+      pace: times <= 1 ? t.twinAtFilmPace : fill(t.twinFaster, { times }),
+    });
+  })();
+  const line: ReactNode = twin
+    ? twinLine
+    : beyond
+      ? readout
+      : ((still && !chosen ? null : readout) ?? progressLine);
   const approach = derivedFate?.approach;
   const canApproach =
     beyond?.from === 'end' && !still && !rested && !!approach && reached < approach.taken;
@@ -602,6 +784,15 @@ export function OrbitScore({
       data-exact={checked ? String(differing.length === 0) : undefined}
       data-fate={fate.phase === 'derived' ? fate.fate.outcome : undefined}
       data-beyond={beyond ? (rested ? 'rested' : 'running') : undefined}
+      data-twin={
+        twin
+          ? twin.phase === 'ready'
+            ? twinRested
+              ? 'rested'
+              : 'running'
+            : twin.phase
+          : undefined
+      }
       data-drawing={plateStill ? 'plate' : 'plane'}
       data-material={plateStill ? (material ?? undefined) : undefined}
     >
@@ -609,7 +800,13 @@ export function OrbitScore({
         <h2 id="orbit-title" className={styles.title}>
           {t.orbitTitle}
         </h2>
-        <p className={styles.line}>{beyond ? t.afterTheFrameNote : t.orbitLine}</p>
+        <p className={styles.line}>
+          {twin
+            ? fill(t.oneInATrillionNote, { body: 1 })
+            : beyond
+              ? t.afterTheFrameNote
+              : t.orbitLine}
+        </p>
       </header>
       <figure className={styles.figure}>
         <div
@@ -645,7 +842,7 @@ export function OrbitScore({
             />
           ) : null}
           {/* The orbit in depth: shown only as the hand turns it, beneath the drawing it replaces. */}
-          {plateStill && space && material && !beyond ? (
+          {plateStill && space && material && !beyond && !twin ? (
             <OrbitSculpture
               key={`depth-${material}`}
               handle={sculpture}
@@ -674,7 +871,7 @@ export function OrbitScore({
         </div>
         <figcaption className={styles.caption}>
           {description}
-          {turnable && !beyond ? (
+          {turnable && !beyond && !twin ? (
             <span className={styles.hint}>
               <span className={styles.hintPointer}>{t.orbitTurnHint}</span>
               <span className={styles.hintTouch}>{t.orbitTurnHintTouch}</span>
@@ -685,7 +882,7 @@ export function OrbitScore({
       <div className={styles.score}>
         <div className={styles.strip}>
           <canvas ref={events} className={styles.events} aria-hidden="true" />
-          {derived && !beyond ? (
+          {derived && !beyond && !twin ? (
             <OrbitSlider
               slider={slider}
               frames={lightFilmFrames(steps)}
@@ -699,7 +896,7 @@ export function OrbitScore({
         <div className={styles.readoutRow}>
           <p className={styles.readout}>{line}</p>
           <div className={styles.words}>
-            {derived && !beyond ? (
+            {derived && !beyond && !twin ? (
               <>
                 {turned ? (
                   <button
@@ -717,6 +914,43 @@ export function OrbitScore({
                   {t.toClosestApproach}
                 </button>
                 {derivedFate && finished ? (
+                  <button
+                    type="button"
+                    className={styles.again}
+                    aria-pressed={false}
+                    onClick={() => goBeyond('end')}
+                  >
+                    {t.afterTheFrame}
+                  </button>
+                ) : null}
+                {derivedFate && finished && placed ? (
+                  <button
+                    type="button"
+                    className={styles.again}
+                    aria-pressed={false}
+                    onClick={goTwin}
+                  >
+                    {t.oneInATrillion}
+                  </button>
+                ) : null}
+              </>
+            ) : null}
+            {derived && twin ? (
+              <>
+                {twinRested && !still ? (
+                  <button type="button" className={styles.again} onClick={goTwin}>
+                    {t.again}
+                  </button>
+                ) : null}
+                <button
+                  type="button"
+                  className={styles.again}
+                  aria-pressed={true}
+                  onClick={leaveTwin}
+                >
+                  {t.oneInATrillion}
+                </button>
+                {derivedFate ? (
                   <button
                     type="button"
                     className={styles.again}
@@ -752,6 +986,16 @@ export function OrbitScore({
                     onClick={() => (beyond ? leaveBeyond() : goBeyond('end'))}
                   >
                     {t.afterTheFrame}
+                  </button>
+                ) : null}
+                {placed ? (
+                  <button
+                    type="button"
+                    className={styles.again}
+                    aria-pressed={false}
+                    onClick={goTwin}
+                  >
+                    {t.oneInATrillion}
                   </button>
                 ) : null}
               </>

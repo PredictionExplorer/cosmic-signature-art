@@ -399,3 +399,9 @@
     min-height: 6em;
   }
 }
+/* A gap's power of ten, raised, but never below the 12 px floor. */
+.exponent {
+  font-size: max(12px, 0.75em);
+  line-height: 0;
+  vertical-align: super;
+}

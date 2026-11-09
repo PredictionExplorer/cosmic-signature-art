@@ -22,6 +22,11 @@ export function orbitWorker(): Worker {
   return new Worker(new URL('../lib/physics/orbit.worker.ts', import.meta.url), { type: 'module' });
 }
 
+/** One part in a trillion's worker (src/lib/physics/twin.worker.ts), started only when asked. */
+export function twinWorker(): Worker {
+  return new Worker(new URL('../lib/physics/twin.worker.ts', import.meta.url), { type: 'module' });
+}
+
 /** Every measurement the record publishes, in the order the proof prints it: the fate last. */
 export const MEASUREMENTS = [
   'mass1',

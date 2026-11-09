@@ -16,6 +16,9 @@ import {
   type Rederivation,
 } from '@/lib/physics/orbit';
 import type { OrbitReply, OrbitRequest } from '@/lib/physics/orbit.worker';
+import type { TwinRun } from '@/lib/physics/twin';
+import type { TwinRequest } from '@/lib/physics/twin.worker';
+import { fill } from '@/lib/i18n/format';
 import { AFTER_THE_FRAME_EVENT } from '@/lib/venue-events';
 import { OrbitScore } from './orbit-score';
 import { forgetExpression, rememberExpression } from './turn';
@@ -852,5 +855,107 @@ describe('the orbit in the hand, in the section', () => {
 
   it('carries a small rung of the Light still to colour the light in depth', () => {
     expect(plate031.stills.light!.colours).toMatch(/\/31-light-(640|960|1280)-/);
+  });
+});
+
+describe('one part in a trillion', () => {
+  const plate031 = orbitPlate(getCuratedArtwork(31)!)!;
+  const twinButton = () => screen.getByRole('button', { name: t.oneInATrillion });
+  /** What the twin's worker finds: a gap doubling every 40,000 steps, parting past the frame. */
+  function found(of: WorkOrbit = orbit): TwinRun {
+    const fate = fateOf(of);
+    const steps = of.generation.steps;
+    return {
+      body: 0,
+      axis: 0,
+      nudge: 1e-12,
+      windowEnd: {
+        positions: Float64Array.from(fate.windowEnd.positions),
+        velocities: Float64Array.from(fate.windowEnd.velocities),
+      },
+      gaps: Float64Array.from({ length: 1_031 }, (_, i) => 1e-12 * 2 ** (i / 40)),
+      every: 1_000,
+      parted: steps + 20_000,
+      doubling: 40_000,
+      until: steps + 30_000,
+    };
+  }
+  /** № 031 on its plate, derived, placed and fated: the window drawn whole, as reduced motion has it. */
+  function onThePlate() {
+    const view_ = render(
+      <OrbitScore orbit={orbit} t={t} locale="en" plate={plate031} opening="ink" both />,
+    );
+    approach();
+    view(true);
+    derive();
+    workers[0].reply({
+      type: 'framed',
+      framed: {
+        stride: 100,
+        count: 10_000,
+        copies: 1,
+        pixels: Float32Array.from({ length: 10_001 * 6 }, (_, i) =>
+          i % 2 ? 1_117 + Math.cos(i) * 400 : 1_728 + Math.sin(i) * 600,
+        ),
+      },
+    });
+    fated();
+    return view_;
+  }
+
+  it('is offered beside After the frame once the window stands drawn, on the plate', () => {
+    onThePlate();
+    expect(twinButton()).toHaveAttribute('aria-pressed', 'false');
+    expect(afterTheFrame()).toBeInTheDocument();
+  });
+
+  it('follows the twin off the main thread, says so, and sets the window aside', () => {
+    const { container } = onThePlate();
+    fireEvent.click(twinButton());
+    expect(section(container)).toHaveAttribute('data-twin', 'following');
+    expect(twinButton()).toHaveAttribute('aria-pressed', 'true');
+    expect(screen.getByText(fill(t.oneInATrillionNote, { body: 1 }))).toBeInTheDocument();
+    expect(screen.getByText(fill(t.twinWorking, { body: 1 }))).toBeInTheDocument();
+    expect(screen.queryByRole('slider')).not.toBeInTheDocument();
+    // The twin's own worker, given the derived window's first state and the plate's frame.
+    const request = workers[1].posted[0] as unknown as TwinRequest;
+    expect(request.frame).toEqual(plate031.frame);
+    expect(request.start.steps).toBe(orbit.generation.steps);
+    expect(request.horizon).toBe(orbit.fate.horizonSteps);
+  });
+
+  it('carries the pair past the frame until the twin parts, and says when, and how fast it grew', () => {
+    const { container } = onThePlate();
+    fireEvent.click(twinButton());
+    workers[1].reply({ type: 'done', run: found() } as unknown as OrbitReply);
+    expect(workers[1].terminated).toBe(true);
+    framesUntil(() => section(container).getAttribute('data-twin') === 'rested', 50);
+    expect(
+      screen.getByText('Parted at step 1,020,000. The gap doubled about every 40,000 steps.'),
+    ).toBeInTheDocument();
+    // The twin's bodies are ringed in its red, on the marks above the drawing.
+    expect(calls.some((call) => call.name === 'arc' && call.args[2] === 5)).toBe(true);
+  });
+
+  it('gives way to After the frame, and After the frame to it, a word apart', () => {
+    const { container } = onThePlate();
+    fireEvent.click(twinButton());
+    fireEvent.click(afterTheFrame());
+    expect(section(container)).not.toHaveAttribute('data-twin');
+    expect(section(container)).toHaveAttribute('data-beyond');
+    fireEvent.click(twinButton());
+    expect(section(container)).not.toHaveAttribute('data-beyond');
+    expect(section(container)).toHaveAttribute('data-twin');
+    // Pressed again, it gives the window back, drawn whole.
+    fireEvent.click(twinButton());
+    expect(section(container)).not.toHaveAttribute('data-twin');
+    expect(screen.getByText(t.orbitLine)).toBeInTheDocument();
+  });
+
+  it('says plainly when this browser cannot follow the twin', () => {
+    onThePlate();
+    fireEvent.click(twinButton());
+    workers[1].reply({ type: 'failed', message: 'no' } as unknown as OrbitReply);
+    expect(screen.getByText(t.twinUnavailable)).toBeInTheDocument();
   });
 });
