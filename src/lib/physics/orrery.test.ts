@@ -1,7 +1,8 @@
 import { describe, expect, it, vi } from 'vitest';
 import type { OrbitWindow } from './orbit';
 import { lightFilmDuration, stepsDrawnAt } from './light-film';
-import { ORRERY, OrreryEngine, bodyStrokes, planeFit, type Surface } from './orrery';
+import { bodyGlow, bodyReach } from './body-light';
+import { ORRERY, OrreryEngine, bodyStrokes, planeFit, type Bitmap, type Surface } from './orrery';
 
 /** A small window: three bodies on a triangle, 3,600 steps, a 30-second Light film. */
 const window: OrbitWindow = {
@@ -21,6 +22,16 @@ const window: OrbitWindow = {
 };
 const hues = [10, 130, 250] as const;
 
+/** A recording that keeps no pixels does nothing with a head's calls. */
+const unlit = {
+  fillStyle: '' as Surface['fillStyle'],
+  arc: () => {},
+  fill: () => {},
+  createRadialGradient: () => ({ addColorStop: () => {} }) as unknown as CanvasGradient,
+  setTransform: () => {},
+  drawImage: () => {},
+};
+
 function surface(width = 200, height = 130) {
   const calls = { clears: 0, strokes: 0, points: 0 };
   const recording: Surface & { calls: typeof calls } = {
@@ -35,6 +46,7 @@ function surface(width = 200, height = 130) {
     moveTo: () => {},
     lineTo: () => void (calls.points += 1),
     stroke: () => void (calls.strokes += 1),
+    ...unlit,
   };
   return recording;
 }
@@ -57,8 +69,245 @@ function tracing() {
     stroke() {
       paths.push({ style: String(this.strokeStyle), width: this.lineWidth, points });
     },
+    ...unlit,
   };
   return trace;
+}
+
+/** Every mark drawn on a test's rasters, numbered by what it draws: the same mark, one number. */
+type Marks = Map<string, number>;
+
+/** A radial gradient as a raster records it: its circles and its stops. */
+interface Light {
+  circles: number[];
+  stops: [number, string][];
+}
+
+/**
+ * A surface that keeps, for each of its pixels, a fingerprint of everything drawn there in order,
+ * and the mark on top. Two drawings are one picture when their fingerprints agree, and a rect
+ * copied from raster to raster, or through a bitmap taken off one, carries its fingerprints
+ * exactly. A stroke marks each segment's box, widened by half its width and a pixel for its
+ * softened edge; a fill marks its arc's box, where a translation sets it, and a pixel more: as
+ * far as a canvas's antialiasing reaches.
+ */
+function raster(across = 200, down = 130, marks: Marks = new Map()) {
+  let [width, height] = [across, down];
+  let prints = new Uint32Array(width * height);
+  let tops = new Uint32Array(width * height);
+  // A canvas given a new size starts again empty, as a real one does.
+  const resized = () => {
+    prints = new Uint32Array(width * height);
+    tops = new Uint32Array(width * height);
+  };
+  /** The bitmaps taken off this canvas and not yet closed, and how many were ever taken. */
+  const open = new Set<object>();
+  let taken = 0;
+  const canvas = {
+    open,
+    get taken() {
+      return taken;
+    },
+    /** What is drawn here, taken away as a bitmap of its own; the canvas is left clear. */
+    transferToImageBitmap() {
+      const bitmap = {
+        width,
+        height,
+        prints,
+        tops,
+        closed: false,
+        close() {
+          expect(bitmap.closed).toBe(false);
+          bitmap.closed = true;
+          open.delete(bitmap);
+        },
+      };
+      open.add(bitmap);
+      taken += 1;
+      resized();
+      return bitmap;
+    },
+    get width() {
+      return width;
+    },
+    set width(value: number) {
+      width = value;
+      resized();
+    },
+    get height() {
+      return height;
+    },
+    set height(value: number) {
+      height = value;
+      resized();
+    },
+    get prints() {
+      return prints;
+    },
+    get tops() {
+      return tops;
+    },
+  };
+  /** Every fill drawn: the heads, in order. */
+  const fills: { x: number; y: number; reach: number; light: Light; mode: string; mark: number }[] =
+    [];
+  /** Every stroke drawn: the trails, in order. */
+  const strokes: { style: string; points: number[] }[] = [];
+  const heads = new Set<number>();
+  let points: number[] = [];
+  let arcs: number[][] = [];
+  /** Where the origin stands: a translation is the only transform the engine sets. */
+  let origin = [0, 0];
+  const numbered = (key: string) => {
+    let mark = marks.get(key);
+    if (mark === undefined) marks.set(key, (mark = marks.size + 1));
+    return mark;
+  };
+  const over = (pixel: number, print: number, top: number) => {
+    const below = prints[pixel];
+    prints[pixel] = below
+      ? Math.imul(below ^ Math.imul(print, 0x9e3779b1), 0x85ebca6b) >>> 0 || 1
+      : print;
+    tops[pixel] = top;
+  };
+  const mark = (x0: number, y0: number, x1: number, y1: number, made: number) => {
+    for (let y = Math.max(0, Math.floor(y0)); y < Math.min(height, Math.ceil(y1)); y++)
+      for (let x = Math.max(0, Math.floor(x0)); x < Math.min(width, Math.ceil(x1)); x++)
+        over(y * width + x, made, made);
+  };
+  const recording = {
+    canvas,
+    fills,
+    strokes,
+    globalCompositeOperation: 'source-over' as GlobalCompositeOperation,
+    lineWidth: 1,
+    lineJoin: 'miter' as CanvasLineJoin,
+    strokeStyle: '' as Surface['strokeStyle'],
+    fillStyle: '' as Surface['fillStyle'],
+    clearRect(x: number, y: number, across: number, down: number) {
+      for (let row = Math.max(0, y); row < Math.min(height, y + down); row++)
+        for (let col = Math.max(0, x); col < Math.min(width, x + across); col++) {
+          prints[row * width + col] = 0;
+          tops[row * width + col] = 0;
+        }
+    },
+    beginPath() {
+      points = [];
+      arcs = [];
+    },
+    moveTo: (x: number, y: number) => void points.push(x, y),
+    lineTo: (x: number, y: number) => void points.push(x, y),
+    arc: (x: number, y: number, reach: number) =>
+      void arcs.push([origin[0] + x, origin[1] + y, reach]),
+    setTransform(a: number, b: number, c: number, d: number, e: number, f: number) {
+      expect([a, b, c, d]).toEqual([1, 0, 0, 1]);
+      origin = [e, f];
+    },
+    stroke() {
+      // A trail is drawn where it lies: the bodies' translation is undone before it.
+      expect(origin).toEqual([0, 0]);
+      const style = String(this.strokeStyle);
+      strokes.push({ style, points });
+      const made = numbered(
+        `${this.globalCompositeOperation} ${style} ${this.lineWidth} ${points}`,
+      );
+      const half = this.lineWidth / 2 + 1;
+      for (let k = 0; k + 3 < points.length; k += 2) {
+        const [x0, y0, x1, y1] = points.slice(k, k + 4);
+        mark(
+          Math.min(x0, x1) - half,
+          Math.min(y0, y1) - half,
+          Math.max(x0, x1) + half,
+          Math.max(y0, y1) + half,
+          made,
+        );
+      }
+    },
+    fill() {
+      const light = this.fillStyle as unknown as Light;
+      for (const [x, y, reach] of arcs) {
+        const mode = this.globalCompositeOperation;
+        const made = numbered(`${mode} ${JSON.stringify(light)} ${x} ${y} ${reach}`);
+        heads.add(made);
+        fills.push({ x, y, reach, light, mode, mark: made });
+        mark(x - reach - 1, y - reach - 1, x + reach + 1, y + reach + 1, made);
+      }
+    },
+    createRadialGradient(...circles: number[]) {
+      const stops: [number, string][] = [];
+      const light = {
+        circles,
+        stops,
+        addColorStop: (at: number, colour: string) => stops.push([at, colour]),
+      };
+      return light as unknown as CanvasGradient;
+    },
+    drawImage(
+      image: Surface['canvas'] | Bitmap,
+      sx: number,
+      sy: number,
+      sw: number,
+      sh: number,
+      dx: number,
+      dy: number,
+      dw: number,
+      dh: number,
+    ) {
+      const source = image as typeof canvas & { closed?: boolean };
+      // Never a bitmap once it is closed.
+      expect(source.closed).toBeFalsy();
+      // Only exact copies: whole pixels, one for one, within both canvases, laid over nothing.
+      expect([sx, sy, sw, sh, dx, dy].every(Number.isInteger)).toBe(true);
+      expect([dw, dh]).toEqual([sw, sh]);
+      expect(sx >= 0 && sy >= 0 && sx + sw <= source.width && sy + sh <= source.height).toBe(true);
+      expect(dx >= 0 && dy >= 0 && dx + dw <= width && dy + dh <= height).toBe(true);
+      expect(this.globalCompositeOperation).toBe('source-over');
+      for (let row = 0; row < sh; row++)
+        for (let col = 0; col < sw; col++) {
+          const from = (sy + row) * source.width + sx + col;
+          if (source.prints[from])
+            over((dy + row) * width + dx + col, source.prints[from], source.tops[from]);
+        }
+    },
+    /** The heads on the canvas now: the fills whose light lies on top somewhere. */
+    lying() {
+      const found = new Set<number>();
+      for (const top of tops) if (heads.has(top)) found.add(top);
+      // In the order they were laid, body by body. A head laid again just where one lay before
+      // is the same mark: the latest is the one.
+      return [...found]
+        .map((made) => fills.findLastIndex((fill) => fill.mark === made))
+        .sort((a, b) => a - b)
+        .map((at) => fills[at]);
+    },
+  };
+  return recording satisfies Surface;
+}
+
+/**
+ * The engine with a spare canvas of the test's own, a raster numbering its marks in common with
+ * the cells', and kept in `spares` for the test to read.
+ */
+function lit(
+  moving: boolean,
+  marks: Marks,
+  options: { clock?: () => number; onDrawn?: () => void } = {},
+  spares: ReturnType<typeof raster>[] = [],
+) {
+  return new OrreryEngine(2, moving, {
+    ...timeless,
+    ...options,
+    spare: (width, height) => spares[spares.push(raster(width, height, marks)) - 1],
+  });
+}
+
+/** Where each body's trail now ends: the last point of its last line. */
+function fronts(canvas: ReturnType<typeof raster>) {
+  const lines = bodyStrokes(hues).map(({ line }) => line);
+  return lines.map((line) => {
+    const last = canvas.strokes.findLast((stroke) => stroke.style === line)!.points;
+    return [last.at(-2), last.at(-1)];
+  });
 }
 
 /** Frames at a display's pace from `from` to `to`, as a page in view gives them. */
@@ -341,5 +590,216 @@ describe('the Orrery', () => {
     engine.setMoving(true);
     expect(canvas.calls.clears).toBe(2);
     expect(engine.stepOf(1)).toBe(0);
+  });
+});
+
+describe('the bodies at the heads of their trails', () => {
+  /**
+   * The small window's orbit taken in fifty times as many steps, so it stays on the canvas: a
+   * hundred steps a film frame, and a frame at a display's pace draws a film frame.
+   */
+  const long: OrbitWindow = { ...window, steps: 180_000, dt: window.dt / 50 };
+  const places = (heads: { x: number; y: number }[]) => heads.map(({ x, y }) => [x, y]);
+
+  it('lays each body at the front of its trail, and moves it on as the trail goes on', () => {
+    const marks: Marks = new Map();
+    const canvas = raster(200, 130, marks);
+    const engine = lit(true, marks);
+    engine.add(1, canvas, long, hues);
+    engine.visible(1, true, 0);
+    let before: number[][] | null = null;
+    let moved = 0;
+    for (let now = 0; now < 4000; now += 1000 / 60) {
+      const strokes = canvas.strokes.length;
+      engine.frame(now);
+      const lying = canvas.lying();
+      // Nothing is laid before the first film frame is drawn.
+      if (!canvas.strokes.length) {
+        expect(lying).toHaveLength(0);
+        continue;
+      }
+      // Three bodies on the canvas, each where its own trail ends; no head is left behind.
+      expect(lying).toHaveLength(3);
+      expect(places(lying)).toEqual(fronts(canvas));
+      if (canvas.strokes.length > strokes) {
+        // Laid over the trail drawn in the same frame, and somewhere new.
+        expect(canvas.fills.slice(-3)).toEqual(lying);
+        if (before) expect(places(lying)).not.toEqual(before);
+        moved += 1;
+      } else expect(places(lying)).toEqual(before);
+      before = places(lying);
+    }
+    // At a display's pace nearly every frame draws a film frame, and the bodies move with it.
+    expect(moved).toBeGreaterThan(0.9 * 240);
+  });
+
+  it('leaves no mark behind: a performance ends on the very picture drawn whole, bodies and all', () => {
+    const marks: Marks = new Map();
+    const picture = (fps: number | null) => {
+      const canvas = raster(200, 130, marks);
+      const engine = lit(fps !== null, marks);
+      engine.add(1, canvas, window, hues);
+      engine.visible(1, true, 0);
+      if (fps === null) engine.frame(0);
+      else play(engine, 0, lightFilmDuration(window.steps) * 1000 + 100, fps);
+      return canvas;
+    };
+    const whole = picture(null);
+    expect(whole.lying()).toHaveLength(3);
+    for (const fps of [24, 60, 144]) {
+      const performed = picture(fps);
+      // Laid and lifted once for each film frame drawn, and gone without a trace each time.
+      expect(performed.fills.length).toBeGreaterThan(3 * 30);
+      const differ = performed.canvas.prints.filter((print, k) => print !== whole.canvas.prints[k]);
+      expect(differ.length).toBe(0);
+      expect(places(performed.lying())).toEqual(places(whole.lying()));
+    }
+  });
+
+  it('rests each body where the window leaves it under a still preference, and shows none before', () => {
+    const marks: Marks = new Map();
+    const canvas = raster(200, 130, marks);
+    const spare = vi.fn((width: number, height: number) => raster(width, height, marks));
+    const onDrawn = vi.fn();
+    const engine = new OrreryEngine(2, false, { ...slowClock(), onDrawn, spare });
+    engine.add(1, canvas, long, hues);
+    engine.visible(1, true, 0);
+    let frames = 0;
+    while (engine.frame(frames * 16)) {
+      frames += 1;
+      // Drawn over several frames, and nothing is shown until the cell is whole.
+      expect(canvas.fills).toHaveLength(0);
+    }
+    expect(frames).toBeGreaterThan(1);
+    expect(onDrawn).toHaveBeenCalledWith(1);
+    // Laid once, over every trail, at the window's end.
+    expect(canvas.fills).toHaveLength(3);
+    expect(places(canvas.lying())).toEqual(fronts(canvas));
+    expect(spare).toHaveBeenCalledTimes(1);
+    engine.frame(frames * 16 + 16);
+    expect(canvas.fills).toHaveLength(3);
+  });
+
+  it('lights each body as the work page does, in its hue, reaching by its mass', () => {
+    const marks: Marks = new Map();
+    const canvas = raster(200, 130, marks);
+    const weighed: OrbitWindow = { ...window, masses: [100, 200, 300] };
+    const engine = lit(false, marks);
+    engine.add(1, canvas, weighed, hues);
+    engine.visible(1, true, 0);
+    engine.frame(0);
+    const heads = canvas.lying();
+    expect(heads).toHaveLength(3);
+    heads.forEach(({ x, y, reach, light, mode }, body) => {
+      // Made once, centred on its origin, and set where the body stands.
+      expect(light.stops).toEqual(bodyGlow(hues[body]));
+      expect(light.circles).toEqual([0, 0, 0, 0, 0, reach]);
+      expect([x, y]).toEqual(fronts(canvas)[body]);
+      expect(reach).toBeCloseTo(bodyReach(weighed.masses[body]) * ORRERY.head.scale * 2, 9);
+      // A body lies over the light it leaves, and reaches past the glow of its own trail.
+      expect(mode).toBe('source-over');
+      expect(reach).toBeGreaterThan(ORRERY.glow.width);
+    });
+    expect(heads[0].reach).toBeLessThan(heads[1].reach);
+    expect(heads[1].reach).toBeLessThan(heads[2].reach);
+    // In CSS pixels, as the line is: 5.6 to 8 at the collection's least and greatest masses.
+    expect(bodyReach(100) * ORRERY.head.scale).toBeCloseTo(5.57, 2);
+    expect(bodyReach(300) * ORRERY.head.scale).toBeCloseTo(8.03, 2);
+  });
+
+  it('draws the trails alone where it has no spare canvas to keep what lies under a body', () => {
+    const none = vi.fn(() => null);
+    for (const spare of [undefined, none]) {
+      const canvas = raster();
+      const engine = new OrreryEngine(2, true, { ...timeless, ...(spare ? { spare } : {}) });
+      engine.add(1, canvas, window, hues);
+      engine.visible(1, true, 0);
+      play(engine, 0, 4000);
+      expect(canvas.strokes.length).toBeGreaterThan(0);
+      expect(canvas.fills).toHaveLength(0);
+    }
+    // Asked for once, not again at every frame.
+    expect(none).toHaveBeenCalledTimes(1);
+  });
+
+  it('clears the bodies with the trails whenever a cell begins again', () => {
+    const marks: Marks = new Map();
+    const canvas = raster(200, 130, marks);
+    const spares: ReturnType<typeof raster>[] = [];
+    const engine = lit(true, marks, {}, spares);
+    engine.add(1, canvas, window, hues);
+    engine.visible(1, true, 0);
+    // Held at the window's end, the bodies rest where it left them, with nothing kept for them.
+    const end = lightFilmDuration(window.steps) * 1000 + 100;
+    play(engine, 0, end);
+    const held = places(canvas.lying());
+    play(engine, end, end + ORRERY.holdMs - 200);
+    expect(places(canvas.lying())).toEqual(held);
+    expect(spares[0].canvas.open.size).toBe(0);
+    // The next performance begins on a clear canvas, its bodies where it starts.
+    play(engine, end + ORRERY.holdMs - 200, end + ORRERY.holdMs + 1000);
+    expect(canvas.lying()).toHaveLength(3);
+    expect(places(canvas.lying())).not.toEqual(held);
+    expect(places(canvas.lying())).toEqual(fronts(canvas));
+    // One bitmap of what lies under moving bodies, and no more.
+    expect(spares).toHaveLength(1);
+    expect(spares[0].canvas.open.size).toBe(1);
+    // A new size begins again from nothing, and so does a change of motion.
+    engine.resize(1, 180, 117);
+    expect(canvas.lying()).toHaveLength(0);
+    expect(spares[0].canvas.open.size).toBe(0);
+    engine.setMoving(false);
+    engine.frame(end + ORRERY.holdMs + 1100);
+    expect(places(canvas.lying())).toEqual(fronts(canvas));
+    expect(spares[0].canvas.open.size).toBe(0);
+  });
+
+  it('copies under every cell’s bodies at once, into one bitmap a frame', () => {
+    const marks: Marks = new Map();
+    const spares: ReturnType<typeof raster>[] = [];
+    const engine = lit(true, marks, {}, spares);
+    const canvases = [1, 2, 3, 4].map((id) => {
+      const canvas = raster(200, 130, marks);
+      engine.add(id, canvas, long, hues);
+      engine.visible(id, true, 0);
+      return canvas;
+    });
+    let frames = 0;
+    for (let now = 0; now < 2000; now += 1000 / 60) {
+      const taken = spares[0]?.canvas.taken ?? 0;
+      engine.frame(now);
+      if (!spares.length) continue;
+      // However many cells moved, the frame took one bitmap, and the last frame's is closed.
+      expect(spares[0].canvas.taken - taken).toBeLessThanOrEqual(1);
+      expect(spares[0].canvas.open.size).toBeLessThanOrEqual(1);
+      frames += 1;
+    }
+    expect(spares).toHaveLength(1);
+    expect(spares[0].canvas.taken).toBeGreaterThan(0.9 * frames);
+    for (const canvas of canvases) {
+      expect(canvas.lying()).toHaveLength(3);
+      expect(places(canvas.lying())).toEqual(fronts(canvas));
+    }
+  });
+
+  it('lifts the bodies of a cell that leaves the view, and lays them again on its return', () => {
+    const marks: Marks = new Map();
+    const canvas = raster(200, 130, marks);
+    const spares: ReturnType<typeof raster>[] = [];
+    const engine = lit(true, marks, {}, spares);
+    engine.add(1, canvas, long, hues);
+    engine.visible(1, true, 0);
+    play(engine, 0, 1000);
+    const there = places(canvas.lying());
+    expect(there).toHaveLength(3);
+    // Away, it keeps nothing of a frame's bitmap, and its trails are as they were drawn.
+    engine.visible(1, false, 1000);
+    expect(canvas.lying()).toHaveLength(0);
+    expect(spares[0].canvas.open.size).toBe(0);
+    // Back, its bodies stand where they were before its trails go on.
+    engine.visible(1, true, 5000);
+    engine.frame(5000);
+    expect(places(canvas.lying())).toEqual(fronts(canvas));
+    expect(canvas.lying()).toHaveLength(3);
   });
 });

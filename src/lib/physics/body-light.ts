@@ -67,9 +67,9 @@ export function bodyLight(hue: number, { lightness, share, alpha }: LightTone): 
 }
 
 /*
-  A body itself, drawn in light, as the work page's orbit section draws the three bodies
-  (orbit-score.tsx): a core near white, tinged with the body's hue, inside a halo of the hue that
-  fades to nothing at its reach.
+  A body itself, drawn in light: the work page's orbit section draws the three bodies so
+  (orbit-score.tsx), and the Orrery draws each at the head of its trail (orrery.ts). A core near
+  white, tinged with the body's hue, inside a halo of the hue that fades to nothing at its reach.
 */
 
 /** On a plate, a body's light reaches no further than this share of the plate's height. */

@@ -208,7 +208,7 @@ The artwork stays the recorded rendering; this is its physics, continued and lab
 
 ### 5.7 The Orrery: the collection, moving, for zero megabytes *(built)*
 
-This is a physical index beside All the light: every work's orbit re-performed at once as a small live score, hung by cycle, with the work's numeral beneath. Hover to see the plate.
+This is a physical index beside All the light: every work's orbit re-performed at once as a small live score, hung by cycle, with the work's numeral beneath. Each body rides at the head of its trail as a point of light. Hover to see the plate.
 - The registry carries each work's state at the start of its recorded window: 18 doubles per work, about 10 KB in binary or a few tens of kilobytes as JSON for the whole collection.
 - Integrating 72 orbits at film pace is about 2.4 million steps per second. That is a fraction of one core; the study measured about 9 million per second in Node.
 

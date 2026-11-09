@@ -10,23 +10,51 @@ afterEach(() => {
 
 const [orbit] = performedOrbits([31]);
 
-/** A canvas handed to the worker, counting the strokes made on it; or one with no context. */
-function canvas(drawable = true) {
-  const strokes = { count: 0 };
-  const context = {
-    canvas: { width: 174, height: 112 },
+/** A 2D context that counts the strokes and fills made with it and the copies made into it. */
+function context(width: number, height: number) {
+  const counts = { strokes: 0, fills: 0, copies: 0, bitmaps: 0, closed: 0 };
+  return {
+    counts,
+    canvas: {
+      width,
+      height,
+      transferToImageBitmap: () => {
+        counts.bitmaps += 1;
+        return { width, height, close: () => void (counts.closed += 1) };
+      },
+    },
     globalCompositeOperation: 'source-over',
     lineWidth: 1,
     lineJoin: 'miter',
     strokeStyle: '',
+    fillStyle: '',
     clearRect() {},
     beginPath() {},
     moveTo() {},
     lineTo() {},
-    stroke: () => void (strokes.count += 1),
+    arc() {},
+    stroke: () => void (counts.strokes += 1),
+    fill: () => void (counts.fills += 1),
+    createRadialGradient: () => ({ addColorStop() {} }),
+    setTransform() {},
+    drawImage: () => void (counts.copies += 1),
   };
-  const offscreen = { getContext: () => (drawable ? context : null) } as unknown as OffscreenCanvas;
-  return { strokes, offscreen, size: context.canvas };
+}
+
+/** A canvas handed to the worker, counting what is drawn on it; or one with no context. */
+function canvas(drawable = true) {
+  const drawn = context(174, 112);
+  const offscreen = { getContext: () => (drawable ? drawn : null) } as unknown as OffscreenCanvas;
+  return {
+    strokes: {
+      get count() {
+        return drawn.counts.strokes;
+      },
+    },
+    drawn: drawn.counts,
+    offscreen,
+    size: drawn.canvas,
+  };
 }
 
 /** The worker's scope, on a clock the test turns; nothing else may wake it. */
@@ -45,9 +73,24 @@ async function workerScope() {
   };
   vi.stubGlobal('requestAnimationFrame', beats.requestAnimationFrame);
   vi.stubGlobal('self', scope);
+  // The worker's own canvases, for what lies under the bodies: made only when one is needed.
+  const spares: ReturnType<typeof context>[] = [];
+  vi.stubGlobal(
+    'OffscreenCanvas',
+    class {
+      readonly spare: ReturnType<typeof context>;
+      constructor(width: number, height: number) {
+        this.spare = context(width, height);
+        spares.push(this.spare);
+      }
+      getContext() {
+        return this.spare;
+      }
+    },
+  );
   await import('./orrery.worker');
   const send = (data: OrreryRequest) => scope.onmessage!({ data } as MessageEvent<OrreryRequest>);
-  return { send, replies, clock, beats };
+  return { send, replies, clock, beats, spares };
 }
 
 const cell = (offscreen: OffscreenCanvas) => ({
@@ -59,7 +102,7 @@ const cell = (offscreen: OffscreenCanvas) => ({
 
 describe('the Orrery’s worker', () => {
   it('draws a frame only when the page asks, and keeps no beat of its own', async () => {
-    const { send, replies, clock, beats } = await workerScope();
+    const { send, replies, clock, beats, spares } = await workerScope();
     const work = canvas();
     send({ type: 'cells', ratio: 1, moving: true, cells: [cell(work.offscreen)] });
     send({ type: 'visible', id: orbit.id, visible: true });
@@ -78,6 +121,18 @@ describe('the Orrery’s worker', () => {
       { type: 'framed', more: true },
       { type: 'framed', more: true },
     ]);
+    // Each body at the head of its trail, what lies under it copied onto a canvas of the
+    // worker's own and taken away as a bitmap.
+    expect(work.drawn.fills).toBe(3);
+    expect(spares).toHaveLength(1);
+    expect(spares[0].counts).toMatchObject({ copies: 3, bitmaps: 1, closed: 0 });
+    // The next frame puts back what lay beneath, closes the bitmap, and lays them on anew.
+    clock.now = 1100;
+    send({ type: 'frame' });
+    expect(work.drawn.fills).toBe(6);
+    expect(work.drawn.copies).toBe(3);
+    expect(spares).toHaveLength(1);
+    expect(spares[0].counts).toMatchObject({ copies: 6, bitmaps: 2, closed: 1 });
   });
 
   it('says it has nothing to draw before its canvases come, and while none is in view', async () => {
@@ -111,7 +166,7 @@ describe('the Orrery’s worker', () => {
     send({ type: 'cells', ratio: 1, moving: true, cells: [cell(work.offscreen)] });
     send({ type: 'visible', id: orbit.id, visible: true });
     send({ type: 'size', id: orbit.id, width: 300, height: 194 });
-    expect(work.size).toEqual({ width: 300, height: 194 });
+    expect(work.size).toMatchObject({ width: 300, height: 194 });
     // Put still, the cell is drawn whole over the frames it is asked for.
     send({ type: 'moving', moving: false });
     for (let asked = 0; asked < 1000 && !replies.some((reply) => reply.type === 'drawn'); asked++)

@@ -316,3 +316,96 @@ Each PR passes the seven-project Playwright matrix, axe, the 12 px floor, the mo
 **Tested.**
 - **Unit:** the gamut search, and every work's line and glow inside sRGB in its own hue; glow and line along one path; the pairs' rhythm, a lead at every chapter and no empty places; the gatefold's spread neither scrolls nor takes focus; the sale's row, with its label and note, every work of the cycle in both expressions leading to its own page and described as not offered, before the conditions, and gone once a sale is offered.
 - **Browser, in the six local projects:** both plates of the gatefold wholly in view, side by side on a desk and stacked on a phone; the Orrery's light in № 002's three hues, never grey (main lit about 160 pixels of that cell, at a median chroma of 0.03; it now lights about 4,400 at 0.06), and four to a row at 1440; the pairs' rhythm and their least plate; every cycle on its lead; the home's cycle row on a desk and on a phone; the sale's row in all eight languages, under axe.
+
+## 9. The bodies at the heads of their trails
+
+*Built 9 November 2026, for the award juror's review of 8 November, which found the Orrery's cells too dim and their bodies nowhere (gap 7).*
+
+It serves the gallery first, a wall that reads as bodies in motion, and the museum: the bodies are the physics, each lit by its mass. It is measured by the next review's design score, and its costs below.
+
+**What a visitor sees.**
+- Each body rides at the front of its own trail as a point of light: a core near white, tinged with its hue, inside a halo of the hue. It is the work page's body in light (`bodyGlow` in `src/lib/physics/body-light.ts`, which the orbit section now draws from too). The cells read as three bodies moving, not as lines growing.
+- A body's light reaches by the cube root of its mass, at half the work page's reach: from 5.6 to 8 CSS pixels over the collection's masses (100 to 300). It is measured in CSS pixels, like the line and its glow. The plate's rule, a cap at 3.5 % of the height, shrank with the cell: on a phone it left each body 3.9 px of reach and a core about a pixel wide, a spark rather than a body.
+- When the window ends, the bodies rest where it leaves them through the three-second hold, and go with the trails when the next performance begins.
+
+**Under a still preference the bodies rest at the window's end.**
+- A performance ends on the very picture the whole drawing makes. With the bodies resting there, a still preference is shown the picture a moving visitor holds for three seconds, not a different one.
+- That is where the work leaves its bodies. On Light each body comes to stand at the head of its own stroke ([third-physics.md](third-physics.md) §5.1), and the orbit section rests its bodies there under reduced motion, Pause and the hush (§7).
+- Three still points tell the bodies apart in a still drawing, and say which way each was going. Left out, a still cell is the tangle of lines the juror found dim.
+- Nothing moves that did not before: the cell is still drawn whole out of sight, and shown once.
+
+**How it is drawn.** The trails accumulate on the cell's one canvas, cleared only when a performance begins again, so a body drawn there would leave a dotted line of its old places. Three ways were weighed:
+- **A second canvas per cell for the bodies, cleared each frame.** Built for measurement, sized only while its cell is in view.
+- **What lies under each body, read back with `getImageData`.** Not built: it makes a canvas on the GPU read back to the CPU every frame.
+- **What lies under each body, copied canvas to canvas.** As built, and no pixel leaves the GPU. Once every trail of a frame is drawn, the few pixels under each body that will move on are copied (`drawImage`) into a row of the engine's one spare canvas, every cell's three before any body is drawn. The rows are then taken off together as one `ImageBitmap` (`transferToImageBitmap`), and only then are the bodies drawn. Before a cell's trails go on, its row is drawn back; when no cell needs a frame's bitmap any more, it is closed.
+  - A body at rest, at the window's end or in a cell drawn whole, is never lifted, so nothing is kept for it.
+  - A cell that leaves the view puts back what lay under its moving bodies and keeps nothing, and they are laid again when it returns. With the margin the cells are watched by, a visitor never sees it.
+  - Each body's light is made once, centred on its origin, and set in place with a translation. Made afresh each frame, the gradients cost Chromium's renderer about 35 MB.
+
+**Why one bitmap a frame.** Each step was measured, and each changed the design:
+- **A spare canvas for each cell** cost far more than its pixels, which were 15 to 35 KB. Chromium makes a canvas-to-canvas copy only when the copy is next read, and until then keeps a snapshot of the whole source cell. So once the whole wall had been seen, software Chromium held about 2 MB more for each spare, 146 MB in all, and WebKit 46 to 81 MB more.
+- **A bitmap taken off one spare for each cell** has the copy made at once, so it cost little memory once the wall had been seen: 7 MB in software Chromium, 12 MB on a WebKit phone. But taking about 24 bitmaps a frame cost GPU Chromium's GPU process a quarter of a core: 26 points of CPU at a desk.
+- **One bitmap a frame for every cell** keeps that memory, and its CPU cost falls within the noise between runs (below).
+- In GPU Chromium every way grows the cells' canvases' memory once the whole wall has been seen: about half a cell's pixels each, 33 MB of the GPU's at a desk. A canvas read and then drawn on in the same frame is copied on write once more each frame, and Chromium keeps the spare buffers it makes. A second canvas per cell grows it further.
+
+**Measured.** On this Mac (M4 Max), against a production build, in three browsers:
+- Chromium 156 on the GPU (Metal);
+- the same Chromium drawing in software (SwiftShader, Playwright's default headless shell, as on a machine or a CI runner without a GPU);
+- WebKit (Playwright's build 2370).
+
+Each was measured at a desk's 1440 × 900 at 2× and a phone's 390 × 844 at 3×, with the bodies as built, with none, and with a second canvas per cell in view. Each run settles for 3 s, then is measured for 8 s at the top of the wall, with the first rows performing: the page's own frames, the worker's time in `frame()`, and the GPU process's CPU. Memory is the footprint of all the browser's processes (`footprint`), at the top and again after the whole wall has been scrolled into view a screen at a time. Medians of two runs, the three ways taken in turn:
+
+| Browser | Size | Drawn | Frames a second | Worker frame, 95th % | GPU process CPU | Memory in view | After the whole wall |
+|---|---|---|---|---|---|---|---|
+| Chromium, GPU | desk | no bodies | 60 | 3.5 ms | 39 % | 699 MB | 941 MB |
+| Chromium, GPU | desk | as built | 60 | 1.9 ms | 36 % | +10 MB | +80 MB |
+| Chromium, GPU | desk | second canvas | 60 | 2.3 ms | 46 % | +60 MB | +104 MB |
+| Chromium, GPU | phone | no bodies | 60 | 2.0 ms | 28 % | 614 MB | 938 MB |
+| Chromium, GPU | phone | as built | 60 | 2.5 ms | 37 % | +23 MB | +67 MB |
+| Chromium, GPU | phone | second canvas | 60 | 1.2 ms | 33 % | +43 MB | +68 MB |
+| Chromium, software | desk | no bodies | 60 | 2.0 ms | 18 % | 172 MB | 555 MB |
+| Chromium, software | desk | as built | 60 | 2.5 ms | 19 % | +3 MB | −9 MB |
+| Chromium, software | desk | second canvas | 60 | 1.4 ms | 28 % | +79 MB | +149 MB |
+| Chromium, software | phone | no bodies | 60 | 1.8 ms | 8 % | 124 MB | 379 MB |
+| Chromium, software | phone | as built | 60 | 1.9 ms | 8 % | +3 MB | +6 MB |
+| Chromium, software | phone | second canvas | 60 | 1.5 ms | 12 % | +44 MB | +60 MB |
+| WebKit | desk | no bodies | 60 | 1.5 ms | 31 % | 500 MB | 711 MB |
+| WebKit | desk | as built | 60 | 2.0 ms | 33 % | −15 MB | −10 MB |
+| WebKit | desk | second canvas | 60 | 1.0 ms | 58 % | +47 MB | +36 MB |
+| WebKit | phone | no bodies | 60 | 1.0 ms | 25 % | 425 MB | 556 MB |
+| WebKit | phone | as built | 60 | 2.0 ms | 28 % | −4 MB | +4 MB |
+| WebKit | phone | second canvas | 60 | 1.0 ms | 43 % | +39 MB | +21 MB |
+
+- Every way keeps the page at 60 frames a second, with the worker's frames at 1 to 3.5 ms, well inside its 6.
+- The GPU process's CPU varies by up to ten points between runs of the same build, so smaller differences in that column are noise. A minus in the memory columns is noise of the same kind.
+- In software Chromium and in WebKit the bodies as built cost next to nothing.
+- In GPU Chromium they cost 10 to 23 MB in view. Once all 72 cells have performed, they cost 67 to 80 MB: the canvases' spare buffers above. These grow once per cell and then hold: three more passes over the wall added nothing. A simulated critical memory-pressure signal gave back almost none of it.
+- A second canvas cost more in view in every browser: 39 to 89 MB. In WebKit it cost a further 18 to 27 points of the GPU process's CPU, for a second layer and a second commit on every cell.
+
+**Bounded as before.**
+- Laying a cell's bodies takes three copies and three fills, and lifting them three clears and three copies back. It happens once for each cell whose trails were drawn, after the frame's time-bounded work, with one bitmap for all of them.
+- The page still asks the worker for each frame (`orrery-pace.ts`). The worker commits no more canvases than before, since the bodies are drawn on each cell's own canvas. In WebKit every committed canvas is a task on the page's thread ([third-physics-phase-c.md](third-physics-phase-c.md), "The page keeps the Orrery's beat"), so a second canvas per cell would have added one per cell per frame.
+
+**Tested.**
+- **Unit**, on recording surfaces that keep, for every pixel, a fingerprint of everything drawn there:
+  - each body laid at the front of its trail and moved on with it, with three on the canvas after every frame and none behind;
+  - a performance at 24, 60 and 144 frames a second ends on the very picture drawn whole, bodies and all, pixel for pixel;
+  - under a still preference no body shows before the cell is whole, and then each rests where the window ends;
+  - each body's light is the work page's, reaching by its mass;
+  - one copy and one bitmap a frame however many cells move, closed when its last cell lifts;
+  - bodies lifted when a cell leaves the view and laid again on its return;
+  - everything cleared when a cell begins again;
+  - the trails alone where no spare canvas can be made, asked for once.
+- **Broken seven ways**, the engine fails these tests: bodies never lifted, lifted without clearing, a rect a pixel short, a bitmap never closed, no lift on leaving the view, a translation left set before the trails, and no bodies under a still preference.
+- **The worker:** the spare made once; three copies, a bitmap and three bodies a frame; the last frame's bitmap closed.
+- **Browser** (`tests/e2e/indexes.spec.ts`): a performing cell grows darker a moment later where a body has moved on. A trail only adds light, so without bodies no pixel ever darkens, and the test fails on main. Measured as a control in all three browsers, a cell without bodies darkened no pixel between looks a quarter second apart; with bodies, 150 to 290 a look.
+- **Local pixel check**, on cell № 000, its performance held at the end against the same cell drawn whole under a still preference:
+  - identical to the pixel in WebKit, at a desk and on a phone, and in software Chromium;
+  - GPU Chromium draws a trail over many frames a few levels apart from one drawn at once, with bodies or without: 799 and 834 pixels of 252,096 at a desk, 2,535 and 2,457 of 169,830 on a phone;
+  - two of its performances without bodies differ in 180 pixels, and one with bodies differs from one without in 158 outside the bodies, so the bodies leave nothing behind;
+  - against no bodies, the still drawing differs in three blobs the size of a body's reach, and a few pixels of their soft edges.
+
+**Run of record** (9 November 2026), against a production build:
+- format, lint and type-check pass;
+- the unit suite passes with coverage, as CI runs it: 1,646 passed and 4 skipped;
+- in the six local projects, the index spec passes (80 passed, 28 skipped by design), and so do the orbit specs, which draw from the shared body light (60 passed, 6 skipped). Firefox runs on CI.

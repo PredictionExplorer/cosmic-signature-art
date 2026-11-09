@@ -1,4 +1,10 @@
-import { OrreryEngine, type OrreryReply, type OrreryRequest, type Surface } from './orrery';
+import {
+  OrreryEngine,
+  type OrreryReply,
+  type OrreryRequest,
+  type Spare,
+  type Surface,
+} from './orrery';
 
 /**
  * The Orrery's worker: every cell's physics and drawing, off the main thread. The page hands it
@@ -20,6 +26,8 @@ scope.onmessage = ({ data }) => {
   else if (data.type === 'cells') {
     engine = new OrreryEngine(data.ratio, data.moving, {
       onDrawn: (id) => scope.postMessage({ type: 'drawn', id }),
+      // A canvas of the worker's own, where what lies under the bodies is copied and taken away.
+      spare: (width, height) => new OffscreenCanvas(width, height).getContext('2d') as Spare | null,
     });
     for (const cell of data.cells) {
       const surface = cell.canvas.getContext('2d') as Surface | null;
