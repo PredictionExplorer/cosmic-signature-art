@@ -194,7 +194,11 @@ This needs two things:
 - the step ↔ film-time map verified per film. Light is 1,802 frames for the 1,000,000 recorded steps, to be confirmed. The Ink films carry their own timing and pre-roll, as [art-presentation-research.md](art-presentation-research.md) warns.
 - a port of `detect_syzygies` and the braid crossing detector, verified against the published counts and the braid word.
 
-*As built:* both are settled for Light. Its map is confirmed at 1,802 frames, and the port's measurements are the record's to the last bit. The score runs under the Light film on the plate and in the room. The Ink films keep their plain time line until their own timing is mapped. See [third-physics-phase-e.md](third-physics-phase-e.md) §1.
+*As built:* both are settled. The Light film's map is confirmed at 1,802 frames, and the port's measurements are the record's to the last bit ([third-physics-phase-e.md](third-physics-phase-e.md) §1).
+
+The complete Ink film keeps the same map, frame for frame. Its pre-roll is not an offset: the bodies move from the first step but lay no ink for 41 to 416 frames, so the film opens on bare paper. The map was read from the generator's code and checked against all 72 published Ink films, and against everything the venue plays in their place (§6 of the same document, 7 November 2026).
+
+The score runs under both films, on the plate and in the room. On Ink it is drawn in graphite on the paper and lit from the first ink. Only the longer studies trim their pre-roll; they carry no score. The verified clock also unblocks the synchronised two-film gatefold, which is not built yet.
 
 ### 5.6 After the frame: fate *(built)*
 
@@ -329,6 +333,7 @@ Each phase ships behind a flag, on its own branch, with the existing seven-proje
 
 **Phase E — the score, the lenses and Verify an orbit.** *Built 5 November 2026; see [third-physics-phase-e.md](third-physics-phase-e.md).*
 - The score in the Light film's transport, on the plate and in the room, with the physics of the moment and the closest approach.
+- The score in the complete Ink film's transport, on its own verified clock (7 November 2026).
 - The Wavelength lens in the room.
 - Verify an orbit, for any work with a record.
 
@@ -340,7 +345,7 @@ Each phase ships behind a flag, on its own branch, with the existing seven-proje
 
 - **Engine determinism.** Expected to hold, because only + − × ÷ and sqrt are used. CI proves it per engine. If an engine ever differs, the page prints *differs* and never hides it.
 - **Phone CPU.** In the study's pure-JavaScript Keccak, deriving all 100,000 beginnings takes about 1.6 s in Node; a phone, or a page throttled in a background tab, takes much longer (the hidden in-app browser reported 11 s). Mitigations: ship the chosen state for instant motion; derive the full chain only on `Verify`, or in WebAssembly; never block the plate.
-- **Arrival-map edge cases.** Dense overlaps interleave times at pixel scale; the study blends 50 % raw time with 50 % smoothed time to keep the front coherent. Ink films with pre-roll or trimming need per-film checks. Each map is hashed against its film.
+- **Arrival-map edge cases.** Dense overlaps interleave times at pixel scale; the study blends 50 % raw time with 50 % smoothed time to keep the front coherent. Ink films with pre-roll or trimming need per-film checks. Each map is hashed against its film. The complete Ink film trims nothing, and its pre-roll is now checked per film ([third-physics-phase-e.md](third-physics-phase-e.md) §6); only the longer studies trim theirs.
 - **Derived images mistaken for works.** Mitigations are labelling rules, exclusion from metadata, sharing cards and sitemaps, and a test that fails if a derived view is reachable from a sale surface.
 - **Intro fatigue.** The Overture plays on the first visit only, any input completes it, and it is never shown on artwork, lot or process pages.
 - **GPU memory for All the light.** Use 640 px textures on phones, a single texture array, and a static fallback image.

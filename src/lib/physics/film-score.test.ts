@@ -6,8 +6,12 @@ import {
   SCORE_SAMPLES,
   closestApproachSeconds,
   filmShare,
+  markedAt,
+  markedFrom,
   pairName,
   physicsAt,
+  scoreClock,
+  showsClosestApproach,
   type FilmScore,
 } from './film-score';
 import { PAIRS } from './orbit';
@@ -69,5 +73,44 @@ describe('a Light film’s score', () => {
     // Before the film begins and after it ends, the first and last samples answer.
     expect(physicsAt(score, -5)).toEqual(physicsAt(score, 0));
     expect(physicsAt(score, 999).distance).toBeGreaterThan(0);
+  });
+});
+
+describe('the clock a film keeps', () => {
+  const ink = { firstInked: 71, films: ['a'.repeat(64), 'b'.repeat(64)] };
+  const steps = 1_000_000;
+
+  it('is the Light film’s for every Light film, and the Ink film’s only on a film checked against it', () => {
+    expect(scoreClock({ ink }, 'light', {})).toEqual({ material: 'light', from: 0 });
+    expect(scoreClock({}, 'light', { sha256: 'c'.repeat(64) })).toEqual({
+      material: 'light',
+      from: 0,
+    });
+    expect(scoreClock({ ink }, 'ink', { sha256: 'b'.repeat(64) })).toEqual({
+      material: 'ink',
+      from: 71,
+    });
+    expect(scoreClock({ ink }, 'ink', { sha256: 'c'.repeat(64) })).toBeNull();
+    expect(scoreClock({ ink }, 'ink', {})).toBeNull();
+    expect(scoreClock({}, 'ink', { sha256: 'a'.repeat(64) })).toBeNull();
+    expect(scoreClock({ ink }, 'sweep', { sha256: 'a'.repeat(64) })).toBeNull();
+    expect(scoreClock(undefined, 'light', {})).toBeNull();
+    expect(scoreClock({ ink }, 'light', undefined)).toBeNull();
+  });
+
+  it('marks the Ink film from its first ink, and shows the closest approach only after it', () => {
+    const light = { material: 'light' as const, from: 0 };
+    const inked = { material: 'ink' as const, from: 71 };
+    expect(markedAt(light, 0)).toBe(true);
+    expect(markedAt(inked, 70 / 60)).toBe(false);
+    expect(markedAt(inked, 71 / 60)).toBe(true);
+    expect(markedFrom(light, { steps })).toBe(0);
+    expect(markedFrom(inked, { steps })).toBe(71 / 1802);
+    // № 031's closest approach, first shown on frame 460, after its first ink at 71.
+    const closest = { steps, closestApproach: { step: 255_842 } };
+    expect(showsClosestApproach(inked, closest)).toBe(true);
+    expect(showsClosestApproach({ material: 'ink', from: 461 }, closest)).toBe(false);
+    expect(showsClosestApproach({ material: 'ink', from: 460 }, closest)).toBe(true);
+    expect(showsClosestApproach(light, { steps, closestApproach: { step: 32 } })).toBe(true);
   });
 });

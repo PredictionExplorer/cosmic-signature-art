@@ -154,7 +154,8 @@ test('an unknown exhibition is not here, and the venue says which work is next d
   // Refused before its page can stream (src/lib/addresses.ts): a true 404, the venue's own.
   const response = await page.goto('/exhibitions/nowhere');
   expect(response?.status()).toBe(404);
-  await expect(page.getByRole('heading', { level: 1 })).toHaveText(t.notFound);
+  // An exhibition is a page, not a work: the page is what is not here.
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText(t.pageNotFound);
   await expect(page.getByRole('main')).toContainText(/next door/);
   await expect(page.getByRole('main')).not.toContainText(t.hangTitle);
 });

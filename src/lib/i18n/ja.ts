@@ -193,6 +193,8 @@ export const ja: Messages = {
   privacyCopy:
     'このギャラリーは広告トラッカーやユーザーアカウントを使用しません。ブラウザーは、設定されたメディアホストとRPC提供者に作品や公開ブロックチェーンデータを要求するため、それらのサービスはネットワークアドレスを確認できます。接続したウォレットは、要求された操作にのみ使用します。動きの設定はブラウザー内に保存します。',
   notFound: 'この作品はここにありません。',
+  notImprinted: '{work} は刻印されていません。',
+  pageNotFound: 'このページはここにありません。',
   errorTitle: 'ギャラリーに少し時間が必要です。',
   retry: '再試行',
   openProtocol: 'プロトコルを訪れる',
@@ -419,6 +421,9 @@ export const ja: Messages = {
   // The sale
   saleTitle: 'セール {n}',
   saleSubtitle: '新作八点 · サイクル {cycle}',
+  saleMeanwhileLabel: '本セールの出品対象外',
+  saleMeanwhileNote:
+    'これらの作品はすでにコレクションに収められており、本セールには含まれません。本セールの新作八点は、サイクル {cycle} の確定時に刻印されます。',
   conditionsOfSale: '販売条件',
   // The entry's copy affordance and footnotes
   copyAddress: 'コピー',

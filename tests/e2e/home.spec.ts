@@ -17,6 +17,39 @@ const nightLayer = `${stage} [data-layer="light"]`;
 const today = workOfTheDay();
 const folio = String(today).padStart(3, '0');
 
+test('the day’s cycle hangs two to a leaf on a desk and one on a phone, each work readable', async ({
+  page,
+  isMobile,
+}) => {
+  await page.goto('/', { waitUntil: 'domcontentloaded' });
+  await pauseAmbientMotion(page);
+  const cycle = page.getByRole('region', { name: /^Cycle \d+$/ });
+  await cycle.scrollIntoViewIfNeeded();
+  for (const leaf of [catalogs.en.ink, catalogs.en.light]) {
+    const row = cycle.getByRole('list', { name: leaf, exact: true });
+    const boxes = await row.getByRole('listitem').evaluateAll((items) =>
+      items.slice(0, 3).map((item) => {
+        const { x, y, width } = item.getBoundingClientRect();
+        return { x: Math.round(x), y: Math.round(y), width };
+      }),
+    );
+    expect(boxes).toHaveLength(3);
+    if (isMobile) {
+      // One work a line, its Ink beside its Light.
+      expect(boxes[1].y).toBeGreaterThan(boxes[0].y);
+      expect(boxes[1].x).toBe(boxes[0].x);
+      expect(boxes[0].width).toBeGreaterThanOrEqual(150);
+    } else {
+      // Two to a leaf at 1440: the second beside the first, the third beneath them.
+      expect(boxes[1].y).toBe(boxes[0].y);
+      expect(boxes[2].y).toBeGreaterThan(boxes[0].y);
+      expect(boxes[2].x).toBe(boxes[0].x);
+      expect(boxes[0].width).toBeGreaterThanOrEqual(280);
+    }
+  }
+  await noHorizontalOverflow(page);
+});
+
 test.describe('localized home', () => {
   for (const locale of locales) {
     test(`${locale} opens on the day's work in Ink with the one line and translated navigation`, async ({
@@ -145,7 +178,10 @@ test('Ink and Light preserve token identity and genuine media; motion is control
     await expect(page.locator(`${current} [data-film-state]`)).toHaveText(/excerpt 00:06–00:14/i);
     await expect(page.locator(`${current} video[data-relay]`)).toHaveCount(0);
   } else {
-    await expect(page.locator('.time-line')).toBeVisible();
+    // The transport: the Ink film's score on its verified clock, once the orbit is measured.
+    await expect(page.locator(`${current} [data-film-score="ink"]`)).toBeVisible({
+      timeout: 30_000,
+    });
     // The complete film is fetched behind the clip and takes over at the same frame.
     await expect(page.locator(`${current} .art-media`)).toHaveAttribute('data-handover', 'film', {
       timeout: 30_000,

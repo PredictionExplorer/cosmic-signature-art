@@ -6,8 +6,9 @@ import { seedPackageUrl } from './constants';
 /**
  * The plate clips (scripts/build-plate-clips.mjs): the settling clip, which is the final eight
  * seconds of a published film at 1280 px and 60 fps and ends on the published still, and the
- * opening clip, its first ten seconds. A clip binds to an interpretation only when the token,
- * seed, published source hash and still hash all agree; a stale clip is dropped, never shown.
+ * opening clip, its first ten seconds, with the frame at which the work first shows in it. A
+ * clip binds to an interpretation only when the token, seed, published source hash and still
+ * hash all agree; a stale clip is dropped, never shown, and its first mark with it.
  */
 const hash = z.string().regex(/^[a-f0-9]{64}$/);
 const match = z.object({ mean: z.number().nonnegative(), max: z.number(), over: z.number() });
@@ -36,6 +37,8 @@ const entrySchema = z.object({
   startSeconds: z.number().nonnegative(),
   sourceDurationSeconds: z.number().positive(),
   stillMatch: match.optional(),
+  /** The opening's first frame that shows the work (scripts/build-plate-clips.mjs FIRST_MARK). */
+  firstMarkFrame: z.number().int().nonnegative().optional(),
 });
 type Entry = z.infer<typeof entrySchema>;
 const registrySchema = z.object({ schemaVersion: z.literal(1), clips: z.array(entrySchema) });
@@ -107,10 +110,17 @@ export function createPlateClipLookup(raw: unknown) {
     const clean = { ...media };
     delete clean.settlingFilm;
     delete clean.openingFilm;
+    delete clean.firstMarkSeconds;
     const settling = bound(work, media, 'settling');
     const opening = bound(work, media, 'opening');
     if (settling) clean.settlingFilm = settling;
-    if (opening) clean.openingFilm = opening;
+    if (opening) {
+      clean.openingFilm = opening;
+      // The opening is the film's first ten seconds, frame for frame, so its first mark is the film's.
+      const mark = entries.get(`${work.id}:${media.id}:opening`)?.firstMarkFrame;
+      if (mark !== undefined && mark < opening.frames! && opening.frameRate)
+        clean.firstMarkSeconds = mark / opening.frameRate;
+    }
     return clean;
   };
 }

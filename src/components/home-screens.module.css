@@ -118,21 +118,41 @@
   color: var(--muted);
   font-variant-numeric: lining-nums tabular-nums;
 }
+/* A label over the heading, at the controls' size and in the type's own colour, so it is read
+   before the plates are. */
+.cycleLabel {
+  font-size: var(--fs-control);
+  color: var(--type);
+  padding-bottom: 9px;
+  border-bottom: 1px solid var(--rule-strong);
+  justify-self: start;
+}
+.cycleNote {
+  max-width: var(--measure);
+  margin-top: 9px;
+}
 .pairs {
   justify-self: stretch;
   margin-inline: calc(-1 * var(--gutter));
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
+/* Two to a leaf on a desk, three on the widest, so each work reads as itself: 303 px at 1440
+   where six to a row had made the Light works tangles and the Ink works smudges. */
 .row {
   list-style: none;
   margin: 0;
   padding: 36px calc(var(--gutter) / 2) 36px var(--gutter);
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   align-content: start;
-  gap: 27px 18px;
+  gap: 36px 27px;
   background: var(--paper);
+}
+@media (min-width: 1920px) {
+  .row {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
 }
 .row[data-ground='night'] {
   --type: var(--night-type);
@@ -184,9 +204,10 @@
     padding-block: 54px 72px;
     gap: 27px;
   }
+  /* On a phone each row is one work, its Ink beside its Light (third-physics-phase-d.md §2). */
   .row {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 18px 9px;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 18px;
   }
 }
 

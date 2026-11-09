@@ -83,6 +83,26 @@ describe('plate clip binding', () => {
           .openingFilm,
       ).toBeUndefined();
   });
+  it("carries the opening's first mark onto the work as the film's own seconds", () => {
+    const opening = { ...entry('opening'), firstMarkFrame: 71 };
+    const result = createPlateClipLookup(registry([entry(), opening]))(work, ink);
+    expect(result.firstMarkSeconds).toBe(71 / 60);
+    // A mark the clip cannot hold, an opening that does not bind, or none measured: no mark.
+    for (const change of [
+      { firstMarkFrame: 600 },
+      { startSeconds: 1 },
+      { firstMarkFrame: undefined },
+    ])
+      expect(
+        createPlateClipLookup(registry([{ ...opening, ...change }]))(work, ink).firstMarkSeconds,
+      ).toBeUndefined();
+    // A malformed mark refuses the registry whole, as any malformed field does.
+    expect(
+      createPlateClipLookup(registry([{ ...opening, firstMarkFrame: -1 }]))(work, ink).openingFilm,
+    ).toBeUndefined();
+    // A stale mark from an earlier binding never outlives its opening.
+    expect(createPlateClipLookup(registry())(work, result).firstMarkSeconds).toBeUndefined();
+  });
   it('rejects ambiguous identities, unsupported registries and foreign interpretations', () => {
     expect(
       createPlateClipLookup(registry([entry(), entry()]))(work, ink).settlingFilm,
@@ -122,7 +142,12 @@ describe('plate clip binding', () => {
         expect(clip.stillMatch?.mean).toBeLessThanOrEqual(6);
         expect(clip.stillMatch?.over).toBeLessThanOrEqual(0.005);
         expect(clip.startSeconds + clip.durationSeconds).toBeCloseTo(clip.sourceDurationSeconds, 1);
-      } else expect(clip.frames).toBe(600);
+      } else {
+        expect(clip.frames).toBe(600);
+        // Every opening records where its work first shows, inside its ten seconds.
+        expect(clip.firstMarkFrame).toBeGreaterThanOrEqual(0);
+        expect(clip.firstMarkFrame).toBeLessThan(clip.frames);
+      }
     }
   });
 });
