@@ -1,4 +1,4 @@
-import type { Metadata, Viewport } from 'next';
+import type { Metadata } from 'next';
 import { Suspense } from 'react';
 import { preconnect, prefetchDNS, preload } from 'react-dom';
 import type { Locale } from '@/lib/i18n/routing';
@@ -27,13 +27,6 @@ import { DAY_WORK_POOL } from '@/lib/art/work-of-the-day';
  * the server's pin. A layout prerendered on another day then never answers for today.
  */
 const venueDay = { poolSize: DAY_WORK_POOL.length, pinned: process.env.COSMIC_VENUE_DATE };
-// viewportFit makes the env(safe-area-inset-*) paddings real; the room script keeps
-// theme-color in step with the ground, so black rooms are not framed by cream bars.
-export const venueViewport: Viewport = {
-  themeColor: '#f1ebdf',
-  colorScheme: 'light',
-  viewportFit: 'cover',
-};
 export const venueMetadata: Metadata = {
   // File-based images and icons resolve against the serving deployment, so a crawler can
   // fetch them while cosmic.art's DNS is pending; canonical links are absolute on SITE_URL.

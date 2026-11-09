@@ -19,6 +19,7 @@ import { ChapterPlate } from './chapter-plate';
 import { SweepPlayer } from './sweep-player';
 import { RoomSeams } from './room-seams';
 import styles from './process.module.css';
+import { nightViewport } from '@/app/viewport';
 
 /**
  * The day's work turns over at UTC midnight. The essay and the home regenerate every five
@@ -26,6 +27,9 @@ import styles from './process.module.css';
  * work within that window after the boundary.
  */
 export const revalidate = 300;
+
+/** A night route: the browser's chrome is black from the first byte (src/app/viewport.ts). */
+export const viewport = nightViewport;
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;

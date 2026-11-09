@@ -1,12 +1,12 @@
 import type { Metadata, Viewport } from 'next';
 import { headers } from 'next/headers';
 import { ADDRESS_HEADER, visitorAddress } from '@/lib/addresses';
-import { ROOM_COLORS } from '@/lib/room';
-import { VenueDocument, venueMetadata, venueViewport } from './venue-document';
+import { VenueDocument, venueMetadata } from './venue-document';
+import { nightViewport } from './viewport';
 import { NotFoundPage } from './[locale]/not-found-page';
 
 export const metadata: Metadata = venueMetadata;
-export const viewport: Viewport = { ...venueViewport, themeColor: ROOM_COLORS.night };
+export const viewport: Viewport = nightViewport;
 
 /**
  * The venue's 404 for an address no route answers. The proxy sends an unknown work, exhibition

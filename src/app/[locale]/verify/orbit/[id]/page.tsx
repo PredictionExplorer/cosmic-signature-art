@@ -9,6 +9,10 @@ import { workOrbit } from '@/lib/art/orbit-records';
 import { workNumber } from '@/lib/art/number';
 import { OrbitVerifier } from '@/components/orbit-verifier';
 import styles from '../verify.module.css';
+import { nightViewport } from '@/app/viewport';
+
+/** A night route: the browser's chrome is black from the first byte (src/app/viewport.ts). */
+export const viewport = nightViewport;
 
 type Params = Promise<{ locale: string; id: string }>;
 
