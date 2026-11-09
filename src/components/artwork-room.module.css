@@ -285,8 +285,8 @@
   color: var(--room-muted);
   pointer-events: none;
 }
-/* The Light film's score (film-score-band.tsx) lies beneath the transport's line, which it
-   carries: the hand drags the thumb across the orbit's encounters. */
+/* The complete film's score (film-score-band.tsx) lies beneath the transport's line, which it
+   carries: the hand drags the thumb across the orbit's encounters, on night or on paper. */
 .room .score {
   bottom: env(safe-area-inset-bottom, 0px);
   color: var(--room-ink);

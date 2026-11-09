@@ -194,6 +194,8 @@ export const vi: Messages = {
   privacyCopy:
     'Phòng trưng bày không dùng công cụ theo dõi quảng cáo hay tài khoản người dùng. Trình duyệt yêu cầu tác phẩm và dữ liệu blockchain công khai từ máy chủ phương tiện và nhà cung cấp RPC đã cấu hình; các dịch vụ đó có thể thấy địa chỉ mạng của bạn. Ví đã kết nối chỉ được dùng cho những hành động bạn yêu cầu. Tùy chọn chuyển động được lưu cục bộ trong trình duyệt.',
   notFound: 'Tác phẩm này không có ở đây.',
+  notImprinted: '{work} chưa được khắc dấu.',
+  pageNotFound: 'Trang này không có ở đây.',
   errorTitle: 'Phòng trưng bày cần một chút thời gian.',
   retry: 'Thử lại',
   openProtocol: 'Ghé thăm giao thức',
@@ -420,6 +422,9 @@ export const vi: Messages = {
   // The sale
   saleTitle: 'Phiên {n}',
   saleSubtitle: 'Tám tác phẩm mới · Chu kỳ {cycle}',
+  saleMeanwhileLabel: 'Không được chào bán',
+  saleMeanwhileNote:
+    'Các tác phẩm này đã thuộc bộ sưu tập và không nằm trong đợt bán này. Tám tác phẩm mới của đợt bán sẽ được khắc dấu khi Chu kỳ {cycle} được hoàn tất.',
   conditionsOfSale: 'Điều kiện bán',
   // The entry's copy affordance and footnotes
   copyAddress: 'Sao chép',

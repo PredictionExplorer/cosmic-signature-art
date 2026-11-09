@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import raw from './orbit-windows.json' with { type: 'json' };
 import { bindWindow, filmOrbit, loadOrbitWindows, performedOrbits } from './orbit-windows';
 import { workOrbit } from './orbit-records';
+import { inkClock } from './ink-clocks';
 import { closestApproachOf } from '@/lib/physics/orbit';
 
 const windows = loadOrbitWindows(raw);
@@ -46,12 +47,14 @@ describe('the orbit windows', () => {
     expect(closestApproachOf(orbit.window)).toEqual(workOrbit(31)!.published.closestApproach);
   });
 
-  it('hand a work’s viewer its Light film’s score: the window, the hues and the record’s closest approach', () => {
+  it('hand a work’s viewer its films’ score: the window, the hues, the record’s closest approach and the Ink film’s clock', () => {
     const [performed] = performedOrbits([31]);
     expect(filmOrbit(31)).toEqual({
       ...performed,
       closestApproach: workOrbit(31)!.published.closestApproach,
+      ink: inkClock(31),
     });
+    expect(filmOrbit(31)!.ink!.firstInked).toBe(71);
     expect(filmOrbit(9999)).toBeUndefined();
   });
 });

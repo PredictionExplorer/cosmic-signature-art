@@ -2,7 +2,8 @@
  * The Light film's clock (CS-Image-Generation render/mod.rs): the film aims at 1,800 frames at
  * 60 fps, so each frame adds ⌊steps / 1800⌋ steps of the recorded window to the exposure, and a
  * last frame closes on the final step. For a million steps that is 1,802 frames, 30.03 s, and
- * frame k shows every step through 555 × (k + 1). The Ink films keep their own timing.
+ * frame k shows every step through 555 × (k + 1). The complete Ink film shows the same steps,
+ * frame for frame, after a pre-roll of bare paper (ink-film.ts).
  */
 export const LIGHT_FILM = { targetFrames: 1800, fps: 60 } as const;
 

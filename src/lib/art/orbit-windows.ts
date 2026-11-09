@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import data from './orbit-windows.json' with { type: 'json' };
 import { workOrbit } from './orbit-records';
+import { inkClock } from './ink-clocks';
 import type { OrbitWindow } from '@/lib/physics/orbit';
 import type { FilmOrbit } from '@/lib/physics/film-score';
 
@@ -89,10 +90,18 @@ export function performedOrbits(ids: readonly number[]): PerformedOrbit[] {
   });
 }
 
-/** A work's Light film's score, as its viewer needs it (film-score.ts); nothing without a window. */
+/**
+ * A work's films' score, as its viewer needs it (film-score.ts), with the Ink film's clock where
+ * the venue checked it (ink-clocks.ts); nothing without a window.
+ */
 export function filmOrbit(id: number): FilmOrbit | undefined {
   const [performed] = performedOrbits([id]);
   const record = workOrbit(id);
   if (!performed || !record) return undefined;
-  return { ...performed, closestApproach: record.published.closestApproach };
+  const ink = inkClock(id);
+  return {
+    ...performed,
+    closestApproach: record.published.closestApproach,
+    ...(ink ? { ink } : {}),
+  };
 }

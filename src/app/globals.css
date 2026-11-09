@@ -40,6 +40,9 @@
   --t-walk: 480ms;
   --t-expand: 650ms;
   --t-hold: 1200ms;
+  /* A plate's still running back to its film's first frame (src/components/plate-rewind.ts),
+     on --ease-overture: the whole making, undone in reverse, before it is performed again. */
+  --t-rewind: 1600ms;
   --t-sit: 1200ms;
   --t-dawn: 2000ms;
   --t-rest: 8000ms;
@@ -824,6 +827,21 @@ html[data-turning='overture'] .head-overlay {
 }
 .art-media video.has-frame {
   opacity: 1;
+}
+/*
+  The run back: a canvas over the still and under the films, showing the film's first frame
+  where the work has run back past a mark. While it runs, the films snap rather than fade: the
+  canvas already shows the frame a film shows as it starts, so a fade would only mix it twice.
+*/
+.art-media .art-rewind {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+.art-media[data-rewind] video {
+  transition: none;
 }
 .art-placeholder {
   display: grid;

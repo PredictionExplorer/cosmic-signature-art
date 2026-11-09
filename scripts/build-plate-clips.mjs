@@ -24,6 +24,7 @@ import {
   writeAtomically,
 } from './lib/origin.mjs';
 import { COMPARE_HEIGHT, COMPARE_WIDTH, decodeRaw, meanAbsoluteDifference } from './lib/raster.mjs';
+import { PARAMETERS as ARRIVAL, eachFrame, modeTone } from './build-arrival-maps.mjs';
 
 /**
  * Plate clips: the two short derivatives that let every plate move honestly.
@@ -32,7 +33,9 @@ import { COMPARE_HEIGHT, COMPARE_WIDTH, decodeRaw, meanAbsoluteDifference } from
  * cut frame-exactly so its last frame is the film's last frame, which is the published still.
  * The cut is proved, not assumed: the last frame is decoded and compared with the still, and
  * a clip whose end is not the still is refused. The opening clip is the first ten seconds of
- * the same film, for the works the home may open on. Both are cut from the published source
+ * the same film, for the works the home may open on, and it records the frame at which the
+ * work first shows: Ink opens on bare paper and Light on black, so a plate that performs from
+ * the beginning starts there, never on the empty sheet. Both are cut from the published source
  * over the same bounded range relay as the catalogue excerpts; nothing is tinted, cropped or
  * re-timed, and every output is content-addressed and recorded with its source hashes.
  */
@@ -55,6 +58,14 @@ export const MAX_CLIP_BYTES = 8 * 1024 * 1024;
  * film frame half a second earlier at 16 mean and 10 % over.
  */
 export const STILL_MATCH = { mean: 6, over: 0.005 };
+/**
+ * An opening's first mark: the first frame in which more than `share` of the pixels, read in
+ * grey at the comparison size, depart by more than `levels` from the ground of the clip's first
+ * frame (the bare sheet for Ink, the night for Light). Measured on 023's Ink opening: no pixel
+ * departs before 2.5 s, then 0.56 % at once as the current brings the first ink; Light's first
+ * light is drawn within a few frames.
+ */
+export const FIRST_MARK = { levels: 24, share: 0.0005 };
 const FILM_ROLES = {
   ink: {
     film: ['ember_web', 'videos/web/ember.mp4'],
@@ -137,6 +148,38 @@ export function validateClip(probe, expectedFrames, bytes) {
   return { durationSeconds, frames: expectedFrames };
 }
 
+/** The first-mark measure, fed an opening's grey frames in order; null if the work never shows. */
+export function createFirstMark(limits = FIRST_MARK) {
+  let ground = -1;
+  let found = null;
+  let frames = 0;
+  return {
+    push(frame) {
+      if (ground < 0) ground = modeTone(frame);
+      if (found === null) {
+        let marked = 0;
+        for (const value of frame) if (Math.abs(value - ground) > limits.levels) marked += 1;
+        if (marked > limits.share * frame.length) found = frames;
+      }
+      frames += 1;
+    },
+    finish: () => found,
+  };
+}
+
+/** The first mark of a local opening clip, as a frame of the clip (and so of its film). */
+export async function measureFirstMark(path, { timeout = 120_000 } = {}) {
+  const measure = createFirstMark();
+  const parameters = {
+    ...ARRIVAL,
+    width: COMPARE_WIDTH,
+    height: COMPARE_HEIGHT,
+    fps: FRAME_RATE,
+  };
+  await eachFrame(path, (frame) => measure.push(frame), { parameters, timeout });
+  return measure.finish();
+}
+
 export function endsOnStill(match, limits = STILL_MATCH) {
   return match.mean <= limits.mean && match.over <= limits.over;
 }
@@ -163,6 +206,7 @@ export function clipEntry(fields) {
     sourceDurationSeconds: fields.sourceDurationSeconds,
   };
   if (fields.stillMatch) entry.stillMatch = fields.stillMatch;
+  if (Number.isSafeInteger(fields.firstMarkFrame)) entry.firstMarkFrame = fields.firstMarkFrame;
   return entry;
 }
 
@@ -222,6 +266,17 @@ async function existingIsSound(existing, expected) {
   throw new Error(`Existing clip integrity check failed for ${existing.src}`);
 }
 
+/** An opening's first mark, logged; an opening that never shows the work records none. */
+async function openingMark(path, id, expression) {
+  const frame = await measureFirstMark(path);
+  log(
+    frame === null
+      ? `Signature ${id} ${expression} opening: no mark in its ten seconds; none recorded`
+      : `Signature ${id} ${expression} opening: first mark at frame ${frame} (${(frame / FRAME_RATE).toFixed(2)} s)`,
+  );
+  return frame ?? undefined;
+}
+
 async function generate({ id, seed }, expression, kind, existing) {
   const document = await manifest(seed);
   const roles = FILM_ROLES[expression];
@@ -247,7 +302,10 @@ async function generate({ id, seed }, expression, kind, existing) {
   };
   if (await existingIsSound(existing, expected)) {
     log(`Signature ${id} ${expression} ${kind}: verified existing ${existing.bytes} byte clip`);
-    return existing;
+    if (kind !== 'opening' || existing.firstMarkFrame !== undefined) return existing;
+    // An opening recorded before its first mark was: read the verified local clip, not the source.
+    const local = fileURLToPath(new URL(`../public${existing.src}`, import.meta.url));
+    return clipEntry({ ...existing, firstMarkFrame: await openingMark(local, id, expression) });
   }
   await mkdir(outputDirectory, { recursive: true });
   const temporary = `${outputDirectory}.partial-${randomUUID()}.mp4`;
@@ -341,6 +399,8 @@ async function generate({ id, seed }, expression, kind, existing) {
           `The settling clip does not end on the published still: ${JSON.stringify(stillMatch)}`,
         );
     }
+    const firstMarkFrame =
+      kind === 'opening' ? await openingMark(temporary, id, expression) : undefined;
     const sha256 = await hashFile(temporary);
     const src = `/art/clips/${id}-${expression}-${kind}-${sha256.slice(0, 16)}.mp4`;
     await publishContentAddressed(
@@ -360,6 +420,7 @@ async function generate({ id, seed }, expression, kind, existing) {
       startSeconds: cut.firstFrame / FRAME_RATE,
       sourceDurationSeconds: source.durationSeconds,
       stillMatch,
+      firstMarkFrame,
     });
   } finally {
     await relay.close();

@@ -18,3 +18,9 @@ export const HOME_RESOLVED_KEY = 'cosmic-art-home-film-v1';
  * shown First Light once (docs/first-light.md §4).
  */
 export const OVERTURE_KEY = 'cosmic-art-first-light-v1';
+
+/**
+ * sessionStorage: where the reader stood when they changed language, kept for the page in the
+ * other language and let go on arrival (src/components/reading-place.tsx).
+ */
+export const PLACE_KEY = 'cosmic-art-place-v1';

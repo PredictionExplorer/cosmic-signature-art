@@ -79,8 +79,9 @@ test('Film from a still starts the intended film with one explicit word', async 
     .poll(() => plate.locator('video').evaluate((element) => (element as HTMLVideoElement).paused))
     .toBe(false);
   await expect(plate.getByRole('button', { name: 'Still', exact: true })).toBeVisible();
-  // The one time line runs along the plate's foot, the viewport's on a desk, while it plays.
-  await expect(page.locator('.time-line')).toBeVisible();
+  // The one transport runs along the plate's foot, the viewport's on a desk, while it plays: the
+  // Ink film's score, on its verified clock, once the orbit is measured.
+  await expect(plate.locator('[data-film-score="ink"]')).toBeVisible({ timeout: 30_000 });
   await plate.getByRole('button', { name: 'Still', exact: true }).click();
   await expect(plate.getByRole('button', { name: 'Film', exact: true })).toBeVisible();
 });

@@ -43,6 +43,26 @@ published still at 320 × 207: it must depart by at most a mean of 6 (of 255) wi
 the still from the film before it. The reader (`plate-clips.ts`) re-checks the recorded match
 and the clip's end time, and attaches `settlingFilm` only when both hold.
 
+**An opening records where the work first shows.** Ink opens on bare paper and Light on black;
+before the current brings the first ink, or the first light is drawn, the film shows nothing of
+the work. Each opening clip is read in grey at 320 × 207, every frame, and its `firstMarkFrame`
+is the first in which more than 0.05 % of the pixels depart by more than 24 levels from the
+ground of the clip's first frame. Measured on 8 November 2026: Ink 023, 031 and 035 at frames
+151, 71 and 135 (2.52, 1.18 and 2.25 s); Light within 13 to 17 frames. The opening is the
+film's first 600 frames, frame for frame, so its first mark is the film's, and the reader
+carries it onto the work as `firstMarkSeconds` only when the opening itself binds. A plate that
+performs from the beginning starts its film 0.3 s before that mark, after its still has run
+back to the bare sheet in the reverse of the order the work was made (the arrival maps' order;
+`src/components/plate-rewind.ts`). A rerun measures an opening recorded without a mark from
+the verified local clip, without reading the source again.
+
+![№ 031 on a returning visit: the still, the run back, the bare sheet, the first marks](screenshots/plate-run-back.jpg)
+
+_№ 031 on a returning visit, production build at 1440 × 900, times from navigation: the still
+held (1.4 s); the marks that came to rest last leave first (1.7–2.5 s); the bare sheet, the
+film's own frame 0.3 s before its first mark (3.0 s); the bodies' first ink (3.7 s). Before the
+run back the plate cut from the still to the bare sheet and stayed bare for up to 1.7 s._
+
 **A rung is both faithful and consistent.** Each rung is cut from the master with a
 Lanczos-3 kernel and encoded as WebP at quality 92 with `smartSubsample`. Before publication
 it is decoded and compared with the master's own downsample at the rung's size (mean ≤ 3; 031

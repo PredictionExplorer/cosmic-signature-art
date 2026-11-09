@@ -16,11 +16,14 @@ const hues = [10, 20, 30] as const;
 
 let resizes: { callback: ResizeObserverCallback; disconnected: boolean }[] = [];
 let drawn: { canvas: HTMLCanvasElement; op: string; args: unknown[] }[] = [];
+/** Every style the drawing set, in order. */
+let assigned: { key: string; value: unknown }[] = [];
 let box = { width: 720, height: 11 };
 
 beforeEach(() => {
   resizes = [];
   drawn = [];
+  assigned = [];
   box = { width: 720, height: 11 };
   vi.stubGlobal('devicePixelRatio', 2);
   vi.stubGlobal(
@@ -51,6 +54,7 @@ beforeEach(() => {
           : (...args: unknown[]) => drawn.push({ canvas: this, op: key, args }),
       set: (target, key: string, value) => {
         target[key] = value;
+        assigned.push({ key, value });
         return true;
       },
     }) as unknown as CanvasRenderingContext2D;
@@ -137,6 +141,29 @@ describe('the score in the Light film’s transport', () => {
     expect(queries[1].media).toBe('(resolution: 1dppx)');
     unmount();
     expect(queries[1].removed).toBe(true);
+  });
+
+  it('lights the Ink film’s score from its first ink, in graphite, and never the bare paper before it', () => {
+    const from = 71 / 1802;
+    const { container, rerender } = render(
+      <FilmScoreBand score={score} hues={hues} progress={0.02} material="ink" from={from} />,
+    );
+    const band = container.querySelector('[data-film-score]')!;
+    expect(band).toHaveAttribute('data-film-score', 'ink');
+    const [, lit] = band.querySelectorAll('canvas');
+    expect(lit).toHaveAttribute('data-film-score-from', '3.9');
+    // Played to 2 %, short of the first ink: nothing is lit.
+    expect(lit.style.clipPath).toBe(`inset(0 ${100 - from * 100}% 0 ${from * 100}%)`);
+    rerender(<FilmScoreBand score={score} hues={hues} progress={0.5} material="ink" from={from} />);
+    expect(lit.style.clipPath).toBe(`inset(0 50% 0 ${from * 100}%)`);
+    rerender(<FilmScoreBand score={score} hues={hues} progress={2} material="ink" from={-1} />);
+    expect(lit.style.clipPath).toBe('inset(0 0% 0 0)');
+    observe();
+    // The pairs in graphite on the paper, not in light: three lines, one a pair.
+    const strokes = assigned.filter(({ key }) => key === 'strokeStyle').map(({ value }) => value);
+    expect(strokes).toHaveLength(3);
+    for (const stroke of strokes)
+      expect(String(stroke)).toMatch(/^oklch\(0\.32 0\.02 [\d.]+ \/ 0\.85\)$/);
   });
 
   it('draws at once where nothing observes a box', () => {

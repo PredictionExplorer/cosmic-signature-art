@@ -1,20 +1,24 @@
 'use client';
 import { useEffect, useRef } from 'react';
 import { filmShare, type FilmScore } from '@/lib/physics/film-score';
-import { drawScore } from './score-drawing';
+import { SCORE_LINES, drawScore } from './score-drawing';
 import styles from './film-score-band.module.css';
 
 /**
- * The Light film's score in place of its time line (third-physics.md §5.5): the window's three
+ * A film's score in place of its time line (third-physics.md §5.5): the window's three
  * separations and its events across the film's own clock, lit as far as the film has drawn.
- * The Light film is an exposure, so everything lit is in the frame on screen. It is for the
- * eye alone: the strip says the physics of the moment in words, and the closest approach is a
- * word in the plate's options.
+ * The Light film is an exposure, so everything lit is in the frame on screen. The Ink film keeps
+ * its ink, fresh and then a pale wash, from its first ink on; the steps of its pre-roll, which it
+ * shows as bare paper, are never lit (third-physics-phase-e.md §6). It is for the eye alone: the
+ * strip says the physics of the moment in words, and the closest approach is a word in the
+ * plate's options.
  */
 export function FilmScoreBand({
   score,
   hues,
   progress,
+  material = 'light',
+  from = 0,
   className,
 }: {
   score: FilmScore;
@@ -22,6 +26,10 @@ export function FilmScoreBand({
   hues: readonly number[];
   /** How much of the film has played, from 0 to 1. */
   progress: number;
+  /** The ground it lies on: light on the Light film's night, graphite on the Ink film's paper. */
+  material?: 'light' | 'ink';
+  /** Where the film first shows the orbit's mark, from 0 to 1: the Ink film's first ink. */
+  from?: number;
   /** Where a surface sets the band otherwise: the room's transport. */
   className?: string;
 }) {
@@ -56,6 +64,7 @@ export function FilmScoreBand({
         // The closest approach rises to the lane's top, clear of the numeral above the band.
         ticks: { crossing: 3, syzygy: 6, closest: height / ratio - 1 },
         lineAlpha: 0.85,
+        line: SCORE_LINES[material],
         ink,
       });
       copy.drawImage(whole, 0, 0);
@@ -84,22 +93,27 @@ export function FilmScoreBand({
       resize?.disconnect();
       density?.removeEventListener('change', onDensity);
     };
-  }, [score, hues]);
+  }, [score, hues, material]);
 
-  const unplayed = (1 - Math.min(1, Math.max(0, progress))) * 100;
+  const clamp = (value: number) => Math.min(1, Math.max(0, value));
+  const unplayed = (1 - clamp(progress)) * 100;
+  const unmarked = clamp(from) * 100;
+  // Lit between the film's first mark and where it has played to; nothing before the first.
+  const right = Math.min(unplayed, 100 - unmarked);
   return (
     <div
       ref={band}
       className={className ? `${styles.band} ${className}` : styles.band}
       aria-hidden="true"
-      data-film-score
+      data-film-score={material}
     >
       <canvas ref={dim} className={styles.dim} />
       <canvas
         ref={lit}
         className={styles.lit}
-        style={{ clipPath: `inset(0 ${unplayed}% 0 0)` }}
+        style={{ clipPath: `inset(0 ${right}% 0 ${unmarked ? `${unmarked}%` : 0})` }}
         data-film-score-progress={Math.round((100 - unplayed) * 10) / 10}
+        data-film-score-from={Math.round(unmarked * 10) / 10}
       />
     </div>
   );

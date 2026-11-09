@@ -4,7 +4,7 @@ import { en } from '@/lib/i18n/en';
 import { collectionIndex, cycles, indexedWork } from '@/lib/art/collection-index';
 import plateRecords from '@/lib/art/plate-records.json';
 import { MotionProvider } from './motion-provider';
-import { HomeCycle, HomeSpread, HomeStatement } from './home-screens';
+import { CycleRow, HomeCycle, HomeSpread, HomeStatement } from './home-screens';
 
 vi.mock('next/navigation', () => ({ usePathname: () => '/' }));
 
@@ -145,6 +145,52 @@ describe('home screen 5: this cycle', () => {
 
   it('renders nothing for a work the index does not know', () => {
     const { container } = render(<HomeCycle locale="en" t={en} dayWork={999} />);
+    expect(container).toBeEmptyDOMElement();
+  });
+});
+
+describe('a cycle row under a label', () => {
+  it('names the section by its label and cycle, says what the label means, and describes every work by it', () => {
+    const latest = cycles().at(-1)!;
+    render(
+      <CycleRow
+        locale="en"
+        t={en}
+        cycle={latest.cycle}
+        id="sale-meanwhile"
+        label={en.saleMeanwhileLabel}
+        note="A note."
+      />,
+    );
+    const section = screen.getByRole('region', {
+      name: `${en.saleMeanwhileLabel} Cycle ${latest.cycle}`,
+    });
+    const label = within(section).getByText(en.saleMeanwhileLabel);
+    // The label stands first, above the heading, and the note beneath the count.
+    expect(label.compareDocumentPosition(within(section).getByRole('heading', { level: 2 }))).toBe(
+      Node.DOCUMENT_POSITION_FOLLOWING,
+    );
+    expect(within(section).getByText('A note.')).toBeVisible();
+    // Every work is described by the label, in both leaves, and leads to its own page.
+    const links = within(section)
+      .getAllByRole('link')
+      .filter((link) => link.getAttribute('href')?.startsWith('/art/'));
+    expect(links).toHaveLength(latest.count * 2);
+    for (const link of links) {
+      expect(link).toHaveAttribute('aria-describedby', label.id);
+      expect(link).toHaveAccessibleDescription(en.saleMeanwhileLabel);
+    }
+  });
+
+  it('carries no label, and describes nothing, where none is given', () => {
+    render(<HomeCycle locale="en" t={en} dayWork={23} />);
+    expect(screen.getByRole('region', { name: /^Cycle \d+$/ })).toBeInTheDocument();
+    for (const link of screen.getAllByRole('link'))
+      expect(link).not.toHaveAttribute('aria-describedby');
+  });
+
+  it('renders nothing for a cycle the index does not know', () => {
+    const { container } = render(<CycleRow locale="en" t={en} cycle={99} id="nowhere" />);
     expect(container).toBeEmptyDOMElement();
   });
 });

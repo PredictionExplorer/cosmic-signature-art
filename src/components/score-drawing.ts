@@ -2,11 +2,21 @@ import { SCORE_PAIRS } from '@/lib/physics/film-score';
 
 /*
   The score as it is drawn (third-physics.md §5.5), by the orbit beneath the plate and by the
-  Light film's transport alike: the three pairs' separations on a logarithmic scale, apart
-  upward, each in the hue between its two bodies' own; and ticks rising from the base at each
-  braid crossing, each syzygy and the closest approach, so an encounter dips to the tick that
-  marks it. Colour comes from the work's published hues; the ticks keep the type's colour.
+  films' transports alike: the three pairs' separations on a logarithmic scale, apart upward,
+  each in the hue between its two bodies' own; and ticks rising from the base at each braid
+  crossing, each syzygy and the closest approach, so an encounter dips to the tick that marks
+  it. Colour comes from the work's published hues, in the material of the ground the score lies
+  on; the ticks keep the type's colour.
 */
+
+/**
+ * The pairs' lines in each material: light on night, and on paper graphite with a trace of the
+ * pair's hue, as the orbit section draws the Ink plate (orbit-picture.ts).
+ */
+export const SCORE_LINES = {
+  light: (hue: number, alpha: number) => `oklch(0.8 0.07 ${hue} / ${alpha})`,
+  ink: (hue: number, alpha: number) => `oklch(0.32 0.02 ${hue} / ${alpha})`,
+} as const;
 
 /** What the drawing needs of a score: separations sampled `stride` steps apart, and events. */
 export interface ScoreTrace {
@@ -33,6 +43,8 @@ export interface ScoreLayout {
   ticks: { crossing: number; syzygy: number; closest: number };
   /** The opacity of the separations' lines. */
   lineAlpha: number;
+  /** The separations' lines' colour for a hue and an opacity: light on night unless told. */
+  line?: (hue: number, alpha: number) => string;
   /** The ticks' colour, any CSS colour. */
   ink: string;
   /** Draw every this many samples. */
@@ -64,11 +76,21 @@ export function drawScore(
   hues: readonly number[],
   layout: ScoreLayout,
 ) {
-  const { ratio, x, lane, base, ticks, lineAlpha, ink, every = 1 } = layout;
+  const {
+    ratio,
+    x,
+    lane,
+    base,
+    ticks,
+    lineAlpha,
+    ink,
+    every = 1,
+    line = SCORE_LINES.light,
+  } = layout;
   const { lo, span } = logExtent(trace);
   context.lineWidth = ratio;
   SCORE_PAIRS.forEach((pair, k) => {
-    context.strokeStyle = `oklch(0.8 0.07 ${pairHue(hues, pair)} / ${lineAlpha})`;
+    context.strokeStyle = line(pairHue(hues, pair), lineAlpha);
     context.beginPath();
     for (let sample = 0; sample < trace.count; sample += every) {
       const px = x(sample * trace.stride);

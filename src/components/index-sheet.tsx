@@ -30,9 +30,10 @@ import {
 } from '@/lib/i18n/routing';
 import { NAVIGATION, NAVIGATION_LABEL } from '@/lib/navigation';
 import { useMediaPolicy } from './media-policy';
-import { useDayExpression } from './venue-day';
+import { useDayExpression, useDayWork } from './venue-day';
 import { useMotion } from './motion-provider';
 import { PreviewImage } from './preview-image';
+import { keepPlaceOnClick } from './reading-place';
 import { closeSheet, useOpenSheet } from './sheets-store';
 import { EXPRESSION_KEY } from '@/lib/storage-keys';
 import styles from './index-sheet.module.css';
@@ -167,14 +168,14 @@ export function IndexSheet({
   works,
   locale,
   t,
-  poolSize,
+  pool,
   pinned,
 }: {
   works: CompactWork[];
   locale: Locale;
   t: Messages;
-  /** The day's-work pool's size, so the sheet knows today's expression for itself. */
-  poolSize: number;
+  /** The day's-work pool, so the sheet knows today's work and expression for itself. */
+  pool: readonly number[];
   /** The server's pin of the venue's day (COSMIC_VENUE_DATE), when it has one. */
   pinned?: string;
 }) {
@@ -216,7 +217,7 @@ export function IndexSheet({
           locale={locale}
           t={t}
           pathname={pathname}
-          poolSize={poolSize}
+          pool={pool}
           pinned={pinned}
         />
       ) : null}
@@ -224,20 +225,23 @@ export function IndexSheet({
   );
 }
 
-/** Mounted only while the sheet is open, so each opening starts with an empty wall. */
+/**
+ * Mounted only while the sheet is open, so each opening starts afresh: on the work of the page
+ * behind it, or the day's work, until a hand or the keys hang another.
+ */
 function SheetBody({
   works,
   locale,
   t,
   pathname,
-  poolSize,
+  pool,
   pinned,
 }: {
   works: CompactWork[];
   locale: Locale;
   t: Messages;
   pathname: string;
-  poolSize: number;
+  pool: readonly number[];
   pinned?: string;
 }) {
   const [active, setActive] = useState<number | null>(null);
@@ -251,7 +255,8 @@ function SheetBody({
     () => '',
   );
   const remembered = useSyncExternalStore(noSubscription, rememberedExpression, () => null);
-  const day = useDayExpression(poolSize, pinned);
+  const day = useDayExpression(pool.length, pinned);
+  const dayWork = useDayWork(pool, pinned);
   const unlocalized = unlocalizedPath(pathname);
   // An ordering is the page only on the collection it orders. Elsewhere the page's own query
   // (a work's ?expression=, its view) says nothing about the collection: its links start afresh,
@@ -304,7 +309,16 @@ function SheetBody({
     };
   }, [constrained, expression, works]);
 
-  const activeWork = active === null ? undefined : byId.get(active);
+  // The wall is never bare: until a hand or the keys hang a work, it holds the page's own work,
+  // or on any other page the day's, the home's plate.
+  const pageWork = /^\/art\/(\d+)$/.exec(unlocalized)?.[1];
+  const resting = [pageWork === undefined ? undefined : Number(pageWork), dayWork].find(
+    (id): id is number => id !== undefined && byId.has(id),
+  );
+  const shown = active ?? resting ?? null;
+  // Under a finger the wall's foot says how to hang a work, until one has been hung by hand.
+  const hint = coarse && active === null;
+  const activeWork = shown === null ? undefined : byId.get(shown);
   const wallSource = activeWork
     ? expression === 'light'
       ? compactPreviewUrl(activeWork, 'light')
@@ -339,8 +353,8 @@ function SheetBody({
     if (visible) setActive(id);
   }
   function enter(event: MouseEvent<HTMLAnchorElement>, id: number) {
-    // Under a finger the first tap hangs the work on the wall; the second enters it.
-    if (coarse && active !== id) {
+    // Under a finger the first tap hangs the work on the wall; a tap on the work it holds enters.
+    if (coarse && shown !== id) {
       event.preventDefault();
       setActive(id);
       return;
@@ -416,8 +430,13 @@ function SheetBody({
           {t.closeIndex}
         </button>
       </div>
-      <div className={styles.wall} data-material={wallMaterial} aria-hidden="true" onClick={close}>
-        {!wallSource && coarse ? <p className={styles.wallHint}>{t.indexWallHint}</p> : null}
+      <div
+        className={styles.wall}
+        data-material={wallMaterial}
+        data-hint={hint || undefined}
+        aria-hidden="true"
+        onClick={close}
+      >
         {wallSource ? (
           <PreviewImage
             key={wallSource}
@@ -428,6 +447,7 @@ function SheetBody({
             data-work={activeWork?.id}
           />
         ) : null}
+        {hint ? <p className={styles.wallHint}>{t.indexWallHint}</p> : null}
       </div>
       <div className={styles.lower}>
         <nav className={styles.pocket} aria-label={t.siteNavigation}>
@@ -467,7 +487,7 @@ function SheetBody({
                       href={workHref(work.id)}
                       className={styles.numeral}
                       aria-label={workNumber(work.id)}
-                      data-active={active === work.id || undefined}
+                      data-active={shown === work.id || undefined}
                       onPointerEnter={() => {
                         if (!coarse) setActive(work.id);
                       }}
@@ -549,10 +569,11 @@ function SheetBody({
           {locales.map((value) => (
             <a
               key={value}
-              href={`${localizedPath(value, unlocalized)}${params.toString() ? `?${params}` : ''}`}
+              href={`${localizedPath(value, unlocalized)}${search}`}
               hrefLang={value}
               lang={value}
               aria-current={value === locale ? 'true' : undefined}
+              onClick={keepPlaceOnClick}
             >
               {localeNames[value]}
             </a>
