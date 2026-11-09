@@ -7,8 +7,14 @@ import { useMediaPolicy } from './media-policy';
 type Intent = 'pointer' | 'focus';
 export type PreviewFailure = 'media' | 'autoplay';
 const noSelectionOnServer = () => null;
-const SETTLE_MS = 240;
-const INTENT_MS = 140;
+/**
+ * A film wakes only once the view has rested this long. A glance in passing downloads nothing:
+ * a desk's Ink card plays its work's settling clip, 2.7–6 MB, and at a quarter-second rest a
+ * scan to the foot of the collection woke one at every pause of the wheel (36 MB in all).
+ */
+export const REST_MS = 600;
+/** Hover or focus is interest stated at once; a pointer only sweeping across wakes nothing. */
+export const INTENT_MS = 140;
 const MIN_VISIBLE = 0.25;
 
 /** A grid has one playback lease. Visibility changes never start every visible film. */
@@ -41,7 +47,7 @@ class CollectionMotionController {
     this.listeners.forEach((listener) => listener());
   }
 
-  private schedule = (delay = SETTLE_MS) => {
+  private schedule = (delay = REST_MS) => {
     clearTimeout(this.timer);
     this.timer = setTimeout(() => this.select(), delay);
   };

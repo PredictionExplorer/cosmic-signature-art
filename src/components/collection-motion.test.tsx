@@ -1,7 +1,7 @@
 import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { getCuratedArtwork } from '@/lib/art/catalog';
-import { useCollectionMotion } from './collection-motion';
+import { INTENT_MS, REST_MS, useCollectionMotion } from './collection-motion';
 import { CollectionPreview } from './collection-preview';
 
 const motion = vi.hoisted(() => ({ paused: false, theatre: 'playing' as 'playing' | 'hushed' }));
@@ -112,7 +112,7 @@ function position(id: number, top = 120, left = 0) {
     toJSON: () => ({}),
   });
 }
-function settle(ids = [23, 31, 35], milliseconds = 240) {
+function settle(ids = [23, 31, 35], milliseconds = REST_MS) {
   act(() => {
     PreviewObserver.instances.at(-1)!.report(ids);
     vi.advanceTimersByTime(milliseconds);
@@ -150,12 +150,29 @@ describe('bounded collection motion', () => {
     ids.forEach((id) => position(id));
     expect(PreviewObserver.instances).toHaveLength(1);
     expect(PreviewObserver.instances[0].targets.size).toBe(3);
-    settle(ids, 239);
+    settle(ids, REST_MS - 1);
     expect(container.querySelector('video')).toBeNull();
     act(() => vi.advanceTimersByTime(1));
     expect(container.querySelectorAll('video')).toHaveLength(1);
     expect(active(container)).toHaveAttribute('data-preview-id', '23');
     expect(container.querySelector('video')).toHaveAttribute('src', '/art/previews/23-ink.mp4');
+  });
+
+  it('wakes nothing for a scan in passing: pauses shorter than the rest download no film', () => {
+    const { container } = render(<Grid />);
+    ids.forEach((id) => position(id));
+    act(() => PreviewObserver.instances.at(-1)!.report(ids));
+    // A wheel scanning down the wall: a flick, then the 300 ms or so before the next.
+    for (let flick = 0; flick < 8; flick++) {
+      fireEvent.scroll(window);
+      act(() => vi.advanceTimersByTime(300));
+      expect(container.querySelector('video')).toBeNull();
+    }
+    expect(HTMLMediaElement.prototype.load).not.toHaveBeenCalled();
+    // The visitor stops to look: one film, the work nearest the middle of the view.
+    act(() => vi.advanceTimersByTime(REST_MS - 300));
+    expect(container.querySelectorAll('video')).toHaveLength(1);
+    expect(active(container)).toHaveAttribute('data-preview-id', '23');
   });
 
   it('waits until scrolling stops and retains its current film through small viewport changes', () => {
@@ -168,7 +185,7 @@ describe('bounded collection motion', () => {
     fireEvent.scroll(window);
     act(() => vi.advanceTimersByTime(200));
     expect(active(container)).toHaveAttribute('data-preview-id', '23');
-    act(() => vi.advanceTimersByTime(40));
+    act(() => vi.advanceTimersByTime(REST_MS - 200));
     expect(active(container)).toHaveAttribute('data-preview-id', '23');
   });
 
@@ -178,17 +195,17 @@ describe('bounded collection motion', () => {
     settle();
     const previous = container.querySelector('video')!;
     fireEvent.focus(screen.getByRole('link', { name: 'Signature 31' }));
-    act(() => vi.advanceTimersByTime(140));
+    act(() => vi.advanceTimersByTime(INTENT_MS));
     expect(previous).not.toHaveAttribute('src');
     expect(HTMLMediaElement.prototype.pause).toHaveBeenCalled();
     fireEvent.pointerEnter(screen.getByRole('link', { name: 'Signature 35' }), {
       pointerType: 'mouse',
     });
-    act(() => vi.advanceTimersByTime(140));
+    act(() => vi.advanceTimersByTime(INTENT_MS));
     expect(active(container)).toHaveAttribute('data-preview-id', '31');
     expect(container.querySelectorAll('video')).toHaveLength(1);
     fireEvent.blur(screen.getByRole('link', { name: 'Signature 31' }));
-    act(() => vi.advanceTimersByTime(240));
+    act(() => vi.advanceTimersByTime(REST_MS));
     expect(active(container)).toHaveAttribute('data-preview-id', '35');
   });
 
@@ -200,7 +217,7 @@ describe('bounded collection motion', () => {
     act(() => PreviewObserver.instances[0].report([23], false));
     expect(container.querySelector('video')).toBeNull();
     expect(video).not.toHaveAttribute('src');
-    act(() => vi.advanceTimersByTime(240));
+    act(() => vi.advanceTimersByTime(REST_MS));
     expect(active(container)).toHaveAttribute('data-preview-id', '31');
   });
 
@@ -211,7 +228,7 @@ describe('bounded collection motion', () => {
     position(35);
     settle([23, 35]);
     fireEvent.focus(screen.getByRole('link', { name: 'Signature 31' }));
-    act(() => vi.advanceTimersByTime(140));
+    act(() => vi.advanceTimersByTime(INTENT_MS));
     expect(active(container)).toHaveAttribute('data-preview-id', '23');
   });
 
@@ -223,12 +240,12 @@ describe('bounded collection motion', () => {
     const touch = new Event('pointerover', { bubbles: true });
     Object.defineProperty(touch, 'pointerType', { value: 'touch' });
     fireEvent(target, touch);
-    act(() => vi.advanceTimersByTime(140));
+    act(() => vi.advanceTimersByTime(INTENT_MS));
     expect(active(container)).toHaveAttribute('data-preview-id', '23');
     fireEvent.pointerEnter(target, { pointerType: 'mouse' });
     act(() => vi.advanceTimersByTime(100));
     fireEvent.pointerLeave(target);
-    act(() => vi.advanceTimersByTime(240));
+    act(() => vi.advanceTimersByTime(REST_MS));
     expect(active(container)).toHaveAttribute('data-preview-id', '23');
   });
 
@@ -238,10 +255,10 @@ describe('bounded collection motion', () => {
     settle();
     fireEvent.error(container.querySelector('video')!);
     expect(container.querySelector('video')).toBeNull();
-    act(() => vi.advanceTimersByTime(240));
+    act(() => vi.advanceTimersByTime(REST_MS));
     expect(active(container)).toHaveAttribute('data-preview-id', '31');
     fireEvent.focus(screen.getByRole('link', { name: 'Signature 23' }));
-    act(() => vi.advanceTimersByTime(140));
+    act(() => vi.advanceTimersByTime(INTENT_MS));
     expect(active(container)).toHaveAttribute('data-preview-id', '31');
   });
 
@@ -356,11 +373,11 @@ describe('bounded collection motion', () => {
     fireEvent.ended(first);
     act(() => vi.advanceTimersByTime(1_900));
     expect(first).not.toHaveAttribute('src');
-    act(() => vi.advanceTimersByTime(240));
+    act(() => vi.advanceTimersByTime(REST_MS));
     expect(active(container)).toHaveAttribute('data-preview-id', '31');
     // Automatic selection leaves the rested work still; explicit focus replays it.
     fireEvent.focus(screen.getByRole('link', { name: 'Signature 23' }));
-    act(() => vi.advanceTimersByTime(140));
+    act(() => vi.advanceTimersByTime(INTENT_MS));
     expect(active(container)).toHaveAttribute('data-preview-id', '23');
     expect(container.querySelector('video')).toHaveAttribute('src', '/art/previews/23-ink.mp4');
   });
@@ -378,7 +395,7 @@ describe('bounded collection motion', () => {
           : fireEvent.pointerEnter(card, { pointerType: 'mouse' });
       const hide = () => (kind === 'focus' ? fireEvent.blur(card) : fireEvent.pointerLeave(card));
       show();
-      act(() => vi.advanceTimersByTime(140));
+      act(() => vi.advanceTimersByTime(INTENT_MS));
       expect(active(container)).toHaveAttribute('data-preview-id', '31');
       const film = card.querySelector('video')!;
       fireEvent.loadedMetadata(film);
@@ -387,17 +404,17 @@ describe('bounded collection motion', () => {
       act(() => vi.advanceTimersByTime(1_900));
       expect(film).not.toHaveAttribute('src');
       // The interest that woke the card is spent: the settled selector moves on.
-      act(() => vi.advanceTimersByTime(240));
+      act(() => vi.advanceTimersByTime(REST_MS));
       expect(active(container)).toHaveAttribute('data-preview-id', '23');
       expect(card.querySelector('video')).toBeNull();
       expect(HTMLMediaElement.prototype.play).toHaveBeenCalledOnce();
       fireEvent.scroll(window);
-      act(() => vi.advanceTimersByTime(240));
+      act(() => vi.advanceTimersByTime(REST_MS));
       expect(card.querySelector('video')).toBeNull();
       // Fresh explicit interest replays it.
       hide();
       show();
-      act(() => vi.advanceTimersByTime(140));
+      act(() => vi.advanceTimersByTime(INTENT_MS));
       expect(active(container)).toHaveAttribute('data-preview-id', '31');
       expect(card.querySelector('video')).toHaveAttribute('src', '/art/previews/31-ink.mp4');
     },
@@ -416,12 +433,12 @@ describe('bounded collection motion', () => {
     // The card scrolls out while its last frame is still held; the rest is recorded anyway.
     act(() => {
       PreviewObserver.instances.at(-1)!.report([23], false);
-      vi.advanceTimersByTime(240);
+      vi.advanceTimersByTime(REST_MS);
     });
     expect(first).not.toHaveAttribute('src');
     act(() => {
       PreviewObserver.instances.at(-1)!.report([31, 35], false);
-      vi.advanceTimersByTime(240);
+      vi.advanceTimersByTime(REST_MS);
     });
     expect(active(container)).toBeNull();
     // Everything returns to view: the first card would win again, but it has rested.
@@ -429,7 +446,7 @@ describe('bounded collection motion', () => {
     expect(active(container)).toHaveAttribute('data-preview-id', '31');
     // Explicit focus still replays the rested work.
     fireEvent.focus(screen.getByRole('link', { name: 'Signature 23' }));
-    act(() => vi.advanceTimersByTime(140));
+    act(() => vi.advanceTimersByTime(INTENT_MS));
     expect(active(container)).toHaveAttribute('data-preview-id', '23');
   });
 
