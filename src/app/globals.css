@@ -798,9 +798,21 @@ html[data-turning='overture'] .head-overlay {
 .art-media[data-material='light'] {
   background: var(--plate-ground, #000);
 }
+/* A work whose ink reaches its border hangs with a deliberate hairline at the sheet's edge
+   (docs/world-class-gallery-vision.md, the edge flag), drawn above every layer of the plate,
+   so the still, its film and the run back all show the same line. As an outline it lay beneath
+   a playing film, whose layer snaps to the pixel: one side was covered and the other was not,
+   an accidental seam where a deliberate edge was meant. */
 .art-media[data-edge='true'] {
-  outline: 1px solid color-mix(in srgb, var(--type) 10%, transparent);
-  outline-offset: -1px;
+  isolation: isolate;
+}
+.art-media[data-edge='true']::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  border: 1px solid color-mix(in srgb, var(--type) 10%, transparent);
+  pointer-events: none;
 }
 .art-media img,
 .art-media video {
