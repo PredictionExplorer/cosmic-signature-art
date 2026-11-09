@@ -162,6 +162,23 @@
   .barWords::-webkit-scrollbar {
     display: none;
   }
+  /* An edge with words beyond it fades, so the bar says it scrolls, and which way
+     (src/components/scroll-edges.ts). */
+  .barWords[data-more-end] {
+    mask-image: linear-gradient(to right, #000 calc(100% - 36px), transparent);
+  }
+  .barWords[data-more-start] {
+    mask-image: linear-gradient(to left, #000 calc(100% - 36px), transparent);
+  }
+  .barWords[data-more-start][data-more-end] {
+    mask-image: linear-gradient(
+      to right,
+      transparent,
+      #000 36px,
+      #000 calc(100% - 36px),
+      transparent
+    );
+  }
   .barWords > * {
     flex: none;
   }

@@ -613,6 +613,26 @@ test('on a phone the bar keeps every word whole, in every language, with both ex
       expect(choice.x + choice.width).toBeLessThanOrEqual(width);
     }
     await expect(bar.getByRole('link', { name: catalogue.older })).toBeInViewport();
+    // The words that do not fit lie beyond a faded edge, and the fade follows the scroll.
+    const words = bar.locator(':scope > div').first();
+    const mask = () =>
+      words.evaluate((row) => {
+        const style = getComputedStyle(row);
+        return style.maskImage || style.getPropertyValue('-webkit-mask-image');
+      });
+    if (await words.evaluate((row) => row.scrollWidth > row.clientWidth + 1)) {
+      await expect(words).toHaveAttribute('data-more-end', '');
+      await expect(words).not.toHaveAttribute('data-more-start');
+      expect(await mask()).toContain('gradient');
+      await words.evaluate((row) => row.scrollTo({ left: row.scrollWidth }));
+      await expect(words).toHaveAttribute('data-more-start', '');
+      await expect(words).not.toHaveAttribute('data-more-end');
+      await words.evaluate((row) => row.scrollTo({ left: 0 }));
+      await expect(words).not.toHaveAttribute('data-more-start');
+    } else {
+      await expect(words).not.toHaveAttribute('data-more-end');
+      expect(await mask()).not.toContain('gradient');
+    }
     await noHorizontalOverflow(page);
   }
 });
