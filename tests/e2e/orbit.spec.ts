@@ -21,8 +21,11 @@ for (const id of [31, 71]) {
     await expect(orbit).toHaveAttribute('data-phase', 'derived', { timeout: 30_000 });
     // The fate is checked last: the worker runs on past the window, to the horizon for a dance.
     await expect(orbit).toHaveAttribute('data-exact', 'true', { timeout: 60_000 });
-    await expect(orbit.getByRole('cell', { name: t.orbitExact, exact: true })).toHaveCount(11);
-    await expect(orbit.getByRole('status')).toContainText(t.orbitAllExact);
+    // The record, checked here, opens the page's second act, on paper beneath the show.
+    const record = page.getByRole('region', { name: t.orbitTableCaption });
+    await expect(record.getByRole('cell', { name: t.orbitExact, exact: true })).toHaveCount(11);
+    await expect(record.getByRole('status')).toContainText(t.orbitAllExact);
+    await expect(record.getByRole('table', { name: t.orbitTableCaption })).toBeVisible();
     // While the section stands beneath the running head, the head is night, type and all; the
     // entry returns it to paper. Each poll scrolls again, so a late change of layout above the
     // target cannot leave the page short of it.
@@ -74,8 +77,10 @@ test('After the frame performs № 054’s escape at its published step, then re
   await orbit.scrollIntoViewIfNeeded();
   await expect(orbit).toHaveAttribute('data-exact', 'true', { timeout: 60_000 });
   await expect(orbit).toHaveAttribute('data-fate', 'ejection');
+  // The fate is checked in the record, which opens the page's second act.
+  const record = page.getByRole('region', { name: t.orbitTableCaption });
   await expect(
-    orbit.getByRole('row', { name: /^Fate body 2 escapes at step 1,090,000/ }),
+    record.getByRole('row', { name: /^Fate body 2 escapes at step 1,090,000/ }),
   ).toBeVisible();
   // The plate's word asks by this event, wherever the visitor stands.
   await page.evaluate((name) => window.dispatchEvent(new Event(name)), AFTER_THE_FRAME_EVENT);

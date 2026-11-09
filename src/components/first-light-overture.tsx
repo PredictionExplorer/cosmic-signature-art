@@ -126,10 +126,11 @@ export default function FirstLightOverture({
     }
     interrupt.current = interruptNow;
 
-    // The home as the visitor meets it: its plate's art, at the top of the page.
+    // The page as the visitor meets it: its plate's art, at the top of the page; the home's, or the
+    // work's own on the page a shared link opens.
     const art = [
       ...document.querySelectorAll<HTMLElement>(
-        '[data-presentation="home"] [data-layer] .art-media',
+        '[data-presentation="home"] [data-layer] .art-media, [data-presentation="gallery"] [data-layer] .art-media',
       ),
     ]
       .map((node) => boxOf(node.getBoundingClientRect()))

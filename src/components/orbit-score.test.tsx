@@ -959,3 +959,25 @@ describe('one part in a trillion', () => {
     expect(screen.getByText(t.twinUnavailable)).toBeInTheDocument();
   });
 });
+
+describe('the work page in two acts', () => {
+  it('performs the orbit in act one, and opens act two on the record, checked here', () => {
+    const { container } = render(<OrbitScore orbit={orbit} t={t} locale="en" />);
+    approach();
+    derive();
+    fated();
+    const [show, record] = container.querySelectorAll('section');
+    expect(show).toHaveAttribute('id', 'orbit');
+    expect(screen.getByRole('region', { name: t.orbitTitle })).toBe(show);
+    // The show carries no table: the record does, under a heading of its own.
+    expect(show.querySelector('table')).toBeNull();
+    expect(record).toHaveAttribute('id', 'proof');
+    expect(screen.getByRole('region', { name: t.orbitTableCaption })).toBe(record);
+    expect(screen.getByRole('heading', { level: 2, name: t.orbitTableCaption })).toBeVisible();
+    expect(screen.getByRole('table', { name: t.orbitTableCaption })).toBeInTheDocument();
+    // Both acts say the derivation is the published record, to the last bit.
+    expect(show).toHaveAttribute('data-exact', 'true');
+    expect(record).toHaveAttribute('data-exact', 'true');
+    expect(record.querySelector('[role="status"]')).toHaveTextContent(t.orbitAllExact);
+  });
+});

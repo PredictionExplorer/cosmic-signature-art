@@ -4,10 +4,7 @@ import { isLocale, localizedPath } from '@/lib/i18n/routing';
 import { messages } from '@/lib/i18n/messages';
 import { metadata } from '@/lib/site';
 import { getCuratedArtwork } from '@/lib/art/catalog';
-import { getInterpretation } from '@/lib/art/types';
-import { performedOrbits } from '@/lib/art/orbit-windows';
-import { plateFrame } from '@/lib/art/orbit-frames';
-import { workOrbit } from '@/lib/art/orbit-records';
+import { showWorkOf } from '@/lib/art/first-light-work';
 import { workNumber } from '@/lib/art/number';
 import { FirstLight, type FirstLightWork } from '@/components/first-light';
 
@@ -23,21 +20,9 @@ function performanceOf(id: string): FirstLightWork | undefined {
   if (!/^(?:0|[1-9]\d{0,2})$/.test(id)) return undefined;
   const number = Number(id);
   const work = getCuratedArtwork(number);
-  const light = work && getInterpretation(work, 'light');
-  const [performed] = performedOrbits([number]);
-  const frame = light && plateFrame(number, light);
-  const orbit = workOrbit(number);
-  if (!light?.rungs?.length || !performed || !frame || !orbit) return undefined;
-  return {
-    id: number,
-    label: workNumber(number),
-    alt: '',
-    href: '',
-    rungs: light.rungs,
-    start: performed.window,
-    frame,
-    closestStep: orbit.published.closestApproach.step,
-  };
+  const show = work && showWorkOf(work);
+  if (!show) return undefined;
+  return { id: number, label: workNumber(number), alt: '', href: '', ...show };
 }
 
 export async function generateMetadata({ params }: { params: Params }) {

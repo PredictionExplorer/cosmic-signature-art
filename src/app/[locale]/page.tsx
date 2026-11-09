@@ -5,14 +5,12 @@ import { getCuratedArtwork } from '@/lib/art/catalog';
 import { inlineCuratedPreview } from '@/lib/art/inline-preview';
 import { expressionOfTheDay, venueNow, workOfTheDay } from '@/lib/art/work-of-the-day';
 import { openingOn } from '@/lib/art/opening';
-import { filmOrbit, performedOrbits } from '@/lib/art/orbit-windows';
-import { plateFrame } from '@/lib/art/orbit-frames';
-import { workOrbit } from '@/lib/art/orbit-records';
-import { getInterpretation, type Artwork } from '@/lib/art/types';
+import { filmOrbit } from '@/lib/art/orbit-windows';
+import { showWorkOf } from '@/lib/art/first-light-work';
 import { metadata } from '@/lib/site';
 import { ArtworkViewer } from '@/components/artwork-viewer';
 import { HomeCycle, HomeSpread, HomeStatement } from '@/components/home-screens';
-import { Overture, type OvertureWork } from '@/components/overture';
+import { Overture } from '@/components/overture';
 
 /**
  * The day's work follows the UTC date. Both the home and the process regenerate every five
@@ -42,25 +40,6 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
 }
 
 /**
- * The day's work as First Light performs it (docs/first-light.md §4): its recorded window, its
- * frame on the Light film, its closest approach and its Light still. Without a frame that still
- * binds to the film there is nothing to land on, and the home opens as it always does.
- */
-function overtureOf(work: Artwork): OvertureWork | null {
-  const [performed] = performedOrbits([work.id]);
-  const light = getInterpretation(work, 'light');
-  const frame = light ? plateFrame(work.id, light) : undefined;
-  const orbit = workOrbit(work.id);
-  if (!performed || !light?.rungs?.length || !frame || !orbit) return null;
-  return {
-    start: performed.window,
-    frame,
-    closestStep: orbit.published.closestApproach.step,
-    rungs: light.rungs,
-  };
-}
-
-/**
  * The home opens on the day's work in the day's expression: Screen 1 is that plate with the
  * one line, Screen 2 the same orbit in the other expression, one Turn away. Light and Ink take
  * the first screen on alternate days (third-physics-phase-d.md §2). A first visit opens with
@@ -72,7 +51,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
   const t = messages(locale);
   const now = venueNow();
   const work = getCuratedArtwork(workOfTheDay(now))!;
-  const firstLight = overtureOf(work);
+  const firstLight = showWorkOf(work);
   return (
     <main id="main" className="home">
       {/* No headline on the wall: the page's h1 is the statement screen's wordmark below. */}
