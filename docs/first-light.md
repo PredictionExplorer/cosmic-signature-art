@@ -370,7 +370,20 @@ _8 November 2026, on the same branch (draft PR #23)._
 - **Slow motion.** About the closest approach the window passes at a quarter of its pace (`slowedAround`). The dance's time is stretched to 6 s so the rest keeps its tempo.
 - **Pace.** On a device whose frames come slowly, the drawing buffer gives way, from twice the CSS pixels down to the CSS pixels, rather than the motion stuttering (`src/lib/first-light/quality.ts`).
 - **Save-Data.** A visitor saving data is not sent the performance unasked: not on the home, and not on the proof page.
-- **Engines behind one interface.** `Engine` (`first-light-engine.ts`) is created by `createEngine` (`first-light-engines.ts`), so WebGPU can draw where the screen shows light brighter than its white, with WebGL 2 as the fallback.
+- **Engines behind one interface.** `Engine` (`first-light-engine.ts`) is created by `createEngine` (`first-light-engines.ts`): WebGPU where the screen shows light brighter than its white, and WebGL 2 beneath it.
+
+**True light (HDR), through WebGPU** (`src/components/first-light-gpu.ts`):
+
+- **Where it runs.** On a screen that reports `(dynamic-range: high)` and has WebGPU, `createEngine` loads the WebGPU engine (the chunk is never fetched elsewhere). It draws on a `rgba16float` canvas with extended tone mapping.
+- **How it was ported.**
+  - The WebGL engine's maths is ported shader for shader to WGSL: the ribbons, the still's colours (read from a 520 px copy), the glow and the bodies.
+  - In headless Chromium, the two engines given the same moments differ by about 0.1 of 255 on average, with 99 % of pixels within one to three levels.
+- **The tone map.** Only the tone map differs (`toneMap`, mirrored in the shader and tested to 4 × 10⁻⁷).
+  - Up to 80 % of white it is the WebGL curve.
+  - Past it, a smooth shoulder rises toward four times the page's white.
+  - Read back from the GPU, the bodies reach about 2.3× white and the closest approach's flare about 3.7×. The landing stays below white, so it meets the still.
+- **When it stands aside.** Before it claims the stage's canvas, it asks a spare canvas whether this browser reads a tone mapping. Without one, or on any failure, a lost device or an uncaught GPU error, WebGL 2 draws instead, or the still comes back. `?engine=webgpu` forces it, for testing.
+- **Seen.** On this Mac's HDR display, in the in-app browser, it chose itself and drew № 031 with a clean console. Light above white cannot be shown in a screenshot, and Safari's WebGPU path and a real iPhone are not yet tried.
 
 **What was checked.**
 
@@ -388,7 +401,8 @@ _8 November 2026, on the same branch (draft PR #23)._
 
   In Chromium and WebKit, on desks, phones and with reduced motion, it passed with the proof's spec: 30 passed, 12 skipped by design.
 
-- The whole unit suite: 1,561 passed.
+- The whole unit suite: 1,583 passed, with the WebGPU engine's 22: the tone map, the probe, the factory's choice and its fallback.
+- The home's, the proof's and the home page's specs, on a production build with the WebGPU engine in it: 96 passed, 12 skipped by design.
 
 ## Sources
 
