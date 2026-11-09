@@ -2,15 +2,44 @@
   background: var(--ground);
   color: var(--type);
 }
-/* The title spread: 100svh of paper and type, the one screen in the venue without a work. */
+/*
+  The title spread: 100svh of paper and type, the one screen in the venue without a work. On a
+  desk it opens as a bound catalogue does, two pages across one gutter rule: the title on the
+  left, the foreword on the right. Narrower screens read them in turn.
+*/
 .title {
   min-height: calc(100svh - var(--head));
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  align-content: center;
+  gap: calc(var(--baseline) * 4);
+  padding: calc(var(--baseline) * 6) var(--gutter);
+}
+.verso,
+.recto {
   display: grid;
   align-content: center;
   justify-items: start;
   gap: 18px;
-  padding: calc(var(--baseline) * 6) var(--gutter);
-  max-width: calc(44em + 2 * var(--gutter));
+}
+/* The gutter between the pages: a rule across the column here, the spine itself on a desk. */
+.recto {
+  padding-block-start: calc(var(--baseline) * 4);
+  border-block-start: 1px solid var(--rule);
+}
+@media (min-width: 1024px) {
+  .title {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    align-items: center;
+    gap: 0;
+  }
+  .recto {
+    align-self: stretch;
+    padding-block-start: 0;
+    padding-inline-start: clamp(36px, 5vw, 90px);
+    border-block-start: 0;
+    border-inline-start: 1px solid var(--rule);
+  }
 }
 .kicker {
   color: var(--muted);
@@ -26,11 +55,7 @@
   color: var(--muted);
 }
 .foreword {
-  margin-top: 18px;
   max-width: 36em;
-}
-.foreword p + p {
-  margin-top: 1em;
 }
 .signed {
   font-size: var(--fs-control);

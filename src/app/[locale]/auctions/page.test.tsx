@@ -21,6 +21,41 @@ afterEach(() => {
 const page = async (locale: string) =>
   render(await Auctions({ params: Promise.resolve({ locale }) }));
 
+describe('the title spread', () => {
+  it('opens as two facing pages: the title on one, the foreword, said once, on the other', async () => {
+    await page('en');
+    const heading = screen.getByRole('heading', {
+      level: 1,
+      name: fill(en.saleTitle, { n: '01' }),
+    });
+    const spread = screen.getByRole('region', { name: heading.textContent! });
+    const pages = [...spread.children];
+    expect(pages).toHaveLength(2);
+    const [verso, recto] = pages as [HTMLElement, HTMLElement];
+    expect(verso).toContainElement(heading);
+    expect(within(verso).getByText(en.auctionNotLive)).toBeVisible();
+    // The foreword is one paragraph, printed once, with its signature and the way in.
+    expect(screen.getAllByText(en.auctionIntro)).toHaveLength(1);
+    expect(within(recto).getByText(en.auctionIntro).tagName).toBe('P');
+    expect(within(recto).getByText(en.statementSigned)).toBeVisible();
+    expect(within(recto).getByRole('link', { name: en.conditionsOfSale })).toHaveAttribute(
+      'href',
+      '#conditions',
+    );
+  });
+
+  it('leads into the lots once a sale is offered', async () => {
+    sale.configured = true;
+    await page('en');
+    const spread = screen.getByRole('region', { name: fill(en.saleTitle, { n: '01' }) });
+    expect(within(spread).queryByText(en.auctionNotLive)).toBeNull();
+    expect(within(spread).getByRole('link', { name: en.browseLots })).toHaveAttribute(
+      'href',
+      '#auction-catalogue',
+    );
+  });
+});
+
 describe('the sale before it is offered', () => {
   it('hangs the last imprinted cycle, labelled as not offered, each work leading to its own page', async () => {
     await page('en');

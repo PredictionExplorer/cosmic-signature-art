@@ -55,24 +55,28 @@ export default async function Auctions({ params }: { params: Promise<{ locale: s
   const latest = cycles().at(-1)?.cycle;
   return (
     <main id="main" className={`auction-page ${styles.sale}`}>
+      {/* A bound catalogue's title spread: the title on the left page, the foreword on the right. */}
       <section className={styles.title} aria-labelledby="auction-title">
-        <p className={`eyebrow ${styles.kicker}`}>{t.auctionKicker}</p>
-        <h1 id="auction-title" className="cover">
-          {fill(t.saleTitle, { n: '01' })}
-        </h1>
-        <p className="subtitle">{fill(t.saleSubtitle, { cycle: number.format(comingCycle()) })}</p>
-        {!auctionConfigured ? <p className={styles.state}>{t.auctionNotLive}</p> : null}
-        <div className={`reading ${styles.foreword}`}>
-          <p>{t.auctionIntro}</p>
-          <p>{t.auctionExhibitionCopy}</p>
+        <div className={styles.verso}>
+          <p className={`eyebrow ${styles.kicker}`}>{t.auctionKicker}</p>
+          <h1 id="auction-title" className="cover">
+            {fill(t.saleTitle, { n: '01' })}
+          </h1>
+          <p className="subtitle">
+            {fill(t.saleSubtitle, { cycle: number.format(comingCycle()) })}
+          </p>
+          {!auctionConfigured ? <p className={styles.state}>{t.auctionNotLive}</p> : null}
         </div>
-        <p className={styles.signed}>{t.statementSigned}</p>
-        <a
-          className={`text-link ${styles.enter}`}
-          href={auctionConfigured ? '#auction-catalogue' : '#conditions'}
-        >
-          {auctionConfigured ? t.browseLots : t.conditionsOfSale}
-        </a>
+        <div className={styles.recto}>
+          <p className={`reading ${styles.foreword}`}>{t.auctionIntro}</p>
+          <p className={styles.signed}>{t.statementSigned}</p>
+          <a
+            className={`text-link ${styles.enter}`}
+            href={auctionConfigured ? '#auction-catalogue' : '#conditions'}
+          >
+            {auctionConfigured ? t.browseLots : t.conditionsOfSale}
+          </a>
+        </div>
       </section>
       <div id="auction-catalogue" className={auctionConfigured ? styles.lots : styles.catalogue}>
         <AuctionLaunch

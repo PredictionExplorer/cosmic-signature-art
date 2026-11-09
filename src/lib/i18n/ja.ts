@@ -1,8 +1,6 @@
 import type { Messages } from './en';
 
 export const ja: Messages = {
-  auctionExhibitionCopy:
-    '各サイクルで、既存のコレクションに8点の新作が加わります。動きを味わい、細部を鑑賞し、ETHで直接入札できます。',
   auctionEditorialNote:
     'この作品はコレクションを紹介するための展示です。出品作品は別に掲載します。',
   auctionRoom: 'オークションルーム',

@@ -29,6 +29,19 @@ for (const locale of locales) {
     );
     await expect(page.getByText(t.auctionNotLive, { exact: true }).first()).toBeVisible();
     await expect(page.getByText(t.statementSigned, { exact: true })).toBeVisible();
+    // Two facing pages: on a desk the foreword's page lies right of the spine at the middle of the
+    // screen, beside the title's; a phone reads the foreword after the title. It is said once.
+    const foreword = page.getByText(t.auctionIntro, { exact: true });
+    await expect(foreword).toHaveCount(1);
+    const title = (await page.getByRole('heading', { level: 1 }).boundingBox())!;
+    const facing = (await foreword.boundingBox())!;
+    const { width } = page.viewportSize()!;
+    if (width >= 1024) {
+      expect(title.x + title.width).toBeLessThanOrEqual(width / 2);
+      expect(facing.x).toBeGreaterThan(width / 2);
+    } else {
+      expect(facing.y).toBeGreaterThan(title.y + title.height);
+    }
     await expect(page.locator('input[name="bid"]')).toHaveCount(0);
     await expect(page.locator('.live-auction')).toHaveCount(0);
     // The coming cycle's chapter strip stands where the lots will hang, its number from the index.
