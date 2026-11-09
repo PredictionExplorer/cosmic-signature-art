@@ -67,11 +67,13 @@ function travelling(c: Choreography, ms: number): Shot {
   return { ...c.open, yaw: c.open.yaw + c.travel * eased };
 }
 
+/** The closest approach's flare as the drawing passes `drawn`: a bell about the peak's share. */
+export function flareAt(drawn: number, peak: number, width = 0.012): number {
+  return Math.exp(-(((drawn - peak) / width) ** 2));
+}
+
 export function momentAt(ms: number, c: Choreography): Moment {
-  const flareAt = (drawn: number) => {
-    const width = c.flareWidth ?? 0.012;
-    return Math.exp(-(((drawn - c.peak) / width) ** 2));
-  };
+  const flare = (drawn: number) => flareAt(drawn, c.peak, c.flareWidth);
   if (ms < OPENED) {
     const t = Math.max(0, ms) / BEATS.open;
     return {
@@ -102,7 +104,7 @@ export function momentAt(ms: number, c: Choreography): Moment {
       drawn,
       heads: 1,
       still: 0,
-      flare: flareAt(drawn),
+      flare: flare(drawn),
     };
   }
   if (ms < LANDED) {

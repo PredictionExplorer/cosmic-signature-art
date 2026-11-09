@@ -1,4 +1,4 @@
-import { LightEngine, type Engine } from './first-light-engine';
+import { LightEngine, type Engine, type InkPalette } from './first-light-engine';
 
 /**
  * The engine for a canvas (docs/first-light.md §7):
@@ -7,10 +7,16 @@ import { LightEngine, type Engine } from './first-light-engine';
  * - otherwise, or where WebGPU cannot draw, WebGL 2 in standard dynamic range;
  * - nothing where neither can, and the still simply stays.
  *
+ * Ink on paper (§14) is drawn in WebGL 2 alone: paper is never brighter than white.
+ *
  * A canvas takes one kind of context for good. The WebGPU engine asks for one only once its device
  * is in hand, so a canvas it could not use is still WebGL 2's to take.
  */
-export async function createEngine(canvas: HTMLCanvasElement): Promise<Engine | null> {
+export async function createEngine(
+  canvas: HTMLCanvasElement,
+  ink?: InkPalette,
+): Promise<Engine | null> {
+  if (ink) return LightEngine.create(canvas, ink);
   if (triesWebGpu()) {
     try {
       // Only the screens that can show it load the WebGPU engine.

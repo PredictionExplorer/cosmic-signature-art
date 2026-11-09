@@ -1,85 +1,56 @@
 'use client';
-import Link from 'next/link';
 import { useEffect, useEffectEvent, useMemo, useRef, useState, type CSSProperties } from 'react';
-import { localizedPath, type Locale } from '@/lib/i18n/routing';
+import type { Locale } from '@/lib/i18n/routing';
 import type { Messages } from '@/lib/i18n/en';
 import { clock, fill } from '@/lib/i18n/format';
 import type { WorkOrbit } from '@/lib/art/orbit-records';
 import type { OrbitPlate } from '@/lib/art/orbit-plate';
-import type {
-  Comparison,
-  DerivedFate,
-  MeasurementKey,
-  Progress,
-  Rederivation,
-} from '@/lib/physics/orbit';
-import { Continuation, restingStep } from '@/lib/physics/continuation';
-import { HeldPlacement, type FramedSamples } from '@/lib/physics/framing';
+import type { Continuation } from '@/lib/physics/continuation';
+import type { DerivedFate } from '@/lib/physics/orbit';
 import { pairName } from '@/lib/physics/film-score';
-import type { OrbitReply, OrbitRequest } from '@/lib/physics/orbit.worker';
 import {
+  LIGHT_FILM,
   lightFilmDuration,
-  lightFilmFrame,
+  lightFilmFrames,
   lightFilmSeconds,
   stepsDrawnAt,
 } from '@/lib/physics/light-film';
 import { principalPlane, type Plane } from '@/lib/physics/plane';
+import {
+  advance,
+  letGo,
+  pause,
+  play,
+  restingAt,
+  scrub,
+  toClosest,
+  type Transport,
+} from '@/lib/first-light/transport';
 import { AFTER_THE_FRAME_EVENT } from '@/lib/venue-events';
 import { useMotion } from './motion-provider';
-import { lendPlateTone, returnPlateTone } from './room-ground';
 import { drawScore } from './score-drawing';
 import { useRememberedExpression, type Expression } from './turn';
-import { MATERIALS, planePicture, platePicture, type Material } from './orbit-picture';
-import {
-  derivedValue,
-  measurementLabels,
-  orbitWorker,
-  progressText,
-  recordValues,
-  seedShort,
-  verdict,
-} from './orbit-proof';
+import { planePicture, platePicture, type Material } from './orbit-picture';
+import { orbitPainter } from './orbit-painter';
+import { beyondLine, performBeyond, type Beyond } from './orbit-beyond';
+import { STRIDE, useOrbitDerivation, type Derivation } from './orbit-derivation';
+import { useOrbitPresence } from './orbit-presence';
+import { OrbitRecord } from './orbit-record';
+import { OrbitSculpture, type Sculpture } from './orbit-sculpture';
+import { OrbitSlider } from './orbit-timeline';
+import { progressText, seedShort, verdict } from './orbit-proof';
 import styles from './orbit-score.module.css';
 
 /** The plate's still is laid out at the figure's width: the full width on a phone. */
 const STILL_SIZES = '(max-width: 860px) 100vw, 62vw';
-/** Every hundredth step is drawn: ten thousand points per body for a million-step window. */
-const STRIDE = 100;
-/** To the ejection starts this many seconds of the film's pace before the escape. */
-const LEAD_SECONDS = 4;
-/**
- * After the frame rests once an escape is confirmed and the escaping body has left the drawing,
- * and never later than this many seconds of the film's pace after the confirmation: the pair it
- * leaves recoils the other way, and would follow it out.
- */
-const AFTER_ESCAPE_SECONDS = 2;
-/** After the confirmation, a drawing made at once looks for the escaper's exit this finely. */
-const SETTLE_STEPS = 1_000;
-/** Drawn at once, an eternal dance past the frame covers this share of a window. */
-const STILL_WINDOWS = 0.5;
-/** Past the frame a trail fades to a twentieth over about the film's length… */
-const MEMORY_SECONDS = 30;
-/** …a step every half second, since a slower fade is lost to an 8-bit canvas. */
-const FADE_EVERY_SECONDS = 0.5;
-const FADE = 1 - 0.05 ** (FADE_EVERY_SECONDS / MEMORY_SECONDS);
-/** The continued trails: the bodies' hues drained of colour. */
-const CONTINUED_ALPHA = 0.3;
-/** No frame advances the performance by more than this, so a tab coming back resumes it. */
-const LONGEST_FRAME_SECONDS = 0.1;
-/** Drawn at once, the steps are taken this many to a frame, so the page stays responsive. */
-const STILL_STEPS_PER_FRAME = 100_000;
 
-type Derivation =
-  | { phase: 'deriving'; progress: Progress | null }
-  | { phase: 'derived'; result: Rederivation; comparisons: Comparison[]; seconds: number }
-  | { phase: 'failed' };
 type State = { phase: 'waiting' } | Derivation;
-type Fate =
-  | { phase: 'deriving' }
-  | { phase: 'derived'; fate: DerivedFate; comparison: Comparison }
-  | { phase: 'failed' };
-/** After the frame: where the performance starts, and a count so a repeat starts afresh. */
-type Beyond = { from: 'end' | 'approach'; run: number };
+
+/** Whether this browser could draw the orbit in depth: only then is it sampled for it. */
+const canTurn = () => typeof WebGL2RenderingContext !== 'undefined';
+
+/** The clock as the words and the slider read it, a few times a second. */
+type Clock = { kind: Transport['kind']; seconds: number };
 
 /**
  * The orbit, re-performed: the work's orbit derived from its seed in this browser, drawn at
@@ -95,9 +66,17 @@ type Beyond = { from: 'end' | 'approach'; run: number };
  * orbit is drawn as Phase A drew it, in the plane of its greatest extent.
  *
  * After the frame (third-physics.md §5.6): the same physics runs on past the recorded window,
- * at the film's pace, with the window dimmed behind it. An ejection is performed as the
- * generator dated it, and the escaping body leaves the drawing; an eternal dance turns on to
- * the record's horizon. The fate is derived here and checked like every other measurement.
+ * at the film's pace, with the window dimmed behind it (orbit-beyond.ts).
+ *
+ * In the hand (docs/first-light.md §14): where the browser can draw it, the orbit can be taken in
+ * hand and turned in depth, and given back to the generator's view (orbit-sculpture.tsx). The
+ * score is a slider, so the moment can be set either way (orbit-timeline.tsx), and the closest
+ * approach can be played slowly, as a film slows for the moment that matters.
+ *
+ * The section is assembled from its parts: where it stands to the visitor (orbit-presence.ts),
+ * the derivation (orbit-derivation.ts), the drawing (orbit-painter.ts), the orbit in depth
+ * (orbit-sculpture.tsx), the slider (orbit-timeline.tsx) and the record (orbit-record.tsx). This
+ * component holds the clock (src/lib/first-light/transport.ts) and says what is happening.
  */
 export function OrbitScore({
   orbit,
@@ -123,15 +102,24 @@ export function OrbitScore({
   const continued = useRef<HTMLCanvasElement>(null);
   const marks = useRef<HTMLCanvasElement>(null);
   const events = useRef<HTMLCanvasElement>(null);
-  const [derivation, setDerivation] = useState<Derivation>({ phase: 'deriving', progress: null });
-  /** The derived window on its plate, from the worker: null when it could not be placed there. */
-  const [framed, setFramed] = useState<FramedSamples | null | undefined>(undefined);
-  const [fate, setFate] = useState<Fate>({ phase: 'deriving' });
-  const [near, setNear] = useState(false);
-  const [inView, setInView] = useState(false);
+  const slider = useRef<HTMLInputElement>(null);
+  const sculpture = useRef<Sculpture | null>(null);
+  const { near, inView, bringNear } = useOrbitPresence(section);
   const [readout, setReadout] = useState<string | null>(null);
   const [done, setDone] = useState(false);
-  const [run, setRun] = useState(0);
+  /**
+   * Where in the Light film the drawing stands. It plays on its own once the section is in view,
+   * from the window's first step, unless motion is unwelcome.
+   */
+  const transport = useRef<Transport>({ kind: 'playing', seconds: 0, slowAt: null });
+  /** The visitor has taken the clock: Play, Pause, the slider or the closest approach. */
+  const [chosen, setChosen] = useState(false);
+  const [clockState, setClockState] = useState<Clock>({ kind: 'playing', seconds: 0 });
+  /** The orbit can be taken in hand here, and is turned from the generator's view now. */
+  const [turnable, setTurnable] = useState(false);
+  const [turned, setTurned] = useState(false);
+  /** The drawing as last laid out, so the clock can move it without laying it out again. */
+  const scene = useRef<{ paint(seconds: number): void; run(): void; speak(): void } | null>(null);
   const [beyond, setBeyond] = useState<Beyond | null>(null);
   /** The plate's word asked for After the frame before the fate was known. */
   const [asked, setAsked] = useState(false);
@@ -140,13 +128,6 @@ export function OrbitScore({
   const [rested, setRested] = useState(false);
   const { paused, reducedMotion, theatre } = useMotion();
   const still = paused || reducedMotion || theatre === 'hushed';
-  // Nothing is derived before the section is near, which is never on the server.
-  const state: State = !near
-    ? { phase: 'waiting' }
-    : typeof Worker === 'undefined'
-      ? { phase: 'failed' }
-      : derivation;
-  const finished = still || done;
   const steps = orbit.generation.steps;
   const film = lightFilmDuration(steps);
   /** The film's pace: steps of the window per second of the Light film. */
@@ -156,6 +137,25 @@ export function OrbitScore({
     () => new Intl.NumberFormat(locale, { minimumFractionDigits: 1, maximumFractionDigits: 1 }),
     [locale],
   );
+
+  const { derivation, framed, fate, space } = useOrbitDerivation({
+    orbit,
+    near,
+    pace,
+    frame: plate?.frame,
+    depth: canTurn(),
+    // The plate's word asked before the fate was known: go on past the frame now it is.
+    onFate: () => {
+      if (asked) goBeyond('end');
+    },
+  });
+  // Nothing is derived before the section is near, which is never on the server.
+  const state: State = !near
+    ? { phase: 'waiting' }
+    : typeof Worker === 'undefined'
+      ? { phase: 'failed' }
+      : derivation;
+  const finished = still || done;
 
   const result = state.phase === 'derived' ? state.result : null;
   const derivedFate = fate.phase === 'derived' ? fate.fate : null;
@@ -174,37 +174,6 @@ export function OrbitScore({
     material && framed !== null && state.phase !== 'failed' ? plate!.stills[material]! : null;
   const placed = plateStill && framed ? framed : null;
 
-  // Derive when the section is a screen away, draw while any of it is in view, and lend the
-  // running head the night while the section stands beneath it: a band the height of the head
-  // at the top of the viewport, so a section taller than the screen still takes the head.
-  useEffect(() => {
-    const node = section.current;
-    if (!node || typeof IntersectionObserver === 'undefined') {
-      queueMicrotask(() => setNear(true));
-      return;
-    }
-    const holder = {};
-    const approach = new IntersectionObserver(([entry]) => entry.isIntersecting && setNear(true), {
-      rootMargin: '100% 0px',
-    });
-    const view = new IntersectionObserver(([entry]) => setInView(entry.isIntersecting));
-    const head = new IntersectionObserver(
-      ([entry]) =>
-        entry.isIntersecting ? lendPlateTone(holder, '#000000', 'night') : returnPlateTone(holder),
-      // Two pixels down, so a section that only touches the top edge has left the head.
-      { rootMargin: '-2px 0px -92% 0px' },
-    );
-    approach.observe(node);
-    view.observe(node);
-    head.observe(node);
-    return () => {
-      approach.disconnect();
-      view.disconnect();
-      head.disconnect();
-      returnPlateTone(holder);
-    };
-  }, []);
-
   const goBeyond = (from: Beyond['from']) => {
     setAsked(false);
     setRested(false);
@@ -215,7 +184,7 @@ export function OrbitScore({
   // The plate's word: bring the section into view and go on past the frame as soon as the fate
   // is known. Asking derives the orbit if the visitor has not come near it yet.
   const onAsk = useEffectEvent(() => {
-    setNear(true);
+    bringNear();
     section.current?.scrollIntoView({
       block: 'start',
       behavior: reducedMotion ? 'instant' : 'smooth',
@@ -226,67 +195,18 @@ export function OrbitScore({
     if (derivation.phase === 'derived' && fate.phase === 'derived') goBeyond('end');
     else setAsked(true);
   });
-  const onFate = useEffectEvent(() => {
-    if (asked) goBeyond('end');
-  });
   useEffect(() => {
     const ask = () => onAsk();
     window.addEventListener(AFTER_THE_FRAME_EVENT, ask);
     return () => window.removeEventListener(AFTER_THE_FRAME_EVENT, ask);
   }, []);
 
-  const plateFrame = plate?.frame;
-  useEffect(() => {
-    if (!near || typeof Worker === 'undefined') return;
-    let worker: Worker;
-    try {
-      worker = orbitWorker();
-    } catch {
-      queueMicrotask(() => {
-        setDerivation({ phase: 'failed' });
-        setFramed(null);
-        setFate({ phase: 'failed' });
-      });
-      return;
-    }
-    const started = performance.now();
-    // The measurements come first, then the window on its plate; the worker then runs on to
-    // the fate and is done.
-    let measured = false;
-    const fail = () => {
-      if (!measured) setDerivation({ phase: 'failed' });
-      setFramed((current) => current ?? null);
-      setFate({ phase: 'failed' });
-      worker.terminate();
-    };
-    worker.onmessage = ({ data }: MessageEvent<OrbitReply>) => {
-      if (data.type === 'progress') setDerivation({ phase: 'deriving', progress: data.progress });
-      else if (data.type === 'done') {
-        measured = true;
-        setDerivation({
-          phase: 'derived',
-          result: data.result,
-          comparisons: data.comparisons,
-          seconds: (performance.now() - started) / 1000,
-        });
-      } else if (data.type === 'framed') setFramed(data.framed);
-      else if (data.type === 'fate') {
-        setFate({ phase: 'derived', fate: data.fate, comparison: data.comparison });
-        worker.terminate();
-        onFate();
-      } else fail();
-    };
-    worker.onerror = fail;
-    const request: OrbitRequest = {
-      generation: orbit.generation,
-      published: orbit.published,
-      stride: STRIDE,
-      fate: { published: orbit.fate, lead: Math.round(LEAD_SECONDS * pace) },
-      ...(plateFrame ? { frame: plateFrame } : {}),
-    };
-    worker.postMessage(request);
-    return () => worker.terminate();
-  }, [near, orbit, pace, plateFrame]);
+  /** Past the frame, the line says how far the orbit has run, and the words follow it. */
+  const speakBeyond = (of: DerivedFate) => (at: Continuation) => {
+    setReached(at.taken);
+    setRested(at.resting);
+    setReadout(beyondLine(of, at, steps, pace, t, number));
+  };
 
   // The drawing: trails accumulate, the bodies ride on a layer above, and the score beneath
   // carries the three separations with the published events. On the plate the drawing lies over
@@ -321,95 +241,23 @@ export function OrbitScore({
       placed && material && plate
         ? platePicture(placed, plate.frame, material, width, height, ratio)
         : planePicture(plane!, count, width, height, ratio);
-    const paint = MATERIALS[picture.material];
-    const { x, y } = picture;
     /** On the plate the bodies stand where the work left them once the window is drawn. */
     const rests = picture.kind === 'plate';
     const hues = orbit.bodyHues;
-    const closestSample = Math.floor(result.closestApproach.step / STRIDE);
-    const copies = picture.drawn / 3;
+    const painter = orbitPainter({
+      trail,
+      mark,
+      picture,
+      width,
+      height,
+      ratio,
+      hues,
+      masses: result.masses,
+      closestApproach: result.closestApproach,
+      steps,
+      stride: STRIDE,
+    });
 
-    // One path a body for each frame of the Light film, as the film adds each frame's marks:
-    // the orbit drawn whole and the orbit performed end on the same picture, at any display's
-    // pace. Light adds and ink darkens alike, so the paths may be stroked body by body.
-    const strokes = (from: number, to: number, alpha = 0.2) => {
-      const spans: [number, number][] = [];
-      const filmFrameOf = (sample: number) =>
-        lightFilmFrame(Math.min(steps - 1, sample * STRIDE), steps);
-      for (let start = from; start < to;) {
-        const filmFrame = filmFrameOf(start + 1);
-        let end = start + 1;
-        while (end < to && filmFrameOf(end + 1) === filmFrame) end += 1;
-        spans.push([start, end]);
-        start = end;
-      }
-      trail.globalCompositeOperation = paint.blend;
-      trail.lineWidth = picture.material === 'ink' ? 0.75 * ratio : ratio;
-      trail.lineJoin = 'round';
-      for (let body = 0; body < picture.drawn; body++) {
-        trail.strokeStyle = paint.trail(hues[picture.body(body)], alpha);
-        for (const [first, last] of spans) {
-          trail.beginPath();
-          trail.moveTo(x(first, body), y(first, body));
-          for (let sample = first + 1; sample <= last; sample++)
-            trail.lineTo(x(sample, body), y(sample, body));
-          trail.stroke();
-        }
-      }
-    };
-    /**
-     * The bodies wherever `at` places them: lights on night; on paper, each outlined at the size
-     * the Ink edition gave it, with its centre marked.
-     */
-    const lights = (at: (body: number) => [number, number]) => {
-      for (let body = 0; body < picture.drawn; body++) {
-        const [cx, cy] = at(body);
-        const hue = hues[picture.body(body)];
-        const reach = picture.reach(result.masses[picture.body(body)]);
-        if (picture.material === 'ink') {
-          mark.strokeStyle = MATERIALS.ink.body(hue);
-          mark.fillStyle = MATERIALS.ink.body(hue);
-          mark.lineWidth = ratio;
-          mark.beginPath();
-          mark.arc(cx, cy, reach, 0, Math.PI * 2);
-          mark.stroke();
-          mark.beginPath();
-          mark.arc(cx, cy, 1.5 * ratio, 0, Math.PI * 2);
-          mark.fill();
-          continue;
-        }
-        const glow = mark.createRadialGradient(cx, cy, 0, cx, cy, reach);
-        glow.addColorStop(0, `oklch(0.96 0.04 ${hue})`);
-        glow.addColorStop(0.22, `oklch(0.9 0.08 ${hue} / 0.55)`);
-        glow.addColorStop(1, 'transparent');
-        mark.fillStyle = glow;
-        mark.beginPath();
-        mark.arc(cx, cy, reach, 0, Math.PI * 2);
-        mark.fill();
-      }
-    };
-    /** The closest approach, ringed where it happened, in each copy drawn, and the bodies. */
-    const bodies = (sample: number, shown: boolean) => {
-      mark.clearRect(0, 0, width, height);
-      if (sample >= closestSample) {
-        const [a, b] = result.closestApproach.pair;
-        const ring = rests ? Math.min(14 * ratio, 0.04 * height) : 14 * ratio;
-        mark.strokeStyle = paint.mark;
-        mark.lineWidth = ratio;
-        for (let copy = 0; copy < copies; copy++) {
-          mark.beginPath();
-          mark.arc(
-            (x(closestSample, copy * 3 + a) + x(closestSample, copy * 3 + b)) / 2,
-            (y(closestSample, copy * 3 + a) + y(closestSample, copy * 3 + b)) / 2,
-            ring,
-            0,
-            Math.PI * 2,
-          );
-          mark.stroke();
-        }
-      }
-      if (shown) lights((body) => [x(sample, body), y(sample, body)]);
-    };
     // The score: log separations of the three pairs, the closest approach, the syzygies and
     // the braid crossings as ticks, and the playhead.
     const scoreWidth = eventCanvas.width;
@@ -454,243 +302,143 @@ export function OrbitScore({
       score.fillRect(Math.round(at(step)), 0, ratio, lane);
     };
 
-    /*
-      After the frame. The recorded window stays, dimmed, and the same physics runs on from the
-      bodies the worker kept: at the window's end, or a few seconds before an ejection. Its
-      trails are the bodies' hues drained of colour, on a layer of their own that forgets them
-      over about a film's length: the same bodies, beyond what the work recorded. On the plate
-      they go on over the same still, the camera held where the film's frame ended.
-    */
-    const performBeyond = (fate: DerivedFate, from: Beyond['from'], key: string) => {
-      const where =
-        picture.kind === 'plate' && plate
-          ? {
-              plate: new HeldPlacement(plate.frame, {
-                masses: result.masses,
-                dt: orbit.generation.dt,
-                steps,
-              }),
-            }
-          : { plane: plane! };
-      const begin = (start: Beyond['from']) =>
-        new Continuation({
-          masses: result.masses,
-          dt: orbit.generation.dt,
-          origin:
-            start === 'approach' && fate.approach
-              ? fate.approach
-              : { taken: steps, ...fate.windowEnd },
-          end: restingStep(fate, Math.round(AFTER_ESCAPE_SECONDS * pace)),
-          stride: STRIDE,
-          ...where,
-        });
-      const place = (at: Continuation, index: number, body: number) =>
-        picture.continued(at.path, at.width, index, body);
-      const trace = (at: Continuation, first: number, last: number, alpha: number) => {
-        if (last <= first) return;
-        beyondTrail.globalCompositeOperation = paint.blend;
-        beyondTrail.lineWidth = picture.material === 'ink' ? 0.75 * ratio : ratio;
-        beyondTrail.lineJoin = 'round';
-        for (let body = 0; body < picture.drawn; body++) {
-          beyondTrail.strokeStyle = paint.continued(hues[picture.body(body)], alpha);
-          beyondTrail.beginPath();
-          beyondTrail.moveTo(...place(at, first, body));
-          for (let index = first + 1; index <= last; index++)
-            beyondTrail.lineTo(...place(at, index, body));
-          beyondTrail.stroke();
-        }
-      };
-      // Redrawn whole (a resize, a return, a still drawing), the last film's length of the path
-      // is traced in quarters, each as faded as the performance would have left it.
-      const retrace = (at: Continuation) => {
-        beyondTrail.clearRect(0, 0, width, height);
-        const last = at.samples - 1;
-        const memory = Math.max(4, Math.round((MEMORY_SECONDS * pace) / STRIDE));
-        for (let quarter = 3; quarter >= 0; quarter--)
-          trace(
-            at,
-            Math.max(0, last - Math.round(((quarter + 1) * memory) / 4)),
-            Math.max(0, last - Math.round((quarter * memory) / 4)),
-            CONTINUED_ALPHA * 0.05 ** (quarter / 4),
-          );
-      };
-      const lightsAt = (at: Continuation) => {
-        mark.clearRect(0, 0, width, height);
-        lights((body) => place(at, at.samples - 1, body));
-      };
-      const speak = (at: Continuation) => {
-        const ejection = fate.outcome === 'ejection' ? fate.ejectionStep : null;
-        setReached(at.taken);
-        setRested(at.resting);
-        setReadout(
-          ejection !== null && at.taken > ejection
-            ? fill(t.orbitEscaped, {
-                body: (fate.escaper ?? 0) + 1,
-                step: number.format(ejection),
-              })
-            : at.taken >= fate.horizonSteps
-              ? fill(t.orbitHeld, { steps: number.format(fate.horizonSteps) })
-              : fill(t.orbitBeyond, {
-                  step: number.format(at.taken),
-                  clock: clock((at.taken - steps) / pace),
-                }),
-        );
-      };
-
-      const confirmed = restingStep(fate, 0);
-      const escaper = fate.outcome === 'ejection' ? fate.escaper : null;
-      /**
-       * Whether the escaping body's light has left the drawing altogether: on a kaleidoscope's
-       * plate, every copy of it, since a turned copy may still be on the plate when the first
-       * has left it.
-       */
-      const gone = (at: Continuation) => {
-        if (escaper === null) return false;
-        const reach = picture.reach(result.masses[escaper]);
-        for (let copy = 0; copy < copies; copy++) {
-          const [ex, ey] = place(at, at.samples - 1, copy * 3 + escaper);
-          if (ex >= -reach && ex <= width + reach && ey >= -reach && ey <= height + reach)
-            return false;
-        }
-        return true;
-      };
-      /** Once the escape is confirmed, the performance rests as soon as the escaper is gone. */
-      const settle = (at: Continuation) => {
-        if (!at.resting && at.taken >= confirmed && gone(at)) at.restHere();
-      };
-
-      // The window, dimmed, and its score: what the work recorded, behind what comes next.
-      strokes(0, picture.last, paint.dimmed);
-      scoreAt(null);
-      // A plate and a plane place the bodies apart: a turn between Light and Ink keeps the path.
-      const keyed = `${key}:${picture.kind}`;
-      let at = live.current?.key === keyed ? live.current.continuation : begin(from);
-      // Drawn at once, an escape is drawn from its approach rather than waited for.
-      if (still && fate.approach && at.taken < fate.approach.taken) at = begin('approach');
-      live.current = { key: keyed, continuation: at };
-      retrace(at);
-      lightsAt(at);
-      if (still) {
-        const target =
-          fate.outcome === 'ejection'
-            ? at.end
-            : Math.max(at.taken, steps + Math.round(STILL_WINDOWS * steps));
-        const compute = () => {
-          const until = Math.min(target, at.taken + STILL_STEPS_PER_FRAME);
-          // In long strides to the confirmation, then finely, so the rest finds the exit.
-          while (at.taken < until && !at.resting) {
-            at.advanceTo(
-              at.taken < confirmed
-                ? Math.min(until, confirmed)
-                : Math.min(until, at.taken + SETTLE_STEPS),
-            );
-            settle(at);
-          }
-          if (at.taken < Math.min(target, at.end)) {
-            frame.current = requestAnimationFrame(compute);
-            return;
-          }
-          retrace(at);
-          lightsAt(at);
-          speak(at);
-          setRested(true);
-        };
-        frame.current = requestAnimationFrame(compute);
-        return () => cancelAnimationFrame(frame.current);
-      }
-      if (!inView || at.resting) return;
-      let last: number | null = null;
-      let spoken = 0;
-      const perform = (now: number) => {
-        const elapsed = last === null ? 0 : Math.min(LONGEST_FRAME_SECONDS, (now - last) / 1000);
-        last = now;
-        const before = at.samples - 1;
-        if (at.perform(elapsed, pace, FADE_EVERY_SECONDS)) {
-          beyondTrail.globalCompositeOperation = 'destination-out';
-          beyondTrail.fillStyle = `rgb(0 0 0 / ${FADE})`;
-          beyondTrail.fillRect(0, 0, width, height);
-        }
-        settle(at);
-        trace(at, before, at.samples - 1, CONTINUED_ALPHA);
-        lightsAt(at);
-        if (now - spoken > 250 || at.resting) {
-          spoken = now;
-          speak(at);
-        }
-        if (!at.resting) frame.current = requestAnimationFrame(perform);
-      };
-      frame.current = requestAnimationFrame(perform);
-      return () => cancelAnimationFrame(frame.current);
-    };
-
     trail.clearRect(0, 0, width, height);
     beyondTrail.clearRect(0, 0, width, height);
+    scene.current = null;
     if (beyond && derivedFate)
-      return performBeyond(derivedFate, beyond.from, `${beyond.run}:${beyond.from}`);
+      return performBeyond({
+        fate: derivedFate,
+        from: beyond.from,
+        key: `${beyond.run}:${beyond.from}`,
+        picture,
+        plate,
+        plane,
+        result,
+        dt: orbit.generation.dt,
+        steps,
+        pace,
+        still,
+        inView,
+        beyondTrail,
+        mark,
+        width,
+        height,
+        ratio,
+        hues,
+        painter,
+        scoreAt,
+        live,
+        frame,
+        speak: speakBeyond(derivedFate),
+        onRested: () => setRested(true),
+      });
     // Asked for After the frame, the window waits whole for the fate rather than starting over.
-    const whole = still || asked;
-    if (whole || !inView) {
-      // A window drawn to its end on the plate goes on to the still's step, and its bodies
-      // stand where the work left them; in the plane they leave the drawing, as Phase A had it.
-      const reached = whole ? count - 1 : drawn.current;
-      const ended = reached >= count - 1;
-      const last = ended ? picture.last : reached;
-      if (last > 0) strokes(0, last);
-      bodies(last, ended ? rests : true);
-      scoreAt(Math.min(steps - 1, last * STRIDE));
-      if (whole) drawn.current = count - 1;
-      return;
-    }
-    if (drawn.current > 0) strokes(0, drawn.current);
-    const resumeAt = lightFilmSeconds(drawn.current * STRIDE, steps);
-    const begun = performance.now() - resumeAt * 1000;
-    let spoken = 0;
-    const tickFrame = (now: number) => {
-      const seconds = Math.min(film, (now - begun) / 1000);
+    // Where motion is unwelcome it is drawn whole, until the visitor takes the clock.
+    if (asked || (still && !chosen)) transport.current = restingAt(film, film);
+    setClockState({ kind: transport.current.kind, seconds: transport.current.seconds });
+    drawn.current = 0;
+    const filmFrames = lightFilmFrames(steps);
+
+    /**
+     * The window drawn to the moment the clock stands at. Forward, the strokes are added; back,
+     * the drawing is laid again. A window drawn to its end on the plate goes on to the still's
+     * step, and its bodies stand where the work left them; in the plane they leave the drawing,
+     * as Phase A had it.
+     */
+    const paint = (seconds: number) => {
       const step = stepsDrawnAt(seconds, steps);
       const sample = Math.min(count - 1, Math.floor(step / STRIDE));
-      if (sample > drawn.current) {
-        strokes(drawn.current, sample);
-        drawn.current = sample;
+      if (sample < drawn.current) {
+        trail.clearRect(0, 0, width, height);
+        drawn.current = 0;
       }
       const complete = sample >= count - 1;
-      if (complete && rests) {
-        strokes(count - 1, picture.last);
-        bodies(picture.last, true);
-      } else bodies(sample, !complete);
-      scoreAt(step);
-      if (now - spoken > 250 || complete) {
-        spoken = now;
-        const closest = result.closestApproach;
-        const nearClosest = step >= closest.step && step - closest.step < 2 * 60 * (steps / 1800);
-        setReadout(
-          complete
-            ? null
-            : nearClosest
-              ? fill(t.orbitClosestNow, {
-                  distance: oneDecimal.format(closest.distance),
-                  pair: pairName(closest.pair),
-                })
-              : fill(t.orbitPlaying, {
-                  step: number.format(step),
-                  total: number.format(steps),
-                  clock: clock(seconds),
-                }),
+      if (complete && drawn.current === 0) {
+        if (picture.last > 0) painter.strokes(0, picture.last);
+        painter.bodies(picture.last, rests);
+        drawn.current = picture.last;
+        scoreAt(Math.min(steps - 1, picture.last * STRIDE));
+      } else {
+        if (sample > drawn.current) {
+          painter.strokes(drawn.current, sample);
+          drawn.current = sample;
+        }
+        if (complete && rests) {
+          if (drawn.current < picture.last) {
+            painter.strokes(count - 1, picture.last);
+            drawn.current = picture.last;
+          }
+          painter.bodies(picture.last, true);
+        } else painter.bodies(sample, !complete);
+        scoreAt(step);
+      }
+      if (slider.current)
+        slider.current.value = String(
+          Math.min(filmFrames - 1, Math.floor(seconds * LIGHT_FILM.fps + 1e-9)),
         );
-      }
-      if (complete) {
-        setDone(true);
-        return;
-      }
-      frame.current = requestAnimationFrame(tickFrame);
+      sculpture.current?.at(step);
     };
-    frame.current = requestAnimationFrame(tickFrame);
+
+    /** What is happening now, a few times a second: the step and the clock, or the approach. */
+    let spoken = -Infinity;
+    const speak = (now = performance.now(), force = true) => {
+      if (!force && now - spoken <= 250) return;
+      spoken = now;
+      const { kind, seconds } = transport.current;
+      setClockState({ kind, seconds });
+      const step = stepsDrawnAt(seconds, steps);
+      const closest = result.closestApproach;
+      const nearClosest = step >= closest.step && step - closest.step < 2 * 60 * (steps / 1800);
+      setReadout(
+        seconds >= film && kind !== 'scrubbing'
+          ? null
+          : nearClosest
+            ? fill(t.orbitClosestNow, {
+                distance: oneDecimal.format(closest.distance),
+                pair: pairName(closest.pair),
+              })
+            : fill(t.orbitPlaying, {
+                step: number.format(step),
+                total: number.format(steps),
+                clock: clock(seconds),
+              }),
+      );
+    };
+
+    /** The clock running, while it plays and the section is in view. */
+    const runClock = () => {
+      cancelAnimationFrame(frame.current);
+      if (!inView || transport.current.kind !== 'playing') return;
+      let last = performance.now();
+      const tick = (now: number) => {
+        // The film's own clock: a frame that comes late, or a tab that comes back, finds the
+        // drawing where the film would be.
+        const elapsed = Math.max(0, (now - last) / 1000);
+        last = now;
+        transport.current = advance(transport.current, elapsed, film);
+        paint(transport.current.seconds);
+        const ended = transport.current.kind !== 'playing';
+        speak(now, ended);
+        if (ended) {
+          setDone(true);
+          return;
+        }
+        frame.current = requestAnimationFrame(tick);
+      };
+      frame.current = requestAnimationFrame(tick);
+    };
+
+    scene.current = { paint, run: runClock, speak: () => speak() };
+    paint(transport.current.seconds);
+    // The line says where the clock stands from the first drawing, a clock the hand set before it too.
+    speak();
+    runClock();
     return () => cancelAnimationFrame(frame.current);
   });
 
   useEffect(
     () => draw(),
-    [result, plane, framed, material, still, inView, run, beyond, derivedFate, asked],
+    [result, plane, framed, material, still, inView, beyond, derivedFate, asked],
   );
 
   useEffect(() => {
@@ -708,21 +456,53 @@ export function OrbitScore({
     return () => observer.disconnect();
   }, []);
 
-  /** Again: the window from its first step, or After the frame from where it began. */
+  /**
+   * The clock as the visitor finds it. Where motion is unwelcome nothing plays until they ask, so
+   * until they take the clock it rests with the window whole: also in the moment between the
+   * derivation and the window's first drawing, while the transport still holds the performance it
+   * would begin where motion is welcome. A slider or a word taken in that moment acts on what the
+   * visitor sees, never on a performance that is not running.
+   */
+  const found = (): Transport => (still && !chosen ? restingAt(film, film) : transport.current);
+  /**
+   * The visitor takes the clock: it is set, the drawing follows at once, and it runs on if it
+   * plays. Motion the visitor asks for is theirs, so it plays even where motion is unwelcome.
+   */
+  const takeClock = (next: Transport) => {
+    setChosen(true);
+    transport.current = next;
+    setClockState({ kind: next.kind, seconds: next.seconds });
+    if (next.kind === 'playing' && next.seconds < film) setDone(false);
+    const current = scene.current;
+    if (!current) return;
+    current.paint(next.seconds);
+    current.speak();
+    current.run();
+  };
+  /** Play and Pause; at the end, play again from the window's first step. */
+  const playPause = () => {
+    const now = found();
+    takeClock(now.kind === 'playing' ? pause(now) : play(now, film));
+  };
+  /** The closest approach, played slowly from a little before it; at rest on it where still. */
+  const toClosestApproach = () =>
+    takeClock(toClosest(lightFilmSeconds(orbit.published.closestApproach.step, steps), still));
+  /** The slider: a frame of the Light film, held while the hand is on it. */
+  const onScrub = (filmFrame: number, settled: boolean) => {
+    const held = scrub(found(), filmFrame / LIGHT_FILM.fps, film);
+    takeClock(settled ? letGo(held, film) : held);
+  };
+
+  /** Again: After the frame from where it began. */
   const again = () => {
     setReadout(null);
-    if (beyond) {
-      goBeyond(beyond.from);
-      return;
-    }
-    drawn.current = 0;
-    setDone(false);
-    setRun((value) => value + 1);
+    if (beyond) goBeyond(beyond.from);
   };
   /** Back to the frame: the recorded window, drawn whole. */
   const leaveBeyond = () => {
     live.current = null;
-    drawn.current = Math.max(0, (result?.samples.count ?? 1) - 1);
+    transport.current = restingAt(film, film);
+    setClockState({ kind: 'resting', seconds: film });
     setBeyond(null);
     setRested(false);
     setReadout(null);
@@ -747,8 +527,6 @@ export function OrbitScore({
     seconds: oneDecimal.format(lightFilmSeconds(closest.step, steps)),
   });
 
-  const labels = measurementLabels(t);
-  const record = recordValues(orbit, t, number);
   // Each row is marked as it is checked; the fate is checked last, since it runs on past the
   // window to the horizon, and the summary speaks once every row has been.
   const comparisons =
@@ -798,11 +576,20 @@ export function OrbitScore({
             steps: number.format(orbit.generation.warmupSteps + steps),
           })} ${verdict(comparisons ?? [], t)}`
         : null;
-  const line = beyond ? readout : ((still ? null : readout) ?? progressLine);
+  // Where motion is unwelcome the window stands whole and the line says so, until the visitor
+  // takes the clock; then the line follows it.
+  const line = beyond ? readout : ((still && !chosen ? null : readout) ?? progressLine);
   const approach = derivedFate?.approach;
   const canApproach =
     beyond?.from === 'end' && !still && !rested && !!approach && reached < approach.taken;
-  const canAgain = !still && (beyond ? rested : done);
+  const canAgain = !still && !!beyond && rested;
+  const derived = state.phase === 'derived';
+  // The word follows the clock as the visitor finds it (found(), above): never Pause where nothing plays.
+  const playing = clockState.kind === 'playing' && !(still && !chosen);
+  const atEnd = clockState.seconds >= film;
+  /** The clock's word: Pause while it plays; at the end, Again for whoever has watched it. */
+  const clockWord = playing ? t.pause : atEnd && (chosen || !still) ? t.again : t.play;
+  const clockStep = stepsDrawnAt(clockState.seconds, steps);
 
   return (
     <section
@@ -857,18 +644,91 @@ export function OrbitScore({
               loading={near ? 'eager' : 'lazy'}
             />
           ) : null}
-          <canvas ref={trails} className={styles.layer} aria-hidden="true" />
-          <canvas ref={continued} className={styles.layer} aria-hidden="true" />
-          <canvas ref={marks} className={styles.layer} aria-hidden="true" />
+          {/* The orbit in depth: shown only as the hand turns it, beneath the drawing it replaces. */}
+          {plateStill && space && material && !beyond ? (
+            <OrbitSculpture
+              key={`depth-${material}`}
+              handle={sculpture}
+              stage={stage}
+              space={space}
+              material={material}
+              tone={plateStill.tone}
+              colours={plateStill.colours}
+              hues={orbit.bodyHues}
+              closestStep={orbit.published.closestApproach.step}
+              still={still}
+              label={t.orbitStageLabel}
+              onReady={setTurnable}
+              onTurned={setTurned}
+              onPlayPause={playPause}
+            />
+          ) : null}
+          <canvas ref={trails} className={styles.layer} data-layer="trails" aria-hidden="true" />
+          <canvas
+            ref={continued}
+            className={styles.layer}
+            data-layer="continued"
+            aria-hidden="true"
+          />
+          <canvas ref={marks} className={styles.layer} data-layer="marks" aria-hidden="true" />
         </div>
-        <figcaption className={styles.caption}>{description}</figcaption>
+        <figcaption className={styles.caption}>
+          {description}
+          {turnable && !beyond ? (
+            <span className={styles.hint}>
+              <span className={styles.hintPointer}>{t.orbitTurnHint}</span>
+              <span className={styles.hintTouch}>{t.orbitTurnHintTouch}</span>
+            </span>
+          ) : null}
+        </figcaption>
       </figure>
       <div className={styles.score}>
-        <canvas ref={events} className={styles.events} aria-hidden="true" />
+        <div className={styles.strip}>
+          <canvas ref={events} className={styles.events} aria-hidden="true" />
+          {derived && !beyond ? (
+            <OrbitSlider
+              slider={slider}
+              frames={lightFilmFrames(steps)}
+              label={t.orbitTimeLabel}
+              valueText={playingLine(clockStep, clockState.seconds)}
+              disabled={asked}
+              onScrub={onScrub}
+            />
+          ) : null}
+        </div>
         <div className={styles.readoutRow}>
           <p className={styles.readout}>{line}</p>
           <div className={styles.words}>
-            {state.phase === 'derived' && (finished || beyond) ? (
+            {derived && !beyond ? (
+              <>
+                {turned ? (
+                  <button
+                    type="button"
+                    className={styles.again}
+                    onClick={() => sculpture.current?.back()}
+                  >
+                    {t.orbitGeneratorView}
+                  </button>
+                ) : null}
+                <button type="button" className={styles.again} onClick={playPause}>
+                  {clockWord}
+                </button>
+                <button type="button" className={styles.again} onClick={toClosestApproach}>
+                  {t.toClosestApproach}
+                </button>
+                {derivedFate && finished ? (
+                  <button
+                    type="button"
+                    className={styles.again}
+                    aria-pressed={false}
+                    onClick={() => goBeyond('end')}
+                  >
+                    {t.afterTheFrame}
+                  </button>
+                ) : null}
+              </>
+            ) : null}
+            {derived && beyond ? (
               <>
                 {canApproach ? (
                   <button
@@ -899,52 +759,13 @@ export function OrbitScore({
           </div>
         </div>
       </div>
-      <div className={styles.record}>
-        <table className={styles.proof}>
-          <caption className={styles.tableCaption}>{t.orbitTableCaption}</caption>
-          <thead className={styles.visuallyHidden}>
-            <tr>
-              <th scope="col">{t.orbitMeasurement}</th>
-              <th scope="col">{t.orbitValue}</th>
-              <th scope="col">{t.orbitCheck}</th>
-            </tr>
-          </thead>
-          <tbody>
-            {(Object.keys(labels) as MeasurementKey[]).map((key) => {
-              const row = comparisons?.find((comparison) => comparison.key === key);
-              return (
-                <tr key={key} data-key={key} data-exact={row ? String(row.exact) : undefined}>
-                  <th scope="row">{labels[key]}</th>
-                  <td className={key === 'braidWord' ? styles.word : undefined}>
-                    <span>{record[key]}</span>
-                    {row && !row.exact ? (
-                      <span className={styles.derivedValue}>{derivedValue(row, t)}</span>
-                    ) : null}
-                  </td>
-                  <td className={styles.check}>
-                    {row ? (row.exact ? t.orbitExact : t.orbitDiffers) : t.orbitPending}
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-        <p className={styles.summary} role="status">
-          {summary}
-        </p>
-        <p className={styles.note}>
-          {fill(t.orbitNote, {
-            index: number.format(orbit.generation.selectedIndex),
-            steps: number.format(orbit.generation.warmupSteps + steps),
-          })}
-        </p>
-        {/* The same derivation, printed whole on a page of its own (Verify an orbit). */}
-        <p className={styles.verify}>
-          <Link className="word-link" href={localizedPath(locale, `/verify/orbit/${orbit.id}`)}>
-            {t.verifyOrbitLineByLine}
-          </Link>
-        </p>
-      </div>
+      <OrbitRecord
+        orbit={orbit}
+        t={t}
+        locale={locale}
+        comparisons={comparisons}
+        summary={summary}
+      />
     </section>
   );
 }

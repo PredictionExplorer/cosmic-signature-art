@@ -193,7 +193,8 @@ fn bodyVertex(@builtin(vertex_index) vertex: u32, @builtin(instance_index) insta
 @fragment
 fn bodyFragment(@location(0) offset: vec2f) -> @location(0) vec4f {
   let r2 = dot(offset, offset);
-  let glare = exp(-r2 * 9.0) * 6.0 + exp(-r2 * 2.2) * 0.9;
+  // The wide glare falls to nothing before the square's edge, or the square would show.
+  let glare = (exp(-r2 * 9.0) * 6.0 + exp(-r2 * 2.2) * 0.9) * (1.0 - smoothstep(0.5, 1.0, sqrt(r2)));
   return vec4f(vec3f(1.0, 0.96, 0.9) * glare * frame.bodies * (1.0 + 2.5 * frame.flare), 1.0);
 }
 `;
@@ -484,7 +485,7 @@ async function equip(device: GPUDevice): Promise<Kit> {
     sampler: device.createSampler({ magFilter: 'linear', minFilter: 'linear' }),
     frame: uniform(FRAME_FLOATS),
     stage: uniform(4),
-    spacing: [0, 1, 2, 3].map(() => uniform(4)),
+    spacing: [0, 1, 2, 3, 4, 5].map(() => uniform(4)),
     // Black until the still's colours arrive: the WebGL engine's warm white where nothing is lit.
     placeholder: device.createTexture({
       size: [1, 1],
@@ -728,8 +729,9 @@ export class GpuLightEngine implements Engine {
     const textures = [this.target(w, h), ...[0, 1, 2].map(() => this.target(gw, gh))];
     const [light, quarter, glowA, glowB] = textures.map((texture) => texture.createView());
     const { quarter: quartering, blur, composite, sampler, spacing, stage } = this.kit;
-    // Across and down, then across and down again at twice the step, as the WebGL engine blurs.
-    const steps = [1, 0, 0, 1, 2, 0, 0, 2];
+    // Across and down, again at twice the step, then once more at single steps to close the wider
+    // round's spaced copies into one glow, as the WebGL engine blurs.
+    const steps = [1, 0, 0, 1, 2, 0, 0, 2, 1, 0, 0, 1];
     spacing.forEach((buffer, i) => {
       const step = [steps[i * 2] / gw, steps[i * 2 + 1] / gh, 0, 0];
       this.device.queue.writeBuffer(buffer, 0, new Float32Array(step));
@@ -754,6 +756,8 @@ export class GpuLightEngine implements Engine {
         blurred(glowA, 1, glowB),
         blurred(glowB, 2, glowA),
         blurred(glowA, 3, glowB),
+        blurred(glowB, 4, glowA),
+        blurred(glowA, 5, glowB),
       ],
       composite: this.group(composite, { 0: light, 1: sampler, 3: glowB, 4: { buffer: stage } }),
     };
@@ -827,7 +831,7 @@ export class GpuLightEngine implements Engine {
     }
     light.end();
 
-    // The glow: the light at a quarter of its size, blurred across and down, twice; then onto the
+    // The glow: the light at a quarter of its size, blurred across and down three times; then onto the
     // stage, tone mapped, where the brightest light may rise past the page's white.
     const stage: Pass = {
       pipeline: kit.composite,

@@ -7,6 +7,7 @@ import type { PlateFrame, WindowStart } from '@/lib/physics/framing';
 import { rungFor, type StillRung } from '@/lib/art/types';
 import { MOTION_KEY } from '@/lib/storage-keys';
 import type { Engine } from './first-light-engine';
+import { decoded } from './decoded-image';
 import { Pace } from '@/lib/first-light/quality';
 
 /*
@@ -46,13 +47,6 @@ export function motionWelcome(): boolean {
   // A visitor saving data is not sent a performance unasked.
   const saving = (navigator as { connection?: { saveData?: boolean } }).connection?.saveData;
   return !paused && !saving;
-}
-
-function decoded(src: string): Promise<HTMLImageElement> {
-  const image = new Image();
-  image.decoding = 'async';
-  image.src = src;
-  return image.decode().then(() => image);
 }
 
 function sampled(start: WindowStart, frame: PlateFrame): Promise<PlateSpace> {

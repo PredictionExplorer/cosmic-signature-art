@@ -619,6 +619,13 @@ export const ko: Messages = {
   orbitEscaped: '천체 {body}이(가) {step}번째 단계에서 탈출했습니다',
   orbitHeld: '춤은 {steps}단계 내내 이어졌습니다',
   toTheEjection: '탈출로',
+  orbitStageLabel: '깊이 속의 궤도. 화살표 키로 돌리고, Esc 키로 생성기의 시점으로 돌아갑니다.',
+  orbitTurnHint:
+    '궤도를 드래그하면 깊이 속에서 돌릴 수 있습니다. 놓으면 생성기의 시점으로 돌아갑니다.',
+  orbitTurnHintTouch:
+    '궤도를 길게 누른 뒤 드래그하면 깊이 속에서 돌릴 수 있습니다. 손을 떼면 생성기의 시점으로 돌아갑니다.',
+  orbitGeneratorView: '생성기의 시점',
+  orbitTimeLabel: '빛 영상 속의 순간',
   filmPhysics: '천체 {pair} · 거리 {distance}',
   toClosestApproach: '최근접으로',
   closestApproachAt: '최근접 직전부터 전체 영상을 엽니다 ({clock})',

@@ -630,6 +630,13 @@ export const vi: Messages = {
   orbitEscaped: 'Vật thể {body} đã thoát ra, ở bước {step}',
   orbitHeld: 'Vũ điệu giữ vững qua cả {steps} bước',
   toTheEjection: 'Đến lúc thoát ra',
+  orbitStageLabel:
+    'Quỹ đạo trong chiều sâu. Phím mũi tên xoay nó; Escape đưa nó về góc nhìn của bộ tạo.',
+  orbitTurnHint: 'Kéo quỹ đạo để xoay nó trong chiều sâu. Thả ra, nó trở về góc nhìn của bộ tạo.',
+  orbitTurnHintTouch:
+    'Giữ quỹ đạo rồi kéo để xoay nó trong chiều sâu. Thả tay, nó trở về góc nhìn của bộ tạo.',
+  orbitGeneratorView: 'Góc nhìn của bộ tạo',
+  orbitTimeLabel: 'Khoảnh khắc trong phim Ánh sáng',
   filmPhysics: 'vật thể {pair} · cách nhau {distance}',
   toClosestApproach: 'Đến lúc gần nhất',
   closestApproachAt: 'Mở phim ngay trước lúc gần nhất, ở {clock}',
