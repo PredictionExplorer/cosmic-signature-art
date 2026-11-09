@@ -194,6 +194,8 @@ export const vi: Messages = {
   privacyCopy:
     'Phòng trưng bày không dùng công cụ theo dõi quảng cáo hay tài khoản người dùng. Trình duyệt yêu cầu tác phẩm và dữ liệu blockchain công khai từ máy chủ phương tiện và nhà cung cấp RPC đã cấu hình; các dịch vụ đó có thể thấy địa chỉ mạng của bạn. Ví đã kết nối chỉ được dùng cho những hành động bạn yêu cầu. Tùy chọn chuyển động được lưu cục bộ trong trình duyệt.',
   notFound: 'Tác phẩm này không có ở đây.',
+  notImprinted: '{work} chưa được khắc dấu.',
+  pageNotFound: 'Trang này không có ở đây.',
   errorTitle: 'Phòng trưng bày cần một chút thời gian.',
   retry: 'Thử lại',
   openProtocol: 'Ghé thăm giao thức',

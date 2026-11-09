@@ -191,6 +191,8 @@ export const en = {
   privacyCopy:
     'The gallery uses no advertising trackers or user accounts. Your browser requests artwork and public blockchain data from the configured media host and RPC provider; those services can see your network address. A connected wallet is used only for actions you request. Motion preferences are stored locally in your browser.',
   notFound: 'This work is not here.',
+  notImprinted: '{work} has not been imprinted.',
+  pageNotFound: 'This page is not here.',
   errorTitle: 'The gallery needs a moment.',
   retry: 'Try again',
   openProtocol: 'Visit the protocol',

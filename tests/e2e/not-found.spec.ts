@@ -1,5 +1,8 @@
 import { expect, test, type APIResponse, type Response, type TestInfo } from '@playwright/test';
 import { catalogs } from '../../src/lib/i18n/messages';
+import { INDEXED_WORKS } from '../../src/lib/addresses';
+import { workNumber } from '../../src/lib/art/number';
+import { fill } from '../../src/lib/i18n/format';
 import { locales, localizedPath, type Locale } from '../../src/lib/i18n/routing';
 import { noHorizontalOverflow } from './helpers';
 
@@ -15,14 +18,27 @@ function oneProjectAsks(info: TestInfo) {
 }
 
 /** The venue's 404, read from the response itself: the status, the language, the words. */
-async function expectNotHere(response: APIResponse, locale: Locale) {
+async function expectNotHere(response: APIResponse, locale: Locale, words: string) {
   const label = response.url();
   expect(response.status(), label).toBe(404);
   const html = await response.text();
   expect(html, label).toContain(`<html lang="${locale}"`);
   expect(html, label).toMatch(/<html[^>]* data-room="night"/);
   expect(html, label).toContain('<meta name="robots" content="noindex"/>');
-  expect(html.match(/<h1[^>]*>([^<]*)<\/h1>/)?.[1], label).toBe(catalogs[locale].notFound);
+  expect(html.match(/<h1[^>]*>([^<]*)<\/h1>/)?.[1], label).toBe(words);
+}
+
+/**
+ * What the 404 says of an address: a number the collection does not hold has not been imprinted,
+ * a work it cannot name is not here, and any other page is not here.
+ */
+const LAST_WORK = Math.max(...INDEXED_WORKS);
+function wordsFor(path: string, locale: Locale) {
+  const t = catalogs[locale];
+  const number = /^\/(?:art|verify\/orbit)\/(\d+)$/.exec(path)?.[1];
+  if (number && Number(number) > LAST_WORK)
+    return fill(t.notImprinted, { work: workNumber(Number(number)) });
+  return /^\/(?:art|verify\/orbit)\//.test(path) ? t.notFound : t.pageNotFound;
 }
 
 for (const locale of locales) {
@@ -38,7 +54,11 @@ for (const locale of locales) {
       '/verify/orbit/031',
       '/zzz',
     ])
-      await expectNotHere(await request.get(localizedPath(locale, path)), locale);
+      await expectNotHere(
+        await request.get(localizedPath(locale, path)),
+        locale,
+        wordsFor(path, locale),
+      );
     for (const path of ['/art/31', '/exhibitions/a-hang', '/exhibitions/cycle-2']) {
       const response = await request.get(localizedPath(locale, path));
       expect(response.status(), path).toBe(200);
@@ -50,8 +70,8 @@ for (const locale of locales) {
 test('a number beyond the index is the indexer’s to refuse', async ({ request }, info) => {
   oneProjectAsks(info);
   // The live indexer's own "record not found"; the venue never infers a total from its index.
-  await expectNotHere(await request.get('/art/9999'), 'en');
-  await expectNotHere(await request.get('/uk/art/9999'), 'uk');
+  await expectNotHere(await request.get('/art/9999'), 'en', wordsFor('/art/9999', 'en'));
+  await expectNotHere(await request.get('/uk/art/9999'), 'uk', wordsFor('/art/9999', 'uk'));
 });
 
 test('a work’s number in another spelling goes to its one spelling, for good', async ({
@@ -93,6 +113,28 @@ test('the venue’s 404 is its own page, in the visitor’s language, on black',
     .getByRole('link', { name: uk.nextDoor.replace('{work}', '№ 031') })
     .click();
   await expect(page).toHaveURL(/\/uk\/art\/31$/);
+});
+
+test('a number the collection does not hold is next door to the nearest work it does', async ({
+  page,
+}) => {
+  const t = catalogs.en;
+  const response = await page.goto('/art/999');
+  expect(response?.status()).toBe(404);
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText(
+    fill(t.notImprinted, { work: workNumber(999) }),
+  );
+  // № 999 is past the last work, which is next door, its own Light still on the plate.
+  const plate = page.getByRole('main').locator('.art-media');
+  await expect(plate.locator('img.art-still')).toHaveAttribute(
+    'alt',
+    `${workNumber(LAST_WORK)} · ${t.light}`,
+  );
+  await page
+    .getByRole('main')
+    .getByRole('link', { name: fill(t.nextDoor, { work: workNumber(LAST_WORK) }) })
+    .click();
+  await expect(page).toHaveURL(new RegExp(`/art/${LAST_WORK}$`));
 });
 
 /** What a router's prefetch asks of an address: its route's shape ("/_tree"), or one segment. */
@@ -164,6 +206,7 @@ test('a typed number without a record arrives at the venue’s 404', async ({ pa
   await page.keyboard.press('Enter');
   expect((await arrival).status()).toBe(404);
   await expect(page).toHaveURL(/\/art\/9999$/);
-  await expect(page.getByRole('heading', { level: 1 })).toHaveText(catalogs.en.notFound);
+  // № 9999 is a number the collection does not hold: it has not been imprinted.
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText(wordsFor('/art/9999', 'en'));
   await expect(page.locator('html')).toHaveAttribute('data-room', 'night');
 });
