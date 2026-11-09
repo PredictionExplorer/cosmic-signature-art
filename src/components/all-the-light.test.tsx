@@ -4,9 +4,6 @@ import { messages } from '@/lib/i18n/messages';
 import { fill } from '@/lib/i18n/format';
 import { AllTheLight, type LightLabels, type LightSky, type LightWork } from './all-the-light';
 
-const lendPlateTone = vi.hoisted(() => vi.fn());
-const returnPlateTone = vi.hoisted(() => vi.fn());
-vi.mock('./room-ground', () => ({ lendPlateTone, returnPlateTone }));
 const motion = vi.hoisted(() => ({ paused: false, reducedMotion: false, theatre: 'playing' }));
 vi.mock('./motion-provider', () => ({ useMotion: () => motion }));
 
@@ -87,8 +84,6 @@ beforeEach(() => {
   decoding = [];
   decodeAtOnce = true;
   scrolled.mockClear();
-  lendPlateTone.mockClear();
-  returnPlateTone.mockClear();
   Object.assign(motion, { paused: false, reducedMotion: false, theatre: 'playing' });
   // Frames run at once: the reveal waits two of them for the choice to be laid out.
   vi.stubGlobal('requestAnimationFrame', (callback: FrameRequestCallback) => {
@@ -618,27 +613,5 @@ describe('All the light', () => {
     expect(screen.queryByRole('button', { name: t.allTheLightReplay })).toBeNull();
     fireEvent.click(numeral(4));
     expect(scrolled).toHaveBeenCalledWith({ block: 'nearest', behavior: 'instant' });
-  });
-
-  it('lends the running head the night while the page stands beneath it, and returns it', () => {
-    const { unmount } = view();
-    expect(observers[0].options?.rootMargin).toBe('-2px 0px -92% 0px');
-    act(() =>
-      observers[0].callback(
-        [{ isIntersecting: true } as IntersectionObserverEntry],
-        {} as IntersectionObserver,
-      ),
-    );
-    expect(lendPlateTone).toHaveBeenLastCalledWith(expect.any(Object), '#000000', 'night');
-    const holder = lendPlateTone.mock.calls[0][0];
-    act(() =>
-      observers[0].callback(
-        [{ isIntersecting: false } as IntersectionObserverEntry],
-        {} as IntersectionObserver,
-      ),
-    );
-    expect(returnPlateTone).toHaveBeenLastCalledWith(holder);
-    unmount();
-    expect(returnPlateTone).toHaveBeenCalledTimes(2);
   });
 });

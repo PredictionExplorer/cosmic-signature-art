@@ -4,9 +4,6 @@ import { performedOrbits } from '@/lib/art/orbit-windows';
 import type { OrreryReply, OrreryRequest } from '@/lib/physics/orrery';
 import { Orrery, type OrreryCycle } from './orrery';
 
-const lendPlateTone = vi.hoisted(() => vi.fn());
-const returnPlateTone = vi.hoisted(() => vi.fn());
-vi.mock('./room-ground', () => ({ lendPlateTone, returnPlateTone }));
 const motion = vi.hoisted(() => ({ paused: false, reducedMotion: false, theatre: 'playing' }));
 vi.mock('./motion-provider', () => ({ useMotion: () => motion }));
 
@@ -75,8 +72,6 @@ beforeEach(() => {
   observers = [];
   workers = [];
   Object.assign(motion, { paused: false, reducedMotion: false, theatre: 'playing' });
-  lendPlateTone.mockClear();
-  returnPlateTone.mockClear();
   vi.stubGlobal(
     'IntersectionObserver',
     class {
@@ -336,19 +331,5 @@ describe('the Orrery', () => {
     // A work the publisher gave no preview has none to show.
     fireEvent.focus(screen.getByRole('link', { name: '№\u00a0040 · its orbit, performed' }));
     expect(container.querySelectorAll('img')).toHaveLength(2);
-  });
-
-  it('lends the running head the night while the page stands beneath it', () => {
-    const { unmount } = render(<Page />);
-    const head = observers.find((observer) => observer.targets.length === 1)!;
-    act(() =>
-      head.callback(
-        [{ isIntersecting: true } as IntersectionObserverEntry],
-        {} as IntersectionObserver,
-      ),
-    );
-    expect(lendPlateTone).toHaveBeenCalledWith(expect.anything(), '#000000', 'night');
-    unmount();
-    expect(returnPlateTone).toHaveBeenCalled();
   });
 });

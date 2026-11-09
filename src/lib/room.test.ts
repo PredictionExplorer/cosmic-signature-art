@@ -45,6 +45,16 @@ describe('the room by route and view', () => {
     expect(roomFor('/process', '?order=spectrum')).toBe('night');
   });
 
+  it('stands All the light and the Orrery on the night, on every screen, from the first paint', () => {
+    expect(roomFor('/collection/all-the-light')).toBe('night');
+    expect(roomFor('/uk/collection/orrery')).toBe('night');
+    expect(paint('/collection/all-the-light')).toEqual({ room: 'night', color: '#000000' });
+    expect(paint('/zh-TW/collection/orrery')).toEqual({ room: 'night', color: '#000000' });
+    // The collection itself, and a name that only begins the same way, keep their paper.
+    expect(roomFor('/collection')).toBe('paper');
+    expect(roomFor('/collection/orrery-notes')).toBe('paper');
+  });
+
   it('stands Verify an orbit on the night, its door and every work', () => {
     expect(roomFor('/verify/orbit')).toBe('night');
     expect(roomFor('/ko/verify/orbit/31')).toBe('night');
