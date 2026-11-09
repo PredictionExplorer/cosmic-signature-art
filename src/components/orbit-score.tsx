@@ -430,6 +430,8 @@ export function OrbitScore({
 
     scene.current = { paint, run: runClock, speak: () => speak() };
     paint(transport.current.seconds);
+    // The line says where the clock stands from the first drawing, a clock the hand set before it too.
+    speak();
     runClock();
     return () => cancelAnimationFrame(frame.current);
   });
@@ -455,6 +457,14 @@ export function OrbitScore({
   }, []);
 
   /**
+   * The clock as the visitor finds it. Where motion is unwelcome nothing plays until they ask, so
+   * until they take the clock it rests with the window whole: also in the moment between the
+   * derivation and the window's first drawing, while the transport still holds the performance it
+   * would begin where motion is welcome. A slider or a word taken in that moment acts on what the
+   * visitor sees, never on a performance that is not running.
+   */
+  const found = (): Transport => (still && !chosen ? restingAt(film, film) : transport.current);
+  /**
    * The visitor takes the clock: it is set, the drawing follows at once, and it runs on if it
    * plays. Motion the visitor asks for is theirs, so it plays even where motion is unwelcome.
    */
@@ -470,18 +480,16 @@ export function OrbitScore({
     current.run();
   };
   /** Play and Pause; at the end, play again from the window's first step. */
-  const playPause = () =>
-    takeClock(
-      transport.current.kind === 'playing'
-        ? pause(transport.current)
-        : play(transport.current, film),
-    );
+  const playPause = () => {
+    const now = found();
+    takeClock(now.kind === 'playing' ? pause(now) : play(now, film));
+  };
   /** The closest approach, played slowly from a little before it; at rest on it where still. */
   const toClosestApproach = () =>
     takeClock(toClosest(lightFilmSeconds(orbit.published.closestApproach.step, steps), still));
   /** The slider: a frame of the Light film, held while the hand is on it. */
   const onScrub = (filmFrame: number, settled: boolean) => {
-    const held = scrub(transport.current, filmFrame / LIGHT_FILM.fps, film);
+    const held = scrub(found(), filmFrame / LIGHT_FILM.fps, film);
     takeClock(settled ? letGo(held, film) : held);
   };
 
@@ -576,7 +584,8 @@ export function OrbitScore({
     beyond?.from === 'end' && !still && !rested && !!approach && reached < approach.taken;
   const canAgain = !still && !!beyond && rested;
   const derived = state.phase === 'derived';
-  const playing = clockState.kind === 'playing';
+  // The word follows the clock as the visitor finds it (found(), above): never Pause where nothing plays.
+  const playing = clockState.kind === 'playing' && !(still && !chosen);
   const atEnd = clockState.seconds >= film;
   /** The clock's word: Pause while it plays; at the end, Again for whoever has watched it. */
   const clockWord = playing ? t.pause : atEnd && (chosen || !still) ? t.again : t.play;

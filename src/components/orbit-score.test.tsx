@@ -209,6 +209,19 @@ function derive(result = derivation(), worker = workers[0], of: WorkOrbit = orbi
   return result;
 }
 
+/** The window on its plate as the worker places it: every stride, then the still's step. */
+function framedOf(copies = 1): FramedSamples {
+  const count = 10_000;
+  return {
+    stride: 100,
+    count,
+    copies,
+    pixels: Float32Array.from({ length: (count + 1) * copies * 6 }, (_, i) =>
+      i % 2 ? 1_117 + Math.cos(i) * 400 : 1_728 + Math.sin(i) * 600,
+    ),
+  };
+}
+
 /** The fate as the worker derives it: the real one for an ejection, an eternal dance in brief. */
 function fateOf(of: WorkOrbit): DerivedFate {
   const [performed] = performedOrbits([of.id]);
@@ -541,18 +554,6 @@ describe('After the frame', () => {
 
 describe('the orbit on the plate', () => {
   const plate031 = orbitPlate(getCuratedArtwork(31)!)!;
-  /** The window on its plate as the worker places it: every stride, then the still's step. */
-  function framedOf(copies = 1): FramedSamples {
-    const count = 10_000;
-    return {
-      stride: 100,
-      count,
-      copies,
-      pixels: Float32Array.from({ length: (count + 1) * copies * 6 }, (_, i) =>
-        i % 2 ? 1_117 + Math.cos(i) * 400 : 1_728 + Math.sin(i) * 600,
-      ),
-    };
-  }
   const placedOn = (framed: FramedSamples, worker = workers[0]) =>
     worker.reply({ type: 'framed', framed });
   const stage = (container: HTMLElement) => container.querySelector('figure > div')!;
@@ -791,6 +792,29 @@ describe('the clock in the visitor’s hands', () => {
     }
     expect(screen.getByText('Closest approach · bodies 1–3, 80.2 apart')).toBeInTheDocument();
     expect(frames_).toBeGreaterThan(22);
+  });
+
+  it('rests where motion is unwelcome before the window is first drawn, and a hand on the slider then holds it there', () => {
+    const plate031 = orbitPlate(getCuratedArtwork(31)!)!;
+    render(<OrbitScore orbit={orbit} t={t} locale="en" plate={plate031} opening="ink" both />);
+    approach();
+    view(true);
+    // Derived, the slider is offered at once; the window waits for its places on the plate.
+    derive();
+    // The word says what a press would do: Play, never Pause for a performance not running.
+    expect(screen.queryByRole('button', { name: t.pause })).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: t.play })).toBeInTheDocument();
+    fireEvent.change(slider(), { target: { value: '0' } });
+    workers[0].reply({ type: 'framed', framed: framedOf() });
+    clockNow += 2_000;
+    nextFrame();
+    // Set by the hand at the first frame, it stays there, and the line says so: nothing plays
+    // unasked.
+    expect(frames.size).toBe(0);
+    expect(
+      screen.getByText(/^Step [\d,]+ of 1,000,000 · 00:00 into the Light film$/),
+    ).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: t.play })).toBeInTheDocument();
   });
 
   it('offers Play where motion is unwelcome, plays only when asked, then offers Again', () => {
