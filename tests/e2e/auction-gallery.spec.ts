@@ -37,6 +37,16 @@ for (const locale of locales) {
         .getByRole('region', { name: t.contractStatusLabel })
         .getByText(new RegExp(`^${t.cycle} \\d+$`)),
     ).toBeVisible();
+    // Until a sale is offered, the last imprinted cycle hangs below, labelled as not offered:
+    // each work is described as such and leads to its own page, never to a lot.
+    const meanwhile = page.getByRole('region', {
+      name: new RegExp(`^${t.saleMeanwhileLabel} ${t.cycle} \\d+$`),
+    });
+    await expect(meanwhile.getByText(t.saleMeanwhileLabel, { exact: true })).toBeVisible();
+    const works = meanwhile.locator('a[href*="/art/"]');
+    await expect(works).toHaveCount(48);
+    await expect(meanwhile.locator('a[href*="/auctions"]')).toHaveCount(0);
+    await expect(works.first()).toHaveAccessibleDescription(t.saleMeanwhileLabel);
     await noOverflow(page);
     expect((await new AxeBuilder({ page }).analyze()).violations).toEqual([]);
     const terms = page.getByRole('main').getByRole('link', { name: new RegExp(t.auctionReadMore) });

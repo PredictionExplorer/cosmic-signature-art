@@ -54,10 +54,10 @@ Many physics (the old Phase E) waits for material packages that are not yet publ
 **In the room.**
 - The complete Light film's transport carries the same score, beneath its 1 px line, so the hand drags the thumb across the orbit's encounters.
 - The room's readout adds the physics of the moment: *00:07 · 00:30 · bodies 1–3 · 124.4 apart*.
-- Only the complete Light film carries it, the one whose clock it shares. The longer studies, the Ink films, the still and a sale surface carry none.
+- Only the complete Light film carries it, the one whose clock it shares. The longer studies, the Ink films, the still and a sale surface carry none. *(Since 7 November the complete Ink film carries it too, on the same clock: §6.)*
 
 **What carries no score.**
-- **The Ink films** keep their own timing and their time line.
+- **The Ink films** keep their own timing and their time line. *(Since 7 November the complete Ink film keeps the Light film's clock, verified, and carries the score: §6.)*
 - **A sale's page.** The viewer drops the orbit on the auction presentation, and the lot page never passes it.
 - **A phone's excerpt** is a clockless preview, and now carries no time line either. This was the excerpt's stated intent: the test that said so could not fail, and now it can.
 
@@ -177,5 +177,39 @@ It found three defects in the score, one in the lens, and smaller things in all 
 
 - **Real iPhone Safari** for the lens and the score: the mobile WebKit project is desktop WebKit at a phone's size.
 - **Firefox** runs on CI only; it cannot launch on this machine.
-- **The Ink films' score** waits for their own map from step to time, with their pre-roll.
+- ~~**The Ink films' score** waits for their own map from step to time, with their pre-roll.~~ Built on 7 November 2026 for the complete Ink film: see §6.
+- **The longer Ink studies** (four and ten times slower) carry no score, as the longer Light studies carry none. Their map follows from the same clock and each certificate's first frame (§6), but has not been checked against their pixels.
+
+## 6. The Ink film's score *(7 November 2026)*
+
+**The clock, read from the generator's code.**
+- The complete Ink film renders exactly the Light film's checkpoints. `app::ember_frame_schedule` is `render::main_video_checkpoints`, one frame each at 60 fps. So frame k of the Ink film shows the bodies at the step through which the Light film's frame k has drawn: step 555 × (k + 1), and step 999,999 on frame 1,801. The Ink film's map from step to time is the Light film's own (`light-film.ts`), frame for frame.
+- **The pre-roll is not an offset.** The bodies stir the water from the window's first step, but lay no ink before the fluid time `pre_roll`, 0.5 in every published certificate. Fluid time runs over the window's duration T, the time that makes the bodies' median speed one: step k stands at (T·k)/(N − 1), and the last at T exactly (`BodyTrack::knot_time`). The film shows bare paper until the first frame whose step reaches 0.5 (`ink-film.ts`).
+- T depends on the orbit and its view, so the pre-roll runs from 41 frames (№ 047, T = 22.0: 0.7 s) to 416 (№ 001, T = 2.16: 6.9 s). That is the "several seconds of blank paper" seen in some films.
+- **The valve.** The bodies stop inking at T − 0.25 and move on as hollows in the ink. That is the last 0.35 to 3.5 s of the film. The bodies stay on screen there, so the score lights those steps.
+- **The trimmed pre-roll** that [art-presentation-research.md](art-presentation-research.md) warns of belongs to the longer studies. Each starts seven frames before the first ink (`SlowFilm::plan`), at the frame its certificate records. The complete film trims nothing.
+
+**Checked against every published Ink film** (`npm run art:ink`, `scripts/build-ink-clocks.mjs`).
+- **The certificate.** Each work's `metadata/ember.json` (ember-v4, schema 5) states the digest of its film's schedule. The Light film's checkpoints give that digest to the bit for all 72. The first inked frame, derived from the certificate's duration and pre-roll, falls exactly where the generator started each slow film, seven frames earlier, in all 72.
+- **The film**, decoded whole at 3,456 × 2,234:
+  - **The pre-roll ends on the frame the clock says.** In none of the 72 films is any pixel ink before the first inked frame (64 levels darker than frame 0), and every film has ink on it.
+  - **The first ink arrives where the bodies are.** Every pixel of it lies within three body radii of the path a body took since the pre-roll ended; the farthest lies at 2.9 radii (№ 053). The soak zone of the most stretched body reaches 2.33 radii, and the water carries fresh ink a little further within the frame.
+  - **No body's place is ever on ink**, from the first ink on: 0 of 365,844 places at the clock's step.
+  - **The hollows keep time.** Each body travels in a hollow of clear water ringed by its ink. In every work the centroids of the closed hollows (321,627 in all) follow the bodies' places at the clock's own frame more closely than a frame either side. The typical work's median is 1.2 px from the place, against 5.4 px a frame away. Each work's median lies within 0.15 of a frame of the clock; № 015 and № 035 are the farthest.
+  - **No frame repeats.**
+- **What the venue plays in its place.** All 72 settling clips, the three opening clips and the three local complete films (30 fps, every other frame) were matched frame by frame with the film's frames the clock says they hold. None is displaced. A copy cut one frame late is displaced on every frame that holds ink (checked on № 031).
+- The registry (`ink-clocks.json`) binds each clock to the orbit record, the certificate and, by hash, the published film and each of those derivatives. The scripts' test derives every committed clock again: its schedule's digest, its first inked frame and its films, byte for byte.
+
+**As built.**
+- **On the plate.** The Ink film's transport carries the score as the Light film's does, at the foot of the plate's screen, 9 px tall, on the plate's own paper. The pairs are drawn in graphite with a trace of each pair's hue, as the orbit section draws the Ink plate. The ticks and the base take the type's sumi.
+- **Lit from the first ink.** The steps of the pre-roll, which the film shows as bare paper, are never lit. So everything lit is on the sheet, as fresh ink or as its pale wash. The settling clip opens with 73 % of the score lit, as on Light.
+- **The physics of the moment** is read once there is ink to read. On bare paper the strip reads nothing.
+- **The closest approach** is offered on Ink where the Ink film shows it: in 64 works. Eight reach it in the pre-roll, on bare paper (№ 021, 022, 028, 035, 041, 050, 058 and 064), and offer it on Light alone.
+- **In the room** the complete Ink film's transport carries the score, and its readout reads the physics from the first ink.
+- **On the home** the Ink plate carries the band alone, as the Light plate always has there: its strip keeps to its own words, with no reading and no closest approach.
+- **Only on a checked film.** The score is drawn on an Ink film only when the registry names its hash. On the home, both the opening clip and the complete film it hands over to must be named. Any other film keeps its plain time line.
+- **The three local complete films** (23, 31, 35) run at 30 fps, every other frame of the published film. Their reading can lead the picture by one 60 fps frame (17 ms), the first ink included. That is the films' rate, not the clock: the frames they do show are the clock's own.
+- **The venue's rules hold.** There are no new words, so the eight locales are unchanged. Under reduced motion the plate plays no film and the band's light moves without a transition, as on Light. A sale's page carries no orbit and no score. No pixel of the work is touched.
+
+**What it unblocks.** The complete Ink and Light films show the same step on every frame, verified for every work. The synchronised two-film gatefold of the vision (Beat 3, and feature 11's dual-film mode) waited for exactly this. It is not built here.
 

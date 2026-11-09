@@ -184,6 +184,8 @@ export const zhHK: Messages = {
   privacyCopy:
     '畫廊不使用廣告追蹤器，也不設用戶帳戶。瀏覽器會向設定的媒體託管方和 RPC 服務商請求作品及公開區塊鏈資料；這些服務能看見你的網絡地址。已連接的錢包僅用於你要求的操作。動態偏好儲存在瀏覽器本機。',
   notFound: '這件作品不在這裏。',
+  notImprinted: '{work} 尚未印記。',
+  pageNotFound: '這個頁面不在這裏。',
   errorTitle: '畫廊需要片刻。',
   retry: '重試',
   openProtocol: '瀏覽協議',
@@ -394,6 +396,9 @@ export const zhHK: Messages = {
   // The sale
   saleTitle: '拍賣 {n}',
   saleSubtitle: '八件新作 · 週期 {cycle}',
+  saleMeanwhileLabel: '不參與是次拍賣',
+  saleMeanwhileNote:
+    '這些作品已在藏品全集之中，不屬於是次拍賣。是次拍賣的八件新作將於週期 {cycle} 完成結算時印記。',
   conditionsOfSale: '拍賣條件',
   // The entry's copy affordance and footnotes
   copyAddress: '複製',

@@ -184,6 +184,8 @@ export const zh: Messages = {
   privacyCopy:
     '画廊不使用广告追踪器，也不设用户账户。浏览器会向配置的媒体托管方和 RPC 服务商请求作品及公开区块链数据；这些服务能够看到你的网络地址。已连接的钱包仅用于你请求的操作。动态偏好保存在浏览器本地。',
   notFound: '这件作品不在这里。',
+  notImprinted: '{work} 尚未印记。',
+  pageNotFound: '这个页面不在这里。',
   errorTitle: '画廊需要片刻。',
   retry: '重试',
   openProtocol: '访问协议',
@@ -394,6 +396,9 @@ export const zh: Messages = {
   // The sale
   saleTitle: '拍卖 {n}',
   saleSubtitle: '八件新作 · 周期 {cycle}',
+  saleMeanwhileLabel: '不参与本次拍卖',
+  saleMeanwhileNote:
+    '这些作品已在藏品全集之中，不属于本次拍卖。本次拍卖的八件新作将在周期 {cycle} 完成结算时印记。',
   conditionsOfSale: '拍卖条件',
   // The entry's copy affordance and footnotes
   copyAddress: '复制',

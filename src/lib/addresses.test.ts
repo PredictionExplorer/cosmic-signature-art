@@ -12,6 +12,9 @@ import {
   INDEXED_WORKS,
   NOT_HERE,
   ORBIT_RECORDS,
+  askedWork,
+  asksForWork,
+  nearestWork,
   notHere,
   readAddress,
   unrecorded,
@@ -167,6 +170,35 @@ describe('the address no route answers', () => {
     'trusts no address that is not a path on this site: %s',
     (header) => expect(visitorAddress(header)).toEqual({ locale: 'en', address: undefined }),
   );
+});
+
+describe('the work an address asked for', () => {
+  it.each([
+    ['/art/999', 999],
+    ['/uk/art/999', 999],
+    ['/zh-HK/art/72', 72],
+    ['/verify/orbit/999', 999],
+    ['/ja/verify/orbit/0', 0],
+  ])('reads the number in %s', (address, work) => {
+    expect(askedWork(address)).toBe(work);
+    expect(asksForWork(address)).toBe(true);
+  });
+
+  it('asks for no number where none is named, though a work may be', () => {
+    for (const address of ['/art/abc', '/uk/art/-1', '/verify/orbit/x'])
+      expect([askedWork(address), asksForWork(address)]).toEqual([undefined, true]);
+    for (const address of [undefined, '', '/', '/uk', '/exhibitions/nothing', '/art/31/more'])
+      expect([askedWork(address), asksForWork(address)]).toEqual([undefined, false]);
+  });
+
+  it('finds the work next door: the nearest held, the lower of two as near', () => {
+    expect(nearestWork(999)).toBe(71);
+    expect(nearestWork(72)).toBe(71);
+    expect(nearestWork(31)).toBe(31);
+    expect(nearestWork(5, [2, 8])).toBe(2);
+    expect(nearestWork(6, [2, 8])).toBe(8);
+    expect(nearestWork(5, [])).toBeUndefined();
+  });
 });
 
 describe('asking the indexer', () => {

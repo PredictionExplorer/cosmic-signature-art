@@ -1,5 +1,5 @@
 /*
-  The Orrery: a night of small long exposures, hung by cycle, each orbit drawn in light at the
+  The Orrery: a night of long exposures, hung by cycle, each orbit drawn in its own hues at the
   pace of its film with its numeral beneath. The page carries its own ground, as the work page's
   orbit section does, so it reads as night whatever the route around it.
 */
@@ -61,11 +61,14 @@
   letter-spacing: 0.04em;
   color: var(--muted);
 }
+/* A desk hangs the orbits large enough to read as exposures, not marks: four to a row at 1440,
+   three at 1024, six at 1920, eight at 2560, each cell 260 px at least. Every count divides a
+   cycle of 24, so no cycle ends on a short row. */
 .cells {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-  gap: 27px 18px;
-  margin: 18px 0 0;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 36px 27px;
+  margin: 27px 0 0;
   padding: 0;
   list-style: none;
 }
@@ -115,10 +118,12 @@
 .link:focus-visible .numeral {
   color: var(--night-type);
 }
-/* On a phone two orbits hang to a row, each as wide as a cell on a desk, so its trails read. */
+/* On a phone two orbits hang to a row, each about 170 px at 390, so its trails read. */
 @media (max-width: 767px) {
   .cells {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 27px 18px;
+    margin-top: 18px;
   }
 }
 @media (prefers-reduced-motion: reduce) {

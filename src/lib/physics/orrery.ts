@@ -1,11 +1,14 @@
 import { WindowPerformance, type OrbitWindow, type PlanePoints } from './orbit';
 import { lightFilmFrame, lightFilmSeconds, stepsDrawnAt } from './light-film';
+import { bodyLight } from './body-light';
 
 /*
   The Orrery: every work's orbit performed at once, each on its own small canvas, from the
   first step of its recorded window (orbit.ts's WindowPerformance). A cell draws its orbit as
-  the work page's section draws it: every hundredth step, in light, at the Light film's pace;
-  when its window is complete it holds the finished exposure for a moment and begins again.
+  the work page's section draws it: every hundredth step, at the Light film's pace; each body in
+  its own published hue, a line of the venue's one weight over a soft glow of the same hue, both
+  added as light, so where trails cross they brighten as the Light plates' ribbons do. When its
+  window is complete it holds the finished exposure for a moment and begins again.
   Cells out of view wait where they are. Under a still preference each cell is drawn whole,
   once, and shown only when it is whole. A frame's work is bounded by time as well as steps,
   so a slow machine performs the orbits more slowly instead of leaving the page no time of
@@ -28,10 +31,33 @@ export const ORRERY = {
   margin: 0.07,
   /** The most of a silence between a cell's frames that is performed; the rest is a pause. */
   gapMs: 250,
+  /**
+   * A body's line: the venue's one weight (a CSS pixel), lit in the body's own hue at most of
+   * the chroma sRGB holds there (src/lib/physics/body-light.ts).
+   */
+  line: { lightness: 0.84, share: 0.85, alpha: 0.5 },
+  /** The glow beneath each line: wider, fainter and deeper in the same hue, in CSS pixels. */
+  glow: { width: 7, lightness: 0.7, share: 0.95, alpha: 0.075 },
 } as const;
 
 /** The samples of one Light film frame, x and y pairs per body: one path a body. */
 type FilmFrame = { frame: number; points: [number[], number[], number[]] };
+
+/** One body's light: the line it draws and the glow beneath it, both in its own hue. */
+export interface BodyStroke {
+  line: string;
+  glow: string;
+}
+
+/** The light the Orrery draws each body of a work in, from the work's published body hues. */
+export function bodyStrokes(
+  hues: readonly [number, number, number],
+): [BodyStroke, BodyStroke, BodyStroke] {
+  return [0, 1, 2].map((body) => ({
+    line: bodyLight(hues[body], ORRERY.line),
+    glow: bodyLight(hues[body], ORRERY.glow),
+  })) as [BodyStroke, BodyStroke, BodyStroke];
+}
 
 /** The part of a 2D context a cell draws with: a canvas's, or a test's recording. */
 export interface Surface {
@@ -77,8 +103,8 @@ interface Cell {
   open: FilmFrame | null;
   /** Film frames complete but kept from the canvas until the cell is drawn whole. */
   unshown: FilmFrame[] | null;
-  /** The cell's three strokes, one hue a body. */
-  styles: readonly [string, string, string];
+  /** The cell's three bodies' light, one hue a body: each body's line and its glow. */
+  styles: readonly [BodyStroke, BodyStroke, BodyStroke];
   /** When the cell last advanced, so a silence since can be taken as a pause. */
   lastFrame: number | null;
   visible: boolean;
@@ -149,11 +175,7 @@ export class OrreryEngine {
       last: null,
       open: null,
       unshown: null,
-      styles: [0, 1, 2].map((body) => `oklch(0.84 0.075 ${hues[body]} / 0.2)`) as [
-        string,
-        string,
-        string,
-      ],
+      styles: bodyStrokes(hues),
       lastFrame: null,
       visible: false,
       startedAt: null,
@@ -317,23 +339,27 @@ export class OrreryEngine {
   }
 
   /**
-   * Stroke a film frame: one path a body, continuing from the frame before. The Light film adds
-   * each frame's marks as one exposure, so a frame is one path, whether the cell is drawn whole
-   * or performed, at any display's pace, and a performance ends on the very picture the whole
-   * drawing makes.
+   * Stroke a film frame: one path a body, continuing from the frame before, stroked twice, its
+   * glow and then its line, both added as light. The Light film adds each frame's marks as one
+   * exposure, so a frame is one path, whether the cell is drawn whole or performed, at any
+   * display's pace, and a performance ends on the very picture the whole drawing makes.
    */
   private paint(cell: Cell, open: FilmFrame) {
     const surface = cell.surface;
     surface.globalCompositeOperation = 'lighter';
-    surface.lineWidth = this.ratio;
     surface.lineJoin = 'round';
     cell.last ??= Float64Array.from(open.points.flatMap((points) => [points[0], points[1]]));
     for (let body = 0; body < 3; body++) {
       const points = open.points[body];
-      surface.strokeStyle = cell.styles[body];
       surface.beginPath();
       surface.moveTo(cell.last[body * 2], cell.last[body * 2 + 1]);
       for (let k = 0; k < points.length; k += 2) surface.lineTo(points[k], points[k + 1]);
+      // A stroke leaves its path in place, so the line retraces the glow's path exactly.
+      surface.lineWidth = ORRERY.glow.width * this.ratio;
+      surface.strokeStyle = cell.styles[body].glow;
+      surface.stroke();
+      surface.lineWidth = this.ratio;
+      surface.strokeStyle = cell.styles[body].line;
       surface.stroke();
       cell.last[body * 2] = points[points.length - 2];
       cell.last[body * 2 + 1] = points[points.length - 1];
