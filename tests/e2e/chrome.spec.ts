@@ -128,6 +128,40 @@ test('a CJK locale links its own sliced display face and the Latin pages load no
   );
 });
 
+for (const path of ['/collection/orrery', '/ja/collection/orrery']) {
+  test(`${path}: a numero sign in an instrument line is Literata's, its figures Plex Mono's`, async ({
+    page,
+  }) => {
+    await page.goto(path);
+    await page.evaluate(() => document.fonts.ready);
+    // Plex Mono draws № in one cell, 0.6 em; Literata sets the sign as a book does, near an em.
+    const advances = await page.evaluate(() => {
+      const label = [...document.querySelectorAll('body *')].find(
+        (element) =>
+          /Plex Mono/.test(getComputedStyle(element).fontFamily) &&
+          [...element.childNodes].some(
+            (node) => node.nodeType === Node.TEXT_NODE && /^№\u00a0\d{3}$/.test(node.textContent!),
+          ),
+      )!;
+      const text = [...label.childNodes].find((node) => node.nodeType === Node.TEXT_NODE)!;
+      const advance = (start: number) => {
+        const range = document.createRange();
+        range.setStart(text, start);
+        range.setEnd(text, start + 1);
+        return range.getBoundingClientRect().width;
+      };
+      return {
+        size: parseFloat(getComputedStyle(label).fontSize),
+        numero: advance(0),
+        figure: advance(2),
+      };
+    });
+    // WebKit measures a range to the whole pixel, so a figure is its cell within one.
+    expect(Math.abs(advances.figure - 0.6 * advances.size)).toBeLessThanOrEqual(1);
+    expect(advances.numero).toBeGreaterThan(0.9 * advances.size);
+  });
+}
+
 test('CJK lines stay upright in an italic and Korean words stay whole', async ({ page }) => {
   await page.goto('/ja/statement');
   const subtitle = page.getByRole('main').locator('.subtitle').first();

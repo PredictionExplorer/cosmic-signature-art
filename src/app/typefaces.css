@@ -263,6 +263,26 @@
 }
 
 /*
+  The numero sign in the instrument face. Plex Mono draws № inside one monospace cell, an N
+  pressed narrow beside a speck of o; Literata draws it as a book sets it. So every № in a mono
+  line borrows Literata's: this face covers that one code point, from the Latin cut each locale
+  already preloads (src/lib/fonts.ts), and leads every mono stack (globals.css). It keeps Plex
+  Mono's own ascent and descent, so the borrowed sign never changes the height of a line.
+*/
+
+@font-face {
+  font-family: 'Literata Numero';
+  font-style: normal;
+  font-weight: 200 900;
+  font-display: swap;
+  src: url('/fonts/literata/literata-latin-roman.woff2') format('woff2-variations');
+  unicode-range: U+2116;
+  ascent-override: 102.5%;
+  descent-override: 27.5%;
+  line-gap-override: 0%;
+}
+
+/*
   Stand-ins matched to the faces (font-display: swap): while Literata or Plex Mono is on its
   way, the system's Georgia, Times New Roman, Menlo or Courier New takes its place, scaled to
   the same average width and set on the same ascent and descent, so neither the line nor the
