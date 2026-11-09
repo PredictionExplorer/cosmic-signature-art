@@ -1,3 +1,10 @@
+# Cosmic Signature art venue
+
+**Read [docs/north-star.md](docs/north-star.md) before planning or building anything.** It holds
+the owner's goal (the best and most amazing website on the internet: a gallery that astonishes, a
+science museum that teaches, and a place people want to collect from and tell others about), what
+"done" means, and the rules every change keeps.
+
 <!-- BEGIN:nextjs-agent-rules -->
 
 ## This is NOT the Next.js you know
