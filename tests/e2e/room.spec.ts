@@ -223,3 +223,44 @@ test('the gatefold hangs both plates at equal scale and offers a seam the keyboa
   await expect(frame.getByRole('img')).toHaveCount(2);
   await noHorizontalOverflow(page);
 });
+
+test('the spread shows both plates whole at once: side by side on a desk, stacked on a phone', async ({
+  page,
+  isMobile,
+}) => {
+  await artworkReady(page);
+  const gatefold = page.getByRole('region', { name: /^Plate 031, in ink and in light/ });
+  const spread = gatefold.getByRole('group', { name: t.gatefoldSpread, exact: true });
+  await spread.evaluate((node) => node.scrollIntoView({ block: 'center', behavior: 'instant' }));
+  const [ink, light] = [spread.getByRole('img').nth(0), spread.getByRole('img').nth(1)];
+  await expect(ink).toHaveAttribute('alt', '№ 031 · Ink');
+  await expect(light).toHaveAttribute('alt', '№ 031 · Light');
+  // Nothing lies out of view: both plates are wholly on screen together (to a pixel's rounding).
+  await expect(ink).toBeInViewport({ ratio: 0.99 });
+  await expect(light).toBeInViewport({ ratio: 0.99 });
+  // The spread is no scroll region, so it is neither a tab stop nor anything a key could turn.
+  expect(
+    await spread.evaluate((node) => ({
+      overflow: node.scrollWidth - node.clientWidth,
+      tabIndex: node.getAttribute('tabindex'),
+      focusable: node.querySelectorAll('a, button, input, [tabindex]').length,
+    })),
+  ).toEqual({ overflow: 0, tabIndex: null, focusable: 0 });
+  const [inkBox, lightBox] = [(await ink.boundingBox())!, (await light.boundingBox())!];
+  const width = page.viewportSize()!.width;
+  expect(Math.abs(inkBox.width - lightBox.width)).toBeLessThanOrEqual(1);
+  if (isMobile) {
+    // A vertical diptych: Ink above, Light below, each the phone's width.
+    expect(lightBox.y).toBeGreaterThanOrEqual(inkBox.y + inkBox.height);
+    expect(Math.abs(inkBox.width - width)).toBeLessThanOrEqual(1);
+  } else {
+    // Side by side on one line, Ink to the left, a hairline of wall between them, and the pair
+    // hung in the middle of the wall within the page's gutters.
+    expect(Math.abs(inkBox.y - lightBox.y)).toBeLessThanOrEqual(1);
+    expect(lightBox.x - (inkBox.x + inkBox.width)).toBeGreaterThanOrEqual(0.5);
+    expect(lightBox.x - (inkBox.x + inkBox.width)).toBeLessThanOrEqual(1.5);
+    expect(Math.abs(inkBox.x - (width - lightBox.x - lightBox.width))).toBeLessThanOrEqual(1);
+    expect(inkBox.width).toBeGreaterThan(width * 0.4);
+  }
+  await noHorizontalOverflow(page);
+});

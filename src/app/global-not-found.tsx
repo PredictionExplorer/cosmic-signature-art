@@ -19,7 +19,7 @@ export default async function GlobalNotFound() {
   const { locale, address } = visitorAddress((await headers()).get(ADDRESS_HEADER));
   return (
     <VenueDocument locale={locale} room="night" address={address}>
-      <NotFoundPage locale={locale} />
+      <NotFoundPage locale={locale} address={address} />
     </VenueDocument>
   );
 }

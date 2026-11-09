@@ -1,5 +1,5 @@
 import { curatedArtworks } from './catalog';
-import { dayNumber, expressionOfDay, venueDate } from './day';
+import { dayNumber, expressionOfDay, venueDate, workOfDay } from './day';
 import { getInterpretation, type Expression } from './types';
 
 /**
@@ -34,9 +34,10 @@ export function venueNow(pinned = process.env.COSMIC_VENUE_DATE): Date {
 }
 
 export function workOfTheDay(now = venueNow(), pool: readonly number[] = DAY_WORK_POOL): number {
-  if (pool.length === 0) throw new Error('No work can open the home: the curated archive is empty');
-  const day = dayNumber(now);
-  return pool[((day % pool.length) + pool.length) % pool.length];
+  const work = workOfDay(dayNumber(now), pool);
+  if (work === undefined)
+    throw new Error('No work can open the home: the curated archive is empty');
+  return work;
 }
 
 /** The day's expression, on the day's work's pool (src/lib/art/day.ts states the turn). */

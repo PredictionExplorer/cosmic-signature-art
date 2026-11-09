@@ -37,7 +37,7 @@ Every route was photographed screen by screen. The share of each screen covered 
 ## 2. The rule: two equal expressions
 
 1. **Neither expression is the venue's default.** Both are the work, of equal standing, as the statement already says.
-2. **Where works are listed, both are shown at equal size across a seam.** Ink hangs on paper to the left, and Light on night to the right. The seam is the Turn's own seam, at rest at the middle of the wall. On a desk each leaf keeps the hang's rhythm. On a phone each row is one work, its Ink beside its Light. This applies to the collection, the home's spread and cycle row, and the exhibition hangs.
+2. **Where works are listed, both are shown at equal size across a seam.** Ink hangs on paper to the left, and Light on night to the right. The seam is the Turn's own seam, at rest at the middle of the wall. On a desk each leaf keeps the hang's rhythm (from 8 November 2026 the pairs' own, never three to a leaf: §8). On a phone each row is one work, its Ink beside its Light. This applies to the collection, the home's spread and cycle row, and the exhibition hangs.
 3. **A single plate opens on the visitor's choice.** The choice is the half they pressed, the word, or a Turn, and it is remembered for the visit. Without a choice, the plate opens on **the day's expression**. That expression alternates every UTC day, so each opens the venue on half of all days. The rotation is offset by the pass through the day's-work pool, so every work of the pool opens the home in both expressions in turn.
 4. **The twin always hangs beneath.** The night wing follows an Ink plate, as now. A paper wing follows a Light plate, its scroll drawing the paper back from the left, as Ink always returns.
 5. **Light moves as Ink does.** Light settling clips play under the one projector in the collection and the spread.
@@ -60,7 +60,7 @@ One policy module decides the opening expression, and every surface asks it. Tes
 - **The Index sheet** is laid out for its content on a phone: no empty band, and a search field that fits.
 - **Footnote markers** get a 24 × 24 px target (WCAG 2.5.8) without moving the text.
 - **All the light on touch.** A finger held on the sky names the orbits beneath it as it moves, and lifting it chooses. A tap still chooses at once. The sky hangs edge to edge. Built (§6).
-- **The auction landing** is left as it is, pending the owner. The vision made the sale's title spread the one screen without a work. Before a contract exists there are no lots, and works that are not for sale on a sale page could mislead. Section 6 asks the owner.
+- **The auction landing** is left as it is, pending the owner. The vision made the sale's title spread the one screen without a work. Before a contract exists there are no lots, and works that are not for sale on a sale page could mislead. Section 6 asks the owner. *Answered by the owner on 8 November 2026: until a contract exists, the landing hangs the last imprinted cycle beneath the sale's status, labelled "Not offered" (§8).*
 - **The collection's bar** keeps clear of the home indicator (`env(safe-area-inset-bottom)`).
 - **The Orrery's phone pass**: two to a row, trails legible at the phone's pixel ratio. It waited for the freeze fix, which landed with PR #13 (8063dc5) on 6 November 2026. Built (§6).
 
@@ -134,7 +134,7 @@ Each PR passes the seven-project Playwright matrix, axe, the 12 px floor, the mo
 - **The browser suite checks its server.** A global setup refuses a reused server that is not on the suite's venue day. The pin is read from the first-paint script a work page ships.
 
 **Open for the owner.**
-- Should the auction landing show work before a contract exists, clearly labelled as not offered?
+- Should the auction landing show work before a contract exists, clearly labelled as not offered? *Answered (owner, 8 November 2026): yes, the last imprinted cycle, labelled "Not offered", until a contract exists (§8).*
 - The Overture was approved on 4 November 2026 and is built (§7).
 
 **The last two on phones.** *Built 7 November 2026, after the freeze fix in PR #13 (8063dc5).*
@@ -286,3 +286,33 @@ Each PR passes the seven-project Playwright matrix, axe, the 12 px floor, the mo
   - **The fix.** The home closes its parameter (`dynamicParams = false` in `src/app/[locale]/page.tsx`), and the router predicts no route with a closed parameter, so it asks the server for each address's route. Each address is then asked twice, for its route and its page. `tests/e2e/not-found.spec.ts` fails without it.
   - An address the proxy never sees, such as `/foo.bar`, now gets the venue's own 404 page rather than Next's bare one.
 - **Opening night** (§5.9) waits for the pipeline to publish traits early.
+
+## 8. A polish pass: the gatefold, the Orrery, the grids, the sale's empty state
+
+*Built 8 November 2026, from an audit of the venue's first impression on 7 November.*
+
+**The gatefold on a desk.**
+- The spread was a strip wider than the viewport that snapped plate to plate: 2,464 px at 1440. A desk saw the Ink plate and a black sliver of the Light, about 15 % of the width, and nothing said it scrolled.
+- On any screen wider than a phone both plates now hang whole, side by side within the page's gutters, at equal scale (662 px each at 1440), capped by the room's height. The gatefold is a comparison, and a comparison wants both in view at once. The seam remains for the large overlaid view, and the page's own plate shows each expression at full height. A phone keeps its vertical diptych.
+- Nothing scrolls, so the spread is no longer a tab stop and no longer quiets the venue's keys: a reader meets the view's name, then each plate by its alt. The plates ask for half-wall rungs.
+- WebKit lays a grid item with an aspect ratio out at nothing unless it is given a width, its image being sized by percentages, so each panel takes its column's width.
+
+**The Orrery.**
+- Each body is drawn in its published hue, the generator's OKLCh base hue, at most of the chroma sRGB holds at the line's lightness (`src/lib/physics/body-light.ts`), so no browser bends a hue back into gamut. The line keeps the venue's one weight, a CSS pixel, but at half its light where the work page and the Overture keep a fifth: a cell is small, and at a fifth it read as grey. Beneath it is a glow of the same hue, 7 px wide. Both add their light, so crossings brighten.
+- The base hues are the centres the generator's colour wanders from: over a film a ribbon's hue moves by up to about a hundred degrees around its body's (`src/render/color.rs`: waves, accents and a drift). A cell therefore shows each work's palette, not a copy of its plate. Drawing the plates' own colours would need the generator's colour stream ported, as its physics was.
+- On a desk the cells are 260 px at least: four to a row at 1440 (311 px, where seven had been 174), three at 1024, six at 1920, eight at 2560. Each count divides a cycle of 24. A phone keeps two to a row.
+- The page's pacing (PR #13) and the still preference are untouched. Each film frame is still one path, now stroked twice, and a performance still ends on the picture the whole drawing makes.
+
+**The grids.**
+- Across the seam each leaf is half the wall, so three to a leaf hung a plate at 172 px at 1440, where Light reads as a tangle and Ink as a smudge. The pairs now hang their own rhythm, a lead and then two rows of two: 1 · 2 · 2 · 1 · 2 · 2 · 1 · 2 · 2 · 1 · 2 for a page of eighteen. The least plate is 288 px. A single ground keeps the full rhythm, whose rows of three are 30 vw.
+- Each chapter opens its cycle on the rhythm's lead, so every cycle leads with its largest plate.
+- A row the cycle or the list runs out on hangs only the works it holds, at their size: a lone work is a lead, never one plate beside empty places. The trails gain most, since their neighbours are often of different cycles.
+- The home's cycle row hangs two to a leaf on a desk (303 px at 1440, where six to a row had been 200) and three from 1920 px. On a phone it is one work a line, its Ink beside its Light, as §2 says; it had been two to a leaf, at 81 px.
+
+**The sale before it is offered.** *Built on the owner's yes, 8 November 2026 (§6).*
+- Cycle 3's eight works do not exist until the cycle finalizes, so the version hangs the last imprinted cycle, Cycle 2, beneath the sale's status. It is labelled "Not offered", with a note that these works are in the collection and not in this sale, and that the sale's eight are imprinted when Cycle 3 finalizes. Each work leads to its own page, never to a lot, and each link is described as not offered. It is gone once a contract is configured.
+- It adds two strings in all eight languages. The landing grows by the cycle's row, so its conditions of sale stand about 3,800 px further down on a desk and 4,400 on a phone; the title spread's link still leads straight to them.
+
+**Tested.**
+- **Unit:** the gamut search, and every work's line and glow inside sRGB in its own hue; glow and line along one path; the pairs' rhythm, a lead at every chapter and no empty places; the gatefold's spread neither scrolls nor takes focus; the sale's row, with its label and note, every work of the cycle in both expressions leading to its own page and described as not offered, before the conditions, and gone once a sale is offered.
+- **Browser, in the six local projects:** both plates of the gatefold wholly in view, side by side on a desk and stacked on a phone; the Orrery's light in № 002's three hues, never grey (main lit about 160 pixels of that cell, at a median chroma of 0.03; it now lights about 4,400 at 0.06), and four to a row at 1440; the pairs' rhythm and their least plate; every cycle on its lead; the home's cycle row on a desk and on a phone; the sale's row in all eight languages, under axe.

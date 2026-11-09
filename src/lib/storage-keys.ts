@@ -20,6 +20,12 @@ export const HOME_RESOLVED_KEY = 'cosmic-art-home-film-v1';
 export const OVERTURE_KEY = 'cosmic-art-first-light-v1';
 
 /**
+ * sessionStorage: where the reader stood when they changed language, kept for the page in the
+ * other language and let go on arrival (src/components/reading-place.tsx).
+ */
+export const PLACE_KEY = 'cosmic-art-place-v1';
+
+/**
  * sessionStorage: this visit has already shown a page. Set by the first-paint script on every
  * page, so only the page a visit opens on, such as a work reached by a shared link, can perform
  * First Light (docs/first-light.md §16).

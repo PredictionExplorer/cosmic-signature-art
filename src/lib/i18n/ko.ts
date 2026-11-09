@@ -192,6 +192,8 @@ export const ko: Messages = {
   privacyCopy:
     '갤러리는 광고 추적기나 사용자 계정을 사용하지 않습니다. 브라우저는 설정된 미디어 호스트와 RPC 제공자에 작품 및 공개 블록체인 데이터를 요청하며, 해당 서비스는 네트워크 주소를 볼 수 있습니다. 연결된 지갑은 요청한 작업에만 사용합니다. 움직임 설정은 브라우저에 로컬로 저장합니다.',
   notFound: '여기에 없는 작품입니다.',
+  notImprinted: '{work} — 각인되지 않은 번호입니다.',
+  pageNotFound: '여기에 없는 페이지입니다.',
   errorTitle: '갤러리에 잠시 시간이 필요합니다.',
   retry: '다시 시도',
   openProtocol: '프로토콜 방문',
@@ -413,6 +415,9 @@ export const ko: Messages = {
   // The sale
   saleTitle: '경매 {n}',
   saleSubtitle: '새 작품 여덟 점 · 사이클 {cycle}',
+  saleMeanwhileLabel: '이번 판매 출품작 아님',
+  saleMeanwhileNote:
+    '이 작품들은 이미 컬렉션에 있으며 이번 판매에 포함되지 않습니다. 이번 판매의 새 작품 여덟 점은 사이클 {cycle} 확정 시 각인됩니다.',
   conditionsOfSale: '판매 조건',
   // The entry's copy affordance and footnotes
   copyAddress: '복사',

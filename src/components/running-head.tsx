@@ -2,6 +2,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useEffect, useEffectEvent, useId, useRef, useState, useSyncExternalStore } from 'react';
+import { keepPlaceOnClick } from './reading-place';
 import { useMotion } from './motion-provider';
 import { openSheet, useOpenSheet } from './sheets-store';
 import {
@@ -36,7 +37,8 @@ const noPopoverOnServer = () => false;
 /**
  * A Popover API menu where the browser provides it (top layer, light dismiss, Escape),
  * with the same behaviour hand-built elsewhere. Every link is a real anchor with hreflang
- * and carries the visitor's current search params into the other language.
+ * and carries the visitor's current search params into the other language, and the reader's
+ * place on the page with them (reading-place.tsx): the page is not scrolled to its top.
  */
 export function LanguageMenu({
   locale,
@@ -153,6 +155,8 @@ export function LanguageMenu({
             hrefLang={value}
             lang={value}
             aria-current={value === locale ? 'true' : undefined}
+            scroll={false}
+            onClick={keepPlaceOnClick}
           >
             {localeNames[value]}
           </Link>

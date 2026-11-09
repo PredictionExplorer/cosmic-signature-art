@@ -4,12 +4,14 @@ import {
   CLIP_HEIGHT,
   CLIP_WIDTH,
   CRF,
+  FIRST_MARK,
   FRAME_RATE,
   KINDS,
   MAX_CLIP_BYTES,
   STILL_MATCH,
   clipEntry,
   clipKey,
+  createFirstMark,
   cutStart,
   endsOnStill,
   orphans,
@@ -96,6 +98,37 @@ test('validates the encoded clip frame for frame and bounds its size', () => {
   assert.throws(() => validateClip({ ...probe, streams: [...probe.streams, {}] }, 480, 4_000_000));
 });
 
+test("an opening's first mark is the first frame that departs from its first frame's ground", () => {
+  // At 10,000 pixels the share allows five: a sixth departing pixel is a mark.
+  const size = 10_000;
+  const sheet = (marks, ground = 236, tone = 40) => {
+    const frame = new Uint8Array(size).fill(ground);
+    frame.fill(tone, 0, marks);
+    return frame;
+  };
+  const measure = createFirstMark();
+  // Bare paper, a sheet whose tone shifts only as far as the levels allow, a speck within the
+  // share, then the first ink.
+  for (const frame of [
+    sheet(0),
+    sheet(0),
+    sheet(0, 236 - FIRST_MARK.levels),
+    sheet(5),
+    sheet(6),
+    sheet(9),
+  ])
+    measure.push(frame);
+  assert.equal(measure.finish(), 4);
+  // Light: the night is the ground, and the light departs upward from it.
+  const night = createFirstMark();
+  for (const frame of [sheet(0, 0), sheet(0, 0, 255), sheet(30, 0, 255)]) night.push(frame);
+  assert.equal(night.finish(), 2);
+  // An opening that never shows the work has no mark.
+  const empty = createFirstMark();
+  empty.push(sheet(0));
+  assert.equal(empty.finish(), null);
+});
+
 test('a settling clip ends on the still only within the measured limits', () => {
   assert.equal(endsOnStill({ mean: 2.958, over: 0 }), true);
   assert.equal(endsOnStill({ mean: STILL_MATCH.mean, over: STILL_MATCH.over }), true);
@@ -152,6 +185,11 @@ test('registry entries keep a stable shape and order, and orphans are the unrefe
     src: '/art/clips/31-ink-opening-ffffffffffffffff.mp4',
   };
   delete opening.stillMatch;
+  // An opening's first mark follows the source's timing, and only a whole frame is kept.
+  assert.equal(clipEntry({ ...opening, firstMarkFrame: 71 }).firstMarkFrame, 71);
+  assert.equal(Object.keys(clipEntry({ ...opening, firstMarkFrame: 71 })).at(-1), 'firstMarkFrame');
+  assert.equal('firstMarkFrame' in clipEntry({ ...opening, firstMarkFrame: 1.5 }), false);
+  assert.equal('firstMarkFrame' in clipEntry(opening), false);
   const light = {
     ...entry,
     id: 2,

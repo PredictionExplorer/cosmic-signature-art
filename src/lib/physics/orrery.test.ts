@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import type { OrbitWindow } from './orbit';
 import { lightFilmDuration, stepsDrawnAt } from './light-film';
-import { ORRERY, OrreryEngine, planeFit, type Surface } from './orrery';
+import { ORRERY, OrreryEngine, bodyStrokes, planeFit, type Surface } from './orrery';
 
 /** A small window: three bodies on a triangle, 3,600 steps, a 30-second Light film. */
 const window: OrbitWindow = {
@@ -39,9 +39,9 @@ function surface(width = 200, height = 130) {
   return recording;
 }
 
-/** A surface that keeps every path it strokes: its style and its points, in order. */
+/** A surface that keeps every path it strokes: its style, its width and its points, in order. */
 function tracing() {
-  const paths: { style: string; points: number[] }[] = [];
+  const paths: { style: string; width: number; points: number[] }[] = [];
   let points: number[] = [];
   const trace: Surface & { paths: typeof paths } = {
     paths,
@@ -55,7 +55,7 @@ function tracing() {
     moveTo: (x, y) => void points.push(x, y),
     lineTo: (x, y) => void points.push(x, y),
     stroke() {
-      paths.push({ style: String(this.strokeStyle), points });
+      paths.push({ style: String(this.strokeStyle), width: this.lineWidth, points });
     },
   };
   return trace;
@@ -96,11 +96,33 @@ describe('the Orrery', () => {
     play(engine, 0, 1000);
     expect(engine.stepOf(31)).toBe(stepsDrawnAt(1, window.steps) + 1);
     expect(canvas.globalCompositeOperation).toBe('lighter');
+    // The last stroke is a line: the venue's one weight, a CSS pixel at the canvas's density.
     expect(canvas.lineWidth).toBe(2);
-    // One path a body for every film frame complete so far.
-    expect(canvas.calls.strokes % 3).toBe(0);
+    // One path a body for every film frame complete so far, stroked as its glow and its line.
+    expect(canvas.calls.strokes % 6).toBe(0);
     expect(canvas.calls.strokes).toBeGreaterThan(0);
-    expect(canvas.strokeStyle).toBe('oklch(0.84 0.075 250 / 0.2)');
+    expect(canvas.strokeStyle).toBe(bodyStrokes(hues)[2].line);
+    expect(canvas.strokeStyle).toMatch(/^oklch\(0\.84 0\.\d{1,3} 250 \/ 0\.5\)$/);
+  });
+
+  it('strokes each body in its own hue, its glow beneath its line along the very same path', () => {
+    const trace = tracing();
+    const engine = new OrreryEngine(2, false, timeless);
+    engine.add(1, trace, window, hues);
+    engine.visible(1, true, 0);
+    engine.frame(0);
+    const lights = bodyStrokes(hues);
+    expect(trace.paths.length % 6).toBe(0);
+    for (let k = 0; k < trace.paths.length; k += 2) {
+      const [glow, line] = [trace.paths[k], trace.paths[k + 1]];
+      const body = (k / 2) % 3;
+      expect(glow).toMatchObject({ style: lights[body].glow, width: ORRERY.glow.width * 2 });
+      expect(line).toMatchObject({ style: lights[body].line, width: 2 });
+      expect(line.points).toEqual(glow.points);
+    }
+    // Each body's light is its published hue, and its three bodies differ.
+    expect(lights.map(({ line }) => line.split(' ')[2])).toEqual(['10', '130', '250']);
+    expect(new Set(lights.map(({ glow }) => glow)).size).toBe(3);
   });
 
   it('lets a cell out of view wait where it is, and resume from there', () => {

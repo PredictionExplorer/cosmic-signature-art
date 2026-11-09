@@ -7,11 +7,12 @@ import { metadata } from '@/lib/site';
 import { auctionConfigured } from '@/lib/auction/config';
 import { comingCycle } from '@/lib/auction/sale';
 import type { LotTraitsById } from '@/lib/auction/catalogue';
-import { collectionIndex } from '@/lib/art/collection-index';
+import { collectionIndex, cycles } from '@/lib/art/collection-index';
 import { curatedArtworks } from '@/lib/art/catalog';
 import type { Artwork } from '@/lib/art/types';
 import { AuctionRules } from '@/components/auction-rules';
 import { AuctionLaunch } from '@/components/auction-launch';
+import { CycleRow } from '@/components/home-screens';
 import styles from './sale.module.css';
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }) {
@@ -51,6 +52,7 @@ export default async function Auctions({ params }: { params: Promise<{ locale: s
   if (!isLocale(locale)) notFound();
   const t = messages(locale);
   const number = new Intl.NumberFormat(locale);
+  const latest = cycles().at(-1)?.cycle;
   return (
     <main id="main" className={`auction-page ${styles.sale}`}>
       <section className={styles.title} aria-labelledby="auction-title">
@@ -81,6 +83,18 @@ export default async function Auctions({ params }: { params: Promise<{ locale: s
           curated={auctionConfigured ? curatedById() : undefined}
         />
       </div>
+      {/* Until a sale is offered, the last imprinted cycle hangs here as the collection's, never
+          as lots: labelled as not offered, each work leading to its own page, never to a lot. */}
+      {!auctionConfigured && latest !== undefined ? (
+        <CycleRow
+          locale={locale}
+          t={t}
+          cycle={latest}
+          id="sale-meanwhile"
+          label={t.saleMeanwhileLabel}
+          note={fill(t.saleMeanwhileNote, { cycle: number.format(comingCycle()) })}
+        />
+      ) : null}
       <section id="conditions" className={styles.conditions} aria-labelledby="rules-title">
         <header className={styles.conditionsHead}>
           <h2 id="rules-title" className="chapter">

@@ -112,6 +112,12 @@ export interface ArtInterpretation {
   settlingFilm?: ArtFilm;
   /** The first ten seconds of the complete film at 1280 px, for the works the home may open on. */
   openingFilm?: ArtFilm;
+  /**
+   * Where the complete film first shows the work, in its own seconds, measured on the opening
+   * clip: Ink opens on bare paper and Light on black until then. A plate that performs from the
+   * beginning starts near here, never on the empty sheet.
+   */
+  firstMarkSeconds?: number;
   /** Smaller rungs of the published still, cut from its 16-bit master, ascending by width. */
   rungs?: StillRung[];
   /** The still's heaviest windows, measured offline and bound to its hash; at most three. */

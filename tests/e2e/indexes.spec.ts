@@ -1,4 +1,5 @@
 import AxeBuilder from '@axe-core/playwright';
+import sharp from 'sharp';
 import { expect, test, type Page } from '@playwright/test';
 import { fill } from '../../src/lib/i18n/format';
 import { catalogs } from '../../src/lib/i18n/messages';
@@ -19,6 +20,26 @@ import {
 
 const t = catalogs.en;
 const night = 'rgb(0, 0, 0)';
+
+/** An sRGB pixel in OKLCh (Björn Ottosson's OKLab), its hue in degrees. */
+function oklch(red: number, green: number, blue: number) {
+  const linear = (value: number) => {
+    const c = value / 255;
+    return c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
+  };
+  const [r, g, b] = [linear(red), linear(green), linear(blue)];
+  const l = Math.cbrt(0.4122214708 * r + 0.5363325363 * g + 0.0514459929 * b);
+  const m = Math.cbrt(0.2119034982 * r + 0.6806995451 * g + 0.1073969566 * b);
+  const s = Math.cbrt(0.0883024619 * r + 0.2817188376 * g + 0.6299787005 * b);
+  const lightness = 0.2104542553 * l + 0.793617785 * m - 0.0040720468 * s;
+  const a = 1.9779984951 * l - 2.428592205 * m + 0.4505937099 * s;
+  const bb = 0.0259040371 * l + 0.7827717662 * m - 0.808675766 * s;
+  return {
+    lightness,
+    chroma: Math.hypot(a, bb),
+    hue: ((Math.atan2(bb, a) * 180) / Math.PI + 360) % 360,
+  };
+}
 
 async function ready(page: Page, path: string) {
   await page.goto(path, { waitUntil: 'domcontentloaded' });
@@ -351,6 +372,64 @@ test.describe('The Orrery', () => {
     expect((await cell.screenshot()).equals(drawn)).toBe(true);
   });
 
+  test('draws each body in its own published hue, as light, never in grey', async ({ page }) => {
+    await ready(page, '/collection/orrery');
+    // Drawn whole and still, so the picture is the same whenever it is read.
+    await pauseAmbientMotion(page);
+    await expect(orrery(page)).toHaveAttribute('data-mode', /^(performing|plates)$/);
+    test.skip(
+      (await orrery(page).getAttribute('data-mode')) === 'plates',
+      'This browser cannot hand a canvas to a worker; its plates are proved below.',
+    );
+    // № 002's three bodies are a green, a magenta and a blue (orbit-records.json).
+    const hues = [128.9, 308.9, 232.7];
+    const cell = page.locator('[data-stage="2"]');
+    await cell.scrollIntoViewIfNeeded();
+    await expect(cell).toHaveAttribute('data-drawn', '', { timeout: 15_000 });
+    const { data, info } = await sharp(await cell.screenshot())
+      .removeAlpha()
+      .raw()
+      .toBuffer({ resolveWithObject: true });
+    const chromas: number[] = [];
+    let coloured = 0;
+    const near = [0, 0, 0];
+    for (let k = 0; k < data.length; k += info.channels) {
+      const { lightness, chroma, hue } = oklch(data[k], data[k + 1], data[k + 2]);
+      if (lightness < 0.35) continue;
+      chromas.push(chroma);
+      if (chroma < 0.04) continue;
+      coloured += 1;
+      hues.forEach((body, index) => {
+        if (Math.abs(((hue - body + 540) % 360) - 180) <= 25) near[index] += 1;
+      });
+    }
+    // The orbit is drawn as light: a desk's cell lights some 4,400 pixels, a phone's about half.
+    // (Drawn at a fifth of the light in grey-tinted strokes, it lit about 160 on a desk.)
+    expect(chromas.length).toBeGreaterThan(1000);
+    // And in colour: its median light is a hue (it was 0.03, nearly grey), and most of it.
+    chromas.sort((a, b) => a - b);
+    expect(chromas[Math.floor(chromas.length / 2)]).toBeGreaterThan(0.045);
+    expect(coloured / chromas.length).toBeGreaterThan(0.75);
+    // That colour lies near the work's own three hues, and each body shows its own.
+    expect(near.reduce((sum, count) => sum + count, 0) / coloured).toBeGreaterThan(0.75);
+    for (const count of near) expect(count / coloured).toBeGreaterThan(0.08);
+  });
+
+  test('a desk hangs the orbits large, four to a row at 1440', async ({ page, isMobile }) => {
+    test.skip(isMobile, 'A phone hangs two to a row, proved below.');
+    await ready(page, '/collection/orrery');
+    const cells = page.getByRole('region', { name: /^Cycle 0 · / }).locator('[data-stage]');
+    await expect(cells).toHaveCount(24);
+    const boxes = await Promise.all(
+      [0, 1, 2, 3, 4].map(async (k) => (await cells.nth(k).boundingBox())!),
+    );
+    for (const box of boxes.slice(1, 4)) expect(box.y).toBe(boxes[0].y);
+    expect(boxes[4].y).toBeGreaterThan(boxes[0].y + boxes[0].height);
+    expect(boxes[4].x).toBe(boxes[0].x);
+    for (const box of boxes) expect(box.width).toBeGreaterThanOrEqual(260);
+    await noHorizontalOverflow(page);
+  });
+
   test('pointing at a work shows its own Light still in the cell', async ({ page, isMobile }) => {
     test.skip(isMobile, 'A finger enters the work; there is no pointing.');
     await ready(page, '/collection/orrery');
@@ -371,7 +450,10 @@ test.describe('The Orrery', () => {
     await expect(page).toHaveURL(/\/art\/31$/);
   });
 
-  test('a phone hangs two orbits to a row, each a desk’s cell wide', async ({ page, isMobile }) => {
+  test('a phone hangs two orbits to a row, each wide enough to read', async ({
+    page,
+    isMobile,
+  }) => {
     test.skip(!isMobile, 'A desk hangs as many to a row as its width holds.');
     await ready(page, '/collection/orrery');
     const cells = page.getByRole('region', { name: /^Cycle 0 · / }).locator('[data-stage]');
