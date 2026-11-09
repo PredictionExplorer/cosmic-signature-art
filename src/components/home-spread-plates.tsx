@@ -18,8 +18,9 @@ import { CollectionPreview, excerptRange, getCollectionPreviewFilm } from './col
 import styles from './home-screens.module.css';
 
 /**
- * Two plates across the seam, the Ink leaf on paper and the Light leaf on night, each
- * letterboxed in its own measured tone with its numeral hanging in the outer margin. No caption
+ * Two plates across the seam, the Ink leaf on paper and the Light leaf on night, each half of the
+ * screen in its own work's measured ground (the sheet's tone, the night's black), so neither plate
+ * shows an edge, with its numeral hanging in the outer margin. No caption
  * until hover or focus; then the label strip appears and that plate's clip wakes under the one
  * playback lease (Ink's eight-second excerpt, Light's settling clip), labelled as what it is,
  * holding its last frame and fading back to the still. A click is the Walk.
@@ -63,11 +64,9 @@ export function SpreadPlates({
             className={styles.side}
             data-side={index === 0 ? 'left' : 'right'}
             data-ground={media.id === 'light' ? 'night' : 'paper'}
+            style={tone ? ({ '--plate-ground': tone } as CSSProperties) : undefined}
           >
-            <figure
-              className={styles.leaf}
-              style={tone ? ({ '--plate-ground': tone } as CSSProperties) : undefined}
-            >
+            <figure className={styles.leaf}>
               <span className={`hanging-numeral ${styles.leafNumeral}`} aria-hidden="true">
                 {workFolio(work.id)}
               </span>
