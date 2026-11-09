@@ -20,7 +20,7 @@ import {
   physicsAt,
   type FilmScore,
 } from '@/lib/physics/film-score';
-import { lightFilmDuration } from '@/lib/physics/light-film';
+import { lightFilmDuration, lightFilmFrames } from '@/lib/physics/light-film';
 import { scoreWindow } from '@/lib/physics/score-window';
 import type { ScoreReply, ScoreRequest } from '@/lib/physics/score.worker';
 import { forgetFilmScores } from './film-score-store';
@@ -1008,7 +1008,7 @@ describe('the settling plate', () => {
   });
 });
 
-describe('the score in the Light film’s transport', () => {
+describe('the score in the films’ transport', () => {
   const orbit = filmOrbit(31)!;
   const clip = work.media.find((item) => item.id === 'light')!.settlingFilm!;
   let measured: FilmScore;
@@ -1174,13 +1174,107 @@ describe('the score in the Light film’s transport', () => {
     expect(ink.currentTime).toBe(0);
   });
 
-  it('keeps the score to the Light film, and off a sale’s page', async () => {
+  /*
+    The complete Ink film keeps the Light film's clock frame for frame, after a pre-roll of bare
+    paper: № 031's first ink is its frame 71 (third-physics-phase-e.md §6). Its plate plays the
+    local complete film, every other frame of the published one, which the venue checked too.
+  */
+  const inkFilm = work.media.find((item) => item.id === 'ink')!.films[0];
+  const inkFrom = (71 / lightFilmFrames(orbit.window.steps)) * 100;
+
+  it('scores the Ink film’s transport where its clock was checked, lit and read from its first ink', async () => {
+    expect(orbit.ink?.firstInked).toBe(71);
+    expect(orbit.ink?.films).toContain(inkFilm.sha256);
     renderViewer({ orbit });
+    const video = await play(0.5);
+    expect(video).toHaveAttribute('src', inkFilm.src);
+    expect(workers).toHaveLength(1);
+    workers[0].reply({ type: 'done', score: scoreOf() });
+    const plate = document.querySelector('[data-layer-state="current"] [data-plate-ground]')!;
+    expect(plate).toHaveAttribute('data-plate-ground', 'paper');
+    const band = plate.lastElementChild!;
+    expect(band).toHaveAttribute('data-film-score', 'ink');
+    const lit = band.querySelector('[data-film-score-progress]') as HTMLElement;
+    expect(lit).toHaveAttribute('data-film-score-from', String(Math.round(inkFrom * 10) / 10));
+    // Half a second in, the paper is bare: nothing is lit, and the strip reads nothing.
+    expect(lit.style.clipPath).toBe(`inset(0 ${100 - inkFrom}% 0 ${inkFrom}%)`);
+    expect(document.querySelector('[data-film-physics]')).toBeNull();
+    // The ink is down: the score is lit from it, and the strip reads the moment.
+    video.currentTime = 3;
+    fireEvent.timeUpdate(video);
+    const share = 3 / lightFilmDuration(orbit.window.steps);
+    expect(lit.style.clipPath).toBe(`inset(0 ${(1 - share) * 100}% 0 ${inkFrom}%)`);
+    expect(strip().getByText(reading(3))).toBeVisible();
+    // The closest approach is shown on the Ink film's frame 460 too: the options open it.
+    fireEvent.click(word(en.ways));
+    const seconds = closestApproachSeconds({
+      steps: orbit.window.steps,
+      closestApproach: orbit.closestApproach,
+    });
+    fireEvent.click(word(`${en.toClosestApproach} ${clock(seconds)}`));
+    const room = screen.getByRole('dialog').querySelector('video')!;
+    expect(room).toHaveAttribute('src', inkFilm.src);
+    Object.defineProperty(room, 'duration', { configurable: true, value: 30 });
+    fireEvent.loadedMetadata(room);
+    expect(room.currentTime).toBeCloseTo(seconds - 2, 9);
+  });
+
+  it('carries the band alone on the home’s Ink plate, whose strip keeps to its words as Light’s does', async () => {
+    renderViewer({ orbit, presentation: 'home', openingExpression: 'ink' });
+    const video = await play(3);
+    expect(video).toHaveAttribute(
+      'src',
+      expect.stringMatching(/\/art\/clips\/31-ink-opening-[a-f0-9]{16}\.mp4$/),
+    );
+    expect(workers).toHaveLength(1);
+    workers[0].reply({ type: 'done', score: scoreOf() });
+    expect(document.querySelector('[data-film-score="ink"]')).not.toBeNull();
+    expect(document.querySelector('[data-film-physics]')).toBeNull();
+    fireEvent.click(word(en.ways));
+    expect(strip().queryByRole('button', { name: new RegExp(en.toClosestApproach) })).toBeNull();
+    cleanup();
+    // An opening clip the venue has not checked keeps the plain line, though the film it hands
+    // over to was checked.
+    const opening = work.media.find((item) => item.id === 'ink')!.openingFilm!;
+    const unchecked = orbit.ink!.films.filter((sha256) => sha256 !== opening.sha256);
+    renderViewer({
+      orbit: { ...orbit, ink: { ...orbit.ink!, films: unchecked } },
+      presentation: 'home',
+      openingExpression: 'ink',
+    });
+    await play(3);
+    expect(workers).toHaveLength(1);
+    expect(document.querySelector('[data-film-score]')).toBeNull();
+    expect(document.querySelector('.time-line')).not.toBeNull();
+  });
+
+  it('offers no closest approach on an Ink film that reaches it on bare paper', async () => {
+    // A pre-roll past frame 460: the bodies pass closest before the Ink film shows them.
+    renderViewer({ orbit: { ...orbit, ink: { ...orbit.ink!, firstInked: 500 } } });
+    const video = await play(3);
+    workers[0].reply({ type: 'done', score: scoreOf() });
+    expect(document.querySelector('[data-film-score="ink"]')).not.toBeNull();
+    expect(document.querySelector('[data-film-physics]')).toBeNull();
+    fireEvent.click(word(en.ways));
+    expect(strip().queryByRole('button', { name: new RegExp(en.toClosestApproach) })).toBeNull();
+    video.currentTime = 9;
+    fireEvent.timeUpdate(video);
+    expect(strip().getByText(reading(9))).toBeVisible();
+  });
+
+  it('keeps the score off an Ink film it was not checked against, and off a sale’s page', async () => {
+    renderViewer({ orbit: { ...orbit, ink: { firstInked: 71, films: ['0'.repeat(64)] } } });
     await play(3);
     expect(workers).toHaveLength(0);
     expect(document.querySelector('.time-line')).not.toBeNull();
     fireEvent.click(word(en.ways));
     expect(strip().queryByRole('button', { name: new RegExp(en.toClosestApproach) })).toBeNull();
+    cleanup();
+
+    renderViewer({ orbit, presentation: 'auction' });
+    await play(3);
+    expect(workers).toHaveLength(0);
+    expect(document.querySelector('.time-line')).not.toBeNull();
     cleanup();
 
     renderViewer({ initialExpression: 'light', orbit, presentation: 'auction' });

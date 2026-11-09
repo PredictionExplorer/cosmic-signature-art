@@ -8,7 +8,7 @@ import { fill } from '@/lib/i18n/format';
 import { ArtworkRoom } from './artwork-room';
 import { filmOrbit } from '@/lib/art/orbit-windows';
 import { pairName, physicsAt, type FilmScore } from '@/lib/physics/film-score';
-import { lightFilmDuration } from '@/lib/physics/light-film';
+import { lightFilmDuration, lightFilmFrames } from '@/lib/physics/light-film';
 import { scoreWindow } from '@/lib/physics/score-window';
 
 // The room reads the venue's motion state; the tests begin where the context default does.
@@ -814,7 +814,7 @@ describe('immersive artwork room', () => {
     expect(room.querySelector('canvas')).toBeNull();
   });
 
-  describe('the Light film’s score', () => {
+  describe('the films’ score', () => {
     const orbit = filmOrbit(31)!;
     let measured: FilmScore;
     // № 031's window measured once, with its own budget: see the viewer's score tests.
@@ -865,7 +865,8 @@ describe('immersive artwork room', () => {
       expect(dialog.querySelector('[data-film-score]')).toBeNull();
     });
 
-    it('belongs to the complete Light film alone, and never to a sale surface', () => {
+    it('belongs to a complete film on its clock, and never to a sale surface', () => {
+      // An Ink film the venue has not checked against the clock keeps its plain line.
       const ink = room({ expression: 'ink' });
       expect(ink.querySelector('video')).not.toBeNull();
       expect(ink.querySelector('[data-film-score]')).toBeNull();
@@ -874,6 +875,55 @@ describe('immersive artwork room', () => {
       expect(sale.querySelector('video')).not.toBeNull();
       expect(sale.querySelector('[data-film-score]')).toBeNull();
       expect(within(sale).getByText('00:00 · 00:00')).toBeInTheDocument();
+    });
+
+    /*
+      The complete Ink film keeps the Light film's clock frame for frame, and opens on bare
+      paper: № 031's first ink is its frame 71 (third-physics-phase-e.md §6). Where the venue
+      checked the film against that clock, its transport carries the score, in graphite on its
+      paper, lit from the first ink; the readout reads the physics once there is ink to read.
+    */
+    it('lies beneath a complete Ink film checked against its clock, lit and read from its first ink', () => {
+      const inkFilm = preserved.media
+        .find((media) => media.id === 'ink')!
+        .films.find((film) => film.id === 'normal')!;
+      const ink = { firstInked: 71, films: [inkFilm.sha256!] };
+      const dialog = room({ expression: 'ink', filmScore: { ...filmScore(), ink } });
+      const video = dialog.querySelector('video')!;
+      Object.defineProperty(video, 'duration', { configurable: true, value: 30.03 });
+      video.currentTime = 1;
+      fireEvent.timeUpdate(video);
+      const band = dialog.querySelector('[data-film-score]')!;
+      expect(band).toHaveAttribute('data-film-score', 'ink');
+      const lit = band.querySelector('[data-film-score-progress]')!;
+      const frames = lightFilmFrames(orbit.window.steps);
+      expect(lit).toHaveAttribute(
+        'data-film-score-from',
+        String(Math.round((71 / frames) * 1000) / 10),
+      );
+      // A second in, the paper is bare: nothing is lit, and nothing is read.
+      expect((lit as HTMLElement).style.clipPath).toBe(
+        `inset(0 ${100 - (71 / frames) * 100}% 0 ${(71 / frames) * 100}%)`,
+      );
+      expect(within(dialog).getByText('00:01 · 00:30')).toBeInTheDocument();
+      video.currentTime = 7.5;
+      fireEvent.timeUpdate(video);
+      const moment = physicsAt(filmScore().score, 7.5);
+      expect(
+        within(dialog).getByText(
+          `00:07 · 00:30 · ${fill(en.filmPhysics, {
+            pair: pairName(moment.pair),
+            distance: moment.distance.toFixed(1),
+          })}`,
+        ),
+      ).toBeInTheDocument();
+      cleanup();
+      // Another Ink film, not the one checked: its plain line.
+      const other = room({
+        expression: 'ink',
+        filmScore: { ...filmScore(), ink: { firstInked: 71, films: ['0'.repeat(64)] } },
+      });
+      expect(other.querySelector('[data-film-score]')).toBeNull();
     });
   });
 

@@ -69,8 +69,12 @@ import styles from './artwork-viewer.module.css';
 import { clock, fill } from '@/lib/i18n/format';
 import {
   closestApproachSeconds,
+  markedAt,
+  markedFrom,
   pairName,
   physicsAt,
+  scoreClock,
+  showsClosestApproach,
   type FilmOrbit,
 } from '@/lib/physics/film-score';
 import { lightFilmDuration } from '@/lib/physics/light-film';
@@ -107,9 +111,11 @@ type ArtworkViewerProps = {
    */
   afterTheFrame?: boolean;
   /**
-   * The work's orbit, for its Light film's score (third-physics.md §5.5): the time line becomes
-   * the orbit's separations and events, the strip reads the physics of the moment, and the
-   * options open the film at the closest approach. Analysis, so never on a sale's page.
+   * The work's orbit, for its films' score (third-physics.md §5.5): the time line becomes the
+   * orbit's separations and events, the strip reads the physics of the moment, and the options
+   * open the film at the closest approach. The Light film always keeps the score's clock, the
+   * Ink film where the venue checked it (third-physics-phase-e.md §6). Analysis, so never on a
+   * sale's page.
    */
   orbit?: FilmOrbit;
 };
@@ -436,33 +442,46 @@ function ArtworkViewerSession({
   const showAgain = restedNow && (ended || homeResolved) && !excerpt;
 
   /*
-    The score (third-physics.md §5.5). While the Light film plays, on the plate or in the room,
-    its orbit is measured off the main thread; the time line then becomes the score, and the
-    strip says which bodies are nearest and how far apart at the moment on screen. The Light
-    film and the score share one clock (light-film.ts); the Ink films keep their own.
+    The score (third-physics.md §5.5). While a film on its work's clock plays, on the plate or in
+    the room, the orbit is measured off the main thread; the time line then becomes the score,
+    and the strip says which bodies are nearest and how far apart at the moment on screen. Every
+    Light film keeps the score's clock (light-film.ts); an Ink film keeps it where the venue
+    checked it against the film (ink-clocks.ts), and shows the orbit's mark only from its first
+    ink, after a pre-roll of bare paper (third-physics-phase-e.md §6).
   */
   const orbit = presentation === 'auction' ? undefined : offeredOrbit;
-  const lightScored = expression === 'light' && !!orbit;
+  // The home opens on the opening clip and hands over to the complete film at the same frame.
+  const openingFilm = home && !compact && !settlingPlate ? media?.openingFilm : undefined;
+  // The plate's clock holds only when every film it plays keeps it: the opening clip as well.
+  const plateClock =
+    openingFilm && !scoreClock(orbit, expression, openingFilm)
+      ? null
+      : scoreClock(orbit, expression, inlineFilm);
+  const roomClock = scoreClock(
+    orbit,
+    expression,
+    media?.films.find((film) => film.id === 'normal'),
+  );
   const score = useFilmScore(
     orbit,
     // The room may be entered on the still and its complete film chosen there.
-    lightScored && ((!!inlineFilm && !excerpt && (playing || ended)) || room !== null),
+    (!!plateClock && !!inlineFilm && !excerpt && (playing || ended)) ||
+      (!!roomClock && room !== null),
   );
-  const filmScore = lightScored ? score : null;
+  const filmScore = plateClock || roomClock ? score : null;
   const oneDecimal = useMemo(
     () => new Intl.NumberFormat(locale, { minimumFractionDigits: 1, maximumFractionDigits: 1 }),
     [locale],
   );
-  // The closest approach is the record's, so the room can open on it before any measuring.
+  // The closest approach is the record's, so the room can open on it before any measuring. A
+  // film that reaches it on bare paper, in the Ink film's pre-roll, shows nothing of it.
+  const closest = orbit
+    ? { steps: orbit.window.steps, closestApproach: orbit.closestApproach }
+    : undefined;
   const closestAt =
-    lightScored && orbit && media?.films.some((film) => film.id === 'normal')
-      ? closestApproachSeconds({
-          steps: orbit.window.steps,
-          closestApproach: orbit.closestApproach,
-        })
+    closest && roomClock && showsClosestApproach(roomClock, closest)
+      ? closestApproachSeconds(closest)
       : null;
-  // The home opens on the opening clip and hands over to the complete film at the same frame.
-  const openingFilm = home && !compact && !settlingPlate ? media?.openingFilm : undefined;
   const [handoverWaiting, setHandoverWaiting] = useState(false);
   const ambientFilm = !room && (!policy.constrained || explicitFilm);
   // A phone reads two compact plates in the page's natural flow. The material button still
@@ -731,9 +750,17 @@ function ArtworkViewerSession({
           </Link>
         </>
       );
-    // The physics of the moment, while the Light film plays its own frames (not an excerpt).
+    // The physics of the moment, while a film on the score's clock plays its own frames (not an
+    // excerpt) and shows the orbit's mark: the Ink film's bare paper has no bodies to read. The
+    // home keeps its strip to its words in either expression; the band alone carries the score.
     const moment =
-      current && layer === 'light' && filmScore && !excerpt && !idle
+      !home &&
+      current &&
+      plateClock &&
+      filmScore &&
+      !excerpt &&
+      !idle &&
+      markedAt(plateClock, time.current)
         ? physicsAt(filmScore, time.current)
         : null;
     const physicsWord = moment ? (
@@ -785,7 +812,7 @@ function ArtworkViewerSession({
             onStudy={!home ? (trigger) => openRoom(false, trigger) : undefined}
             onSit={inlineFilm && !showAgain ? sitDown : undefined}
             closest={
-              current && layer === 'light' && closestAt !== null
+              !home && current && closestAt !== null
                 ? {
                     clock: clock(closestAt),
                     onOpen: (trigger) =>
@@ -834,15 +861,17 @@ function ArtworkViewerSession({
     return <span>{[...parts, label(layer)].join(' · ')}</span>;
   }
 
-  // The film's transport, at the foot of its plate: the score where the Light film has one,
+  // The film's transport, at the foot of its plate: the score where the film keeps its clock,
   // otherwise its time line. A phone's excerpt is a preview, and carries neither.
   const transport =
     inlineFilm && !excerpt && (playing || (ended && !restedNow)) ? (
-      filmScore && orbit ? (
+      filmScore && orbit && plateClock ? (
         <FilmScoreBand
           score={filmScore}
           hues={orbit.bodyHues}
           progress={time.current / lightFilmDuration(filmScore.steps)}
+          material={plateClock.material}
+          from={markedFrom(plateClock, filmScore)}
         />
       ) : (
         <div className="time-line" aria-hidden="true">
@@ -1088,7 +1117,9 @@ function ArtworkViewerSession({
           onClose={closeRoom}
           returnFocusRef={returnFocusRef}
           derivedViews={presentation !== 'auction'}
-          filmScore={filmScore && orbit ? { score: filmScore, hues: orbit.bodyHues } : null}
+          filmScore={
+            filmScore && orbit ? { score: filmScore, hues: orbit.bodyHues, ink: orbit.ink } : null
+          }
         />
       ) : null}
     </>
