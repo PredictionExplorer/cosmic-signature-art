@@ -420,6 +420,9 @@ export const vi: Messages = {
   // The sale
   saleTitle: 'Phiên {n}',
   saleSubtitle: 'Tám tác phẩm mới · Chu kỳ {cycle}',
+  saleMeanwhileLabel: 'Không được chào bán',
+  saleMeanwhileNote:
+    'Các tác phẩm này đã thuộc bộ sưu tập và không nằm trong đợt bán này. Tám tác phẩm mới của đợt bán sẽ được khắc dấu khi Chu kỳ {cycle} được hoàn tất.',
   conditionsOfSale: 'Điều kiện bán',
   // The entry's copy affordance and footnotes
   copyAddress: 'Sao chép',

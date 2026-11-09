@@ -394,6 +394,9 @@ export const zhTW: Messages = {
   // The sale
   saleTitle: '拍賣 {n}',
   saleSubtitle: '八件新作 · 週期 {cycle}',
+  saleMeanwhileLabel: '不參與本次拍賣',
+  saleMeanwhileNote:
+    '這些作品已在藏品全集之中，不屬於本次拍賣。本次拍賣的八件新作將在週期 {cycle} 完成結算時印記。',
   conditionsOfSale: '拍賣條件',
   // The entry's copy affordance and footnotes
   copyAddress: '複製',

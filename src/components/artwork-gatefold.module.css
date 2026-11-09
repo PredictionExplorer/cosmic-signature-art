@@ -1,4 +1,4 @@
-/* The gatefold: two plates at equal scale, each on its own ground, wider than the viewport. */
+/* The gatefold: two plates at equal scale, each on its own ground, both whole in view. */
 .gatefold {
   position: relative;
   padding-block: 9px 27px;
@@ -50,28 +50,29 @@
   outline: 1px solid currentColor;
   outline-offset: 3px;
 }
-/* The spread: a horizontal snap of two plates, 92 vw each, one hairline of wall between them. */
+/* The spread: both plates whole, side by side within the page's gutters, one hairline of wall
+   between them, so the two are read together and nothing lies out of view. */
 .spread {
-  /* A plate is 92 vw, or as wide as the room's height allows, so no plate is ever cut. */
-  --gatefold-plate: min(92vw, calc((100svh - var(--head) - var(--strip)) * 3456 / 2234));
+  /* A plate is half the wall inside the gutters, or as wide as the room's height allows, so no
+     plate is ever cut. Percentages are the spread's own width. */
+  --gatefold-plate: min(
+    calc((100% - 2 * var(--gutter) - 1px) / 2),
+    calc((100svh - var(--head) - var(--strip)) * 3456 / 2234)
+  );
   display: grid;
-  grid-auto-flow: column;
-  grid-auto-columns: var(--gatefold-plate) 1px var(--gatefold-plate);
-  align-items: stretch;
-  overflow-x: auto;
-  overscroll-behavior-x: contain;
-  scroll-snap-type: x mandatory;
-  scrollbar-width: none;
+  grid-template-columns: var(--gatefold-plate) 1px var(--gatefold-plate);
+  justify-content: center;
+  align-items: start;
 }
-.spread::-webkit-scrollbar {
-  display: none;
-}
+/* A grid item with an aspect ratio does not stretch of itself (WebKit then lays the panel out at
+   nothing, its image being sized by percentages): the panel takes its column's width, and its
+   height from the ratio. */
 .panel {
   display: grid;
   place-items: center;
+  width: 100%;
   margin: 0;
   background: var(--gatefold-ground);
-  scroll-snap-align: start;
   aspect-ratio: 3456 / 2234;
 }
 .still {
@@ -81,16 +82,8 @@
   object-fit: contain;
 }
 .gutter {
+  align-self: stretch;
   background: var(--ground);
-}
-@media (min-width: 1700px) {
-  .spread {
-    --gatefold-plate: min(
-      calc(50vw - 0.5px),
-      calc((100svh - var(--head) - var(--strip)) * 3456 / 2234)
-    );
-    justify-content: center;
-  }
 }
 @media (max-width: 767px) {
   .head {
@@ -99,13 +92,10 @@
     gap: 0;
     padding-block: 9px;
   }
-  /* The gatefold is vertical: Ink above, Light below, equal. */
+  /* The gatefold is vertical: Ink above, Light below, equal, each the phone's width. */
   .spread {
-    grid-auto-flow: row;
-    grid-auto-columns: auto;
-    grid-auto-rows: auto 1px auto;
-    overflow-x: visible;
-    scroll-snap-type: none;
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto 1px auto;
   }
 }
 /* The seam: both plates in one frame, the night clipped at the line the hand moves. */

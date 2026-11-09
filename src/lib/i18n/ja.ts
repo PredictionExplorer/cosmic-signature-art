@@ -419,6 +419,9 @@ export const ja: Messages = {
   // The sale
   saleTitle: 'セール {n}',
   saleSubtitle: '新作八点 · サイクル {cycle}',
+  saleMeanwhileLabel: '本セールの出品対象外',
+  saleMeanwhileNote:
+    'これらの作品はすでにコレクションに収められており、本セールには含まれません。本セールの新作八点は、サイクル {cycle} の確定時に刻印されます。',
   conditionsOfSale: '販売条件',
   // The entry's copy affordance and footnotes
   copyAddress: 'コピー',

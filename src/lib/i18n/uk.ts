@@ -419,6 +419,9 @@ export const uk: Messages = {
   // The sale
   saleTitle: 'Продаж {n}',
   saleSubtitle: 'Вісім нових робіт · Цикл {cycle}',
+  saleMeanwhileLabel: 'Не пропонується на продаж',
+  saleMeanwhileNote:
+    'Ці роботи вже є в колекції і не входять до цього продажу. Вісім нових робіт продажу буде відбито після фіналізації циклу {cycle}.',
   conditionsOfSale: 'Умови продажу',
   // The entry's copy affordance and footnotes
   copyAddress: 'Копіювати',

@@ -179,6 +179,8 @@ Timings are for a warm connection at 1440×900 unless stated; every plate uses t
 
 **Beat 3 — the gatefold.** A horizontally scroll-snapped spread wider than the viewport: Ink plate 92 vw on paper | 1 px gutter | Light plate 92 vw on black, equal scale; on ≥1700 px both fit at 46 vw; on a phone a vertical diptych. Caption at 18 px: "Plate 031, in ink and in light. One orbit." A draggable seam is the second view. Available from either expression; survives expression changes. (The synchronised dual-film mode waits until ember pre-roll trimming is verified, as docs/art-presentation-research.md:27 requires.)
 
+*Revised on 8 November 2026: on any screen wider than a phone both plates hang whole, side by side within the page's gutters. The strip wider than the viewport showed a desk the Ink plate and a sliver of black, and nothing said it scrolled; a comparison wants both in view at once ([third-physics-phase-d.md](third-physics-phase-d.md) §8).*
+
 **Beat 4 — the entry (type page, paper).** Generated per work, 18 / 27 px, 34 em, the numeral `031` hanging in the margin at 106 px. The first line under the title is the selection sentence, written large at 68 px — "One of 100,000 candidate orbits. Number 77,741 was chosen." — with the Borda weights in a 12 px mono note beneath. Then the entry:
 
 > **Signature 031 — Eternal Dance**
@@ -207,6 +209,8 @@ Footnotes are the glossary as marginalia at 15 px, and the first two define the 
 
 **The plate sequence.** Per page of 18 the hang is 1 · 2 · 3 · 1 · 2 · 1 · 3 · 1 · 2 · 2 (a fixed editorial rhythm, never scaled by a trait): one full-bleed plate, a spread of two at 46 vw, three at 30 vw (stills only), full again. Every sheet is positioned so its offline-computed ink centre sits on one eye line (50 svh desktop, 42 svh phone), clamped inside the wall, so clusters stop landing at random (shots 06–07). Motion in the sequence: on desktop nothing autoplays until the settling clips exist, except the three curated works' 1280 films under the lease; on any plate the 8 s excerpt wakes on hover, focus or press, labelled `excerpt`, holding its last frame and fading to the still. Captions: the numeral only; the label appears on hover/focus/press.
 
+*Revised on 8 November 2026: across the seam, the collection's default since 4 November, each leaf is half the wall, so three to a leaf hung a plate at 172 px at 1440. The pairs now hang 1 · 2 · 2, a lead and then two rows of two, and every cycle opens on its lead. A single ground keeps the rhythm above ([third-physics-phase-d.md](third-physics-phase-d.md) §8).*
+
 **Chapters by cycle.** A 48 px strip between cycles: "Cycle 1 · n works · 11 August 2026", the count from the index.
 
 **The night section.** Choosing Light in the Index sheet flips the whole section to black stock with the Light previews; the ribbons float with no edge. Not black cards on cream.
@@ -228,6 +232,8 @@ Footnotes are the glossary as marginalia at 15 px, and the first two define the 
 ### Auctions (/auctions) and the lot page (/auctions/[id])
 
 **Title spread (100svh, paper).** "Sale 01" at 164 px, "Eight new works · Performance Cycle 2" at 28 px italic, the dates exactly, and never typed into copy: both are read from the chain through `auctionPhase()`/`eligibleAt` (eligibility is seven days after on-chain cycle finalisation, decision register line 14) and shown in UTC and the visitor's own zone — illustratively, "Preview from 3 November · Bidding eligible from 10 November 2026, 14:00 UTC (16:00 in your zone)". A signed 150-word foreword. The first lot's Ink plate is in the first viewport (shot 19 has none). While no contract is configured: "Sale 01 — in preparation" over the coming cycle's chapter row; the apologetic permanent-collection stand-in goes.
+
+*Revised on 8 November 2026, on the owner's yes: the coming cycle has no works until it finalizes, so while no contract is configured the landing hangs the last imprinted cycle beneath the sale's status, labelled "Not offered", each work leading to its own page and never to a lot ([third-physics-phase-d.md](third-physics-phase-d.md) §8).*
 
 **The lots.** Eight full-bleed plates in lot order, alternating Ink-on-paper and Light-on-black so neither expression leads every time, each with the hanging lot numeral (`Lot 1` at 44 px), `Sit` in its strip, and its entry at 18 px, and the chain state as one quiet mono line straight from `auctionPhase()`: "Available to start · opening minimum 0.00001 ETH" / "Preview · bidding eligible from 10 Nov, 14:00 UTC" / "Bidding open · 0.42 ETH · closes 12 Nov, 09:14 UTC · late bids leave 10 minutes" / "Ready to settle" / "Settled · 0.42 ETH · delivered to 0x…". Media readiness and chain phase are stated separately when they differ. `Order of sale` is a 48 px strip of the eight numerals that is also the pager. One projector across the lots.
 
