@@ -387,9 +387,12 @@ html {
   font-variant-numeric: lining-nums proportional-nums;
   letter-spacing: -0.02em;
 }
+/* Display type at Literata's own metrics, as the Process cover explains: no line's descenders
+   meet the next line's ascenders, in any language, and the last line's stay inside its box. */
 .cover {
   font-size: var(--fs-cover);
-  line-height: 0.99;
+  line-height: 1.06;
+  padding-block-end: 0.06em;
   font-weight: var(--weight-hairline);
 }
 /* The hanging numeral beside a plate: 44 px light figures with 6 px of leading in a 56 px strip. */
