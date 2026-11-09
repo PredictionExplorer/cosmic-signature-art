@@ -19,6 +19,8 @@ import { pauseAmbientMotion, playAmbientMotion } from './helpers';
 const t = catalogs.en;
 const pageStage = '[data-artwork-stage="page"]:visible';
 const current = `${pageStage} [data-layer-state="current"]`;
+// The crossing's own canvas: the plate also holds the canvas its still is run back on.
+const crossingCanvas = `${pageStage} canvas[class*="crossing"]`;
 const arrivalMaps = JSON.parse(
   readFileSync(new URL('../../src/lib/art/arrival-maps.json', import.meta.url), 'utf8'),
 ) as { maps: { id: number; expression: 'ink' | 'light'; src: string }[] };
@@ -120,6 +122,48 @@ function leftOver(page: Page) {
       )
       .filter(Boolean),
   );
+}
+
+/**
+ * How far the walls lay toward the paper, 0 the night and 1 the sheet: now, on each frame, and
+ * when a key was let go.
+ */
+type Walls = { share: number; frames: [number, number][]; released: [number, number] | null };
+
+/**
+ * Read the walls in the page itself, on every frame, and where they lay when a key was let go.
+ * The crossing lays the room's ground on the same frame as the plate's, and the page reads it at
+ * once, where a screenshot takes seconds on a runner without a GPU.
+ */
+async function watchWalls(page: Page, paper: Rgb) {
+  await page
+    .locator(`${pageStage} [data-layer="ink"] [data-plate-ground]`)
+    .evaluate((wall, sheet) => {
+      const luma = ([r, g, b]: number[]) => 0.2126 * r + 0.7152 * g + 0.0722 * b;
+      const share = () =>
+        luma(
+          getComputedStyle(wall)
+            .backgroundColor.match(/[\d.]+/g)!
+            .slice(0, 3)
+            .map(Number),
+        ) / luma(sheet);
+      const walls: Walls = { share: share(), frames: [], released: null };
+      Object.assign(window, { __walls: walls });
+      const letGo = () => {
+        walls.released ??= [performance.now(), share()];
+      };
+      addEventListener('keyup', letGo, { capture: true });
+      const look = (now: number) => {
+        walls.share = share();
+        walls.frames.push([now, walls.share]);
+        requestAnimationFrame(look);
+      };
+      requestAnimationFrame(look);
+    }, paper);
+}
+
+function wallsOf(page: Page) {
+  return page.evaluate(() => (window as unknown as { __walls: Walls }).__walls);
 }
 
 type Pixels = { data: Buffer; width: number; height: number };
@@ -407,7 +451,7 @@ function composition(frame: Pixels, ink: Pixels, light: Pixels, tolerance = 24) 
  */
 async function lastPainted(page: Page, size: { width: number; height: number }) {
   const url = await page
-    .locator(`${pageStage} canvas`)
+    .locator(crossingCanvas)
     .evaluate((canvas) => (canvas as HTMLCanvasElement).toDataURL('image/png'));
   return pixels(
     await sharp(Buffer.from(url.slice(url.indexOf(',') + 1), 'base64'))
@@ -658,25 +702,39 @@ test('a peek released mid-way returns from where it is, never from the far side'
     .slice(0, 3)
     .map(Number) as Rgb;
   const bare = bareGround(ink, null, { x: 0, y: 0, width: ink.width, height: ink.height }, paper);
-  // Slowed to twelve seconds, so a runner's slow screenshots still see the release itself.
+  // Slowed to twelve seconds, so the ground takes seconds to cool and the key is let go well
+  // inside that change.
   await page.addStyleTag({ content: ':root { --t-cross: 12000ms; }' });
-  // Hold L a while: the ink lifts and the ground begins to cool, part of the way along.
+  await watchWalls(page, paper);
+  // Hold L until the walls show the ground has begun to cool: by then most of the ink has lifted.
+  // The page says when. A screenshot first would take seconds on a runner without a GPU, and the
+  // Turn would run on toward the night before the key was let go.
   await page.keyboard.down('l');
   await expect(page.locator('html')).toHaveAttribute('data-turning', 'time');
-  await page.waitForTimeout(4000);
-  expect(distance(await shot(), ink)).toBeGreaterThan(1);
+  await page.waitForFunction(
+    () => (window as unknown as { __walls: Walls }).__walls.share < 0.9,
+    null,
+    { polling: 'raf' },
+  );
   await page.keyboard.up('l');
   const first = await shot();
   const after = [distance(first, ink)];
   const released = Date.now();
   while (Date.now() - released < 3000) after.push(distance(await shot(), ink));
   // The first frame after the key is let go keeps the change where it had come: its ground is
-  // still nearer the paper than the night, which a change jumped to the far side would show. A
-  // twelve-second Turn held for four seconds is nowhere near its end, however slow the runner.
+  // still nearer the paper than the night, which a change jumped to the far side would show.
   expect(groundOf(first, ink, bare).share).toBeGreaterThan(0.4);
   // And from there it only goes back.
   for (let i = 1; i < after.length; i++) expect(after[i]).toBeLessThanOrEqual(after[i - 1] + 0.75);
   await expect(page.locator('html')).not.toHaveAttribute('data-turning', /./, { timeout: 12_000 });
+  // Frame by frame, from the moment the key was let go: the walls went no further toward the
+  // night than a frame or two of a slow runner's change, and came back to the paper.
+  const walls = await wallsOf(page);
+  const [letGo, there] = walls.released!;
+  const back = walls.frames.filter(([time]) => time > letGo).map(([, share]) => share);
+  expect(there).toBeLessThan(0.9);
+  expect(Math.min(...back)).toBeGreaterThan(there - 0.1);
+  expect(back.at(-1)).toBeGreaterThan(0.98);
   await expect(page.locator(`${pageStage} canvas[data-active]`)).toHaveCount(0);
   expect(distance(await shot(), ink)).toBeLessThan(1);
   await expect(page.locator(pageStage)).toHaveAttribute('data-expression', 'ink');

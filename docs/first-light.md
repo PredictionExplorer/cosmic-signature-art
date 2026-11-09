@@ -512,11 +512,12 @@ _8 November 2026: step 5 of the F2 plan, "the work in your hands" (§5C)._
     - the canvas ends each Turn on the arriving still, within 3 levels, and far from the other;
     - afterwards the room's own elements carry nothing the crossing set, and the page is the Ink still again.
   - A finger's Turn on a phone is the two stills and nothing else, in Light's order, with its strip on a front.
-  - A peek released mid-way returns from where it is, its ground still nearer the paper, and only goes back from there.
+  - A peek released mid-way returns from where it is. The key is let go once the walls show the ground has begun to cool. The first frame after it keeps its ground nearer the paper, and from there the plate only goes back. Read in the page on every frame, the walls go no further toward the night than where the key was let go, and they end on the paper.
   - Reduced motion turns in one frame, the straight seam is the Turn without WebGL, the crossing returns after Pause and Play, and the When lens is unchanged.
 - **The whole browser suite** passes in the same six projects: 1,573 passed and 149 skipped by design, in 21.8 minutes.
 - **The gates.** Lint, type-check, Prettier and a production build pass.
 - **On CI** Firefox offers no WebGL, so the crossing's own tests skip there, as they always have. Chromium and WebKit run them on software WebGL, with each Turn sized to the runner's screenshots, and each frame's rise and bloom read against its own ground, so a slow runner still finds the frames it needs.
+  - **No screenshot stands between a decision and its act.** CI's screenshots take seconds mid-Turn. A peek that waited four seconds and then took one was let go after more than seven, with the ground already at night, so the test failed on CI's Chromium (8 November). It now lets go when the page says so.
 
 **Not yet.**
 
