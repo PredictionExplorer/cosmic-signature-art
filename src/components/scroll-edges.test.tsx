@@ -18,12 +18,15 @@ class Observer {
   }
 }
 
-function Row() {
+function Row({ words = ['Ink', 'Light'] }: { words?: string[] }) {
   const row = useScrollEdges<HTMLDivElement>();
   return (
     <div ref={row} data-testid="row">
-      <a href="#ink">Ink</a>
-      <a href="#light">Light</a>
+      {words.map((word) => (
+        <a key={word} href={`#${word}`}>
+          {word}
+        </a>
+      ))}
     </div>
   );
 }
@@ -97,6 +100,19 @@ describe('a row that scrolls sideways says which of its edges hide more of it', 
     expect(marks(row)).toEqual({ start: false, end: true });
     act(() => vi.advanceTimersToNextFrame());
     expect(marks(row)).toEqual({ start: false, end: false });
+  });
+
+  it('measures again when its words change, and watches the new ones', async () => {
+    const { rerender } = render(<Row />);
+    const row = screen.getByTestId('row');
+    expect(marks(row)).toEqual({ start: false, end: true });
+    // A navigation swaps a word for another: the row now fits, and the new word is watched.
+    lay(row, { content: 280, view: 302, at: 0 });
+    rerender(<Row words={['Ink', 'Spectrum']} />);
+    await act(async () => {});
+    act(() => vi.advanceTimersToNextFrame());
+    expect(marks(row)).toEqual({ start: false, end: false });
+    expect(observed).toContain(screen.getByRole('link', { name: 'Spectrum' }));
   });
 
   it('leaves no mark behind when the row goes', () => {
