@@ -1,6 +1,8 @@
 import { expect, test } from '@playwright/test';
 import { readFileSync } from 'node:fs';
 import { catalogs } from '../../src/lib/i18n/messages';
+import { locales, localizedPath } from '../../src/lib/i18n/routing';
+import { workOfTheDay } from '../../src/lib/art/work-of-the-day';
 import { collectionLoaded, imageLoaded, noHorizontalOverflow, pauseAmbientMotion } from './helpers';
 
 const t = catalogs.en;
@@ -348,7 +350,14 @@ test('the Index of numbers opens from the head and the slash key, hangs the work
   await expect(thirtyOne).toHaveText('031');
   await expect(thirtyOne).toHaveAttribute('href', '/art/31');
   const wall = sheet.locator('[data-material]');
-  await expect(wall.locator('img')).toHaveCount(0);
+  // Never a bare wall: away from a work it opens on the day's work, its numeral marked.
+  await expect(wall.locator('img')).toHaveAttribute('data-work', String(workOfTheDay()));
+  await expect(
+    sheet.getByRole('link', {
+      name: `№ ${String(workOfTheDay()).padStart(3, '0')}`,
+      exact: true,
+    }),
+  ).toHaveAttribute('data-active', 'true');
   if (isMobile) {
     // The first tap hangs the work on the wall; the second enters it.
     await thirtyOne.tap();
@@ -475,6 +484,34 @@ test('on a phone the collection carries a bottom bar and the Index sheet is the 
   await sheet.getByRole('link', { name: '№ 031', exact: true }).tap();
   await expect(sheet.getByText(t.indexWallHint)).toHaveCount(0);
   await noHorizontalOverflow(page);
+});
+
+test('on the narrowest phone the Index sheet keeps to the screen, in every language', async ({
+  page,
+  isMobile,
+}) => {
+  test.skip(!isMobile, 'The pocket edition only');
+  await page.setViewportSize({ width: 320, height: 568 });
+  for (const locale of locales) {
+    await page.goto(localizedPath(locale, '/collection'), { waitUntil: 'domcontentloaded' });
+    await expect(page.locator('html')).toHaveAttribute('data-keys', 'ready');
+    // Opened as a press would, without the scroll a locator's click makes first.
+    await page.evaluate(() =>
+      [...document.querySelectorAll<HTMLButtonElement>('button[aria-controls="index-sheet"]')]
+        .find((button) => !button.closest('[inert]') && button.getClientRects().length)
+        ?.click(),
+    );
+    const sheet = page.getByRole('dialog', { name: catalogs[locale].indexSheet });
+    await expect(sheet).toBeVisible();
+    // Every row of the sheet is one grid column wide: a row that will not wrap widens them all.
+    const widths = await sheet.evaluate((dialog) => ({
+      scroll: dialog.scrollWidth,
+      client: dialog.clientWidth,
+    }));
+    expect(widths.scroll, locale).toBeLessThanOrEqual(widths.client);
+    await page.keyboard.press('Escape');
+    await expect(sheet).not.toBeVisible();
+  }
 });
 
 test('on a phone the bar keeps every word whole, in every language, with both expressions in view', async ({
