@@ -6,7 +6,7 @@ import type { ScoreReply, ScoreRequest } from '@/lib/physics/score.worker';
   The scores measured in this visit, one a work. A score is measured once, off the main thread,
   while someone waits for it; a viewer that stops waiting (the film rested, the page left)
   stops its worker, and the next viewer to want it starts afresh. A measured score is kept for
-  the visit: a Turn back to Light, or the same work opened again, draws it at once.
+  the visit: a Turn to the other expression, or the same work opened again, draws it at once.
 */
 interface Entry {
   score: FilmScore | null;
@@ -94,7 +94,7 @@ const noSubscription = () => () => {};
 const noScore = () => null;
 
 /**
- * A work's Light film's score: measured while `wanted`, and null until it is (or wherever it
+ * A work's films' score: measured while `wanted`, and null until it is (or wherever it
  * cannot be measured). Once measured it is returned whether wanted or not.
  */
 export function useFilmScore(orbit: FilmOrbit | undefined, wanted: boolean): FilmScore | null {

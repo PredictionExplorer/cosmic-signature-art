@@ -81,11 +81,18 @@ const SIZES: Record<Shape, string> = {
 };
 
 /**
- * The hang of a page of eighteen: one full-bleed plate, a spread of two, three stills, full
- * again. A fixed editorial rhythm, never scaled by a trait; a work's place in it says nothing
- * about its rank.
+ * The hang of a page of eighteen on one ground: one full-bleed plate, a spread of two, three
+ * stills, full again. A fixed editorial rhythm, never scaled by a trait; a work's place in it
+ * says nothing about its rank.
  */
 export const RHYTHM: readonly Shape[] = [1, 2, 3, 1, 2, 1, 3, 1, 2, 2];
+/**
+ * The hang across the seam. Each leaf is half the wall, so three to a leaf would hang a plate
+ * at a sixth of it (172 px at 1440), where Light reads as a tangle and Ink as a smudge. So the
+ * pairs hang a lead, then two rows of two, and never more than two to a leaf: a page of
+ * eighteen is 1 · 2 · 2 · 1 · 2 · 2 · 1 · 2 · 2 · 1 · 2.
+ */
+export const PAIRED_RHYTHM: readonly Shape[] = [1, 2, 2];
 export type Shape = 1 | 2 | 3;
 export type Chapters = 'none' | 'boundaries' | 'all';
 export interface SequenceRow {
@@ -96,8 +103,11 @@ export interface SequenceRow {
 }
 
 /**
- * Walk the works through the rhythm; a row never straddles two cycles, so a chapter strip
- * can stand exactly where one cycle ends and the next begins.
+ * Walk the works through the rhythm. A row never straddles two cycles, so a chapter strip can
+ * stand exactly where one cycle ends and the next begins; each chapter opens its cycle on the
+ * rhythm's first row, so every cycle leads with its largest plate. A row the cycle (or the
+ * list) runs out on hangs only the works it holds, at their size: a lone work is a lead, never
+ * one plate beside an empty place.
  */
 export function sequenceRows(
   works: Artwork[],
@@ -109,17 +119,19 @@ export function sequenceRows(
   let index = 0;
   let previous: number | undefined | null = null;
   while (index < works.length) {
-    const shape = rhythm[step % rhythm.length];
-    step += 1;
     const cycle = works[index].cycle;
-    const row: SequenceRow = { shape, works: [] };
     const opens =
-      previous === null ? chapters === 'all' : chapters !== 'none' && cycle !== previous;
-    if (opens && cycle !== undefined) row.chapter = cycle;
-    while (row.works.length < shape && index < works.length && works[index].cycle === cycle) {
-      row.works.push(works[index]);
-      index += 1;
-    }
+      (previous === null ? chapters === 'all' : chapters !== 'none' && cycle !== previous) &&
+      cycle !== undefined;
+    if (opens) step = 0;
+    const planned = rhythm[step % rhythm.length];
+    step += 1;
+    let held = 1;
+    while (held < planned && index + held < works.length && works[index + held].cycle === cycle)
+      held += 1;
+    const row: SequenceRow = { shape: held as Shape, works: works.slice(index, index + held) };
+    if (opens) row.chapter = cycle;
+    index += held;
     previous = cycle;
     rows.push(row);
   }
@@ -198,7 +210,7 @@ export function PlateSequence({
   eagerFirstRow = false,
   chapters = 'none',
   cycles = [],
-  rhythm = RHYTHM,
+  rhythm,
 }: {
   works: Artwork[];
   locale: Locale;
@@ -212,6 +224,7 @@ export function PlateSequence({
   eagerFirstRow?: boolean;
   chapters?: Chapters;
   cycles?: CycleSummary[];
+  /** The hang's rhythm; across the seam the paired one, on one ground the full one. */
   rhythm?: readonly Shape[];
 }) {
   const [intentId, setIntentId] = useState<number | null>(null);
@@ -221,7 +234,8 @@ export function PlateSequence({
     () => (expression === 'both' ? LEAVES : [expression]),
     [expression],
   );
-  const rows = useMemo(() => sequenceRows(works, rhythm, chapters), [works, rhythm, chapters]);
+  const hang = rhythm ?? (paired ? PAIRED_RHYTHM : RHYTHM);
+  const rows = useMemo(() => sequenceRows(works, hang, chapters), [works, hang, chapters]);
   // A work moves under the lease when one of its hung expressions has a verified clip, never in
   // a row of three stills. Across the seam a work is one unit: its two halves settle together.
   const previewIds = useMemo(

@@ -32,11 +32,13 @@ function Probe() {
 }
 /** Days the venue's arithmetic answers for a pool of three: an Ink day and a Light day. */
 const DAYS = { ink: '2026-11-06', light: '2026-11-05' } as const;
+/** The day's-work pool: on the Ink day its work is № 023, on the Light day № 035. */
+const POOL = [23, 31, 35] as const;
 /** An Ink day unless a case says otherwise. */
 function renderSheet(locale: 'en' | 'ja' = 'en', day: 'ink' | 'light' = 'ink') {
   return render(
     <>
-      <IndexSheet works={works} locale={locale} t={en} poolSize={3} pinned={DAYS[day]} />
+      <IndexSheet works={works} locale={locale} t={en} pool={POOL} pinned={DAYS[day]} />
       <Probe />
     </>,
   );
@@ -153,16 +155,29 @@ describe('the Index of numbers', () => {
     expect(document.documentElement.style.overflow).toBe('');
   });
 
-  it('hangs the work under the hand or the focus on the wall, in the chosen expression', () => {
+  it('opens on the day’s work, then hangs the work under the hand or the focus, in the chosen expression', () => {
     renderSheet();
     act(() => openSheet('index'));
-    expect(wall()).toBeNull();
+    // Never a bare wall: away from a work, it opens on the day's work, its numeral marked.
+    expect(wall()).toHaveAttribute('data-work', '23');
+    expect(numeral(23)).toHaveAttribute('data-active', 'true');
     fireEvent.pointerEnter(numeral(31), { pointerType: 'mouse' });
     expect(wall()?.src).toMatch(/ember_preview\.webp$/);
     expect(wall()).toHaveAttribute('data-work', '31');
+    expect(numeral(31)).toHaveAttribute('data-active', 'true');
+    expect(numeral(23)).not.toHaveAttribute('data-active');
     expect(wall()!.closest('[data-material]')).toHaveAttribute('data-material', 'ink');
     fireEvent.focus(numeral(35));
     expect(wall()).toHaveAttribute('data-work', '35');
+  });
+
+  it('opens on the work of the page behind it', () => {
+    pathname = '/ja/art/40';
+    window.history.replaceState(null, '', '/ja/art/40');
+    renderSheet('ja', 'light');
+    act(() => openSheet('index'));
+    expect(wall()).toHaveAttribute('data-work', '40');
+    expect(numeral(40)).toHaveAttribute('data-active', 'true');
   });
 
   it('follows the Light expression from the URL into the wall and every link', () => {
@@ -215,16 +230,31 @@ describe('the Index of numbers', () => {
     renderSheet();
     act(() => openSheet('index'));
     const link = numeral(31);
+    // The wall opens on the day's work, and its foot says how to hang another, never over the work.
+    expect(wall()).toHaveAttribute('data-work', '23');
+    expect(screen.getByText(en.indexWallHint)).toBeInTheDocument();
+    expect(wall()!.closest('[data-material]')).toHaveAttribute('data-hint', 'true');
     // A coarse pointer has no hover: entering a numeral hangs nothing, nor does the focus a tap gives.
     fireEvent.pointerEnter(link, { pointerType: 'mouse' });
     fireEvent.focus(link);
-    expect(wall()).toBeNull();
+    expect(wall()).toHaveAttribute('data-work', '23');
     const first = fireEvent.click(link);
     expect(first).toBe(false);
     expect(wall()).toHaveAttribute('data-work', '31');
+    // Hung by hand, the work has the whole wall.
+    expect(screen.queryByText(en.indexWallHint)).toBeNull();
+    expect(wall()!.closest('[data-material]')).not.toHaveAttribute('data-hint');
     expect(screen.getByTestId('sheet')).toHaveTextContent('index');
     const second = fireEvent.click(link);
     expect(second).toBe(true);
+    expect(screen.getByTestId('sheet')).toHaveTextContent('none');
+  });
+
+  it('under a finger, a tap on the work the wall already holds enters it', () => {
+    pointer.matches = true;
+    renderSheet();
+    act(() => openSheet('index'));
+    expect(fireEvent.click(numeral(23))).toBe(true);
     expect(screen.getByTestId('sheet')).toHaveTextContent('none');
   });
 
@@ -331,6 +361,12 @@ describe('the Index of numbers', () => {
       expect(choice).toHaveAttribute('href', `/collection?expression=${expression}`);
       expect(choice).not.toHaveAttribute('aria-current');
     }
+    // The page's own query goes with it into another language, as the running head's menu does.
+    const languages = screen.getByRole('navigation', { name: en.language });
+    expect(within(languages).getByRole('link', { name: '日本語' })).toHaveAttribute(
+      'href',
+      '/ja/art/35?expression=light&view=still',
+    );
     // The wall and the numerals follow the visit's choice or the day's, not the page's query.
     expect(numeral(31)).toHaveAttribute('href', '/art/31');
     fireEvent.pointerEnter(numeral(31), { pointerType: 'mouse' });
@@ -353,7 +389,7 @@ describe('the Index of numbers', () => {
     pathname = '/art/31';
     view.rerender(
       <>
-        <IndexSheet works={works} locale="en" t={en} poolSize={3} pinned={DAYS.ink} />
+        <IndexSheet works={works} locale="en" t={en} pool={POOL} pinned={DAYS.ink} />
         <Probe />
       </>,
     );

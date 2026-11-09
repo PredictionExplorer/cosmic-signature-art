@@ -21,10 +21,16 @@
   padding: 0 var(--gutter);
   border-bottom: 1px solid var(--rule);
 }
+/*
+  The orderings wrap where a narrow phone, or a long language, cannot hold them in one row: the
+  sheet is one grid column, and a row that would not wrap set its width, so every row ran off
+  the screen with it (320 px: Ukrainian by 103 px, English by 35).
+*/
 .orderings {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  gap: 18px;
+  gap: 0 18px;
 }
 .divider {
   width: 1px;
@@ -85,17 +91,29 @@
   background: var(--paper);
   overflow: hidden;
 }
-/* Under a finger the empty wall says how to hang a work on it. */
-.wallHint {
-  position: absolute;
-  inset: 0;
+/*
+  Under a finger, until a work has been hung by hand, the wall's foot says how to hang one: a row
+  of its own as tall as its words in any language, so the work stands above it, never under type.
+*/
+.wall[data-hint] {
   display: grid;
-  place-items: center;
-  padding: 0 var(--gutter);
+  grid-template-rows: minmax(0, 1fr) auto;
+}
+.wall[data-hint] img {
+  position: relative;
+  inset: auto;
+  min-height: 0;
+}
+.wallHint {
+  grid-row: 2;
+  padding: 10px var(--gutter) 14px;
   color: var(--muted);
   font-size: var(--fs-control);
+  line-height: 1.3;
   text-align: center;
-  text-wrap: balance;
+}
+.wall[data-material='light'] .wallHint {
+  color: #b8b5ad;
 }
 .wall[data-material='light'] {
   background: #000;

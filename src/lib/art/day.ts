@@ -24,6 +24,11 @@ export function expressionOfDay(day: number, size: number): Expression {
   return modulo(turn, 2) === 0 ? 'light' : 'ink';
 }
 
+/** The day's work: the pool's works take turns, one UTC day each. None for an empty pool. */
+export function workOfDay(day: number, pool: readonly number[]): number | undefined {
+  return pool.length ? pool[modulo(day, pool.length)] : undefined;
+}
+
 /** The venue's date: an ISO date that pins it, or the clock. A pin that is not a date is refused. */
 export function venueDate(pinned?: string): Date {
   if (!pinned) return new Date();

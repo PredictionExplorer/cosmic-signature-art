@@ -1,6 +1,8 @@
 import { expect, test } from '@playwright/test';
 import { readFileSync } from 'node:fs';
 import { catalogs } from '../../src/lib/i18n/messages';
+import { locales, localizedPath } from '../../src/lib/i18n/routing';
+import { workOfTheDay } from '../../src/lib/art/work-of-the-day';
 import { collectionLoaded, imageLoaded, noHorizontalOverflow, pauseAmbientMotion } from './helpers';
 
 const t = catalogs.en;
@@ -198,6 +200,72 @@ test('the number ordering walks the whole collection to token zero with chapter 
   await expect(page).toHaveURL(/\/collection\?offset=36#works$/);
 });
 
+test('the pairs hang a lead and two rows of two, never three plates to a leaf', async ({
+  page,
+  isMobile,
+}) => {
+  await page.goto('/collection', { waitUntil: 'domcontentloaded' });
+  await pauseAmbientMotion(page);
+  await collectionLoaded(page);
+  const rows = page.locator('#works [data-hanging="both"] [data-shape]');
+  expect(
+    await rows.evaluateAll((nodes) => nodes.map((node) => node.getAttribute('data-shape'))),
+  ).toEqual(['1', '2', '2', '1', '2', '2', '1', '2', '2', '1', '2']);
+  // Every plate of the page is large enough to read as itself: at 1440 the least is 287 px wide,
+  // where three to a leaf had hung 172; on a phone each work is a line of its own.
+  const widths = await page
+    .locator('#works [data-hanging="both"] .work-card .art-media')
+    .evaluateAll((nodes) => nodes.map((node) => node.getBoundingClientRect().width));
+  expect(widths).toHaveLength(36);
+  const width = page.viewportSize()!.width;
+  expect(Math.min(...widths)).toBeGreaterThanOrEqual(isMobile ? 150 : width * 0.19);
+  // A row's two leaves hang the same works, so the pair's halves share their line.
+  const second = rows.nth(1);
+  const [ink, light] = await Promise.all(
+    ['paper', 'night'].map((ground) =>
+      second
+        .locator(`[data-ground="${ground}"] .work-card`)
+        .evaluateAll((cards) => cards.map((card) => Math.round(card.getBoundingClientRect().top))),
+    ),
+  );
+  expect(ink).toEqual(light);
+  expect(ink).toHaveLength(2);
+  if (!isMobile) expect(ink[0]).toBe(ink[1]);
+  await noHorizontalOverflow(page);
+});
+
+test('every cycle opens on its lead, after its strip', async ({ page }) => {
+  await page.goto('/collection?order=cycle', { waitUntil: 'domcontentloaded' });
+  await pauseAmbientMotion(page);
+  await collectionLoaded(page);
+  const opening = await page
+    .locator('#works h2[data-cycle]')
+    .evaluateAll((strips) =>
+      strips.map((strip) => [
+        strip.getAttribute('data-cycle'),
+        strip.nextElementSibling?.getAttribute('data-shape'),
+      ]),
+    );
+  expect(opening).toEqual([
+    ['0', '1'],
+    ['1', '1'],
+    ['2', '1'],
+  ]);
+  // No row hangs a place without a work: each leaf holds as many as its row's shape.
+  const short = await page
+    .locator('#works [data-shape]')
+    .evaluateAll(
+      (rows) =>
+        rows.filter((row) =>
+          [...row.querySelectorAll(':scope > [data-ground]')].some(
+            (leaf) =>
+              leaf.querySelectorAll('.work-card').length !== Number(row.getAttribute('data-shape')),
+          ),
+        ).length,
+    );
+  expect(short).toBe(0);
+});
+
 test('the cycle ordering opens every cycle with its strip; the Light view is a night section', async ({
   page,
   isMobile,
@@ -348,7 +416,14 @@ test('the Index of numbers opens from the head and the slash key, hangs the work
   await expect(thirtyOne).toHaveText('031');
   await expect(thirtyOne).toHaveAttribute('href', '/art/31');
   const wall = sheet.locator('[data-material]');
-  await expect(wall.locator('img')).toHaveCount(0);
+  // Never a bare wall: away from a work it opens on the day's work, its numeral marked.
+  await expect(wall.locator('img')).toHaveAttribute('data-work', String(workOfTheDay()));
+  await expect(
+    sheet.getByRole('link', {
+      name: `№ ${String(workOfTheDay()).padStart(3, '0')}`,
+      exact: true,
+    }),
+  ).toHaveAttribute('data-active', 'true');
   if (isMobile) {
     // The first tap hangs the work on the wall; the second enters it.
     await thirtyOne.tap();
@@ -475,6 +550,34 @@ test('on a phone the collection carries a bottom bar and the Index sheet is the 
   await sheet.getByRole('link', { name: '№ 031', exact: true }).tap();
   await expect(sheet.getByText(t.indexWallHint)).toHaveCount(0);
   await noHorizontalOverflow(page);
+});
+
+test('on the narrowest phone the Index sheet keeps to the screen, in every language', async ({
+  page,
+  isMobile,
+}) => {
+  test.skip(!isMobile, 'The pocket edition only');
+  await page.setViewportSize({ width: 320, height: 568 });
+  for (const locale of locales) {
+    await page.goto(localizedPath(locale, '/collection'), { waitUntil: 'domcontentloaded' });
+    await expect(page.locator('html')).toHaveAttribute('data-keys', 'ready');
+    // Opened as a press would, without the scroll a locator's click makes first.
+    await page.evaluate(() =>
+      [...document.querySelectorAll<HTMLButtonElement>('button[aria-controls="index-sheet"]')]
+        .find((button) => !button.closest('[inert]') && button.getClientRects().length)
+        ?.click(),
+    );
+    const sheet = page.getByRole('dialog', { name: catalogs[locale].indexSheet });
+    await expect(sheet).toBeVisible();
+    // Every row of the sheet is one grid column wide: a row that will not wrap widens them all.
+    const widths = await sheet.evaluate((dialog) => ({
+      scroll: dialog.scrollWidth,
+      client: dialog.clientWidth,
+    }));
+    expect(widths.scroll, locale).toBeLessThanOrEqual(widths.client);
+    await page.keyboard.press('Escape');
+    await expect(sheet).not.toBeVisible();
+  }
 });
 
 test('on a phone the bar keeps every word whole, in every language, with both expressions in view', async ({

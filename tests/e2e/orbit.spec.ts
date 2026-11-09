@@ -161,3 +161,83 @@ test('the Light film’s transport is its orbit’s score, and opens on the clos
     .toBeGreaterThanOrEqual(5.6);
   expect(await film.evaluate((video) => (video as HTMLVideoElement).currentTime)).toBeLessThan(10);
 });
+
+/**
+ * The Ink film's score (third-physics-phase-e.md §6): the complete Ink film keeps the Light
+ * film's clock frame for frame, after a pre-roll of bare paper; № 031's first ink is its frame
+ * 71, 3.9 % of the film. Its plate plays the local complete film, which the venue checked
+ * against that clock with the published one: the band lies on the plate's paper, lit from the
+ * first ink, the strip reads the physics once there is ink to read, and the options open the
+ * room's complete Ink film just before the closest approach, which it shows at 00:07 as well.
+ */
+test('the Ink film’s transport is its orbit’s score too, lit from its first ink', async ({
+  page,
+  isMobile,
+}, info) => {
+  test.slow();
+  await page.goto('/art/31?expression=ink');
+  const plate = page.locator('[data-artwork-stage="page"]:visible [data-layer-state="current"]');
+  if (!info.project.name.includes('reduced-motion')) {
+    await playAmbientMotion(page);
+    if (isMobile) await plate.getByRole('button', { name: t.film, exact: true }).click();
+    const band = plate.locator('[data-film-score="ink"]');
+    await expect(band).toBeVisible({ timeout: 60_000 });
+    await expect(plate.locator('.time-line')).toHaveCount(0);
+    await expect(band.locator('[data-film-score-progress]')).toHaveAttribute(
+      'data-film-score-from',
+      '3.9',
+    );
+    await expect(plate.locator('[data-film-physics]')).toHaveText(
+      /^bodies [1-3]–[1-3] · \d+\.\d apart$/,
+      { timeout: 30_000 },
+    );
+    // It lies along the plate's own foot, on its paper.
+    const screen = (await plate.locator('[data-plate-ground="paper"]').boundingBox())!;
+    const box = (await band.boundingBox())!;
+    expect(box.height).toBe(9);
+    expect(Math.abs(box.y + box.height - (screen.y + screen.height))).toBeLessThanOrEqual(1);
+  }
+  await plate.getByRole('button', { name: t.ways, exact: true }).click();
+  await plate.getByRole('button', { name: `${t.toClosestApproach} 00:07` }).click();
+  const room = page.getByRole('dialog');
+  const film = room.locator('video');
+  await expect(film).toHaveAttribute('src', /\/art\/31-ink-preview\.mp4$/);
+  await expect
+    .poll(() => film.evaluate((video) => (video as HTMLVideoElement).currentTime), {
+      timeout: 30_000,
+    })
+    .toBeGreaterThanOrEqual(5.6);
+  expect(await film.evaluate((video) => (video as HTMLVideoElement).currentTime)).toBeLessThan(10);
+  await expect(room.locator('[data-film-score="ink"]')).toBeVisible({ timeout: 60_000 });
+});
+
+/**
+ * Every work's Ink plate settles on the last eight seconds of its film, which the venue checked
+ * frame by frame against the published film's clock: № 060's Ink score is lit past its 22nd
+ * second, on paper, while the clip plays.
+ */
+test('an Ink plate’s settling clip carries its score, on paper', async ({
+  page,
+  isMobile,
+}, info) => {
+  test.skip(
+    info.project.name.includes('reduced-motion'),
+    'Reduced motion plays no film on the plate.',
+  );
+  test.slow();
+  await page.goto('/art/60?expression=ink');
+  const plate = page.locator('[data-artwork-stage="page"]:visible [data-layer-state="current"]');
+  await playAmbientMotion(page);
+  if (isMobile) await plate.getByRole('button', { name: t.film, exact: true }).click();
+  const band = plate.locator('[data-film-score="ink"]');
+  await expect(band).toBeVisible({ timeout: 60_000 });
+  const lit = band.locator('[data-film-score-progress]');
+  expect(Number(await lit.getAttribute('data-film-score-progress'))).toBeGreaterThan(70);
+  await expect(plate.locator('[data-film-physics]')).toHaveText(
+    /^bodies [1-3]–[1-3] · \d+\.\d apart$/,
+  );
+  await expect(plate.locator('video')).toHaveAttribute(
+    'src',
+    /\/art\/clips\/60-ink-settling-[a-f0-9]{16}\.mp4$/,
+  );
+});

@@ -107,6 +107,49 @@ export function readAddress(path: string): Reading {
 export const ASK_TIMEOUT_MS = 2_000;
 
 /**
+ * The work an address asked for by number, its locale set aside: "/uk/art/999" asks for 999, and
+ * so does "/verify/orbit/999", the record of its orbit. Anything else asks for no work.
+ */
+export function askedWork(address?: string): number | undefined {
+  const segments = (address ?? '').split(/[?#]/)[0].split('/').slice(1);
+  if (isLocale(segments[0] ?? '')) segments.shift();
+  const [room, name, number] = segments;
+  if (room === 'art' && segments.length === 2) return workId(name) ?? undefined;
+  if (room === 'verify' && name === 'orbit' && segments.length === 3)
+    return workId(number) ?? undefined;
+  return undefined;
+}
+
+/** Whether an address names a work at all, by number or not: "/art/abc" does, "/about" does not. */
+export function asksForWork(address?: string): boolean {
+  const segments = (address ?? '').split(/[?#]/)[0].split('/').slice(1);
+  if (isLocale(segments[0] ?? '')) segments.shift();
+  return (
+    (segments[0] === 'art' && segments.length === 2) ||
+    (segments[0] === 'verify' && segments[1] === 'orbit' && segments.length === 3)
+  );
+}
+
+/**
+ * The work next door to a number: the nearest the venue holds, the lower of two as near. A
+ * number past the collection's last work is next door to that work.
+ */
+export function nearestWork(
+  asked: number,
+  works: Iterable<number> = INDEXED_WORKS,
+): number | undefined {
+  let nearest: number | undefined;
+  for (const work of works)
+    if (
+      nearest === undefined ||
+      Math.abs(work - asked) < Math.abs(nearest - asked) ||
+      (Math.abs(work - asked) === Math.abs(nearest - asked) && work < nearest)
+    )
+      nearest = work;
+  return nearest;
+}
+
+/**
  * Whether the indexer says, in so many words, that a work has no record. Works are minted after
  * the index is built, and the venue never infers a total from it, so a number beyond the index
  * is asked. Only the explicit "record not found" refuses it: an outage, a slow answer or

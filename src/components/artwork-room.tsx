@@ -36,7 +36,15 @@ import { WavelengthLens } from './wavelength-lens';
 import { WhenLens } from './when-lens';
 import { FilmScoreBand } from './film-score-band';
 import styles from './artwork-room.module.css';
-import { pairName, physicsAt, type FilmScore } from '@/lib/physics/film-score';
+import {
+  markedAt,
+  markedFrom,
+  pairName,
+  physicsAt,
+  scoreClock,
+  type FilmScore,
+  type InkClock,
+} from '@/lib/physics/film-score';
 import { lightFilmDuration } from '@/lib/physics/light-film';
 import { ART_HEIGHT, ART_WIDTH } from '@/lib/art/constants';
 import { stillSourceSet } from '@/lib/art/types';
@@ -87,10 +95,11 @@ type ArtworkRoomProps = {
    */
   derivedViews?: boolean;
   /**
-   * The Light film's score (third-physics.md §5.5), as the viewer measured it: the complete
-   * Light film's transport carries it, and its readout says the physics of the moment.
+   * The films' score (third-physics.md §5.5), as the viewer measured it: the complete film's
+   * transport carries it, and its readout says the physics of the moment. Every Light film keeps
+   * its clock; an Ink film does where `ink` names it (third-physics-phase-e.md §6).
    */
-  filmScore?: { score: FilmScore; hues: readonly number[] } | null;
+  filmScore?: { score: FilmScore; hues: readonly number[]; ink?: InkClock } | null;
   onClose: () => void;
 };
 
@@ -429,10 +438,15 @@ export function ArtworkRoom({
     () => new Intl.NumberFormat(locale, { minimumFractionDigits: 1, maximumFractionDigits: 1 }),
     [locale],
   );
-  // The score belongs to the complete Light film, the one whose clock it shares.
-  const scored =
-    filmShown && derivedViews && media?.id === 'light' && film?.id === 'normal' ? filmScore : null;
-  const moment = scored ? physicsAt(scored.score, time.current) : null;
+  // The score belongs to a complete film on its clock: the Light film, and an Ink film the venue
+  // checked against it, whose readout waits for its first ink.
+  const kept =
+    filmShown && derivedViews && film?.id === 'normal' && media
+      ? scoreClock(filmScore ?? undefined, media.id, film)
+      : null;
+  const scored = filmScore && kept ? { ...filmScore, clock: kept } : null;
+  const moment =
+    scored && markedAt(scored.clock, time.current) ? physicsAt(scored.score, time.current) : null;
 
   /*
     A lens that leaves takes its slider with it. Focus that was on the slider would fall to the
@@ -1106,6 +1120,8 @@ export function ArtworkRoom({
                 score={scored.score}
                 hues={scored.hues}
                 progress={time.current / lightFilmDuration(scored.score.steps)}
+                material={scored.clock.material}
+                from={markedFrom(scored.clock, scored.score)}
                 className={styles.score}
               />
             ) : null}

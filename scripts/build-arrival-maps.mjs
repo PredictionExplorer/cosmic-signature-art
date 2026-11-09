@@ -34,7 +34,8 @@ import {
  * leaves the marks as a soft shape; the whole field is then normalised to 0–255 and kept as
  * a lossless 576 × 372 WebP, a few kilobytes, beside its source film's hash.
  *
- * The maps order a crossing between the two published stills; they are never shown as the
+ * The maps order the crossing between the two published stills, and a plate's run back from its
+ * still to its film's first frame (src/components/plate-rewind.ts); they are never shown as the
  * work. Each film is read whole once (approved 2026-10-30) through the verified cache, so a
  * rebuild with unchanged sources rereads nothing from the origin.
  */

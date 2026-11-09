@@ -2,6 +2,8 @@ import { readFileSync } from 'node:fs';
 import { expect, test } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
 import { catalogs } from '../../src/lib/i18n/messages';
+import { fill } from '../../src/lib/i18n/format';
+import { workNumber } from '../../src/lib/art/number';
 import { noHorizontalOverflow } from './helpers';
 
 const t = catalogs.en;
@@ -124,23 +126,27 @@ test('a phone holds the whole transcript within its width, in a long language to
 test('a number without a record is not here', async ({ page }) => {
   // Refused before the page renders (src/lib/addresses.ts): a true 404, with the venue's own
   // not-found in the visitor's language, marked noindex.
-  const notHere = async (path: string, locale: 'en' | 'ja' = 'en') => {
+  const notHere = async (path: string, words: string, locale: 'en' | 'ja' = 'en') => {
     const response = await page.goto(path);
     expect(response?.status(), path).toBe(404);
     await expect(page.locator('html')).toHaveAttribute('lang', locale);
-    await expect(
-      page.getByRole('heading', { level: 1, name: catalogs[locale].notFound }),
-    ).toBeVisible();
+    await expect(page.getByRole('heading', { level: 1, name: words })).toBeVisible();
     await expect(page.locator('meta[name="robots"]')).toHaveAttribute('content', /noindex/);
     await expect(
       page.getByRole('heading', { name: catalogs[locale].verifyOrbitLineByLine }),
     ).toHaveCount(0);
   };
-  await notHere('/verify/orbit/999');
+  // A number the collection does not hold has not been imprinted; a work it holds, misspelt, or a
+  // name that is no number, is not here.
+  await notHere('/verify/orbit/999', fill(t.notImprinted, { work: workNumber(999) }));
   // Only the one spelling of a number that has a record, in any language.
-  await notHere('/verify/orbit/031');
-  await notHere('/verify/orbit/abc');
-  await notHere('/ja/verify/orbit/72', 'ja');
+  await notHere('/verify/orbit/031', t.notFound);
+  await notHere('/verify/orbit/abc', t.notFound);
+  await notHere(
+    '/ja/verify/orbit/72',
+    fill(catalogs.ja.notImprinted, { work: workNumber(72) }),
+    'ja',
+  );
   const known = await page.goto('/ja/verify/orbit/71');
   expect(known?.status()).toBe(200);
   await expect(

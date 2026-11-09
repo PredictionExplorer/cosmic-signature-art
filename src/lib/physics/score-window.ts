@@ -2,7 +2,7 @@ import { measureWindow, type OrbitWindow } from './orbit';
 import { SCORE_SAMPLES, type FilmScore } from './film-score';
 
 /**
- * A Light film's score measured (film-score.ts): the recorded window run again from its
+ * A work's films' score measured (film-score.ts): the recorded window run again from its
  * verified first state, as the generator measures it, and sampled about two thousand times for
  * the transport. Run in the score's worker; the page only reads the result.
  */
