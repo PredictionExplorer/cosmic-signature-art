@@ -168,8 +168,10 @@ async function handover() {
     expect.stringMatching(/\/art\/clips\/31-ink-opening-[a-f0-9]{16}\.mp4$/),
   );
   Object.defineProperty(opening, 'duration', { configurable: true, value: 10 });
+  Object.defineProperty(opening, 'paused', { configurable: true, value: false });
   fireEvent.playing(opening);
-  Object.defineProperty(opening, 'currentTime', { configurable: true, value: 2.5, writable: true });
+  // Two seconds of clip past where it began (just before the first mark), the film is fetched.
+  Object.defineProperty(opening, 'currentTime', { configurable: true, value: 3.5, writable: true });
   fireEvent.timeUpdate(opening);
   const relay = document.querySelector<HTMLVideoElement>(
     '[data-layer-state="current"] video[data-relay]',

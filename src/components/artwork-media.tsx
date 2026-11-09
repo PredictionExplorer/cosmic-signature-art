@@ -16,6 +16,9 @@ import { getPlateGround } from '@/lib/art/plate-records';
 import type { ArtFilm, ArtInterpretation } from '@/lib/art/types';
 import { ART_HEIGHT, ART_WIDTH } from '@/lib/art/constants';
 import { stillSourceSet } from '@/lib/art/types';
+import { REWIND_MS, openingAt, parseDuration } from '@/lib/crossing/rewind';
+import { parseEasing } from '@/lib/crossing/timing';
+import { prepareRewind, type Rewind } from './plate-rewind';
 
 /** The settled still is held as an object before any film may begin (--t-hold). */
 export const HOLD_MS = 1200;
@@ -25,6 +28,11 @@ export const RELAY_PREFETCH_S = 2;
 export const RELAY_LEAD_S = 2 / 60;
 /** The relay must hold this much film beyond the cue before it may take over. */
 export const RELAY_BUFFER_S = 2;
+/**
+ * A film that is to be run back to must hold its first frame, and enough beyond it to play,
+ * within this long of being asked; otherwise the plate crosses to it as it always has.
+ */
+export const REWIND_WAIT_MS = 4000;
 /**
  * The plate's layout width for the still ladder: 100 vw on a phone, and on a desk the plate
  * fitted by height to the room (100svh − head − strip) in the work's own proportion.
@@ -117,6 +125,41 @@ export function filmLength(
   return filmTime(film, Number.isFinite(playerDuration) ? playerDuration : 0);
 }
 
+/**
+ * The film can be run back to and played from `at`: it holds that frame and data beyond it
+ * (HAVE_FUTURE_DATA), and is not seeking. False if it cannot within `timeout`, or is stopped.
+ */
+export function filmReady(
+  player: HTMLVideoElement,
+  at: number,
+  signal: AbortSignal,
+  timeout = REWIND_WAIT_MS,
+): Promise<boolean> {
+  return new Promise((resolve) => {
+    if (signal.aborted) return resolve(false);
+    const events = ['loadeddata', 'canplay', 'canplaythrough', 'seeked', 'progress'] as const;
+    const finish = (ready: boolean) => {
+      clearTimeout(timer);
+      events.forEach((name) => player.removeEventListener(name, check));
+      signal.removeEventListener('abort', stop);
+      resolve(ready);
+    };
+    const stop = () => finish(false);
+    const check = () => {
+      if (
+        player.readyState >= HTMLMediaElement.HAVE_FUTURE_DATA &&
+        !player.seeking &&
+        Math.abs(player.currentTime - at) < 0.05
+      )
+        finish(true);
+    };
+    const timer = setTimeout(stop, timeout);
+    events.forEach((name) => player.addEventListener(name, check));
+    signal.addEventListener('abort', stop, { once: true });
+    check();
+  });
+}
+
 function buffered(player: HTMLVideoElement, from: number, to: number): boolean {
   const ranges = player.buffered;
   for (let index = 0; index < ranges.length; index += 1)
@@ -133,6 +176,10 @@ function buffered(player: HTMLVideoElement, from: number, to: number): boolean {
  * The home's opening clip hands over to the complete film: the film is fetched from
  * RELAY_PREFETCH_S into the clip, cued two frames ahead at the clip's own time, and shown
  * on its first presented frame; a clip that ends first holds its last frame as `arriving`.
+ *
+ * A film performed from the beginning starts just before the work's first mark, and the still
+ * runs back to that frame first, in the reverse of the order the work was made
+ * (plate-rewind.ts), so the plate returns to the bare sheet rather than vanishing into it.
  */
 function ArtworkMediaSession({
   media,
@@ -156,7 +203,7 @@ function ArtworkMediaSession({
   onHandover,
   onFailure,
 }: ArtworkMediaProps) {
-  const { paused, theatre } = useMotion();
+  const { paused, theatre, reducedMotion } = useMotion();
   const { constrained } = useMediaPolicy();
   const hushed = theatre === 'hushed';
   const container = useRef<HTMLDivElement>(null);
@@ -223,6 +270,39 @@ function ArtworkMediaSession({
   const clipDone = useRef(false);
   /** Film time a remounted plate resumes at, when the clip cannot show it and the relay must. */
   const resumeAt = useRef<number | undefined>(undefined);
+  /** Where the work first shows in its film, measured on its opening clip, if it has one. */
+  const firstMark = media?.firstMarkSeconds;
+  /** Where the plate's film starts from the beginning, in its own seconds: just before the first mark. */
+  const beginning = openingAt(film, firstMark);
+  /** The same for the complete film an opening clip hands over to. */
+  const relayBeginning = openingAt(relayFilm, firstMark);
+  /** The film opens at the start of the work: a complete film or an opening clip, not an ending. */
+  const opensAtStart = !!film && (film.startSeconds ?? 0) === 0;
+  /** The plate performs from the beginning rather than resuming past the first mark. */
+  const fromTheBeginning = opensAtStart && startAt <= (firstMark ?? 0);
+  const arrivalMap = media?.arrival?.src;
+  /** The run back's state, for the films' snap and the tests: waiting for the film, running, cued. */
+  const [rewinding, setRewinding] = useState<'waiting' | 'running' | 'cued' | null>(null);
+  /** The run back, once its map has been read; null until then, or where it cannot be drawn. */
+  const rewind = useRef<Rewind | null>(null);
+  const rewinds = useRef(0);
+  /** A frame of the film has shown since it last began; until then, a start runs the still back. */
+  const begun = useRef(false);
+  /** The canvas the still runs back on: its map is read as it mounts, while the still holds. */
+  const attachRewind = useCallback(
+    (canvas: HTMLCanvasElement | null) => {
+      if (!canvas || !arrivalMap) return;
+      let attached = true;
+      void prepareRewind(canvas, arrivalMap).then((prepared) => {
+        if (attached) rewind.current = prepared;
+      });
+      return () => {
+        attached = false;
+        rewind.current = null;
+      };
+    },
+    [arrivalMap],
+  );
   const cardSource =
     thumbnail && !thumbnailFailed ? (media?.thumbnail ?? media?.still) : media?.still;
   const preview =
@@ -254,11 +334,69 @@ function ArtworkMediaSession({
   const reportPlayback = useEffectEvent((playing: boolean) => onPlaybackChange?.(playing));
   const reportSettled = useEffectEvent(() => onSettled?.());
   /** A replay begins at the film's first frame; the clock is told so before any frame shows. */
-  const reportRestart = useEffectEvent((player: HTMLVideoElement) =>
+  const reportRestart = useEffectEvent((player: HTMLVideoElement, at: number) =>
     onProgress?.(
-      filmTime(relay === 'live' ? relayFilm : film, 0),
+      filmTime(relay === 'live' ? relayFilm : film, at),
       filmLength(film, Number.isFinite(player.duration) ? player.duration : 0, relayFilm),
     ),
+  );
+  /**
+   * The film begins. From the beginning, with the work's order read and motion allowed, the
+   * still runs back to the film's first frame once the film holds it, then the film plays on from
+   * that frame; otherwise, or if the film cannot be ready in time, the plate crosses as before.
+   */
+  const beginFilm = useEffectEvent(
+    (
+      player: HTMLVideoElement,
+      signal: AbortSignal,
+      play: (refused?: () => void) => void,
+      restarted: boolean,
+    ) => {
+      const current = live.current ? relayFilm : film;
+      const rewinder = rewind.current;
+      const runsBack =
+        !!rewinder &&
+        !begun.current &&
+        !reducedMotion &&
+        (restarted || fromTheBeginning) &&
+        (current?.startSeconds ?? 0) === 0;
+      if (!runsBack) {
+        play();
+        return;
+      }
+      const run = ++rewinds.current;
+      const mine = () => run === rewinds.current && !signal.aborted;
+      const at = openingAt(current, firstMark);
+      // The run back starts over the still: a film still holding its last frame snaps away.
+      setHasFrame(false);
+      setRelayFrame(false);
+      setRewinding('waiting');
+      void (async () => {
+        const ready = await filmReady(player, at, signal);
+        if (!mine()) return;
+        if (!ready) {
+          setRewinding(null);
+          play();
+          return;
+        }
+        setRewinding('running');
+        const style = container.current ? getComputedStyle(container.current) : null;
+        const done = await rewinder.run(player, {
+          duration: parseDuration(style?.getPropertyValue('--t-rewind') ?? '', REWIND_MS),
+          ease: parseEasing(style?.getPropertyValue('--ease-overture') ?? ''),
+          still: container.current?.querySelector<HTMLImageElement>('img.art-still'),
+          signal,
+        });
+        if (!mine() || !done) return;
+        setRewinding('cued');
+        play(() => {
+          // A film the browser will not play leaves the still, as a refusal always has.
+          if (run !== rewinds.current) return;
+          rewind.current?.clear();
+          setRewinding(null);
+        });
+      })();
+    },
   );
   const settle = useCallback(() => setSettled(true), []);
   const attachStill = useCallback(
@@ -292,6 +430,9 @@ function ArtworkMediaSession({
     const opening = video.current;
     const second = relayVideo.current;
     if (!relayFilm || !opening || !second || relay !== 'loading' || relayCued.current) return;
+    // The film takes over a clip that is playing or has ended, never one held paused: in the
+    // hold, while the still runs back, or when the visitor has paused it.
+    if (opening.paused && !clipDone.current) return;
     const at = clipDone.current
       ? (resumeAt.current ??
         (Number.isFinite(opening.duration) ? opening.duration : opening.currentTime))
@@ -327,6 +468,7 @@ function ArtworkMediaSession({
     onPlaybackChange?.(true);
   }
   function fail() {
+    begun.current = false;
     setFailure({ restart, playRequest });
     setHasFrame(false);
     setRelayFrame(false);
@@ -372,21 +514,28 @@ function ArtworkMediaSession({
     if (!player) return;
     let timer: ReturnType<typeof setTimeout> | undefined;
     let canceled = false;
-    const play = () => {
+    const controller = new AbortController();
+    const play = (refused?: () => void) => {
       void player.play().catch(() => {
         // Autoplay refusal preserves the original still and exposes a Play control.
-        if (!canceled) reportPlayback(false);
+        if (canceled) return;
+        refused?.();
+        reportPlayback(false);
       });
     };
-    if (restartRequested || (playRequested && ended.current)) {
-      player.currentTime = 0;
+    const restarted = restartRequested || (playRequested && ended.current);
+    const begin = () => beginFilm(player, controller.signal, play, restarted);
+    if (restarted) {
+      const at = live.current ? relayBeginning : beginning;
+      player.currentTime = at;
+      begun.current = false;
       ended.current = false;
       clipDone.current = false;
       relayFailed.current = false;
       resumeAt.current = undefined;
       clearTimeout(restTimer.current);
       setResting(false);
-      reportRestart(player);
+      reportRestart(player, at);
     }
     // An explicit request is intent; it never waits out the hold.
     if (restartRequested || playRequested) held.current = true;
@@ -400,16 +549,40 @@ function ArtworkMediaSession({
         if (layered && !settled) return;
         timer = setTimeout(() => {
           held.current = true;
-          play();
+          begin();
         }, HOLD_MS);
-      } else play();
+      } else begin();
     } else player.pause();
     return () => {
       canceled = true;
+      controller.abort();
       player.pause();
       if (timer) clearTimeout(timer);
     };
-  }, [shouldPlay, hold, layered, settled, restart, playRequest]);
+  }, [shouldPlay, hold, layered, settled, restart, playRequest, beginning, relayBeginning]);
+  // A run back that was stopped before its film began leaves the still as it was.
+  useEffect(() => {
+    if (shouldPlay || !rewinding || begun.current) return;
+    rewinds.current += 1;
+    rewind.current?.clear();
+    const frame = requestAnimationFrame(() => setRewinding(null));
+    return () => cancelAnimationFrame(frame);
+  }, [shouldPlay, rewinding]);
+  // Once the film shows its first frame over the canvas's copy of it, the copy is let go.
+  useEffect(() => {
+    if (rewinding !== 'cued' || !(hasFrame || relayFrame)) return;
+    let second = 0;
+    const first = requestAnimationFrame(() => {
+      second = requestAnimationFrame(() => {
+        rewind.current?.clear();
+        setRewinding(null);
+      });
+    });
+    return () => {
+      cancelAnimationFrame(first);
+      cancelAnimationFrame(second);
+    };
+  }, [rewinding, hasFrame, relayFrame]);
 
   const loading = eager || priority ? 'eager' : 'lazy';
   const style = ground ? ({ '--plate-ground': ground.tone } as CSSProperties) : undefined;
@@ -518,6 +691,7 @@ function ArtworkMediaSession({
       data-material={media?.id ?? 'ink'}
       data-arrival={arrival}
       data-edge={ground?.edge ? 'true' : undefined}
+      data-rewind={rewinding ?? undefined}
       data-handover={
         relayFilm && mounted
           ? relay === 'live'
@@ -534,18 +708,26 @@ function ArtworkMediaSession({
           <span />
         </div>
       )}
+      {/* Kept while the plate may perform from the beginning, so the order read for it outlasts a
+          film that leaves and returns; cleared, it holds no pixels. */}
+      {ambient && !still && opensAtStart && arrivalMap && !failed ? (
+        <canvas ref={attachRewind} className="art-rewind" aria-hidden="true" />
+      ) : null}
       {mounted && relay !== 'live' ? (
         <video
           ref={attachVideo}
           src={film.src}
           muted
           playsInline
-          preload="metadata"
+          // A film the still will run back to is fetched while the still holds.
+          preload={fromTheBeginning && arrivalMap ? 'auto' : 'metadata'}
           aria-hidden="true"
           className={videoClass(hasFrame)}
           onLoadedMetadata={(event) => {
             const player = event.currentTarget;
-            const at = Math.max(0, startAt - (film.startSeconds ?? 0));
+            const at = fromTheBeginning
+              ? beginning
+              : Math.max(0, startAt - (film.startSeconds ?? 0));
             if (relayFilm && restart === 0 && at >= player.duration - 1) {
               // The plate resumes past the clip: the complete film carries on from there.
               player.currentTime = Math.max(0, player.duration - 1);
@@ -554,10 +736,14 @@ function ArtworkMediaSession({
               setRelay('loading');
               return;
             }
-            player.currentTime = Math.min(restart > 0 ? 0 : at, Math.max(0, player.duration - 1));
+            player.currentTime = Math.min(
+              restart > 0 ? beginning : at,
+              Math.max(0, player.duration - 1),
+            );
           }}
           onPlaying={() => {
             if (live.current) return;
+            begun.current = true;
             setHasFrame(true);
             setHasPlayed(true);
             held.current = true;
@@ -580,7 +766,13 @@ function ArtworkMediaSession({
               onPlaybackChange?.(true);
             }
             if (relayFilm) {
-              if (relay === 'idle' && player.currentTime >= RELAY_PREFETCH_S) setRelay('loading');
+              // The complete film is fetched once the clip has played this far from where it began.
+              if (
+                relay === 'idle' &&
+                !player.paused &&
+                player.currentTime >= beginning + RELAY_PREFETCH_S
+              )
+                setRelay('loading');
               else tryRelay();
             }
           }}
@@ -623,7 +815,7 @@ function ArtworkMediaSession({
             // A live relay that returns (the room closed, the policy changed) resumes where the plate was.
             const player = event.currentTarget;
             player.currentTime = Math.min(
-              restart > 0 ? 0 : Math.max(0, startAt),
+              restart > 0 ? relayBeginning : Math.max(0, startAt),
               Math.max(0, player.duration - 1),
             );
           }}
@@ -632,6 +824,7 @@ function ArtworkMediaSession({
           onCanPlayThrough={tryRelay}
           onPlaying={(event) => {
             if (live.current) {
+              begun.current = true;
               setRelayFrame(true);
               onPlaybackChange?.(true);
               return;

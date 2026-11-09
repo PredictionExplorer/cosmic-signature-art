@@ -5,6 +5,7 @@ import { getCuratedArtwork } from '@/lib/art/catalog';
 import type { ArtInterpretation } from '@/lib/art/types';
 import { renderToString } from 'react-dom/server';
 import { ArtworkMedia, PLATE_SIZES, cappedSourceSet } from './artwork-media';
+import { REWIND_LEAD_S } from '@/lib/crossing/rewind';
 
 const motion = vi.hoisted(() => ({ paused: false, theatre: 'playing' as 'playing' | 'hushed' }));
 vi.mock('./motion-provider', () => ({ useMotion: () => motion }));
@@ -66,6 +67,15 @@ function player(container: HTMLElement): HTMLVideoElement {
   expect(video).not.toBeNull();
   return video!;
 }
+
+/** A film the browser is playing: `playing` has fired and the player no longer reports paused. */
+function playOn(video: HTMLVideoElement) {
+  Object.defineProperty(video, 'paused', { configurable: true, value: false });
+  fireEvent.playing(video);
+}
+
+/** Where № 031's film starts from the beginning: just before its first mark, not on the bare sheet. */
+const fromTheStart = () => ink(31).firstMarkSeconds! - REWIND_LEAD_S;
 
 function imagePath(): string {
   return new URL((screen.getByRole('img') as HTMLImageElement).src).pathname;
@@ -410,7 +420,7 @@ describe('artwork media delivery', () => {
         onProgress={onProgress}
       />,
     );
-    expect(video.currentTime).toBe(0);
+    expect(video.currentTime).toBeCloseTo(fromTheStart(), 6);
   });
 
   it('holds the final frame when a film ends and never rewinds on its own', () => {
@@ -495,13 +505,17 @@ describe('artwork media delivery', () => {
     const box = container.querySelector('.art-media')!;
     expect(box).toHaveAttribute('data-handover', 'opening');
     Object.defineProperty(clip, 'duration', { configurable: true, value: 10 });
-    fireEvent.playing(clip);
+    playOn(clip);
     clip.currentTime = 1;
     fireEvent.timeUpdate(clip);
     // The clock states the complete film's length from the first frame.
     expect(onProgress).toHaveBeenLastCalledWith(1, complete.durationSeconds);
     expect(container.querySelectorAll('video')).toHaveLength(1);
-    clip.currentTime = 2.5;
+    // Two seconds of clip past where it began, the complete film is fetched behind it.
+    clip.currentTime = fromTheStart() + 1.9;
+    fireEvent.timeUpdate(clip);
+    expect(container.querySelectorAll('video')).toHaveLength(1);
+    clip.currentTime = 3.5;
     fireEvent.timeUpdate(clip);
     const relay = container.querySelector<HTMLVideoElement>('video[data-relay]')!;
     expect(relay).toHaveAttribute('src', complete.src);
@@ -518,7 +532,7 @@ describe('artwork media delivery', () => {
     });
     vi.mocked(HTMLMediaElement.prototype.play).mockClear();
     fireEvent.canPlay(relay);
-    expect(relay.currentTime).toBeCloseTo(2.5 + 2 / 60, 3);
+    expect(relay.currentTime).toBeCloseTo(3.5 + 2 / 60, 3);
     expect(HTMLMediaElement.prototype.play).toHaveBeenCalledOnce();
     vi.mocked(HTMLMediaElement.prototype.pause).mockClear();
     fireEvent.playing(relay);
@@ -641,10 +655,10 @@ describe('artwork media delivery', () => {
     enterViewport();
     const clip = player(container);
     Object.defineProperty(clip, 'duration', { configurable: true, value: 10 });
-    fireEvent.playing(clip);
+    playOn(clip);
     vi.mocked(HTMLMediaElement.prototype.pause).mockClear();
     onPlaybackChange.mockClear();
-    clip.currentTime = 2.5;
+    clip.currentTime = 3.5;
     fireEvent.timeUpdate(clip);
     expect(container.querySelector('video[data-relay]')).not.toBeNull();
     // The relay's arrival is the relay's own business: the clip beneath it was not paused.
@@ -668,8 +682,8 @@ describe('artwork media delivery', () => {
     enterViewport();
     const clip = player(container);
     Object.defineProperty(clip, 'duration', { configurable: true, value: 10 });
-    fireEvent.playing(clip);
-    clip.currentTime = 2.5;
+    playOn(clip);
+    clip.currentTime = 3.5;
     fireEvent.timeUpdate(clip);
     const relay = container.querySelector<HTMLVideoElement>('video[data-relay]')!;
     fireEvent.error(relay);
@@ -696,7 +710,7 @@ describe('artwork media delivery', () => {
     expect(onHandover).toHaveBeenLastCalledWith(true);
   });
 
-  it('replays forward from the first frame only on an explicit request', () => {
+  it('replays forward from just before the first mark only on an explicit request', () => {
     const { container, rerender } = render(
       <ArtworkMedia media={ink(31)} alt="Signature 31 in ink" />,
     );
@@ -707,7 +721,7 @@ describe('artwork media delivery', () => {
     fireEvent.ended(video);
     vi.mocked(HTMLMediaElement.prototype.play).mockClear();
     rerender(<ArtworkMedia media={ink(31)} alt="Signature 31 in ink" playRequest={1} />);
-    expect(video.currentTime).toBe(0);
+    expect(video.currentTime).toBeCloseTo(fromTheStart(), 6);
     expect(HTMLMediaElement.prototype.play).toHaveBeenCalledOnce();
   });
 
@@ -747,7 +761,7 @@ describe('artwork media delivery', () => {
         onPlaybackChange={onPlaybackChange}
       />,
     );
-    expect(video.currentTime).toBe(0);
+    expect(video.currentTime).toBeCloseTo(fromTheStart(), 6);
     expect(HTMLMediaElement.prototype.play).toHaveBeenCalledOnce();
   });
 
