@@ -5,6 +5,7 @@ Every plan and record behind cosmic.art, one line each. Start with the [README](
 1. Two Grounds, 26 October 2026: the vision and its first phases.
 2. Third Physics, 29 October: Phases A to E.
 3. First Light, 7 November: F0 to F4, under way.
+4. After the frame, 10 November: the true ending and the object behind the picture. Planned; its first step is built.
 
 Each phase note records what shipped, how it was proved, and what it left open. Dates are UTC.
 
@@ -13,6 +14,7 @@ Each phase note records what shipped, how it was proved, and what it left open. 
 - [world-class-gallery-vision.md](world-class-gallery-vision.md): the Two Grounds plan. It begins with an audit of the live site and a benchmark of 31 reference sites, then sets out the vision and Phases 0 to 2.
 - [third-physics.md](third-physics.md): the direction after Two Grounds, physics upon physics upon the page, with its working study in `concepts/third-physics-v1`.
 - [first-light.md](first-light.md): the current programme. It covers First Light, the phases F0 to F4, the performance budgets (§9) and F0 and F1 as built (§12–13).
+- [after-the-frame.md](after-the-frame.md): the phase after First Light. It holds an audit of every work's fate and computed energy, what the literature says about awe and being moved, what nine designers changed in a first draft, the steps in order, the owner's open decisions, and step 0 as built (§8.1).
 - [art-direction-exploration.md](art-direction-exploration.md): the first creative exploration of 22 October: the Passage and the Atlas, Ink first, and movement as the organising theme.
 - [art-presentation-research.md](art-presentation-research.md): research, from their own pages, into how leading digital art venues present work.
 - [site-and-collector-experience.md](site-and-collector-experience.md): the brief for what the site should make a visitor and a collector feel and do.
@@ -33,6 +35,10 @@ In the order they shipped. Third Physics Phases A and E are listed under physics
 
 - [third-physics-phase-a.md](third-physics-phase-a.md): the orbit, re-performed. Each work's orbit is re-derived from its seed in the browser, and proved equal to the published record to the last bit.
 - [third-physics-phase-e.md](third-physics-phase-e.md): the film's score, the Wavelength lens, and Verify an orbit, where a visitor watches their own browser reach the published record.
+
+## The code
+
+- [codebase-review.md](codebase-review.md): the review of 9–10 November 2026. It lists 46 findings, each made by one reviewer and confirmed by a second who was told to refute it, in the order to take them, with what the codebase does well and must keep.
 
 ## Media pipeline
 
