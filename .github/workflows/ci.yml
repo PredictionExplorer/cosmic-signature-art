@@ -72,11 +72,49 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run build
-      - run: npm run test:e2e -- --project=${{ matrix.project }}
+      # The budget spec runs in the budgets job below, alone on its runner.
+      - run: npm run test:e2e -- --project=${{ matrix.project }} --grep-invert @budget
       - uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v5
         if: always()
         with:
           name: browsers-${{ matrix.project }}
+          path: |
+            playwright-report/
+            test-results/
+          retention-days: 14
+
+  # The performance budgets, set in scripts/budgets.json. First the JavaScript each route loads
+  # before it can hydrate, read from the production build; then, in Chromium on a desk and a
+  # phone, when the art paints and whether anything jumps. Timings need a quiet machine, so the
+  # paint is measured on a runner of its own, one page at a time. ARCHITECTURE.md records the
+  # baseline each budget was set from.
+  budgets:
+    name: performance budgets
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    # The browsers' own image, as for the browser suite above.
+    container:
+      image: mcr.microsoft.com/playwright:v1.64.1-noble
+      options: --user 1001 --ipc=host --init
+    env:
+      COSMIC_VENUE_DATE: '2026-11-06'
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - id: build
+        run: npm run build
+      - run: npm run test:budgets:js
+      # Measured even when a script budget failed: the two say different things.
+      - if: ${{ !cancelled() && steps.build.outcome == 'success' }}
+        run: npm run test:budgets:paint
+      - uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v5
+        if: always()
+        with:
+          name: budgets
           path: |
             playwright-report/
             test-results/
@@ -109,7 +147,7 @@ jobs:
   # passed. It runs even when one failed or was cancelled, and then fails itself.
   verify:
     if: always()
-    needs: [checks, browsers, auction]
+    needs: [checks, browsers, auction, budgets]
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:

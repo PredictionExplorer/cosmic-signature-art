@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   FRONT_EDGE,
   cubicBezier,
+  invertEasing,
   parseEasing,
   revealAt,
   revealEnd,
@@ -31,6 +32,20 @@ describe('the crossing clock', () => {
     expect(parseEasing(' cubic-bezier(0.76, 0, 0.24, 1)')(0.5)).toBeCloseTo(0.5, 5);
     expect(parseEasing('ease-in-out')(0.3)).toBe(0.3);
     expect(parseEasing('')(2)).toBe(1);
+  });
+
+  it('reads a curve backwards: the time at which it reaches a share of the travel', () => {
+    const turn = cubicBezier(0.76, 0, 0.24, 1);
+    const clock = invertEasing(turn);
+    for (const x of [0.01, 0.1, 0.3, 0.5, 0.7, 0.9, 0.99]) expect(clock(turn(x))).toBeCloseTo(x, 6);
+    // The ends are the ends, and beyond them the clock holds.
+    expect(clock(0)).toBe(0);
+    expect(clock(1)).toBe(1);
+    expect(clock(-0.5)).toBe(0);
+    expect(clock(1.5)).toBe(1);
+    // Through the curve's slow start a little travel is a good deal of time.
+    expect(clock(0.05)).toBeGreaterThan(0.2);
+    expect(invertEasing((x) => x)(0.42)).toBeCloseTo(0.42, 9);
   });
 
   it('maps the seam to the reveal, from before the first mark to past the farthest wall', () => {

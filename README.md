@@ -1,99 +1,221 @@
-# Cosmic Signature Art
+# cosmic.art
 
-The Next.js gallery for `cosmic.art`: Ink first, authentic movement, one existing Cosmic Signature collection. The production application lives in `src/`; the earlier visual studies remain in `concepts/`.
+cosmic.art is the venue for the 72 Cosmic Signature works.
 
-Implementation was authorized on October 22, 2026; website publication on GitHub and Vercel was authorized on October 24. Auction transactions remain inactive until a reviewed contract deployment address and exact runtime code hash are configured. There is no simulated live auction or fabricated price in the deployed application.
+Each work is a recorded three-body orbit. Three bodies are set moving by a seed, simulated for two million steps, and rendered twice by the generator: as **Light**, trails on black, and as **Ink**, sumi on a paper sheet. The two are equal expressions of one work. The venue hangs them as plates and turns between them in the order each film made its marks. In the visitor's own browser it derives again, to the last bit, the orbit that made each work.
 
-## Hosting
+This repository is the venue:
 
-The repository is [PredictionExplorer/cosmic-signature-art](https://github.com/PredictionExplorer/cosmic-signature-art). Vercel's `cosmic-signature-art` project in the `Randomwalknft` team deploys `main`; the running gallery is available at [cosmic-signature-art.vercel.app](https://cosmic-signature-art.vercel.app/). Node 24 and `npm ci` are configured on Vercel. Canonical URLs, language alternatives, social metadata, robots and sitemap use `https://cosmic.art`.
+- `src/`: a Next.js 16 application (React 19, TypeScript, Tailwind CSS 4);
+- `scripts/`: the offline pipelines that measure the publisher's files, and the checks CI runs;
+- `tests/`: the browser suites;
+- `docs/`: the plans and records;
+- `concepts/`: the earlier visual studies.
 
-As of October 24, 2026, `cosmic.art` is attached and ownership-verified on the new Vercel project, but public DNS is still pending. It uses `ns1.verification-hold.suspended-domain.com` / `ns2.verification-hold.suspended-domain.com` at its external registrar (PublicDomainRegistry, potentially via a reseller). Complete the registrar's contact verification and restore working DNS. The Vercel DNS zone already exists; its intended nameservers are `ns1.vercel-dns.com` and `ns2.vercel-dns.com`. Preserve unrelated records and verify HTTPS after the change. The old project and its repository are preserved.
+Where it stands:
 
-Social preview images resolve against an origin crawlers can reach: `NEXT_PUBLIC_DEPLOYMENT_URL` when set, otherwise a `*.vercel.app` host (`VERCEL_PROJECT_PRODUCTION_URL` only when it is itself a Vercel host, else `VERCEL_BRANCH_URL` or `VERCEL_URL`), because the attached `cosmic.art` does not resolve yet; set `NEXT_PUBLIC_DEPLOYMENT_URL=https://cosmic.art` once its DNS works. Share cards therefore work before `cosmic.art` resolves; canonical links, hreflang alternates, robots and the sitemap follow `NEXT_PUBLIC_SITE_URL` (default `https://cosmic.art`). Set `NEXT_PUBLIC_SITE_URL` to the Vercel origin only if canonical links must match the served domain during the DNS hold. App icons, the favicon and the web manifest are static files derived once from the three-body mark (`src/app/icon.svg`, `src/app/apple-icon.png`, `src/app/favicon.ico`, `public/icons/`).
+- **Live** at [cosmic.art](https://cosmic.art), deployed from `main` (see [Hosting](#hosting)).
+- **The auction is inactive.** It starts only once a reviewed contract's address and exact runtime code hash are configured. The application never simulates a live auction or shows an invented price.
+- **Read next:** [ARCHITECTURE.md](ARCHITECTURE.md) for how the venue is built and why, and [docs/README.md](docs/README.md) for every plan and record.
 
-Production and preview explicitly use Arbitrum chain ID 42161 with empty `NEXT_PUBLIC_AUCTION_ADDRESS` and `NEXT_PUBLIC_AUCTION_CODE_HASH`; publishing the art gallery does not activate bidding. Local rehearsal configuration stays in its isolated test bundle.
+## Principles, and the code that keeps them
 
-## Run locally
+Each principle is a promise to the visitor. Each names the code that keeps it and the test that checks it, so a change that breaks a promise fails a test instead of waiting for a reviewer to notice.
 
-Use Node 22.12+ and npm (the lockfile is authoritative).
+### The art is the Largest Contentful Paint
+
+The first thing a visitor sees should be the work, and it should arrive first. Largest Contentful Paint (LCP) is when the largest thing in the first screen finished painting. On this venue that must be the plate.
+
+- **Kept by:**
+  - `src/lib/art/inline-preview.ts`: the page's hero carries its 640 px preview inline, as a data URI in the HTML, so it paints before any image request.
+  - `src/components/artwork-media.tsx`: that preview loads eagerly, at high priority on the page's hero, and the full still follows behind it.
+  - `src/lib/room.ts`: on a first visit to the home, First Light's gate keeps the plate alone from the first frame, with the running head held back.
+  - `src/components/overture.tsx`: the performance itself loads by `import()`, and only on a first visit.
+- **Checked by:**
+  - `tests/e2e/budgets.spec.ts`: on a desk and on a phone, the largest paint must be the artwork's preview, still or film, within 2.5 s.
+  - `tests/e2e/first-light-home.spec.ts`: a first visit opens on the plate.
+
+### Stills are never altered
+
+A work is its published still. A venue that recolours, crops or "enhances" it shows something else.
+
+- **Kept by:**
+  - `scripts/lib/origin.mjs`: every derivative (excerpt, clip, ladder rung, inline preview) is cut from a published source whose hash has been checked, recorded with that hash, and published under a content-addressed name.
+  - `scripts/build-plate-clips.mjs` refuses a clip whose last frame is not the published still, and `scripts/build-still-ladder.mjs` proves each rung against both of its parents.
+  - `src/lib/art/derivatives.ts` and `inline-preview.ts` bind a derivative to a work only when the hashes agree.
+  - A plate is never cropped. It is contained, and letterboxed in the sheet's own measured tone (`npm run art:plates`).
+  - The crossing shows only pixels of the two published stills, except across the soft edge of its front (`src/components/arrival-crossing.ts`).
+- **Checked by:**
+  - `scripts/build-plate-clips.test.mjs`, `scripts/build-still-ladder.test.mjs` and `src/lib/art/inline-preview.test.ts`;
+  - `tests/e2e/crossing.spec.ts`: each work crosses "from its two stills and nothing else";
+  - `tests/e2e/polish-responsive.spec.ts`: the plate keeps its proportion, contained.
+
+### Derived views say "Analysis, not the work", and never stand where a work is for sale
+
+The venue computes new pictures from the works: the When and Wavelength lenses, the film's score, the orbit drawn over the plate, and All the light. They teach, but they are not works, and a buyer must never mistake one for what is offered.
+
+- **Kept by:**
+  - Each says so in every locale (`src/lib/i18n/*.ts`):
+    - the lenses and the orbit over the plate say "Analysis, not the work" (`analysisNotWork`);
+    - the orbit's continuation past its window says "This is not the work: it is what the work's orbit does next";
+    - All the light says "A derived view, not a work".
+  - `src/components/artwork-room.tsx` offers the lenses and the score only when `derivedViews` is true, and the sale's viewer passes false (`artwork-viewer.tsx`).
+  - `src/components/index-sheet.tsx` never offers the collection's indexes, All the light and the Orrery, on a sale.
+  - `src/app/sitemap.ts` never offers All the light for discovery as if it were a work, and no derived view is ever a sharing card.
+- **Checked by:**
+  - `src/components/artwork-room.test.tsx`: the lenses and the score are never offered on a sale surface, by word, by key or in the key sheet;
+  - `src/components/index-sheet.test.tsx`;
+  - `tests/e2e/crossing.spec.ts` and `tests/e2e/wavelength-lens.spec.ts`: each lens carries its label.
+
+### Light and Ink are equal
+
+The generator published both expressions, and neither is the venue's default.
+
+- **Kept by:**
+  - One policy module decides which expression a plate opens on, and every surface asks it: the visitor's choice, else the day's expression (`src/lib/art/opening.ts`).
+  - The day's expression alternates every UTC day (`src/lib/art/day.ts`, `work-of-the-day.ts`).
+  - Lists hang both at equal size across the Turn's seam, and every plate's twin hangs beneath it. [docs/third-physics-phase-d.md](docs/third-physics-phase-d.md) §2 sets out the rule.
+- **Checked by:**
+  - `src/lib/art/work-of-the-day.test.ts`: the expression alternates day to day, through every pass of the pool;
+  - `src/lib/art/opening.test.ts`.
+
+### Reduced motion is the same venue, still
+
+A visitor who asks for less motion gets every work, every fact and every instrument, as stills and as choices they make, never as a lesser page.
+
+- **Kept by:**
+  - `src/components/motion-provider.tsx`: the system's preference, overridden by the visitor's own Pause or Play. The server renders the quiet room.
+  - Films begin as stills. First Light waits to be asked (_Watch it form_). The orbit section draws the whole orbit at once. The Turn takes a single frame.
+- **Checked by:**
+  - The `chromium-reduced-motion` and `webkit-reduced-motion` projects run the whole browser suite with the preference set;
+  - `src/components/motion-provider.test.tsx`.
+
+### Eight locales
+
+English, Simplified Chinese, Traditional Chinese for Taiwan and for Hong Kong, Ukrainian, Korean, Japanese and Vietnamese. English addresses carry no prefix, and the others keep their exact tags.
+
+- **Kept by:**
+  - `src/lib/i18n/routing.ts` and `src/proxy.ts`.
+  - One catalogue per locale, each typed by `Messages` (`src/lib/i18n/en.ts`).
+  - Each CJK locale's own sliced face (`scripts/build-font-subsets.mjs`).
+- **Checked by:**
+  - `npm run type-check`: a missing string is a type error;
+  - `npm run test:fonts`: every character in every locale is drawn by a shipped face;
+  - `tests/e2e/accessibility.spec.ts`: axe runs on every route in every locale.
+
+### A 12 px floor and 44 px targets
+
+Small type and small targets shut people out.
+
+- **Kept by:** `src/app/globals.css`, whose type scale stops at 12 px in every locale, and controls sized to at least 44 px.
+- **Checked by:**
+  - `src/app/stylesheet-floor.test.ts`: no stylesheet sets type below 12 px;
+  - `tests/e2e/polish-responsive.spec.ts`: the viewing controls are at least 44 × 44 px, from a 320 px phone to a laptop.
+
+### Say what is known, and how
+
+The venue says where each fact comes from and what it cannot promise. It never fills a gap with something plausible.
+
+- **Kept by:**
+  - The record says it is "read from the Arbitrum indexer and may lag the chain by a few blocks". The media files are said to be "the publisher's; their hashes are recorded here and checked wherever a local copy is kept" (`honestyRecord` and `honestyMedia`, shown by `src/components/artwork-entry.tsx`).
+  - Ownership that cannot be read is not invented, and indexed custody is never presented as the current owner.
+  - The sale shows no price it did not read from the contract, and an action not yet confirmed is shown as unconfirmed.
+- **Checked by:**
+  - `src/components/artwork-entry.test.tsx`, `artwork-record.test.tsx` and `artwork-history.test.tsx`;
+  - `src/lib/auction/client.test.ts` and `rules.test.ts`, held to the stricter coverage thresholds in `vitest.config.ts`.
+
+## Run it
+
+Use Node 22.12 or later and npm; the lockfile is authoritative.
 
 ```sh
 npm ci
 npm run dev
 ```
 
-Open `http://127.0.0.1:4318`. Copy `.env.example` to `.env.local` only when configuration is needed. No private key belongs in this application. All signing stays in the visitor's wallet.
+Open `http://127.0.0.1:4318`. No secrets are needed. Copy `.env.example` to `.env.local` only to change configuration. No private key belongs in this application: all signing stays in the visitor's wallet.
+
+The venue's day decides the day's work and its expression. To pin it, for example for a screenshot, set `COSMIC_VENUE_DATE=2026-11-06` (an Ink day) for the build and the server.
+
+## Test it
 
 ```sh
-npm run type-check
 npm run lint
-npm test
-npm run test:coverage
-npm run test:previews
-npm run test:e2e
-npm run test:auction-ui:types
-npm run test:auction-ui
-npm run build
-npm audit
+npm run type-check
+npm run format:check
+npm test                    # unit tests (Vitest)
+npm run test:coverage       # the same, with coverage thresholds
+npm run test:scripts        # the pipelines' and checks' own tests (node:test)
+npm run test:fonts          # every glyph in every locale is drawn
+npm run test:e2e            # the browser suite (Playwright, seven projects)
 ```
 
-Browser tests use the locally running application or start the configured preview. Their matrix covers desktop, mobile and reduced motion. Install the pinned Playwright browsers when setting up a new machine.
+The browser suite reuses a server already running on its address, `http://127.0.0.1:4318` (set `PLAYWRIGHT_BASE_URL` for another), or starts `npm run dev`. On a new machine, install Playwright's browsers first (`npx playwright install`). The suite's seven projects are Chromium, Firefox and WebKit on a desk; Chromium and WebKit on a phone; and Chromium and WebKit with reduced motion. Choose one with `--project=chromium-desktop`.
 
-`test:auction-ui` separately starts a loopback-only Vite fixture on port 4320. It renders the actual auction components and styles with synthetic contract snapshots and a synthetic wallet, clearly labelled in the page. Its network policy blocks external connections. It verifies bidding interactions without activating the public auction configuration, opening a real wallet, or submitting transactions. Stop any manually started fixture on that port before running it. This suite complements the production-page tests and the separately gated real-contract client rehearsal.
+## Verify it
 
-To exercise the real contracts locally, compile the sibling `Cosmic-Signature` repository's approved V4 branch in production mode (`HARDHAT_MODE_CODE=1 ENABLE_HARDHAT_PREPROCESSOR=false npx hardhat compile`), then run from this gallery:
+CI (`.github/workflows/ci.yml`) runs everything above against a production build, plus the auction harness and the performance budgets. To check a change as CI will:
+
+```sh
+COSMIC_VENUE_DATE=2026-11-06 npm run build
+COSMIC_VENUE_DATE=2026-11-06 npm run start      # in a second terminal
+npm run test:e2e
+npm run test:budgets:js       # first-load JavaScript per route, read from the build
+npm run test:budgets:paint    # LCP and CLS in Chromium, on a desk and a phone
+```
+
+The budgets are set in [`scripts/budgets.json`](scripts/budgets.json): first-load JavaScript per route, and LCP within 2.5 s and CLS within 0.1 for the home and a work page. ARCHITECTURE.md, §12, records the baseline they were set from and how to change one. The paint budget is measured only on a production server. Against `npm run dev` it skips, because a development server's timings mean nothing.
+
+## Hosting
+
+_As checked on 8 November 2026._
+
+- **Repository:** [PredictionExplorer/cosmic-signature-art](https://github.com/PredictionExplorer/cosmic-signature-art), public.
+- **Deployment:** Vercel's `cosmic-signature-art` project, in the `Randomwalknft` team, deploys `main`. It installs with `npm ci` on Node 24, as configured when the project was created on 24 October 2026.
+- **Domain:** `cosmic.art` is served by Vercel over HTTPS, with HSTS. Its DNS is on Vercel (`ns1.vercel-dns.com`, `ns2.vercel-dns.com`). `www.cosmic.art` and `cosmic-signature-art.vercel.app` both redirect to `https://cosmic.art`. The October DNS hold at the registrar is over.
+- **Canonical addresses:** canonical links, language alternates, robots and the sitemap use `NEXT_PUBLIC_SITE_URL`, by default `https://cosmic.art`.
+- **Sharing cards (open):** card images resolve against `NEXT_PUBLIC_DEPLOYMENT_URL` when it is set, and otherwise against a `*.vercel.app` host (`src/lib/site.ts`).
+  - Production does not set it, so the live pages point crawlers at the branch alias `cosmic-signature-art-git-main-randomwalknft.vercel.app`. That alias sits behind Vercel's deployment protection and answers with a sign-in redirect.
+  - On `cosmic.art` itself, the card routes answer 500, although they render on a local production build.
+  - Two changes are the owner's: set `NEXT_PUBLIC_DEPLOYMENT_URL=https://cosmic.art` in production, as `.env.example` says to once the domain resolves, and read the card routes' function logs on Vercel.
+- **The chain:** production and preview use Arbitrum (chain ID 42161), with `NEXT_PUBLIC_AUCTION_ADDRESS` and `NEXT_PUBLIC_AUCTION_CODE_HASH` empty. Publishing the gallery does not activate bidding.
+- **Icons:** the favicon, app icons and web manifest are static files derived once from the three-body mark (`src/app/icon.svg`, `src/app/apple-icon.png`, `src/app/favicon.ico`, `public/icons/`).
+
+## The auction
+
+Bidding is built and tested but inactive until a contract is reviewed and configured. Three layers verify it without a public wallet.
+
+**The interface harness.** `npm run test:auction-ui` starts a loopback-only Vite fixture on port 4320. It renders the real auction components and styles against synthetic contract snapshots and a synthetic wallet, both labelled as such on the page. Its network policy blocks external connections. It checks the bidding interactions without the public configuration, a real wallet or a transaction. Stop any fixture you started by hand on that port first.
+
+**The real contracts, locally.** Compile the sibling `Cosmic-Signature` repository's approved V4 branch in production mode (`HARDHAT_MODE_CODE=1 ENABLE_HARDHAT_PREPROCESSOR=false npx hardhat compile`), then run from this repository:
 
 ```sh
 npm run test:auction:local:types
 npm run test:auction:local
 ```
 
-This command owns a fresh Hardhat node on `127.0.0.1:8548` and an isolated browser fixture on `127.0.0.1:4321`, refuses occupied ports, and stops its processes when complete. It freezes and verifies compiler artifacts against all referenced source inputs, runs the real auction/NFT client tests, then deploys the actual game and production periphery, upgrades through V4, and finalizes a cycle to generate eight auction NFTs. Four browser profiles exercise the production bid panel and unchanged transaction client against that local deployment. Only local game/NFT identities are substituted in the test bundle; chain, destination, runtime hash, simulation and receipt verification remain active. Browser RPC cannot call administrative methods or send to unrelated accounts/contracts. No public wallet is used, no `.env.local` is changed, and no test token is assigned a public artwork's image or provenance.
+The runner owns a fresh Hardhat node on `127.0.0.1:8548` and a browser fixture on `127.0.0.1:4321`. It refuses occupied ports and stops its processes when it is done.
 
-The runner prints the temporary evidence directory containing the deployment, issuance record, artifact hashes and node log. Playwright retains verified transaction receipts and final accounting in its test attachments. `ART_AUCTION_CONTRACT_ROOT` can identify another local contracts checkout; `ART_AUCTION_ARTIFACT_ROOT` can identify a previously frozen artifact/cache root. Tests use disposable ETH, accelerated local time and the repository's Arbitrum precompile shims. These checks complement the separate pinned-state V3-to-V4 fork rehearsal and do not substitute for real extension/hardware-wallet compatibility or native Arbitrum execution.
+1. It freezes the compiler artifacts and checks them against every source input they reference.
+2. It runs the real auction and NFT client tests.
+3. It deploys the game and its production periphery, upgrades through V4, and finalizes a cycle, which issues eight auction NFTs.
+4. Four browser profiles bid through the production bid panel and the unchanged transaction client.
 
-## Architecture
+Only the local game and NFT identities are substituted. The chain, destination, runtime hash, simulation and receipt checks all stay active. Browser RPC cannot call administrative methods or send to unrelated accounts. No `.env.local` is changed, and no test token is given a public artwork's image or provenance.
 
-- **Next.js App Router / React / TypeScript / Tailwind CSS 4.** Server-rendered discovery and metadata, with focused client components for motion, navigation and transactions.
-- **The Passage:** a moving, uncropped Ink work on paper sampled directly from the films (`#f1ebdf`), with a cinematic change into Light. Original artwork colors are preserved.
-- **The collection:** the full live catalogue is the default, with number/name search, pagination and Ink/Light views. `/collection?view=atlas` opens the moving editorial constellation. Newly indexed NFTs appear through revalidation without a frontend release; the catalogue never treats the curated archive as a collection total.
-- **The viewing room:** full-width Ink/paper and Light/black environments with decoded-image cinematic material changes, comparison, and a full-window modal with optional native fullscreen. Inline motion uses compact excerpts only; complete films and longer variants load on explicit request. Keyboard focus, scroll position, playback memory, failure recovery and media resource release are tested. The editorial record below retains origin, seed, cycle, indexed custodian, known protocol-custody participant and independently paginated histories. Published composition characteristics remain separate from blockchain provenance. Original files remain accessible, and the interpretation model accommodates future modes.
-- **The auction exhibition:** an authentic Ink introduction, spacious lot plates, and the same material transitions and full viewing room. A contained artwork area sits beside a readable bid panel on desktop and above it on mobile. Current price, minimum next bid, UTC deadline, wallet, review, and recovery actions have a deliberate hierarchy. Editorial art is labelled separately from available lots. Missing media never blocks contract discovery; stale financial reads hide current quotes and disable actions. The review preserves the exact entered total and funding amount.
-- **Eight locales:** English, Simplified Chinese, Taiwan Traditional Chinese, Hong Kong Traditional Chinese, Ukrainian, Korean, Japanese and Vietnamese. English URLs are unprefixed; other locales retain their exact tags. The art venue has its own auction vocabulary; the existing app's vocabulary rules are unchanged.
-- **Motion:** the catalogue gives one visible Ink work a playback slot, with focus/hover priority and restrained changes as scrolling settles. Only dedicated compact excerpts can use that slot; leaving it detaches the video source. Hidden tabs, pause, data saving and slow connections keep stills. Reduced motion starts with stills; explicit Resume can enable ambient playback while cinematic transitions remain disabled for the system preference. Native React view transitions connect matching token/expression surfaces when ready, with ordinary immediate navigation as the fallback. Fonts are self-hosted.
-- **Data:** validated, bounded requests to the existing public indexer and renderer manifests. Fifteen authenticated archived works provide an explicitly labeled fallback. Unavailable ownership is not invented. Indexed custody is not represented as a guaranteed current wallet owner.
-- **Transactions:** viem loads only in auction UI. EIP-6963 browser-wallet discovery, exact bigint amounts, direct-bid review, fresh chain reads, runtime-hash and destination verification, simulation, wallet-state recheck and receipt verification. An unconfirmed action remains unconfirmed.
+The runner prints a temporary evidence directory with the deployment, the issuance record, the artifact hashes and the node log. `ART_AUCTION_CONTRACT_ROOT` names another contracts checkout, and `ART_AUCTION_ARTIFACT_ROOT` names an artifact root frozen earlier. The record of the last full run is [docs/local-auction-rehearsal.json](docs/local-auction-rehearsal.json). These checks do not replace a fork rehearsal, real wallet hardware, native Arbitrum execution or an independent security review.
 
-Stable routes are `/`, `/collection`, `/art/[id]`, `/process`, `/auctions`, `/auctions/[id]`, `/terms`, and `/privacy`. Auction-specific URLs remain usable when media indexing fails. Financial state comes from the contract, not the renderer or collection indexer.
+**The V4 contracts** live in the sibling `Cosmic-Signature` repository, on `codex/v4-art-auctions`, based on `v3-deployment` at `37fdc5e01fee9b4a1ef59fff35726d96775b3680`.
 
-## V4 contracts
+- **The rules.**
+  - Each successful finalization issues eight more NFTs to the existing collection, at no extra CST cost. Minting and registration are atomic.
+  - Each auction opens after a seven-day preview. The first funded bid starts a 48-hour clock, at a minimum of 0.00001 ETH.
+  - Each raise is at least 10%, rounded up. A bid in the last ten minutes leaves ten minutes on the clock, however often it happens.
+- **No administrator can intervene.** No one can cancel, pause, change terms, override winners or redirect liabilities.
+- **Settlement.** Outbid funds become pull refunds. Delivery, refunds and forwarding can each be retried on their own. Proceeds go to the game's reserve through its explicit `donateEth()`.
 
-Source, game integration, tests and upgrade tooling live in the sibling `Cosmic-Signature` repository on **`codex/v4-art-auctions`**, based on `v3-deployment` at `37fdc5e01fee9b4a1ef59fff35726d96775b3680`.
+The rules are recorded in [docs/contract-architecture-and-auction-rules.md](docs/contract-architecture-and-auction-rules.md). After an approved contract change, regenerate the frontend ABI with `node scripts/sync-auction-abi.mjs`. Activation needs the reviewed immutable address, chain and runtime hash in the environment, then a new build and a full verification.
 
-The existing collection receives a separate batch of eight NFTs at successful finalization, without extra CST. Minting and registration are atomic. The immutable auction implements the agreed seven-day preview, first-bid 48-hour clock, 0.00001 ETH minimum, 10% raises rounded up, and uncapped ten-minute soft closes. No administrator can cancel, pause, change terms, override winners or redirect liabilities.
+## Records
 
-Outbid funds become pull refunds. Settlement creates a winner's entitlement and proceeds liability without external calls. NFT delivery, refunds and forwarding are independently retryable. Proceeds use the game's explicit `donateEth()` entry point; a raw ETH transfer would invoke the game's participation path and is deliberately not used.
-
-Regenerate the frontend ABI after an approved contract change:
-
-```sh
-node scripts/sync-auction-abi.mjs
-```
-
-Activation requires the exact reviewed immutable address, chain and runtime hash in `.env.local`, followed by a new build and full verification. The deployed NFT's metadata controls and game upgrade powers remain inherited dependencies. Tests do not replace independent security review.
-
-## Records and boundaries
-
-- [Implementation and validation](docs/implementation-and-validation.md): completed work, evidence and release prerequisites.
-- [Decision register](docs/decision-register.md): accepted rules and outstanding launch decisions.
-- [Media and indexer integration](docs/media-and-indexer-integration.md): actual APIs, source hashes, manifest handling and suggested Go changes.
-- [Collection preview delivery](docs/collection-preview-delivery.md): compact film excerpts, source binding and the repeatable offline publishing step (`npm run art:previews`).
-- [Auction frontend review](docs/auction-frontend-review.md): transaction security review and evidence.
-- [Local auction rehearsal record](docs/local-auction-rehearsal.json): verified artifact/source hashes, four-browser transactions and final accounting from the real-contract local run.
-- [Contract architecture](docs/contract-architecture-and-auction-rules.md): design and trust boundaries.
-- [Ecosystem plan](docs/ecosystem-and-delivery-plan.md): issuance, reserve economics and operations.
-- [Art direction](docs/art-direction-exploration.md): Passage/Atlas rationale and earlier concepts.
-- [Third Physics](docs/third-physics.md): the direction after Two Grounds, with its working study in `concepts/third-physics-v1`. [Phase A](docs/third-physics-phase-a.md) re-derives every work's orbit in the browser and checks it against the published record (`npm run art:orbits` rebuilds the registry). [Phase B](docs/third-physics-phase-b.md) turns between Ink and Light in the order each film made its marks, and adds the When lens to the room (`npm run art:arrival` rebuilds the maps from the films, read once into `.cache/art`). [Phase C](docs/third-physics-phase-c.md) adds the collection's two other indexes: All the light, every Light still added as light adds (`npm run art:light`), and the Orrery, every orbit performed at once from where its recorded window begins (`npm run art:windows`). In [Phase D](docs/third-physics-phase-d.md) the Overture's bodies draw the plate itself, from each work's frame on its Light film: the generator's view, camera drift and fit, re-derived and checked against the film frame by frame (`npm run art:frames`).
-
-The Go repository and renderer are not modified by this implementation. Their suggested additions are documented here. Publishing this website does not deploy, activate, or upgrade its auction or game contracts.
+The venue was authorized for implementation on 22 October 2026 and for publication on 24 October. Its decisions are in the [decision register](docs/decision-register.md), and every plan and record is indexed in [docs/README.md](docs/README.md). The Go indexer, the renderer and the generator are not modified by this repository. Additions suggested for them are documented in [docs/media-and-indexer-integration.md](docs/media-and-indexer-integration.md).
