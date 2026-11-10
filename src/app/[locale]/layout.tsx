@@ -1,7 +1,8 @@
 import type { Metadata, Viewport } from 'next';
 import { notFound } from 'next/navigation';
 import { isLocale, locales } from '@/lib/i18n/routing';
-import { VenueDocument, venueMetadata, venueViewport } from '../venue-document';
+import { VenueDocument, venueMetadata } from '../venue-document';
+import { venueViewport } from '../viewport';
 
 export const viewport: Viewport = venueViewport;
 export const metadata: Metadata = venueMetadata;

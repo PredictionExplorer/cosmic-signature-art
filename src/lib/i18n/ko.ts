@@ -1,8 +1,6 @@
 import type { Messages } from './en';
 
 export const ko: Messages = {
-  auctionExhibitionCopy:
-    '각 사이클마다 기존 컬렉션에 새로운 작품 8점이 더해집니다. 움직임을 감상하고 세부를 살펴본 뒤 ETH로 직접 입찰할 수 있습니다.',
   auctionEditorialNote: '이 대표 작품은 컬렉션을 소개합니다. 경매 작품은 별도로 안내합니다.',
   auctionRoom: '경매 전시실',
   auctionBeforeBid: '입찰 전 안내',

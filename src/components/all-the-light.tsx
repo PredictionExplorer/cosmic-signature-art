@@ -15,7 +15,6 @@ import { cellAt, namesAt, type SkyGrid } from '@/lib/art/sky-names';
 import { fill } from '@/lib/i18n/format';
 import { SEPARATOR } from '@/lib/typography';
 import { useMotion } from './motion-provider';
-import { lendPlateTone, returnPlateTone } from './room-ground';
 import styles from './all-the-light.module.css';
 
 /** One work in the sky: its Light still, its numeral and where it leads. */
@@ -454,23 +453,6 @@ export function AllTheLight({
     document.addEventListener('keydown', onEscape);
     return () => document.removeEventListener('keydown', onEscape);
   }, [alone]);
-
-  // The page is night from the top: while it stands beneath the running head, the head is too.
-  useEffect(() => {
-    const node = section.current;
-    if (!node || typeof IntersectionObserver === 'undefined') return;
-    const holder = {};
-    const head = new IntersectionObserver(
-      ([entry]) =>
-        entry.isIntersecting ? lendPlateTone(holder, '#000000', 'night') : returnPlateTone(holder),
-      { rootMargin: '-2px 0px -92% 0px' },
-    );
-    head.observe(node);
-    return () => {
-      head.disconnect();
-      returnPlateTone(holder);
-    };
-  }, []);
 
   const chosen = alone === null ? undefined : byId.get(alone);
   const cycles = [...new Set(works.map((work) => work.cycle))];

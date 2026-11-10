@@ -77,8 +77,11 @@ describe('home screen 4: the spread', () => {
     ).toEqual(['/art/31-ink-640.webp', '/art/35-light-640.webp']);
     const figures = spread.querySelectorAll('figure');
     expect(figures).toHaveLength(2);
-    expect(figures[0].getAttribute('style')).toContain(`--plate-ground: ${tone(31)}`);
-    expect(figures[1].getAttribute('style')).toContain('--plate-ground: #000000');
+    // Each half of the screen is its work's own ground: the sheet's measured tone, the night.
+    expect(figures[0].parentElement!.getAttribute('style')).toContain(
+      `--plate-ground: ${tone(31)}`,
+    );
+    expect(figures[1].parentElement!.getAttribute('style')).toContain('--plate-ground: #000000');
     expect(figures[0].querySelector('.hanging-numeral')).toHaveTextContent('031');
     expect(figures[1].querySelector('.hanging-numeral')).toHaveTextContent('035');
     expect(within(spread).getByText('№ 031')).toBeInTheDocument();

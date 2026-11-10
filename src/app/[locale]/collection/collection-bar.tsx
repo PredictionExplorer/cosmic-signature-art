@@ -1,6 +1,7 @@
 'use client';
 import Link from 'next/link';
 import { openSheet, useOpenSheet } from '@/components/sheets-store';
+import { useScrollEdges } from '@/components/scroll-edges';
 import type { Messages } from '@/lib/i18n/en';
 import styles from './collection.module.css';
 
@@ -27,12 +28,13 @@ export function CollectionBar({
   nextHref?: string;
 }) {
   const sheet = useOpenSheet();
+  const words = useScrollEdges<HTMLDivElement>();
   return (
     <nav className={styles.bar} aria-label={t.collectionControls}>
       {/* The words keep their own widths in every language and scroll sideways when the bar
-          is too narrow for them, the two expressions first so they are always in view; the
-          pager holds the right edge whatever they do. */}
-      <div className={styles.barWords}>
+          is too narrow for them, the two expressions first so they are always in view, and an
+          edge with words beyond it fades; the pager holds the right edge whatever they do. */}
+      <div ref={words} className={styles.barWords}>
         <button
           type="button"
           onClick={() => openSheet('index')}

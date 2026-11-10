@@ -1,8 +1,6 @@
 import type { Messages } from './en';
 
 export const uk: Messages = {
-  auctionExhibitionCopy:
-    'Кожен цикл додає вісім нових творів до наявної колекції. Спостерігайте за їхнім рухом, розглядайте деталі та робіть пряму пропозицію в ETH.',
   auctionEditorialNote: 'Цей вибраний твір знайомить із колекцією. Аукціонні лоти наведено окремо.',
   auctionRoom: 'Аукціонна зала',
   auctionBeforeBid: 'Перш ніж зробити ставку',

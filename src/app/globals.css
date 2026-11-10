@@ -19,9 +19,10 @@
   --font-latin: Literata, 'Literata Georgia', 'Literata Times', Georgia, 'Times New Roman', serif;
   /* The book face of the locale: Literata, or Literata set into a CJK face (below). */
   --font-book: var(--font-latin);
+  /* The instrument face, Plex Mono; its № is Literata's (src/app/typefaces.css). */
   --font-mono:
-    'IBM Plex Mono', 'Plex Mono Menlo', 'Plex Mono Courier', 'SFMono-Regular', Menlo, Consolas,
-    monospace;
+    'Literata Numero', 'IBM Plex Mono', 'Plex Mono Menlo', 'Plex Mono Courier', 'SFMono-Regular',
+    Menlo, Consolas, monospace;
   /* Aliases so a stray `font-serif` or `font-sans` utility still resolves to the book face. */
   --font-serif: var(--font-book);
   --font-sans: var(--font-book);
@@ -139,30 +140,30 @@ html:lang(zh) {
   --font-book:
     'Literata Han', 'Literata Han Georgia', 'Noto Serif SC', 'Songti SC', STSong, SimSun, serif;
   --font-mono:
-    'IBM Plex Mono', 'Plex Mono Menlo', 'Plex Mono Courier', 'Noto Serif SC', 'Songti SC', STSong,
-    SimSun, monospace;
+    'Literata Numero', 'IBM Plex Mono', 'Plex Mono Menlo', 'Plex Mono Courier', 'Noto Serif SC',
+    'Songti SC', STSong, SimSun, monospace;
 }
 html:lang(zh-TW) {
   --font-book:
     'Literata Han', 'Literata Han Georgia', 'Noto Serif TC', 'Songti TC', PMingLiU, serif;
   --font-mono:
-    'IBM Plex Mono', 'Plex Mono Menlo', 'Plex Mono Courier', 'Noto Serif TC', 'Songti TC', PMingLiU,
-    monospace;
+    'Literata Numero', 'IBM Plex Mono', 'Plex Mono Menlo', 'Plex Mono Courier', 'Noto Serif TC',
+    'Songti TC', PMingLiU, monospace;
 }
 html:lang(zh-HK) {
   --font-book:
     'Literata Han', 'Literata Han Georgia', 'Noto Serif HK', 'Songti TC', MingLiU_HKSCS, serif;
   --font-mono:
-    'IBM Plex Mono', 'Plex Mono Menlo', 'Plex Mono Courier', 'Noto Serif HK', 'Songti TC',
-    MingLiU_HKSCS, monospace;
+    'Literata Numero', 'IBM Plex Mono', 'Plex Mono Menlo', 'Plex Mono Courier', 'Noto Serif HK',
+    'Songti TC', MingLiU_HKSCS, monospace;
 }
 html:lang(ja) {
   --font-book:
     'Literata Han', 'Literata Han Georgia', 'Shippori Mincho B1', 'Hiragino Mincho ProN',
     'Yu Mincho', serif;
   --font-mono:
-    'IBM Plex Mono', 'Plex Mono Menlo', 'Plex Mono Courier', 'Shippori Mincho B1',
-    'Hiragino Mincho ProN', 'Yu Mincho', monospace;
+    'Literata Numero', 'IBM Plex Mono', 'Plex Mono Menlo', 'Plex Mono Courier',
+    'Shippori Mincho B1', 'Hiragino Mincho ProN', 'Yu Mincho', monospace;
   /* No small kana or prolonged sound mark opens a line. */
   line-break: strict;
   /* Shippori Mincho B1 and Gowun Batang begin at 400; the Latin display rises to meet them. */
@@ -172,8 +173,8 @@ html:lang(ko) {
   --font-book:
     'Literata Hangul', 'Literata Hangul Georgia', 'Gowun Batang', AppleMyungjo, Batang, serif;
   --font-mono:
-    'IBM Plex Mono', 'Plex Mono Menlo', 'Plex Mono Courier', 'Gowun Batang', AppleMyungjo, Batang,
-    monospace;
+    'Literata Numero', 'IBM Plex Mono', 'Plex Mono Menlo', 'Plex Mono Courier', 'Gowun Batang',
+    AppleMyungjo, Batang, monospace;
   /* Korean breaks between words, as it is written, never inside one. */
   word-break: keep-all;
   --weight-hairline: 300;
@@ -387,9 +388,12 @@ html {
   font-variant-numeric: lining-nums proportional-nums;
   letter-spacing: -0.02em;
 }
+/* Display type at Literata's own metrics, as the Process cover explains: no line's descenders
+   meet the next line's ascenders, in any language, and the last line's stay inside its box. */
 .cover {
   font-size: var(--fs-cover);
-  line-height: 0.99;
+  line-height: 1.06;
+  padding-block-end: 0.06em;
   font-weight: var(--weight-hairline);
 }
 /* The hanging numeral beside a plate: 44 px light figures with 6 px of leading in a 56 px strip. */
@@ -794,9 +798,21 @@ html[data-turning='overture'] .head-overlay {
 .art-media[data-material='light'] {
   background: var(--plate-ground, #000);
 }
+/* A work whose ink reaches its border hangs with a deliberate hairline at the sheet's edge
+   (docs/world-class-gallery-vision.md, the edge flag), drawn above every layer of the plate,
+   so the still, its film and the run back all show the same line. As an outline it lay beneath
+   a playing film, whose layer snaps to the pixel: one side was covered and the other was not,
+   an accidental seam where a deliberate edge was meant. */
 .art-media[data-edge='true'] {
-  outline: 1px solid color-mix(in srgb, var(--type) 10%, transparent);
-  outline-offset: -1px;
+  isolation: isolate;
+}
+.art-media[data-edge='true']::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  border: 1px solid color-mix(in srgb, var(--type) 10%, transparent);
+  pointer-events: none;
 }
 .art-media img,
 .art-media video {

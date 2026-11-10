@@ -13,9 +13,16 @@ export type Room = 'paper' | 'night';
 export const ROOM_COLORS: Record<Room, string> = { paper: '#f1ebdf', night: '#000000' };
 /**
  * Routes whose first screen is the night ground; the running head takes their material. Verify
- * an orbit stands on the night the orbit section draws on.
+ * an orbit stands on the night the orbit section draws on, and the collection's two night views,
+ * All the light and the Orrery, are night from the top: on every screen, from the first paint,
+ * so a phone's head is never paper over a black page.
  */
-export const NIGHT_ROUTES: readonly string[] = ['/process', '/verify'];
+export const NIGHT_ROUTES: readonly string[] = [
+  '/process',
+  '/verify',
+  '/collection/all-the-light',
+  '/collection/orrery',
+];
 
 /** Views of the collection that open on black: the Spectrum wall and the Light section. */
 function nightView(path: string, search: string): boolean {

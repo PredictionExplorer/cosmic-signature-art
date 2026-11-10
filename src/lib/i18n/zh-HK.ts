@@ -1,8 +1,6 @@
 import type { Messages } from './en';
 
 export const zhHK: Messages = {
-  auctionExhibitionCopy:
-    '每個週期都會為現有系列帶來八件新作品。欣賞流動之美，細看作品，以 ETH 直接出價。',
   auctionEditorialNote: '這件精選作品帶你認識本系列。拍品另行列出。',
   auctionRoom: '拍賣展廳',
   auctionBeforeBid: '出價之前',

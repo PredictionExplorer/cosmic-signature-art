@@ -68,6 +68,11 @@ test.describe('All the light', () => {
     const span = fill(t.cyclesSpan, { first: 0, last: 2 });
     await expect(sky(page)).toHaveAttribute('alt', fill(t.allTheLightAlt, { span, count: '72' }));
     await expect(page.getByText(/A derived view, not a work/)).toBeVisible();
+    // Night from the top, on every screen: the room, the head and the browser's own chrome, one
+    // theme colour from the server's first byte.
+    await expect(page.locator('html')).toHaveAttribute('data-room', 'night');
+    await expect(page.locator('meta[name="theme-color"]')).toHaveCount(1);
+    await expect(page.locator('meta[name="theme-color"]')).toHaveAttribute('content', '#000000');
     await expect.poll(() => headTone(page)).toBe(night);
     // The card a share carries is a published still, never the sky.
     const card = await page.locator('meta[property="og:image"]').first().getAttribute('content');
@@ -337,6 +342,9 @@ test.describe('The Orrery', () => {
       'This browser cannot hand a canvas to a worker; its plates are proved below.',
     );
     await expect(page.getByRole('heading', { level: 1, name: t.orreryTitle })).toBeVisible();
+    await expect(page.locator('html')).toHaveAttribute('data-room', 'night');
+    await expect(page.locator('meta[name="theme-color"]')).toHaveCount(1);
+    await expect(page.locator('meta[name="theme-color"]')).toHaveAttribute('content', '#000000');
     await expect.poll(() => headTone(page)).toBe(night);
     for (const cycle of [0, 1, 2])
       await expect(

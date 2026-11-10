@@ -1,4 +1,5 @@
 import { expect, test } from '@playwright/test';
+import sharp from 'sharp';
 import { catalogs } from '../../src/lib/i18n/messages';
 import {
   artworkImageSource,
@@ -236,4 +237,35 @@ test('a work without a local film wakes into its settling clip, keeps the filmâ€
   await expect(dialog.locator('video')).toHaveAttribute('src', /\/videos\/web\/ember\.mp4$/);
   await page.keyboard.press('Escape');
   await expect(dialog).not.toBeVisible();
+});
+
+test('an edge plate keeps its hairline on both sides, above whatever plays on it', async ({
+  page,
+}) => {
+  await page.goto('/art/31?expression=ink');
+  await pauseAmbientMotion(page);
+  // â„– 031's ink reaches its border, so its sheet hangs with a deliberate hairline.
+  const media = page.locator(`${current} .art-media[data-edge="true"]`);
+  await expect(media).toBeVisible();
+  // A film's layer stands in: opaque, composited and across the whole plate, as a playing film
+  // is. A line drawn beneath it was covered on one side, wherever the layer met the pixel.
+  await media.evaluate((plate) => {
+    const film = document.createElement('div');
+    film.style.cssText = 'position:absolute;inset:0;background:#efe9dd;will-change:transform';
+    plate.append(film);
+  });
+  const box = (await media.boundingBox())!;
+  // The whole row of the screen through the plate's middle: an engine may round a clip's edge.
+  const { width } = page.viewportSize()!;
+  const row = await page.screenshot({
+    clip: { x: 0, y: box.y + box.height / 2, width, height: 1 },
+  });
+  const { data, info } = await sharp(row).removeAlpha().raw().toBuffer({ resolveWithObject: true });
+  const red = (x: number) => data[Math.min(info.width - 1, Math.max(0, x)) * info.channels]!;
+  /** The darkest pixel within two of x: a line at a fractional edge falls across two. */
+  const darkest = (x: number) => Math.min(...[-2, -1, 0, 1, 2].map((d) => red(Math.floor(x) + d)));
+  const ground = red(Math.floor(box.x + box.width / 2));
+  // The hairline is a tenth of the type over the sheet: about twenty levels below it.
+  expect(darkest(box.x)).toBeLessThanOrEqual(ground - 12);
+  expect(darkest(box.x + box.width - 1)).toBeLessThanOrEqual(ground - 12);
 });

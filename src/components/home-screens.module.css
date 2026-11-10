@@ -32,34 +32,38 @@
 }
 
 /* Screen 4: two leaves across the seam, the Ink leaf on paper and the Light leaf on night, a
-   1 px gutter at the seam and the numerals hanging in the outer margins. */
+   1 px gutter at the seam and the numerals hanging in the outer margins. Each half is its work's
+   own measured ground, as each leaf of a hang is, so a plate meets no other tone at its edge. */
 .spread {
   min-height: calc(100svh - var(--head));
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   overflow-x: clip;
+  /* Each outer margin hangs its numeral on the page's gutter, the line the wordmark and the
+     hero's numeral stand on: the gutter, three figures at --fs-plate ("000", the widest, sets
+     1.73 em), and 9 px before the plate. */
+  --outer: max(6vw, calc(var(--gutter) + var(--fs-plate) * 1.75 + 9px));
 }
 .side {
   display: grid;
   align-items: center;
   padding-block: 54px;
 }
-/* The outer padding reserves the hanging numerals (three figures at --fs-plate plus 9 px). */
 .side[data-side='left'] {
-  padding-inline: max(var(--gutter), 6vw, calc(var(--fs-plate) * 2 + 9px)) 0.5px;
+  padding-inline: var(--outer) 0.5px;
 }
 .side[data-side='right'] {
-  padding-inline: 0.5px max(var(--gutter), 6vw, calc(var(--fs-plate) * 2 + 9px));
+  padding-inline: 0.5px var(--outer);
 }
 /* The leaf's strip reads on the sheet's own tone: 5.1:1 on the darkest kozo measured. */
 .side[data-ground='paper'] {
   --muted: #5a5a51;
-  background: var(--paper);
+  background: var(--plate-ground, var(--paper));
 }
 .side[data-ground='night'] {
   --type: var(--night-type);
   --muted: #b8b5ad;
-  background: var(--night);
+  background: var(--plate-ground, var(--night));
   color: var(--type);
 }
 .leaf {
@@ -73,11 +77,11 @@
   top: 0;
   color: var(--type);
 }
-.leaf[data-side='left'] .leafNumeral {
-  right: calc(100% + 9px);
+.side[data-side='left'] .leafNumeral {
+  left: calc(var(--gutter) - var(--outer));
 }
-.leaf[data-side='right'] .leafNumeral {
-  left: calc(100% + 9px);
+.side[data-side='right'] .leafNumeral {
+  right: calc(var(--gutter) - var(--outer));
 }
 .leafPlate {
   display: block;

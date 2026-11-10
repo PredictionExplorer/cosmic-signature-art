@@ -1,8 +1,6 @@
 import type { Messages } from './en';
 
 export const vi: Messages = {
-  auctionExhibitionCopy:
-    'Mỗi chu kỳ mang đến tám tác phẩm mới cho bộ sưu tập hiện có. Khám phá chuyển động, ngắm nhìn chi tiết và trực tiếp đặt giá bằng ETH.',
   auctionEditorialNote:
     'Tác phẩm tiêu biểu này giới thiệu bộ sưu tập. Các tác phẩm đấu giá được liệt kê riêng.',
   auctionRoom: 'Phòng đấu giá',

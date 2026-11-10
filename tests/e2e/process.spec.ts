@@ -66,6 +66,9 @@ test('the essay opens on night, pins the day’s Light film, crosses a hard edge
   await expect(page.getByRole('heading', { level: 1 })).toHaveText(t.processTitle);
   await expect(page.getByText(t.statementSigned)).toBeVisible();
   await expect(header).toHaveCSS('background-color', 'rgb(0, 0, 0)');
+  // One theme colour, the night's, from the server's first byte.
+  await expect(page.locator('meta[name="theme-color"]')).toHaveCount(1);
+  await expect(page.locator('meta[name="theme-color"]')).toHaveAttribute('content', '#000000');
   const chapters = page.getByRole('navigation', { name: t.ways });
   await expect(chapters.getByRole('link')).toHaveCount(4);
   await expect(chapters.getByRole('link').nth(0)).toHaveText(`00${t.chapterChoice}`);

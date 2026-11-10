@@ -6,7 +6,6 @@ import type { OrbitWindow } from '@/lib/physics/orbit';
 import type { OrreryReply, OrreryRequest } from '@/lib/physics/orrery';
 import { OrreryPace } from '@/lib/physics/orrery-pace';
 import { useMotion } from './motion-provider';
-import { lendPlateTone, returnPlateTone } from './room-ground';
 import styles from './orrery.module.css';
 
 /** One work as the Orrery hangs it: its window to perform, and where its numeral leads. */
@@ -197,24 +196,6 @@ export function Orrery({
       stage.removeAttribute('data-drawn');
     tell.current?.({ type: 'moving', moving });
   }, [moving]);
-
-  // The page is night from the top: while it stands beneath the running head, the head is too.
-  useEffect(() => {
-    const node = section.current;
-    if (!node || typeof IntersectionObserver === 'undefined') return;
-    const holder = {};
-    const head = new IntersectionObserver(
-      ([entry]) =>
-        entry.isIntersecting ? lendPlateTone(holder, '#000000', 'night') : returnPlateTone(holder),
-      // Two pixels down, so a section that only touches the top edge has left the head.
-      { rootMargin: '-2px 0px -92% 0px' },
-    );
-    head.observe(node);
-    return () => {
-      head.disconnect();
-      returnPlateTone(holder);
-    };
-  }, []);
 
   const mode = performing === null ? undefined : performing ? 'performing' : 'plates';
   return (

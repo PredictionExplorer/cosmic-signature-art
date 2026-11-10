@@ -7,6 +7,10 @@ import { cycles, indexedAssetUrl, indexedWork } from '@/lib/art/collection-index
 import { performedOrbits } from '@/lib/art/orbit-windows';
 import { workNumber } from '@/lib/art/number';
 import { Orrery, type OrreryCycle } from '@/components/orrery';
+import { nightViewport } from '@/app/viewport';
+
+/** A night route: the browser's chrome is black from the first byte (src/app/viewport.ts). */
+export const viewport = nightViewport;
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;

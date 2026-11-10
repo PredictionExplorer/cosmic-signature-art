@@ -1,6 +1,4 @@
 export const en = {
-  auctionExhibitionCopy:
-    'Each cycle brings eight new works to the existing collection. Explore their movement, study their details, and make a direct offer in ETH.',
   auctionEditorialNote:
     'This featured work introduces the collection. Auction lots are listed separately.',
   auctionRoom: 'The auction room',

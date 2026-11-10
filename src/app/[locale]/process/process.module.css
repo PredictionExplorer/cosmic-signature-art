@@ -69,9 +69,16 @@
   gap: 27px;
   max-width: 1120px;
 }
+/*
+  Display type keeps to Literata's own metrics. Its ascenders rise about 0.75 em and its
+  descenders fall about 0.25 em, so lines closer than 1 em collide (Physics' y on physics' h);
+  at 1.06 they clear, and 0.06 em at the foot keeps the last line's descenders inside the
+  heading, clear of the lede.
+*/
 .cover {
   font-size: var(--fs-cover);
-  line-height: 0.98;
+  line-height: 1.06;
+  padding-block-end: 0.06em;
   font-weight: var(--weight-hairline);
   letter-spacing: -0.02em;
   max-width: 11ch;
