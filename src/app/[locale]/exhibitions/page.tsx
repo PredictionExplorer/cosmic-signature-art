@@ -20,8 +20,8 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
   const { locale } = await params;
   if (!isLocale(locale)) return {};
   const t = messages(locale);
-  // No image of its own: the venue's card beside the home stands for the list.
-  return metadata(locale, '/exhibitions', t.exhibitions, t.exhibitionsIntro, null);
+  // This route has no file-based card, so explicitly include the venue's default still.
+  return metadata(locale, '/exhibitions', t.exhibitions, t.exhibitionsIntro);
 }
 
 /** The exhibitions, as a quiet list: one plate each, the kind and date, the title, one line. */
