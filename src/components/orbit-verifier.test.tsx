@@ -92,6 +92,7 @@ function fateOf(of: WorkOrbit): DerivedFate {
     escaper: of.fate.escaper,
     ejectionStep: of.fate.ejectionStep,
     horizonSteps: of.fate.horizonSteps,
+    energy: { first: -1, windowChange: 3e-13, change: 3e-13, broken: null },
     windowEnd: { positions: new Float64Array(9), velocities: new Float64Array(9), watchRun: 0 },
     approach: null,
   };
@@ -232,6 +233,10 @@ describe('Verify an orbit', () => {
     );
     expect(screen.getByRole('status')).toHaveTextContent(
       'Checked here in 1.9 s. Every measurement is the published record, to the last bit.',
+    );
+    // And what the record does not publish: whether the computation kept its energy.
+    expect(screen.getByRole('status')).toHaveTextContent(
+      'As computed here, the energy holds to 12 digits through the recorded window.',
     );
     expect(section(container)).toHaveAttribute('aria-busy', 'false');
     expect(section(container)).toHaveAttribute('data-phase', 'derived');

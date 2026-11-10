@@ -367,6 +367,14 @@
   line-height: 1.5;
   color: var(--muted);
 }
+/* What the energy watch found arrives with the fate; two lines of room are kept for it. */
+.kept {
+  min-height: 3em;
+  margin: 9px 0 0;
+  font-size: var(--fs-control);
+  line-height: 1.5;
+  color: var(--muted);
+}
 /* The note's way on: the same derivation, printed line by line on Verify an orbit. */
 .verify {
   margin: 9px 0 0;

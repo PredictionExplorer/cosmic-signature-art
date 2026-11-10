@@ -6,6 +6,7 @@ import { HeldPlacement } from '@/lib/physics/framing';
 import type { DerivedFate, Rederivation } from '@/lib/physics/orbit';
 import type { Plane } from '@/lib/physics/plane';
 import { STRIDE } from './orbit-derivation';
+import { shareText } from './orbit-proof';
 import { MATERIALS, type Picture } from './orbit-picture';
 import type { Painter } from './orbit-painter';
 
@@ -42,7 +43,11 @@ const LONGEST_FRAME_SECONDS = 0.1;
 /** Drawn at once, the steps are taken this many to a frame, so the page stays responsive. */
 const STILL_STEPS_PER_FRAME = 100_000;
 
-/** The line under the drawing past the frame: how far it has run, an escape, or the horizon. */
+/**
+ * The line under the drawing past the frame: how far it has run, an escape, or the horizon. Once
+ * the run is past a step at which the computation lost its energy (EnergyWatch in orbit.ts), the
+ * line says that instead: what follows is no orbit, whatever the record dates there.
+ */
 export function beyondLine(
   fate: DerivedFate,
   at: { taken: number },
@@ -51,6 +56,12 @@ export function beyondLine(
   t: Messages,
   number: Intl.NumberFormat,
 ): string {
+  const { broken } = fate.energy;
+  if (broken && at.taken >= broken.step)
+    return fill(t.orbitAdrift, {
+      step: number.format(broken.step),
+      change: shareText(broken.change, number.resolvedOptions().locale),
+    });
   const ejection = fate.outcome === 'ejection' ? fate.ejectionStep : null;
   return ejection !== null && at.taken > ejection
     ? fill(t.orbitEscaped, {

@@ -626,6 +626,12 @@ export const en = {
   orbitEscaped: 'Body {body} has escaped, at step {step}',
   orbitHeld: 'The dance held through all {steps} steps',
   toTheEjection: 'To the ejection',
+  // The energy the computation keeps (EnergyWatch in src/lib/physics/orbit.ts)
+  orbitAdrift: 'Not an orbit past step {step}: the computed energy changed by {change}.',
+  orbitEnergyHeld:
+    'As computed here, the energy holds to {digits} digits through the recorded window.',
+  orbitEnergyBroken:
+    'Near step {step} two bodies pass {distance} apart, closer than the computation’s fixed step can follow, and its energy changes by {change}. Gravity keeps energy constant, so past that step this is the computation, not an orbit.',
   // The orbit in the hand (src/components/orbit-sculpture.tsx, orbit-timeline.tsx)
   orbitStageLabel:
     'The orbit in depth. The arrow keys turn it; Escape returns it to the generator’s view.',

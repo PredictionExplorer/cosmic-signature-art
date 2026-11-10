@@ -147,6 +147,13 @@
   line-height: 1.2857;
   text-wrap: balance;
 }
+/* What the record does not publish and this browser found: whether the energy held. */
+.kept {
+  max-width: 44em;
+  font-size: var(--fs-control);
+  line-height: 1.5;
+  color: var(--muted);
+}
 .words {
   display: flex;
   flex-wrap: wrap;

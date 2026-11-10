@@ -81,7 +81,7 @@ Each work is a recorded three-body orbit. The generator, `CS-Image-Generation`, 
 
 1. **The stream.** The seed feeds `Sha3RandomByteStream`, where each refill hashes the seed with the last buffer using SHA3-256 (FIPS 202, implemented in the file). The stream forks by domain, as the generator's does.
 2. **The draws.** The visual profile's draws and the Borda weights come first, in the generator's order. Then come the candidates: each is three random bodies, moved to their centre of mass.
-3. **The motion.** The chosen candidate runs 1,000,000 warm-up steps and 1,000,000 recorded steps of the fourth-order Yoshida integrator. Yoshida-4 is symplectic: over millions of steps its energy error stays bounded instead of drifting, which a long recorded orbit needs.
+3. **The motion.** The chosen candidate runs 1,000,000 warm-up steps and 1,000,000 recorded steps of the fourth-order Yoshida integrator. Yoshida-4 is symplectic: over millions of steps its energy error stays bounded instead of drifting, which a long recorded orbit needs. That holds only while no two bodies pass closer than the fixed step can follow. At such a pass the computed energy jumps, and it does so inside the recorded window of six works (`docs/after-the-frame.md` §1.3).
 4. **The measurements.** The trait analyses the publisher records come last: masses, energy, angular momentum, the closest approach, the syzygies, the braid word and the fate.
 
 **Why exactly.** Every operation keeps the generator's order and uses only + − × ÷ and √. IEEE 754 and ECMAScript define those to the last bit, so the result is the published record to the last bit in every engine. Trigonometric functions are not defined that tightly (V8 on arm64 and on x86-64 can differ in the last bit), so the orbit uses none. The note in [docs/third-physics-phase-a.md](docs/third-physics-phase-a.md) tells how this was proved.
@@ -120,6 +120,8 @@ seed ─▶ orbit ─▶ published record ─▶ EXACT
 2. **The orbit** is derived from it by `src/lib/physics/orbit.ts` (§4).
 3. **The published record** is the package's `metadata/nft_traits.json`. `npm run art:orbits` (`scripts/build-orbit-records.mjs`) reads it with a bounded, hashed read. It keeps the inputs that chose the orbit and every measurement the publisher states. It writes `src/lib/art/orbit-records.json` **only when every measurement of every work matches exactly**.
 4. **EXACT.** Every number is compared with `Object.is`, never within a tolerance: the derived double and the published one must be identical, bit for bit (`compare` in `orbit.ts`). The closest approach's pair and step, the braid word and the fate must match exactly too. On a work's page and on `/verify/orbit/[id]`, every row reads _exact_ or _differs_, and a differing row shows both values. The verdict is one sentence: "Every measurement is the published record, to the last bit." (`src/components/orbit-proof.ts`, `src/components/orbit-verifier.tsx`).
+
+5. **What the record does not say.** The generator publishes no measure of whether its computation kept the energy it began with, so the venue asks for itself: `EnergyWatch` (`orbit.ts`) rides the fate run, and the record's note and After the frame say what it finds. Nothing in this step is compared with the record (`energyText` in `src/components/orbit-proof.ts`).
 
 Verify an orbit prints the derivation as a transcript while the worker reports: the seed, the candidates up to the chosen one, the warm-up, the recorded window and the braid's second pass. A visitor can watch their own machine reach the published record.
 

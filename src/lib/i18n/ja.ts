@@ -624,6 +624,12 @@ export const ja: Messages = {
   orbitEscaped: '天体 {body} が第 {step} ステップで脱出しました',
   orbitHeld: '{steps} ステップのあいだ、舞は続きました',
   toTheEjection: '脱出へ',
+  orbitAdrift:
+    '第 {step} ステップ以降は軌道ではなく、計算上のエネルギーが {change} 変化しています。',
+  orbitEnergyHeld:
+    'ここでの計算では、記録された時間を通じてエネルギーは {digits} 桁まで保たれています。',
+  orbitEnergyBroken:
+    '第 {step} ステップ付近で、二つの天体が {distance} まで近づきます。計算の固定された刻みでは追えない近さで、エネルギーが {change} 変化します。重力はエネルギーを一定に保つので、そのステップより先は計算であって、軌道ではありません。',
   orbitStageLabel: '奥行きのある軌道。矢印キーで回し、Escキーで生成器の視点に戻ります。',
   orbitTurnHint: '軌道をドラッグすると、奥行きの中で回せます。手を離すと、生成器の視点に戻ります。',
   orbitTurnHintTouch:

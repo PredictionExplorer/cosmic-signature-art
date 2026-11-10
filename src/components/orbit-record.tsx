@@ -4,15 +4,16 @@ import { localizedPath, type Locale } from '@/lib/i18n/routing';
 import type { Messages } from '@/lib/i18n/en';
 import { fill } from '@/lib/i18n/format';
 import type { WorkOrbit } from '@/lib/art/orbit-records';
-import type { Comparison, MeasurementKey } from '@/lib/physics/orbit';
-import { derivedValue, measurementLabels, recordValues } from './orbit-proof';
+import type { Comparison, EnergyKept, MeasurementKey } from '@/lib/physics/orbit';
+import { derivedValue, energyText, measurementLabels, recordValues } from './orbit-proof';
 import styles from './orbit-score.module.css';
 
 /**
  * The published record, checked here (orbit-score.tsx): the record's opening, in act two of the
  * work page. Each measurement stands as the record states it and is marked as the derivation in
  * this browser reaches it, with both values where they differ. The summary speaks once every row
- * has been checked, from a slot of its own.
+ * has been checked, from a slot of its own. Beneath the record's note stands what the record does
+ * not publish and this browser found: whether the computation kept its energy.
  */
 export function OrbitRecord({
   orbit,
@@ -20,6 +21,7 @@ export function OrbitRecord({
   locale,
   comparisons,
   summary,
+  energy,
   labelledBy,
 }: {
   orbit: WorkOrbit;
@@ -28,6 +30,8 @@ export function OrbitRecord({
   /** The rows checked so far, or none before the derivation is done. */
   comparisons: Comparison[] | null;
   summary: string | null;
+  /** What the energy watch found on the run to the fate, once it is there. */
+  energy: EnergyKept | null;
   /** The heading that names the table: the record's opening (orbit-score.tsx). */
   labelledBy: string;
 }) {
@@ -72,6 +76,13 @@ export function OrbitRecord({
           index: number.format(orbit.generation.selectedIndex),
           steps: number.format(orbit.generation.warmupSteps + orbit.generation.steps),
         })}
+      </p>
+      {/* Its room is kept, like the summary's: the watch answers with the fate. */}
+      <p
+        className={styles.kept}
+        data-energy={energy ? (energy.broken ? 'broken' : 'held') : undefined}
+      >
+        {energy ? energyText(energy, orbit.generation.steps, t, number) : null}
       </p>
       {/* The same derivation, printed whole on a page of its own (Verify an orbit). */}
       <p className={styles.verify}>

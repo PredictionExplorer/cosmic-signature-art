@@ -1309,12 +1309,93 @@ export class FateWatch {
   }
 }
 
+/*
+  The venue's own question, beside the generator's: does the computation keep the energy it began
+  with? Gravity conserves it. A fixed step does not at a pass closer than it can follow: there the
+  computed energy jumps, and what is computed afterwards is no motion gravity allows from that
+  start. The generator publishes no such measure, so nothing here is compared with the record;
+  the proof and After the frame say what this browser found.
+*/
+
+/** How often the venue asks what energy the computation carries, in steps. */
+export const ENERGY_INTERVAL = 1_000;
+/**
+ * How far the computed energy may stand from its first value, as a share of it, before the venue
+ * stops calling a run an orbit: one part in a thousand.
+ */
+export const ENERGY_HELD_WITHIN = 1e-3;
+
+/** What the energy watch found, from a window's first step to where a run stopped. */
+export interface EnergyKept {
+  /** The total energy at the window's first step. */
+  first: number;
+  /** The furthest it stood from that inside the recorded window, as a share of it… */
+  windowChange: number;
+  /** …and over the whole run. */
+  change: number;
+  /**
+   * Where it first stood more than ENERGY_HELD_WITHIN away: the step it was asked at, the share
+   * it had moved by, and the closest any two bodies came in the steps since the watch last
+   * asked. Null when the energy held.
+   */
+  broken: { step: number; change: number; closest: number } | null;
+}
+
+/** Asks on the bodies as they stand, after every step; nothing here moves them. */
+export class EnergyWatch {
+  readonly kept: EnergyKept;
+  private readonly bodies: Bodies;
+  private readonly steps: number;
+  /** The closest any two bodies came since the watch last asked, squared. */
+  private nearest = Infinity;
+
+  /** `positions` and `velocities` are the arrays the integrator steps; `steps` is the window's. */
+  constructor(
+    masses: readonly [number, number, number],
+    positions: Float64Array,
+    velocities: Float64Array,
+    steps: number,
+  ) {
+    this.bodies = { masses: [masses[0], masses[1], masses[2]], positions, velocities };
+    this.steps = steps;
+    this.kept = {
+      first: energyAndMomentum(this.bodies).energy,
+      windowChange: 0,
+      change: 0,
+      broken: null,
+    };
+  }
+
+  /** The bodies after `taken` steps since the window's first. */
+  observe(taken: number) {
+    const p = this.bodies.positions;
+    for (let i = 0; i < 3; i++)
+      for (let j = i + 1; j < 3; j++) {
+        const dx = p[i * 3] - p[j * 3];
+        const dy = p[i * 3 + 1] - p[j * 3 + 1];
+        const dz = p[i * 3 + 2] - p[j * 3 + 2];
+        const squared = dx * dx + dy * dy + dz * dz;
+        if (squared < this.nearest) this.nearest = squared;
+      }
+    if (taken % ENERGY_INTERVAL !== 0) return;
+    const { kept } = this;
+    const moved = Math.abs((energyAndMomentum(this.bodies).energy - kept.first) / kept.first);
+    if (moved > kept.change) kept.change = moved;
+    if (taken <= this.steps && moved > kept.windowChange) kept.windowChange = moved;
+    if (!kept.broken && moved > ENERGY_HELD_WITHIN)
+      kept.broken = { step: taken, change: moved, closest: Math.sqrt(this.nearest) };
+    this.nearest = Infinity;
+  }
+}
+
 /** The outcome of a fate run, with the states a page needs to perform past the window. */
 export interface DerivedFate {
   outcome: 'ejection' | 'eternal_dance';
   escaper: number | null;
   ejectionStep: number | null;
   horizonSteps: number;
+  /** Whether the computation kept its energy, from the window's first step to where the run stopped. */
+  energy: EnergyKept;
   /** The bodies after the recorded window, where After the frame begins. */
   windowEnd: { positions: Float64Array; velocities: Float64Array; watchRun: number };
   /**
@@ -1352,12 +1433,14 @@ export function deriveFate(
   const V = Float64Array.from(window.velocities);
   const step = integrator(window.masses, P, V, window.dt);
   const watch = new FateWatch(window.masses, threshold);
+  const energy = new EnergyWatch(window.masses, P, V, steps);
   let windowEnd: DerivedFate['windowEnd'] | null = null;
   // The states every `lead` steps back are kept as a ring of one: the latest multiple of the
   // interval that is at least `lead` before the asking point, so the approach is exact.
   const snapshots: { taken: number; P: Float64Array; V: Float64Array; run: number }[] = [];
   for (let taken = 1; taken <= horizonSteps; taken++) {
     step();
+    energy.observe(taken);
     if (taken === steps)
       windowEnd = { positions: P.slice(), velocities: V.slice(), watchRun: watch.run };
     if (taken >= steps && lead > 0 && taken % CHECK_INTERVAL === 0) {
@@ -1374,6 +1457,7 @@ export function deriveFate(
         escaper: ejection.escaper,
         ejectionStep: ejection.ejectionStep,
         horizonSteps,
+        energy: energy.kept,
         windowEnd: windowEnd ?? {
           positions: P.slice(),
           velocities: V.slice(),
@@ -1390,6 +1474,7 @@ export function deriveFate(
     escaper: null,
     ejectionStep: null,
     horizonSteps,
+    energy: energy.kept,
     windowEnd: windowEnd ?? { positions: P.slice(), velocities: V.slice(), watchRun: watch.run },
     approach: null,
   };

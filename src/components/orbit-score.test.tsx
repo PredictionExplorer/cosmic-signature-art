@@ -234,6 +234,7 @@ function fateOf(of: WorkOrbit): DerivedFate {
       escaper: null,
       ejectionStep: null,
       horizonSteps: of.fate.horizonSteps,
+      energy: { first: -1, windowChange: 0, change: 0, broken: null },
       windowEnd: {
         positions: Float64Array.from(performed.window.positions),
         velocities: Float64Array.from(performed.window.velocities),
@@ -331,8 +332,13 @@ describe('the orbit section', () => {
     expect(section(container)).not.toHaveAttribute('data-exact');
     // The worker runs on past the window to the fate before it is done.
     expect(workers[0].terminated).toBe(false);
+    expect(container.querySelector('[class*="kept"]')).toBeEmptyDOMElement();
     fated();
     expect(screen.getAllByText(t.orbitExact)).toHaveLength(11);
+    // With the fate comes the watch's answer: the computed energy held.
+    expect(container.querySelector('[data-energy="held"]')).toHaveTextContent(
+      'As computed here, the energy holds to 15 digits through the recorded window.',
+    );
     expect(screen.getByRole('status')).toHaveTextContent(
       'Derived here in 0.8 s from seed 0x4a0d…f5b5: candidate 77,741 of 100,000, then 2,000,000 steps. Every measurement is the published record, to the last bit.',
     );
@@ -481,6 +487,44 @@ describe('After the frame', () => {
     expect(screen.getByText(t.orbitLine)).toBeInTheDocument();
     nextFrame();
     expect(screen.getByRole('button', { name: t.again })).toBeVisible();
+  });
+
+  it('says where the computation lost its energy, and calls nothing past it an escape', () => {
+    Object.assign(motion, { paused: false, reducedMotion: false });
+    const { container } = render(<OrbitScore orbit={soonest} t={t} locale="en" />);
+    approach();
+    view(true);
+    derive(derivation(soonest), workers[0], soonest);
+    // № 054's own run, with the watch's answer for one that broke 5,000 steps past the frame.
+    const fate: DerivedFate = {
+      ...fateOf(soonest),
+      energy: {
+        first: -2864.2,
+        windowChange: 2e-11,
+        change: 13,
+        broken: { step: 1_005_000, change: 7.8, closest: 0.11 },
+      },
+    };
+    workers[0].reply({ type: 'fate', fate, comparison: compareFate(soonest.fate, fate) });
+    clockNow = 800 + 31_000;
+    nextFrame();
+    // The record's note: what the published record does not say, and this browser found.
+    const note = container.querySelector('[data-energy]')!;
+    expect(note).toHaveAttribute('data-energy', 'broken');
+    expect(note).toHaveTextContent(
+      'As computed here, the energy holds to 10 digits through the recorded window. Near step 1,005,000 two bodies pass 0.11 apart, closer than the computation’s fixed step can follow, and its energy changes by 780%. Gravity keeps energy constant, so past that step this is the computation, not an orbit.',
+    );
+    fireEvent.click(afterTheFrame());
+    nextFrame();
+    clockNow += 1_000;
+    nextFrame();
+    // Before the break the line counts as ever; from it on, it says what the run has become.
+    expect(screen.getByText(/^After the frame · step 1,003,330 · /)).toBeVisible();
+    framesUntil(() => section(container).getAttribute('data-beyond') === 'rested');
+    expect(
+      screen.getByText('Not an orbit past step 1,005,000: the computed energy changed by 780%.'),
+    ).toBeVisible();
+    expect(screen.queryByText(/has escaped/)).not.toBeInTheDocument();
   });
 
   it('offers to go straight to an escape that lies further on', () => {

@@ -617,6 +617,10 @@ export const ko: Messages = {
   orbitEscaped: '천체 {body}이(가) {step}번째 단계에서 탈출했습니다',
   orbitHeld: '춤은 {steps}단계 내내 이어졌습니다',
   toTheEjection: '탈출로',
+  orbitAdrift: '{step}번째 단계 이후는 궤도가 아닙니다. 계산된 에너지가 {change} 달라졌습니다.',
+  orbitEnergyHeld: '여기서 계산한 바로는, 기록된 구간 내내 에너지가 {digits}자리까지 유지됩니다.',
+  orbitEnergyBroken:
+    '{step}번째 단계 무렵 두 천체가 {distance}까지 가까워집니다. 계산의 고정된 간격으로는 따라갈 수 없는 거리여서, 에너지가 {change} 달라집니다. 중력은 에너지를 일정하게 지키므로, 그 단계 이후는 궤도가 아니라 계산입니다.',
   orbitStageLabel: '깊이 속의 궤도. 화살표 키로 돌리고, Esc 키로 생성기의 시점으로 돌아갑니다.',
   orbitTurnHint:
     '궤도를 드래그하면 깊이 속에서 돌릴 수 있습니다. 놓으면 생성기의 시점으로 돌아갑니다.',

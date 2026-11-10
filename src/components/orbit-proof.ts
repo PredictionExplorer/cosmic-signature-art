@@ -1,7 +1,13 @@
 import type { Messages } from '@/lib/i18n/en';
 import { fill } from '@/lib/i18n/format';
 import type { WorkOrbit } from '@/lib/art/orbit-records';
-import type { Comparison, MeasurementKey, OrbitGeneration, Progress } from '@/lib/physics/orbit';
+import type {
+  Comparison,
+  EnergyKept,
+  MeasurementKey,
+  OrbitGeneration,
+  Progress,
+} from '@/lib/physics/orbit';
 import { pairName } from '@/lib/physics/film-score';
 
 /*
@@ -120,6 +126,44 @@ export function progressText(
     case 'braid':
       return fill(t.orbitProgressBraid, { done, total });
   }
+}
+
+const shares = new Map<string, Intl.NumberFormat>();
+/** A share of a quantity as a percentage, to two significant digits, in the reader's own digits. */
+export function shareText(share: number, locale: string): string {
+  let format = shares.get(locale);
+  if (!format) {
+    format = new Intl.NumberFormat(locale, { style: 'percent', maximumSignificantDigits: 2 });
+    shares.set(locale, format);
+  }
+  return format.format(share);
+}
+
+/** How many digits a quantity that moved by `share` of itself has kept: a double's fifteen at most. */
+export const digitsKept = (share: number) =>
+  share > 0 ? Math.min(15, Math.max(0, Math.floor(-Math.log10(share)))) : 15;
+
+/**
+ * What the energy watch found (EnergyWatch in orbit.ts), in words: how many digits the computed
+ * energy held to through the recorded window, and where it broke, if it did. A break inside the
+ * window is all there is to say of the window.
+ */
+export function energyText(
+  energy: EnergyKept,
+  steps: number,
+  t: Messages,
+  number: Intl.NumberFormat,
+): string {
+  const { broken } = energy;
+  const held = fill(t.orbitEnergyHeld, { digits: number.format(digitsKept(energy.windowChange)) });
+  if (!broken) return held;
+  const { locale } = number.resolvedOptions();
+  const said = fill(t.orbitEnergyBroken, {
+    step: number.format(broken.step),
+    distance: new Intl.NumberFormat(locale, { maximumSignificantDigits: 2 }).format(broken.closest),
+    change: shareText(broken.change, locale),
+  });
+  return broken.step <= steps ? said : `${held} ${said}`;
 }
 
 /** The verdict on the rows checked: every one is the record, or so many of them differ. */
