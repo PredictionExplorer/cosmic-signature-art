@@ -1,12 +1,14 @@
 import { act, cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import { ArtworkViewer } from './artwork-viewer';
+import { LINED_PLATE_SIZES, PLATE_SIZES } from './artwork-media';
 import { getCuratedArtwork } from '@/lib/art/catalog';
 import { artworkFromIndex } from '@/lib/art/collection-cards';
 import { indexedWork } from '@/lib/art/collection-index';
 import { withCollectionPreviews } from '@/lib/art/collection-previews';
 import type { Artwork } from '@/lib/art/types';
 import { en } from '@/lib/i18n/en';
+import { ja } from '@/lib/i18n/ja';
 import { AFTER_THE_FRAME_EVENT, SEAM_EVENT } from '@/lib/venue-events';
 import { BREATH_MS, forgetExpression } from './turn';
 import { closeSheet, openSheet } from './sheets-store';
@@ -227,6 +229,93 @@ describe('the plate and its strip', () => {
     expect(screen.getByText(`${en.light} · ${en.noInkPublished}`)).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: en.ink })).toBeNull();
     expect(document.querySelector('[data-wing]')).toBeNull();
+  });
+
+  it('sets the line under each still where the label stood, each sentence a box of its own', () => {
+    const line = ['Three bodies, together for all the steps.', 'One of them is no longer bound.'];
+    renderViewer({ lines: { ink: line, light: line } });
+    expect(document.querySelector('.viewing-room')).toHaveAttribute('data-lines');
+    for (const id of ['ink', 'light']) {
+      const strip = layer(id).querySelector('.strip')!;
+      // The strip is marked, so that the line keeps its place where a label gives way.
+      expect(strip).toHaveAttribute('data-line');
+      const said = strip.querySelector('p')!;
+      expect(said.textContent).toBe(
+        'Three bodies, together for all the steps. One of them is no longer bound.',
+      );
+      // A line breaks between two sentences before it breaks inside one.
+      expect([...said.querySelectorAll('em > span')].map((span) => span.textContent)).toEqual(line);
+    }
+    // The generator's vocabulary has left the strip; the entry keeps it, with its notes.
+    expect(screen.queryByText(/Orbit Ribbons/)).toBeNull();
+  });
+
+  it('runs two sentences together as the language does: no space between them in Japanese', () => {
+    const line = ['一つ目の文。', '二つ目の文。'];
+    renderViewer({ t: ja, locale: 'ja', lines: { ink: line, light: line } });
+    expect(layer('ink').querySelector('.strip p')!.textContent).toBe('一つ目の文。二つ目の文。');
+  });
+
+  it('says its line under the twin’s own screen too, each material’s its own', () => {
+    renderViewer({
+      lines: { ink: ['Three bodies.', 'This is ink.'], light: ['Three bodies.', 'This is light.'] },
+    });
+    // Beneath an Ink plate the wing hangs the Light twin, on a screen of its own where no
+    // scroll draws it over the plate: a phone, reduced motion, an older browser.
+    const twin = document.querySelector('[data-wing]')!.lastElementChild!;
+    expect(twin).toHaveAttribute('data-ground', 'night');
+    expect(twin.querySelector('.strip')).toHaveAttribute('data-line');
+    expect(twin.querySelector('.strip p')!.textContent).toBe('Three bodies. This is light.');
+    expect(layer('ink').querySelector('.strip p')!.textContent).toBe('Three bodies. This is ink.');
+  });
+
+  it('keeps the material’s name under the twin’s screen in a room without lines', () => {
+    renderViewer();
+    const twin = document.querySelector('[data-wing]')!.lastElementChild!;
+    expect(twin.querySelector('.strip')).not.toHaveAttribute('data-line');
+    expect(within(twin.querySelector('.strip') as HTMLElement).getByText('Light')).toBeVisible();
+  });
+
+  it('says after a work’s line, as a sentence of its own, that no Ink is published', () => {
+    const line = ['Three bodies, together for all the steps.', 'They are still bound.'];
+    renderViewer({
+      artwork: getCuratedArtwork(2)!,
+      traits: undefined,
+      lines: { ink: line, light: line },
+    });
+    const said = layer('light').querySelector('.strip p')!;
+    // The whole paragraph, in order: the two sentences, a space, the note.
+    expect(said.textContent).toBe(
+      `Three bodies, together for all the steps. They are still bound. ${en.noInkPublished}`,
+    );
+    expect(said.lastElementChild).toHaveTextContent(en.noInkPublished);
+    expect(said.lastElementChild).toHaveClass('folio');
+    expect(screen.queryByText(`${en.light} · ${en.noInkPublished}`)).toBeNull();
+  });
+
+  it('asks the still ladder for the plate a line leaves room for', () => {
+    const line = ['Three bodies.'];
+    const sizesOf = () =>
+      document.querySelector('[data-layer-state="current"] img.art-still')!.getAttribute('sizes');
+    const lined = renderViewer({ lines: { ink: line, light: line } });
+    expect(sizesOf()).toBe(LINED_PLATE_SIZES);
+    lined.unmount();
+    renderViewer();
+    expect(sizesOf()).toBe(PLATE_SIZES);
+  });
+
+  it('keeps the label line on a sale’s page, whatever line it is given', () => {
+    const line = ['Three bodies, together for all the steps.', 'One of them is no longer bound.'];
+    renderViewer({ presentation: 'auction', lines: { ink: line, light: line } });
+    // A work's fate is not told beside its sale: the viewer cuts the line as it cuts the orbit.
+    expect(document.querySelector('.viewing-room')).not.toHaveAttribute('data-lines');
+    const strip = layer('ink').querySelector('.strip')!;
+    expect(strip).not.toHaveAttribute('data-line');
+    expect(strip.querySelector('p')).toBeNull();
+    expect(
+      within(strip as HTMLElement).getByText('Orbit Ribbons · Harmonic Weave · Ink'),
+    ).toBeInTheDocument();
+    expect(document.querySelector('img.art-still')).toHaveAttribute('sizes', PLATE_SIZES);
   });
 });
 
@@ -669,9 +758,17 @@ describe('the room and the keys', () => {
 
 describe('the home', () => {
   it('sets the one line in the strip, remembers a resolved arrival, and opens the night wing’s words', async () => {
-    const { container } = renderViewer({ presentation: 'home' });
-    expect(within(layer('ink') as HTMLElement).getByText(en.statementLine)).toBeInTheDocument();
-    expect(within(layer('ink') as HTMLElement).getByText(en.statementSigned)).toBeInTheDocument();
+    const { container } = renderViewer({
+      presentation: 'home',
+      lines: { ink: [en.homeLine, en.homeLineInk], light: [en.homeLine, en.homeLineLight] },
+    });
+    // Each material's still is told in its own second sentence.
+    expect(layer('ink').querySelector('.strip p')).toHaveTextContent(
+      'Three bodies, each pulling on the other two. This is the ink their motion stirred.',
+    );
+    expect(layer('light').querySelector('.strip p')).toHaveTextContent(
+      'Three bodies, each pulling on the other two. This is a long exposure of their motion.',
+    );
     expect(screen.queryByRole('button', { name: en.enlarge })).toBeNull();
     expect(
       within(layer('light') as HTMLElement).getByRole('link', {

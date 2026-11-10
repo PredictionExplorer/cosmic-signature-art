@@ -123,6 +123,10 @@ describe('the energy the computation kept, in words', () => {
     expect(energyText(later, steps, en, english)).toBe(
       'As computed here, the energy holds to 12 digits through the recorded window. Near step 1,535,000 two bodies pass 0.11 apart, closer than the computation’s fixed step can follow, and its energy changes by 780%. Gravity keeps energy constant, so past that step this is the computation, not an orbit.',
     );
+    // Japanese sets its sentences together, with no space after the full stop.
+    const said = energyText(later, steps, ja, new Intl.NumberFormat('ja'));
+    expect(said).toContain('12 桁まで保たれています。第 1,535,000 ステップ付近で');
+    expect(said).not.toContain('。 ');
   });
 
   it('says only the break when it lies inside the window', () => {

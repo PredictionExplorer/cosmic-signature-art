@@ -1,5 +1,6 @@
 'use client';
 import {
+  Fragment,
   Suspense,
   use,
   useCallback,
@@ -26,7 +27,7 @@ import type { Messages } from '@/lib/i18n/en';
 import { localizedPath, type Locale } from '@/lib/i18n/routing';
 import { AFTER_THE_FRAME_EVENT, SEAM_EVENT } from '@/lib/venue-events';
 import { HOME_RESOLVED_KEY } from '@/lib/storage-keys';
-import { ArtworkMedia } from './artwork-media';
+import { ArtworkMedia, LINED_PLATE_SIZES } from './artwork-media';
 import { useMotion } from './motion-provider';
 import { useMediaPolicy } from './media-policy';
 import { ArtworkTransition } from './artwork-transition';
@@ -102,6 +103,13 @@ type ArtworkViewerProps = {
   live?: Promise<Artwork | null>;
   /** The label line's words, read from the collection index on the server. */
   traits?: { structure?: string; underlay?: string };
+  /**
+   * The line under each expression's still, as its sentences, worded on the server: a work's,
+   * from its record, or the home's (src/lib/art/fate-line.ts). It stands where the label line
+   * stood, and the generator's vocabulary keeps its place in the entry, where it has its notes.
+   * Without one the strip keeps the label line; a sale's page keeps it whatever it is given.
+   */
+  lines?: Readonly<Record<Expression, readonly string[]>>;
   neighbours?: Neighbours;
   /** The night wing beneath the plate; the lot page has the bid rail there instead. */
   wing?: boolean;
@@ -176,6 +184,7 @@ function ArtworkViewerSession({
   inlinePreviews,
   live,
   traits,
+  lines,
   neighbours,
   wing = presentation !== 'auction',
   afterTheFrame = false,
@@ -451,6 +460,8 @@ function ArtworkViewerSession({
     ink, after a pre-roll of bare paper (third-physics-phase-e.md §6).
   */
   const orbit = presentation === 'auction' ? undefined : offeredOrbit;
+  // The line tells a work's fate from its record; like the orbit, it is not said beside a sale.
+  const shownLines = presentation === 'auction' ? undefined : lines;
   // The home opens on the opening clip and hands over to the complete film at the same frame.
   const openingFilm = home && !compact && !settlingPlate ? media?.openingFilm : undefined;
   // The plate's clock holds only when every film it plays keeps it: the opening clip as well.
@@ -842,17 +853,36 @@ function ArtworkViewerSession({
     );
   }
 
-  /** The strip's centre: the label line, or the home's one line. */
+  /** What stands between two sentences on one line: a space, or nothing in Japanese and Chinese. */
+  const betweenSentences = fill(t.sentences, { first: '', second: '' });
+
+  /** The strip's centre: the line under the still, or else the label line. */
   function centre(layer: Expression): ReactNode {
-    if (home) {
-      if (layer !== 'ink') return <span />;
+    const alone = layer === 'light' && !ink?.still;
+    const line = shownLines?.[layer];
+    if (line?.length)
       return (
         <p className={styles.line}>
-          <em>{t.statementLine}</em> <span className="folio">{t.statementSigned}</span>
+          <em>
+            {line.map((sentence, index) => (
+              // Each sentence is a box of its own, so a line breaks between two before it breaks
+              // inside one; what stands between them is the language's own (t.sentences).
+              <Fragment key={sentence}>
+                {index ? betweenSentences : null}
+                <span>{sentence}</span>
+              </Fragment>
+            ))}
+          </em>
+          {alone && !home ? (
+            <>
+              {' '}
+              <span className="folio">{t.noInkPublished}</span>
+            </>
+          ) : null}
         </p>
       );
-    }
-    if (layer === 'light' && !ink?.still)
+    if (home) return <span />;
+    if (alone)
       return (
         <span>
           {t.light} · {t.noInkPublished}
@@ -906,6 +936,7 @@ function ArtworkViewerSession({
           current={current}
           settled={settledLayers.includes(id)}
           centre={centre(id)}
+          line={!!shownLines?.[id]?.length}
           words={<div className={styles.wordsRow}>{words(id)}</div>}
           foot={current ? transport : null}
           className={current ? 'viewer-plate' : ''}
@@ -927,6 +958,7 @@ function ArtworkViewerSession({
               ambient={current && ambientFilm}
               artworkId={artwork.id}
               previewSrc={previewSrc}
+              sizes={shownLines ? LINED_PLATE_SIZES : undefined}
               still={!current || still || homeResolved || !!room}
               startAt={current ? time.current : 0}
               restart={current ? restart : 0}
@@ -1023,6 +1055,7 @@ function ArtworkViewerSession({
         aria-label={t.ways}
         data-presentation={presentation}
         data-expression={expression}
+        data-lines={shownLines && !foreign ? '' : undefined}
         data-live={liveArtwork ? 'adopted' : undefined}
         data-turning={turning?.mode}
         data-sit={sit ? '' : undefined}
@@ -1054,7 +1087,8 @@ function ArtworkViewerSession({
                   id={artwork.id}
                   media={twinMedia}
                   current={false}
-                  centre={<span>{label(twin)}</span>}
+                  centre={shownLines?.[twin]?.length ? centre(twin) : <span>{label(twin)}</span>}
+                  line={!!shownLines?.[twin]?.length}
                   words={
                     <div className={styles.wordsRow}>
                       <span className={styles.state}>{t.still}</span>
@@ -1067,6 +1101,7 @@ function ArtworkViewerSession({
                     alt={`${workNumber(artwork.id)} · ${label(twin)}`}
                     artworkId={artwork.id}
                     previewSrc={inlinePreviews?.[twin]}
+                    sizes={shownLines ? LINED_PLATE_SIZES : undefined}
                     still
                   />
                 </Plate>

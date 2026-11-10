@@ -38,6 +38,14 @@ export const REWIND_WAIT_MS = 4000;
  * fitted by height to the room (100svh − head − strip) in the work's own proportion.
  */
 export const PLATE_SIZES = '(max-width: 767px) 100vw, min(100vw, calc((100svh - 104px) * 1.547))';
+/**
+ * The same for a plate whose strip carries the line under the still. Between a phone and a wide
+ * desk that strip is two rows, 116 px, and the plate is fitted to what is left of a room tall
+ * enough to spare it (artwork-viewer.module.css); without this the ladder would be asked for a
+ * rung wider than the plate.
+ */
+export const LINED_PLATE_SIZES =
+  '(max-width: 767px) 100vw, (min-height: 560.02px) and (max-width: 1279.98px) min(100vw, calc((100svh - 164px) * 1.547)), min(100vw, calc((100svh - 104px) * 1.547))';
 /** On a constrained connection the resting still is this rung, never the 3,456 px file. */
 const CONSTRAINED_RUNG_PX = 1280;
 /**

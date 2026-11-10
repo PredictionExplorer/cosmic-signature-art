@@ -7,6 +7,7 @@ import { expressionOfTheDay, venueNow, workOfTheDay } from '@/lib/art/work-of-th
 import { openingOn } from '@/lib/art/opening';
 import { filmOrbit } from '@/lib/art/orbit-windows';
 import { showWorkOf } from '@/lib/art/first-light-work';
+import { homeLine } from '@/lib/art/fate-line';
 import { metadata } from '@/lib/site';
 import { ArtworkViewer } from '@/components/artwork-viewer';
 import { HomeCycle, HomeSpread, HomeStatement } from '@/components/home-screens';
@@ -41,9 +42,10 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
 
 /**
  * The home opens on the day's work in the day's expression: Screen 1 is that plate with the
- * one line, Screen 2 the same orbit in the other expression, one Turn away. Light and Ink take
- * the first screen on alternate days (third-physics-phase-d.md §2). A first visit opens with
- * the Overture, the venue's one timed event: the plate condenses out of its orbit, then lands.
+ * line under it, which says what a newcomer is looking at, Screen 2 the same orbit in the other
+ * expression, one Turn away. Light and Ink take the first screen on alternate days
+ * (third-physics-phase-d.md §2). A first visit opens with the Overture, the venue's one timed
+ * event: the plate condenses out of its orbit, then lands.
  */
 export default async function Home({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
@@ -66,6 +68,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
           light: inlineCuratedPreview(work.id, 'light'),
         }}
         orbit={filmOrbit(work.id)}
+        lines={{ ink: homeLine(work.id, 'ink', t), light: homeLine(work.id, 'light', t) }}
       />
       <Overture work={firstLight} skip={t.firstLightSkip} />
       {/* Screen 3: the statement line, the one screen without a work. */}

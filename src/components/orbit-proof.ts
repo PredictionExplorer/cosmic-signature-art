@@ -163,7 +163,7 @@ export function energyText(
     distance: new Intl.NumberFormat(locale, { maximumSignificantDigits: 2 }).format(broken.closest),
     change: shareText(broken.change, locale),
   });
-  return broken.step <= steps ? said : `${held} ${said}`;
+  return broken.step <= steps ? said : fill(t.sentences, { first: held, second: said });
 }
 
 /** The verdict on the rows checked: every one is the record, or so many of them differ. */

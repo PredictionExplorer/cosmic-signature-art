@@ -364,6 +364,18 @@ export const en = {
   statementLine:
     'Each work is one recorded three-body orbit, rendered twice, as light and as ink. Both are the same token.',
   statementSigned: 'Cosmic Signature · October 2026',
+  // The line under a still, sentence by sentence: the home's, with its second sentence for each
+  // material, and a work's (src/lib/art/fate-line.ts)
+  homeLine: 'Three bodies, each pulling on the other two.',
+  homeLineLight: 'This is a long exposure of their motion.',
+  homeLineInk: 'This is the ink their motion stirred.',
+  fateTogether: 'Three bodies, together for all {steps} steps this work records.',
+  fateLeaves: '{time} after its film ends, one of them is no longer bound to the other two.',
+  fateStill: 'They are still bound to one another at step {steps}, where the record stops looking.',
+  fateSeconds: '{n} seconds',
+  fateMinutes: '{n} minutes',
+  // Two sentences run together: a space between them here, none in Japanese or Chinese
+  sentences: '{first} {second}',
   livingCollection: 'A living collection of recorded orbits',
   cyclesSpan: 'Cycle {first} to Cycle {last}',
   since: 'since {date}',

@@ -63,6 +63,60 @@
 .words {
   color: var(--type);
 }
+/* A label is cut short where it runs out of room. The line under the still is not: its
+   sentences stand whole, a line each where two cannot share one (artwork-viewer.module.css). */
+.centre[data-line] {
+  overflow: visible;
+  white-space: normal;
+}
+/* At a wide desk the line stands inside the strip, on two lines at most. The strip's three
+   parts are raised together, so that the second line stands clear of the film's score along
+   the foot and a line of one sentence keeps the words' own line. */
+@media (min-width: 1280px) {
+  .strip[data-line] {
+    padding-bottom: 6px;
+  }
+}
+/* Between a phone and a wide desk the centre cannot hold a sentence beside the words in every
+   language: the film's readout joins the words while it plays, and the line would wrap again
+   under the picture. So there it takes a row of its own, beneath the numeral and the words in
+   theirs, which keeps a desk strip's 56 px. The viewer fits the plate to what is left
+   (artwork-viewer.module.css). The bounds are fractional so that a zoomed window, whose width
+   is not whole, is never between two settings. */
+@media (min-width: 767.02px) and (max-width: 1279.98px) {
+  .numeral {
+    grid-row: 1;
+    grid-column: 1;
+  }
+  .words {
+    grid-row: 1;
+    grid-column: 3;
+  }
+}
+@media (min-width: 767.02px) and (max-width: 1279.98px) and (min-height: 560.02px) {
+  .strip[data-line] {
+    grid-template-rows: 56px auto;
+    row-gap: 0;
+    align-content: start;
+  }
+  .centre[data-line] {
+    grid-row: 2;
+    grid-column: 1 / -1;
+    padding-bottom: 18px;
+  }
+}
+/* A screen that wide and no taller than a phone on its side has no height to give: the picture
+   keeps its room and the strip its one row. The line is still there to be read aloud. */
+@media (min-width: 767.02px) and (max-width: 1279.98px) and (max-height: 560px) {
+  .centre[data-line] {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+}
 @media (max-width: 767px) {
   /* The plate is the first pixel under the masthead: 100 vw, letterboxed in its own tone. */
   .screen .plate {
@@ -80,6 +134,23 @@
   .strip {
     grid-template-columns: auto minmax(0, 1fr);
     gap: 12px;
+  }
+  /* A label gives way on a phone; the line under the still does not. It takes rows of its own
+     beneath the numeral and the words, which keep theirs, and stands clear of the live state
+     that hangs just under the words (artwork-viewer.module.css). */
+  .numeral {
+    grid-row: 1;
+    grid-column: 1;
+  }
+  .words {
+    grid-row: 1;
+    grid-column: 2;
+  }
+  .centre[data-line] {
+    display: block;
+    grid-row: 2;
+    grid-column: 1 / -1;
+    padding-block: 9px 18px;
   }
   .words {
     gap: 12px;
