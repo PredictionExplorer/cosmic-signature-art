@@ -1,3 +1,4 @@
+import { BODY_REACH_SHARE, bodyReach } from '@/lib/physics/body-light';
 import type { FramedSamples } from '@/lib/physics/framing';
 import type { Plane } from '@/lib/physics/plane';
 
@@ -22,8 +23,6 @@ export type Material = 'light' | 'ink';
 export const INK_BODY_RADIUS = 0.025;
 /** Phase A's margin about the plane's drawing, in CSS pixels. */
 const PLANE_MARGIN = 24;
-/** On the plate a body's light reaches no further than this share of the plate's height. */
-const LIGHT_REACH = 0.035;
 
 /** The bodies' places, sample by sample, in canvas pixels. */
 export interface Picture {
@@ -71,7 +70,7 @@ export function planePicture(
       ox + path[index * size + body * 2] * scale,
       oy + path[index * size + body * 2 + 1] * scale,
     ],
-    reach: (mass) => Math.cbrt(mass) * 0.6 * ratio * 4,
+    reach: (mass) => bodyReach(mass) * ratio,
   };
 }
 
@@ -103,7 +102,7 @@ export function platePicture(
     reach: (mass) =>
       material === 'ink'
         ? INK_BODY_RADIUS * height
-        : Math.min(Math.cbrt(mass) * 0.6 * ratio * 4, LIGHT_REACH * height),
+        : Math.min(bodyReach(mass) * ratio, BODY_REACH_SHARE * height),
   };
 }
 

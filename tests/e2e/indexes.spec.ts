@@ -364,6 +364,41 @@ test.describe('The Orrery', () => {
     await noHorizontalOverflow(page);
   });
 
+  test('carries each body at the head of its trail, and moves it on', async ({
+    page,
+  }, testInfo) => {
+    test.skip(
+      testInfo.project.name.endsWith('reduced-motion'),
+      'A still preference rests each body where its window ends, proved in the unit tests.',
+    );
+    await ready(page, '/collection/orrery');
+    await playAmbientMotion(page);
+    // Every engine here hands its canvases to a worker; one that failed would hang the stills.
+    await expect(orrery(page)).toHaveAttribute('data-mode', 'performing');
+    // A trail only ever adds light. So where the cell is darker a moment later, a body was there
+    // and has moved on, leaving the trail beneath it as it was.
+    const cell = page.locator('[data-stage]').first();
+    const pixels = async () =>
+      sharp(await cell.screenshot())
+        .removeAlpha()
+        .raw()
+        .toBuffer();
+    let before = await pixels();
+    await expect
+      .poll(
+        async () => {
+          await page.waitForTimeout(250);
+          const after = await pixels();
+          let darker = 0;
+          for (let k = 0; k < after.length; k++) if (before[k] - after[k] > 48) darker += 1;
+          before = after;
+          return darker;
+        },
+        { timeout: 15_000 },
+      )
+      .toBeGreaterThan(5);
+  });
+
   test('under a still preference each orbit is drawn whole, once', async ({ page }) => {
     await ready(page, '/collection/orrery');
     await pauseAmbientMotion(page);

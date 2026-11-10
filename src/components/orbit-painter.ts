@@ -1,3 +1,4 @@
+import { bodyGlow } from '@/lib/physics/body-light';
 import { lightFilmFrame } from '@/lib/physics/light-film';
 import { MATERIALS, type Picture } from './orbit-picture';
 
@@ -102,9 +103,7 @@ export function orbitPainter({
         continue;
       }
       const glow = mark.createRadialGradient(cx, cy, 0, cx, cy, reach);
-      glow.addColorStop(0, `oklch(0.96 0.04 ${hue})`);
-      glow.addColorStop(0.22, `oklch(0.9 0.08 ${hue} / 0.55)`);
-      glow.addColorStop(1, 'transparent');
+      for (const [offset, colour] of bodyGlow(hue)) glow.addColorStop(offset, colour);
       mark.fillStyle = glow;
       mark.beginPath();
       mark.arc(cx, cy, reach, 0, Math.PI * 2);
