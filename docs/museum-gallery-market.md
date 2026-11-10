@@ -88,7 +88,10 @@ Chapters, each a live figure built on a work in the collection:
    work's own Lyapunov time, measured from its own twin.
 6. **How we compute it anyway.** The fourth-order Yoshida integrator, whose middle step runs time
    backward, holding the energy steady where a naive method lets it drift away. "Your browser just
-   took a million steps."
+   took a million steps." _Corrected 10 November 2026:_ it holds the energy only while no two
+   bodies pass closer than its fixed step can follow. In six works they do inside the recorded
+   window, and the chapter must show each work's own energy line, flat or stepped
+   ([after-the-frame.md](after-the-frame.md) §1.3).
 7. **The zoo.** The figure-eight (Moore 1993; Chenciner and Montgomery 2000), the thousands of
    periodic families found since 2013, and where our works sit on the map of beginnings.
 

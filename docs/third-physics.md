@@ -206,6 +206,13 @@ The traits say *Eternal Dance* or *Ejection*. The generator decided this over an
 
 The artwork stays the recorded rendering; this is its physics, continued and labelled as such. *Every motion has an echo* finally has a literal page.
 
+*Corrected 10 November 2026:* "its physics" holds only while the computation keeps its energy. An audit of all 72 works found that it does not always:
+- in five works the published ejection is the fixed step failing at a very close pass;
+- in six the energy jumps inside the recorded window;
+- and 29 of the 36 dances lose a body after the 8,000,000-step horizon, so no dance should be called eternal in the venue's own voice.
+
+The fate run now watches the energy, and After the frame and the record say what it finds ([after-the-frame.md](after-the-frame.md) §1.3 and §8.1).
+
 ### 5.7 The Orrery: the collection, moving, for zero megabytes *(built)*
 
 This is a physical index beside All the light: every work's orbit re-performed at once as a small live score, hung by cycle, with the work's numeral beneath. Hover to see the plate.
