@@ -1382,7 +1382,8 @@ export class EnergyWatch {
     const moved = Math.abs((energyAndMomentum(this.bodies).energy - kept.first) / kept.first);
     if (moved > kept.change) kept.change = moved;
     if (taken <= this.steps && moved > kept.windowChange) kept.windowChange = moved;
-    if (!kept.broken && moved > ENERGY_HELD_WITHIN)
+    // Asked as "not held", so that an energy that is no longer a number counts as lost.
+    if (!kept.broken && !(moved <= ENERGY_HELD_WITHIN))
       kept.broken = { step: taken, change: moved, closest: Math.sqrt(this.nearest) };
     this.nearest = Infinity;
   }
