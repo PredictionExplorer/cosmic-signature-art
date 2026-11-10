@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { getCuratedArtwork } from '@/lib/art/catalog';
+import { groundColour, materialAt } from '@/lib/crossing/material';
+import { cubicBezier, invertEasing } from '@/lib/crossing/timing';
 import { rgb, useArrivalCrossing } from './arrival-crossing';
 import { SeamController } from './turn';
 
@@ -33,10 +35,16 @@ function Viewer({
     <div>
       <canvas ref={canvas} />
       <div data-layer="ink">
-        <div className="plate">
-          <div className="art-media" />
+        <div data-plate-ground="paper" style={{ backgroundColor: 'rgb(239, 233, 221)' }}>
+          <div className="plate">
+            <div className="art-media" />
+          </div>
         </div>
       </div>
+      <div data-layer="light">
+        <div data-plate-ground="night" />
+      </div>
+      <div className="head-overlay" />
       <button
         type="button"
         onClick={(event) => {
@@ -58,6 +66,7 @@ function fakeWebGL() {
   const calls: string[] = [];
   const floats = new Map<string, number>();
   const pairs = new Map<string, [number, number]>();
+  const triples = new Map<string, [number, number, number]>();
   let lost = false;
   const methods: Record<string, (...args: never[]) => unknown> = {
     isContextLost: () => lost,
@@ -70,6 +79,9 @@ function fakeWebGL() {
     },
     uniform2f: (location: { name: string } | null, x: number, y: number) => {
       if (location) pairs.set(location.name, [x, y]);
+    },
+    uniform3f: (location: { name: string } | null, x: number, y: number, z: number) => {
+      if (location) triples.set(location.name, [x, y, z]);
     },
   };
   const gl = new Proxy(methods, {
@@ -85,6 +97,7 @@ function fakeWebGL() {
     calls,
     floats,
     pairs,
+    triples,
     lose: () => (lost = true),
     restore: () => (lost = false),
   };
@@ -97,14 +110,23 @@ function paint() {
   frames = [];
   act(() => now.forEach((frame) => frame(performance.now())));
 }
-/** A Turn begins on <html>, with the seam where the straight seam would paint it. */
-async function turn(seam: number | null) {
+/**
+ * A Turn begins on <html>, with the seam where the straight seam would paint it: by time unless
+ * a finger or the Overture drives it, toward the night unless it is bound for the paper.
+ */
+async function turn(
+  seam: number | null,
+  mode: 'time' | 'drag' | 'overture' = 'time',
+  to: 'night' | 'paper' = 'night',
+) {
   await act(async () => {
     if (seam === null) {
       root().removeAttribute('data-turning');
+      root().removeAttribute('data-turn-to');
       root().style.removeProperty('--seam');
     } else {
-      root().setAttribute('data-turning', 'time');
+      root().setAttribute('data-turning', mode);
+      root().setAttribute('data-turn-to', to);
       root().style.setProperty('--seam', `${seam}%`);
     }
   });
@@ -132,7 +154,9 @@ afterEach(() => {
   Reflect.deleteProperty(HTMLImageElement.prototype, 'decode');
   root().removeAttribute('data-crossing');
   root().removeAttribute('data-turning');
+  root().removeAttribute('data-turn-to');
   root().style.removeProperty('--seam');
+  root().style.removeProperty('--ease-turn');
 });
 
 /** WebGL as the crossing finds it, over a plate laid out at 400 × 300. */
@@ -374,5 +398,173 @@ describe('the crossing in the order the work was made', () => {
     expect(() => unmount()).not.toThrow();
     expect(cancelled).toEqual([1]);
     expect(root().hasAttribute('data-crossing')).toBe(false);
+  });
+  it('changes material on a Turn by time, and the room takes the ground on the same frame', async () => {
+    const webgl = withWebGL();
+    const { container } = render(<Viewer enabled />);
+    await prepared();
+    // Each pixel is written as the change computes it, and each order is paced over its marks:
+    // here, where no still can be read back, over the whole map.
+    expect(webgl.calls).toContain('disable');
+    expect(webgl.pairs.get('uInkSpan')).toEqual([0, 1]);
+    expect(webgl.pairs.get('uLightSpan')).toEqual([0, 1]);
+    await turn(50);
+    paint();
+    expect(webgl.floats.get('uMaterial')).toBe(1);
+    expect(webgl.floats.get('uTowardNight')).toBe(1);
+    const change = materialAt(50, 'night');
+    expect(webgl.floats.get('uProgress')).toBeCloseTo(change.progress, 6);
+    const ground = webgl.floats.get('uGround')!;
+    expect(ground).toBeGreaterThan(0);
+    expect(ground).toBeLessThan(1);
+    const sheet = [239 / 255, 233 / 255, 221 / 255] as const;
+    const [paperScreen, nightScreen] =
+      container.querySelectorAll<HTMLElement>('[data-plate-ground]');
+    const night = container.querySelector<HTMLElement>('[data-layer="light"]')!;
+    const head = container.querySelector<HTMLElement>('.head-overlay')!;
+    // Both screens wear the ground beneath the strip, the night's words come in by their share,
+    // and the head's overlay shows as far as the ground has come toward the night.
+    expect(paperScreen.style.backgroundColor).toBe(groundColour(sheet, ground));
+    expect(nightScreen.style.backgroundColor).toBe(groundColour(sheet, ground));
+    expect(night.style.clipPath).toBe('none');
+    expect(Number(night.style.opacity)).toBeCloseTo(change.words, 6);
+    expect(head.style.clipPath).toBe('none');
+    expect(Number(head.style.opacity)).toBeCloseTo(1 - ground, 6);
+    // The sheet's tone was read while its screen wore its own, and is kept while it wears the ground.
+    paint();
+    webgl.triples.get('uPaper')!.forEach((value, c) => expect(value).toBeCloseTo(sheet[c], 6));
+    // The Turn ends: everything goes back, the screen's own colour included.
+    await turn(null);
+    paint();
+    expect(paperScreen.style.backgroundColor).toBe('rgb(239, 233, 221)');
+    expect(nightScreen.style.backgroundColor).toBe('');
+    expect(night.style.opacity).toBe('');
+    expect(night.style.clipPath).toBe('');
+    expect(head.style.opacity).toBe('');
+    expect(head.style.clipPath).toBe('');
+  });
+
+  it('brings the paper back in the sheet’s own tone, the head’s overlay with it', async () => {
+    const webgl = withWebGL();
+    const { container } = render(<Viewer enabled expression="light" />);
+    await prepared();
+    await turn(30, 'time', 'paper');
+    paint();
+    expect(webgl.floats.get('uMaterial')).toBe(1);
+    expect(webgl.floats.get('uTowardNight')).toBe(0);
+    const change = materialAt(30, 'paper');
+    const night = container.querySelector<HTMLElement>('[data-layer="light"]')!;
+    const head = container.querySelector<HTMLElement>('.head-overlay')!;
+    // The night's words leave as the paper's come in; the paper overlay is the sheet's tone.
+    expect(Number(night.style.opacity)).toBeCloseTo(1 - change.words, 6);
+    expect(Number(head.style.opacity)).toBeCloseTo(change.ground, 6);
+    expect(head.style.backgroundColor).toBe('rgb(239, 233, 221)');
+  });
+
+  it('paints the published stills themselves at either end of a change', async () => {
+    const webgl = withWebGL();
+    render(<Viewer enabled />);
+    await prepared();
+    await turn(100);
+    paint();
+    expect(webgl.floats.get('uMaterial')).toBe(1);
+    expect(webgl.floats.get('uProgress')).toBe(0);
+    await act(async () => root().style.setProperty('--seam', '0%'));
+    paint();
+    expect(webgl.floats.get('uProgress')).toBe(1);
+  });
+
+  it('paces the change by the Turn’s own clock, through the seam’s slow ends', async () => {
+    const webgl = withWebGL();
+    render(<Viewer enabled />);
+    await prepared();
+    root().style.setProperty('--ease-turn', 'cubic-bezier(0.76, 0, 0.24, 1)');
+    // A quarter of the travel, on a curve that starts slowly, is a good deal more of the time.
+    await turn(75);
+    paint();
+    const clock = invertEasing(cubicBezier(0.76, 0, 0.24, 1));
+    expect(webgl.floats.get('uProgress')).toBeCloseTo(clock(0.25), 6);
+    expect(webgl.floats.get('uProgress')).toBeGreaterThan(0.35);
+  });
+
+  it('keeps the pixel crossing for a finger, the Overture, and a plate under its wing', async () => {
+    const webgl = withWebGL();
+    const { container, rerender } = render(<Viewer enabled />);
+    await prepared();
+    const night = container.querySelector<HTMLElement>('[data-layer="light"]')!;
+    for (const mode of ['drag', 'overture'] as const) {
+      await turn(50, mode);
+      paint();
+      expect(webgl.floats.get('uMaterial')).toBe(0);
+      expect(night.style.opacity).toBe('');
+      await turn(null);
+      paint();
+    }
+    // Inside a partly drawn wing a Turn by time meets the wing as it is drawn: pixel by pixel.
+    rerender(<Viewer enabled wing={40} />);
+    paint();
+    expect(webgl.floats.get('uMaterial')).toBe(0);
+    await turn(40);
+    paint();
+    expect(webgl.floats.get('uMaterial')).toBe(0);
+    expect(night.style.opacity).toBe('');
+  });
+
+  it('holds a Turn’s material to its end, whoever takes the seam', async () => {
+    const webgl = withWebGL();
+    render(<Viewer enabled />);
+    await prepared();
+    await turn(60);
+    paint();
+    expect(webgl.floats.get('uMaterial')).toBe(1);
+    // A finger takes the seam mid-way: the Turn it takes goes on changing material.
+    await act(async () => root().setAttribute('data-turning', 'drag'));
+    paint();
+    expect(webgl.floats.get('uMaterial')).toBe(1);
+    // And a finger's own Turn, begun afresh, keeps the pixel crossing.
+    await turn(null);
+    paint();
+    await turn(70, 'drag');
+    paint();
+    expect(webgl.floats.get('uMaterial')).toBe(0);
+  });
+  it('draws a still more than twice the work’s width down to it before the canvas reads it', async () => {
+    withWebGL();
+    // The rungs as the browser decodes them: the full still, then the one drawn down, each let go.
+    const made: { width: number; height: number; close: () => void }[] = [];
+    const bitmaps = vi.fn(async (_source: unknown, options?: ImageBitmapOptions) => {
+      const bitmap = {
+        width: options?.resizeWidth ?? 1920,
+        height: options?.resizeHeight ?? 1241,
+        close: vi.fn(),
+      };
+      made.push(bitmap);
+      return bitmap as unknown as ImageBitmap;
+    });
+    vi.stubGlobal('createImageBitmap', bitmaps);
+    render(<Viewer enabled />);
+    await prepared();
+    expect(root()).toHaveAttribute('data-crossing', 'arrival');
+    // The work lies 400 pixels wide: each 1920 still is drawn down to it, finely, and the full
+    // one let go once the smaller is made.
+    const fitted = bitmaps.mock.calls.filter(([, options]) => options);
+    expect(fitted).toHaveLength(2);
+    for (const [, options] of fitted)
+      expect(options).toEqual({ resizeWidth: 400, resizeHeight: 259, resizeQuality: 'high' });
+    const full = made.filter((bitmap) => bitmap.width === 1920);
+    expect(full).toHaveLength(2);
+    for (const bitmap of full) expect(bitmap.close).toHaveBeenCalled();
+  });
+
+  it('reads a still under twice the work’s width as it is', async () => {
+    withWebGL();
+    const bitmaps = vi.fn<(source: unknown, options?: ImageBitmapOptions) => Promise<ImageBitmap>>(
+      async () => ({ width: 700, height: 452, close: vi.fn() }) as unknown as ImageBitmap,
+    );
+    vi.stubGlobal('createImageBitmap', bitmaps);
+    render(<Viewer enabled />);
+    await prepared();
+    expect(root()).toHaveAttribute('data-crossing', 'arrival');
+    expect(bitmaps.mock.calls.every(([, options]) => options === undefined)).toBe(true);
   });
 });

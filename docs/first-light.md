@@ -540,3 +540,102 @@ Gathered on 7 November 2026 by a research pass. Awwwards' own pages refuse autom
   - [Core Web Vitals](https://web.dev/articles/vitals).
   - [Autoplay and audio](https://developer.chrome.com/blog/autoplay).
   - [WCAG 2.2.2, pause, stop, hide](https://www.w3.org/WAI/WCAG22/Understanding/pause-stop-hide.html).
+
+## The Turn as a change of material, as built
+
+_8 November 2026: step 5 of the F2 plan, "the work in your hands" (§5C)._
+
+**What the visitor sees.**
+
+- A Turn by time between the two whole stills no longer swaps pixels. That means the words _Ink_ and _Light_, the `I` and `L` keys, and a held peek. The bodies stay where they are, because the stills are registered to one frame, and the material changes around them.
+  - **Toward paper:**
+    1. the night's black warms to the sheet's own tone;
+    2. the light's colour drains to grey;
+    3. the ink blooms where the trails ran, in the order it came to rest, and where it arrives the light that is left goes out.
+  - **Toward night:**
+    1. the ink lifts, the last of it to rest the first to go;
+    2. the ground cools;
+    3. the light rises in the order its film drew it.
+- **The room goes with it.** The walls beside the work, the running head and the strip take the ground's colour on the plate's frame:
+  - the canvas paints the walls as one ground, never a front;
+  - both layers' screens wear the ground beneath the strip, and the arriving layer's words come in while the ground is about half-way, where either set of words has least contrast to lose;
+  - the head's overlay shows as far as the ground has come toward its own ground, in the sheet's own tone where that is paper.
+- **At rest the plate is the published still.**
+  - At either end of a Turn the shader returns the still itself, by a branch rather than by arithmetic, with dithering off.
+  - Between Turns the canvas steps aside and the page shows its own image.
+  - Turned to Light and back, № 023's plate came back identical to every pixel.
+
+**What keeps the crossing pixel by pixel.** These are unchanged since Phase B.
+
+- **A finger's Turn,** the venue's own gesture, keeps what it has done since Phase B: the crossing in the work's order wherever the crossing is ready, and the straight seam wherever it is not. Only the timed Turn changes.
+- **The Overture's landing** (the `overture` mode). That is First Light's to decide. Adding `'overture'` to `MATERIAL_MODES` in `src/lib/crossing/material.ts` would let First Light land on an Ink day by this change instead.
+- **A Turn that begins or ends with the plate partly drawn under its wing.** The wing draws its twin pixel by pixel as the visitor scrolls, so a Turn from or to that rest must meet it there.
+- **Held to its end.** Each Turn is read once, when it begins:
+  - a finger that takes a changing Turn mid-way carries the change on;
+  - a reversal or a released peek retraces it.
+- **Motion.** Reduced motion, Pause and the auction hush still turn in one frame and prepare nothing. Without WebGL the straight seam is the Turn.
+
+**How it is made.** `src/lib/crossing/material.ts` holds the arithmetic, and `src/components/arrival-crossing.ts` paints it.
+
+- **One pixel.**
+  - The ground is the paper beneath the ink, at the ground's share of its tone.
+  - The light is lit on the ground as light adds (a screen).
+  - The ink is a transmittance on its paper. Its density grows as it blooms (Beer–Lambert), so a pixel whose ink has bloomed is the Ink still again.
+  - The paper beneath the ink is the still itself as deep as the sheet goes (97 % of its tone), so the sheet keeps its fibres. Beneath ink it is the sheet's whole tone, reached across a further 12 %, so no ghost of the ink is left in a bare ground.
+  - `materialPixel` is the shader's arithmetic on the CPU, and the unit tests hold it.
+- **Its pace.** Each stage is a share of the Turn's own time.
+  - The seam's travel is read back through the inverse of `--ease-turn` (`invertEasing` in `src/lib/crossing/timing.ts`).
+  - So the stages keep an even pace through the curve's slow start and slow end, and the Turn's two seconds are spent evenly. Read straight from the seam, most of the change would fall in the middle 0.8 s.
+
+  | Toward paper             | Share of the Turn | Toward night     | Share of the Turn |
+  | :----------------------- | :---------------- | :--------------- | :---------------- |
+  | The ground warms         | 0–45 %            | The ink lifts    | 0–45 %            |
+  | The light drains         | 10–45 %           | The ground cools | 25–70 %           |
+  | What light is left fades | 35–70 %           | The light rises  | 45–100 %          |
+  | The ink blooms           | 35–100 %          |                  |                   |
+
+- **Each work's order, at each work's pace.**
+  - Each order runs over its own marks, from the 2nd to the 98th percentile of their times. Those are read once from the stills, at the maps' size, when the crossing is prepared, as the When lens spans them.
+  - The order is untouched; only its pace is each work's.
+  - Without this, most works would finish early. Across the collection the 98th percentile of Light's marks lies between 18 % and 88 % of its map (51 % at the median), and Ink's between 44 % and 96 %.
+- **A truer canvas on phones.** A still more than twice as wide as the work is painted is now drawn down to the work's width before it is uploaded, finely, as the page draws it.
+  - On a 390-pixel phone the canvas had been sampling the 1280 rung at over three times the plate's width, which aliased the finest lines.
+  - Its still now lies 0.8–1.1 levels from the page's on average (№ 023 and № 031), where it had lain 2.1–3.5.
+  - On a desk the 1920 rung is under twice the plate's width and is read as before, 0.4–0.6 levels from the page.
+  - This also sharpens the pixel crossing on phones.
+
+**How it was checked.**
+
+- **Unit.**
+  - `material.test.ts`: each still exactly at either end of a Turn, and no jump leaving or landing; the walls one ground between night and paper at every moment; the ink blooming in its order and lifting in its reverse, and the light rising in its own (property tests); the drain to grey; the paper beneath the ink; each order's span over its marks; the stages' order and direction; the Turn's clock.
+  - `timing.test.ts`: the seam's curve read back to its time.
+  - `arrival-crossing.test.tsx`, against a WebGL context that records what it is asked:
+    - a Turn by time changes material, and the screens, the night's words and the head's overlay take the ground, then give back what they had;
+    - the paper comes back in the sheet's own tone;
+    - the stills themselves are painted at either end;
+    - the change keeps the Turn's own clock;
+    - a finger, the Overture and a Turn inside the wing keep the pixel crossing, and a Turn's reading holds when a finger takes it mid-way;
+    - a still more than twice the work's width is drawn down to it first, and one under twice is read as it is.
+  - The whole suite passes: 1,588 tests, with the coverage thresholds held. `material.ts` is covered to 98.9 % of its statements and every branch.
+- **In the browser** (`tests/e2e/crossing.spec.ts`), against a production build on the venue day, in Chromium and WebKit, on desks, phones and with reduced motion: 40 passed, and 14 skipped by design (a finger answers touch only, and the reduced-motion projects prove the one-frame Turn instead). The tests of the change, the finger and the peek then passed twice more in the four projects that move.
+  - № 031, 023 and 035 each turn to Light and back. The Turns are slowed to the runner and sampled frame by frame:
+    - every frame's ground lies between night and paper and moves one way only;
+    - mid-Turn it is one ground, its quartiles within 0.12 of each other, which a front cannot be;
+    - the running head and the strip wear it on the same frame, within 14 levels;
+    - the light rises in Light's order and the ink blooms in Ink's: among marks already there and marks still to come, the 90th percentile of the first lies within 16 levels of the 10th percentile of the second;
+    - the canvas ends each Turn on the arriving still, within 3 levels, and far from the other;
+    - afterwards the room's own elements carry nothing the crossing set, and the page is the Ink still again.
+  - A finger's Turn on a phone is the two stills and nothing else, in Light's order, with its strip on a front.
+  - A peek released mid-way returns from where it is. The key is let go once the walls show the ground has begun to cool. The first frame after it keeps its ground nearer the paper, and from there the plate only goes back. Read in the page on every frame, the walls go no further toward the night than where the key was let go, and they end on the paper.
+  - Reduced motion turns in one frame, the straight seam is the Turn without WebGL, the crossing returns after Pause and Play, and the When lens is unchanged.
+- **The whole browser suite** passes in the same six projects: 1,573 passed and 149 skipped by design, in 21.8 minutes.
+- **The gates.** Lint, type-check, Prettier and a production build pass.
+- **On CI** Firefox offers no WebGL, so the crossing's own tests skip there, as they always have. Chromium and WebKit run them on software WebGL, with each Turn sized to the runner's screenshots, and each frame's rise and bloom read against its own ground, so a slow runner still finds the frames it needs.
+  - **No screenshot stands between a decision and its act.** CI's screenshots take seconds mid-Turn. A peek that waited four seconds and then took one was let go after more than seven, with the ground already at night, so the test failed on CI's Chromium (8 November). It now lets go when the page says so.
+
+**Not yet.**
+
+- **The pace is the owner's to judge.** The Turn's two seconds (`--t-cross` in `globals.css`) now carry three stages. If they read too brisk, a longer token is a one-line change.
+- **The Overture's landing** still crosses pixel by pixel, until First Light decides otherwise.
+- **Firefox** shows the change wherever it offers WebGL, but no browser test watches it there: it cannot launch on the Mac the venue is built on, and on CI it offers no WebGL.
+- **Real devices.** Nothing has been tried on a real iPhone.
