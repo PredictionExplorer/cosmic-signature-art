@@ -6,11 +6,14 @@ import { pairName } from '@/lib/physics/film-score';
 import {
   MEASUREMENTS,
   derivedValue,
+  digitsKept,
+  energyText,
   exact,
   measurementLabels,
   progressText,
   recordValues,
   seedShort,
+  shareText,
   verdict,
 } from './orbit-proof';
 
@@ -84,6 +87,53 @@ describe('the proof, in words', () => {
     expect(verdict([row(true), row(true)], en)).toBe(en.orbitAllExact);
     expect(verdict([row(true), row(false), row(false)], en)).toBe(
       '2 of 3 measurements differ from the published record.',
+    );
+  });
+});
+
+describe('the energy the computation kept, in words', () => {
+  const steps = 1_000_000;
+  const held = { first: -2142.89, windowChange: 2.1e-13, change: 2.1e-13, broken: null };
+
+  it('counts the digits a quantity kept, and sets a share as a percentage', () => {
+    expect([0, 2.1e-13, 8.9e-10, 1.6e-4, 0.575, 13].map(digitsKept)).toEqual([15, 12, 9, 3, 0, 0]);
+    expect([0.0076, 0.575, 7.8, 1990].map((share) => shareText(share, 'en'))).toEqual([
+      '0.76%',
+      '58%',
+      '780%',
+      '200,000%',
+    ]);
+  });
+
+  it('says how far the energy held through the window when it never broke', () => {
+    expect(energyText(held, steps, en, english)).toBe(
+      'As computed here, the energy holds to 12 digits through the recorded window.',
+    );
+    expect(energyText(held, steps, ja, new Intl.NumberFormat('ja'))).toBe(
+      'ここでの計算では、記録された時間を通じてエネルギーは 12 桁まで保たれています。',
+    );
+  });
+
+  it('adds where it broke past the window, with the pass that broke it', () => {
+    const later = {
+      ...held,
+      change: 13,
+      broken: { step: 1_535_000, change: 7.846, closest: 0.11436 },
+    };
+    expect(energyText(later, steps, en, english)).toBe(
+      'As computed here, the energy holds to 12 digits through the recorded window. Near step 1,535,000 two bodies pass 0.11 apart, closer than the computation’s fixed step can follow, and its energy changes by 780%. Gravity keeps energy constant, so past that step this is the computation, not an orbit.',
+    );
+  });
+
+  it('says only the break when it lies inside the window', () => {
+    const inside = {
+      first: -1652.74,
+      windowChange: 0.5753,
+      change: 0.5753,
+      broken: { step: 44_000, change: 0.5753, closest: 0.18505 },
+    };
+    expect(energyText(inside, steps, en, english)).toBe(
+      'Near step 44,000 two bodies pass 0.19 apart, closer than the computation’s fixed step can follow, and its energy changes by 58%. Gravity keeps energy constant, so past that step this is the computation, not an orbit.',
     );
   });
 });

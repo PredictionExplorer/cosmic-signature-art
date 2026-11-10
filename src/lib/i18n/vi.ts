@@ -630,6 +630,11 @@ export const vi: Messages = {
   orbitEscaped: 'Vật thể {body} đã thoát ra, ở bước {step}',
   orbitHeld: 'Vũ điệu giữ vững qua cả {steps} bước',
   toTheEjection: 'Đến lúc thoát ra',
+  orbitAdrift: 'Sau bước {step} không còn là quỹ đạo: năng lượng tính được đổi {change}.',
+  orbitEnergyHeld:
+    'Theo phép tính tại đây, năng lượng được giữ đến {digits} chữ số trong suốt cửa sổ đã ghi.',
+  orbitEnergyBroken:
+    'Gần bước {step}, hai vật thể đi qua nhau chỉ cách {distance}, gần hơn mức mà bước cố định của phép tính theo kịp, và năng lượng của nó thay đổi {change}. Lực hấp dẫn giữ năng lượng không đổi, nên sau bước ấy đây là phép tính, không phải quỹ đạo.',
   orbitStageLabel:
     'Quỹ đạo trong chiều sâu. Phím mũi tên xoay nó; Escape đưa nó về góc nhìn của bộ tạo.',
   orbitTurnHint: 'Kéo quỹ đạo để xoay nó trong chiều sâu. Thả ra, nó trở về góc nhìn của bộ tạo.',

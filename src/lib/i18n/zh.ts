@@ -597,6 +597,10 @@ export const zh: Messages = {
   orbitEscaped: '天体 {body} 已在第 {step} 步逃逸',
   orbitHeld: '这支舞持续了全部 {steps} 步',
   toTheEjection: '前往逃逸',
+  orbitAdrift: '第 {step} 步之后不再是轨道：计算出的能量改变了 {change}。',
+  orbitEnergyHeld: '按此处的计算，能量在整个记录的时段内保持到 {digits} 位数字。',
+  orbitEnergyBroken:
+    '在第 {step} 步附近，两个天体相距仅 {distance}，近到计算的固定步长无法跟随，能量随之改变了 {change}。引力使能量保持不变，所以那一步之后是计算，而不是轨道。',
   orbitStageLabel: '纵深中的轨道。方向键转动它；Esc 键让它回到生成器的视角。',
   orbitTurnHint: '拖动轨道，在纵深中转动它。松开后，它会回到生成器的视角。',
   orbitTurnHintTouch: '按住轨道再拖动，在纵深中转动它。松开后，它会回到生成器的视角。',

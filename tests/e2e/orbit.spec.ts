@@ -118,6 +118,62 @@ test('a resolved film offers After the frame, which goes down to the orbit and o
 });
 
 /**
+ * The energy the computation keeps (EnergyWatch in src/lib/physics/orbit.ts). The record dates
+ * № 004's ejection at step 1,540,000 and the derivation meets it to the step. It also finds what
+ * the record does not say: 5,000 steps earlier two bodies pass 0.11 apart, closer than the fixed
+ * step can follow, and the computed energy of a bound triple turns several times over positive.
+ * The record's note says so, and After the frame stops calling what follows an escape.
+ */
+test('the record says where a computation lost its energy, and After the frame calls nothing past it an escape', async ({
+  page,
+}, info) => {
+  await page.goto('/art/4');
+  const orbit = page.getByRole('region', { name: t.orbitTitle });
+  await orbit.scrollIntoViewIfNeeded();
+  await expect(orbit).toHaveAttribute('data-exact', 'true', { timeout: 60_000 });
+  await expect(orbit).toHaveAttribute('data-fate', 'ejection');
+  const record = page.getByRole('region', { name: t.orbitTableCaption });
+  const kept = record.locator('[data-energy]');
+  await expect(kept).toHaveAttribute('data-energy', 'broken');
+  await expect(kept).toContainText(
+    'Near step 1,535,000 two bodies pass 0.11 apart, closer than the computation’s fixed step can follow, and its energy changes by 780%.',
+  );
+  await expect(kept).toContainText('past that step this is the computation, not an orbit.');
+  await page.evaluate((name) => window.dispatchEvent(new Event(name)), AFTER_THE_FRAME_EVENT);
+  await expect(orbit.getByRole('button', { name: t.afterTheFrame })).toHaveAttribute(
+    'aria-pressed',
+    'true',
+  );
+  // The ejection lies sixteen seconds of film on: performed, it is reached by its own word;
+  // drawn at once for reduced motion, it is already there.
+  if (!info.project.name.includes('reduced-motion'))
+    await orbit.getByRole('button', { name: t.toTheEjection }).click();
+  await expect(orbit).toHaveAttribute('data-beyond', 'rested', { timeout: 60_000 });
+  await expect(
+    orbit.getByText('Not an orbit past step 1,535,000: the computed energy changed by 780%.'),
+  ).toBeVisible();
+  await expect(orbit.getByText(/has escaped/)).toHaveCount(0);
+});
+
+test('a window whose energy held says so, and Verify an orbit prints a break inside a window', async ({
+  page,
+}) => {
+  await page.goto('/art/31');
+  const orbit = page.getByRole('region', { name: t.orbitTitle });
+  await orbit.scrollIntoViewIfNeeded();
+  await expect(orbit).toHaveAttribute('data-exact', 'true', { timeout: 60_000 });
+  await expect(
+    page.getByRole('region', { name: t.orbitTableCaption }).locator('[data-energy="held"]'),
+  ).toHaveText('As computed here, the energy holds to 12 digits through the recorded window.');
+  // № 022: the pass the step could not follow lies inside the recorded window itself.
+  await page.goto('/verify/orbit/22');
+  await expect(page.locator('[data-energy="broken"]')).toHaveText(
+    'Near step 44,000 two bodies pass 0.19 apart, closer than the computation’s fixed step can follow, and its energy changes by 58%. Gravity keeps energy constant, so past that step this is the computation, not an orbit.',
+    { timeout: 60_000 },
+  );
+});
+
+/**
  * The score (third-physics.md §5.5): while the Light film plays, its time line becomes the
  * orbit's score, measured here from the verified window, and the strip reads the physics of the
  * moment. The options open the complete film just before the closest approach, which № 031's

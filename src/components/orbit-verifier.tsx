@@ -6,11 +6,12 @@ import type { Messages } from '@/lib/i18n/en';
 import { fill } from '@/lib/i18n/format';
 import { workNumber } from '@/lib/art/number';
 import type { WorkOrbit } from '@/lib/art/orbit-records';
-import type { Comparison, MeasurementKey, Progress } from '@/lib/physics/orbit';
+import type { Comparison, EnergyKept, MeasurementKey, Progress } from '@/lib/physics/orbit';
 import type { OrbitReply, OrbitRequest } from '@/lib/physics/orbit.worker';
 import {
   MEASUREMENTS,
   derivedValue,
+  energyText,
   measurementLabels,
   orbitWorker,
   progressText,
@@ -29,12 +30,21 @@ interface Transcript {
   measured: Comparison[] | null;
   /** The fate, checked last; 'failed' when this browser could not run on to it. */
   fate: Comparison | 'failed' | null;
+  /** Whether the computation kept its energy on the run to the fate (EnergyWatch in orbit.ts). */
+  energy: EnergyKept | null;
   /** Nothing could be derived here. */
   failed: boolean;
   /** Seconds from the request to the last word. */
   seconds: number | null;
 }
-const BEGUN: Transcript = { lines: [], measured: null, fate: null, failed: false, seconds: null };
+const BEGUN: Transcript = {
+  lines: [],
+  measured: null,
+  fate: null,
+  energy: null,
+  failed: false,
+  seconds: null,
+};
 
 /** True once hydrated: the server and the hydrating render both say false. */
 const noSubscription = () => () => {};
@@ -120,7 +130,12 @@ export function OrbitVerifier({
           measured: data.comparisons,
         }));
       else if (data.type === 'fate') {
-        setTranscript((current) => ({ ...current, fate: data.comparison, seconds }));
+        setTranscript((current) => ({
+          ...current,
+          fate: data.comparison,
+          energy: data.fate.energy,
+          seconds,
+        }));
         worker.terminate();
       } else fail();
     };
@@ -262,6 +277,14 @@ export function OrbitVerifier({
           </>
         ) : null}
         {said ? <p className={styles.verdict}>{said}</p> : null}
+        {transcript.energy ? (
+          <>
+            {' '}
+            <p className={styles.kept} data-energy={transcript.energy.broken ? 'broken' : 'held'}>
+              {energyText(transcript.energy, orbit.generation.steps, t, number)}
+            </p>
+          </>
+        ) : null}
       </div>
       {ended ? (
         <div className={styles.words}>

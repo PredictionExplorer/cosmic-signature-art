@@ -4,6 +4,9 @@ import { workOrbit } from '@/lib/art/orbit-records';
 import { performedOrbits } from '@/lib/art/orbit-windows';
 import {
   CHECK_INTERVAL,
+  ENERGY_HELD_WITHIN,
+  ENERGY_INTERVAL,
+  EnergyWatch,
   FateWatch,
   HYSTERESIS,
   chosenBeginning,
@@ -235,5 +238,91 @@ describe('the fate, as the generator classifies it', () => {
     expect(row.exact).toBe(false);
     expect(row.published).toBe('eternal_dance through 8000000');
     expect(row.derived).toBe('eternal_dance through 1050000');
+  });
+});
+
+describe('the energy the computation keeps', () => {
+  /** A work's fate run from its window's first step, to its own horizon or a nearer one. */
+  function fateOf(id: number, horizonSteps?: number) {
+    const orbit = workOrbit(id)!;
+    const [performed] = performedOrbits([id]);
+    return deriveFate(
+      {
+        masses: orbit.published.masses,
+        dt: orbit.generation.dt,
+        positions: performed.window.positions,
+        velocities: performed.window.velocities,
+      },
+      {
+        steps: orbit.generation.steps,
+        threshold: orbit.fate.escapeThreshold,
+        horizonSteps: horizonSteps ?? orbit.fate.horizonSteps,
+      },
+    );
+  }
+
+  it('asks every thousand steps how far the energy stands from its first value', () => {
+    // Two unit masses two apart, at rest: the energy is the pull between them, −9.8 / 2.
+    const positions = Float64Array.from([-1, 0, 0, 1, 0, 0, 0, 1e6, 0]);
+    const velocities = new Float64Array(9);
+    const watch = new EnergyWatch([1, 1, 1e-12], positions, velocities, 2 * ENERGY_INTERVAL);
+    expect(watch.kept.first).toBeCloseTo(-4.9, 9);
+    // Between its beats it only notes how close the bodies come.
+    positions[0] = -0.25;
+    positions[3] = 0.25;
+    watch.observe(1);
+    positions[0] = -1;
+    positions[3] = 1;
+    velocities[0] = 0.01;
+    watch.observe(ENERGY_INTERVAL);
+    // Half a unit of mass at a hundredth of a unit of speed: far inside the tolerance.
+    expect(watch.kept.change).toBeCloseTo((0.5 * 0.01 ** 2) / 4.9, 12);
+    expect(watch.kept.windowChange).toBe(watch.kept.change);
+    expect(watch.kept.broken).toBeNull();
+    // Past the window the watch goes on; a change over the tolerance is dated once, with the
+    // closest pass since it last asked.
+    positions[0] = -0.5;
+    watch.observe(2 * ENERGY_INTERVAL + 1);
+    velocities[0] = 1;
+    positions[0] = -1;
+    watch.observe(3 * ENERGY_INTERVAL);
+    expect(watch.kept.windowChange).toBeLessThan(ENERGY_HELD_WITHIN);
+    expect(watch.kept.change).toBeCloseTo(0.5 / 4.9, 9);
+    expect(watch.kept.broken).toEqual({
+      step: 3 * ENERGY_INTERVAL,
+      change: watch.kept.change,
+      closest: 1.5,
+    });
+    velocities[0] = 2;
+    watch.observe(4 * ENERGY_INTERVAL);
+    expect(watch.kept.broken!.step).toBe(3 * ENERGY_INTERVAL);
+  });
+
+  it('finds № 054’s energy held to nine digits, to its ejection', () => {
+    const fate = fateOf(54);
+    expect(fate.ejectionStep).toBe(1_090_000);
+    expect(fate.energy.broken).toBeNull();
+    expect(fate.energy.change).toBeLessThan(1e-9);
+    expect(fate.energy.first).toBeCloseTo(-2864.2062873, 6);
+  });
+
+  it('finds № 004’s ejection a pass the fixed step could not follow', () => {
+    const fate = fateOf(4);
+    // The record dates an ejection, and the derivation meets it to the step…
+    expect(compareFate(workOrbit(4)!.fate, fate).exact).toBe(true);
+    // …but the window held, and 535,000 steps past it two bodies pass a ninth of a unit apart.
+    expect(fate.energy.windowChange).toBeLessThan(1e-9);
+    expect(fate.energy.broken!.step).toBe(1_535_000);
+    expect(fate.energy.broken!.closest).toBeCloseTo(0.11436, 4);
+    // The computed energy, negative for a bound triple, is by then several times over positive.
+    expect(fate.energy.broken!.change).toBeGreaterThan(7);
+    expect(fate.energy.change).toBeGreaterThan(12);
+  });
+
+  it('finds the break inside № 022’s recorded window', () => {
+    const fate = fateOf(22, 1_050_000);
+    expect(fate.energy.broken!.step).toBe(44_000);
+    expect(fate.energy.broken!.closest).toBeCloseTo(0.18505, 4);
+    expect(fate.energy.windowChange).toBeCloseTo(0.5753, 3);
   });
 });

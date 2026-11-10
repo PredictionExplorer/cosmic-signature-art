@@ -1032,6 +1032,7 @@ export function OrbitScore({
             locale={locale}
             comparisons={comparisons}
             summary={summary}
+            energy={derivedFate?.energy ?? null}
             labelledBy="orbit-proof-title"
           />
         </div>
