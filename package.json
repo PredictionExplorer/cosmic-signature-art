@@ -40,6 +40,7 @@
     "art:windows": "node --experimental-strip-types scripts/build-orbit-windows.mjs",
     "art:frames": "node --experimental-strip-types scripts/build-orbit-frames.mjs",
     "art:hollows": "node --experimental-strip-types scripts/build-orbit-hollows.mjs",
+    "art:energy": "node --experimental-strip-types scripts/build-orbit-energy.mjs",
     "art:ink": "node --experimental-strip-types scripts/build-ink-clocks.mjs",
     "art:arrival": "node scripts/build-arrival-maps.mjs",
     "art:light": "node scripts/build-all-the-light.mjs",

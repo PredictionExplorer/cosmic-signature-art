@@ -23,6 +23,23 @@ describe('production translations', () => {
     }
   }
 
+  it('fills the same blanks in every language as in English', () => {
+    // A translation that drops {steps} or {time} would print a sentence with its number gone.
+    const blanks = (value: string) => [...value.matchAll(/\{[a-zA-Z]+\}/g)].map(([blank]) => blank);
+    for (const locale of locales)
+      for (const [key, value] of Object.entries(catalogs[locale]))
+        expect(blanks(value).sort(), `${locale}.${key}`).toEqual(
+          blanks(catalogs.en[key as keyof typeof catalogs.en]).sort(),
+        );
+  });
+
+  it('runs two sentences together as each language does: no space in Japanese or Chinese', () => {
+    for (const locale of locales)
+      expect(catalogs[locale].sentences, locale).toBe(
+        ['ja', 'zh', 'zh-TW', 'zh-HK'].includes(locale) ? '{first}{second}' : '{first} {second}',
+      );
+  });
+
   it('preserves critical auction quantities in every language', () => {
     for (const locale of locales) {
       const catalog = catalogs[locale];

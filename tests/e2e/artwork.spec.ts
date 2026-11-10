@@ -1,6 +1,7 @@
 import { expect, test } from '@playwright/test';
 import sharp from 'sharp';
 import { catalogs } from '../../src/lib/i18n/messages';
+import { localizedPath } from '../../src/lib/i18n/routing';
 import {
   artworkImageSource,
   noHorizontalOverflow,
@@ -9,7 +10,10 @@ import {
 } from './helpers';
 
 const current = '[data-artwork-stage="page"]:visible [data-layer-state="current"]';
-
+/** № 031's line (src/lib/art/fate-line.ts): its record dates no ejection, and its energy held. */
+const TOGETHER = 'Three bodies, together for all 1,000,000 steps this work records.';
+const STILL_BOUND =
+  'They are still bound to one another at step 8,000,000, where the record stops looking.';
 test('the plate, the room and the keys preserve identity; Escape returns focus', async ({
   page,
   isMobile,
@@ -19,7 +23,7 @@ test('the plate, the room and the keys preserve identity; Escape returns focus',
   await expect(page).toHaveTitle(/№\s031/);
   const plate = page.locator(current);
   await artworkImageSource(plate.locator('img.art-still'), 31, 'ink', true);
-  // The strip: the folio, the label from the published traits, and the words.
+  // The strip: the folio, the line under the still, and the words.
   await expect(plate.locator('.hanging-numeral')).toHaveText('031');
   // The work is never cropped: the media box fits the plate by height on a desk, and on a phone
   // the plate itself is 100 vw by the work's own proportion, the first pixel under the masthead.
@@ -33,9 +37,13 @@ test('the plate, the room and the keys preserve identity; Escape returns focus',
     expect(Math.abs(plateBox.width - viewport.width)).toBeLessThanOrEqual(1);
     expect(Math.abs(plateBox.height - (viewport.width * 2234) / 3456)).toBeLessThanOrEqual(2);
   }
-  // The label line yields to the words on a phone; the numeral and the words remain.
-  if (!isMobile)
-    await expect(plate.getByText('Orbit Ribbons · Harmonic Weave · Ink')).toBeVisible();
+  // The line under the still stands where the label line stood, on a phone as on a desk: what
+  // the record says of № 031, in two sentences. The generator's vocabulary is the entry's.
+  const line = plate.locator('.strip p');
+  await expect(line).toBeVisible();
+  await expect(line).toHaveText(`${TOGETHER} ${STILL_BOUND}`);
+  await expect(plate.locator('.strip')).not.toContainText('Orbit Ribbons');
+  await expect(page.locator('#record')).toContainText('Orbit Ribbons');
   const options = plate.getByRole('button', { name: catalogs.en.ways, exact: true });
   await expect(plate.getByRole('button', { name: 'Study', exact: true })).toHaveCount(0);
   await options.click();
@@ -120,6 +128,72 @@ test('the plate settles in place: its strip keeps its height and nothing beneath
   await expect(state).toHaveAttribute('data-film-state', 'still');
   expect(await layout()).toEqual(arriving);
 });
+
+/**
+ * The line under the still (docs/after-the-frame.md §8.2). While a film plays, its readout joins
+ * the words beside the line, and at its end two more words do. The strip's centre stays wider
+ * than the widest sentence whatever stands beside it, so each sentence keeps a line of its own,
+ * the strip keeps its height, nothing under the picture wraps again, and the second line stays
+ * clear of the film's score. Measured at the suite's desk, and where the room is least: the
+ * narrowest desk that sets the line inside the strip, in Vietnamese, whose second sentence for
+ * a work that parts stands closest to the words beside it (588 px of the centre's 649).
+ */
+for (const { locale, work, viewport, label } of [
+  { locale: 'en', work: 31, viewport: null, label: 'at the desk' },
+  {
+    locale: 'vi',
+    work: 25,
+    viewport: { width: 1280, height: 720 },
+    label: 'in Vietnamese at 1280 px',
+  },
+] as const) {
+  test(`the line under the still holds its two lines while the film plays and after it ends, ${label}`, async ({
+    page,
+    isMobile,
+  }, testInfo) => {
+    test.skip(isMobile, 'A phone sets the line on rows of its own, beneath the words.');
+    test.skip(
+      testInfo.project.name.includes('reduced-motion'),
+      'No ambient film under reduced motion; the still’s strip is measured in polish-responsive.',
+    );
+    test.slow();
+    if (viewport) await page.setViewportSize(viewport);
+    await page.goto(`${localizedPath(locale, `/art/${work}`)}?expression=light`);
+    await playAmbientMotion(page);
+    const plate = page.locator(current);
+    const strip = plate.locator('.strip');
+    const sentences = strip.locator('p em > span');
+    await expect(sentences).toHaveCount(2);
+    if (locale === 'en') await expect(sentences).toHaveText([TOGETHER, STILL_BOUND]);
+    const measure = async () => ({
+      strip: (await strip.boundingBox())!.height,
+      lines: await sentences.evaluateAll((spans) =>
+        spans.map((span) => {
+          const { x, y, height } = span.getBoundingClientRect();
+          return { x, y, height };
+        }),
+      ),
+    });
+    // While it plays, the readout stands beside the line.
+    await expect(plate.locator('[data-film-physics]')).toBeVisible({ timeout: 60_000 });
+    const playing = await measure();
+    expect(playing.strip).toBe(56);
+    const [first, second] = playing.lines;
+    // One sentence to a line: neither is wrapped, and the second stands under the first.
+    for (const line of playing.lines) expect(line.height).toBeLessThan(24);
+    expect(second!.x).toBe(first!.x);
+    expect(second!.y).toBeGreaterThanOrEqual(first!.y + first!.height - 1);
+    // Clear of the score along the strip's foot, and beside the words, not under them.
+    const band = (await plate.locator('[data-film-score]').boundingBox())!;
+    expect(second!.y + second!.height).toBeLessThanOrEqual(band.y);
+    const words = (await strip.locator('.strip-words').boundingBox())!;
+    const line = (await strip.locator('p').boundingBox())!;
+    expect(line.x + line.width).toBeLessThanOrEqual(words.x);
+    // When it ends, Again and After the frame join the words, and the line has not moved.
+    await expect(plate.locator('[data-after-the-frame]')).toBeVisible({ timeout: 30_000 });
+    expect(await measure()).toEqual(playing);
+  });
+}
 
 test('the neighbours carry the visitor on by number and by wavelength, in the expression on view', async ({
   page,

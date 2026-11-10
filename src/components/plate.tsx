@@ -10,14 +10,16 @@ import styles from './plate.module.css';
  * The plate and its label strip: one art screen. The plate is fitted by height to the room
  * (100svh − head − strip) and letterboxed in the work's own measured tone, so the sheet has
  * no edge; while it dominates the viewport the running head takes the same tone. The strip
- * carries the hanging numeral, one label and the words. Everything that moves inside the
- * plate is the work's own film, handled by ArtworkMedia, which the caller renders as children.
+ * carries the hanging numeral, the line under the still or its label, and the words. Everything
+ * that moves inside the plate is the work's own film, handled by ArtworkMedia, which the caller
+ * renders as children.
  */
 export function Plate({
   id,
   media,
   current,
   centre,
+  line = false,
   words,
   settled = true,
   strip = true,
@@ -29,8 +31,14 @@ export function Plate({
   media?: ArtInterpretation;
   /** This layer is the committed expression: it lends the head its tone and its strip is live. */
   current: boolean;
-  /** The strip's centre: the label line, or the home's one line. */
+  /** The strip's centre: the line under the still, or the label line. */
   centre?: ReactNode;
+  /**
+   * The centre holds the line under the still: one or two sentences. Where a label is cut short
+   * or gives way, the line keeps its place and its sentences stand whole: inside the strip at a
+   * wide desk, on a row of its own beneath the numeral and the words anywhere narrower.
+   */
+  line?: boolean;
   /** The strip's right-hand words and readouts. */
   words?: ReactNode;
   /** The still has settled; the strip's centre may rise. */
@@ -81,11 +89,13 @@ export function Plate({
         {children}
       </div>
       {strip ? (
-        <div className={`strip ${styles.strip}`}>
+        <div className={`strip ${styles.strip}`} data-line={line ? '' : undefined}>
           <span className={`hanging-numeral ${styles.numeral}`} aria-hidden="true">
             {workFolio(id)}
           </span>
-          <div className={styles.centre}>{centre}</div>
+          <div className={styles.centre} data-line={line ? '' : undefined}>
+            {centre}
+          </div>
           <div className={`strip-words ${styles.words}`}>{words}</div>
         </div>
       ) : null}

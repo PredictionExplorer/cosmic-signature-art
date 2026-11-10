@@ -151,6 +151,16 @@ export function plateFrame(
   return bindFrame(frames.get(id), id, light);
 }
 
+/**
+ * Whether a work's picture draws the bodies where they were: positions, each stroke drawn once.
+ * Seventeen of the 72 works draw another space (a phase portrait, a hodograph, cross-braid) or
+ * draw every stroke again about a symmetry. Nothing without a frame that still binds.
+ */
+export function drawsPositions(id: number): boolean {
+  const frame = plateFrame(id);
+  return frame?.projection === 'position' && frame.symmetry === 'none';
+}
+
 /** The Light film a work's frame was measured against: what anything placed by the frame binds to. */
 export function frameFilmSha256(id: number): string | undefined {
   return frames.get(id)?.film.sha256;

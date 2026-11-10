@@ -298,6 +298,18 @@ describe('the energy the computation keeps', () => {
     expect(watch.kept.broken!.step).toBe(3 * ENERGY_INTERVAL);
   });
 
+  it('counts an energy that is no longer a number as lost, never as kept', () => {
+    const positions = Float64Array.from([-1, 0, 0, 1, 0, 0, 0, 1e6, 0]);
+    const velocities = new Float64Array(9);
+    const watch = new EnergyWatch([1, 1, 1e-12], positions, velocities, 2 * ENERGY_INTERVAL);
+    positions.fill(NaN);
+    velocities.fill(NaN);
+    watch.observe(ENERGY_INTERVAL);
+    // A comparison with NaN is false either way: the watch asks whether the energy held.
+    expect(watch.kept.broken).toMatchObject({ step: ENERGY_INTERVAL });
+    expect(watch.kept.broken!.change).toBeNaN();
+  });
+
   it('finds № 054’s energy held to nine digits, to its ejection', () => {
     const fate = fateOf(54);
     expect(fate.ejectionStep).toBe(1_090_000);

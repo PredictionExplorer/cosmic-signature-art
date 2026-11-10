@@ -1,5 +1,6 @@
 import { expect, test } from '@playwright/test';
 import { catalogs } from '../../src/lib/i18n/messages';
+import { fill } from '../../src/lib/i18n/format';
 import { locales, localizedPath } from '../../src/lib/i18n/routing';
 import { workOfTheDay } from '../../src/lib/art/work-of-the-day';
 import {
@@ -127,8 +128,23 @@ test.describe('localized home', () => {
         'alt',
         `№\u00a0${folio} · ${t.ink}`,
       );
-      if (!isMobile) {
-        await expect(page.locator(current).getByText(t.statementLine)).toBeVisible();
+      // The line under the still, on a phone as on a desk: what the picture is, in two
+      // sentences, the second this material's own. The day's work draws the bodies where they
+      // were (src/lib/art/fate-line.ts homeLine), so both are said.
+      const line = page.locator(`${current} .strip p`);
+      await expect(line).toBeVisible();
+      await expect(line).toHaveText(
+        fill(t.sentences, { first: t.homeLine, second: t.homeLineInk }),
+      );
+      // Light is told in its own sentence, one Turn away under the same plate.
+      const lightLine = fill(t.sentences, { first: t.homeLine, second: t.homeLineLight });
+      await expect(page.locator(`${nightLayer} .strip p`)).toHaveText(lightLine);
+      // Where the twin hangs on a screen of its own (a phone), it says its line there too.
+      if (isMobile) {
+        const twin = page.locator('.home [data-wing] > [data-ground="night"] .strip p');
+        await expect(twin).toHaveText(lightLine);
+        await twin.scrollIntoViewIfNeeded();
+        await expect(twin).toBeVisible();
       }
       // No headline, no kicker, no portal on the wall: the page's one h1 is the statement
       // screen's wordmark, below the plate.

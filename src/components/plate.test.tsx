@@ -70,6 +70,24 @@ describe('the plate', () => {
     expect(screen.getByRole('button', { name: 'Light' })).toBeInTheDocument();
   });
 
+  it('marks a strip whose centre holds the line under the still, and no other', () => {
+    const { container, rerender } = render(
+      <Plate id={31} media={ink} current line centre={<p>Three bodies.</p>}>
+        <div className="art-media" />
+      </Plate>,
+    );
+    // Both are marked: the strip takes a second row for it, and the centre is not cut short.
+    expect(container.querySelector('.strip')).toHaveAttribute('data-line');
+    expect(screen.getByText('Three bodies.').parentElement).toHaveAttribute('data-line');
+    rerender(
+      <Plate id={31} media={ink} current centre={<span>Ink</span>}>
+        <div className="art-media" />
+      </Plate>,
+    );
+    expect(container.querySelector('.strip')).not.toHaveAttribute('data-line');
+    expect(screen.getByText('Ink').parentElement).not.toHaveAttribute('data-line');
+  });
+
   it('lends the running head its tone while it dominates the viewport, and only as the committed layer', () => {
     const { rerender, unmount } = render(
       <Plate id={31} media={ink} current settled={false}>

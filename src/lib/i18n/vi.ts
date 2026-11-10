@@ -364,6 +364,16 @@ export const vi: Messages = {
   statementLine:
     'Mỗi tác phẩm là một quỹ đạo ba vật thể được ghi lại, kết xuất hai lần, thành ánh sáng và thành mực. Cả hai là cùng một token.',
   statementSigned: 'Cosmic Signature · Tháng 10 năm 2026',
+  homeLine: 'Ba vật thể, mỗi vật hút hai vật còn lại.',
+  homeLineLight: 'Đây là một lần phơi sáng lâu ghi lại chuyển động của chúng.',
+  homeLineInk: 'Đây là mực mà chuyển động của chúng đã khuấy lên.',
+  fateTogether: 'Ba vật thể, ở bên nhau suốt {steps} bước mà tác phẩm này ghi lại.',
+  fateLeaves:
+    '{time} sau khi phim kết thúc, một trong số chúng không còn gắn kết với hai vật còn lại.',
+  fateStill: 'Chúng vẫn gắn kết với nhau tại bước {steps}, nơi hồ sơ ngừng dõi theo.',
+  fateSeconds: '{n} giây',
+  fateMinutes: '{n} phút',
+  sentences: '{first} {second}',
   livingCollection: 'Một bộ sưu tập sống gồm những quỹ đạo được ghi lại',
   cyclesSpan: 'Chu kỳ {first} đến chu kỳ {last}',
   since: 'từ {date}',
