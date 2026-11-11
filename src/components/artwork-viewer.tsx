@@ -280,6 +280,9 @@ function ArtworkViewerSession({
       media: artwork.media,
       initialExpression,
       openingExpression,
+      // The page's own stage takes no snapshot: the seam has shown the Turn by the time it
+      // commits, so the commit follows the seam at once. Only the room's stage takes one.
+      snapshot: room !== null,
       onCommit: (committed) => {
         const chosen = !quiet.current;
         quiet.current = false;
