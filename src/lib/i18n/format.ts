@@ -54,6 +54,24 @@ export function clock(seconds: number): string {
     .padStart(2, '0')}:${(whole % 60).toString().padStart(2, '0')}`;
 }
 
+/** Under a minute, a stretch of film is told in seconds; past it, in minutes. */
+const MINUTE = 60;
+
+/**
+ * A stretch of a film's time in words: "6.3 seconds", "1.7 minutes". One decimal either way, so
+ * the unit keeps one form in every language the venue speaks.
+ */
+export function filmSpan(seconds: number, t: Messages, locale: string): string {
+  const tenth = new Intl.NumberFormat(locale, {
+    minimumFractionDigits: 1,
+    maximumFractionDigits: 1,
+  });
+  // Rounded as it will print, so that 59.96 seconds is a minute and never "60.0 seconds".
+  return Math.round(seconds * 10) < MINUTE * 10
+    ? fill(t.fateSeconds, { n: tenth.format(seconds) })
+    : fill(t.fateMinutes, { n: tenth.format(seconds / MINUTE) });
+}
+
 /** The word for an expression: the catalog's for Ink and Light, the publisher's label otherwise. */
 export function expressionWord(
   media: Pick<ArtInterpretation, 'id' | 'label'> | string | undefined,

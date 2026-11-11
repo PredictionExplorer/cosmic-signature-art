@@ -630,16 +630,35 @@ export const en = {
   // After the frame (src/components/orbit-score.tsx)
   afterTheFrame: 'After the frame',
   afterTheFrameNote:
-    'Past the recorded window the same physics runs on, at the film’s pace. This is not the work: it is what the work’s orbit does next.',
+    'Past the recorded window the same physics runs on, at the film’s pace, and the camera stays where the film left it. This is not the work: it is what the work’s orbit does next.',
   orbitFate: 'Fate',
-  orbitFateEjection: 'body {body} escapes at step {step}',
+  orbitFateEjection: 'body {body} no longer bound at step {step}',
   orbitFateDance: 'bound through {steps} steps',
-  orbitBeyond: 'After the frame · step {step} · {clock} past the film',
-  orbitEscaped: 'Body {body} has escaped, at step {step}',
-  orbitHeld: 'The dance held through all {steps} steps',
-  toTheEjection: 'To the ejection',
+  orbitBeyond: '{clock} past the film · step {step}',
+  // Past the frame, with the frame held (src/components/orbit-beyond.ts): the line while it
+  // runs, the words that go on, and what happened, said once it has
+  beyondAway:
+    '{clock} past the film · body {body} is out of the picture, {widths} picture widths away',
+  beyondOut: '{clock} past the film · body {body} is out of the picture',
+  beyondAwayTwo: '{clock} past the film · bodies {a} and {b} are out of the picture',
+  beyondEmptyNow: '{clock} past the film · all three are out of the picture',
+  beyondOnward: 'Further on',
+  beyondTell: 'Tell me',
+  beyondRecord: 'The record',
+  beyondLeft: 'Body {body} left the picture {time} after the film ended.',
+  beyondLeftAgain: 'Body {body} left the picture again {time} after the film ended.',
+  beyondLeftLast: 'Body {body} last left the picture {time} after the film ended.',
+  beyondBack: 'It came back {time} later.',
+  beyondEmptied: '{time} later the other two had left it too.',
+  beyondAlreadyEmpty: 'The other two had already left it.',
+  beyondStayed: '{time} later the other two were still in it.',
+  beyondNotBack:
+    'At step {steps}, where the record stops looking, it has not come back, and all three are still bound to one another.',
+  beyondFree: 'The record finds body {body} no longer bound to the other two at step {step}.',
+  beyondStill:
+    'All three are still bound to one another at step {steps}, where the record stops looking.',
   // The energy the computation keeps (EnergyWatch in src/lib/physics/orbit.ts)
-  orbitAdrift: 'Not an orbit past step {step}: the computed energy changed by {change}.',
+  orbitAdrift: 'Past step {step} this is not an orbit: the computed energy changed by {change}.',
   orbitEnergyHeld:
     'As computed here, the energy holds to {digits} digits through the recorded window.',
   orbitEnergyBroken:

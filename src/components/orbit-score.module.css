@@ -14,8 +14,12 @@
   --type: var(--night-type);
   --muted: #b8b5ad;
   --rule: color-mix(in srgb, var(--night-type) 24%, transparent);
-  /* The show's width: the plate as tall as the screen leaves room for, in its own proportions. */
-  --show-width: calc((100svh - 200px) * var(--plate-ratio, 1.547));
+  /* The show's width: the plate as tall as the screen leaves room for, in its own proportions.
+     220 px are kept: the running head's 48, and 172 for what stands beneath the picture past
+     the frame (below). */
+  --show-width: calc((100svh - 220px) * var(--plate-ratio, 1.547));
+  /* What stands beneath the picture past the frame, with the 6 px above it: label, line, words. */
+  --beneath: 172px;
   display: grid;
   grid-template-columns: minmax(0, 1fr);
   grid-template-areas:
@@ -101,6 +105,36 @@
   display: block;
   width: 100%;
   height: 100%;
+}
+/*
+  After the frame (orbit-beyond.ts). While the orbit runs on past its window the still stands
+  back, a ghost of itself, so that three bodies and their trails can be read over it. When the
+  performance ends the drawing gives way and the still returns whole, with nothing over it.
+  The drawing's layers take the fade only while the section is past the frame: the hand turning
+  the orbit moves their opacity itself, frame by frame.
+*/
+.still {
+  transition: opacity var(--t-sit) var(--ease-settle);
+}
+.orbit[data-beyond='running'] .still {
+  opacity: 0.3;
+}
+.orbit[data-beyond] .stage[data-drawing='plate'] .layer {
+  transition: opacity var(--t-sit) var(--ease-settle);
+}
+.orbit[data-beyond='resting'] .stage[data-drawing='plate'] .layer,
+.orbit[data-beyond='told'] .stage[data-drawing='plate'] .layer {
+  opacity: 0;
+}
+/* Where the visitor has paused the venue, or hushed it, the still and the drawing change places
+   at once, as they do where the system asks for less motion (globals.css). */
+:global(.motion-paused) .still,
+:global(.motion-paused) .label,
+:global(.motion-paused) .orbit[data-beyond] .stage[data-drawing='plate'] .layer,
+:global([data-theatre='hushed']) .still,
+:global([data-theatre='hushed']) .label,
+:global([data-theatre='hushed']) .orbit[data-beyond] .stage[data-drawing='plate'] .layer {
+  transition: none;
 }
 .stage[data-material='light'] .layer {
   mix-blend-mode: screen;
@@ -257,8 +291,9 @@
   font-variant-numeric: tabular-nums lining-nums;
   color: var(--muted);
 }
-/* Again, To the ejection and After the frame: words at the right of the readout, never under it
-   on a desk; on a phone they take the line beneath when the readout needs the width. */
+/* The clock's word, the closest approach, After the frame and One part in a trillion: words at
+   the right of the readout, never under it on a desk; on a phone they take the line beneath
+   when the readout needs the width. */
 .words {
   display: flex;
   flex-wrap: wrap;
@@ -286,10 +321,95 @@
 .again:focus-visible {
   text-decoration-thickness: 2px;
 }
+/* The way into the record is a link among the words: it stands on their line, in their box. */
+a.again {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
 /* After the frame, pressed: the orbit stands past its window until the word is pressed again. */
 .again[aria-pressed='true'] {
   font-style: italic;
   text-decoration-thickness: 2px;
+}
+/* Further on, where it would save nothing: in its place, and plainly not to be pressed. */
+.again[aria-disabled='true'] {
+  color: var(--muted);
+  text-decoration-color: transparent;
+  cursor: default;
+}
+/*
+  Past the frame (orbit-beyond.ts) the whole picture is the subject: its four edges, the line
+  beneath it and the words stand in one screen. The caption's account of the recorded window and
+  the window's score step aside for them until the visitor returns to the frame, and the page
+  brings the picture 6 px under the running head. A desk's stage is as tall as the screen less
+  220 px, so 166 px are left beneath it there: 31.5 for the label (a margin and a line), 10 for
+  a margin and the rule, 72 for the line (three of what happened, at 21 px, under 9), and 44 for
+  the words: 157.5, with 8.5 to spare. Narrower windows keep the plate at its full width while
+  the screen is tall enough, and fit it to the height left where it is not (a phone on its
+  side).
+
+  The three rows keep their heights through the performance, the rest and the telling, so
+  nothing moves when the drawing gives way to the still: the label fades with the drawing it
+  labels and keeps its line once the picture is the work again; the line keeps the room of what
+  will be told while it is empty; and the words keep theirs while none is offered.
+*/
+.orbit[data-beyond][data-drawing='plate'] {
+  grid-template-rows: auto auto auto;
+  align-content: start;
+}
+.orbit[data-beyond] .caption {
+  max-width: none;
+}
+.label {
+  display: block;
+  transition: opacity var(--t-sit) var(--ease-settle);
+}
+.label[data-shown='false'] {
+  opacity: 0;
+}
+.orbit[data-beyond] .strip {
+  display: none;
+}
+.orbit[data-beyond] .score {
+  margin-top: 9px;
+  /* Where a short window makes the picture narrow, what is told keeps a measure to be read in. */
+  max-width: max(var(--show-width), min(100%, 40em));
+}
+.orbit[data-beyond] .readoutRow {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0;
+}
+.orbit[data-beyond] .readout {
+  display: block;
+  -webkit-line-clamp: none;
+  line-clamp: none;
+  overflow: visible;
+  height: auto;
+  min-height: 72px;
+}
+.orbit[data-beyond] .words {
+  min-height: 44px;
+}
+/* The line takes the focus when the visitor asks to be told; it is not a control. */
+.readout:focus {
+  outline: none;
+}
+/* What happened is read, not metered: the book face, at the size of the line under the still
+   (artwork-viewer.module.css), each sentence a box of its own so a line breaks between two
+   before it breaks inside one. */
+.orbit[data-beyond='told'] .readout {
+  font-family: var(--font-book);
+  font-size: var(--fs-control);
+  font-style: italic;
+  font-variant-numeric: normal;
+  line-height: 21px;
+  color: var(--type);
+  text-wrap: balance;
+}
+.sentence {
+  display: inline-block;
 }
 /* Act two's opening: the entry's grid (artwork-entry.module.css), the record in its measure. */
 .proofAct {
@@ -416,11 +536,60 @@
   .words {
     min-height: 44px;
   }
+  /* What happened, at the reading size, its sentences running on as one paragraph: room for
+     three lines of it from the start. Japanese breaks between phrases, as the line under the
+     still does (artwork-viewer.module.css). */
+  .orbit[data-beyond] {
+    --beneath: calc(14px + 31.5px + 10px + 9px + 3 * 1.5 * var(--fs-reading) + 44px);
+  }
+  .orbit[data-beyond] .readout {
+    min-height: calc(9px + 3 * 1.5 * var(--fs-reading));
+  }
+  .orbit[data-beyond='told'] .readout {
+    font-size: var(--fs-reading);
+    line-height: 1.5;
+    text-wrap: pretty;
+  }
+  :global(html:lang(ja)) .orbit[data-beyond='told'] .readout {
+    word-break: auto-phrase;
+  }
+  .sentence {
+    display: inline;
+  }
+  /* The plate keeps its full width while the screen is tall enough for it and what stands
+     beneath it (--beneath: 6 px above the picture and 8 to spare, the label, the rule, the
+     line and the words), and is fitted to the height left where it is not: a phone on its side
+     shows the whole picture, small, with its label, its line and its words. */
+  .orbit[data-beyond] .figure {
+    max-width: calc((100svh - var(--head) - var(--beneath)) * var(--plate-ratio, 1.547));
+  }
   .proofAct {
     padding-top: 45px;
   }
   .summary {
     min-height: 6em;
+  }
+}
+/* On a phone what happened runs to four or five lines, and the words to two rows: both keep
+   that room from the start, so the page that brought the picture into view need not move again.
+   The narrowest phones keep a sixth line. */
+@media (max-width: 520px) {
+  .orbit[data-beyond] {
+    --beneath: calc(14px + 31.5px + 10px + 9px + 5 * 1.5 * var(--fs-reading) + 88px);
+  }
+  .orbit[data-beyond] .readout {
+    min-height: calc(9px + 5 * 1.5 * var(--fs-reading));
+  }
+  .orbit[data-beyond] .words {
+    min-height: 88px;
+  }
+}
+@media (max-width: 360px) {
+  .orbit[data-beyond] {
+    --beneath: calc(14px + 31.5px + 10px + 9px + 6 * 1.5 * var(--fs-reading) + 88px);
+  }
+  .orbit[data-beyond] .readout {
+    min-height: calc(9px + 6 * 1.5 * var(--fs-reading));
   }
 }
 /* A gap's power of ten, raised, but never below the 12 px floor. */

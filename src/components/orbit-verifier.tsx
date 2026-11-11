@@ -143,9 +143,9 @@ export function OrbitVerifier({
     const request: OrbitRequest = {
       generation: orbit.generation,
       published: orbit.published,
-      // Nothing is drawn here: the window keeps one sample, and no bodies before an escape.
+      // Nothing is drawn here: the window keeps one sample, and no path past it is asked for.
       stride: orbit.generation.steps,
-      fate: { published: orbit.fate, lead: 0 },
+      fate: { published: orbit.fate },
     };
     worker.postMessage(request);
     return () => {

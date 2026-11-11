@@ -1349,17 +1349,22 @@ export class EnergyWatch {
   /** The closest any two bodies came since the watch last asked, squared. */
   private nearest = Infinity;
 
-  /** `positions` and `velocities` are the arrays the integrator steps; `steps` is the window's. */
+  /**
+   * `positions` and `velocities` are the arrays the integrator steps; `steps` is the window's.
+   * A run taken up part of the way (beyond.ts) is given the energy its window began with as
+   * `first`, so that it asks the same question the run before it asked.
+   */
   constructor(
     masses: readonly [number, number, number],
     positions: Float64Array,
     velocities: Float64Array,
     steps: number,
+    first?: number,
   ) {
     this.bodies = { masses: [masses[0], masses[1], masses[2]], positions, velocities };
     this.steps = steps;
     this.kept = {
-      first: energyAndMomentum(this.bodies).energy,
+      first: first ?? energyAndMomentum(this.bodies).energy,
       windowChange: 0,
       change: 0,
       broken: null,
@@ -1397,23 +1402,13 @@ export interface DerivedFate {
   horizonSteps: number;
   /** Whether the computation kept its energy, from the window's first step to where the run stopped. */
   energy: EnergyKept;
-  /** The bodies after the recorded window, where After the frame begins. */
-  windowEnd: { positions: Float64Array; velocities: Float64Array; watchRun: number };
-  /**
-   * The bodies `lead` steps before the ejection (never inside the window), so a page can go
-   * straight to the escape and perform it from there; null for an eternal dance.
-   */
-  approach: {
-    taken: number;
-    positions: Float64Array;
-    velocities: Float64Array;
-    watchRun: number;
-  } | null;
+  /** The bodies after the recorded window, where After the frame begins (beyond.ts). */
+  windowEnd: { positions: Float64Array; velocities: Float64Array };
 }
 
 /**
  * classify_fate from a window's first step: the recorded window, then on to the horizon,
- * asking every interval. `lead` is how many steps before the ejection the approach is kept.
+ * asking every interval.
  */
 export function deriveFate(
   window: WindowState,
@@ -1421,12 +1416,10 @@ export function deriveFate(
     steps,
     threshold,
     horizonSteps,
-    lead = 0,
   }: {
     steps: number;
     threshold: number;
     horizonSteps: number;
-    lead?: number;
   },
   onProgress?: (taken: number) => void,
 ): DerivedFate {
@@ -1436,23 +1429,13 @@ export function deriveFate(
   const watch = new FateWatch(window.masses, threshold);
   const energy = new EnergyWatch(window.masses, P, V, steps);
   let windowEnd: DerivedFate['windowEnd'] | null = null;
-  // The states every `lead` steps back are kept as a ring of one: the latest multiple of the
-  // interval that is at least `lead` before the asking point, so the approach is exact.
-  const snapshots: { taken: number; P: Float64Array; V: Float64Array; run: number }[] = [];
   for (let taken = 1; taken <= horizonSteps; taken++) {
     step();
     energy.observe(taken);
-    if (taken === steps)
-      windowEnd = { positions: P.slice(), velocities: V.slice(), watchRun: watch.run };
-    if (taken >= steps && lead > 0 && taken % CHECK_INTERVAL === 0) {
-      snapshots.push({ taken, P: P.slice(), V: V.slice(), run: watch.run });
-      if (snapshots.length > Math.ceil(lead / CHECK_INTERVAL) + HYSTERESIS + 1) snapshots.shift();
-    }
+    if (taken === steps) windowEnd = { positions: P.slice(), velocities: V.slice() };
     const ejection = watch.observe(taken, P, V);
     if (onProgress && taken % 250_000 === 0) onProgress(taken);
-    if (ejection) {
-      const target = Math.max(steps, ejection.ejectionStep - lead);
-      const kept = snapshots.filter((snapshot) => snapshot.taken <= target).at(-1);
+    if (ejection)
       return {
         outcome: 'ejection',
         escaper: ejection.escaper,
@@ -1462,13 +1445,8 @@ export function deriveFate(
         windowEnd: windowEnd ?? {
           positions: P.slice(),
           velocities: V.slice(),
-          watchRun: watch.run,
         },
-        approach: kept
-          ? { taken: kept.taken, positions: kept.P, velocities: kept.V, watchRun: kept.run }
-          : null,
       };
-    }
   }
   return {
     outcome: 'eternal_dance',
@@ -1476,12 +1454,14 @@ export function deriveFate(
     ejectionStep: null,
     horizonSteps,
     energy: energy.kept,
-    windowEnd: windowEnd ?? { positions: P.slice(), velocities: V.slice(), watchRun: watch.run },
-    approach: null,
+    windowEnd: windowEnd ?? { positions: P.slice(), velocities: V.slice() },
   };
 }
 
-/** The fate's text for the proof: who escapes and when, or how long the dance held. */
+/**
+ * The fate's text for the proof: which body is found free and at which step, or how long the
+ * three stayed bound.
+ */
 function fateText(
   fate: Pick<PublishedFate, 'outcome' | 'escaper' | 'ejectionStep' | 'horizonSteps'>,
 ) {
