@@ -200,7 +200,6 @@ describe('the fate, as the generator classifies it', () => {
         steps: orbit.generation.steps,
         threshold: orbit.fate.escapeThreshold,
         horizonSteps: orbit.fate.horizonSteps,
-        lead: 30_000,
       },
     );
     expect(compareFate(orbit.fate, fate)).toEqual({
@@ -209,11 +208,7 @@ describe('the fate, as the generator classifies it', () => {
       published: `ejection ${orbit.fate.escaper}@${orbit.fate.ejectionStep}`,
       exact: true,
     });
-    // The approach is kept on the rhythm, at least the lead before the escape and never inside
-    // the window; the window's end is kept for After the frame.
-    expect(fate.approach!.taken % CHECK_INTERVAL).toBe(0);
-    expect(fate.approach!.taken).toBeLessThanOrEqual(fate.ejectionStep! - 30_000);
-    expect(fate.approach!.taken).toBeGreaterThanOrEqual(orbit.generation.steps);
+    // The window's end is kept: After the frame is carried on from it (beyond.ts).
     expect(fate.windowEnd.positions).toHaveLength(9);
   });
 
@@ -233,7 +228,7 @@ describe('the fate, as the generator classifies it', () => {
         horizonSteps: orbit.generation.steps + 50_000,
       },
     );
-    expect(fate).toMatchObject({ outcome: 'eternal_dance', escaper: null, approach: null });
+    expect(fate).toMatchObject({ outcome: 'eternal_dance', escaper: null, ejectionStep: null });
     const row = compareFate(orbit.fate, fate);
     expect(row.exact).toBe(false);
     expect(row.published).toBe('eternal_dance through 8000000');

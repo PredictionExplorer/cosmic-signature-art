@@ -6,6 +6,7 @@ import { performedOrbits } from '@/lib/art/orbit-windows';
 import { getCuratedArtwork } from '@/lib/art/catalog';
 import { orbitPlate, type OrbitPlate } from '@/lib/art/orbit-plate';
 import { plateFrame } from '@/lib/art/orbit-frames';
+import type { BeyondPath } from '@/lib/physics/beyond';
 import type { FramedSamples } from '@/lib/physics/framing';
 import { lightFilmDuration } from '@/lib/physics/light-film';
 import {
@@ -30,12 +31,13 @@ const motion = vi.hoisted(() => ({ paused: true, reducedMotion: true, theatre: '
 vi.mock('./motion-provider', () => ({ useMotion: () => motion }));
 
 const t = messages('en');
-/** A calm eternal dance, and the two works that eject soonest after their windows. */
+/** A work whose record finds its three bound, and the one that ejects soonest after its window. */
 const orbit = workOrbit(31)!;
 const soonest = workOrbit(54)!;
-const later = workOrbit(25)!;
 const steps = orbit.generation.steps;
-const lead = Math.round((4 * steps) / lightFilmDuration(steps));
+/** The Light film's pace, in steps a second, and the worker's samples in a second of it. */
+const pace = steps / lightFilmDuration(steps);
+const PER_SECOND = pace / 100;
 
 let observers: { callback: IntersectionObserverCallback; options?: IntersectionObserverInit }[] =
   [];
@@ -238,9 +240,7 @@ function fateOf(of: WorkOrbit): DerivedFate {
       windowEnd: {
         positions: Float64Array.from(performed.window.positions),
         velocities: Float64Array.from(performed.window.velocities),
-        watchRun: 0,
       },
-      approach: null,
     };
   return deriveFate(
     {
@@ -253,13 +253,54 @@ function fateOf(of: WorkOrbit): DerivedFate {
       steps: of.generation.steps,
       threshold: of.fate.escapeThreshold,
       horizonSteps: of.fate.horizonSteps,
-      lead,
     },
   );
 }
-function fated(of: WorkOrbit = orbit, worker = workers[0]) {
+
+/**
+ * A path past the window as the worker carries it, for `seconds` of film. Each body stands at
+ * the middle of the frame, but for the stretches `out` names (in seconds of film; without a
+ * `to`, to the path's end), when it stands `far` frame-widths outside it.
+ */
+function pathOf({
+  seconds = 6,
+  out = [],
+  lost = null,
+  copies = 1,
+}: {
+  seconds?: number;
+  out?: { body: number; from: number; to?: number; far?: number }[];
+  lost?: BeyondPath['lost'];
+  copies?: number;
+} = {}): BeyondPath {
+  const samples = Math.round(seconds * PER_SECOND) + 1;
+  const pixels = new Float32Array(samples * copies * 6);
+  for (let sample = 0; sample < samples; sample++)
+    for (let body = 0; body < 3; body++) {
+      const at = sample / PER_SECOND;
+      const away = out.find(
+        (stretch) => stretch.body === body && at >= stretch.from && at < (stretch.to ?? Infinity),
+      );
+      const far = away ? (away.far ?? 1) : 0;
+      for (let copy = 0; copy < copies; copy++) {
+        pixels[(sample * copies * 3 + copy * 3 + body) * 2] = far ? 3_456 * (1 + far) : 1_728;
+        pixels[(sample * copies * 3 + copy * 3 + body) * 2 + 1] = 1_117;
+      }
+    }
+  return { from: steps, stride: 100, samples, pixels, copies, lost };
+}
+/** A work's plate as its page makes it, for one not among the curated works. */
+const plateOf = (id: number, material: 'light' | 'ink' = 'light'): OrbitPlate => ({
+  frame: plateFrame(id)!,
+  stills: {
+    [material]: { src: `/art/stills/${id}-${material}-1920.webp`, width: 1920, height: 1242 },
+  },
+});
+/** The fate, and after it the path past the window, as the worker sends them. */
+function fated(of: WorkOrbit = orbit, worker = workers[0], path: BeyondPath | null = pathOf()) {
   const fate = fateOf(of);
   worker.reply({ type: 'fate', fate, comparison: compareFate(of.fate, fate) });
+  worker.reply({ type: 'beyond', beyond: path });
   return fate;
 }
 
@@ -285,7 +326,7 @@ describe('the orbit section', () => {
   it('states an ejection as the record dates it', () => {
     render(<OrbitScore orbit={soonest} t={t} locale="en" />);
     expect(
-      screen.getByRole('row', { name: /Fate body 2 escapes at step 1,090,000/ }),
+      screen.getByRole('row', { name: /Fate body 2 no longer bound at step 1,090,000/ }),
     ).toBeVisible();
   });
 
@@ -298,7 +339,8 @@ describe('the orbit section', () => {
         generation: orbit.generation,
         published: orbit.published,
         stride: 100,
-        fate: { published: orbit.fate, lead },
+        fate: { published: orbit.fate },
+        beyond: { pace },
       },
     ]);
     workers[0].reply({
@@ -349,7 +391,9 @@ describe('the orbit section', () => {
     expect(drawCalls).toContain('stroke');
     expect(drawCalls).toContain('drawImage');
     expect(screen.queryByRole('button', { name: t.again })).not.toBeInTheDocument();
-    expect(afterTheFrame()).toHaveAttribute('aria-pressed', 'false');
+    // Drawn in its own plane, without a plate, there is no frame to go past: After the frame
+    // is offered on the plate alone (below).
+    expect(screen.queryByRole('button', { name: t.afterTheFrame })).not.toBeInTheDocument();
   });
 
   it('shows both values when a measurement differs', () => {
@@ -444,68 +488,442 @@ describe('the orbit section', () => {
 });
 
 describe('After the frame', () => {
-  /** № 054 in view with motion welcome, its window performed through. */
-  function performed(of: WorkOrbit = soonest) {
-    Object.assign(motion, { paused: false, reducedMotion: false });
-    const view_ = render(<OrbitScore orbit={of} t={t} locale="en" />);
+  /**
+   * № 025's record finds body 2 free 210,000 steps past its window, and its picture draws the
+   * bodies where they were, so a body that leaves it can be named. № 031's finds its three bound.
+   */
+  const ejected = workOrbit(25)!;
+  const sectionOf = (container: HTMLElement) => section(container);
+  const phase = (container: HTMLElement) => sectionOf(container).getAttribute('data-beyond');
+  const telling = (container: HTMLElement) =>
+    container.querySelector<HTMLElement>('#orbit [class*="readoutRow"] > p')!;
+  const line = (container: HTMLElement) => telling(container).textContent;
+  const words = (container: HTMLElement) =>
+    [...container.querySelectorAll('#orbit [class*="words"] > *')].map((word) => word.textContent);
+  const word = (name: string) => screen.getByRole('button', { name });
+  /** Where the bodies' lights were last drawn, in canvas pixels, body by body. */
+  const lights = () =>
+    calls
+      .filter((call) => call.name === 'arc')
+      .slice(-3)
+      .map(({ args }) => [Math.round(args[0] as number), Math.round(args[1] as number)]);
+
+  /** A work on its Light plate, in view, its window performed through, and its path known. */
+  function performed(
+    of: WorkOrbit = ejected,
+    path: BeyondPath | null = pathOf(),
+    { still = false, plate = plateOf(of.id) as OrbitPlate | null } = {},
+  ) {
+    Object.assign(motion, { paused: still, reducedMotion: still });
+    // jsdom lays nothing out: the canvases are given the plate's size on a desk.
+    vi.spyOn(HTMLCanvasElement.prototype, 'getBoundingClientRect').mockReturnValue({
+      width: 900,
+      height: 580,
+    } as DOMRect);
+    const view_ = render(
+      <OrbitScore orbit={of} t={t} locale="en" plate={plate ?? undefined} opening="light" />,
+    );
     approach();
     view(true);
     derive(derivation(of), workers[0], of);
-    const fate = fated(of);
+    if (plate) workers[0].reply({ type: 'framed', framed: framedOf() });
+    const fate = fated(of, workers[0], path);
     clockNow = 800 + 31_000;
     nextFrame();
     return { ...view_, fate };
   }
+  /** Frames a tenth of a second apart until so many seconds of film have been performed. */
+  function perform(seconds: number) {
+    for (let frame = 0; frame < Math.round(seconds * 10); frame++) {
+      clockNow += 100;
+      nextFrame();
+    }
+  }
+  /** The eight seconds of nothing, and the fade before them. */
+  function rest() {
+    act(() => vi.advanceTimersByTime(1_200 + 8_000));
+  }
+  /**
+   * Where jsdom would lay the picture, what stands beneath it and the words, were it to lay
+   * anything out: each a top and a bottom, or what they are past the frame and back at it.
+   */
+  type Box = [number, number] | ((pastFrame: boolean) => [number, number]);
+  function laidOut(boxes: { picture: Box; beneath: Box; words?: Box }) {
+    vi.spyOn(HTMLDivElement.prototype, 'getBoundingClientRect').mockImplementation(function (
+      this: HTMLDivElement,
+    ) {
+      const box = /_stage_/.test(this.className)
+        ? boxes.picture
+        : /_score_/.test(this.className)
+          ? boxes.beneath
+          : /_words_/.test(this.className)
+            ? (boxes.words ?? [0, 0])
+            : ([0, 0] as [number, number]);
+      const pastFrame = !!document.querySelector('#orbit[data-beyond]');
+      const [top, bottom] = typeof box === 'function' ? box(pastFrame) : box;
+      return { top, bottom } as DOMRect;
+    });
+  }
+  beforeEach(() => vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] }));
+  afterEach(() => vi.useRealTimers());
 
-  it('runs the orbit on past its window at the film’s pace, to the escape and a rest', () => {
-    const { container, fate } = performed();
-    expect(fate.ejectionStep).toBe(1_090_000);
+  it('runs on with the frame held until all three are out, rests on the still, then says what happened', () => {
+    // Body 2 leaves the picture three seconds after the film, and the two it left follow it
+    // out two seconds later.
+    const path = pathOf({
+      seconds: 20,
+      out: [
+        { body: 1, from: 3, far: 1.4 },
+        { body: 0, from: 5 },
+        { body: 2, from: 5 },
+      ],
+    });
+    const { container, fate } = performed(ejected, path);
+    expect(fate.ejectionStep).toBe(1_210_000);
+    calls = [];
     fireEvent.click(afterTheFrame());
     expect(afterTheFrame()).toHaveAttribute('aria-pressed', 'true');
-    expect(section(container)).toHaveAttribute('data-beyond', 'running');
-    // Labelled as physics, not the work.
+    expect(phase(container)).toBe('running');
+    // Labelled as physics, not the work, with the camera held; and under the picture.
     expect(screen.getByText(t.afterTheFrameNote)).toBeInTheDocument();
-    // The window dims behind it, and the score loses its playhead.
-    expect(drawCalls).toContain('drawImage');
+    expect(container.querySelector('figcaption')!.textContent).toBe(t.analysisNotWork);
+    // The window is drawn again, dimmed, and over it the three bodies where the path's first
+    // sample places them: at the middle of the frame, at the size the plate is drawn at.
+    expect(calls.some((call) => call.name === 'stroke')).toBe(true);
+    expect(lights()).toEqual([
+      [450, 290],
+      [450, 290],
+      [450, 290],
+    ]);
     nextFrame();
     clockNow += 1_000;
     nextFrame();
     // A frame never carries more than a tenth of a second: 3,330 steps at the film's pace.
+    expect(line(container)).toBe('00:00 past the film · step 1,003,300');
+    calls = [];
+    perform(3.4);
+    // Nothing follows the body that leaves: its light is drawn 1.4 frame-widths past the edge,
+    // off the canvas, with its trail out to it; the line counts how far away it is.
+    expect(lights()).toEqual([
+      [450, 290],
+      [2160, 290],
+      [450, 290],
+    ]);
     expect(
-      screen.getByText(/^After the frame · step 1,003,330 · 00:00 past the film$/),
-    ).toBeVisible();
-    framesUntil(() => section(container).getAttribute('data-beyond') === 'rested');
-    expect(screen.getByText('Body 2 has escaped, at step 1,090,000')).toBeVisible();
-    // An escape this soon is reached at the film's pace: nothing to jump to.
-    expect(screen.queryByRole('button', { name: t.toTheEjection })).not.toBeInTheDocument();
-    // Again performs After the frame again; the word again returns to the window, drawn whole.
-    fireEvent.click(screen.getByRole('button', { name: t.again }));
-    expect(section(container)).toHaveAttribute('data-beyond', 'running');
-    fireEvent.click(afterTheFrame());
-    expect(section(container)).not.toHaveAttribute('data-beyond');
-    expect(afterTheFrame()).toHaveAttribute('aria-pressed', 'false');
-    expect(screen.getByText(t.orbitLine)).toBeInTheDocument();
+      calls.some((call) => call.name === 'lineTo' && Math.round(call.args[0] as number) === 2160),
+    ).toBe(true);
+    expect(line(container)).toBe(
+      '00:03 past the film · body 2 is out of the picture, 1.4 picture widths away',
+    );
+    perform(2);
+    expect(line(container)).toBe('00:05 past the film · all three are out of the picture');
+    // Two seconds with all three out; then the drawing gives way to the still.
+    word(t.beyondTell).focus();
+    expect(telling(container)).not.toHaveAttribute('aria-live');
+    framesUntil(() => phase(container) === 'resting', 40);
+    expect(line(container)).toBe('');
+    // The words are gone: a focus that stood on one stays in the section, and the line that
+    // will say what happened is live from now, so a screen reader says it when it comes.
+    expect(document.activeElement).toBe(sectionOf(container));
+    expect(telling(container)).toHaveAttribute('aria-live', 'polite');
+    // The label goes with the drawing it labelled, and keeps its line.
+    const label = container.querySelector('figcaption span')!;
+    expect(label).toHaveAttribute('data-shown', 'false');
+    expect(label).toHaveAttribute('aria-hidden', 'true');
+    // Eight seconds in which nothing is said and nothing is offered.
+    expect(words(container)).toEqual([]);
+    act(() => vi.advanceTimersByTime(1_200 + 7_900));
+    expect(phase(container)).toBe('resting');
+    act(() => vi.advanceTimersByTime(100));
+    expect(phase(container)).toBe('told');
+    expect(line(container)).toBe(
+      'Body 2 left the picture 3.0 seconds after the film ended. 2.0 seconds later the other two had left it too. The record finds body 2 no longer bound to the other two at step 1,210,000.',
+    );
+    // Told by the clock, the focus is left where the visitor has it.
+    expect(document.activeElement).toBe(sectionOf(container));
+    // Two words, the way back to the frame, and the other act.
+    expect(words(container)).toEqual([t.again, t.beyondRecord, t.afterTheFrame, t.oneInATrillion]);
+    expect(screen.getByRole('link', { name: t.beyondRecord })).toHaveAttribute('href', '#proof');
+    // Again performs it again from the film's end, and the word that was pressed is the word
+    // that now offers to tell: the hand, or the keyboard, still stands on it.
+    const again = word(t.again);
+    again.focus();
+    fireEvent.click(again);
+    expect(phase(container)).toBe('running');
+    expect(document.activeElement).toBe(word(t.beyondTell));
+    expect(again).toBe(word(t.beyondTell));
     nextFrame();
-    expect(screen.getByRole('button', { name: t.again })).toBeVisible();
+    expect(line(container)).toBe('00:00 past the film · step 1,000,000');
+    // The word again returns to the window, and is the same word still.
+    const pressed = afterTheFrame();
+    pressed.focus();
+    fireEvent.click(pressed);
+    expect(sectionOf(container)).not.toHaveAttribute('data-beyond');
+    expect(afterTheFrame()).toHaveAttribute('aria-pressed', 'false');
+    expect(document.activeElement).toBe(afterTheFrame());
+    expect(screen.getByText(t.orbitLine)).toBeInTheDocument();
   });
 
-  it('says where the computation lost its energy, and calls nothing past it an escape', () => {
+  it('ends a bound orbit when the first body to leave the picture has come back', () => {
+    // № 031's record finds the three bound to its horizon. Body 3 is gone from the picture for
+    // six seconds; body 1 only grazes its edge, too briefly and too near to be missed.
+    const path = pathOf({
+      seconds: 30,
+      out: [
+        { body: 0, from: 1, to: 2, far: 0.05 },
+        { body: 2, from: 4, to: 10, far: 0.6 },
+      ],
+    });
+    const { container } = performed(orbit, path);
+    fireEvent.click(afterTheFrame());
+    perform(1.6);
+    // Body 1 is over the edge now, and the line does not chatter about it.
+    expect(line(container)).toMatch(/^00:01 past the film · step [\d,]+$/);
+    perform(4.4);
+    expect(line(container)).toMatch(/^00:05 past the film · body 3 is out of the picture, /);
+    // Back at ten seconds, and two more of the three together again.
+    framesUntil(() => phase(container) === 'resting', 80);
+    expect(clockNow).toBeGreaterThan(800 + 31_000 + 11_900);
+    rest();
+    expect(line(container)).toBe(
+      'Body 3 left the picture 4.0 seconds after the film ended. It came back 6.0 seconds later. All three are still bound to one another at step 8,000,000, where the record stops looking.',
+    );
+  });
+
+  it('keeps Further on in its place, dimmed where it would save nothing, and goes to a little before the next moment', () => {
+    const path = pathOf({ seconds: 80, out: [{ body: 2, from: 40, to: 50 }] });
+    const { container } = performed(orbit, path);
+    fireEvent.click(afterTheFrame());
+    perform(1);
+    const all = [t.beyondOnward, t.beyondTell, t.afterTheFrame, t.oneInATrillion];
+    expect(words(container)).toEqual(all);
+    const onward = word(t.beyondOnward);
+    expect(onward).not.toHaveAttribute('aria-disabled');
+    onward.focus();
+    fireEvent.click(onward);
+    nextFrame();
+    // Four seconds before body 3 leaves: near enough to watch it go.
+    expect(line(container)).toBe('00:36 past the film · step 2,198,700');
+    // With the moment that near there is nothing to skip: the word stays where it is, with the
+    // focus that pressed it, says it is not to be pressed, and does nothing if it is.
+    expect(words(container)).toEqual(all);
+    expect(word(t.beyondOnward)).toBe(onward);
+    expect(document.activeElement).toBe(onward);
+    expect(onward).toHaveAttribute('aria-disabled', 'true');
+    fireEvent.click(onward);
+    nextFrame();
+    expect(line(container)).toMatch(/^00:36 past the film · step /);
+    perform(5);
+    expect(line(container)).toMatch(/^00:4[01] past the film · body 3 is out of the picture/);
+    // And on again, to a little before its return.
+    expect(onward).not.toHaveAttribute('aria-disabled');
+    fireEvent.click(onward);
+    nextFrame();
+    expect(line(container)).toMatch(/^00:46 past the film · body 3 is out of the picture/);
+  });
+
+  it('waits where it stands while the section is out of view, and goes on when it is back', () => {
+    const { container } = performed(orbit, pathOf({ seconds: 30 }));
+    fireEvent.click(afterTheFrame());
+    perform(2);
+    expect(line(container)).toMatch(/^00:0[12] past the film/);
+    view(false);
+    const waiting = line(container);
+    expect(frames.size).toBe(0);
+    clockNow += 60_000;
+    view(true);
+    perform(1);
+    // A minute away is not a minute performed.
+    expect(line(container)).toMatch(/^00:0[23] past the film/);
+    expect(line(container)).not.toBe(waiting);
+  });
+
+  it('brings the whole picture just under the running head as a performance begins, and keeps the words under the hand on the way back', () => {
+    const scrolledTo = vi.fn();
+    vi.stubGlobal('scrollTo', scrolledTo);
+    const { container } = performed(orbit, pathOf({ seconds: 20 }));
+    // The running head is 48 px tall: the section's scroll margin says so.
+    const style = window.getComputedStyle.bind(window);
+    vi.spyOn(window, 'getComputedStyle').mockImplementation((element, pseudo) =>
+      element === sectionOf(container)
+        ? ({ scrollMarginTop: '48px' } as CSSStyleDeclaration)
+        : style(element, pseudo),
+    );
+    // The picture runs under the fold of a 768 px window: its line and its words are out of sight.
+    const boxes: { picture: Box; beneath: Box; words: Box } = {
+      picture: [302, 1002],
+      beneath: [1011, 1140],
+      words: [1096, 1140],
+    };
+    laidOut(boxes);
+    fireEvent.click(afterTheFrame());
+    // Not in the frame of the change of layout, which WebKit's scroll anchoring answers…
+    expect(scrolledTo).not.toHaveBeenCalled();
+    nextFrame();
+    expect(scrolledTo).not.toHaveBeenCalled();
+    // …but two frames on, measured again there: the picture has moved a line down meanwhile.
+    boxes.picture = [329, 1029];
+    nextFrame();
+    // It comes to stand 6 px under the running head, at the visitor's pace.
+    expect(scrolledTo.mock.calls).toEqual([[{ top: 329 - 48 - 6, behavior: 'smooth' }]]);
+    // All of it in view under the head, Again moves nothing.
+    boxes.picture = [54, 574];
+    boxes.beneath = [583, 744];
+    fireEvent.click(word(t.beyondTell));
+    fireEvent.click(word(t.again));
+    nextFrame();
+    nextFrame();
+    expect(scrolledTo).toHaveBeenCalledTimes(1);
+    // The picture's top behind the head is not in view: it is brought out from under it.
+    boxes.picture = [40, 560];
+    fireEvent.click(word(t.beyondTell));
+    fireEvent.click(word(t.again));
+    nextFrame();
+    nextFrame();
+    expect(scrolledTo.mock.calls[1]).toEqual([{ top: 40 - 48 - 6, behavior: 'smooth' }]);
+    // Back at the frame the caption and the score return above the words, 72 px lower. They are
+    // put back where they stood under the hand: at once, before the page is painted again.
+    boxes.words = (pastFrame) => (pastFrame ? [700, 744] : [772, 816]);
+    fireEvent.click(afterTheFrame());
+    expect(scrolledTo.mock.calls[2]).toEqual([{ top: 72, behavior: 'instant' }]);
+    // Two frames on, the browser has answered the change its own way: 27 px more are put right.
+    boxes.words = [727, 771];
+    nextFrame();
+    nextFrame();
+    expect(scrolledTo.mock.calls[3]).toEqual([{ top: 27, behavior: 'instant' }]);
+    expect(scrolledTo).toHaveBeenCalledTimes(4);
+  });
+
+  it('moves nothing on the way back where the words were not in view', () => {
+    const scrolledTo = vi.fn();
+    vi.stubGlobal('scrollTo', scrolledTo);
+    performed(orbit, pathOf({ seconds: 20 }), { still: true });
+    // All of it in view as the performance begins: nothing moves.
+    const boxes: { picture: Box; beneath: Box; words: Box } = {
+      picture: [54, 574],
+      beneath: [583, 744],
+      words: [700, 744],
+    };
+    laidOut(boxes);
+    fireEvent.click(afterTheFrame());
+    expect(scrolledTo).not.toHaveBeenCalled();
+    // The visitor scrolls the words under the fold, and leaves by the keyboard: the words are
+    // not brought back from where they had put them.
+    boxes.words = (pastFrame) => (pastFrame ? [946, 990] : [1018, 1062]);
+    fireEvent.click(afterTheFrame());
+    nextFrame();
+    nextFrame();
+    expect(scrolledTo).not.toHaveBeenCalled();
+  });
+
+  /** The plate's word, given before anything is derived: the page sets off for the section. */
+  function askedEarly(of: WorkOrbit = ejected) {
+    const scrolledTo = vi.fn();
+    vi.stubGlobal('scrollTo', scrolledTo);
     Object.assign(motion, { paused: false, reducedMotion: false });
-    const { container } = render(<OrbitScore orbit={soonest} t={t} locale="en" />);
+    const { container } = render(
+      <OrbitScore orbit={of} t={t} locale="en" plate={plateOf(of.id)} opening="light" />,
+    );
+    act(() => window.dispatchEvent(new Event(AFTER_THE_FRAME_EVENT)));
+    expect(scrolled).toEqual([{ block: 'start', behavior: 'smooth' }]);
+    derive(derivation(of), workers[0], of);
+    workers[0].reply({ type: 'framed', framed: framedOf() });
+    return { container, scrolledTo };
+  }
+
+  it('ends on the picture when the path was awaited, wherever the page had got to', () => {
+    const { container, scrolledTo } = askedEarly();
+    // The path arrives while that scroll is under way, at a moment when all of it happens to
+    // be in view: the page still ends on the picture, not wherever that scroll was going.
+    laidOut({ picture: [80, 600], beneath: [609, 740] });
+    fated(ejected);
+    expect(sectionOf(container)).toHaveAttribute('data-beyond', 'running');
+    nextFrame();
+    nextFrame();
+    expect(scrolledTo.mock.calls).toEqual([[{ top: 74, behavior: 'smooth' }]]);
+  });
+
+  it('does not pull back a visitor who left while the path was awaited', () => {
+    const { container, scrolledTo } = askedEarly();
+    // They have gone back up the page: the picture is two screens below.
+    laidOut({ picture: [2400, 3100], beneath: [3110, 3240] });
+    fated(ejected);
+    expect(sectionOf(container)).toHaveAttribute('data-beyond', 'running');
+    nextFrame();
+    nextFrame();
+    expect(scrolledTo).not.toHaveBeenCalled();
+  });
+
+  it('performs nothing, and gives the window back, where the awaited path cannot be carried', () => {
+    const { container } = askedEarly();
+    const slider = () => screen.getByRole('slider', { name: t.orbitTimeLabel });
+    // While it waits, the window stands whole and its slider is held.
+    expect(slider()).toBeDisabled();
+    fated(ejected, workers[0], null);
+    // No performance of nothing: the section is not past the frame, says nothing of it, and
+    // the window is the visitor's again.
+    expect(sectionOf(container)).not.toHaveAttribute('data-beyond');
+    expect(screen.getByText(t.orbitLine)).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: t.afterTheFrame })).not.toBeInTheDocument();
+    expect(slider()).toBeEnabled();
+  });
+
+  it('gives the window back where the worker fails while the path is awaited', () => {
+    const { container } = askedEarly();
+    const slider = () => screen.getByRole('slider', { name: t.orbitTimeLabel });
+    expect(slider()).toBeDisabled();
+    workers[0].reply({ type: 'failed', message: 'no' });
+    expect(sectionOf(container)).not.toHaveAttribute('data-beyond');
+    expect(slider()).toBeEnabled();
+  });
+
+  it('tells what happened at once when asked, with no rest, and hands the focus to what is told', () => {
+    const path = pathOf({ seconds: 80, out: [{ body: 2, from: 40, to: 50 }] });
+    const { container } = performed(orbit, path);
+    fireEvent.click(afterTheFrame());
+    perform(1);
+    word(t.beyondTell).focus();
+    fireEvent.click(word(t.beyondTell));
+    expect(phase(container)).toBe('told');
+    expect(line(container)).toBe(
+      'Body 3 left the picture 40.0 seconds after the film ended. It came back 10.0 seconds later. All three are still bound to one another at step 8,000,000, where the record stops looking.',
+    );
+    // Each sentence is a box of its own, so a line breaks between two before it breaks inside one.
+    expect(
+      [...telling(container).querySelectorAll('span')].map((sentence) => sentence.textContent),
+    ).toEqual([
+      'Body 3 left the picture 40.0 seconds after the film ended.',
+      'It came back 10.0 seconds later.',
+      'All three are still bound to one another at step 8,000,000, where the record stops looking.',
+    ]);
+    expect(words(container)).toEqual([t.again, t.beyondRecord, t.afterTheFrame, t.oneInATrillion]);
+    // The keyboard and the screen reader stand on what was told.
+    expect(document.activeElement).toBe(telling(container));
+    // Nothing goes on being performed behind what was told.
+    expect(frames.size).toBe(0);
+  });
+
+  it('performs nothing past the step at which the computation lost its energy, and says so', () => {
+    Object.assign(motion, { paused: false, reducedMotion: false });
+    const { container } = render(
+      <OrbitScore orbit={ejected} t={t} locale="en" plate={plateOf(25)} opening="light" />,
+    );
     approach();
     view(true);
-    derive(derivation(soonest), workers[0], soonest);
-    // № 054's own run, with the watch's answer for one that broke 5,000 steps past the frame.
+    derive(derivation(ejected), workers[0], ejected);
+    workers[0].reply({ type: 'framed', framed: framedOf() });
+    // № 025's own run, with the watch's answer for one that broke 5,000 steps past the frame.
+    const broken = { step: 1_005_000, change: 7.8, closest: 0.11 };
     const fate: DerivedFate = {
-      ...fateOf(soonest),
-      energy: {
-        first: -2864.2,
-        windowChange: 2e-11,
-        change: 13,
-        broken: { step: 1_005_000, change: 7.8, closest: 0.11 },
-      },
+      ...fateOf(ejected),
+      energy: { first: -2864.2, windowChange: 2e-11, change: 13, broken },
     };
-    workers[0].reply({ type: 'fate', fate, comparison: compareFate(soonest.fate, fate) });
+    workers[0].reply({ type: 'fate', fate, comparison: compareFate(ejected.fate, fate) });
+    // The worker stops the path a thousand steps before the watch found the break.
+    workers[0].reply({
+      type: 'beyond',
+      beyond: { ...pathOf({ seconds: 4_000 / pace }), lost: broken },
+    });
     clockNow = 800 + 31_000;
     nextFrame();
     // The record's note: what the published record does not say, and this browser found.
@@ -516,85 +934,184 @@ describe('After the frame', () => {
     );
     fireEvent.click(afterTheFrame());
     nextFrame();
-    clockNow += 1_000;
-    nextFrame();
-    // Before the break the line counts as ever; from it on, it says what the run has become.
-    expect(screen.getByText(/^After the frame · step 1,003,330 · /)).toBeVisible();
-    framesUntil(() => section(container).getAttribute('data-beyond') === 'rested');
+    expect(line(container)).toBe('00:00 past the film · step 1,000,000');
+    // A tenth of a second of film, and the path is at its end.
+    framesUntil(() => phase(container) === 'resting', 10);
+    rest();
+    expect(line(container)).toBe(
+      'Past step 1,005,000 this is not an orbit: the computed energy changed by 780%.',
+    );
     expect(
-      screen.getByText('Not an orbit past step 1,005,000: the computed energy changed by 780%.'),
-    ).toBeVisible();
-    expect(screen.queryByText(/has escaped/)).not.toBeInTheDocument();
+      screen.queryByText(/no longer bound to the other two|still bound/),
+    ).not.toBeInTheDocument();
   });
 
-  it('offers to go straight to an escape that lies further on', () => {
-    const { container, fate } = performed(later);
-    expect(fate.approach!.taken).toBeGreaterThan(steps);
+  it.each([
+    ['performed', false],
+    ['stepped, where motion is unwelcome', true],
+  ])(
+    'says at once what happened where there is nothing past the frame to perform (%s)',
+    (_, still) => {
+      Object.assign(motion, { paused: still, reducedMotion: still });
+      const { container } = render(
+        <OrbitScore orbit={ejected} t={t} locale="en" plate={plateOf(25)} opening="light" />,
+      );
+      approach();
+      view(true);
+      derive(derivation(ejected), workers[0], ejected);
+      workers[0].reply({ type: 'framed', framed: framedOf() });
+      // A window that lost its energy inside itself: the path past it is where the window ended.
+      const broken = { step: 44_000, change: 0.58, closest: 0.09 };
+      const fate: DerivedFate = {
+        ...fateOf(ejected),
+        energy: { first: -2864.2, windowChange: 0.58, change: 0.58, broken },
+      };
+      workers[0].reply({ type: 'fate', fate, comparison: compareFate(ejected.fate, fate) });
+      workers[0].reply({
+        type: 'beyond',
+        beyond: { ...pathOf({ seconds: 1 }), samples: 1, lost: broken },
+      });
+      clockNow = 800 + 31_000;
+      nextFrame();
+      fireEvent.click(afterTheFrame());
+      // No performance, so no rest and nothing to step through: the line is there, with its
+      // words, and Again is not among them: there is nothing to perform again.
+      expect(phase(container)).toBe('told');
+      expect(line(container)).toBe(
+        'Past step 44,000 this is not an orbit: the computed energy changed by 58%.',
+      );
+      expect(words(container)).toEqual([t.beyondRecord, t.afterTheFrame, t.oneInATrillion]);
+      expect(frames.size).toBe(0);
+    },
+  );
+
+  it('stands still where motion is unwelcome, and is stepped from moment to moment', () => {
+    const path = pathOf({
+      seconds: 20,
+      out: [
+        { body: 1, from: 3 },
+        { body: 0, from: 5 },
+        { body: 2, from: 5 },
+      ],
+    });
+    const { container } = performed(ejected, path, { still: true });
     fireEvent.click(afterTheFrame());
-    fireEvent.click(screen.getByRole('button', { name: t.toTheEjection }));
-    expect(screen.queryByRole('button', { name: t.toTheEjection })).not.toBeInTheDocument();
-    nextFrame();
-    // The readout speaks four times a second; the frame still carries a tenth at most.
-    clockNow += 1_000;
-    nextFrame();
-    const reading = screen.getByText(/^After the frame · step [\d,]+ · /).textContent!;
-    const step = Number(reading.match(/step ([\d,]+)/)![1].replaceAll(',', ''));
-    expect(step).toBe(fate.approach!.taken + 3_330);
-    framesUntil(() => section(container).getAttribute('data-beyond') === 'rested');
-    expect(screen.getByText('Body 2 has escaped, at step 1,210,000')).toBeVisible();
+    // Nothing plays: the picture stands at the film's end, and the words go on from there.
+    expect(frames.size).toBe(0);
+    expect(line(container)).toBe('00:00 past the film · step 1,000,000');
+    expect(words(container)).toEqual([
+      t.beyondOnward,
+      t.beyondTell,
+      t.afterTheFrame,
+      t.oneInATrillion,
+    ]);
+    // Where nothing plays Further on is the way on, and is never dimmed.
+    expect(word(t.beyondOnward)).not.toHaveAttribute('aria-disabled');
+    const onward = () => fireEvent.click(word(t.beyondOnward));
+    // Each step lands a second past a moment, so the picture shows it.
+    onward();
+    expect(line(container)).toMatch(/^00:04 past the film · body 2 is out of the picture/);
+    onward();
+    expect(line(container)).toBe('00:06 past the film · all three are out of the picture');
+    // Then the end of the performance, and from there what happened: no rest is timed.
+    onward();
+    expect(line(container)).toBe('00:07 past the film · all three are out of the picture');
+    expect(phase(container)).toBe('running');
+    expect(telling(container)).not.toHaveAttribute('aria-live');
+    onward();
+    expect(phase(container)).toBe('told');
+    expect(line(container)).toBe(
+      'Body 2 left the picture 3.0 seconds after the film ended. 2.0 seconds later the other two had left it too. The record finds body 2 no longer bound to the other two at step 1,210,000.',
+    );
+    expect(words(container)).toEqual([t.again, t.beyondRecord, t.afterTheFrame, t.oneInATrillion]);
+    // The word that was pressed is gone: the keyboard and the screen reader stand on what it told.
+    expect(document.activeElement).toBe(telling(container));
+    expect(telling(container)).toHaveAttribute('aria-live', 'polite');
   });
 
-  it('is drawn at once for reduced motion, from the approach to the escape', () => {
-    const { container } = render(<OrbitScore orbit={later} t={t} locale="en" />);
-    approach();
-    derive(derivation(later), workers[0], later);
-    fated(later);
+  it('names no body where the picture does not draw the bodies where they were', () => {
+    // № 054 is plotted in cross-braid space: a mark there is made of two bodies' coordinates.
+    const path = pathOf({
+      seconds: 20,
+      out: [
+        { body: 1, from: 3 },
+        { body: 0, from: 5 },
+        { body: 2, from: 5 },
+      ],
+    });
+    const { container } = performed(soonest, path, { still: true });
     fireEvent.click(afterTheFrame());
-    // The steps are taken a hundred thousand to a frame, then the whole is drawn.
-    framesUntil(() => section(container).getAttribute('data-beyond') === 'rested', 20);
-    expect(screen.getByText('Body 2 has escaped, at step 1,210,000')).toBeVisible();
-    expect(screen.queryByRole('button', { name: t.again })).not.toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: t.toTheEjection })).not.toBeInTheDocument();
+    // The marks' leaving still shapes the performance: the same steps, to the same end.
+    fireEvent.click(word(t.beyondOnward));
+    expect(line(container)).toBe('00:04 past the film · step 1,133,200');
+    fireEvent.click(word(t.beyondTell));
+    // And what is told is the record's finding alone.
+    expect(line(container)).toBe(
+      'The record finds body 2 no longer bound to the other two at step 1,090,000.',
+    );
   });
 
-  it('draws half a window of an eternal dance at once, and rests', () => {
-    const { container } = render(<OrbitScore orbit={orbit} t={t} locale="en" />);
-    approach();
-    derive();
-    fated();
-    fireEvent.click(afterTheFrame());
-    framesUntil(() => section(container).getAttribute('data-beyond') === 'rested', 20);
-    expect(
-      screen.getByText('After the frame · step 1,500,000 · 00:15 past the film'),
-    ).toBeVisible();
+  it('is not offered where the path past the window could not be carried', () => {
+    performed(ejected, null);
+    expect(screen.queryByRole('button', { name: t.afterTheFrame })).not.toBeInTheDocument();
+  });
+
+  it('is not offered in the plane, where there is no frame for a body to leave', () => {
+    // A work with no plate is drawn in its own plane, and the worker carries no path for it.
+    const { container } = performed(ejected, null, { plate: null });
+    expect(sectionOf(container)).toHaveAttribute('data-drawing', 'plane');
+    expect(screen.queryByRole('button', { name: t.afterTheFrame })).not.toBeInTheDocument();
+    // Nor, asked for by the plate's word, is anything performed.
+    act(() => window.dispatchEvent(new Event(AFTER_THE_FRAME_EVENT)));
+    expect(sectionOf(container)).not.toHaveAttribute('data-beyond');
   });
 
   it('answers the plate’s word: into view, derived if need be, and on past the frame', () => {
-    const { container } = render(<OrbitScore orbit={soonest} t={t} locale="en" />);
+    const { container } = render(
+      <OrbitScore orbit={ejected} t={t} locale="en" plate={plateOf(25)} opening="light" />,
+    );
     expect(workers).toHaveLength(0);
     act(() => window.dispatchEvent(new Event(AFTER_THE_FRAME_EVENT)));
     expect(scrolled).toEqual([{ block: 'start', behavior: 'instant' }]);
     // The keyboard and the screen reader arrive with it.
     expect(document.activeElement).toBe(section(container));
     expect(workers).toHaveLength(1);
-    derive(derivation(soonest), workers[0], soonest);
+    derive(derivation(ejected), workers[0], ejected);
+    workers[0].reply({ type: 'framed', framed: framedOf() });
     expect(section(container)).not.toHaveAttribute('data-beyond');
-    fated(soonest);
+    // It waits for the path past the window, which follows the fate.
+    const fate = fateOf(ejected);
+    workers[0].reply({ type: 'fate', fate, comparison: compareFate(ejected.fate, fate) });
+    expect(section(container)).not.toHaveAttribute('data-beyond');
+    workers[0].reply({ type: 'beyond', beyond: pathOf() });
     expect(section(container)).toHaveAttribute('data-beyond', 'running');
-    // Asked again while it runs, the section only comes back into view.
+    // Asked again while it runs, from the plate a screen above: its picture comes back, whole.
+    const scrolledTo = vi.fn();
+    vi.stubGlobal('scrollTo', scrolledTo);
+    laidOut({ picture: [954, 1654], beneath: [1663, 1790] });
     act(() => window.dispatchEvent(new Event(AFTER_THE_FRAME_EVENT)));
-    expect(scrolled).toHaveLength(2);
+    expect(scrolledTo.mock.calls).toEqual([[{ top: 948, behavior: 'instant' }]]);
+    expect(scrolled).toHaveLength(1);
+    expect(section(container)).toHaveAttribute('data-beyond', 'running');
+    // Asked again once it has been told, it is performed again.
+    fireEvent.click(word(t.beyondTell));
+    expect(section(container)).toHaveAttribute('data-beyond', 'told');
+    act(() => window.dispatchEvent(new Event(AFTER_THE_FRAME_EVENT)));
     expect(section(container)).toHaveAttribute('data-beyond', 'running');
   });
 
-  it('goes on at once when the fate is already known', () => {
-    Object.assign(motion, { paused: false, reducedMotion: false });
-    const { container } = render(<OrbitScore orbit={soonest} t={t} locale="en" />);
-    approach();
-    derive(derivation(soonest), workers[0], soonest);
-    fated(soonest);
+  it('goes on at once when the path is already known', () => {
+    const { container } = performed(ejected, pathOf());
+    // The plate is a screen above: the picture comes into view in one scroll, to where it will
+    // stand, and the section's own start is not scrolled to on the way.
+    const scrolledTo = vi.fn();
+    vi.stubGlobal('scrollTo', scrolledTo);
+    laidOut({ picture: [954, 1654], beneath: [1663, 1790] });
     act(() => window.dispatchEvent(new Event(AFTER_THE_FRAME_EVENT)));
-    expect(scrolled).toEqual([{ block: 'start', behavior: 'smooth' }]);
+    nextFrame();
+    nextFrame();
+    expect(scrolledTo.mock.calls).toEqual([[{ top: 948, behavior: 'smooth' }]]);
+    expect(scrolled).toEqual([]);
     expect(section(container)).toHaveAttribute('data-beyond', 'running');
   });
 });
@@ -740,25 +1257,163 @@ describe('the orbit on the plate', () => {
     expect(still(unable.container)).toBeNull();
   });
 
-  it('carries the orbit on past the frame over the same still, to the escape', () => {
-    // № 054 is not among the curated works: its plate as the page would make it.
-    const plate054: OrbitPlate = {
-      frame: plateFrame(54)!,
-      stills: { ink: { src: '/art/stills/54-ink-1920.webp', width: 1920, height: 1242 } },
-    };
+  it('carries the orbit on past the frame over the same still, on paper', () => {
+    // № 025 is not among the curated works: its Ink plate as the page would make it.
+    const ejected = workOrbit(25)!;
     const { container } = render(
-      <OrbitScore orbit={soonest} t={t} locale="en" plate={plate054} opening="ink" both />,
+      <OrbitScore
+        orbit={ejected}
+        t={t}
+        locale="en"
+        plate={plateOf(25, 'ink')}
+        opening="ink"
+        both
+      />,
     );
     approach();
-    derive(derivation(soonest), workers[0], soonest);
+    derive(derivation(ejected), workers[0], ejected);
     placedOn(framedOf());
-    fated(soonest);
+    // On the plate the picture is the frame itself: body 2 stands 1.4 frame-widths outside it.
+    fated(
+      ejected,
+      workers[0],
+      pathOf({
+        seconds: 20,
+        out: [
+          { body: 1, from: 3, far: 1.4 },
+          { body: 0, from: 5 },
+          { body: 2, from: 5 },
+        ],
+      }),
+    );
+    const caption = () => container.querySelector('figcaption')!;
+    expect(caption()).toHaveTextContent(/Analysis, not the work\.$/);
     fireEvent.click(afterTheFrame());
-    framesUntil(() => section(container).getAttribute('data-beyond') === 'rested', 20);
     expect(section(container)).toHaveAttribute('data-drawing', 'plate');
-    expect(screen.getByText('Body 2 has escaped, at step 1,090,000')).toBeVisible();
+    expect(section(container)).toHaveAttribute('data-material', 'ink');
+    expect(section(container)).toHaveAttribute('data-beyond', 'running');
+    // The caption's account of the window steps aside: the label alone stands under the picture.
+    expect(caption().textContent).toBe(t.analysisNotWork);
+    expect(caption().firstElementChild).toHaveAttribute('data-shown', 'true');
+    expect(caption().firstElementChild).toHaveAttribute('aria-hidden', 'false');
     // Past the frame the bodies are outlined on the paper still, as in the window.
     expect(arcs(0.025).length).toBeGreaterThanOrEqual(3);
+    // Stepped to a second past the leaving: the same count, in widths of the frame.
+    fireEvent.click(screen.getByRole('button', { name: t.beyondOnward }));
+    expect(
+      screen.getByText(
+        '00:04 past the film · body 2 is out of the picture, 1.4 picture widths away',
+      ),
+    ).toBeVisible();
+    // Told, the picture is the work again, and needs no label; the label keeps its line, unseen.
+    fireEvent.click(screen.getByRole('button', { name: t.beyondTell }));
+    expect(section(container)).toHaveAttribute('data-beyond', 'told');
+    expect(container.querySelector('#orbit [class*="readoutRow"] > p')!.textContent).toBe(
+      'Body 2 left the picture 3.0 seconds after the film ended. 2.0 seconds later the other two had left it too. The record finds body 2 no longer bound to the other two at step 1,210,000.',
+    );
+    expect(caption().firstElementChild).toHaveAttribute('data-shown', 'false');
+    expect(caption().firstElementChild).toHaveAttribute('aria-hidden', 'true');
+    // Back at the frame, the caption says again what the window's drawing is.
+    fireEvent.click(afterTheFrame());
+    expect(caption()).toHaveTextContent(/^Three bodies, .* Analysis, not the work\.$/);
+  });
+
+  it('tells again, of the picture on view, when the plate is turned while the line stands', () => {
+    // Two copies of each body, as a mirrored work draws them on Light; Ink draws the first
+    // alone. Body 3's first copy leaves for six seconds while its second stays in the picture.
+    const turned: OrbitPlate = {
+      frame: plateFrame(31)!,
+      stills: {
+        light: { src: '/art/stills/31-light-1920.webp', width: 1920, height: 1242 },
+        ink: { src: '/art/stills/31-ink-1920.webp', width: 1920, height: 1242 },
+      },
+    };
+    const path = pathOf({ seconds: 30, copies: 2 });
+    for (let sample = Math.round(4 * PER_SECOND); sample < Math.round(10 * PER_SECOND); sample++)
+      path.pixels[(sample * 6 + 2) * 2] = 3_456 * 1.5;
+    const { container } = render(
+      <OrbitScore orbit={orbit} t={t} locale="en" plate={turned} opening="light" both />,
+    );
+    approach();
+    derive();
+    placedOn(framedOf(2));
+    fated(orbit, workers[0], path);
+    fireEvent.click(afterTheFrame());
+    fireEvent.click(screen.getByRole('button', { name: t.beyondTell }));
+    const told = () => container.querySelector('#orbit [class*="readoutRow"] > p')!.textContent;
+    const stillBound =
+      'All three are still bound to one another at step 8,000,000, where the record stops looking.';
+    // On Light a copy of body 3 is in the picture throughout: nothing was seen to leave.
+    expect(told()).toBe(stillBound);
+    // The plate turned to Ink, the line is of the Ink picture, which draws the first copy alone.
+    act(() => rememberExpression('ink'));
+    expect(section(container)).toHaveAttribute('data-material', 'ink');
+    expect(section(container)).toHaveAttribute('data-beyond', 'told');
+    expect(told()).toBe(
+      `Body 3 left the picture 4.0 seconds after the film ended. It came back 6.0 seconds later. ${stillBound}`,
+    );
+  });
+
+  describe('through the rest', () => {
+    beforeEach(() => vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] }));
+    afterEach(() => vi.useRealTimers());
+
+    it('lets the last frame stand on the plate while it gives way to the still, and after', () => {
+      Object.assign(motion, { paused: false, reducedMotion: false });
+      const ejected = workOrbit(25)!;
+      const { container } = render(
+        <OrbitScore
+          orbit={ejected}
+          t={t}
+          locale="en"
+          plate={plateOf(25, 'ink')}
+          opening="ink"
+          both
+        />,
+      );
+      approach();
+      view(true);
+      derive(derivation(ejected), workers[0], ejected);
+      placedOn(framedOf());
+      // All three are out of the picture a second after the film: it ends two seconds on.
+      fated(
+        ejected,
+        workers[0],
+        pathOf({
+          seconds: 20,
+          out: [
+            { body: 0, from: 1 },
+            { body: 1, from: 1 },
+            { body: 2, from: 1 },
+          ],
+        }),
+      );
+      clockNow = 800 + 31_000;
+      nextFrame();
+      fireEvent.click(afterTheFrame());
+      // Sizing a canvas wipes it. The frame that ends the performance sizes none: its last
+      // picture stands, and the stylesheet fades the drawing's layers as they are.
+      const sized = vi.spyOn(HTMLCanvasElement.prototype, 'width', 'set');
+      for (let frame = 0; frame < 80; frame++) {
+        if (section(container).getAttribute('data-beyond') === 'resting') break;
+        sized.mockClear();
+        clockNow += 100;
+        nextFrame();
+      }
+      expect(section(container)).toHaveAttribute('data-beyond', 'resting');
+      expect(sized).not.toHaveBeenCalled();
+      // Through the fade, the rest and the telling nothing is drawn, and nothing is wiped: the
+      // layers stand unseen under the still, which is the work again.
+      calls = [];
+      act(() => vi.advanceTimersByTime(1_200 + 8_000));
+      expect(section(container)).toHaveAttribute('data-beyond', 'told');
+      expect(calls).toEqual([]);
+      expect(sized).not.toHaveBeenCalled();
+      // Again, and the canvases are laid out afresh for the performance.
+      fireEvent.click(screen.getByRole('button', { name: t.again }));
+      expect(sized).toHaveBeenCalled();
+      expect(calls.some((call) => call.name === 'stroke')).toBe(true);
+    });
   });
 });
 

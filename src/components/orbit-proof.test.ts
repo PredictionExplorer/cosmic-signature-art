@@ -59,9 +59,11 @@ describe('the proof, in words', () => {
       fate: 'bound through 8,000,000 steps',
     });
     expect(record.braidWord).toBe(calm.published.braid.word);
-    expect(recordValues(ejecting, en, english).fate).toBe('body 2 escapes at step 1,090,000');
+    expect(recordValues(ejecting, en, english).fate).toBe(
+      'body 2 no longer bound at step 1,090,000',
+    );
     expect(recordValues(ejecting, ja, new Intl.NumberFormat('ja')).fate).toBe(
-      '天体 2 が第 1,090,000 ステップで脱出',
+      '第 1,090,000 ステップで天体 2 はもう束縛されていない',
     );
   });
 

@@ -1,25 +1,26 @@
-import { CHECK_INTERVAL, HYSTERESIS, integrator, type DerivedFate } from './orbit';
+import { integrator } from './orbit';
 import type { HeldPlacement } from './framing';
 
 /** A direction or a point in the simulation's space. */
 type Triple = readonly [number, number, number];
 
 /**
- * After the frame's physics (third-physics.md §5.6): the orbit carried on past its recorded
- * window from a state the fate run kept, step by step with the generator's own integrator, and
- * sampled every `stride` steps where the window is drawn: on its plate, where the films put the
- * bodies (framing.ts), or else in its own plane. Started from the window's end it passes through
- * every state the fate run passed through, bit for bit, so an ejection happens here at the step
- * the generator dated. It knows nothing of canvases or of the page's clock: the orbit section
- * paces it and draws it.
+ * An orbit carried on past its recorded window as a page watches (third-physics.md §5.6), step
+ * by step with the generator's own integrator, from a state the fate run kept, and sampled every
+ * `stride` steps where the window is drawn: on its plate, where the films put the bodies
+ * (framing.ts), or else in its own plane. Started from the window's end it passes through every
+ * state the fate run passed through, bit for bit. It knows nothing of canvases or of the page's
+ * clock: a page paces it and draws it. One part in a trillion carries the work and its twin so,
+ * side by side (orbit-twin.tsx); After the frame plays a path carried once, off the main thread
+ * (beyond.ts).
  */
 export class Continuation {
   /** Steps since the window's first step, as the record counts them. */
   taken: number;
   /** The step the path begins at. */
   readonly from: number;
-  /** The step the performance rests at; the page may bring it forward (restHere). */
-  end: number;
+  /** The step the performance rests at. */
+  readonly end: number;
   readonly stride: number;
   /**
    * Every `stride`-th step where the window is drawn, `width` numbers a sample: in its plane, u
@@ -84,11 +85,6 @@ export class Continuation {
     return this.taken >= this.end;
   }
 
-  /** Brings the rest to the step the performance stands at: nothing past it will be taken. */
-  restHere() {
-    this.end = this.taken;
-  }
-
   /** Takes steps until `target` (never past the end), sampling the path as it goes. */
   advanceTo(target: number) {
     const until = Math.min(target, this.end);
@@ -129,17 +125,4 @@ export class Continuation {
     }
     this.samples += 1;
   }
-}
-
-/**
- * Where After the frame rests: `after` steps past the step at which the generator's fifth
- * answer in a row confirmed an escape, or the record's horizon for an eternal dance.
- */
-export function restingStep(
-  fate: Pick<DerivedFate, 'outcome' | 'ejectionStep' | 'horizonSteps'>,
-  after: number,
-): number {
-  if (fate.outcome !== 'ejection' || fate.ejectionStep === null) return fate.horizonSteps;
-  const confirmed = fate.ejectionStep + 1 + (HYSTERESIS - 1) * CHECK_INTERVAL;
-  return Math.min(fate.horizonSteps, confirmed + after);
 }

@@ -113,7 +113,7 @@ test('a phone holds the whole transcript within its width, in a long language to
   const derivation = page.getByRole('region', { name: vi.verifyOrbitLineByLine });
   await expect(derivation).toHaveAttribute('data-exact', 'true', { timeout: DERIVED_MS });
   await expect(derivation.locator('[data-key="fate"]')).toContainText(
-    'vật thể 2 thoát ra ở bước 1.090.000',
+    'vật thể 2 không còn gắn kết ở bước 1.090.000',
   );
   await noHorizontalOverflow(page);
   const width = page.viewportSize()!.width;

@@ -1,3 +1,4 @@
+import { outsideFrame } from '@/lib/physics/absences';
 import { BODY_REACH_SHARE, bodyReach } from '@/lib/physics/body-light';
 import type { FramedSamples } from '@/lib/physics/framing';
 import type { Plane } from '@/lib/physics/plane';
@@ -38,6 +39,11 @@ export interface Picture {
   y(sample: number, drawn: number): number;
   /** A drawn body's place at `index` of a continuation's path (`width` numbers a sample). */
   continued(path: Float32Array, width: number, index: number, drawn: number): [number, number];
+  /**
+   * How far outside the picture a drawn body's centre stands there, in widths of the picture
+   * (0 on it): the plate's own frame, whatever size it is drawn at, or the plane's canvas.
+   */
+  outside(path: Float32Array, width: number, index: number, drawn: number): number;
   /** How far a body's light reaches (Light), or the radius of its outline (Ink). */
   reach(mass: number): number;
 }
@@ -70,6 +76,13 @@ export function planePicture(
       ox + path[index * size + body * 2] * scale,
       oy + path[index * size + body * 2 + 1] * scale,
     ],
+    outside: (path, size, index, body) =>
+      outsideFrame(
+        ox + path[index * size + body * 2] * scale,
+        oy + path[index * size + body * 2 + 1] * scale,
+        width,
+        height,
+      ),
     reach: (mass) => bodyReach(mass) * ratio,
   };
 }
@@ -99,6 +112,13 @@ export function platePicture(
       path[index * pathSize + drawn * 2] * sx,
       path[index * pathSize + drawn * 2 + 1] * sy,
     ],
+    outside: (path, pathSize, index, drawn) =>
+      outsideFrame(
+        path[index * pathSize + drawn * 2],
+        path[index * pathSize + drawn * 2 + 1],
+        frame.width,
+        frame.height,
+      ),
     reach: (mass) =>
       material === 'ink'
         ? INK_BODY_RADIUS * height

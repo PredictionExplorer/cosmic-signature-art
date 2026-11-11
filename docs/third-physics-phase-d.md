@@ -67,7 +67,7 @@ One policy module decides the opening expression, and every surface asks it. Tes
 ## 4. The events
 
 Unchanged from [third-physics.md](third-physics.md) §5, ordered by readiness:
-1. **After the frame** (§5.6). When a film resolves, the re-performance continues past the recorded window, labelled as physics, not the work. An ejection leaves at the published `ejection_step`.
+1. **After the frame** (§5.6). When a film resolves, the re-performance continues past the recorded window, labelled as physics, not the work. An ejection leaves at the published `ejection_step`. _(Changed 10 November 2026: it ends on the picture's own event, [after-the-frame.md](after-the-frame.md) §8.3.)_
 2. **The choice** (§5.10). The process essay re-derives all 100,000 beginnings of the day's work in a worker, in a field of energy against angular momentum with the chosen one ringed.
 3. **The Overture** (§5.8). Approved by the owner on 4 November 2026 to replace the Dusk. Under rule 3 its last beat lands on the day's expression.
 4. **Opening night** (§5.9). It waits for the pipeline to publish traits early.
@@ -164,6 +164,7 @@ Each PR passes the seven-project Playwright matrix, axe, the 12 px floor, the mo
 
 **After the frame.**
 - **The fate is re-derived and checked.** The port gains the generator's fate rule (`classify_fate`): from the window's first step, the escape check every 10,000 steps, and five positive answers in a row date an ejection by the first. The published threshold (−0.3) now travels in the orbit registry, and the registry's build re-derives every fate before it writes. All 72 are exact: 36 ejections and 36 eternal dances.
+- _Superseded 10 November 2026 by [after-the-frame.md](after-the-frame.md) §8.3: the next four points describe After the frame as Phase D built it. The worker no longer keeps the bodies before an ejection; the page plays a path the worker carried; the readout "has escaped", the word To the ejection and the drawing-at-once for reduced motion are gone._
 - **The proof table gains a row: Fate.** After the measurements the worker runs on past the window, to the escape or the 8,000,000-step horizon. It hands back the bodies at the window's end and just before an ejection. The summary speaks once every row, the fate included, has been checked.
 - **The performance.** The section's word After the frame, or the plate's once its film resolves, runs the same physics on at the film's pace from the bodies the worker kept. It passes through the fate run's states bit for bit; a test proves it for №054. The window dims behind it and the score loses its playhead. The continued trails take the bodies' hues drained of colour, on a layer that forgets them over about a film's length. The section's line says what it is: not the work, but what the work's orbit does next.
 - **An ejection** is performed to its confirmation. It rests as soon as the escaping body's light has left the drawing, and never more than two seconds of the film's pace later. The readout dates it: "Body 2 has escaped, at step 1,090,000". An escape further on is one word away: To the ejection starts four seconds before it. **An eternal dance** turns on to the horizon.

@@ -1,5 +1,5 @@
 import type { Messages } from '@/lib/i18n/en';
-import { fill } from '@/lib/i18n/format';
+import { fill, filmSpan } from '@/lib/i18n/format';
 import type { Locale } from '@/lib/i18n/routing';
 import { lightFilmDuration } from '@/lib/physics/light-film';
 import type { EnergyKept } from '@/lib/physics/orbit';
@@ -31,25 +31,12 @@ import type { WorkOrbit } from './orbit-records';
   of a picture that is one.
 */
 
-/** Under a minute, a wait is told in seconds; past it, in minutes. One decimal either way. */
-const MINUTE = 60;
-
 /**
  * How long after the Light film's last frame a step falls, at the film's own pace, in words.
- * The Ink film keeps the same clock, frame for frame. One decimal always, so the unit keeps
- * one form in every language the venue speaks.
+ * The Ink film keeps the same clock, frame for frame.
  */
-function sinceFilm(after: number, steps: number, t: Messages, locale: Locale): string {
-  const seconds = (after * lightFilmDuration(steps)) / steps;
-  const tenth = new Intl.NumberFormat(locale, {
-    minimumFractionDigits: 1,
-    maximumFractionDigits: 1,
-  });
-  // Rounded as it will print, so that 59.96 seconds is a minute and never "60.0 seconds".
-  return Math.round(seconds * 10) < MINUTE * 10
-    ? fill(t.fateSeconds, { n: tenth.format(seconds) })
-    : fill(t.fateMinutes, { n: tenth.format(seconds / MINUTE) });
-}
+const sinceFilm = (after: number, steps: number, t: Messages, locale: Locale) =>
+  filmSpan((after * lightFilmDuration(steps)) / steps, t, locale);
 
 /**
  * The line for one work, as the sentences it is made of, from its record and the venue's measure
