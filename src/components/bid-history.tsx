@@ -5,7 +5,7 @@ import { readBidHistory, type BidHistory as History } from '@/lib/auction/histor
 import { auctionPhase } from '@/lib/auction/rules';
 import { compactAddress, formatChainDate, formatEth } from '@/lib/auction/catalogue';
 import { fill } from '@/lib/i18n/format';
-import type { Messages } from '@/lib/i18n/en';
+import type { BidHistoryWords } from './bid-history.words';
 import type { Locale } from '@/lib/i18n/routing';
 import styles from './auction-lot.module.css';
 
@@ -22,7 +22,7 @@ export function BidHistory({
   snapshot,
 }: {
   tokenId: number;
-  t: Messages;
+  t: BidHistoryWords;
   locale: Locale;
   snapshot: Snapshot | null;
 }) {
