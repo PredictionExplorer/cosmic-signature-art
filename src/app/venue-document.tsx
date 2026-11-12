@@ -25,6 +25,8 @@ import '@fontsource/ibm-plex-mono/400.css';
 import './typefaces.css';
 import './globals.css';
 import { DAY_WORK_POOL } from '@/lib/art/work-of-the-day';
+import { ErrorWords } from './[locale]/error-context';
+import { ERROR_PAGE_WORDS } from './[locale]/error.words';
 
 /**
  * What the browser needs to know today's expression for itself: the day's-work pool's size and
@@ -48,7 +50,8 @@ export const venueMetadata: Metadata = {
  *
  * The catalog stays here, on the server. Each Client Component in the frame is handed the
  * strings its own list names (running-head.words.ts and its fellows), because every prop that
- * crosses to the client is written into the document.
+ * crosses to the client is written into the document. The error page cannot be handed props,
+ * so its two strings are provided around the routes ([locale]/error-context.tsx).
  */
 export function VenueDocument({
   locale,
@@ -81,7 +84,7 @@ export function VenueDocument({
             <RoomGround />
           </Suspense>
           <RunningHead locale={locale} t={words(t, RUNNING_HEAD_WORDS)} address={address} />
-          {children}
+          <ErrorWords t={words(t, ERROR_PAGE_WORDS)}>{children}</ErrorWords>
           <Colophon locale={locale} t={t} />
           <IndexSheet
             works={compactWorks()}

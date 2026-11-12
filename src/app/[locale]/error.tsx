@@ -1,13 +1,9 @@
 'use client';
-import { useParams } from 'next/navigation';
-import { messages } from '@/lib/i18n/messages';
-import { isLocale } from '@/lib/i18n/routing';
+import { useErrorWords } from './error-context';
+
 /** Paper, one line, one word: the venue needs a moment and says so. */
 export default function ErrorPage({ reset }: { error: Error; reset: () => void }) {
-  const params = useParams();
-  const t = messages(
-    typeof params.locale === 'string' && isLocale(params.locale) ? params.locale : 'en',
-  );
+  const t = useErrorWords();
   return (
     <main id="main" className="section-wrap empty-state">
       <h1>{t.errorTitle}</h1>
