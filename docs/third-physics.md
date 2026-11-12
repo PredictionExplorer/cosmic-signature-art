@@ -215,6 +215,8 @@ The fate run now watches the energy, and After the frame and the record say what
 
 *Changed 10 November 2026:* After the frame no longer ends at the published `ejection_step`, which is the generator's test date and not the moment a body goes. With the camera held, it ends when a body's absence from the picture resolves, rests on the still, and then says what happened and what the record finds ([after-the-frame.md](after-the-frame.md) §8.3).
 
+*Changed 11 November 2026:* where the picture draws the bodies where they were, the visitor is first asked whom to stay with: the frame, or one of the three, which then holds still in the picture while the other two are drawn where they stand from it ([after-the-frame.md](after-the-frame.md) §8.4).
+
 ### 5.7 The Orrery: the collection, moving, for zero megabytes *(built)*
 
 This is a physical index beside All the light: every work's orbit re-performed at once as a small live score, hung by cycle, with the work's numeral beneath. Each body rides at the head of its trail as a point of light. Hover to see the plate.
