@@ -33,6 +33,31 @@ describe('production translations', () => {
         );
   });
 
+  it('names each answer to "whom to stay with" by a name that holds its visible label', () => {
+    // WCAG 2.5.3: a visitor who speaks the word they see must be understood. The answers are
+    // shown as "1", "2", "3" and the frame's own label, and named by what they do; a language
+    // whose grammar would change the label inside the name words the name round it instead
+    // (Ukrainian: «Кадр фільму: лишитися з ним»).
+    for (const locale of locales) {
+      const catalog = catalogs[locale];
+      expect(catalog.beyondStayFrame.toLowerCase(), locale).toContain(
+        catalog.beyondFrame.toLowerCase(),
+      );
+      expect(catalog.beyondStayBody, locale).toContain('{body}');
+      // Whom the running line says the picture is with comes before the line it wraps.
+      expect(catalog.beyondKeptLine.indexOf('{body}'), locale).toBeLessThan(
+        catalog.beyondKeptLine.indexOf('{line}'),
+      );
+    }
+  });
+
+  it('has one Vietnamese word for a body, «vật thể», wherever a body is named', () => {
+    // «thiên thể» (a heavenly body) stood in six older strings, one of them a row of the
+    // record's table beside «Khối lượng vật thể 1».
+    for (const [key, value] of Object.entries(catalogs.vi))
+      expect(String(value).toLowerCase(), key).not.toContain('thiên thể');
+  });
+
   it('runs two sentences together as each language does: no space in Japanese or Chinese', () => {
     for (const locale of locales)
       expect(catalogs[locale].sentences, locale).toBe(
