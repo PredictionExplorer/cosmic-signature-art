@@ -18,7 +18,7 @@ import { confirmedAt, type BeyondPath } from '@/lib/physics/beyond';
 import type { DerivedFate } from '@/lib/physics/orbit';
 import { shareText } from './orbit-proof';
 import { MATERIALS, type Picture } from './orbit-picture';
-import type { Painter, Target } from './orbit-painter';
+import { FADE_EVERY_SECONDS, type Continued, type Painter, type Target } from './orbit-painter';
 
 /*
   After the frame (third-physics.md §5.6; docs/after-the-frame.md §8.3). The same physics runs on
@@ -75,12 +75,11 @@ const LEAD_SECONDS = 4;
 const WORTH_SECONDS = 4;
 /** Where nothing plays, a step lands this long after the moment, so the picture shows it. */
 const PAST_SECONDS = 1;
-/** A trail fades to a twentieth over the film's length: a step every half second performed. */
-const FADE_EVERY_SECONDS = 0.5;
-/** The continued trails: the bodies' hues drained of colour. */
-const CONTINUED_ALPHA = 0.3;
-/** No frame advances the performance by more than this, so a tab coming back resumes it. */
-const LONGEST_FRAME_SECONDS = 0.1;
+/**
+ * No frame advances a performance past the frame by more than this, so a tab coming back
+ * resumes it where it was.
+ */
+export const LONGEST_FRAME_SECONDS = 0.1;
 
 /** What the picture shows of a path past the window, and where a performance of it ends. */
 export type HeldScript = {
@@ -535,13 +534,10 @@ export interface BeyondStage {
   /** Nothing plays: the picture stands where it is, and Further on steps it. */
   still: boolean;
   inView: boolean;
-  /** The continued trails' canvas, and the bodies'. */
-  beyondTrail: CanvasRenderingContext2D;
+  /** The bodies' canvas, and its size in device pixels. */
   mark: CanvasRenderingContext2D;
   width: number;
   height: number;
-  ratio: number;
-  hues: readonly number[];
   painter: Painter;
   /**
    * How far the performance has run, in samples of the path: a redraw or a return carries on.
@@ -567,7 +563,7 @@ export interface BeyondStage {
  */
 export function performBeyond(stage: BeyondStage): (() => void) | void {
   const { path, script, key, picture, film, still } = stage;
-  const { beyondTrail, mark, width, height, ratio, hues, painter, live, frame, speak } = stage;
+  const { mark, width, height, painter, live, frame, speak } = stage;
   const paint = MATERIALS[picture.material];
   const size = path.copies * 6;
   const { perSecond, ending } = script;
@@ -580,33 +576,13 @@ export function performBeyond(stage: BeyondStage): (() => void) | void {
   const stacked = (body: number) =>
     kept !== null && kept.towards === 1 && body >= 3 && picture.body(body) === kept.body;
   const once = (body: number) => (stacked(body) ? 0 : 1);
-  const trace = (first: number, last: number, alpha: number) => {
-    if (last <= first) return;
-    beyondTrail.globalCompositeOperation = paint.blend;
-    beyondTrail.lineWidth = picture.material === 'ink' ? 0.75 * ratio : ratio;
-    beyondTrail.lineJoin = 'round';
-    for (let body = 0; body < picture.drawn; body++) {
-      // The body the picture stays with draws no trail in it: it does not move there.
-      if (kept !== null && picture.body(body) === kept.body) continue;
-      beyondTrail.strokeStyle = paint.continued(hues[picture.body(body)], alpha);
-      beyondTrail.beginPath();
-      beyondTrail.moveTo(...place(first, body));
-      for (let index = first + 1; index <= last; index++) beyondTrail.lineTo(...place(index, body));
-      beyondTrail.stroke();
-    }
+  const trail: Continued = {
+    place,
+    // The body the picture stays with draws no trail in it: it does not move there.
+    still: kept ? (body) => picture.body(body) === kept.body : undefined,
   };
-  // Drawn whole (a resize, a return, a step), the last film's length of the path is traced in
-  // quarters, each as faded as the performance would have left it.
+  /** A trail is remembered for as long as the film runs: this many samples of the path. */
   const memory = Math.max(4, Math.round(film * perSecond));
-  const retrace = (last: number) => {
-    beyondTrail.clearRect(0, 0, width, height);
-    for (let quarter = 3; quarter >= 0; quarter--)
-      trace(
-        Math.max(0, last - Math.round(((quarter + 1) * memory) / 4)),
-        Math.max(0, last - Math.round((quarter * memory) / 4)),
-        CONTINUED_ALPHA * 0.05 ** (quarter / 4),
-      );
-  };
   const lightsAt = (index: number) => {
     mark.clearRect(0, 0, width, height);
     painter.lights((body) => place(index, body), once);
@@ -646,7 +622,7 @@ export function performBeyond(stage: BeyondStage): (() => void) | void {
   else if (arriving) painter.strokes(0, picture.last);
   const sampleAt = (sample: number) => Math.min(ending.sample, Math.max(0, Math.floor(sample)));
   let index = sampleAt(playhead.sample);
-  retrace(index);
+  painter.retraced(memory, [trail, index]);
   if (arriving) bring(brought(performance.now()));
   else lightsAt(index);
   speak(index, !arriving);
@@ -670,11 +646,9 @@ export function performBeyond(stage: BeyondStage): (() => void) | void {
     index = sampleAt(playhead.sample);
     if (unfaded >= FADE_EVERY_SECONDS) {
       unfaded = 0;
-      beyondTrail.globalCompositeOperation = 'destination-out';
-      beyondTrail.fillStyle = `rgb(0 0 0 / ${1 - 0.05 ** (FADE_EVERY_SECONDS / film)})`;
-      beyondTrail.fillRect(0, 0, width, height);
+      painter.fade(film);
     }
-    trace(before, index, CONTINUED_ALPHA);
+    painter.continued(trail, before, index);
     lightsAt(index);
     const ended = index >= ending.sample;
     if (now - spoken > 250 || ended) {

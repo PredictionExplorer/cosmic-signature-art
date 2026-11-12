@@ -4,7 +4,6 @@ import { restingAt, type Transport } from '@/lib/first-light/transport';
 import { lightFilmDuration } from '@/lib/physics/light-film';
 import type { Rederivation } from '@/lib/physics/orbit';
 import { recordingContext } from '../../tests/canvas-support';
-import type { Painter } from './orbit-painter';
 import type { Picture } from './orbit-picture';
 import {
   performWindow,
@@ -139,10 +138,8 @@ describe('the window, performed', () => {
   function staged(kind: Picture['kind'], transport: Transport, over: Partial<WindowStage> = {}) {
     const done: string[] = [];
     const said: Clock[] = [];
-    const painter: Painter = {
+    const painter: WindowStage['painter'] = {
       strokes: (from, to) => done.push(`strokes ${from}→${to}`),
-      lights: () => {},
-      numbers: () => [],
       bodies: (sample, shown) => done.push(`bodies ${sample} ${shown ? 'shown' : 'gone'}`),
     };
     const trail = recordingContext();

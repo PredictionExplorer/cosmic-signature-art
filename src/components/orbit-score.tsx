@@ -702,7 +702,7 @@ export function OrbitScore({
       names: names.current,
     });
     if (!sheet) return;
-    const { trail, mark, width, height, ratio } = sheet;
+    const { mark, width, height, ratio } = sheet;
     // Past the frame the picture may stay with one body: the same frame, moved along with it.
     const picture = pictureOn(
       surface,
@@ -713,12 +713,8 @@ export function OrbitScore({
     );
     const hues = orbit.bodyHues;
     const painter = orbitPainter({
-      trail,
-      mark,
+      ...sheet,
       picture,
-      width,
-      height,
-      ratio,
       hues,
       masses: result.masses,
       closestApproach: result.closestApproach,
@@ -755,12 +751,9 @@ export function OrbitScore({
         film,
         still,
         inView,
-        beyondTrail: sheet.continued,
         mark,
         width,
         height,
-        ratio,
-        hues,
         painter,
         live,
         frame,
@@ -803,12 +796,10 @@ export function OrbitScore({
         stride: STRIDE,
         still,
         inView,
-        beyondTrail: sheet.continued,
         mark,
         width,
         height,
         ratio,
-        hues,
         painter,
         strip: sheet.strip,
         live: twinLive,
@@ -825,7 +816,7 @@ export function OrbitScore({
     scene.current = performWindow({
       picture,
       painter,
-      trail,
+      trail: sheet.trail,
       width,
       height,
       score,

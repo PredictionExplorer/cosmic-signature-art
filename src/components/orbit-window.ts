@@ -134,7 +134,8 @@ export interface WindowScene {
 /** Everything the recorded window is drawn with, as the section has set it out. */
 export interface WindowStage {
   picture: Picture;
-  painter: Painter;
+  /** The window's trails and its bodies are the painter's to draw. */
+  painter: Pick<Painter, 'strokes' | 'bodies'>;
   /** The trails' canvas, and its size in device pixels. */
   trail: CanvasRenderingContext2D;
   width: number;

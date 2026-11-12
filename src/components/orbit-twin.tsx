@@ -4,8 +4,9 @@ import { HeldPlacement } from '@/lib/physics/framing';
 import type { DerivedFate, Rederivation } from '@/lib/physics/orbit';
 import { gapAt, twinPace, type TwinRun } from '@/lib/physics/twin';
 import type { Strip } from './orbit-layers';
+import { LONGEST_FRAME_SECONDS } from './orbit-beyond';
 import { MATERIALS, type Picture } from './orbit-picture';
-import type { Painter } from './orbit-painter';
+import { FADE_EVERY_SECONDS, type Continued, type Painter } from './orbit-painter';
 import styles from './orbit-score.module.css';
 
 /*
@@ -27,14 +28,8 @@ export const TWIN_TONE = {
   ink: (alpha: number) => `oklch(0.52 0.15 32 / ${alpha})`,
 } as const;
 
-/** The trails past the frame fade to a twentieth over about thirty seconds… */
+/** The trails past the frame are remembered for about thirty seconds of the performance. */
 const MEMORY_SECONDS = 30;
-/** …a step every half second, since a slower fade is lost to an 8-bit canvas. */
-const FADE_EVERY_SECONDS = 0.5;
-const FADE = 1 - 0.05 ** (FADE_EVERY_SECONDS / MEMORY_SECONDS);
-const TRAIL_ALPHA = 0.3;
-/** No frame carries the pair more than this far, so a tab coming back resumes where it was. */
-const LONGEST_FRAME_SECONDS = 0.1;
 /** Drawn at once, the steps are taken this many to a frame, so the page stays responsive. */
 const STILL_STEPS_PER_FRAME = 200_000;
 
@@ -66,12 +61,11 @@ export interface TwinStage {
   /** Drawn at once rather than performed. */
   still: boolean;
   inView: boolean;
-  beyondTrail: CanvasRenderingContext2D;
+  /** The bodies' canvas, its size in device pixels, and device pixels to a CSS pixel. */
   mark: CanvasRenderingContext2D;
   width: number;
   height: number;
   ratio: number;
-  hues: readonly number[];
   painter: Painter;
   /** The strip beneath the picture, where the gap's growth is drawn. */
   strip: Strip;
@@ -122,7 +116,7 @@ export function twinGrowth(strip: Strip, run: TwinRun, steps: number): (taken: n
 /** Performs the work and its twin past the frame, or draws them at once; returns what stops it. */
 export function performTwin(stage: TwinStage): (() => void) | void {
   const { run, fate, picture, plate, result, steps, still, painter, live, frame } = stage;
-  const { beyondTrail, mark, width, height, ratio, hues } = stage;
+  const { mark, width, height, ratio } = stage;
   const paint = MATERIALS[picture.material];
   const tone = TWIN_TONE[picture.material];
   const pace = twinPace(run, steps, stage.pace);
@@ -147,49 +141,11 @@ export function performTwin(stage: TwinStage): (() => void) | void {
 
   const place = (at: Continuation, index: number, body: number) =>
     picture.continued(at.path, at.width, index, body);
-  const trace = (
-    at: Continuation,
-    colour: (body: number, alpha: number) => string,
-    first: number,
-    last: number,
-    alpha: number,
-  ) => {
-    if (last <= first) return;
-    beyondTrail.globalCompositeOperation = paint.blend;
-    beyondTrail.lineWidth = picture.material === 'ink' ? 0.75 * ratio : ratio;
-    beyondTrail.lineJoin = 'round';
-    for (let body = 0; body < picture.drawn; body++) {
-      beyondTrail.strokeStyle = colour(body, alpha);
-      beyondTrail.beginPath();
-      beyondTrail.moveTo(...place(at, first, body));
-      for (let index = first + 1; index <= last; index++)
-        beyondTrail.lineTo(...place(at, index, body));
-      beyondTrail.stroke();
-    }
-  };
-  const workTone = (body: number, alpha: number) =>
-    paint.continued(hues[picture.body(body)], alpha);
-  const twinTone = (_body: number, alpha: number) => tone(alpha);
-  // Redrawn whole (a resize, a return, a drawing made at once), the paths so far are traced in
-  // quarters, each as faded as the performance would have left it.
-  const retrace = () => {
-    beyondTrail.clearRect(0, 0, width, height);
-    const memory = Math.max(4, Math.round((MEMORY_SECONDS * pace) / stride));
-    for (const [at, colour] of [
-      [work, workTone],
-      [twin, twinTone],
-    ] as const) {
-      const last = at.samples - 1;
-      for (let quarter = 3; quarter >= 0; quarter--)
-        trace(
-          at,
-          colour,
-          Math.max(0, last - Math.round(((quarter + 1) * memory) / 4)),
-          Math.max(0, last - Math.round((quarter * memory) / 4)),
-          TRAIL_ALPHA * 0.05 ** (quarter / 4),
-        );
-    }
-  };
+  /** The work in its own hues, drained of colour; the twin in its red. */
+  const workTrail: Continued = { place: (index, body) => place(work, index, body) };
+  const twinTrail: Continued = { place: (index, body) => place(twin, index, body), tone };
+  /** The trails are remembered for this many samples of either path. */
+  const memory = Math.max(4, Math.round((MEMORY_SECONDS * pace) / stride));
   /** The work's bodies as the window drew them, and the twin's ringed in its red. */
   const bodies = () => {
     mark.clearRect(0, 0, width, height);
@@ -203,8 +159,9 @@ export function performTwin(stage: TwinStage): (() => void) | void {
       mark.stroke();
     }
   };
+  // Shown whole (at first, on a resize or a return, or drawn at once): the paths so far.
   const show = () => {
-    retrace();
+    painter.retraced(memory, [workTrail, work.samples - 1], [twinTrail, twin.samples - 1]);
     bodies();
     growth(work.taken);
     stage.speak(work.taken);
@@ -241,13 +198,9 @@ export function performTwin(stage: TwinStage): (() => void) | void {
     const twinBefore = twin.samples - 1;
     const fading = work.perform(elapsed, pace, FADE_EVERY_SECONDS);
     twin.perform(elapsed, pace, FADE_EVERY_SECONDS);
-    if (fading) {
-      beyondTrail.globalCompositeOperation = 'destination-out';
-      beyondTrail.fillStyle = `rgb(0 0 0 / ${FADE})`;
-      beyondTrail.fillRect(0, 0, width, height);
-    }
-    trace(work, workTone, workBefore, work.samples - 1, TRAIL_ALPHA);
-    trace(twin, twinTone, twinBefore, twin.samples - 1, TRAIL_ALPHA);
+    if (fading) painter.fade(MEMORY_SECONDS);
+    painter.continued(workTrail, workBefore, work.samples - 1);
+    painter.continued(twinTrail, twinBefore, twin.samples - 1);
     bodies();
     growth(work.taken);
     if (now - spoken > 250 || work.resting) {
