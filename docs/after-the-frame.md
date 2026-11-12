@@ -521,6 +521,8 @@ It also found three things that were so before the change and are left as they w
 
 **Tests.** 121 new unit tests. Each new module with logic of its own has a file: the reducer, the clock, the twin's state and its worker, the twin's line and the gap's growth, the room's fit and scrolls, the ring and the presses, where the numbers stand, the painter, the window's line and its drawing, the canvases. They share one recording canvas (`tests/canvas-support.ts`). The figure, the line and a word are held by the section's own tests, now 98.
 
+**What it cost.** A work's page loads 1.8 KiB more script as sent (358.7 to 360.5 KiB, against a budget of 370): the seams between the modules. No other route moved.
+
 **What it does not do yet.**
 
 - `OrbitScore` is still 747 lines, of which `draw` is 130: it is the one place that sees everything, and reads as a list of four.
