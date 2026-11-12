@@ -21,8 +21,6 @@ export function deploymentUrl(env: Record<string, string | undefined>): string {
   return env.NEXT_PUBLIC_SITE_URL || 'https://cosmic.art';
 }
 export const DEPLOYMENT_URL = deploymentUrl(process.env);
-export const NFT_ADDRESS = '0xbb84Be3500A63581d3F2d5AC3bdF8685AAedad25' as const;
-export const GAME_ADDRESS = '0x6a714Ae7B5b6eA520F6BCA23d2E609C4Fd5863F2' as const;
 /**
  * A page's metadata. `image` undefined is the venue's still of 023; an object is that page's
  * own; null names no image here at all, so the sharing card drawn beside the route (an

@@ -15,7 +15,7 @@ import {
 } from 'viem';
 import { auctionAbi } from '../../src/lib/auction/abi';
 import { MINIMUM_BID } from '../../src/lib/auction/rules';
-import { GAME_ADDRESS, NFT_ADDRESS } from '../../src/lib/site';
+import { GAME_ADDRESS, NFT_ADDRESS } from '../../src/lib/contracts';
 import { en as t } from '../../src/lib/i18n/en';
 
 /**

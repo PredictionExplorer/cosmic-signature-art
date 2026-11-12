@@ -16,7 +16,7 @@ import {
 import { arbitrum } from 'viem/chains';
 import { auctionAbi } from './abi';
 import { auctionAddress, auctionConfigured, rpcUrl, chainId, expectedCodeHash } from './config';
-import { GAME_ADDRESS, NFT_ADDRESS } from '../site';
+import { GAME_ADDRESS, NFT_ADDRESS } from '../contracts';
 import { bidFunding, type AuctionRecord } from './rules';
 
 const chain =

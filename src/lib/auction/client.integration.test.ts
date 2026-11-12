@@ -17,7 +17,7 @@ import {
   type EIP1193Provider,
   type Hex,
 } from 'viem';
-import { GAME_ADDRESS, NFT_ADDRESS } from '../site';
+import { GAME_ADDRESS, NFT_ADDRESS } from '../contracts';
 import { auctionAbi } from './abi';
 import { DURATION_SECONDS, EXTENSION_SECONDS, MINIMUM_BID, PREVIEW_SECONDS } from './rules';
 import type { AuctionAction } from './client';
