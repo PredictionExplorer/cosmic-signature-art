@@ -626,6 +626,8 @@ export const ja: Messages = {
   afterTheFrame: 'フレームの先',
   afterTheFrameNote:
     '記録された時間の先でも、同じ物理が映像の速さで続き、カメラは映像が終わった位置にとどまります。これは作品ではありません。作品の軌道がその後どうなるかです。',
+  afterTheFrameNoteAsk:
+    '記録された時間の先でも、同じ物理が映像の速さで続きます。フレームは映像が終わった位置にとどまるか、三つの天体のひとつについていきます。その場合、その天体はフレームの中で動きません。これは作品ではありません。作品の軌道がその後どうなるかです。',
   orbitFate: '運命',
   orbitFateEjection: '第 {step} ステップで天体 {body} はもう束縛されていない',
   orbitFateDance: '{steps} ステップを通じて束縛',
@@ -639,7 +641,7 @@ export const ja: Messages = {
   beyondRecord: '記録へ',
   beyondLeft: '映像が終わって {time}後、天体 {body} がフレームの外に出ました。',
   beyondLeftAgain: '映像が終わって {time}後、天体 {body} が再びフレームの外に出ました。',
-  beyondLeftLast: '映像が終わって {time}後、天体 {body} が最後にフレームの外に出ました。',
+  beyondLeftLast: '天体 {body} が最後にフレームの外に出たのは、映像が終わって {time}後です。',
   beyondBack: 'その {time}後に戻りました。',
   beyondEmptied: 'さらに {time}後には、他の二つもフレームの外に出ていました。',
   beyondAlreadyEmpty: '他の二つは、すでにフレームの外に出ていました。',
@@ -648,6 +650,19 @@ export const ja: Messages = {
     '記録が見届けた最後の第 {steps} ステップでもまだ戻っておらず、三つは互いに束縛されたままです。',
   beyondFree: '記録では、第 {step} ステップで天体 {body} はもう他の二つに束縛されていません。',
   beyondStill: '記録が見届けた最後の第 {steps} ステップでも、三つはまだ互いに束縛されています。',
+  beyondAsk: '三つのうちひとつについていくか、元のフレームにとどまるか。',
+  beyondStayBody: '天体 {body} についていく',
+  beyondFrame: '元のフレーム',
+  beyondStayFrame: '元のフレームにとどまる',
+  beyondKeptLine: '天体 {body} のフレーム · {line}',
+  beyondKept: 'フレームは天体 {body} についていきました。',
+  beyondAlone: '映像が終わって {time}後から、フレームの中は天体 {body} だけになりました。',
+  beyondAloneAgain: '映像が終わって {time}後から、フレームの中は再び天体 {body} だけになりました。',
+  beyondAloneFor:
+    '映像が終わって {time}後から {span}のあいだ、フレームの中は天体 {body} だけでした。',
+  beyondAloneForAgain:
+    '映像が終わって {time}後から {span}のあいだ、フレームの中は再び天体 {body} だけでした。',
+  beyondOneStayed: 'その {time}後も、天体 {body} はフレームの中にありました。',
   orbitAdrift:
     '第 {step} ステップ以降は軌道ではなく、計算上のエネルギーが {change} 変化しています。',
   orbitEnergyHeld:

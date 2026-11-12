@@ -1,6 +1,7 @@
 import { expect, test, type Locator, type Page } from '@playwright/test';
 import { catalogs } from '../../src/lib/i18n/messages';
 import { fill } from '../../src/lib/i18n/format';
+import { SETTLE_MS } from '../../src/lib/second-press';
 import { AFTER_THE_FRAME_EVENT } from '../../src/lib/venue-events';
 import { playAmbientMotion, standInFilm } from './helpers';
 
@@ -63,12 +64,13 @@ test('the orbit holds still for reduced motion and plays once otherwise', async 
   }
 });
 
-/** The line under the drawing, and the words beside it. */
-const lineOf = (orbit: Locator) => orbit.locator('p[class*="readout"]');
-const wordsOf = (orbit: Locator) => orbit.locator('[class*="words"] > *');
-/** The orbit section of a work on its Light plate, derived and checked, with its path past the window. */
-async function onItsPlate(page: Page, id: number, locale = '') {
-  await page.goto(`${locale}/art/${id}?expression=light`);
+/** The line under the drawing, the words beside it, and the answers under the question. */
+const lineOf = (orbit: Locator) => orbit.locator('#orbit-said');
+const wordsOf = (orbit: Locator) => orbit.locator('[class*="words"] :is(button, a)');
+const answersOf = (orbit: Locator) => orbit.locator('[class*="answers"] button');
+/** The orbit section of a work on its plate, derived and checked, with its path past the window. */
+async function onItsPlate(page: Page, id: number, locale = '', expression = 'light') {
+  await page.goto(`${locale}/art/${id}?expression=${expression}`);
   const orbit = page.locator('#orbit');
   // Each poll scrolls again: a page that settles its own place after loading cannot leave the
   // section a screen away, where nothing is derived.
@@ -84,53 +86,139 @@ async function onItsPlate(page: Page, id: number, locale = '') {
   await expect(orbit).toHaveAttribute('data-exact', 'true', { timeout: 60_000 });
   // On the plate the picture is the work's own frame, whatever size it is drawn at.
   await expect(orbit).toHaveAttribute('data-drawing', 'plate');
-  await expect(orbit).toHaveAttribute('data-material', 'light');
+  await expect(orbit).toHaveAttribute('data-material', expression);
   return orbit;
 }
 /**
- * Further on, for as long as it would save a wait. Where nothing plays it always does: it steps
- * to each moment in turn, to the end, and from the end to what happened. Where the picture is
- * performed it is dimmed once the next moment is near, and the performance does the rest.
+ * Further on, for as long as it goes anywhere. Where the picture is performed it is dimmed once
+ * the next moment is near, and the performance does the rest. Where nothing plays (`still`) it
+ * steps to each moment in turn and to the end, where it is dimmed too: it never tells, so Tell
+ * me is pressed then.
  */
-async function allTheWayOn(orbit: Locator) {
+async function allTheWayOn(orbit: Locator, still = false) {
   const onward = orbit.getByRole('button', { name: catalogs.en.beyondOnward });
   // It keeps its place for the whole performance, so it is there to be found.
   await expect(onward).toBeVisible();
   for (let step = 0; step < 60; step++) {
-    if ((await orbit.getAttribute('data-beyond')) !== 'running') return;
-    if ((await onward.getAttribute('aria-disabled').catch(() => 'true')) === 'true') return;
-    // A word that goes with the performance's end as it is pressed has done its work.
+    if ((await orbit.getAttribute('data-beyond')) !== 'running') {
+      // A performance may end by itself where it plays. Where nothing plays only Tell me
+      // tells: a press of Further on never does.
+      expect(still, 'Further on told what happened').toBe(false);
+      return;
+    }
+    if ((await onward.getAttribute('aria-disabled').catch(() => 'true')) === 'true') break;
+    // A performance that ends as the word is pressed has done its work.
     await onward.click({ timeout: 2_000 }).catch(() => {});
   }
+  if (!still || (await orbit.getAttribute('data-beyond')) !== 'running') return;
+  // Dimmed at the end, Further on does nothing however often it is pressed.
+  await onward.click({ force: true });
+  await expect(orbit).toHaveAttribute('data-beyond', 'running');
+  await orbit.getByRole('button', { name: catalogs.en.beyondTell }).click();
 }
-/** The plate's word asks by this event, wherever the visitor stands. */
-async function goBeyond(page: Page, orbit: Locator, words = t) {
+/**
+ * The plate's word asks by this event, wherever the visitor stands. Where the picture draws the
+ * bodies where they were, the visitor is then asked whom to stay with: `stay` answers with the
+ * frame (as every test of the frame held does), with a body, or (null) leaves the question open.
+ */
+async function goBeyond(
+  page: Page,
+  orbit: Locator,
+  words = t,
+  stay: 'frame' | 1 | 2 | 3 | null = 'frame',
+) {
   await page.evaluate((name) => window.dispatchEvent(new Event(name)), AFTER_THE_FRAME_EVENT);
   const word = orbit.getByRole('button', { name: words.afterTheFrame });
   await expect(word).toHaveAttribute('aria-pressed', 'true', { timeout: 60_000 });
-  await expect(orbit.getByText(words.afterTheFrameNote)).toBeVisible();
+  await expect(orbit).toHaveAttribute('data-beyond', /./);
+  if ((await orbit.getAttribute('data-beyond')) !== 'choosing') {
+    await expect(orbit.getByText(words.afterTheFrameNote)).toBeVisible();
+    return word;
+  }
+  await expect(orbit.getByText(words.afterTheFrameNoteAsk)).toBeVisible();
+  await expect(lineOf(orbit)).toHaveText(words.beyondAsk);
+  if (stay === null) return word;
+  const answer =
+    stay === 'frame' ? words.beyondStayFrame : words.beyondStayBody.replace('{body}', String(stay));
+  // Answered in the page, not by a pointer: the page is still bringing the picture into view,
+  // and a pointer aimed at a word on the move leaves the page somewhere else (the tests of the
+  // question itself press as a visitor does).
+  await orbit.getByRole('button', { name: answer, exact: true }).dispatchEvent('click');
+  await expect(orbit).toHaveAttribute('data-beyond', 'running');
   return word;
 }
-/** Where an element stands once the page has come to rest: two readings a moment apart agree. */
+/**
+ * Where an element stands once the page has come to rest: the page has not scrolled for eight
+ * of its own animation frames in a row, and the element is where it was at the first of them.
+ * A scroll the page begins a frame or two after the change that asks for it has begun by then;
+ * and a page too busy to draw waits, where a clock would have called it still.
+ */
 async function atRest(locator: Locator) {
-  let last = await locator.boundingBox();
   await expect
     .poll(async () => {
-      const now = await locator.boundingBox();
-      const still = JSON.stringify(now) === JSON.stringify(last);
-      last = now;
-      return still;
+      const before = await locator.boundingBox();
+      await locator.page().evaluate(
+        () =>
+          new Promise<void>((resolve) => {
+            let at = window.scrollY;
+            let same = 0;
+            const frame = () => {
+              same = window.scrollY === at ? same + 1 : 0;
+              at = window.scrollY;
+              if (same >= 8) resolve();
+              else requestAnimationFrame(frame);
+            };
+            requestAnimationFrame(frame);
+          }),
+      );
+      return JSON.stringify(await locator.boundingBox()) === JSON.stringify(before);
     })
     .toBe(true);
-  return last!;
+  return (await locator.boundingBox())!;
 }
 /** How many pixels of the bodies' layer are drawn on: a 2D canvas, read without a GPU. */
-const lit = (orbit: Locator) =>
-  orbit.locator('canvas[data-layer="marks"]').evaluate((canvas: HTMLCanvasElement) => {
+const lit = (orbit: Locator, layer = 'marks') =>
+  orbit.locator(`canvas[data-layer="${layer}"]`).evaluate((canvas: HTMLCanvasElement) => {
     const { data } = canvas.getContext('2d')!.getImageData(0, 0, canvas.width, canvas.height);
     let drawn = 0;
     for (let alpha = 3; alpha < data.length; alpha += 4) if (data[alpha] > 0) drawn++;
     return drawn;
+  });
+/**
+ * Where the bodies' layer is drawn on, as shares of the picture: the box about every lit pixel,
+ * and the middles of the topmost and the bottommost lit rows.
+ */
+const litBox = (orbit: Locator) =>
+  orbit.locator('canvas[data-layer="marks"]').evaluate((canvas: HTMLCanvasElement) => {
+    const { width, height } = canvas;
+    const { data } = canvas.getContext('2d')!.getImageData(0, 0, width, height);
+    let [left, right, top, bottom] = [width, -1, height, -1];
+    let [topFrom, topTo] = [width, -1];
+    let [bottomFrom, bottomTo] = [width, -1];
+    let hearts = 0;
+    for (let y = 0; y < height; y++)
+      for (let x = 0; x < width; x++) {
+        // The bright heart of a light, not the far reach of its halo.
+        if (data[(y * width + x) * 4 + 3] < 160) continue;
+        hearts += 1;
+        if (top === height) top = y;
+        if (y === top) [topFrom, topTo] = [Math.min(topFrom, x), Math.max(topTo, x)];
+        if (y !== bottom) [bottomFrom, bottomTo] = [width, -1];
+        [bottomFrom, bottomTo] = [Math.min(bottomFrom, x), Math.max(bottomTo, x)];
+        left = Math.min(left, x);
+        right = Math.max(right, x);
+        bottom = y;
+      }
+    return {
+      /** Pixels at a light's heart: none where nothing is drawn. */
+      hearts,
+      left: left / width,
+      right: right / width,
+      top: top / height,
+      bottom: bottom / height,
+      topmost: [(topFrom + topTo) / 2 / width, top / height],
+      bottommost: [(bottomFrom + bottomTo) / 2 / width, bottom / height],
+    };
   });
 
 /**
@@ -205,7 +293,7 @@ test('After the frame holds the frame: № 025’s bodies leave the picture, the
     await expect(line).toHaveText(allOut);
     // No body's centre is on it: at most the rim of one's light, just past the edge.
     expect(await lit(orbit)).toBeLessThan(three / 4);
-    await allTheWayOn(orbit);
+    await allTheWayOn(orbit, true);
   } else {
     // The three bodies are drawn on the picture as it begins…
     const three = await lit(orbit);
@@ -247,7 +335,7 @@ test('After the frame holds the frame: № 025’s bodies leave the picture, the
   await expect(line).toHaveCSS('font-style', 'italic');
   const again = orbit.getByRole('button', { name: t.again });
   await expect(again).toBeInViewport({ ratio: 1 });
-  // Again stands where Tell me stood, and the way into the record on the line of the words.
+  // Again stands on the line Tell me stood on, and the way into the record beside it.
   const againBox = (await again.boundingBox())!;
   const recordBox = (await orbit.getByRole('link', { name: t.beyondRecord }).boundingBox())!;
   expect(againBox.y).toBe(tellAt.y);
@@ -306,6 +394,277 @@ test('a picture that does not draw the bodies where they were names none of them
 });
 
 /**
+ * Whom to stay with (docs/after-the-frame.md §8.4). Before time resumes the three wait where the
+ * film left them, each with its number, and one line asks: "Stay with one of the three, or with
+ * the frame." № 025's record finds body 2 free. With body 2 the picture stays on it: the still
+ * leaves the stage, the other two go out of the picture 1.2 seconds after the film, and body 2
+ * is alone in it for eight seconds; then the still, the silence, and what happened. Nothing on
+ * the page moves from the question to the telling.
+ */
+test('asked whom to stay with, № 025 stays with the body its record finds free, and that body is left alone', async ({
+  page,
+}, info) => {
+  test.slow();
+  const still = info.project.name.includes('reduced-motion');
+  const orbit = await onItsPlate(page, 25);
+  const word = await goBeyond(page, orbit, t, null);
+  await expect(orbit).toHaveAttribute('data-beyond', 'choosing');
+  const line = lineOf(orbit);
+  const picture = orbit.locator('figure img');
+  const stage = orbit.locator('figure [class*="stage"]');
+  // The question, in the voice of what will be told, said by the focus it is given: here the
+  // plate's word asked, from wherever the visitor stood. Its answers stand under it, as a
+  // group it names, in its order: the three by the numbers they bear in the picture, then the
+  // frame.
+  await expect(line).toHaveCSS('font-style', 'italic');
+  await expect(line).toBeFocused();
+  await expect(answersOf(orbit)).toHaveText(['1', '2', '3', t.beyondFrame]);
+  const group = orbit.getByRole('group', { name: t.beyondAsk });
+  await expect(group).toBeVisible();
+  // Under it: both read in one look, since the page may still be bringing the picture up.
+  const [lineEnds, groupBegins] = await group.evaluate((answers) => [
+    document.getElementById(answers.getAttribute('aria-labelledby')!)!.getBoundingClientRect()
+      .bottom,
+    answers.getBoundingClientRect().top,
+  ]);
+  expect(groupBegins).toBeGreaterThanOrEqual(lineEnds - 0.5);
+  // Everything else that can come to stand in the line's room is laid out there, unseen: the
+  // question again with its answers, the four tellings and the longest running line.
+  const unseen = orbit.locator('[class*="said"] > [aria-hidden="true"]');
+  await expect(unseen).toHaveCount(6);
+  for (const one of await unseen.all()) await expect(one).toHaveCSS('visibility', 'hidden');
+  // Beside the line stand only the two words that stay: none where an answer will go.
+  await expect(wordsOf(orbit)).toHaveText([t.afterTheFrame, t.oneInATrillion]);
+  const answer = orbit.getByRole('button', { name: 'Stay with body 2', exact: true });
+  expect((await answer.boundingBox())!.width).toBeGreaterThanOrEqual(44);
+  expect((await answer.boundingBox())!.height).toBeGreaterThanOrEqual(44);
+  // The still stands back a little; the three are drawn on it, each with its number; nothing runs.
+  await expect(picture).toHaveCSS('opacity', '0.6');
+  await expect(orbit.getByText(t.analysisNotWork, { exact: true })).toHaveCSS('opacity', '1');
+  expect((await litBox(orbit)).hearts).toBeGreaterThan(0);
+  expect(await lit(orbit, 'names')).toBeGreaterThan(0);
+  // The whole picture, the question and every word are in view.
+  await expect(stage).toBeInViewport({ ratio: 1 });
+  await expect(line).toBeInViewport({ ratio: 1 });
+  await expect(answer).toBeInViewport({ ratio: 1 });
+  await expect(orbit.getByRole('button', { name: t.oneInATrillion })).toBeInViewport({ ratio: 1 });
+  const stood = await atRest(stage);
+  const twin = orbit.getByRole('button', { name: t.oneInATrillion });
+  const twinAt = (await atRest(twin)).y;
+
+  // Answered from the keyboard on a desk, and by one tap of a finger on a phone: the word goes,
+  // and the focus is on the line, which says first whom the picture stays with.
+  if (info.project.name.includes('mobile')) await answer.tap();
+  else {
+    await answer.focus();
+    await page.keyboard.press('Enter');
+  }
+  await expect(orbit).toHaveAttribute('data-beyond', 'running');
+  await expect(orbit).toHaveAttribute('data-kept', '2');
+  await expect(line).toHaveText(/^Staying with body 2 · 00:0\d past the film · /);
+  await expect(line).toBeFocused();
+  await expect(answersOf(orbit)).toHaveCount(0);
+  // The picture travels with body 2 now, so the still has left the stage, and the window's
+  // strokes with it. Nothing on the page has moved, and the two words that stay stand where
+  // they stood.
+  await expect(picture).toHaveCSS('opacity', '0');
+  await expect(orbit.locator('canvas[data-layer="trails"]')).toHaveCSS('opacity', '0');
+  expect(await lit(orbit, 'names')).toBe(0);
+  expect(await stage.boundingBox()).toEqual(stood);
+  expect((await twin.boundingBox())!.y).toBe(twinAt);
+  const alone =
+    /^Staying with body 2 · 00:\d\d past the film · bodies 1 and 3 are out of the picture$/;
+  // On a phone the words are two rows: those that come and go, and under them the two that stay.
+  if (info.project.name.includes('mobile'))
+    expect(
+      (await twin.boundingBox())!.y -
+        (await orbit.getByRole('button', { name: t.beyondTell }).boundingBox())!.y,
+    ).toBeGreaterThanOrEqual(40);
+  if (still) {
+    await expect(line).toHaveText('Staying with body 2 · 00:00 past the film · step 1,000,000');
+    await allTheWayOn(orbit, true);
+  } else {
+    await expect(line).toHaveText(alone, { timeout: 30_000 });
+    // One light, held at the middle of the picture, and nothing else on it.
+    const box = await litBox(orbit);
+    expect(box.hearts).toBeGreaterThan(0);
+    expect((box.left + box.right) / 2).toBeCloseTo(0.5, 1);
+    expect((box.top + box.bottom) / 2).toBeCloseTo(0.5, 1);
+    expect(box.right - box.left).toBeLessThan(0.05);
+    await expect(orbit).toHaveAttribute('data-beyond', 'resting', { timeout: 30_000 });
+    await expect(picture).toHaveCSS('opacity', '1');
+  }
+  await expect(orbit).toHaveAttribute('data-beyond', 'told', { timeout: 30_000 });
+  await expect(line).toHaveText(
+    'The picture stayed with body 2. Body 2 was alone in it from 1.2 seconds after the film ended. The record finds body 2 no longer bound to the other two at step 1,210,000.',
+  );
+  // From the question to the telling nothing has moved: the picture, and the words under it.
+  expect(await stage.boundingBox()).toEqual(stood);
+  expect((await twin.boundingBox())!.y).toBe(twinAt);
+  await expect(line).toBeInViewport({ ratio: 1 });
+  // Again asks the question again. Pressed twice in the same place, as a double click presses,
+  // it does not also answer it: no word stands where Again stood.
+  const again = orbit.getByRole('button', { name: t.again });
+  if (info.project.name.includes('mobile')) await again.tap();
+  else await again.dblclick();
+  await expect(orbit).toHaveAttribute('data-beyond', 'choosing');
+  await expect(line).toHaveText(t.beyondAsk);
+  await expect(picture).toHaveCSS('opacity', '0.6');
+  await expect(answersOf(orbit)).toHaveCount(4);
+  await expect(orbit).not.toHaveAttribute('data-kept');
+  await expect(orbit).toHaveAttribute('data-beyond', 'choosing');
+  // And the word that began it still ends it.
+  await word.click();
+  await expect(orbit).not.toHaveAttribute('data-beyond');
+});
+
+/**
+ * A second press in the same place (src/lib/second-press.ts). Tell me, pressed twice as a double
+ * click or a double tap presses it, tells once: the way into the record, which comes to stand
+ * under the pointer when it is told, is not followed by the second.
+ */
+test('a word pressed twice in one place is pressed once: Tell me tells, and nothing follows it', async ({
+  page,
+}, info) => {
+  test.slow();
+  const finger = info.project.name.includes('mobile');
+  const orbit = await onItsPlate(page, 31);
+  await goBeyond(page, orbit, t, 3);
+  const tell = orbit.getByRole('button', { name: t.beyondTell });
+  await expect(tell).toBeInViewport({ ratio: 1 });
+  const at = await atRest(tell);
+  if (finger) {
+    // Two taps of a finger in one place, as fast as the page takes them.
+    const [x, y] = [at.x + at.width / 2, at.y + at.height / 2];
+    await page.touchscreen.tap(x, y);
+    await page.touchscreen.tap(x, y);
+  } else await tell.dblclick();
+  await expect(orbit).toHaveAttribute('data-beyond', 'told');
+  await expect(lineOf(orbit)).toHaveText(
+    /^The picture stayed with body 3\. Body 3 was alone in it for 10\.8 seconds/,
+  );
+  // Neither followed into the record, nor asked again: read in the page, once the second
+  // press has had time to do whatever it would.
+  await page.waitForTimeout(SETTLE_MS + 200);
+  expect(await page.evaluate(() => window.location.hash)).toBe('');
+  await expect(orbit).toHaveAttribute('data-beyond', 'told');
+  // The way into the record now stands where Tell me was pressed. A press there in its own
+  // time is taken as any other.
+  const record = orbit.getByRole('link', { name: t.beyondRecord });
+  const there = (await record.boundingBox())!;
+  expect(at.x + at.width / 2).toBeGreaterThan(there.x);
+  expect(at.x + at.width / 2).toBeLessThan(there.x + there.width);
+  if (finger) await record.tap();
+  else await record.click();
+  await expect.poll(() => page.evaluate(() => window.location.hash)).toBe('#proof');
+});
+
+/**
+ * A body can be pressed in the picture itself. A mouse finds it, and its number, and is shown
+ * that it can be pressed; a finger, which covers more than it points at, is taken only where one
+ * body is under it: № 025's bodies 1 and 3 end the film a few pixels apart on a phone, and a
+ * tap on them leaves the question to the words. And from one of the two the record leaves bound,
+ * it is body 2 that goes, while the other stays in the picture: said in Ukrainian too.
+ */
+test('a body pressed in the picture is stayed with; from one left behind, the other is still there', async ({
+  page,
+}, info) => {
+  test.skip(
+    !['chromium-desktop', 'chromium-mobile', 'webkit-mobile'].includes(info.project.name),
+    'A mouse on one engine, and a finger on two.',
+  );
+  test.slow();
+  const orbit = await onItsPlate(page, 25);
+  await goBeyond(page, orbit, t, null);
+  const stage = orbit.locator('figure [class*="stage"]');
+  // Body 2 stands apart at the top of the three; bodies 1 and 3 together at the bottom. The
+  // page may still be bringing the picture into view, so each is found afresh as it is pressed.
+  const { topmost, bottommost } = await litBox(orbit);
+  const on = async ([x, y]: number[], down = 0) => {
+    const frame = (await stage.boundingBox())!;
+    return [frame.x + x * frame.width, frame.y + y * frame.height + down];
+  };
+  if (info.project.name.includes('mobile')) {
+    await expect(orbit.getByRole('button', { name: t.oneInATrillion })).toBeInViewport({
+      ratio: 1,
+    });
+    await atRest(stage);
+    // A finger on the two that stand together: not taken, and both are ringed, so the press
+    // is seen to have been taken in (a tap that missed them would ring nothing).
+    const numbers = await lit(orbit, 'names');
+    const [bx, by] = await on(bottommost, -3);
+    await page.touchscreen.tap(bx, by);
+    await expect.poll(() => lit(orbit, 'names')).toBeGreaterThan(numbers);
+    await expect(orbit).toHaveAttribute('data-beyond', 'choosing');
+    // On body 2, alone under it: taken.
+    const [tx, ty] = await on(topmost, 4);
+    await page.touchscreen.tap(tx, ty);
+  } else {
+    let at = [0, 0];
+    await expect(async () => {
+      at = await on(topmost, 4);
+      await page.mouse.move(at[0] - 40, at[1] - 40);
+      await page.mouse.move(at[0], at[1]);
+      await expect(stage).toHaveAttribute('data-pick', /./, { timeout: 500 });
+    }).toPass({ timeout: 20_000 });
+    await page.mouse.click(at[0], at[1]);
+  }
+  await expect(orbit).toHaveAttribute('data-kept', '2');
+  // Asked again, and answered with body 1: told at the visitor's word.
+  await orbit.getByRole('button', { name: t.beyondTell }).click();
+  await orbit.getByRole('button', { name: t.again }).click();
+  await orbit.getByRole('button', { name: 'Stay with body 1', exact: true }).click();
+  await expect(orbit).toHaveAttribute('data-kept', '1');
+  await orbit.getByRole('button', { name: t.beyondTell }).click();
+  await expect(lineOf(orbit)).toHaveText(
+    'The picture stayed with body 1. Body 2 left the picture 1.2 seconds after the film ended. 8.0 seconds later body 3 was still in it. The record finds body 2 no longer bound to the other two at step 1,210,000.',
+  );
+  if (info.project.name !== 'chromium-desktop') return;
+
+  const uk = catalogs.uk;
+  const there = await onItsPlate(page, 25, '/uk');
+  await goBeyond(page, there, uk, 2);
+  await expect(lineOf(there)).toHaveText(/^Кадр із тілом 2 · 00:0\d після фільму · /);
+  await there.getByRole('button', { name: uk.beyondTell }).click();
+  await expect(lineOf(there)).toHaveText(
+    /^Кадр лишався з тілом 2\. Через 1,2 секунди після кінця фільму тіло 2 лишилося в кадрі одне\./,
+  );
+});
+
+/**
+ * On paper the same question is asked over the Ink still, with each body's ring in the hollow it
+ * left; with a body, the three go on as graphite on the sheet's own tone, and what happened is
+ * told as it is on Light.
+ */
+test('on Ink the question is asked over the sheet, and a body is stayed with on its bare tone', async ({
+  page,
+}) => {
+  test.slow();
+  const orbit = await onItsPlate(page, 25, '', 'ink');
+  await goBeyond(page, orbit, t, null);
+  const picture = orbit.locator('figure img');
+  await expect(picture).toHaveCSS('opacity', '0.6');
+  await expect(answersOf(orbit)).toHaveText(['1', '2', '3', t.beyondFrame]);
+  expect(await lit(orbit)).toBeGreaterThan(0);
+  expect(await lit(orbit, 'names')).toBeGreaterThan(0);
+  // The sheet's own edge is there to see: no hairline is drawn about it.
+  expect(
+    await orbit
+      .locator('figure [class*="stage"]')
+      .evaluate((stage) => getComputedStyle(stage, '::after').content),
+  ).toBe('none');
+  await orbit.getByRole('button', { name: 'Stay with body 3', exact: true }).click();
+  await expect(orbit).toHaveAttribute('data-kept', '3');
+  await expect(picture).toHaveCSS('opacity', '0');
+  expect(await lit(orbit)).toBeGreaterThan(0);
+  await orbit.getByRole('button', { name: t.beyondTell }).click();
+  await expect(lineOf(orbit)).toHaveText(
+    'The picture stayed with body 3. Body 2 left the picture 0.2 seconds after the film ended. 8.0 seconds later body 1 was still in it. The record finds body 2 no longer bound to the other two at step 1,210,000.',
+  );
+  await expect(picture).toHaveCSS('opacity', '1');
+});
+
+/**
  * A phone on its side has 390 px of height. Past the frame the plate is fitted to what is left
  * of them under the running head, so the whole picture stands in view with its label, its line
  * and its words; the full-width plate would run 160 px under the fold. And in Ukrainian, whose
@@ -350,6 +709,60 @@ test('past the frame the whole picture stands in view on a phone on its side, an
   expect(Math.abs((await atRest(word)).y - pressedAt)).toBeLessThan(2);
 });
 
+/**
+ * Nothing on the page moves from the question to the telling (docs/after-the-frame.md §8.4):
+ * everything that can come to stand in the line's room is laid out there from the moment of
+ * asking, and the plate is fitted to the room that takes. Held here where it is hardest: the
+ * longest telling there is (№ 030 with body 3: four sentences, the last of lost energy), in
+ * Japanese, on a narrow phone.
+ */
+test('nothing moves from the question to the longest telling, in Japanese on a narrow phone', async ({
+  page,
+}, info) => {
+  test.skip(info.project.name !== 'chromium-desktop', 'One engine is enough for the arithmetic.');
+  test.slow();
+  const screen = { width: 360, height: 740 };
+  await page.setViewportSize(screen);
+  const ja = catalogs.ja;
+  const orbit = await onItsPlate(page, 30, '/ja');
+  await goBeyond(page, orbit, ja, null);
+  const stage = orbit.locator('figure [class*="stage"]');
+  /** Where the picture, the line's room and the words stand, once the page is at rest. */
+  const placed = async () => {
+    const picture = await atRest(stage);
+    const room = (await orbit.locator('[class*="said"]').boundingBox())!;
+    const words = (await orbit.locator('[class*="words"]').boundingBox())!;
+    return [picture, room, words].flatMap(({ x, y, width, height }) => [x, y, width, height]);
+  };
+  const asked = await placed();
+  const [, top, , , , roomTop, , roomHeight, , wordsTop, , wordsHeight] = asked;
+  // All of it in one screen: the picture under the running head, the last word above the fold.
+  expect(top).toBeGreaterThanOrEqual(48);
+  expect(wordsTop + wordsHeight).toBeLessThanOrEqual(screen.height);
+  const unmoved = async () => {
+    const now = await placed();
+    now.forEach((value, at) =>
+      expect(Math.abs(value - asked[at]), `reading ${at}`).toBeLessThan(0.5),
+    );
+  };
+
+  await orbit
+    .getByRole('button', { name: fill(ja.beyondStayBody, { body: 3 }), exact: true })
+    .dispatchEvent('click');
+  await expect(orbit).toHaveAttribute('data-kept', '3');
+  await expect(lineOf(orbit)).not.toHaveText(ja.beyondAsk);
+  await unmoved();
+
+  await orbit.getByRole('button', { name: ja.beyondTell }).click();
+  await expect(orbit).toHaveAttribute('data-beyond', 'told');
+  const line = lineOf(orbit);
+  await expect(line.locator('[class*="sentence"]')).toHaveCount(4);
+  await unmoved();
+  // The telling stands inside the room that was kept for it.
+  const told = (await line.boundingBox())!;
+  expect(told.y + told.height).toBeLessThanOrEqual(roomTop + roomHeight + 0.5);
+});
+
 test('a resolved film offers After the frame, which goes down to the orbit and on past it', async ({
   page,
 }, info) => {
@@ -383,7 +796,7 @@ test('a resolved film offers After the frame, which goes down to the orbit and o
  */
 test('the record says where a computation lost its energy, and After the frame performs nothing past it', async ({
   page,
-}) => {
+}, info) => {
   test.slow();
   const orbit = await onItsPlate(page, 4);
   await expect(orbit).toHaveAttribute('data-fate', 'ejection');
@@ -396,7 +809,7 @@ test('the record says where a computation lost its energy, and After the frame p
   await expect(kept).toContainText('past that step this is the computation, not an orbit.');
   await goBeyond(page, orbit);
   // The step lies sixteen seconds of film on: Further on goes there, at any pace.
-  await allTheWayOn(orbit);
+  await allTheWayOn(orbit, info.project.name.includes('reduced-motion'));
   await expect(orbit).toHaveAttribute('data-beyond', 'told', { timeout: 60_000 });
   await expect(lineOf(orbit)).toHaveText(
     'Past step 1,535,000 this is not an orbit: the computed energy changed by 780%.',

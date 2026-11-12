@@ -230,14 +230,28 @@ export function OrbitSculpture({
 
   // Once a finger holds the orbit, the page beneath it must not scroll: touch-action cannot change
   // mid-gesture, so its moves are held back here.
+  //
+  // A finger that lands while the page is still coasting from a swipe stops the page, and that
+  // touch is the page's: the browser says so (its touchstart cannot be cancelled, nor can its
+  // first move, and asking logs an error). The hand does not take such a touch, however long it
+  // rests: the finger lifts, and holds again.
   useEffect(() => {
     const node = canvas.current;
     if (!node) return;
-    const hold = (event: TouchEvent) => {
-      if (hand.current.kind === 'held') event.preventDefault();
+    const begin = (event: TouchEvent) => {
+      if (event.cancelable || hand.current.kind !== 'pressing') return;
+      hand.current = hand.current.under;
+      pointer.current = null;
     };
+    const hold = (event: TouchEvent) => {
+      if (hand.current.kind === 'held' && event.cancelable) event.preventDefault();
+    };
+    node.addEventListener('touchstart', begin, { passive: true });
     node.addEventListener('touchmove', hold, { passive: false });
-    return () => node.removeEventListener('touchmove', hold);
+    return () => {
+      node.removeEventListener('touchstart', begin);
+      node.removeEventListener('touchmove', hold);
+    };
   }, []);
 
   const grab = (event: PointerEvent<HTMLCanvasElement>) => {

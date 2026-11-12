@@ -417,6 +417,7 @@ _8 November 2026, on the branch `claude/orbit-in-hand`: F2's first part (§5D), 
   - Drag the orbit section's drawing, and the flat picture opens into the event's own depth and turns with the hand, about the event's middle.
   - Let go, and it springs back to the generator's view, where it meets the still again.
   - On a phone a hold of 300 ms takes it, so a swipe over it still scrolls the page.
+  - A finger that lands while the page is still coasting from a swipe stops the page, and is not taken however long it rests: the finger lifts, and holds again. (_Since 11 November 2026._ The browser marks such a touch as the page's: its first move cannot be held back, and asking logged an error and let the page slip a few pixels under a turning orbit. The page coasts for about a third of a second.)
   - From the keyboard the arrows turn it, three times as far with Shift, and leave it where they put it. Escape, or the word _The generator's view_, gives it back.
 - **In both materials.**
   - On Light: light on black, coloured by the Light still, and in HDR where the screen shows it (the WebGPU engine, §13).

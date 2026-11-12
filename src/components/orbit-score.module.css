@@ -14,12 +14,15 @@
   --type: var(--night-type);
   --muted: #b8b5ad;
   --rule: color-mix(in srgb, var(--night-type) 24%, transparent);
-  /* The show's width: the plate as tall as the screen leaves room for, in its own proportions.
-     220 px are kept: the running head's 48, and 172 for what stands beneath the picture past
-     the frame (below). */
-  --show-width: calc((100svh - 220px) * var(--plate-ratio, 1.547));
-  /* What stands beneath the picture past the frame, with the 6 px above it: label, line, words. */
-  --beneath: 172px;
+  /* What stands beneath the picture past the frame, with the 6 px above it and a little to
+     spare: its label, the line's room and the words. 172 px as a desk lays it out (below), and
+     never less than what is found there once it is laid out (--beneath-measured, set by
+     orbit-score.tsx's `fit`): a long telling in a narrow window takes a line more. */
+  --beneath: max(172px, var(--beneath-measured, 0px));
+  /* The show's width: the plate as tall as the screen leaves room for, in its own proportions,
+     under the running head's 48 px and over what stands beneath the picture. At the frame that
+     is 220 px kept, so the plate is the same size before After the frame as after it. */
+  --show-width: calc((100svh - 48px - var(--beneath)) * var(--plate-ratio, 1.547));
   display: grid;
   grid-template-columns: minmax(0, 1fr);
   grid-template-areas:
@@ -119,8 +122,24 @@
 .orbit[data-beyond='running'] .still {
   opacity: 0.3;
 }
+/*
+  Whom to stay with (docs/after-the-frame.md §8.4). While the visitor chooses, the still stands
+  back a little, so the three bodies and their numbers read over it. With the frame, it stands
+  back further and the performance runs over it, as above. With one of the three, the picture
+  travels with that body: the still cannot lie under a picture that moves, so it leaves the
+  stage, and the window's strokes with it, until the performance is over.
+*/
+.orbit[data-beyond='choosing'] .still {
+  opacity: 0.6;
+}
+.orbit[data-beyond='running'][data-kept] .still {
+  opacity: 0;
+}
 .orbit[data-beyond] .stage[data-drawing='plate'] .layer {
   transition: opacity var(--t-sit) var(--ease-settle);
+}
+.orbit[data-beyond='running'][data-kept] .stage[data-drawing='plate'] .layer[data-layer='trails'] {
+  opacity: 0;
 }
 .orbit[data-beyond='resting'] .stage[data-drawing='plate'] .layer,
 .orbit[data-beyond='told'] .stage[data-drawing='plate'] .layer {
@@ -141,6 +160,46 @@
 }
 .stage[data-material='ink'] .layer {
   mix-blend-mode: multiply;
+}
+/*
+  The picture's edge. Past the frame a body leaves the picture, and what leaves must have
+  something to cross: on Light the plate's ground is the night's own, so its edge is drawn as a
+  hairline from the moment the visitor is asked whom to stay with until the still returns. On
+  paper the sheet's own edge is there to see.
+*/
+.stage[data-drawing='plate'][data-material='light']::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border: 1px solid var(--rule);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--t-sit) var(--ease-settle);
+}
+.orbit[data-beyond='choosing'] .stage[data-drawing='plate'][data-material='light']::after,
+.orbit[data-beyond='running'] .stage[data-drawing='plate'][data-material='light']::after {
+  opacity: 1;
+}
+/* It comes and goes at once where the venue is paused or hushed, as the still does (above). */
+:global(.motion-paused) .stage[data-drawing='plate'][data-material='light']::after,
+:global([data-theatre='hushed']) .stage[data-drawing='plate'][data-material='light']::after {
+  transition: none;
+}
+/* The bodies' numbers are read, not added to the still: they lie over it unblended. */
+.stage[data-drawing='plate'] .layer[data-layer='names'] {
+  mix-blend-mode: normal;
+}
+/* A body under the pointer can be pressed, while the visitor chooses among the three. A press
+   on the picture draws no highlight over the whole of it, and past the frame, where the still
+   is what a finger meets, a long press opens no menu on it. */
+.stage[data-pick] {
+  cursor: pointer;
+}
+.stage {
+  -webkit-tap-highlight-color: transparent;
+}
+.orbit[data-beyond] .stage {
+  -webkit-touch-callout: none;
 }
 /*
   The orbit in the hand (orbit-sculpture.tsx). The event in depth lies between the still and the
@@ -300,8 +359,14 @@
   justify-content: flex-end;
   column-gap: 18px;
   flex-shrink: 0;
+  /* A row's height whether or not a word stands in it: none does in the rest after a
+     performance, and nothing beneath is to move for that. */
+  min-height: 44px;
 }
 .again {
+  /* A word is a box of its own whatever element it is: a button, a link, or the unseen copy
+     that keeps an answer's room (.fit). */
+  display: inline-block;
   min-width: 44px;
   min-height: 44px;
   padding: 0;
@@ -344,15 +409,18 @@ a.again {
   the window's score step aside for them until the visitor returns to the frame, and the page
   brings the picture 6 px under the running head. A desk's stage is as tall as the screen less
   220 px, so 166 px are left beneath it there: 31.5 for the label (a margin and a line), 10 for
-  a margin and the rule, 72 for the line (three of what happened, at 21 px, under 9), and 44 for
-  the words: 157.5, with 8.5 to spare. Narrower windows keep the plate at its full width while
-  the screen is tall enough, and fit it to the height left where it is not (a phone on its
-  side).
+  a margin and the rule, 74 for the line's room where it is three lines of what happened (at
+  21 px, under 9) or the question with its answers under it (30 and 44), and 44 for the words:
+  159.5, with 6.5 to spare. Where the room laid out is taller than that, the plate gives up the
+  difference (--beneath, above: what is measured is counted with 6 px to spare, so a room of
+  this height changes nothing). Narrower windows keep the plate at its full width while the
+  screen is tall enough, and fit it to the height left where it is not (a phone on its side).
 
   The three rows keep their heights through the performance, the rest and the telling, so
   nothing moves when the drawing gives way to the still: the label fades with the drawing it
-  labels and keeps its line once the picture is the work again; the line keeps the room of what
-  will be told while it is empty; and the words keep theirs while none is offered.
+  labels and keeps its line once the picture is the work again; the line's room is that of
+  everything that can come to stand in it (.said, below); and the words keep theirs while none
+  is offered.
 */
 .orbit[data-beyond][data-drawing='plate'] {
   grid-template-rows: auto auto auto;
@@ -381,16 +449,54 @@ a.again {
   align-items: stretch;
   gap: 0;
 }
+/* The line's own room: the line and, under the question, its answers. Outside After the frame
+   it is no box at all, and the line and the words stand side by side as they did.
+
+   Past the frame it is one cell, in which everything that can come to stand there is laid out
+   at once: what is shown, and, unseen (.fit), the question over its answers, each telling the
+   visitor may be given, and the longest line a performance says. So the room is that of the
+   tallest of them, in this language and at this width, and nothing beneath it moves when one
+   gives way to another. No height is set here: the cell measures itself, and the plate is
+   fitted to what it finds (--beneath). */
+.said,
+.shown,
+.passing,
+.staying {
+  display: contents;
+}
+.orbit[data-beyond] .said {
+  display: grid;
+  align-items: start;
+}
+.orbit[data-beyond] .said > * {
+  grid-area: 1 / 1;
+  min-width: 0;
+}
+.orbit[data-beyond] .shown {
+  display: block;
+}
+.fit {
+  visibility: hidden;
+  pointer-events: none;
+}
 .orbit[data-beyond] .readout {
   display: block;
   -webkit-line-clamp: none;
   line-clamp: none;
   overflow: visible;
   height: auto;
-  min-height: 72px;
 }
-.orbit[data-beyond] .words {
-  min-height: 44px;
+/* The answers, in the order of the question, where the eye is when it has read it. No word
+   takes their place when one is pressed: the line does. */
+.answers {
+  display: flex;
+  flex-wrap: wrap;
+  column-gap: 18px;
+}
+/* A figure stands at the start of its 44 px, so the first answer begins where the question
+   does, and the four are evenly spaced. */
+.answers .again {
+  text-align: start;
 }
 /* The line takes the focus when the visitor asks to be told; it is not a control. */
 .readout:focus {
@@ -398,8 +504,8 @@ a.again {
 }
 /* What happened is read, not metered: the book face, at the size of the line under the still
    (artwork-viewer.module.css), each sentence a box of its own so a line breaks between two
-   before it breaks inside one. */
-.orbit[data-beyond='told'] .readout {
+   before it breaks inside one. The question before it is asked in the same voice. */
+.orbit[data-beyond] .book {
   font-family: var(--font-book);
   font-size: var(--fs-control);
   font-style: italic;
@@ -533,35 +639,34 @@ a.again {
     align-items: stretch;
     gap: 0;
   }
-  .words {
-    min-height: 44px;
-  }
-  /* What happened, at the reading size, its sentences running on as one paragraph: room for
-     three lines of it from the start. Japanese breaks between phrases, as the line under the
-     still does (artwork-viewer.module.css). */
+  /* What stands beneath the picture past the frame, with the 6 px above it and 6 to spare:
+     what is found there once it is laid out (--beneath-measured). Until then, in the frame
+     before it is measured, the label, the rule, three lines of what happened and a row of
+     words. */
   .orbit[data-beyond] {
-    --beneath: calc(14px + 31.5px + 10px + 9px + 3 * 1.5 * var(--fs-reading) + 44px);
+    --beneath: var(--beneath-measured, 180px);
   }
-  .orbit[data-beyond] .readout {
-    min-height: calc(9px + 3 * 1.5 * var(--fs-reading));
-  }
-  .orbit[data-beyond='told'] .readout {
+  /* What happened, at the reading size, its sentences running on as one paragraph. Japanese
+     breaks between phrases, as the line under the still does (artwork-viewer.module.css). */
+  .orbit[data-beyond] .book {
     font-size: var(--fs-reading);
     line-height: 1.5;
     text-wrap: pretty;
   }
-  :global(html:lang(ja)) .orbit[data-beyond='told'] .readout {
+  :global(html:lang(ja)) .orbit[data-beyond] .book {
     word-break: auto-phrase;
   }
   .sentence {
     display: inline;
   }
   /* The plate keeps its full width while the screen is tall enough for it and what stands
-     beneath it (--beneath: 6 px above the picture and 8 to spare, the label, the rule, the
-     line and the words), and is fitted to the height left where it is not: a phone on its side
-     shows the whole picture, small, with its label, its line and its words. */
+     beneath it, and is fitted to the height left where it is not: a phone on its side shows
+     the whole picture, small, with its label, its line and its words; so does a small phone
+     held upright, for a long telling in a wide script. It is never fitted below a quarter of
+     the screen's height: in a window too short for all of it three bodies must still be told
+     apart, and the last of the words is scrolled to. */
   .orbit[data-beyond] .figure {
-    max-width: calc((100svh - var(--head) - var(--beneath)) * var(--plate-ratio, 1.547));
+    max-width: calc(max(100svh - var(--head) - var(--beneath), 25svh) * var(--plate-ratio, 1.547));
   }
   .proofAct {
     padding-top: 45px;
@@ -570,26 +675,26 @@ a.again {
     min-height: 6em;
   }
 }
-/* On a phone what happened runs to four or five lines, and the words to two rows: both keep
-   that room from the start, so the page that brought the picture into view need not move again.
-   The narrowest phones keep a sixth line. */
 @media (max-width: 520px) {
-  .orbit[data-beyond] {
-    --beneath: calc(14px + 31.5px + 10px + 9px + 5 * 1.5 * var(--fs-reading) + 88px);
-  }
-  .orbit[data-beyond] .readout {
-    min-height: calc(9px + 5 * 1.5 * var(--fs-reading));
-  }
-  .orbit[data-beyond] .words {
+  /* Two rows of words, each its own: the words that come and go with the state, and under
+     them the two that stay. Past the frame no word's coming or going moves those two, and
+     After the frame stands in the same place before it is pressed and after, so the word that
+     takes the visitor past the frame, and back, stays under the hand. (At the frame, on the
+     narrowest phones, the three words offered while the orbit is turned in the hand still take
+     a line more.) */
+  .words {
+    flex-direction: column;
+    flex-wrap: nowrap;
+    align-items: flex-end;
     min-height: 88px;
   }
-}
-@media (max-width: 360px) {
-  .orbit[data-beyond] {
-    --beneath: calc(14px + 31.5px + 10px + 9px + 6 * 1.5 * var(--fs-reading) + 88px);
-  }
-  .orbit[data-beyond] .readout {
-    min-height: calc(9px + 6 * 1.5 * var(--fs-reading));
+  .passing,
+  .staying {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    column-gap: 18px;
+    min-height: 44px;
   }
 }
 /* A gap's power of ten, raised, but never below the 12 px floor. */
