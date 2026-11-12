@@ -39,13 +39,12 @@ import { useMotion } from './motion-provider';
 import { useRememberedExpression, type Expression } from './turn';
 import { layers } from './orbit-layers';
 import { pictureOn, type Material, type Surface } from './orbit-picture';
-import { orbitPainter, type Target } from './orbit-painter';
+import { orbitPainter } from './orbit-painter';
 import {
   FADE_MS,
   REST_MS,
   beyondFact,
   beyondLine,
-  drawChoice,
   furtherOn,
   heldScript,
   performBeyond,
@@ -70,7 +69,8 @@ import {
   type WindowScene,
 } from './orbit-window';
 import { progressText, seedShort, twinWorker, verdict } from './orbit-proof';
-import { useChoice } from './orbit-choice';
+import { drawChoice, type Choice } from './orbit-choice';
+import { useChoosing } from './orbit-choosing';
 import { OrbitFigure } from './orbit-figure';
 import { OrbitSaid, Sentences } from './orbit-said';
 import { PressGuard, usePresses } from './orbit-word';
@@ -161,12 +161,12 @@ export function OrbitScore({
   const continued = useRef<HTMLCanvasElement>(null);
   const marks = useRef<HTMLCanvasElement>(null);
   /**
-   * The bodies' numbers while the visitor chooses among them: their canvas, how they are drawn
-   * again when the ring moves (the picture itself is not), and what a pointer may press.
+   * The bodies' numbers while the visitor chooses among them: their canvas, and the question's
+   * picture once drawn, which draws them again when the ring moves (the picture itself is not)
+   * and knows what a pointer finds in it.
    */
   const names = useRef<HTMLCanvasElement>(null);
-  const numbered = useRef<((hinted: readonly number[]) => Target[]) | null>(null);
-  const picks = useRef<Target[]>([]);
+  const choice = useRef<Choice | null>(null);
   const tooSoon = usePresses();
   const events = useRef<HTMLCanvasElement>(null);
   const slider = useRef<HTMLInputElement>(null);
@@ -308,9 +308,9 @@ export function OrbitScore({
    */
   const beyond = canGoBeyond ? went : null;
   const choosing = !!beyond && phase === 'choosing';
-  const { ringed, aiming, point, unpoint, renew, hand } = useChoice({
+  const { ringed, aiming, point, unpoint, renew, hand } = useChoosing({
     stage,
-    picks,
+    choice,
     asked: beyond && choosing ? beyond.run : null,
     tooSoon,
     onStay: (body) => stay(body),
@@ -702,7 +702,6 @@ export function OrbitScore({
       names: names.current,
     });
     if (!sheet) return;
-    const { mark, width, height, ratio } = sheet;
     // Past the frame the picture may stay with one body: the same frame, moved along with it.
     const picture = pictureOn(
       surface,
@@ -721,40 +720,33 @@ export function OrbitScore({
       steps,
       stride: STRIDE,
     });
+    /** What each of the four is drawn with: the layers, the picture on them, and its painter. */
+    const easel = { ...sheet, picture, painter };
     scene.current = null;
-    numbered.current = null;
-    picks.current = [];
+    choice.current = null;
 
     // The question. The three wait where the film left them, each with its number, until the
     // visitor says whom to stay with. Nothing plays.
     if (beyond && phase === 'choosing') {
-      numbered.current = drawChoice({
-        picture,
-        painter,
-        mark,
-        names: sheet.names,
-        width,
-        height,
+      choice.current = drawChoice({
+        ...easel,
+        masses: result.masses,
         font: sheet.font(),
         ground: plateStill?.tone ?? 'transparent',
       });
-      picks.current = numbered.current(ringed);
+      choice.current.ring(ringed);
       return;
     }
     // After the frame, in the picture the visitor chose. The score is not shown, and not built.
     if (beyond && script && path)
       return performBeyond({
+        ...easel,
         path,
         script,
         key: String(beyond.run),
-        picture,
         film,
         still,
         inView,
-        mark,
-        width,
-        height,
-        painter,
         live,
         frame,
         speak: (sample, brought) => {
@@ -784,10 +776,10 @@ export function OrbitScore({
     // in the score's place, the growth of the gap between them.
     if (twin?.phase === 'ready' && derivedFate && plate && picture.kind === 'plate')
       return performTwin({
+        ...easel,
         run: twin.run,
         fate: derivedFate,
         key: String(twin.repeat),
-        picture,
         plate,
         result,
         dt: orbit.generation.dt,
@@ -796,12 +788,6 @@ export function OrbitScore({
         stride: STRIDE,
         still,
         inView,
-        mark,
-        width,
-        height,
-        ratio,
-        painter,
-        strip: sheet.strip,
         live: twinLive,
         frame,
         speak: (taken) => setTwinTaken(taken),
@@ -814,11 +800,7 @@ export function OrbitScore({
     // Where motion is unwelcome it is drawn whole, until the visitor takes the clock.
     if (awaited || following || (still && !chosen)) transport.current = restingAt(film, film);
     scene.current = performWindow({
-      picture,
-      painter,
-      trail: sheet.trail,
-      width,
-      height,
+      ...easel,
       score,
       count: result.samples.count,
       steps,
@@ -864,7 +846,7 @@ export function OrbitScore({
   );
   // The ring moves without the picture being drawn again: the numbers' layer alone is.
   useEffect(() => {
-    if (numbered.current) picks.current = numbered.current(ringed);
+    choice.current?.ring(ringed);
   }, [ringed]);
 
   const resized = useEffectEvent(() => {

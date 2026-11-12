@@ -18,7 +18,7 @@ import { confirmedAt, type BeyondPath } from '@/lib/physics/beyond';
 import type { DerivedFate } from '@/lib/physics/orbit';
 import { shareText } from './orbit-proof';
 import { MATERIALS, type Picture } from './orbit-picture';
-import { FADE_EVERY_SECONDS, type Continued, type Painter, type Target } from './orbit-painter';
+import { FADE_EVERY_SECONDS, type Continued, type Painter } from './orbit-painter';
 
 /*
   After the frame (third-physics.md §5.6; docs/after-the-frame.md §8.3). The same physics runs on
@@ -678,36 +678,4 @@ export function performBeyond(stage: BeyondStage): (() => void) | void {
     frame.current = requestAnimationFrame(arrive);
   } else frame.current = requestAnimationFrame(perform);
   return () => cancelAnimationFrame(frame.current);
-}
-
-/** The choosing, as the section has set it out. */
-export interface ChoiceStage {
-  picture: Picture;
-  painter: Painter;
-  /** The bodies' canvas, and the one their numbers are drawn on. */
-  mark: CanvasRenderingContext2D;
-  names: CanvasRenderingContext2D;
-  width: number;
-  height: number;
-  /** The face the numbers are set in, and the ground they must read on. */
-  font: string;
-  ground: string;
-}
-
-/**
- * The picture a visitor chooses in: the recorded window drawn whole over its still, and the
- * three bodies where the film left them. Returns how to number them, which is drawn again, alone,
- * whenever the bodies a word or a pointer points at change: each body's number beside it, those
- * bodies ringed, and what a pointer may press, in CSS pixels of the stage.
- */
-export function drawChoice(stage: ChoiceStage): (hinted: readonly number[]) => Target[] {
-  const { picture, painter, mark, names, width, height, font, ground } = stage;
-  const at = (body: number): [number, number] => [
-    picture.x(picture.last, body),
-    picture.y(picture.last, body),
-  ];
-  if (picture.last > 0) painter.strokes(0, picture.last);
-  mark.clearRect(0, 0, width, height);
-  painter.lights(at);
-  return (hinted) => painter.numbers(names, at, { font, ground, hinted });
 }
