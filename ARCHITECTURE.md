@@ -57,6 +57,13 @@ The document also holds the motion provider, the running head, the index and key
 - `artwork-media.tsx` paints one expression: the inline preview, then the still, then a film if motion is welcome.
 - `artwork-room.tsx` is the full viewing room, with the films and the lenses.
 
+Beneath them stands the orbit section, "The orbit, re-performed". `orbit-score.tsx` is where its parts meet, and two rules shape them:
+
+- **Each thing that changes has one owner**, a hook: the recorded window's clock (`orbit-clock.ts`), After the frame (`orbit-beyond-state.ts`), the twin (`orbit-twin-state.ts`), the choosing by hand (`orbit-choosing.ts`) and the picture's room on the page (`orbit-room.ts`).
+- **Each thing that can stand on its stage has one performer**, a plain function with no hooks, which draws and keeps time: the recorded window (`orbit-window.ts`), the question (`orbit-choice.ts`), After the frame (`orbit-beyond.ts`) and the twin (`orbit-twin.tsx`). All four draw with one painter (`orbit-painter.ts`) on one picture (`orbit-picture.ts`).
+
+[docs/after-the-frame.md](docs/after-the-frame.md) §8.5 lists every file and says how the section was parted without changing what a visitor meets.
+
 `src/lib/` holds what pages know:
 
 | Folder                 | What it holds                                                                                                                                                                        |
@@ -193,6 +200,8 @@ English, Simplified Chinese, Traditional Chinese for Taiwan and for Hong Kong, U
 | Scripts    | `node:test`                           | `scripts/**/*.test.mjs`  | The pipelines, their proofs and the budget check.                                                                                                              |
 | Browsers   | Playwright                            | `tests/e2e/*.spec.ts`    | The venue in real engines, with axe for accessibility.                                                                                                         |
 | Auction UI | Playwright, against a Vite fixture    | `tests/auction-harness/` | The bid panel with a synthetic contract and wallet.                                                                                                            |
+
+**A golden master** (`tests/golden/`, `npm run test:golden`) records the orbit section through its unit tests: every canvas call and property set in order, every change of the page, the focus and the scrolls. It is for a change that must alter nothing a visitor meets: record before, compare after.
 
 **Playwright's seven projects** (`playwright.config.ts`): Chromium, Firefox and WebKit on a desk (1440 × 1000); Chromium and WebKit on a phone (390 × 844, touch); and Chromium and WebKit with reduced motion. Reduced motion is a project of its own because it is a promise, not a setting (README, principles). The suite meets the venue as a returning visitor, and a spec starts afresh when it needs a first visit.
 
