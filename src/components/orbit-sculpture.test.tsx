@@ -288,6 +288,48 @@ describe('the orbit in the hand', () => {
     expect(canvas).toHaveAttribute('data-view', 'flat');
   });
 
+  it('leaves to the page a touch that lands while the page still coasts, and holds back only what it may', async () => {
+    const { canvas } = await staged();
+    await waitFor(() => expect(onReady).toHaveBeenLastCalledWith(true));
+    const touched = (type: 'touchstart' | 'touchmove', cancelable: boolean) => {
+      const event = new Event(type, { bubbles: true, cancelable });
+      fireEvent(canvas, event);
+      return event;
+    };
+    const finger = (pointerId: number, clientX: number) => ({
+      pointerId,
+      pointerType: 'touch',
+      clientX,
+      clientY: 200,
+    });
+    // A finger that stops a coasting page: the browser marks the touch as the page's (its
+    // touchstart cannot be cancelled). However long it rests, the hand does not take it, and
+    // no move of it is held back.
+    fireEvent.pointerDown(canvas, finger(7, 400));
+    touched('touchstart', false);
+    nextFrame(1_000 + HOLD_MS * 2);
+    fireEvent.pointerMove(canvas, finger(7, 200));
+    nextFrame(1_000 + HOLD_MS * 2 + 16);
+    expect(canvas).toHaveAttribute('data-view', 'flat');
+    expect(touched('touchmove', true).defaultPrevented).toBe(false);
+    fireEvent.pointerUp(canvas, finger(7, 200));
+    // With the page at rest the touch is the orbit's: held, it is taken, and the page is kept
+    // still beneath it.
+    nextFrame(10_000);
+    fireEvent.pointerDown(canvas, finger(8, 400));
+    touched('touchstart', true);
+    nextFrame(10_000 + HOLD_MS);
+    expect(touched('touchmove', true).defaultPrevented).toBe(true);
+    fireEvent.pointerMove(canvas, finger(8, 200));
+    nextFrame(10_000 + HOLD_MS + 16);
+    expect(canvas).toHaveAttribute('data-view', 'turned');
+    // A move the browser will not let be held back is not asked for: asking logs an error.
+    const late = new Event('touchmove', { bubbles: true, cancelable: false });
+    const asked = vi.spyOn(late, 'preventDefault');
+    fireEvent(canvas, late);
+    expect(asked).not.toHaveBeenCalled();
+  });
+
   it('returns at once where motion is unwelcome', async () => {
     const { canvas, stage } = await staged({ still: true });
     await waitFor(() => expect(onReady).toHaveBeenLastCalledWith(true));

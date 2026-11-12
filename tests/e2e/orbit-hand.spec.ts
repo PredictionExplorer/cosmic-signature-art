@@ -117,7 +117,7 @@ test('the score is a slider that sets the moment, either way', async ({ page }) 
   });
 });
 
-test('on a phone a swipe over the orbit scrolls the page, and a hold takes it', async ({
+test('on a phone a swipe over the orbit scrolls the page, a touch that stops it is the page’s, and a hold takes the orbit', async ({
   page,
   browserName,
 }, info) => {
@@ -125,10 +125,28 @@ test('on a phone a swipe over the orbit scrolls the page, and a hold takes it', 
     !info.project.name.includes('mobile') || browserName !== 'chromium',
     'Touch is driven through Chromium’s own protocol; WebKit’s native scroll cannot be driven.',
   );
+  // What the browser refuses is logged as an error: a move it was asked to hold back and
+  // would not.
+  const refused: string[] = [];
+  page.on('console', (message) => {
+    if (message.type() === 'error') refused.push(message.text());
+  });
   const orbit = await orbitSection(page);
   const depth = await inDepth(page, orbit);
   if (!depth) return;
   await expect(orbit.getByText(t.orbitTurnHintTouch)).toBeVisible();
+  // Whether the browser lets the page hold back each touch that begins on the orbit.
+  await depth.evaluate((node) => {
+    const cancelable: boolean[] = [];
+    Object.assign(window, { __orbitTouches: cancelable });
+    node.addEventListener('touchstart', (event) => cancelable.push(event.cancelable), {
+      passive: true,
+    });
+  });
+  const lastTouchWasThePages = () =>
+    page.evaluate(
+      () => (window as unknown as { __orbitTouches: boolean[] }).__orbitTouches.at(-1) === false,
+    );
   const touch = await page.context().newCDPSession(page);
   const send = (
     type: 'touchStart' | 'touchMove' | 'touchEnd',
@@ -141,9 +159,40 @@ test('on a phone a swipe over the orbit scrolls the page, and a hold takes it', 
   await send('touchStart', [{ x, y }]);
   for (let step = 1; step <= 12; step++) await send('touchMove', [{ x, y: y - step * 15 }]);
   await send('touchEnd', []);
+  // The page coasts on for a third of a second. A finger that lands on the orbit meanwhile
+  // stops the page, and the touch is the page's: the browser will not let its first move be
+  // held back. So the hand does not take it, however long it rests, and nothing is refused.
+  // (The swipe has carried the orbit 165 px up the screen, and it coasts some 60 more: a
+  // quarter of the way down it is on the orbit all the while. Nothing is awaited between the
+  // lift and the landing, so the landing comes while the page still moves; where a browser
+  // had already brought the page to rest, the touch would be the orbit's, and is held to that.)
+  const landing = { x, y: box.y - 165 + box.height / 4 };
+  await send('touchStart', [landing]);
+  await page.waitForTimeout(450);
+  for (let step = 1; step <= 6; step++)
+    await send('touchMove', [{ x: landing.x - step * 15, y: landing.y + step * 4 }]);
+  const coasting = await lastTouchWasThePages();
+  // Which of the two this run met is written into its report: a browser that stopped coasting
+  // would take the other branch in silence (the hand's part is held by a unit test either way).
+  info.annotations.push({
+    type: 'landing',
+    description: coasting
+      ? 'on a coasting page: the touch was the page’s'
+      : 'on a page at rest: the touch was the orbit’s',
+  });
+  await expect(depth).toHaveAttribute('data-view', coasting ? 'flat' : 'turned');
+  await send('touchEnd', []);
+  await expect(depth).toHaveAttribute('data-view', 'flat', { timeout: 3_000 });
   await expect.poll(() => page.evaluate(() => window.scrollY)).toBeGreaterThan(before + 40);
-  await expect(depth).toHaveAttribute('data-view', 'flat');
-  // Held still past the hold, the finger takes the orbit, and the page holds still beneath it.
+  // With the page at rest, a finger held still past the hold takes the orbit, and the page
+  // holds still beneath it.
+  await expect
+    .poll(async () => {
+      const first = await page.evaluate(() => window.scrollY);
+      await page.waitForTimeout(160);
+      return (await page.evaluate(() => window.scrollY)) === first;
+    })
+    .toBe(true);
   await depth.evaluate((node) => node.scrollIntoView({ block: 'center', behavior: 'instant' }));
   box = (await depth.boundingBox())!;
   const [hx, hy] = [box.x + box.width / 2, box.y + box.height / 2];
@@ -154,10 +203,12 @@ test('on a phone a swipe over the orbit scrolls the page, and a hold takes it', 
   const held = await page.evaluate(() => window.scrollY);
   for (let step = 1; step <= 10; step++)
     await send('touchMove', [{ x: hx - step * 15, y: hy + step * 4 }]);
+  expect(await lastTouchWasThePages()).toBe(false);
   await expect(depth).toHaveAttribute('data-view', 'turned');
   expect(await page.evaluate(() => window.scrollY)).toBe(held);
   await send('touchEnd', []);
   await expect(depth).toHaveAttribute('data-view', 'flat', { timeout: 3_000 });
+  expect(refused).toEqual([]);
 });
 
 /** Mean absolute difference, per channel, between two same-sized PNGs. */
