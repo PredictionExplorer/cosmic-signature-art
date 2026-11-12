@@ -5,6 +5,7 @@ import type { Locale } from '@/lib/i18n/routing';
 import type { Messages } from '@/lib/i18n/en';
 import { isLocale, localizedPath } from '@/lib/i18n/routing';
 import { messages } from '@/lib/i18n/messages';
+import { words } from '@/lib/i18n/words';
 import { metadata } from '@/lib/site';
 import { getArtwork } from '@/lib/art/server';
 import { getCuratedArtwork } from '@/lib/art/catalog';
@@ -20,6 +21,7 @@ import { workNumber } from '@/lib/art/number';
 import { getInterpretation, isExpression, type Artwork, type ArtworkResult } from '@/lib/art/types';
 import { artworkSharingImage } from '@/lib/art/sharing';
 import { ArtworkViewer } from '@/components/artwork-viewer';
+import { ARTWORK_VIEWER_WORDS } from '@/components/artwork-viewer.words';
 import type { Neighbour, Neighbours } from '@/components/artwork-neighbours';
 import type { HistoryQuery } from '@/components/artwork-history';
 import { ArtworkEntry } from '@/components/artwork-entry';
@@ -162,7 +164,7 @@ export default async function ArtworkPage({
     <main id="main" className="work-page" data-opening-expression={expression}>
       <ArtworkViewer
         artwork={work}
-        t={t}
+        t={words(t, ARTWORK_VIEWER_WORDS)}
         locale={locale}
         initialStill={initialStill}
         initialExpression={initialExpression}
@@ -177,6 +179,8 @@ export default async function ArtworkPage({
       />
       {/* First Light, when this work is the page a first visit opens on: a shared link (§16). */}
       <Overture work={showWorkOf(work)} skip={t.firstLightSkip} />
+      {/* The orbit section is the one part still handed the whole catalog: its files are being
+          rewritten, and list their words afterwards (PENDING in client-boundary.test.ts). */}
       {orbit ? (
         <OrbitScore
           key={tokenId}

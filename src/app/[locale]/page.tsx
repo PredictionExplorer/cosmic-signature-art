@@ -1,6 +1,7 @@
 import { notFound } from 'next/navigation';
 import { isLocale } from '@/lib/i18n/routing';
 import { messages } from '@/lib/i18n/messages';
+import { words } from '@/lib/i18n/words';
 import { getCuratedArtwork } from '@/lib/art/catalog';
 import { inlineCuratedPreview } from '@/lib/art/inline-preview';
 import { expressionOfTheDay, venueNow, workOfTheDay } from '@/lib/art/work-of-the-day';
@@ -10,6 +11,7 @@ import { showWorkOf } from '@/lib/art/first-light-work';
 import { homeLine } from '@/lib/art/fate-line';
 import { metadata } from '@/lib/site';
 import { ArtworkViewer } from '@/components/artwork-viewer';
+import { ARTWORK_VIEWER_WORDS } from '@/components/artwork-viewer.words';
 import { HomeCycle, HomeSpread, HomeStatement } from '@/components/home-screens';
 import { Overture } from '@/components/overture';
 
@@ -59,7 +61,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
       {/* No headline on the wall: the page's h1 is the statement screen's wordmark below. */}
       <ArtworkViewer
         artwork={work}
-        t={t}
+        t={words(t, ARTWORK_VIEWER_WORDS)}
         locale={locale}
         presentation="home"
         openingExpression={openingOn(work, undefined, expressionOfTheDay(now))}

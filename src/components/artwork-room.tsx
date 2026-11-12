@@ -24,7 +24,8 @@ import { getPlateGround } from '@/lib/art/plate-records';
 import { workFolio, workNumber } from '@/lib/art/number';
 import { heldNm, startingNm, wavelengthRange } from '@/lib/art/spectral-sweep';
 import { clock, expressionWord, fill, filmLabel, formatBytes } from '@/lib/i18n/format';
-import type { Messages } from '@/lib/i18n/en';
+import type { FilmLabelWords } from '@/lib/i18n/format.words';
+import type { ArtworkRoomWords } from './artwork-room.words';
 import type { Locale } from '@/lib/i18n/routing';
 import { ArtworkStage } from './artwork-stage';
 import { inField } from './keys';
@@ -73,7 +74,7 @@ const NO_TIME = { current: 0, duration: 0 };
 
 type ArtworkRoomProps = {
   artwork: Artwork;
-  t: Messages;
+  t: ArtworkRoomWords;
   /** Formats the loupe's coordinates; the venue's default is English. */
   locale?: Locale;
   expression: string;
@@ -164,7 +165,7 @@ function RoomFilm({
   media: ArtInterpretation;
   film: ArtFilm;
   label: string;
-  t: Messages;
+  t: FilmLabelWords;
   memory: FilmMemory;
   startAt?: number;
   attempt: number;
@@ -297,7 +298,7 @@ function DetailReadout({
 }: {
   store: ViewStore;
   folio: string;
-  t: Messages;
+  t: Pick<ArtworkRoomWords, 'detailOf' | 'scaleNative' | 'scaleReadout'>;
   numbers: Intl.NumberFormat;
 }) {
   const view = useSyncExternalStore(store.subscribe, store.get, noView);

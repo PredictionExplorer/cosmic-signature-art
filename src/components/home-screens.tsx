@@ -2,12 +2,14 @@ import Link from 'next/link';
 import type { Messages } from '@/lib/i18n/en';
 import { localizedPath, type Locale } from '@/lib/i18n/routing';
 import { fill } from '@/lib/i18n/format';
+import { words } from '@/lib/i18n/words';
 import { getCuratedArtwork } from '@/lib/art/catalog';
 import { collectionIndex, cycles, indexedAssetUrl, indexedWork } from '@/lib/art/collection-index';
 import { artworkForView } from '@/lib/art/view-media';
 import { workFolio, workNumber } from '@/lib/art/number';
 import type { Expression } from '@/lib/art/types';
 import { SpreadPlates } from './home-spread-plates';
+import { SPREAD_PLATES_WORDS } from './home-spread-plates.words';
 import { bindFigures, SEPARATOR } from '@/lib/typography';
 import styles from './home-screens.module.css';
 import { PreviewImage } from './preview-image';
@@ -88,7 +90,7 @@ export function HomeSpread({
     const expression: Expression = index === 0 ? 'ink' : 'light';
     return work ? [{ work: artworkForView(work, 'card'), expression }] : [];
   });
-  return <SpreadPlates leaves={leaves} locale={locale} t={t} />;
+  return <SpreadPlates leaves={leaves} locale={locale} t={words(t, SPREAD_PLATES_WORDS)} />;
 }
 
 /**

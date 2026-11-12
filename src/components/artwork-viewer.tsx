@@ -23,7 +23,7 @@ import {
 } from '@/lib/art/types';
 import { workNumber } from '@/lib/art/number';
 import { getPlateGround } from '@/lib/art/plate-records';
-import type { Messages } from '@/lib/i18n/en';
+import type { ArtworkViewerWords } from './artwork-viewer.words';
 import { localizedPath, type Locale } from '@/lib/i18n/routing';
 import { AFTER_THE_FRAME_EVENT, SEAM_EVENT } from '@/lib/venue-events';
 import { HOME_RESOLVED_KEY } from '@/lib/storage-keys';
@@ -89,7 +89,7 @@ export type Presentation = 'gallery' | 'auction' | 'home';
 
 type ArtworkViewerProps = {
   artwork: Artwork;
-  t: Messages;
+  t: ArtworkViewerWords;
   locale: Locale;
   initialStill?: boolean;
   /** The visitor's request from the URL; it outranks the session's remembered choice. */
