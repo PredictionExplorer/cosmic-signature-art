@@ -236,6 +236,22 @@ export function beyondLine(
   return script.kept === null ? line : fill(t.beyondKeptLine, { body: script.kept + 1, line });
 }
 
+/**
+ * The longest line a performance can say here, for the room the section keeps under the
+ * picture: a body far away, said from a picture that stays with one where the visitor is asked
+ * whom to stay with. Where the picture draws no body where it was, no line names one.
+ */
+export function longestBeyondLine(
+  { names, asks, horizon }: { names: boolean; asks: boolean; horizon: number },
+  t: Messages,
+  number: Intl.NumberFormat,
+  oneDecimal: Intl.NumberFormat,
+): string {
+  if (!names) return fill(t.orbitBeyond, { clock: clock(0), step: number.format(horizon) });
+  const line = fill(t.beyondAway, { clock: clock(0), body: 3, widths: oneDecimal.format(88.8) });
+  return asks ? fill(t.beyondKeptLine, { body: 3, line }) : line;
+}
+
 function lineOf(
   script: HeldScript,
   path: BeyondPath,

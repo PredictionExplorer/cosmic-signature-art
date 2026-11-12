@@ -12,11 +12,10 @@ import {
 } from 'react';
 import type { Locale } from '@/lib/i18n/routing';
 import type { Messages } from '@/lib/i18n/en';
-import { clock, fill, fillParts } from '@/lib/i18n/format';
+import { fill, fillParts } from '@/lib/i18n/format';
 import type { WorkOrbit } from '@/lib/art/orbit-records';
 import type { OrbitPlate } from '@/lib/art/orbit-plate';
 import {
-  LIGHT_FILM,
   lightFilmDuration,
   lightFilmFrames,
   lightFilmSeconds,
@@ -25,15 +24,6 @@ import {
 import { principalPlane, type Plane } from '@/lib/physics/plane';
 import { gapAt, twinPace, type TwinRun } from '@/lib/physics/twin';
 import type { TwinReply, TwinRequest } from '@/lib/physics/twin.worker';
-import {
-  letGo,
-  pause,
-  play,
-  restingAt,
-  scrub,
-  toClosest,
-  type Transport,
-} from '@/lib/first-light/transport';
 import { AFTER_THE_FRAME_EVENT } from '@/lib/venue-events';
 import { useMotion } from './motion-provider';
 import { useRememberedExpression, type Expression } from './turn';
@@ -47,6 +37,7 @@ import {
   beyondLine,
   furtherOn,
   heldScript,
+  longestBeyondLine,
   performBeyond,
   worthGoingOn,
   type Beyond,
@@ -60,16 +51,10 @@ import { OrbitRecord } from './orbit-record';
 import type { Sculpture } from './orbit-sculpture';
 import { OrbitSlider } from './orbit-timeline';
 import { Scientific, performTwin, type TwinPair } from './orbit-twin';
-import {
-  performWindow,
-  playingLine,
-  windowLine,
-  windowScore,
-  type Clock,
-  type WindowScene,
-} from './orbit-window';
+import { performWindow, playingLine, windowLine, windowScore } from './orbit-window';
 import { progressText, seedShort, twinWorker, verdict } from './orbit-proof';
 import { drawChoice, type Choice } from './orbit-choice';
+import { useWindowClock } from './orbit-clock';
 import { useChoosing } from './orbit-choosing';
 import { OrbitFigure } from './orbit-figure';
 import { OrbitSaid, Sentences } from './orbit-said';
@@ -178,16 +163,8 @@ export function OrbitScore({
   /** Where the words stood as the visitor left After the frame, so they stay under the hand. */
   const wordsWere = useRef<{ top: number; bottom: number } | null>(null);
   const { near, inView, bringNear } = useOrbitPresence(section);
+  /** What After the frame's performance last said. */
   const [readout, setReadout] = useState<string | null>(null);
-  const [done, setDone] = useState(false);
-  /**
-   * Where in the Light film the drawing stands. It plays on its own once the section is in view,
-   * from the window's first step, unless motion is unwelcome.
-   */
-  const transport = useRef<Transport>({ kind: 'playing', seconds: 0, slowAt: null });
-  /** The visitor has taken the clock: Play, Pause, the slider or the closest approach. */
-  const [chosen, setChosen] = useState(false);
-  const [clockState, setClockState] = useState<Clock>({ kind: 'playing', seconds: 0 });
   /** The orbit can be taken in hand here, and is turned from the generator's view now. */
   /** The orbit is turned from the generator's view now. */
   const [turned, setTurned] = useState(false);
@@ -198,8 +175,6 @@ export function OrbitScore({
   const twinLive = useRef<TwinPair | null>(null);
   /** The twin is followed once; a repeat or a return performs what was found. */
   const twinCache = useRef<TwinRun | null>(null);
-  /** The window as last laid out, so the clock can move it without laying it out again. */
-  const scene = useRef<WindowScene | null>(null);
   /** After the frame as the visitor last left it; `beyond`, below, is what the section shows. */
   const [went, setWent] = useState<Beyond | null>(null);
   /** The plate's word asked for After the frame before its path was known: it is awaited. */
@@ -230,6 +205,7 @@ export function OrbitScore({
   const film = lightFilmDuration(steps);
   /** The film's pace: steps of the window per second of the Light film. */
   const pace = steps / film;
+  const clock = useWindowClock({ film, still });
   const number = useMemo(() => new Intl.NumberFormat(locale), [locale]);
   const oneDecimal = useMemo(
     () => new Intl.NumberFormat(locale, { minimumFractionDigits: 1, maximumFractionDigits: 1 }),
@@ -266,8 +242,6 @@ export function OrbitScore({
     : typeof Worker === 'undefined'
       ? { phase: 'failed' }
       : derivation;
-  // The window stands whole: drawn at once, performed to its end, or brought there by the slider.
-  const finished = still || done || clockState.seconds >= film;
 
   const result = state.phase === 'derived' ? state.result : null;
   const derivedFate = fate.phase === 'derived' ? fate.fate : null;
@@ -584,12 +558,9 @@ export function OrbitScore({
   /** Back to the frame: the recorded window, drawn whole. */
   const leaveTwin = () => {
     twinLive.current = null;
-    transport.current = restingAt(film, film);
-    setClockState({ kind: 'resting', seconds: film });
+    clock.rest();
     setTwin(null);
     setTwinRested(false);
-    setReadout(null);
-    setDone(true);
   };
   const following = twin?.phase === 'following';
   const twinFrame = plate?.frame;
@@ -722,7 +693,7 @@ export function OrbitScore({
     });
     /** What each of the four is drawn with: the layers, the picture on them, and its painter. */
     const easel = { ...sheet, picture, painter };
-    scene.current = null;
+    clock.forDrawing.laid(null);
     choice.current = null;
 
     // The question. The three wait where the film left them, each with its number, until the
@@ -798,31 +769,33 @@ export function OrbitScore({
     if (!score) return;
     // Asked for After the frame, the window waits whole for its path rather than starting over.
     // Where motion is unwelcome it is drawn whole, until the visitor takes the clock.
-    if (awaited || following || (still && !chosen)) transport.current = restingAt(film, film);
-    scene.current = performWindow({
-      ...easel,
-      score,
-      count: result.samples.count,
-      steps,
-      stride: STRIDE,
-      film,
-      inView,
-      transport,
-      frame,
-      slider,
-      sculpture,
-      say: (now) => {
-        setClockState(now);
-        setReadout(
-          windowLine(
+    if (awaited || following || clock.untouched) clock.forDrawing.holdWhole();
+    const said = clock.forDrawing.said;
+    clock.forDrawing.laid(
+      performWindow({
+        ...easel,
+        score,
+        count: result.samples.count,
+        steps,
+        stride: STRIDE,
+        film,
+        inView,
+        transport: clock.forDrawing.transport,
+        frame,
+        slider,
+        sculpture,
+        say: (now) =>
+          said(
             now,
-            { steps, film, closest: result.closestApproach },
-            { t, number, oneDecimal },
+            windowLine(
+              now,
+              { steps, film, closest: result.closestApproach },
+              { t, number, oneDecimal },
+            ),
           ),
-        );
-      },
-      onEnd: () => setDone(true),
-    });
+        onEnd: clock.forDrawing.ended,
+      }),
+    );
     return () => cancelAnimationFrame(frame.current);
   });
 
@@ -877,43 +850,6 @@ export function OrbitScore({
     };
   }, []);
 
-  /**
-   * The clock as the visitor finds it. Where motion is unwelcome nothing plays until they ask, so
-   * until they take the clock it rests with the window whole: also in the moment between the
-   * derivation and the window's first drawing, while the transport still holds the performance it
-   * would begin where motion is welcome. A slider or a word taken in that moment acts on what the
-   * visitor sees, never on a performance that is not running.
-   */
-  const found = (): Transport => (still && !chosen ? restingAt(film, film) : transport.current);
-  /**
-   * The visitor takes the clock: it is set, the drawing follows at once, and it runs on if it
-   * plays. Motion the visitor asks for is theirs, so it plays even where motion is unwelcome.
-   */
-  const takeClock = (next: Transport) => {
-    setChosen(true);
-    transport.current = next;
-    setClockState({ kind: next.kind, seconds: next.seconds });
-    if (next.kind === 'playing' && next.seconds < film) setDone(false);
-    const current = scene.current;
-    if (!current) return;
-    current.paint(next.seconds);
-    current.speak();
-    current.run();
-  };
-  /** Play and Pause; at the end, play again from the window's first step. */
-  const playPause = () => {
-    const now = found();
-    takeClock(now.kind === 'playing' ? pause(now) : play(now, film));
-  };
-  /** The closest approach, played slowly from a little before it; at rest on it where still. */
-  const toClosestApproach = () =>
-    takeClock(toClosest(lightFilmSeconds(orbit.published.closestApproach.step, steps), still));
-  /** The slider: a frame of the Light film, held while the hand is on it. */
-  const onScrub = (filmFrame: number, settled: boolean) => {
-    const held = scrub(found(), filmFrame / LIGHT_FILM.fps, film);
-    takeClock(settled ? letGo(held, film) : held);
-  };
-
   /** Notes where the words stand, on the way out of After the frame (compose). */
   const keepWords = () => {
     const box = wordsRow.current?.getBoundingClientRect();
@@ -925,11 +861,9 @@ export function OrbitScore({
     unpoint();
     handOn.current = false;
     live.current = null;
-    transport.current = restingAt(film, film);
-    setClockState({ kind: 'resting', seconds: film });
+    clock.rest();
     setWent(null);
     setReadout(null);
-    setDone(true);
   };
 
   // Each row is marked as it is checked; the fate is checked last, since it runs on past the
@@ -959,7 +893,7 @@ export function OrbitScore({
               t,
               number,
             )
-          : finished
+          : clock.finished
             ? standsAt(steps, film)
             : standsAt(0, 0);
   const summary =
@@ -1004,14 +938,14 @@ export function OrbitScore({
   /** The question and what is told are read, in the book face; the running line is metered. */
   const read = !!beyond && (phase === 'choosing' || phase === 'told');
   /** The longest line a performance can say here, for the room it is to keep. */
-  const longestLine = !beyond
-    ? null
-    : !bodiesDrawn
-      ? fill(t.orbitBeyond, { clock: clock(0), step: number.format(orbit.fate.horizonSteps) })
-      : fill(asksWhom(path) ? t.beyondKeptLine : '{line}', {
-          body: 3,
-          line: fill(t.beyondAway, { clock: clock(0), body: 3, widths: oneDecimal.format(88.8) }),
-        });
+  const longestLine = beyond
+    ? longestBeyondLine(
+        { names: bodiesDrawn, asks: asksWhom(path), horizon: orbit.fate.horizonSteps },
+        t,
+        number,
+        oneDecimal,
+      )
+    : null;
   const line: ReactNode = twin
     ? twinLine
     : beyond
@@ -1020,14 +954,18 @@ export function OrbitScore({
         : phase === 'choosing'
           ? t.beyondAsk
           : readout
-      : ((still && !chosen ? null : readout) ?? progressLine);
+      : ((clock.untouched ? null : clock.line) ?? progressLine);
   const derived = state.phase === 'derived';
-  // The word follows the clock as the visitor finds it (found(), above): never Pause where nothing plays.
-  const playing = clockState.kind === 'playing' && !(still && !chosen);
-  const atEnd = clockState.seconds >= film;
-  /** The clock's word: Pause while it plays; at the end, Again for whoever has watched it. */
-  const clockWord = playing ? t.pause : atEnd && (chosen || !still) ? t.again : t.play;
-  const clockStep = stepsDrawnAt(clockState.seconds, steps);
+  /**
+   * The clock's word follows the clock as the visitor finds it: Pause while it plays, never
+   * where nothing does; at the end, Again for whoever has watched it.
+   */
+  const clockWord = clock.playing
+    ? t.pause
+    : clock.atEnd && (clock.chosen || !still)
+      ? t.again
+      : t.play;
+  const clockStep = stepsDrawnAt(clock.state.seconds, steps);
 
   const offered: Offered | null = !derived
     ? null
@@ -1052,11 +990,13 @@ export function OrbitScore({
         : {
             act: 'window',
             clockWord,
-            onClock: playPause,
-            onClosest: toClosestApproach,
+            onClock: clock.playPause,
+            // Played slowly from a little before it; at rest on it where nothing plays.
+            onClosest: () =>
+              clock.toClosest(lightFilmSeconds(orbit.published.closestApproach.step, steps)),
             onGeneratorView: turned ? () => sculpture.current?.back() : null,
-            onBeyond: canGoBeyond && finished ? goBeyond : null,
-            onTwin: derivedFate && finished && placed ? goTwin : null,
+            onBeyond: canGoBeyond && clock.finished ? goBeyond : null,
+            onTwin: derivedFate && clock.finished && placed ? goTwin : null,
           };
 
   return (
@@ -1131,7 +1071,7 @@ export function OrbitScore({
           hand={hand}
           aimed={aiming}
           onTurned={setTurned}
-          onPlayPause={playPause}
+          onPlayPause={clock.playPause}
         />
         <div ref={beneath} className={styles.score}>
           <div className={styles.strip}>
@@ -1141,9 +1081,9 @@ export function OrbitScore({
                 slider={slider}
                 frames={lightFilmFrames(steps)}
                 label={t.orbitTimeLabel}
-                valueText={standsAt(clockStep, clockState.seconds)}
+                valueText={standsAt(clockStep, clock.state.seconds)}
                 disabled={awaited}
-                onScrub={onScrub}
+                onScrub={clock.scrub}
               />
             ) : null}
           </div>
