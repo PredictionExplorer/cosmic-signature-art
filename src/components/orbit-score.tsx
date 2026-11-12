@@ -201,8 +201,8 @@ export function OrbitScore({
   const [awaited, setAwaited] = useState(false);
   /** The material After the frame was last asked for in: its pictures are read then, and kept. */
   const [wanted, setWanted] = useState<Material | null>(null);
-  /** After the frame: asked whom to stay with, performed, then the still alone in silence, then told. */
-  const [phase, setPhase] = useState<BeyondPhase>('running');
+  /** Where After the frame has got to. At the frame nothing reads it. */
+  const phase: BeyondPhase = went?.phase ?? 'running';
   /**
    * The focus is to go to the line once it has its words: the visitor has asked for the
    * question (the keyboard and the screen reader are taken to it, and its answers follow it),
@@ -304,7 +304,7 @@ export function OrbitScore({
   });
   const performing = !!beyond && !choosing;
   /** The body the picture is kept on past the frame; none where it is the work's frame, held. */
-  const keptOn = beyond?.kept ?? null;
+  const keptOn = beyond && beyond.phase !== 'choosing' ? beyond.kept : null;
   /**
    * Whether the picture draws the bodies where they were: only then can a line name one, and
    * only then is there a body to stay with (a mark made of two bodies' coordinates is none).
@@ -376,11 +376,14 @@ export function OrbitScore({
     twinLive.current = null;
     setAwaited(false);
     setWanted(material);
-    setPhase(asksWhom(carried) ? 'choosing' : 'running');
     unpoint();
     setWorthIt(false);
     setReadout(null);
-    setWent((current) => ({ run: (current?.run ?? 0) + 1, kept: null }));
+    const asks = asksWhom(carried);
+    setWent((current) => {
+      const run = (current?.run ?? 0) + 1;
+      return asks ? { run, phase: 'choosing' } : { run, phase: 'running', kept: null };
+    });
   };
   /**
    * After the frame, asked for now: by its word here, by the plate's, or again. Where the
@@ -397,10 +400,9 @@ export function OrbitScore({
     arriving.current = 'bring';
     handOn.current = true;
     unpoint();
-    setPhase('running');
     setWorthIt(false);
     setReadout(null);
-    setWent((current) => ({ run: (current?.run ?? 0) + 1, kept: body }));
+    setWent((current) => ({ run: (current?.run ?? 0) + 1, phase: 'running', kept: body }));
   };
   // Past the frame the whole picture is the subject: its four edges, the line beneath it and the
   // words stand in one screen, so the caption and the score step aside (orbit-score.module.css)
@@ -616,7 +618,15 @@ export function OrbitScore({
   /** What happened past the frame is told: the line under the still says it (`fact`, above). */
   const tell = () => {
     setReadout(null);
-    setPhase('told');
+    setWent((current) =>
+      current && current.phase !== 'told'
+        ? {
+            run: current.run,
+            phase: 'told',
+            kept: current.phase === 'choosing' ? null : current.kept,
+          }
+        : current,
+    );
   };
   /** Tell me: told at the visitor's word, and the focus goes to what is told. */
   const tellNow = () => {
@@ -701,7 +711,7 @@ export function OrbitScore({
         : planePicture(plane!, count, width, height, ratio);
     // Past the frame the picture may stay with one body: the same frame, moved along with it.
     const picture =
-      beyond && beyond.kept !== null && phase === 'running' && path && plate && placed
+      beyond && beyond.phase === 'running' && beyond.kept !== null && path && plate && placed
         ? keptPicture(own, plate.frame, placed, path.pixels, beyond.kept, width, height)
         : own;
     /** On the plate the bodies stand where the work left them once the window is drawn. */
@@ -780,7 +790,9 @@ export function OrbitScore({
           if (wordsRow.current?.contains(document.activeElement))
             section.current?.focus({ preventScroll: true });
           setReadout(null);
-          setPhase('resting');
+          setWent((current) =>
+            current && current.phase === 'running' ? { ...current, phase: 'resting' } : current,
+          );
         },
       });
     }
@@ -1094,7 +1106,6 @@ export function OrbitScore({
     transport.current = restingAt(film, film);
     setClockState({ kind: 'resting', seconds: film });
     setWent(null);
-    setPhase('running');
     setReadout(null);
     setDone(true);
   };
@@ -1249,7 +1260,7 @@ export function OrbitScore({
         data-exact={checked ? String(differing.length === 0) : undefined}
         data-fate={fate.phase === 'derived' ? fate.fate.outcome : undefined}
         data-beyond={beyond ? phase : undefined}
-        data-kept={keptOn !== null && phase !== 'choosing' ? keptOn + 1 : undefined}
+        data-kept={keptOn !== null ? keptOn + 1 : undefined}
         data-twin={
           twin
             ? twin.phase === 'ready'

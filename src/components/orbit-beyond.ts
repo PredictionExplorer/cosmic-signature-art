@@ -41,13 +41,18 @@ import type { Painter, Target } from './orbit-painter';
 */
 
 /**
- * After the frame: a count, so that a repeat starts afresh, and the body the picture stays
- * with (none: the frame, held where the film left it).
+ * After the frame, as it stands: a count, so that a repeat starts afresh, and where it has got
+ * to. The visitor is asked whom to stay with; then, with their answer, it is performed, the
+ * still stands alone in silence, and what happened is told. The answer is the body the picture
+ * stays with (none: the frame, held where the film left it), so there is one only once the
+ * question is answered, or was not asked.
  */
-export type Beyond = { run: number; kept: number | null };
+export type Beyond = { run: number } & (
+  { phase: 'choosing' } | { phase: 'running' | 'resting' | 'told'; kept: number | null }
+);
 
 /** Asked whom to stay with; performed; then the still alone, in silence; then told. */
-export type BeyondPhase = 'choosing' | 'running' | 'resting' | 'told';
+export type BeyondPhase = Beyond['phase'];
 
 /** An absence lasts when it runs this long, in seconds of film, or to the path's end… */
 const LASTING_SECONDS = 3;
