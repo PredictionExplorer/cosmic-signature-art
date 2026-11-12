@@ -6,7 +6,48 @@ import { fill } from '@/lib/i18n/format';
 import type { WorkOrbit } from '@/lib/art/orbit-records';
 import type { Comparison, EnergyKept, MeasurementKey } from '@/lib/physics/orbit';
 import { derivedValue, energyText, measurementLabels, recordValues } from './orbit-proof';
+import recordStyles from './artwork-record.module.css';
 import styles from './orbit-score.module.css';
+
+/** What the record is checked against, and how far the check has got. */
+interface Checked {
+  orbit: WorkOrbit;
+  t: Messages;
+  locale: Locale;
+  /** The rows checked so far, or none before the derivation is done. */
+  comparisons: Comparison[] | null;
+  summary: string | null;
+  /** What the energy watch found on the run to the fate, once it is there. */
+  energy: EnergyKept | null;
+}
+
+/**
+ * Act two of the work page, the record: the published record, checked here, opens it on paper
+ * (docs/first-light.md §17). Its heading names the table beneath it.
+ */
+export function OrbitProofAct({
+  exact,
+  ...record
+}: Checked & {
+  /** Whether every row is the record's, once every row has been checked; null until then. */
+  exact: boolean | null;
+}) {
+  return (
+    <section
+      id="proof"
+      className={styles.proofAct}
+      aria-labelledby="orbit-proof-title"
+      data-exact={exact === null ? undefined : String(exact)}
+    >
+      <div className={styles.proofBody}>
+        <h2 id="orbit-proof-title" className={`${recordStyles.sectionTitle} ${styles.proofTitle}`}>
+          {record.t.orbitTableCaption}
+        </h2>
+        <OrbitRecord {...record} labelledBy="orbit-proof-title" />
+      </div>
+    </section>
+  );
+}
 
 /**
  * The published record, checked here (orbit-score.tsx): the record's opening, in act two of the
@@ -23,16 +64,8 @@ export function OrbitRecord({
   summary,
   energy,
   labelledBy,
-}: {
-  orbit: WorkOrbit;
-  t: Messages;
-  locale: Locale;
-  /** The rows checked so far, or none before the derivation is done. */
-  comparisons: Comparison[] | null;
-  summary: string | null;
-  /** What the energy watch found on the run to the fate, once it is there. */
-  energy: EnergyKept | null;
-  /** The heading that names the table: the record's opening (orbit-score.tsx). */
+}: Checked & {
+  /** The heading that names the table: the record's opening. */
   labelledBy: string;
 }) {
   const number = useMemo(() => new Intl.NumberFormat(locale), [locale]);

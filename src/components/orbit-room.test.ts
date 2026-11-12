@@ -48,7 +48,7 @@ function staged(
   };
   const hook = renderHook(
     ({ run }: { run: number | null }) =>
-      usePictureRoom({ ...refs, past: run !== null, run, reducedMotion }),
+      usePictureRoom({ ...refs, pastFrame: run !== null, run, reducedMotion }),
     { initialProps: { run: null as number | null } },
   );
   return { ...hook, section, refs, room: () => hook.result.current };

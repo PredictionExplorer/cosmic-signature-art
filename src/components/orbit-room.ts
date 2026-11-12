@@ -23,7 +23,7 @@ export function usePictureRoom({
   stage,
   beneath,
   wordsRow,
-  past,
+  pastFrame,
   run,
   reducedMotion,
 }: {
@@ -35,7 +35,7 @@ export function usePictureRoom({
   /** The words themselves: kept under the hand that pressed one, on the way back. */
   wordsRow: RefObject<HTMLDivElement | null>;
   /** The section stands past the frame. */
-  past: boolean;
+  pastFrame: boolean;
   /** Which performance past the frame stands, by its count; null at the frame. */
   run: number | null;
   reducedMotion: boolean;
@@ -67,7 +67,7 @@ export function usePictureRoom({
     if (!node) return;
     const picture = stage.current?.getBoundingClientRect();
     const under = beneath.current?.getBoundingClientRect();
-    if (!past || !picture || !under) node.style.removeProperty('--beneath-measured');
+    if (!pastFrame || !picture || !under) node.style.removeProperty('--beneath-measured');
     else
       node.style.setProperty(
         '--beneath-measured',

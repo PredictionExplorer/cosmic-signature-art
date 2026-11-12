@@ -20,7 +20,6 @@ import {
   stepsDrawnAt,
 } from '@/lib/physics/light-film';
 import { principalPlane, type Plane } from '@/lib/physics/plane';
-import { AFTER_THE_FRAME_EVENT } from '@/lib/venue-events';
 import { useMotion } from './motion-provider';
 import { useRememberedExpression, type Expression } from './turn';
 import { layers } from './orbit-layers';
@@ -30,15 +29,15 @@ import { beyondLine, longestBeyondLine, performBeyond, worthGoingOn } from './or
 import { useBeyond } from './orbit-beyond-state';
 import type { BeyondPath } from '@/lib/physics/beyond';
 import { STRIDE, useOrbitDerivation, type Derivation } from './orbit-derivation';
-import { useOrbitPresence } from './orbit-presence';
-import { OrbitRecord } from './orbit-record';
+import { useOrbitPresence, usePlateWord } from './orbit-presence';
+import { OrbitProofAct } from './orbit-record';
 import { usePictureRoom } from './orbit-room';
 import type { Sculpture } from './orbit-sculpture';
 import { OrbitSlider } from './orbit-timeline';
 import { performTwin, twinLine } from './orbit-twin';
 import { useTwin } from './orbit-twin-state';
 import { performWindow, playingLine, windowLine, windowScore } from './orbit-window';
-import { progressText, seedShort, verdict } from './orbit-proof';
+import { derivedSummary, progressText } from './orbit-proof';
 import { drawChoice, type Choice } from './orbit-choice';
 import { useWindowClock } from './orbit-clock';
 import { useChoosing } from './orbit-choosing';
@@ -46,9 +45,9 @@ import { OrbitFigure } from './orbit-figure';
 import { OrbitSaid, Sentences } from './orbit-said';
 import { PressGuard, usePresses } from './orbit-word';
 import { OrbitWords, type Offered } from './orbit-words';
-import recordStyles from './artwork-record.module.css';
 import styles from './orbit-score.module.css';
 
+/** The derivation as the section finds it: nothing is derived before the section is near. */
 type State = { phase: 'waiting' } | Derivation;
 
 /** Whether this browser could draw the orbit in depth: only then is it sampled for it. */
@@ -82,12 +81,23 @@ const canTurn = () => typeof WebGL2RenderingContext !== 'undefined';
  * One part in a trillion (docs/first-light.md §15): a twin of the orbit, one body moved by a
  * trillionth, carried past the frame beside the work until it parts (orbit-twin.tsx).
  *
- * The section is assembled from its parts: where it stands to the visitor (orbit-presence.ts),
- * the derivation (orbit-derivation.ts), the drawing (orbit-painter.ts), the orbit in depth
- * (orbit-sculpture.tsx), the slider (orbit-timeline.tsx) and the record (orbit-record.tsx). This
- * component holds what is left: the clock (src/lib/first-light/transport.ts), After the frame's
- * phases with the question and its answers, the twin's worker, where the focus goes, the page's
- * scroll to the picture, and the words that say what is happening.
+ * The section is assembled from its parts, and this component is where they meet.
+ *
+ * - What is known: where the section stands to the visitor (orbit-presence.ts) and the
+ *   derivation (orbit-derivation.ts).
+ * - Who owns what changes: the recorded window's clock (orbit-clock.ts), After the frame
+ *   (orbit-beyond-state.ts), the twin (orbit-twin-state.ts), the choosing by hand
+ *   (orbit-choosing.ts) and the picture's room on the page (orbit-room.ts).
+ * - What is drawn: the canvases (orbit-layers.ts), the picture on them (orbit-picture.ts) and
+ *   its painter (orbit-painter.ts), then one of four things, each performed by its own module:
+ *   the question (orbit-choice.ts), After the frame (orbit-beyond.ts), the twin (orbit-twin.tsx)
+ *   or the recorded window (orbit-window.ts).
+ * - What is shown: the figure (orbit-figure.tsx) with the orbit in depth (orbit-sculpture.tsx),
+ *   the slider (orbit-timeline.tsx), the line (orbit-said.tsx), the words (orbit-words.tsx) and
+ *   the record (orbit-record.tsx).
+ *
+ * What is left here belongs to the whole stage: the four changes of what stands on it, the
+ * plate's word, the one drawing that hands on to the four, and the choice of what the line says.
  */
 export function OrbitScore({
   orbit,
@@ -215,7 +225,7 @@ export function OrbitScore({
     stage,
     beneath,
     wordsRow,
-    past: !!beyond,
+    pastFrame: !!beyond,
     run,
     reducedMotion,
   });
@@ -286,7 +296,7 @@ export function OrbitScore({
   // The plate's word: go on past the frame as soon as the path past it is known, bringing the
   // picture into view. Asking derives the orbit if the visitor has not come near it yet, and
   // brings the section into view to wait.
-  const onPlateWord = useEffectEvent(() => {
+  usePlateWord(() => {
     bringNear();
     // The word was a link to here: the keyboard and the screen reader come here too.
     section.current?.focus({ preventScroll: true });
@@ -317,11 +327,6 @@ export function OrbitScore({
     if (path === undefined && derivation.phase !== 'failed' && fate.phase !== 'failed')
       past.awaitPath();
   });
-  useEffect(() => {
-    const heard = () => onPlateWord();
-    window.addEventListener(AFTER_THE_FRAME_EVENT, heard);
-    return () => window.removeEventListener(AFTER_THE_FRAME_EVENT, heard);
-  }, []);
 
   // The drawing: trails accumulate, the bodies ride on a layer above, and the score beneath
   // carries the three separations with the published events. On the plate the drawing lies over
@@ -518,7 +523,8 @@ export function OrbitScore({
         : state.comparisons
       : null;
   const checked = state.phase === 'derived' && fate.phase !== 'deriving';
-  const differing = comparisons?.filter((row) => !row.exact) ?? [];
+  /** Whether every row is the record's, once every row has been checked. */
+  const exact = checked ? (comparisons ?? []).every((row) => row.exact) : null;
 
   const progress = state.phase === 'deriving' ? state.progress : null;
   const standsAt = (step: number, seconds: number) => playingLine(step, seconds, steps, t, number);
@@ -543,15 +549,7 @@ export function OrbitScore({
     state.phase === 'failed'
       ? t.orbitUnavailable
       : checked
-        ? `${fill(t.orbitDerived, {
-            seconds: oneDecimal.format(state.seconds),
-            seed: seedShort(orbit.generation.seed),
-            index: number.format(orbit.generation.selectedIndex),
-            total: number.format(
-              orbit.generation.candidatesPerAttempt * (orbit.generation.retryCount + 1),
-            ),
-            steps: number.format(orbit.generation.warmupSteps + steps),
-          })} ${verdict(comparisons ?? [], t)}`
+        ? derivedSummary(state.seconds, orbit.generation, comparisons ?? [], t, number, oneDecimal)
         : null;
   const factLine: ReactNode = past.fact ? <Sentences said={past.fact} t={t} /> : null;
   /** The question and what is told are read, in the book face; the running line is metered. */
@@ -633,7 +631,7 @@ export function OrbitScore({
         }
         aria-labelledby="orbit-title"
         data-phase={state.phase}
-        data-exact={checked ? String(differing.length === 0) : undefined}
+        data-exact={exact === null ? undefined : String(exact)}
         data-fate={fate.phase === 'derived' ? fate.fate.outcome : undefined}
         data-beyond={beyond ? phase : undefined}
         data-kept={keptOn !== null ? keptOn + 1 : undefined}
@@ -728,31 +726,15 @@ export function OrbitScore({
           </div>
         </div>
       </section>
-      {/* Act two, the record: the published record, checked here, opens it on paper. */}
-      <section
-        id="proof"
-        className={styles.proofAct}
-        aria-labelledby="orbit-proof-title"
-        data-exact={checked ? String(differing.length === 0) : undefined}
-      >
-        <div className={styles.proofBody}>
-          <h2
-            id="orbit-proof-title"
-            className={`${recordStyles.sectionTitle} ${styles.proofTitle}`}
-          >
-            {t.orbitTableCaption}
-          </h2>
-          <OrbitRecord
-            orbit={orbit}
-            t={t}
-            locale={locale}
-            comparisons={comparisons}
-            summary={summary}
-            energy={derivedFate?.energy ?? null}
-            labelledBy="orbit-proof-title"
-          />
-        </div>
-      </section>
+      <OrbitProofAct
+        orbit={orbit}
+        t={t}
+        locale={locale}
+        comparisons={comparisons}
+        exact={exact}
+        summary={summary}
+        energy={derivedFate?.energy ?? null}
+      />
     </PressGuard.Provider>
   );
 }
