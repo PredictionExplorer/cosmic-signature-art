@@ -996,24 +996,20 @@ describe('After the frame', () => {
       }
     });
 
-    it('turns a number onto the picture at each of its four edges', () => {
-      // A body 10 px from an edge, the other two well inside: its number's first place, away
-      // from the middle of the three, is off the picture.
-      const inside: [number, number][] = [
-        [1_500, 1_000],
-        [1_900, 1_200],
-      ];
-      for (const edge of [
-        [1_700, 40],
-        [1_700, 2_194],
-        [40, 1_100],
-        [3_416, 1_100],
-      ] as [number, number][]) {
-        // Each edge is its own section, with its own worker and observers.
-        workers = [];
-        observers = [];
-        const { unmount } = performed(ejected, leaving(), {
-          framed: framedWith([edge, ...inside]),
+    // One section a test: four of them in one test ran it close to its budget where coverage
+    // is counted.
+    it.each([
+      ['top', [1_700, 40]],
+      ['bottom', [1_700, 2_194]],
+      ['left', [40, 1_100]],
+      ['right', [3_416, 1_100]],
+    ] as [string, [number, number]][])(
+      'turns a number onto the picture at its %s edge',
+      (_name, edge) => {
+        // A body 10 px from the edge, the other two well inside: its number's first place,
+        // away from the middle of the three, is off the picture.
+        performed(ejected, leaving(), {
+          framed: framedWith([edge, [1_500, 1_000], [1_900, 1_200]]),
         });
         calls = [];
         fireEvent.click(afterTheFrame());
@@ -1030,9 +1026,8 @@ describe('After the frame', () => {
         const off = Math.hypot(fx - x, fy - y);
         expect(off).toBeGreaterThan(14);
         expect(off).toBeLessThan(20);
-        unmount();
-      }
-    });
+      },
+    );
 
     it('keeps each number nearer its own body than any other', () => {
       // Body 2 stands 24 px from body 1, where body 1's number would first go: 17 px from

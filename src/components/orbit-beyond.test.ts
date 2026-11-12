@@ -44,16 +44,37 @@ const QUIET_FILM = {
   pixels: Float32Array.from({ length: 12 }, (_, i) => (i % 2 ? 1_117 : 1_728)),
 };
 
-/** A work's own path past its window, as the worker carries it. */
+/**
+ * A work's own path past its window, as the worker carries it: on from the bodies at the
+ * window's end, to the fate the record states.
+ *
+ * The worker derives that fate first, by running on to the record's horizon. Here the record's
+ * is taken instead. Every work's derived fate is its published one, exactly: `npm run
+ * art:energy` runs all 72 to their fates and keeps its registry only when each meets the
+ * record, and orbit.test.ts derives several. And the path is then the same to the last bit,
+ * since it takes nothing else of the fate run than the bodies at the window's end and the
+ * energy the window began with, which a run to the window's end gives. Deriving the fates here
+ * as well ran five of these eleven works to step 8,000,000 twice over; with coverage counting
+ * every step, that took a CI runner more than three minutes.
+ */
 function carried(id: number) {
   const orbit = workOrbit(id)!;
   const [performed] = performedOrbits([id]);
   const steps = orbit.generation.steps;
   const start = { masses: orbit.published.masses, dt: orbit.generation.dt, steps };
-  const fate = deriveFate(
-    { ...start, positions: performed.window.positions, velocities: performed.window.velocities },
-    { steps, threshold: orbit.fate.escapeThreshold, horizonSteps: orbit.fate.horizonSteps },
-  );
+  const window = {
+    ...start,
+    positions: performed.window.positions,
+    velocities: performed.window.velocities,
+  };
+  const { outcome, escaper, ejectionStep, horizonSteps, escapeThreshold } = orbit.fate;
+  const fate: DerivedFate = {
+    ...deriveFate(window, { steps, threshold: escapeThreshold, horizonSteps: steps }),
+    outcome,
+    escaper,
+    ejectionStep,
+    horizonSteps,
+  };
   const frame = plateFrame(id)!;
   const path = beyondPath({
     ...start,
@@ -62,12 +83,12 @@ function carried(id: number) {
     stride: 100,
     plate: new HeldPlacement(frame, start),
   });
-  // The recorded window as the frame places it: what the film itself showed.
-  const framed = framedSamples(
-    { ...start, positions: performed.window.positions, velocities: performed.window.velocities },
-    frame,
-    100,
-  );
+  /**
+   * The recorded window as the frame places it: what the film itself showed. A picture kept on
+   * a body reads it; it is placed when the first one asks.
+   */
+  let framed: ReturnType<typeof framedSamples> | null = null;
+  const filmed = () => (framed ??= framedSamples(window, frame, 100));
   /**
    * The path read for the work's plate in a material, as the page reads it: in the work's own
    * frame, or in the picture kept on a body.
@@ -79,7 +100,7 @@ function carried(id: number) {
       path,
       script: heldScript(
         path,
-        kept === null ? own : keptPicture(own, frame, framed, path.pixels, kept, 900, 582),
+        kept === null ? own : keptPicture(own, frame, filmed(), path.pixels, kept, 900, 582),
         fate,
         PACE,
         frame.projection === 'position',
@@ -142,13 +163,19 @@ const lineAt = ({ script, path }: Read, second: number, t = en, number = english
   beyondLine(script, path, Math.ceil(second * PER_SECOND), t, number);
 const seconds = (script: HeldScript, sample: number) => sample / script.perSecond;
 
-/** Eleven works carried past their windows once, for every test that reads one. */
+/**
+ * Eleven works carried past their windows once, for every test that reads one. Five are
+ * carried to the record's horizon, seven million steps on: about 7 s in all on a laptop, and
+ * about two minutes on a CI runner that counts coverage. The budget is there to catch a hang,
+ * and is sized to a runner several times slower than that: one was 1.6 times slower than the
+ * usual on 12 November 2026.
+ */
 let works: Record<number, ReturnType<typeof carried>>;
 beforeAll(() => {
   works = Object.fromEntries(
     [25, 31, 16, 4, 30, 14, 54, 8, 62, 37, 63].map((id) => [id, carried(id)]),
   );
-}, 300_000);
+}, 600_000);
 
 describe('what the picture shows of eight works, past their frames', () => {
   it('№ 025: body 2 leaves, and the other two are out of the picture 7.2 seconds later', () => {
