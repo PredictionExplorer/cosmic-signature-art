@@ -7,9 +7,9 @@ import { HeldPlacement } from '@/lib/physics/framing';
 import type { DerivedFate, Rederivation } from '@/lib/physics/orbit';
 import { gapAt, twinPace, type TwinRun } from '@/lib/physics/twin';
 import type { Strip } from './orbit-layers';
-import { LONGEST_FRAME_SECONDS } from './orbit-beyond';
 import { MATERIALS, type Picture } from './orbit-picture';
 import { FADE_EVERY_SECONDS, type Continued, type Painter } from './orbit-painter';
+import { LONGEST_FRAME_SECONDS, SAID_EVERY_MS } from './orbit-rhythm';
 import styles from './orbit-score.module.css';
 
 /*
@@ -23,6 +23,8 @@ import styles from './orbit-score.module.css';
   Where they coincide the two read as one line. Then the twin parts and dances its own dance.
   The bodies of the twin are ringed in its red. On the strip beneath, in the score's place, the
   gap's growth is drawn on a log scale, where doubling at a steady rate reads as a straight line.
+  The line says the same in words: how far apart the two stand, then where they parted
+  (`twinLine`).
 */
 
 /** The twin: followed in its worker, ready to perform, or not to be had. */
@@ -210,7 +212,7 @@ export function performTwin(stage: TwinStage): (() => void) | void {
     painter.continued(twinTrail, twinBefore, twin.samples - 1);
     bodies();
     growth(work.taken);
-    if (now - spoken > 250 || work.resting) {
+    if (now - spoken > SAID_EVERY_MS || work.resting) {
       spoken = now;
       stage.speak(work.taken);
     }
@@ -265,7 +267,7 @@ function exponentText(exponent: number): string {
  * A length in the orbit's units as a mantissa times a power of ten: the mantissa to two figures
  * in the reader's own digits, and the power raised, but never below the 12 px floor.
  */
-export function Scientific({ value, locale }: { value: number; locale: string }) {
+function Scientific({ value, locale }: { value: number; locale: string }) {
   if (!(value > 0)) return <>0</>;
   let exponent = Math.floor(Math.log10(value));
   let mantissa = value / 10 ** exponent;

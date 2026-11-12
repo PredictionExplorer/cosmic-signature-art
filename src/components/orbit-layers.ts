@@ -46,7 +46,7 @@ export interface Layers {
   ratio: number;
   strip: Strip;
   /** The face the numbers are set in: read from the page when the numbers are drawn. */
-  font(): string;
+  face(): string;
 }
 
 /** The ticks of the score rise this far beneath its lane, in CSS pixels. */
@@ -83,6 +83,6 @@ export function layers(canvases: Canvases): Layers | null {
       lane: events.height - TICKS * ratio,
       ratio,
     },
-    font: () => getComputedStyle(names).getPropertyValue('--font-mono').trim() || 'monospace',
+    face: () => getComputedStyle(names).getPropertyValue('--font-mono').trim() || 'monospace',
   };
 }

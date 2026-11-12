@@ -139,13 +139,22 @@ describe('the twin, as the visitor moves through it', () => {
     expect(twin.current.twin).toEqual({ phase: 'failed' });
   });
 
-  it('waits for the derived window, and follows nothing in the plane', () => {
-    const waiting = staged({ result: null });
+  it('waits for the derived window before it follows, and follows nothing in the plane', () => {
+    const waiting = renderHook(
+      ({ derived }: { derived: Rederivation | null }) =>
+        useTwin({ orbit, steps, result: derived, frame }),
+      { initialProps: { derived: null as Rederivation | null } },
+    );
     act(() => waiting.result.current.go());
+    expect(waiting.result.current.following).toBe(true);
     expect(workers).toEqual([]);
+    // The window derived, the following begins, from its first state.
+    waiting.rerender({ derived: result });
+    expect(workers).toHaveLength(1);
+    expect(workers[0].posted[0].start.positions).toBe(result.windowStart.positions);
     const plane = staged({ frame: undefined });
     act(() => plane.result.current.go());
-    expect(workers).toEqual([]);
+    expect(workers).toHaveLength(1);
   });
 
   it('stops following a twin the visitor has left', () => {

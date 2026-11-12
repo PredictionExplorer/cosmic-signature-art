@@ -21,7 +21,7 @@ export function Sentences({ said, t }: { said: readonly string[]; t: Messages })
 }
 
 /** Everything that can come to stand in the line's room past the frame. */
-export interface Room {
+interface Room {
   /** The visitor is asked whom to stay with here: the question over its answers stands first. */
   asks: boolean;
   /** What happened in each picture the visitor may be in. */

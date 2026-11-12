@@ -67,7 +67,7 @@ describe('the window’s line', () => {
     expect(playingLine(333_555, 10, steps, t, number)).toBe(
       'Step 333,555 of 1,000,000 · 00:10 into the Light film',
     );
-    // Ten seconds in, frame 600 has drawn every step through 555 × 601.
+    // Five seconds in, frame 300 has drawn every step through 555 × 301.
     expect(at(5)).toBe('Step 167,055 of 1,000,000 · 00:05 into the Light film');
   });
 

@@ -87,10 +87,10 @@ describe('the orbit section’s canvases', () => {
     display(1);
     const canvases = five();
     const sheet = layers(canvases)!;
-    expect(sheet.font()).toBe('monospace');
+    expect(sheet.face()).toBe('monospace');
     canvases.names!.style.setProperty('--font-mono', ' "IBM Plex Mono", monospace ');
     document.body.append(canvases.names!);
-    expect(sheet.font()).toBe('"IBM Plex Mono", monospace');
+    expect(sheet.face()).toBe('"IBM Plex Mono", monospace');
     canvases.names!.remove();
   });
 });

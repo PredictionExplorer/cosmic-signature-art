@@ -151,7 +151,7 @@ export function useBeyond({
    * moved to it: turning the plate did not ask for the orbit (orbit-room.ts).
    */
   const beyond = canGoBeyond ? went : null;
-  /** Where After the frame has got to. At the frame nothing reads it. */
+  /** Where After the frame has got to. At the frame it reads running: every reader asks `beyond` first. */
   const phase: BeyondPhase = went?.phase ?? 'running';
   const run = beyond?.run ?? null;
   const choosing = !!beyond && phase === 'choosing';

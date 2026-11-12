@@ -17,7 +17,7 @@
   /* What stands beneath the picture past the frame, with the 6 px above it and a little to
      spare: its label, the line's room and the words. 172 px as a desk lays it out (below), and
      never less than what is found there once it is laid out (--beneath-measured, set by
-     orbit-score.tsx's `fit`): a long telling in a narrow window takes a line more. */
+     `fit` in orbit-room.ts): a long telling in a narrow window takes a line more. */
   --beneath: max(172px, var(--beneath-measured, 0px));
   /* The show's width: the plate as tall as the screen leaves room for, in its own proportions,
      under the running head's 48 px and over what stands beneath the picture. At the frame that

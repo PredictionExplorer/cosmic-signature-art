@@ -40,7 +40,7 @@ import { performWindow, playingLine, windowLine, windowScore } from './orbit-win
 import { derivedSummary, progressText } from './orbit-proof';
 import { drawChoice, type Choice } from './orbit-choice';
 import { useWindowClock } from './orbit-clock';
-import { useChoosing } from './orbit-choosing';
+import { usePicturePresses, useRing } from './orbit-choosing';
 import { OrbitFigure } from './orbit-figure';
 import { OrbitSaid, Sentences } from './orbit-said';
 import { PressGuard, usePresses } from './orbit-word';
@@ -96,8 +96,8 @@ const canTurn = () => typeof WebGL2RenderingContext !== 'undefined';
  *   the slider (orbit-timeline.tsx), the line (orbit-said.tsx), the words (orbit-words.tsx) and
  *   the record (orbit-record.tsx).
  *
- * What is left here belongs to the whole stage: the four changes of what stands on it, the
- * plate's word, the one drawing that hands on to the four, and the choice of what the line says.
+ * What is left here belongs to the whole stage: the changes of what stands on it, the plate's
+ * word, the one drawing that hands on to the four, and the choice of what the line says.
  */
 export function OrbitScore({
   orbit,
@@ -121,7 +121,10 @@ export function OrbitScore({
   const stage = useRef<HTMLDivElement>(null);
   /** The line beneath the picture and its words: what must stand in view with it past the frame. */
   const beneath = useRef<HTMLDivElement>(null);
-  /** The line and the words themselves: the focus is handed on when a word it stood on goes. */
+  /**
+   * The line and the row of words. Past the frame the focus is handed to the line, or kept in
+   * the section, when a word it stood on goes (orbit-beyond-state.ts).
+   */
   const telling = useRef<HTMLParagraphElement>(null);
   const wordsRow = useRef<HTMLDivElement>(null);
   const trails = useRef<HTMLCanvasElement>(null);
@@ -192,14 +195,19 @@ export function OrbitScore({
   // out for that expression. A window that could not be placed is drawn in its plane.
   const remembered = useRememberedExpression();
   const onPage = (both && remembered) || opening;
-  const material: Material | null = onPage && plate?.stills[onPage] ? onPage : null;
-  const plateStill =
-    material && framed !== null && state.phase !== 'failed' ? plate!.stills[material]! : null;
-  const placed = plateStill && framed ? framed : null;
+  const stillOnPage = onPage ? plate?.stills[onPage] : undefined;
+  const material: Material | null = onPage && stillOnPage ? onPage : null;
+  /** The plate the drawing lies over: its frame, and its still in the material on view. */
+  const on =
+    plate && stillOnPage && material && framed !== null && state.phase !== 'failed'
+      ? { frame: plate.frame, still: stillOnPage, material }
+      : null;
+  /** The recorded window as the frame places it on that plate, once it is known. */
+  const placed = on && framed ? framed : null;
   /** What the orbit is drawn on, once its places there are known: a plate waits for the window's. */
-  const surface: Surface | null = plateStill
-    ? placed && material && plate
-      ? { kind: 'plate', window: placed, frame: plate.frame, material }
+  const surface: Surface | null = on
+    ? placed
+      ? { kind: 'plate', window: placed, frame: on.frame, material: on.material }
       : null
     : plane && result
       ? { kind: 'plane', plane, count: result.samples.count }
@@ -225,19 +233,14 @@ export function OrbitScore({
     stage,
     beneath,
     wordsRow,
-    pastFrame: !!beyond,
     run,
     reducedMotion,
   });
-  const { ringed, aiming, point, unpoint, renew, hand } = useChoosing({
-    stage,
-    choice,
-    asked: beyond && choosing ? beyond.run : null,
-    tooSoon,
-    onStay: (body) => stay(body),
-  });
+  /** Which bodies are pointed at while the visitor chooses: the drawing rings them. */
+  const ring = useRing();
+  const { ringed, point, unpoint } = ring;
 
-  // The four changes of what stands on the stage. Each is the visitor's own act, and each says
+  // The changes of what stands on the stage. Each follows the visitor's own act, and each says
   // what must leave with it: the ring, the twin, the words' place on the page.
   /**
    * After the frame takes the stage, on a path that is known. The page may come to its picture:
@@ -293,41 +296,6 @@ export function OrbitScore({
     clock.rest();
   };
 
-  // The plate's word: go on past the frame as soon as the path past it is known, bringing the
-  // picture into view. Asking derives the orbit if the visitor has not come near it yet, and
-  // brings the section into view to wait.
-  usePlateWord(() => {
-    bringNear();
-    // The word was a link to here: the keyboard and the screen reader come here too.
-    section.current?.focus({ preventScroll: true });
-    if (beyond && (phase === 'running' || phase === 'choosing')) {
-      // Already past the frame: its picture comes back into view, whole, and a question that
-      // stands unanswered is said again by the focus it is given. The picture is new under
-      // the pointer that pressed the word: a second press there is not yet an answer.
-      room.bring();
-      if (phase === 'choosing') {
-        renew();
-        telling.current?.focus({ preventScroll: true });
-      }
-      return;
-    }
-    // Its path known, the performance begins (again, where it had been told), and brings its
-    // picture into view as it does. One scroll, to where it will stand: a second, begun here,
-    // would carry the page past it.
-    if (canGoBeyond) {
-      goBeyond();
-      return;
-    }
-    section.current?.scrollIntoView({
-      block: 'start',
-      behavior: reducedMotion ? 'instant' : 'smooth',
-    });
-    // Neither a path that could not be carried, nor one a failed derivation will never send,
-    // is waited for.
-    if (path === undefined && derivation.phase !== 'failed' && fate.phase !== 'failed')
-      past.awaitPath();
-  });
-
   // The drawing: trails accumulate, the bodies ride on a layer above, and the score beneath
   // carries the three separations with the published events. On the plate the drawing lies over
   // the still, in its material: light added on night, graphite and sumi on paper. At the film's
@@ -377,8 +345,8 @@ export function OrbitScore({
       choice.current = drawChoice({
         ...easel,
         masses: result.masses,
-        font: sheet.font(),
-        ground: plateStill?.tone ?? 'transparent',
+        font: sheet.face(),
+        ground: on?.still.tone ?? 'transparent',
       });
       choice.current.ring(ringed);
       return;
@@ -484,6 +452,51 @@ export function OrbitScore({
   useEffect(() => {
     choice.current?.ring(ringed);
   }, [ringed]);
+  // What a press on the picture means while the visitor chooses. After the drawing's effects,
+  // on purpose: the picture is one to press from when it stands drawn (orbit-choosing.ts).
+  const { hand, renew } = usePicturePresses({
+    stage,
+    choice,
+    asked: beyond && choosing ? beyond.run : null,
+    tooSoon,
+    ring,
+    onStay: stay,
+  });
+
+  // The plate's word: go on past the frame as soon as the path past it is known, bringing the
+  // picture into view. Asking derives the orbit if the visitor has not come near it yet, and
+  // brings the section into view to wait.
+  usePlateWord(() => {
+    bringNear();
+    // The word was a link to here: the keyboard and the screen reader come here too.
+    section.current?.focus({ preventScroll: true });
+    if (beyond && (phase === 'running' || phase === 'choosing')) {
+      // Already past the frame: its picture comes back into view, whole, and a question that
+      // stands unanswered is said again by the focus it is given. The picture is new under
+      // the pointer that pressed the word: a second press there is not yet an answer.
+      room.bring();
+      if (phase === 'choosing') {
+        renew();
+        telling.current?.focus({ preventScroll: true });
+      }
+      return;
+    }
+    // Its path known, the performance begins (again, where it had been told), and brings its
+    // picture into view as it does. One scroll, to where it will stand: a second, begun here,
+    // would carry the page past it.
+    if (canGoBeyond) {
+      goBeyond();
+      return;
+    }
+    section.current?.scrollIntoView({
+      block: 'start',
+      behavior: reducedMotion ? 'instant' : 'smooth',
+    });
+    // Neither a path that could not be carried, nor one a failed derivation will never send,
+    // is waited for.
+    if (path === undefined && derivation.phase !== 'failed' && fate.phase !== 'failed')
+      past.awaitPath();
+  });
 
   const resized = useEffectEvent(() => {
     // At another size the picture is not where a resting mouse found it: it aims afresh when
@@ -625,9 +638,7 @@ export function OrbitScore({
         tabIndex={-1}
         className={styles.orbit}
         style={
-          plateStill && plate
-            ? ({ '--plate-ratio': plate.frame.width / plate.frame.height } as CSSProperties)
-            : undefined
+          on ? ({ '--plate-ratio': on.frame.width / on.frame.height } as CSSProperties) : undefined
         }
         aria-labelledby="orbit-title"
         data-phase={state.phase}
@@ -644,8 +655,8 @@ export function OrbitScore({
               : twin.phase
             : undefined
         }
-        data-drawing={plateStill ? 'plate' : 'plane'}
-        data-material={plateStill ? (material ?? undefined) : undefined}
+        data-drawing={on ? 'plate' : 'plane'}
+        data-material={on?.material}
       >
         <header className={styles.head}>
           <h2 id="orbit-title" className={styles.title}>
@@ -675,18 +686,14 @@ export function OrbitScore({
           t={t}
           oneDecimal={oneDecimal}
           number={number}
-          on={
-            plateStill && plate && material
-              ? { frame: plate.frame, still: plateStill, material }
-              : null
-          }
+          on={on}
           near={near}
           space={space}
           still={still}
           act={beyond ? 'beyond' : twin ? 'twin' : 'window'}
-          labelled={phase === 'running' || phase === 'choosing'}
+          labelled={!!beyond && (phase === 'running' || phase === 'choosing')}
           hand={hand}
-          aimed={aiming}
+          aimed={ring.aiming}
           onTurned={setTurned}
           onPlayPause={clock.playPause}
         />

@@ -8,21 +8,30 @@ function laid<T extends HTMLElement>(node: T, top: number, bottom: number) {
   return node;
 }
 
-let frames: FrameRequestCallback[] = [];
+let frames = new Map<number, FrameRequestCallback>();
+let frameIds = 0;
 const scrolledTo = vi.fn();
+/** The frame that was asked for comes, if one still is. */
+const nextFrame = () => {
+  const [next] = frames;
+  if (!next) return;
+  frames.delete(next[0]);
+  next[1](0);
+};
 /** Two frames on: when the browser has answered the change in its own way. */
 const twoFramesOn = () => {
-  frames.shift()?.(0);
-  frames.shift()?.(0);
+  nextFrame();
+  nextFrame();
 };
 
 beforeEach(() => {
-  frames = [];
+  frames = new Map();
   scrolledTo.mockClear();
-  vi.stubGlobal('requestAnimationFrame', (callback: FrameRequestCallback) => frames.push(callback));
-  vi.stubGlobal('cancelAnimationFrame', (id: number) => {
-    frames[id - 1] = () => {};
+  vi.stubGlobal('requestAnimationFrame', (callback: FrameRequestCallback) => {
+    frames.set(++frameIds, callback);
+    return frameIds;
   });
+  vi.stubGlobal('cancelAnimationFrame', (id: number) => frames.delete(id));
   vi.stubGlobal('scrollTo', scrolledTo);
   vi.stubGlobal('scrollY', 1_000);
   vi.stubGlobal('innerHeight', 800);
@@ -47,8 +56,7 @@ function staged(
     wordsRow: { current: laid(document.createElement('div'), ...at.words) },
   };
   const hook = renderHook(
-    ({ run }: { run: number | null }) =>
-      usePictureRoom({ ...refs, pastFrame: run !== null, run, reducedMotion }),
+    ({ run }: { run: number | null }) => usePictureRoom({ ...refs, run, reducedMotion }),
     { initialProps: { run: null as number | null } },
   );
   return { ...hook, section, refs, room: () => hook.result.current };
@@ -113,8 +121,28 @@ describe('the picture’s room past the frame', () => {
     room().arrive('bring');
     rerender({ run: 1 });
     expect(scrolledTo).toHaveBeenCalledTimes(1);
-    // The same picture again without a word for it (a plate turned back).
+    // The same picture stands again without a word for it: a plate turned to a material its
+    // orbit is not drawn on, and back.
+    rerender({ run: null });
+    rerender({ run: 1 });
+    expect(scrolledTo).toHaveBeenCalledTimes(1);
+  });
+
+  it('does not bring the page to a picture the visitor has left before the scroll began', () => {
+    const { room, rerender } = staged(below);
+    room().arrive('bring');
+    rerender({ run: 1 });
+    // Back at the frame within the two frames the scroll waits.
+    rerender({ run: null });
+    twoFramesOn();
+    expect(scrolledTo).not.toHaveBeenCalled();
+    // And asked for again at once: one scroll, not the first one's too.
+    room().arrive('bring');
     rerender({ run: 2 });
+    room().arrive('bring');
+    rerender({ run: 3 });
+    twoFramesOn();
+    twoFramesOn();
     expect(scrolledTo).toHaveBeenCalledTimes(1);
   });
 

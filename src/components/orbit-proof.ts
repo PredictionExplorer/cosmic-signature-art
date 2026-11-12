@@ -13,8 +13,9 @@ import { pairName } from '@/lib/physics/film-score';
 /*
   The proof, in words: what the orbit section (orbit-score.tsx) and Verify an orbit
   (orbit-verifier.tsx) both print of one derivation. The published record as text, each
-  measurement's label, the worker's progress, a value derived here that differs, and the
-  verdict. One module, so the two pages never word the same check two ways.
+  measurement's label, the worker's progress, a value derived here that differs, the verdict,
+  and the section's summary of a derivation. One module, so the two pages never word the same
+  check two ways.
 */
 
 export const MINUS = '−';

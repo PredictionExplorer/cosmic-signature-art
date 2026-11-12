@@ -5,6 +5,7 @@ import { pairName } from '@/lib/physics/film-score';
 import { LIGHT_FILM, lightFilmFrames, stepsDrawnAt } from '@/lib/physics/light-film';
 import type { Rederivation } from '@/lib/physics/orbit';
 import type { Strip } from './orbit-layers';
+import { SAID_EVERY_MS } from './orbit-rhythm';
 import type { Painter } from './orbit-painter';
 import type { Picture } from './orbit-picture';
 import { drawScore } from './score-drawing';
@@ -15,8 +16,8 @@ import { drawScore } from './score-drawing';
 
   The clock is the visitor's (src/lib/first-light/transport.ts): it plays, rests, is scrubbed and
   slows for the closest approach. This module draws the window to wherever the clock stands, moves
-  the score's playhead, the slider and the orbit in depth with it, and says where it stands a few
-  times a second. What is said in words is the section's.
+  the score's playhead, the slider and the orbit in depth with it, and reports where it stands a
+  few times a second. The section keeps that report and words it with `windowLine`.
 */
 
 /** The clock as the words and the slider read it. */
@@ -24,8 +25,6 @@ export type Clock = { kind: Transport['kind']; seconds: number };
 
 /** The closest approach is said from its step for this long, in seconds of the Light film. */
 const CLOSEST_SAID_SECONDS = 2;
-/** The line is said this often at most while the clock runs, in milliseconds. */
-const SAID_EVERY_MS = 250;
 
 /** Where the window stands: its step of all its steps, and the film's clock there. */
 export function playingLine(

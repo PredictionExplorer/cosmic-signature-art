@@ -19,6 +19,7 @@ import type { DerivedFate } from '@/lib/physics/orbit';
 import { shareText } from './orbit-proof';
 import { MATERIALS, type Picture } from './orbit-picture';
 import { FADE_EVERY_SECONDS, type Continued, type Painter } from './orbit-painter';
+import { LONGEST_FRAME_SECONDS, SAID_EVERY_MS } from './orbit-rhythm';
 
 /*
   After the frame (third-physics.md §5.6; docs/after-the-frame.md §8.3). The same physics runs on
@@ -61,11 +62,6 @@ const LEAD_SECONDS = 4;
 const WORTH_SECONDS = 4;
 /** Where nothing plays, a step lands this long after the moment, so the picture shows it. */
 const PAST_SECONDS = 1;
-/**
- * No frame advances a performance past the frame by more than this, so a tab coming back
- * resumes it where it was.
- */
-export const LONGEST_FRAME_SECONDS = 0.1;
 
 /** What the picture shows of a path past the window, and where a performance of it ends. */
 export type HeldScript = {
@@ -653,7 +649,7 @@ export function performBeyond(stage: BeyondStage): (() => void) | void {
     painter.continued(trail, before, index);
     lightsAt(index);
     const ended = index >= ending.sample;
-    if (now - spoken > 250 || ended) {
+    if (now - spoken > SAID_EVERY_MS || ended) {
       spoken = now;
       speak(index, true);
     }

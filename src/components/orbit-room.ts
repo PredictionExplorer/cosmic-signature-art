@@ -23,7 +23,6 @@ export function usePictureRoom({
   stage,
   beneath,
   wordsRow,
-  pastFrame,
   run,
   reducedMotion,
 }: {
@@ -34,8 +33,6 @@ export function usePictureRoom({
   beneath: RefObject<HTMLDivElement | null>;
   /** The words themselves: kept under the hand that pressed one, on the way back. */
   wordsRow: RefObject<HTMLDivElement | null>;
-  /** The section stands past the frame. */
-  pastFrame: boolean;
   /** Which performance past the frame stands, by its count; null at the frame. */
   run: number | null;
   reducedMotion: boolean;
@@ -67,15 +64,15 @@ export function usePictureRoom({
     if (!node) return;
     const picture = stage.current?.getBoundingClientRect();
     const under = beneath.current?.getBoundingClientRect();
-    if (!pastFrame || !picture || !under) node.style.removeProperty('--beneath-measured');
+    if (run === null || !picture || !under) node.style.removeProperty('--beneath-measured');
     else
       node.style.setProperty(
         '--beneath-measured',
         `${Math.ceil(under.bottom - picture.bottom) + BENEATH_HEAD + BENEATH_SPARE}px`,
       );
   };
-  /** The page as it should stand, past the frame or back at it. */
-  const compose = (beyond: boolean) => {
+  /** The page as it should stand, past the frame (`past`) or back at it. */
+  const compose = (past: boolean) => {
     cancelAnimationFrame(composing.current);
     // First of all, so that the page is brought to the picture as it will stand.
     fit();
@@ -89,7 +86,7 @@ export function usePictureRoom({
     };
     const now = stands();
     if (!now) return;
-    if (!beyond) {
+    if (!past) {
       // Back at the frame the caption and the score return above the words. They are put back
       // where they stood under the hand that pressed one: at once, before the next paint, and
       // once more two frames on, when the browser has answered the change in its own way.

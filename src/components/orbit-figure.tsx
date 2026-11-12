@@ -21,7 +21,7 @@ import styles from './orbit-score.module.css';
 /** The plate's still is laid out at the figure's width: the full width on a phone. */
 const STILL_SIZES = '(max-width: 860px) 100vw, 62vw';
 
-/** A pointer on the picture, while the visitor chooses a body in it (orbit-choice.ts). */
+/** A pointer on the picture, while the visitor chooses a body in it (orbit-choosing.ts). */
 export interface StageHand {
   onPointerDown: (event: PointerEvent<HTMLDivElement>) => void;
   onClick: (event: MouseEvent<HTMLDivElement>) => void;
