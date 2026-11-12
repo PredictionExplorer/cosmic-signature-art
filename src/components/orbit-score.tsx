@@ -1,8 +1,6 @@
 'use client';
 import {
   Fragment,
-  createContext,
-  useContext,
   useEffect,
   useEffectEvent,
   useLayoutEffect,
@@ -10,7 +8,6 @@ import {
   useRef,
   useState,
   type CSSProperties,
-  type KeyboardEvent,
   type ReactNode,
 } from 'react';
 import type { Locale } from '@/lib/i18n/routing';
@@ -39,7 +36,6 @@ import {
   toClosest,
   type Transport,
 } from '@/lib/first-light/transport';
-import { PRESSES_KEPT, pressedTooSoon, type Press } from '@/lib/second-press';
 import { AFTER_THE_FRAME_EVENT } from '@/lib/venue-events';
 import { useMotion } from './motion-provider';
 import { drawScore } from './score-drawing';
@@ -66,6 +62,7 @@ import { useOrbitPresence } from './orbit-presence';
 import { OrbitRecord } from './orbit-record';
 import { OrbitSculpture, type Sculpture } from './orbit-sculpture';
 import { OrbitSlider } from './orbit-timeline';
+import { PressGuard, Word, WordLink, usePresses } from './orbit-word';
 import { Scientific, TWIN_TONE, performTwin, type TwinPair } from './orbit-twin';
 import { progressText, seedShort, twinWorker, verdict } from './orbit-proof';
 import recordStyles from './artwork-record.module.css';
@@ -92,95 +89,6 @@ type Clock = { kind: Transport['kind']; seconds: number };
 /** One part in a trillion: the twin followed in its worker, ready to perform, or not to be had. */
 type Twin =
   { phase: 'following' } | { phase: 'ready'; run: TwinRun; repeat: number } | { phase: 'failed' };
-
-/**
- * Whether a click is a pointer's, made too soon after what it lands on became what it is
- * (`becameAt`), where the press before it landed (src/lib/second-press.ts). The section answers,
- * since it keeps the presses; a word outside one is always pressed.
- */
-type TooSoon = (
-  event: { detail: number; clientX: number; clientY: number },
-  becameAt: number,
-) => boolean;
-const PressGuard = createContext<TooSoon>(() => false);
-
-/** A held key presses a word once: its repeats are stopped where they begin. */
-const oncePerPress = (event: KeyboardEvent) => {
-  if (event.repeat && (event.key === 'Enter' || event.key === ' ')) event.preventDefault();
-};
-
-/** One of the words beside the line: pressed or not where it is a mode, dimmed where it would do nothing. */
-function Word({
-  label,
-  name,
-  onClick,
-  onPoint,
-  pressed,
-  disabled = false,
-}: {
-  label: string;
-  /** What the word does, where its letters alone do not say: it contains them (WCAG 2.5.3). */
-  name?: string;
-  onClick: () => void;
-  /**
-   * The focus, or a mouse, has come to the word or left it. A finger does not hover: a touch
-   * that changed the picture on its way to a press could lose the press (WebKit).
-   */
-  onPoint?: (by: 'focus' | 'mouse', on: boolean) => void;
-  pressed?: boolean;
-  disabled?: boolean;
-}) {
-  /** When the word became what it now says, on the clock a press is timed by. */
-  const became = useRef(0);
-  useEffect(() => {
-    became.current = performance.now();
-  }, [label, pressed]);
-  const tooSoon = useContext(PressGuard);
-  return (
-    <button
-      type="button"
-      className={styles.again}
-      aria-label={name}
-      aria-pressed={pressed}
-      aria-disabled={disabled || undefined}
-      onClick={(event) => {
-        if (!tooSoon(event, became.current)) onClick();
-      }}
-      onKeyDown={oncePerPress}
-      onPointerEnter={
-        onPoint && ((event) => event.pointerType === 'mouse' && onPoint('mouse', true))
-      }
-      onPointerLeave={
-        onPoint && ((event) => event.pointerType === 'mouse' && onPoint('mouse', false))
-      }
-      onFocus={onPoint && (() => onPoint('focus', true))}
-      onBlur={onPoint && (() => onPoint('focus', false))}
-    >
-      {label}
-    </button>
-  );
-}
-
-/** A way on among the words: a link, which a press that comes too soon does not follow either. */
-function WordLink({ label, href }: { label: string; href: string }) {
-  const became = useRef(0);
-  useEffect(() => {
-    became.current = performance.now();
-  }, []);
-  const tooSoon = useContext(PressGuard);
-  return (
-    <a
-      className={styles.again}
-      href={href}
-      onClick={(event) => {
-        if (tooSoon(event, became.current)) event.preventDefault();
-      }}
-      onKeyDown={oncePerPress}
-    >
-      {label}
-    </a>
-  );
-}
 
 /**
  * The orbit, re-performed: the work's orbit derived from its seed in this browser, drawn at
@@ -261,31 +169,7 @@ export function OrbitScore({
    */
   const pressed = useRef<{ finger: boolean; body: number | null } | null>(null);
   const pressableSince = useRef(0);
-  /**
-   * A pointer's last few presses, oldest first, the one being made last: a press that comes
-   * too soon is measured against those before it. They are noted wherever in the window they
-   * land: the plate's own word stands outside this section, and brings its picture under the
-   * pointer that pressed it. A key's click, and one a script makes, count no presses
-   * (`detail` 0): the focus was moved there on purpose, and it is always taken.
-   */
-  const presses = useRef<Press[]>([]);
-  useEffect(() => {
-    const note = (event: PointerEvent) => {
-      presses.current = [
-        ...presses.current.slice(1 - PRESSES_KEPT),
-        { x: event.clientX, y: event.clientY, at: performance.now() },
-      ];
-    };
-    window.addEventListener('pointerdown', note, true);
-    return () => window.removeEventListener('pointerdown', note, true);
-  }, []);
-  const tooSoon: TooSoon = (event, becameAt) =>
-    event.detail > 0 &&
-    pressedTooSoon(
-      { x: event.clientX, y: event.clientY, at: performance.now() },
-      presses.current.slice(0, -1),
-      becameAt,
-    );
+  const tooSoon = usePresses();
   const events = useRef<HTMLCanvasElement>(null);
   const slider = useRef<HTMLInputElement>(null);
   const sculpture = useRef<Sculpture | null>(null);
