@@ -2,7 +2,6 @@
 import {
   useEffect,
   useEffectEvent,
-  useLayoutEffect,
   useMemo,
   useRef,
   useState,
@@ -45,6 +44,7 @@ import type { BeyondPath } from '@/lib/physics/beyond';
 import { STRIDE, useOrbitDerivation, type Derivation } from './orbit-derivation';
 import { useOrbitPresence } from './orbit-presence';
 import { OrbitRecord } from './orbit-record';
+import { usePictureRoom } from './orbit-room';
 import type { Sculpture } from './orbit-sculpture';
 import { OrbitSlider } from './orbit-timeline';
 import { performTwin, twinLine } from './orbit-twin';
@@ -60,11 +60,6 @@ import { PressGuard, usePresses } from './orbit-word';
 import { OrbitWords, type Offered } from './orbit-words';
 import recordStyles from './artwork-record.module.css';
 import styles from './orbit-score.module.css';
-
-/** Past the frame the picture is brought this far beneath the running head, in pixels… */
-const BENEATH_HEAD = 6;
-/** …and this much of the screen is left to spare under what stands beneath it. */
-const BENEATH_SPARE = 6;
 
 /** A picture is read at no size in particular: a body is on it or off it at every size. */
 const ANY_SIZE = { width: 1, height: 1, ratio: 1 };
@@ -154,8 +149,6 @@ export function OrbitScore({
   const frame = useRef(0);
   /** How far After the frame has run, so a resize or a return carries on from it. */
   const live = useRef<{ key: string; sample: number; began?: number } | null>(null);
-  /** Where the words stood as the visitor left After the frame, so they stay under the hand. */
-  const wordsWere = useRef<{ top: number; bottom: number } | null>(null);
   const { near, inView, bringNear } = useOrbitPresence(section);
   /** What After the frame's performance last said. */
   const [readout, setReadout] = useState<string | null>(null);
@@ -176,12 +169,6 @@ export function OrbitScore({
    * or has answered it, and the word that answered is gone.
    */
   const handOn = useRef(false);
-  /**
-   * Whether the performance now beginning may move the page to its picture: always when the
-   * visitor has just asked, and only if they are still here when it had to wait for its path.
-   * It is taken once (`compose`): a picture that comes back unasked moves nothing.
-   */
-  const arriving = useRef<'bring' | 'if-here' | null>(null);
   /** Whether Further on would save a wait from where the performance stands… */
   const [worthIt, setWorthIt] = useState(false);
   /** …and a count of the times it was taken, so the drawing follows the playhead it moved. */
@@ -271,6 +258,16 @@ export function OrbitScore({
    * moved to it: turning the plate did not ask for the orbit (`arriving`).
    */
   const beyond = canGoBeyond ? went : null;
+  const run = beyond?.run ?? null;
+  const room = usePictureRoom({
+    section,
+    stage,
+    beneath,
+    wordsRow,
+    past: !!beyond,
+    run,
+    reducedMotion,
+  });
   const choosing = !!beyond && phase === 'choosing';
   const { ringed, aiming, point, unpoint, renew, hand } = useChoosing({
     stage,
@@ -348,7 +345,7 @@ export function OrbitScore({
   const nothingPerformed = script?.ending.sample === 0;
 
   const startBeyond = (waited: boolean, carried: BeyondPath | null | undefined) => {
-    arriving.current = waited ? 'if-here' : 'bring';
+    room.arrive(waited ? 'if-here' : 'bring');
     twinAct.leave();
     setAwaited(false);
     setWanted(material);
@@ -373,114 +370,13 @@ export function OrbitScore({
   };
   /** The visitor's answer: stay with one of the three, or (null) with the frame. Time resumes. */
   const stay = (body: number | null) => {
-    arriving.current = 'bring';
+    room.arrive('bring');
     handOn.current = true;
     unpoint();
     setWorthIt(false);
     setReadout(null);
     setWent((current) => ({ run: (current?.run ?? 0) + 1, phase: 'running', kept: body }));
   };
-  // Past the frame the whole picture is the subject: its four edges, the line beneath it and the
-  // words stand in one screen, so the caption and the score step aside (orbit-score.module.css)
-  // and, as a performance begins, the page brings the picture just under the running head,
-  // unless all of that is in view already. Leaving, the caption and the score return, and the
-  // words are kept in view. Either is the visitor's own act: the word they pressed.
-  const composing = useRef(0);
-  /**
-   * Past the frame the plate is fitted to the height its screen leaves beside what stands
-   * beneath it: the label, the line's room (that of the tallest thing that can come to stand
-   * in it, in this language at this width) and the words. That room is found here, once it is
-   * laid out, and given to the stylesheet (--beneath-measured: orbit-score.module.css). On a
-   * phone it does not depend on the plate's own size, and is found in one pass. On a desk, and
-   * between 700 and 860 px, what stands beneath is as wide as the plate: a room taller than
-   * the desk's 172 px narrows both, a telling may then take a line more, and the observer of
-   * the room (below) finds that in a further pass. At the frame it is not given, and the plate
-   * is the size it always was.
-   */
-  const fit = useEffectEvent(() => {
-    const node = section.current;
-    if (!node) return;
-    const picture = stage.current?.getBoundingClientRect();
-    const under = beneath.current?.getBoundingClientRect();
-    if (!beyond || !picture || !under) node.style.removeProperty('--beneath-measured');
-    else
-      node.style.setProperty(
-        '--beneath-measured',
-        `${Math.ceil(under.bottom - picture.bottom) + BENEATH_HEAD + BENEATH_SPARE}px`,
-      );
-  });
-  const compose = useEffectEvent((past: boolean) => {
-    cancelAnimationFrame(composing.current);
-    // First of all, so that the page is brought to the picture as it will stand.
-    fit();
-    /** Where the picture and what stands beneath it are in the window now. */
-    const stands = () => {
-      const picture = stage.current?.getBoundingClientRect();
-      const words = beneath.current?.getBoundingClientRect();
-      if (!section.current || !picture || !words) return null;
-      const head = parseFloat(getComputedStyle(section.current).scrollMarginTop) || 0;
-      return { picture, words, head, room: window.innerHeight };
-    };
-    const now = stands();
-    if (!now) return;
-    if (!past) {
-      // Back at the frame the caption and the score return above the words. They are put back
-      // where they stood under the hand that pressed one: at once, before the next paint, and
-      // once more two frames on, when the browser has answered the change in its own way.
-      const were = wordsWere.current;
-      wordsWere.current = null;
-      if (!were || were.bottom <= now.head || were.top >= now.room) return;
-      const back = () => {
-        const top = wordsRow.current?.getBoundingClientRect().top;
-        if (top === undefined || Math.abs(top - were.top) < 1) return;
-        window.scrollTo({ top: window.scrollY + top - were.top, behavior: 'instant' });
-      };
-      back();
-      composing.current = requestAnimationFrame(() => {
-        composing.current = requestAnimationFrame(back);
-      });
-      return;
-    }
-    // The page moves to the picture only as the visitor's own act: their word for it, taken
-    // once. A picture that stands past the frame again without one (a plate turned back to
-    // the material its orbit is drawn on) is left where the page is.
-    const asked = arriving.current;
-    arriving.current = null;
-    if (!asked) return;
-    // A performance that waited for its path found the page already on its way here, by the
-    // plate's word: if the visitor is still here it ends on the picture, wherever that scroll
-    // has reached. One they asked for here moves nothing when all of it is in view.
-    const waited = asked === 'if-here';
-    const here = now.picture.bottom > now.head && now.picture.top < now.room;
-    if (waited ? !here : now.picture.top >= now.head && now.words.bottom <= now.room) return;
-    const bring = () => {
-      const at = stands();
-      if (!at) return;
-      window.scrollTo({
-        top: window.scrollY + at.picture.top - at.head - BENEATH_HEAD,
-        behavior: reducedMotion ? 'instant' : 'smooth',
-      });
-    };
-    if (reducedMotion) {
-      bring();
-      return;
-    }
-    // Two frames on, and measured again there. The note above the picture grows a line as the
-    // performance begins, the browser's scroll anchoring answers that in the next frame, and
-    // WebKit cancels a smooth scroll begun in the frame of a change it has to answer.
-    composing.current = requestAnimationFrame(() => {
-      composing.current = requestAnimationFrame(bring);
-    });
-  });
-  const run = beyond?.run ?? null;
-  const performed = useRef(false);
-  useLayoutEffect(() => {
-    // Nothing moves when the section first stands, only when the visitor goes past the frame or back.
-    if (run === null && !performed.current) return;
-    performed.current = run !== null;
-    compose(run !== null);
-    return () => cancelAnimationFrame(composing.current);
-  }, [run]);
   // The plate's word: go on past the frame as soon as the path past it is known, bringing the
   // picture into view. Asking derives the orbit if the visitor has not come near it yet, and
   // brings the section into view to wait.
@@ -492,8 +388,7 @@ export function OrbitScore({
       // Already past the frame: its picture comes back into view, whole, and a question that
       // stands unanswered is said again by the focus it is given. The picture is new under
       // the pointer that pressed the word: a second press there is not yet an answer.
-      arriving.current = 'bring';
-      compose(true);
+      room.bring();
       if (phase === 'choosing') {
         renew();
         telling.current?.focus({ preventScroll: true });
@@ -524,7 +419,7 @@ export function OrbitScore({
 
   /** One part in a trillion: After the frame gives way, and the twin is followed if it is new. */
   const goTwin = () => {
-    if (beyond) keepWords();
+    if (beyond) room.keepWords();
     setWent(null);
     unpoint();
     handOn.current = false;
@@ -767,6 +662,7 @@ export function OrbitScore({
     point('aim', null);
     draw();
   });
+  const refit = useEffectEvent(() => room.fit());
   useEffect(() => {
     const node = stage.current;
     if (!node || typeof ResizeObserver === 'undefined') return;
@@ -781,7 +677,7 @@ export function OrbitScore({
     observer.observe(node);
     // What stands beneath the picture takes another height at another width (a line more of
     // what happened): the plate is fitted again.
-    const under = new ResizeObserver(() => fit());
+    const under = new ResizeObserver(() => refit());
     if (beneath.current) under.observe(beneath.current);
     return () => {
       observer.disconnect();
@@ -789,14 +685,9 @@ export function OrbitScore({
     };
   }, []);
 
-  /** Notes where the words stand, on the way out of After the frame (compose). */
-  const keepWords = () => {
-    const box = wordsRow.current?.getBoundingClientRect();
-    wordsWere.current = box ? { top: box.top, bottom: box.bottom } : null;
-  };
   /** Back to the frame: the recorded window, drawn whole. */
   const leaveBeyond = () => {
-    keepWords();
+    room.keepWords();
     unpoint();
     handOn.current = false;
     live.current = null;
