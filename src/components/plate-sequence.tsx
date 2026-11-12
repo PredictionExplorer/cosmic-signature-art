@@ -23,9 +23,9 @@ import { getPlateGround } from '@/lib/art/plate-records';
 import type { CycleSummary } from '@/lib/art/collection-index';
 import type { Hanging } from '@/lib/art/collection-traits';
 import { expressionWord, fill } from '@/lib/i18n/format';
-import type { Messages } from '@/lib/i18n/en';
 import { localizedPath, type Locale } from '@/lib/i18n/routing';
 import { ArtworkMedia } from './artwork-media';
+import type { PlateSequenceWords } from './plate-sequence.words';
 import { useCollectionMotion } from './collection-motion';
 import { CollectionPreview, excerptRange, getCollectionPreviewFilm } from './collection-preview';
 import { ArtworkTransition } from './artwork-transition';
@@ -152,7 +152,7 @@ export function ChapterStrip({
   cycle: number;
   summary?: CycleSummary;
   locale: Locale;
-  t: Messages;
+  t: Pick<PlateSequenceWords, 'cycle' | 'oneWork' | 'worksCount' | 'imprintedOn'>;
   paired?: boolean;
 }) {
   const date = summary?.mintedAt
@@ -214,7 +214,7 @@ export function PlateSequence({
 }: {
   works: Artwork[];
   locale: Locale;
-  t: Messages;
+  t: PlateSequenceWords;
   /**
    * What every card shows: one expression (a work without it falls back to what it has), or
    * `both`, each work's Ink and Light side by side across the seam.
