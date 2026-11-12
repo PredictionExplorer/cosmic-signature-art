@@ -731,8 +731,6 @@ export function OrbitScore({
       stride: STRIDE,
     });
 
-    trail.clearRect(0, 0, width, height);
-    beyondTrail.clearRect(0, 0, width, height);
     scene.current = null;
     numbered.current = null;
     picks.current = [];
@@ -796,50 +794,9 @@ export function OrbitScore({
         },
       });
     }
-    // The score: log separations of the three pairs, the closest approach, the syzygies and
-    // the braid crossings as ticks, and the playhead.
     const scoreWidth = eventCanvas.width;
     const scoreHeight = eventCanvas.height;
-    const at = (step: number) => (step / (steps - 1)) * scoreWidth;
     const lane = scoreHeight - 12 * ratio;
-    const scoreStill = document.createElement('canvas');
-    scoreStill.width = scoreWidth;
-    scoreStill.height = scoreHeight;
-    const base = scoreStill.getContext('2d');
-    if (!base) return;
-    drawScore(
-      base,
-      {
-        separations: result.samples.separations,
-        count,
-        stride: STRIDE,
-        closestApproach: result.closestApproach,
-        syzygies: result.syzygies,
-        crossings: result.braid.events.map((crossing) => crossing.step),
-      },
-      hues,
-      {
-        ratio,
-        x: at,
-        lane: { top: 2 * ratio, height: lane - 4 * ratio },
-        base: scoreHeight,
-        ticks: { crossing: 3, syzygy: 7, closest: 11 },
-        lineAlpha: 0.55,
-        ink: 'rgb(241 235 223)',
-        every: 2,
-      },
-    );
-    /** The score with its playhead, or dimmed without one while the orbit runs past it. */
-    const scoreAt = (step: number | null) => {
-      score.clearRect(0, 0, scoreWidth, scoreHeight);
-      score.globalAlpha = step === null ? 0.35 : 1;
-      score.drawImage(scoreStill, 0, 0);
-      score.globalAlpha = 1;
-      if (step === null) return;
-      score.fillStyle = 'rgb(241 235 223 / 0.92)';
-      score.fillRect(Math.round(at(step)), 0, ratio, lane);
-    };
-
     if (twin?.phase === 'ready' && derivedFate && plate && picture.kind === 'plate') {
       const found = twin.run;
       const speed = twinPace(found, steps, pace);
@@ -900,10 +857,46 @@ export function OrbitScore({
         onRested: () => setTwinRested(true),
       });
     }
+    // The score: log separations of the three pairs, the closest approach, the syzygies and
+    // the braid crossings as ticks, and the playhead.
+    const at = (step: number) => (step / (steps - 1)) * scoreWidth;
+    const scoreStill = document.createElement('canvas');
+    scoreStill.width = scoreWidth;
+    scoreStill.height = scoreHeight;
+    const base = scoreStill.getContext('2d');
+    if (!base) return;
+    drawScore(
+      base,
+      {
+        separations: result.samples.separations,
+        count,
+        stride: STRIDE,
+        closestApproach: result.closestApproach,
+        syzygies: result.syzygies,
+        crossings: result.braid.events.map((crossing) => crossing.step),
+      },
+      hues,
+      {
+        ratio,
+        x: at,
+        lane: { top: 2 * ratio, height: lane - 4 * ratio },
+        base: scoreHeight,
+        ticks: { crossing: 3, syzygy: 7, closest: 11 },
+        lineAlpha: 0.55,
+        ink: 'rgb(241 235 223)',
+        every: 2,
+      },
+    );
+    /** The score with its playhead at a step. */
+    const scoreAt = (step: number) => {
+      score.clearRect(0, 0, scoreWidth, scoreHeight);
+      score.drawImage(scoreStill, 0, 0);
+      score.fillStyle = 'rgb(241 235 223 / 0.92)';
+      score.fillRect(Math.round(at(step)), 0, ratio, lane);
+    };
     // Asked for After the frame, the window waits whole for its path rather than starting over.
     // Where motion is unwelcome it is drawn whole, until the visitor takes the clock.
     if (awaited || following || (still && !chosen)) transport.current = restingAt(film, film);
-    setClockState({ kind: transport.current.kind, seconds: transport.current.seconds });
     drawn.current = 0;
     const filmFrames = lightFilmFrames(steps);
 
