@@ -2,7 +2,8 @@ import type { OrbitPlate } from '@/lib/art/orbit-plate';
 import { Continuation } from '@/lib/physics/continuation';
 import { HeldPlacement } from '@/lib/physics/framing';
 import type { DerivedFate, Rederivation } from '@/lib/physics/orbit';
-import type { TwinRun } from '@/lib/physics/twin';
+import { gapAt, twinPace, type TwinRun } from '@/lib/physics/twin';
+import type { Strip } from './orbit-layers';
 import { MATERIALS, type Picture } from './orbit-picture';
 import type { Painter } from './orbit-painter';
 import styles from './orbit-score.module.css';
@@ -16,8 +17,8 @@ import styles from './orbit-score.module.css';
   - the twin in vermilion, the red of a seal.
 
   Where they coincide the two read as one line. Then the twin parts and dances its own dance.
-  The bodies of the twin are ringed in its red. On the score beneath, the gap's growth is drawn on
-  a log scale, where doubling at a steady rate reads as a straight line (orbit-score.tsx).
+  The bodies of the twin are ringed in its red. On the strip beneath, in the score's place, the
+  gap's growth is drawn on a log scale, where doubling at a steady rate reads as a straight line.
 */
 
 /** The twin's tone, in light on night and in ink on paper. */
@@ -55,7 +56,11 @@ export interface TwinStage {
   result: Rederivation;
   dt: number;
   steps: number;
-  /** The pair's pace, in steps a second, and the steps between the samples drawn. */
+  /**
+   * The film's pace, in steps a second, and the steps between the window's samples. The pair
+   * keeps the film's pace, or a faster one where the twin parts late (`twinPace`), and is
+   * sampled as much more sparsely.
+   */
   pace: number;
   stride: number;
   /** Drawn at once rather than performed. */
@@ -68,8 +73,8 @@ export interface TwinStage {
   ratio: number;
   hues: readonly number[];
   painter: Painter;
-  /** The gap's growth on the score, drawn to a step. */
-  growth: (taken: number) => void;
+  /** The strip beneath the picture, where the gap's growth is drawn. */
+  strip: Strip;
   live: { current: TwinPair | null };
   frame: { current: number };
   /** Says where the pair has reached. */
@@ -77,19 +82,59 @@ export interface TwinStage {
   onRested: () => void;
 }
 
+/**
+ * The gap's growth on the strip beneath the picture, drawn to a step: on a log scale from a
+ * trillionth up, where steady doubling is a straight line. A rule stands where the frame ends
+ * (the recorded window lies to its left), and a dot where the twin parted.
+ */
+export function twinGrowth(strip: Strip, run: TwinRun, steps: number): (taken: number) => void {
+  const { context, width, height, lane, ratio } = strip;
+  const span = Math.max(run.until, steps);
+  const highest = run.gaps.reduce((most, gap) => Math.max(most, gap), 1e-12);
+  const top = Math.max(0, Math.ceil(Math.log10(highest)));
+  const bottom = -12;
+  const x = (step: number) => (step / span) * width;
+  const y = (gap: number) =>
+    lane -
+    2 * ratio -
+    ((Math.log10(Math.max(gap, 1e-13)) - bottom) / (top - bottom)) * (lane - 4 * ratio);
+  return (taken) => {
+    context.clearRect(0, 0, width, height);
+    context.fillStyle = 'rgb(241 235 223 / 0.35)';
+    context.fillRect(Math.round(x(steps)), 0, ratio, lane);
+    context.strokeStyle = TWIN_TONE.light(0.95);
+    context.lineWidth = 1.5 * ratio;
+    context.beginPath();
+    for (let i = 0; i < run.gaps.length && i * run.every <= taken; i++) {
+      if (i === 0) context.moveTo(x(0), y(run.gaps[0]));
+      else context.lineTo(x(i * run.every), y(run.gaps[i]));
+    }
+    context.stroke();
+    if (run.parted !== null && taken >= run.parted) {
+      context.fillStyle = TWIN_TONE.light(1);
+      context.beginPath();
+      context.arc(x(run.parted), y(gapAt(run, run.parted)), 3 * ratio, 0, Math.PI * 2);
+      context.fill();
+    }
+  };
+}
+
 /** Performs the work and its twin past the frame, or draws them at once; returns what stops it. */
 export function performTwin(stage: TwinStage): (() => void) | void {
-  const { run, fate, picture, plate, result, steps, still, pace, painter, live, frame } = stage;
+  const { run, fate, picture, plate, result, steps, still, painter, live, frame } = stage;
   const { beyondTrail, mark, width, height, ratio, hues } = stage;
   const paint = MATERIALS[picture.material];
   const tone = TWIN_TONE[picture.material];
+  const pace = twinPace(run, steps, stage.pace);
+  const stride = stage.stride * Math.max(1, Math.round(pace / stage.pace));
+  const growth = twinGrowth(stage.strip, run, steps);
   const begin = (origin: { positions: ArrayLike<number>; velocities: ArrayLike<number> }) =>
     new Continuation({
       masses: result.masses,
       dt: stage.dt,
       origin: { taken: steps, ...origin },
       end: run.until,
-      stride: stage.stride,
+      stride,
       plate: new HeldPlacement(plate.frame, { masses: result.masses, dt: stage.dt, steps }),
     });
   const keyed = `${stage.key}:${picture.kind}`;
@@ -129,7 +174,7 @@ export function performTwin(stage: TwinStage): (() => void) | void {
   // quarters, each as faded as the performance would have left it.
   const retrace = () => {
     beyondTrail.clearRect(0, 0, width, height);
-    const memory = Math.max(4, Math.round((MEMORY_SECONDS * pace) / stage.stride));
+    const memory = Math.max(4, Math.round((MEMORY_SECONDS * pace) / stride));
     for (const [at, colour] of [
       [work, workTone],
       [twin, twinTone],
@@ -161,7 +206,7 @@ export function performTwin(stage: TwinStage): (() => void) | void {
   const show = () => {
     retrace();
     bodies();
-    stage.growth(work.taken);
+    growth(work.taken);
     stage.speak(work.taken);
   };
 
@@ -204,7 +249,7 @@ export function performTwin(stage: TwinStage): (() => void) | void {
     trace(work, workTone, workBefore, work.samples - 1, TRAIL_ALPHA);
     trace(twin, twinTone, twinBefore, twin.samples - 1, TRAIL_ALPHA);
     bodies();
-    stage.growth(work.taken);
+    growth(work.taken);
     if (now - spoken > 250 || work.resting) {
       spoken = now;
       stage.speak(work.taken);

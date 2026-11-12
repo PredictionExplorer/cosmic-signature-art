@@ -5,8 +5,10 @@ import {
   INK_BODY_RADIUS,
   MATERIALS,
   keptPicture,
+  pictureOn,
   planePicture,
   platePicture,
+  type Surface,
 } from './orbit-picture';
 
 /** Two samples and the still's step, in two copies: each x is 100 × its pair's index, each y 50. */
@@ -163,6 +165,49 @@ describe('the orbit’s picture', () => {
     expect(picture.x(0, 0)).toBe(24);
     expect(picture.y(1, 2)).toBe(124);
     expect(picture.continued(Float32Array.from([20, 10, 0, 0, 0, 0]), 6, 0, 0)).toEqual([224, 124]);
+  });
+
+  it('makes the picture of a surface: the plate’s, kept on a body past the window, or the plane’s', () => {
+    const size = { width: 864, height: 558.5, ratio: 2 };
+    const plate: Surface = { kind: 'plate', window: framed, frame, material: 'light' };
+    const own = platePicture(framed, frame, 'light', 864, 558.5, 2);
+    const drawn = pictureOn(plate, size);
+    expect(drawn).toMatchObject({ kind: 'plate', material: 'light', drawn: 6, last: 2 });
+    expect(drawn.kept).toBeUndefined();
+    expect(drawn.x(1, 5)).toBe(own.x(1, 5));
+    expect(drawn.reach(125)).toBe(own.reach(125));
+    // Kept on a body, it is the kept picture of that plate, at that size.
+    const path = Float32Array.from([
+      ...[1000, 800, 1400, 900, 1700, 1200],
+      ...[2400, 1500, 2000, 1300, 1800, 1000],
+    ]);
+    const stays = pictureOn(plate, size, { path, body: 1 });
+    const kept = keptPicture(own, frame, framed, path, 1, 864, 558.5);
+    expect(stays.kept).toMatchObject({ body: 1, towards: kept.kept!.towards });
+    expect(stays.continued(path, 12, 0, 0)).toEqual(kept.continued(path, 12, 0, 0));
+    expect(stays.x(1, 5)).toBe(own.x(1, 5));
+    // A reading is made at no size in particular: who is outside it is the same at every size.
+    const read = pictureOn(plate, { width: 1, height: 1, ratio: 1 }, { path, body: 1 });
+    expect(read.outside(path, 12, 0, 0)).toBe(stays.outside(path, 12, 0, 0));
+    // The plane has no frame to move along with a body: it is never kept.
+    const plane: Plane = {
+      u: Float32Array.from([0, 10, 20, 0, 10, 20]),
+      v: Float32Array.from([0, 5, 10, 0, 5, 10]),
+      bounds: { u0: 0, u1: 20, v0: 0, v1: 10 },
+      mean: [0, 0, 0],
+      axes: [
+        [1, 0, 0],
+        [0, 1, 0],
+      ],
+    };
+    const flat = pictureOn(
+      { kind: 'plane', plane, count: 2 },
+      { width: 248, height: 148, ratio: 1 },
+      { path, body: 1 },
+    );
+    expect(flat).toMatchObject({ kind: 'plane', drawn: 3, last: 1 });
+    expect(flat.kept).toBeUndefined();
+    expect(flat.x(0, 0)).toBe(24);
   });
 
   it('paints light adding on night, and ink darkening paper', () => {

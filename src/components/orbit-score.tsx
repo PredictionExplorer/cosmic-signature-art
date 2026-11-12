@@ -15,7 +15,6 @@ import type { Messages } from '@/lib/i18n/en';
 import { clock, fill, fillParts } from '@/lib/i18n/format';
 import type { WorkOrbit } from '@/lib/art/orbit-records';
 import type { OrbitPlate } from '@/lib/art/orbit-plate';
-import { pairName } from '@/lib/physics/film-score';
 import {
   LIGHT_FILM,
   lightFilmDuration,
@@ -27,7 +26,6 @@ import { principalPlane, type Plane } from '@/lib/physics/plane';
 import { gapAt, twinPace, type TwinRun } from '@/lib/physics/twin';
 import type { TwinReply, TwinRequest } from '@/lib/physics/twin.worker';
 import {
-  advance,
   letGo,
   pause,
   play,
@@ -38,9 +36,9 @@ import {
 } from '@/lib/first-light/transport';
 import { AFTER_THE_FRAME_EVENT } from '@/lib/venue-events';
 import { useMotion } from './motion-provider';
-import { drawScore } from './score-drawing';
 import { useRememberedExpression, type Expression } from './turn';
-import { keptPicture, planePicture, platePicture, type Material } from './orbit-picture';
+import { layers } from './orbit-layers';
+import { pictureOn, type Material, type Surface } from './orbit-picture';
 import { orbitPainter, type Target } from './orbit-painter';
 import {
   FADE_MS,
@@ -62,7 +60,15 @@ import { useOrbitPresence } from './orbit-presence';
 import { OrbitRecord } from './orbit-record';
 import type { Sculpture } from './orbit-sculpture';
 import { OrbitSlider } from './orbit-timeline';
-import { Scientific, TWIN_TONE, performTwin, type TwinPair } from './orbit-twin';
+import { Scientific, performTwin, type TwinPair } from './orbit-twin';
+import {
+  performWindow,
+  playingLine,
+  windowLine,
+  windowScore,
+  type Clock,
+  type WindowScene,
+} from './orbit-window';
 import { progressText, seedShort, twinWorker, verdict } from './orbit-proof';
 import { useChoice } from './orbit-choice';
 import { OrbitFigure } from './orbit-figure';
@@ -77,13 +83,13 @@ const BENEATH_HEAD = 6;
 /** …and this much of the screen is left to spare under what stands beneath it. */
 const BENEATH_SPARE = 6;
 
+/** A picture is read at no size in particular: a body is on it or off it at every size. */
+const ANY_SIZE = { width: 1, height: 1, ratio: 1 };
+
 type State = { phase: 'waiting' } | Derivation;
 
 /** Whether this browser could draw the orbit in depth: only then is it sampled for it. */
 const canTurn = () => typeof WebGL2RenderingContext !== 'undefined';
-
-/** The clock as the words and the slider read it, a few times a second. */
-type Clock = { kind: Transport['kind']; seconds: number };
 
 /** One part in a trillion: the twin followed in its worker, ready to perform, or not to be had. */
 type Twin =
@@ -165,8 +171,7 @@ export function OrbitScore({
   const events = useRef<HTMLCanvasElement>(null);
   const slider = useRef<HTMLInputElement>(null);
   const sculpture = useRef<Sculpture | null>(null);
-  /** The last sample drawn, and the drawing's animation frame. */
-  const drawn = useRef(0);
+  /** The drawing's animation frame. */
   const frame = useRef(0);
   /** How far After the frame has run, so a resize or a return carries on from it. */
   const live = useRef<{ key: string; sample: number; began?: number } | null>(null);
@@ -193,8 +198,8 @@ export function OrbitScore({
   const twinLive = useRef<TwinPair | null>(null);
   /** The twin is followed once; a repeat or a return performs what was found. */
   const twinCache = useRef<TwinRun | null>(null);
-  /** The drawing as last laid out, so the clock can move it without laying it out again. */
-  const scene = useRef<{ paint(seconds: number): void; run(): void; speak(): void } | null>(null);
+  /** The window as last laid out, so the clock can move it without laying it out again. */
+  const scene = useRef<WindowScene | null>(null);
   /** After the frame as the visitor last left it; `beyond`, below, is what the section shows. */
   const [went, setWent] = useState<Beyond | null>(null);
   /** The plate's word asked for After the frame before its path was known: it is awaited. */
@@ -280,6 +285,14 @@ export function OrbitScore({
   const plateStill =
     material && framed !== null && state.phase !== 'failed' ? plate!.stills[material]! : null;
   const placed = plateStill && framed ? framed : null;
+  /** What the orbit is drawn on, once its places there are known: a plate waits for the window's. */
+  const surface: Surface | null = plateStill
+    ? placed && material && plate
+      ? { kind: 'plate', window: placed, frame: plate.frame, material }
+      : null
+    : plane && result
+      ? { kind: 'plane', plane, count: result.samples.count }
+      : null;
   /**
    * After the frame can be performed: the fate is known, and the path past the window, on the
    * plate the window is drawn on. In the plane there is no frame for a body to leave.
@@ -330,13 +343,13 @@ export function OrbitScore({
   const reads = !!went || (wanted !== null && wanted === material);
   const readings = useMemo(() => {
     if (!reads || !path || !derivedFate || !placed || !material || !plate) return null;
-    const own = platePicture(placed, plate.frame, material, 1, 1, 1);
+    const on: Surface = { kind: 'plate', window: placed, frame: plate.frame, material };
     const pictures: (number | null)[] = bodiesDrawn && path.samples > 1 ? [null, 0, 1, 2] : [null];
     return pictures.map((kept) => ({
       kept,
       script: heldScript(
         path,
-        kept === null ? own : keptPicture(own, plate.frame, placed, path.pixels, kept, 1, 1),
+        pictureOn(on, ANY_SIZE, kept === null ? null : { path: path.pixels, body: kept }),
         derivedFate,
         pace,
         bodiesDrawn,
@@ -676,46 +689,28 @@ export function OrbitScore({
   const draw = useEffectEvent((): (() => void) | void => {
     cancelAnimationFrame(frame.current);
     // The performance over, its last frame stands under the still, which the stylesheet brings
-    // back over it (orbit-score.module.css): nothing is drawn again until the visitor goes on.
+    // back over it (orbit-score.module.css): nothing is drawn again, and no canvas is sized,
+    // until the visitor goes on.
     if (beyond && (phase === 'resting' || phase === 'told')) return;
-    const canvases = [
-      trails.current,
-      continued.current,
-      marks.current,
-      events.current,
-      names.current,
-    ];
     // A plate waits for the window's places on it; the plane for its own.
-    const ready = plateStill ? !!placed : !!plane;
-    if (!result || !ready || canvases.some((canvas) => !canvas)) return;
-    const [trailCanvas, continuedCanvas, markCanvas, eventCanvas, nameCanvas] =
-      canvases as HTMLCanvasElement[];
-    const ratio = Math.min(2, window.devicePixelRatio || 1);
-    for (const canvas of canvases as HTMLCanvasElement[]) {
-      const box = canvas.getBoundingClientRect();
-      canvas.width = Math.max(1, Math.round(box.width * ratio));
-      canvas.height = Math.max(1, Math.round(box.height * ratio));
-    }
-    const trail = trailCanvas.getContext('2d');
-    const beyondTrail = continuedCanvas.getContext('2d');
-    const mark = markCanvas.getContext('2d');
-    const score = eventCanvas.getContext('2d');
-    const name = nameCanvas.getContext('2d');
-    if (!trail || !beyondTrail || !mark || !score || !name) return;
-    const { count } = result.samples;
-    const width = trailCanvas.width;
-    const height = trailCanvas.height;
-    const own =
-      placed && material && plate
-        ? platePicture(placed, plate.frame, material, width, height, ratio)
-        : planePicture(plane!, count, width, height, ratio);
+    if (!result || !surface) return;
+    const sheet = layers({
+      trails: trails.current,
+      continued: continued.current,
+      marks: marks.current,
+      events: events.current,
+      names: names.current,
+    });
+    if (!sheet) return;
+    const { trail, mark, width, height, ratio } = sheet;
     // Past the frame the picture may stay with one body: the same frame, moved along with it.
-    const picture =
-      beyond && beyond.phase === 'running' && beyond.kept !== null && path && plate && placed
-        ? keptPicture(own, plate.frame, placed, path.pixels, beyond.kept, width, height)
-        : own;
-    /** On the plate the bodies stand where the work left them once the window is drawn. */
-    const rests = picture.kind === 'plate';
+    const picture = pictureOn(
+      surface,
+      sheet,
+      beyond && beyond.phase === 'running' && beyond.kept !== null && path
+        ? { path: path.pixels, body: beyond.kept }
+        : null,
+    );
     const hues = orbit.bodyHues;
     const painter = orbitPainter({
       trail,
@@ -730,29 +725,28 @@ export function OrbitScore({
       steps,
       stride: STRIDE,
     });
-
     scene.current = null;
     numbered.current = null;
     picks.current = [];
+
+    // The question. The three wait where the film left them, each with its number, until the
+    // visitor says whom to stay with. Nothing plays.
     if (beyond && phase === 'choosing') {
-      // The three wait where the film left them, each with its number, until the visitor says
-      // whom to stay with. Nothing plays.
-      const look = getComputedStyle(nameCanvas);
       numbered.current = drawChoice({
         picture,
         painter,
         mark,
-        names: name,
+        names: sheet.names,
         width,
         height,
-        font: look.getPropertyValue('--font-mono').trim() || 'monospace',
+        font: sheet.font(),
         ground: plateStill?.tone ?? 'transparent',
       });
       picks.current = numbered.current(ringed);
       return;
     }
-    if (beyond && script && path) {
-      // Past the frame the score is not shown, and is not built.
+    // After the frame, in the picture the visitor chose. The score is not shown, and not built.
+    if (beyond && script && path)
       return performBeyond({
         path,
         script,
@@ -761,7 +755,7 @@ export function OrbitScore({
         film,
         still,
         inView,
-        beyondTrail,
+        beyondTrail: sheet.continued,
         mark,
         width,
         height,
@@ -793,45 +787,11 @@ export function OrbitScore({
           );
         },
       });
-    }
-    const scoreWidth = eventCanvas.width;
-    const scoreHeight = eventCanvas.height;
-    const lane = scoreHeight - 12 * ratio;
-    if (twin?.phase === 'ready' && derivedFate && plate && picture.kind === 'plate') {
-      const found = twin.run;
-      const speed = twinPace(found, steps, pace);
-      // The gap's growth on a log scale, from a trillionth up: steady doubling is a straight line.
-      const span = Math.max(found.until, steps);
-      const highest = found.gaps.reduce((most, gap) => Math.max(most, gap), 1e-12);
-      const top = Math.max(0, Math.ceil(Math.log10(highest)));
-      const bottom = -12;
-      const gx = (step: number) => (step / span) * scoreWidth;
-      const gy = (gap: number) =>
-        lane -
-        2 * ratio -
-        ((Math.log10(Math.max(gap, 1e-13)) - bottom) / (top - bottom)) * (lane - 4 * ratio);
-      const growth = (taken: number) => {
-        score.clearRect(0, 0, scoreWidth, scoreHeight);
-        // Where the frame ends: the recorded window lies to its left.
-        score.fillStyle = 'rgb(241 235 223 / 0.35)';
-        score.fillRect(Math.round(gx(steps)), 0, ratio, lane);
-        score.strokeStyle = TWIN_TONE.light(0.95);
-        score.lineWidth = 1.5 * ratio;
-        score.beginPath();
-        for (let i = 0; i < found.gaps.length && i * found.every <= taken; i++) {
-          if (i === 0) score.moveTo(gx(0), gy(found.gaps[0]));
-          else score.lineTo(gx(i * found.every), gy(found.gaps[i]));
-        }
-        score.stroke();
-        if (found.parted !== null && taken >= found.parted) {
-          score.fillStyle = TWIN_TONE.light(1);
-          score.beginPath();
-          score.arc(gx(found.parted), gy(gapAt(found, found.parted)), 3 * ratio, 0, Math.PI * 2);
-          score.fill();
-        }
-      };
+    // One part in a trillion: the work and its twin past the frame, and on the strip beneath,
+    // in the score's place, the growth of the gap between them.
+    if (twin?.phase === 'ready' && derivedFate && plate && picture.kind === 'plate')
       return performTwin({
-        run: found,
+        run: twin.run,
         fate: derivedFate,
         key: String(twin.repeat),
         picture,
@@ -839,161 +799,57 @@ export function OrbitScore({
         result,
         dt: orbit.generation.dt,
         steps,
-        pace: speed,
-        stride: STRIDE * Math.max(1, Math.round(speed / pace)),
+        pace,
+        stride: STRIDE,
         still,
         inView,
-        beyondTrail,
+        beyondTrail: sheet.continued,
         mark,
         width,
         height,
         ratio,
         hues,
         painter,
-        growth,
+        strip: sheet.strip,
         live: twinLive,
         frame,
         speak: (taken) => setTwinTaken(taken),
         onRested: () => setTwinRested(true),
       });
-    }
-    // The score: log separations of the three pairs, the closest approach, the syzygies and
-    // the braid crossings as ticks, and the playhead.
-    const at = (step: number) => (step / (steps - 1)) * scoreWidth;
-    const scoreStill = document.createElement('canvas');
-    scoreStill.width = scoreWidth;
-    scoreStill.height = scoreHeight;
-    const base = scoreStill.getContext('2d');
-    if (!base) return;
-    drawScore(
-      base,
-      {
-        separations: result.samples.separations,
-        count,
-        stride: STRIDE,
-        closestApproach: result.closestApproach,
-        syzygies: result.syzygies,
-        crossings: result.braid.events.map((crossing) => crossing.step),
-      },
-      hues,
-      {
-        ratio,
-        x: at,
-        lane: { top: 2 * ratio, height: lane - 4 * ratio },
-        base: scoreHeight,
-        ticks: { crossing: 3, syzygy: 7, closest: 11 },
-        lineAlpha: 0.55,
-        ink: 'rgb(241 235 223)',
-        every: 2,
-      },
-    );
-    /** The score with its playhead at a step. */
-    const scoreAt = (step: number) => {
-      score.clearRect(0, 0, scoreWidth, scoreHeight);
-      score.drawImage(scoreStill, 0, 0);
-      score.fillStyle = 'rgb(241 235 223 / 0.92)';
-      score.fillRect(Math.round(at(step)), 0, ratio, lane);
-    };
+    // The recorded window at its clock, over its score.
+    const score = windowScore(sheet.strip, result, steps, STRIDE, hues);
+    if (!score) return;
     // Asked for After the frame, the window waits whole for its path rather than starting over.
     // Where motion is unwelcome it is drawn whole, until the visitor takes the clock.
     if (awaited || following || (still && !chosen)) transport.current = restingAt(film, film);
-    drawn.current = 0;
-    const filmFrames = lightFilmFrames(steps);
-
-    /**
-     * The window drawn to the moment the clock stands at. Forward, the strokes are added; back,
-     * the drawing is laid again. A window drawn to its end on the plate goes on to the still's
-     * step, and its bodies stand where the work left them; in the plane they leave the drawing,
-     * as Phase A had it.
-     */
-    const paint = (seconds: number) => {
-      const step = stepsDrawnAt(seconds, steps);
-      const sample = Math.min(count - 1, Math.floor(step / STRIDE));
-      if (sample < drawn.current) {
-        trail.clearRect(0, 0, width, height);
-        drawn.current = 0;
-      }
-      const complete = sample >= count - 1;
-      if (complete && drawn.current === 0) {
-        if (picture.last > 0) painter.strokes(0, picture.last);
-        painter.bodies(picture.last, rests);
-        drawn.current = picture.last;
-        scoreAt(Math.min(steps - 1, picture.last * STRIDE));
-      } else {
-        if (sample > drawn.current) {
-          painter.strokes(drawn.current, sample);
-          drawn.current = sample;
-        }
-        if (complete && rests) {
-          if (drawn.current < picture.last) {
-            painter.strokes(count - 1, picture.last);
-            drawn.current = picture.last;
-          }
-          painter.bodies(picture.last, true);
-        } else painter.bodies(sample, !complete);
-        scoreAt(step);
-      }
-      if (slider.current)
-        slider.current.value = String(
-          Math.min(filmFrames - 1, Math.floor(seconds * LIGHT_FILM.fps + 1e-9)),
+    scene.current = performWindow({
+      picture,
+      painter,
+      trail,
+      width,
+      height,
+      score,
+      count: result.samples.count,
+      steps,
+      stride: STRIDE,
+      film,
+      inView,
+      transport,
+      frame,
+      slider,
+      sculpture,
+      say: (now) => {
+        setClockState(now);
+        setReadout(
+          windowLine(
+            now,
+            { steps, film, closest: result.closestApproach },
+            { t, number, oneDecimal },
+          ),
         );
-      sculpture.current?.at(step);
-    };
-
-    /** What is happening now, a few times a second: the step and the clock, or the approach. */
-    let spoken = -Infinity;
-    const speak = (now = performance.now(), force = true) => {
-      if (!force && now - spoken <= 250) return;
-      spoken = now;
-      const { kind, seconds } = transport.current;
-      setClockState({ kind, seconds });
-      const step = stepsDrawnAt(seconds, steps);
-      const closest = result.closestApproach;
-      const nearClosest = step >= closest.step && step - closest.step < 2 * 60 * (steps / 1800);
-      setReadout(
-        seconds >= film && kind !== 'scrubbing'
-          ? null
-          : nearClosest
-            ? fill(t.orbitClosestNow, {
-                distance: oneDecimal.format(closest.distance),
-                pair: pairName(closest.pair),
-              })
-            : fill(t.orbitPlaying, {
-                step: number.format(step),
-                total: number.format(steps),
-                clock: clock(seconds),
-              }),
-      );
-    };
-
-    /** The clock running, while it plays and the section is in view. */
-    const runClock = () => {
-      cancelAnimationFrame(frame.current);
-      if (!inView || transport.current.kind !== 'playing') return;
-      let last = performance.now();
-      const tick = (now: number) => {
-        // The film's own clock: a frame that comes late, or a tab that comes back, finds the
-        // drawing where the film would be.
-        const elapsed = Math.max(0, (now - last) / 1000);
-        last = now;
-        transport.current = advance(transport.current, elapsed, film);
-        paint(transport.current.seconds);
-        const ended = transport.current.kind !== 'playing';
-        speak(now, ended);
-        if (ended) {
-          setDone(true);
-          return;
-        }
-        frame.current = requestAnimationFrame(tick);
-      };
-      frame.current = requestAnimationFrame(tick);
-    };
-
-    scene.current = { paint, run: runClock, speak: () => speak() };
-    paint(transport.current.seconds);
-    // The line says where the clock stands from the first drawing, a clock the hand set before it too.
-    speak();
-    runClock();
+      },
+      onEnd: () => setDone(true),
+    });
     return () => cancelAnimationFrame(frame.current);
   });
 
@@ -1115,12 +971,7 @@ export function OrbitScore({
   const differing = comparisons?.filter((row) => !row.exact) ?? [];
 
   const progress = state.phase === 'deriving' ? state.progress : null;
-  const playingLine = (step: number, seconds: number) =>
-    fill(t.orbitPlaying, {
-      step: number.format(step),
-      total: number.format(steps),
-      clock: clock(seconds),
-    });
+  const standsAt = (step: number, seconds: number) => playingLine(step, seconds, steps, t, number);
   // The line under the drawing says what is happening now; the summary has a slot of its own,
   // so a line that changes length never moves the page beneath the section.
   const progressLine =
@@ -1136,8 +987,8 @@ export function OrbitScore({
               number,
             )
           : finished
-            ? playingLine(steps, film)
-            : playingLine(0, 0);
+            ? standsAt(steps, film)
+            : standsAt(0, 0);
   const summary =
     state.phase === 'failed'
       ? t.orbitUnavailable
@@ -1317,7 +1168,7 @@ export function OrbitScore({
                 slider={slider}
                 frames={lightFilmFrames(steps)}
                 label={t.orbitTimeLabel}
-                valueText={playingLine(clockStep, clockState.seconds)}
+                valueText={standsAt(clockStep, clockState.seconds)}
                 disabled={awaited}
                 onScrub={onScrub}
               />
