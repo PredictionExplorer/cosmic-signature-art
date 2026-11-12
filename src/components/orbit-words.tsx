@@ -1,7 +1,7 @@
 'use client';
 import type { ReactNode, RefObject } from 'react';
 import type { Messages } from '@/lib/i18n/en';
-import type { BeyondPhase } from './orbit-beyond';
+import type { BeyondPhase } from './orbit-beyond-state';
 import { Word, WordLink } from './orbit-word';
 import styles from './orbit-score.module.css';
 

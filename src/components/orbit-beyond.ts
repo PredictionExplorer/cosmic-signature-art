@@ -40,20 +40,6 @@ import { FADE_EVERY_SECONDS, type Continued, type Painter } from './orbit-painte
   trails are the bodies' hues drained of colour, each remembered for as long as the film runs.
 */
 
-/**
- * After the frame, as it stands: a count, so that a repeat starts afresh, and where it has got
- * to. The visitor is asked whom to stay with; then, with their answer, it is performed, the
- * still stands alone in silence, and what happened is told. The answer is the body the picture
- * stays with (none: the frame, held where the film left it), so there is one only once the
- * question is answered, or was not asked.
- */
-export type Beyond = { run: number } & (
-  { phase: 'choosing' } | { phase: 'running' | 'resting' | 'told'; kept: number | null }
-);
-
-/** Asked whom to stay with; performed; then the still alone, in silence; then told. */
-export type BeyondPhase = Beyond['phase'];
-
 /** An absence lasts when it runs this long, in seconds of film, or to the path's end… */
 const LASTING_SECONDS = 3;
 /** …and is one a visitor sees the body go on when it also takes it this far, in widths. */
