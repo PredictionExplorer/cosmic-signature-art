@@ -1,4 +1,7 @@
+import { Fragment, type ReactNode } from 'react';
 import type { OrbitPlate } from '@/lib/art/orbit-plate';
+import type { Messages } from '@/lib/i18n/en';
+import { fill, fillParts } from '@/lib/i18n/format';
 import { Continuation } from '@/lib/physics/continuation';
 import { HeldPlacement } from '@/lib/physics/framing';
 import type { DerivedFate, Rederivation } from '@/lib/physics/orbit';
@@ -21,6 +24,10 @@ import styles from './orbit-score.module.css';
   The bodies of the twin are ringed in its red. On the strip beneath, in the score's place, the
   gap's growth is drawn on a log scale, where doubling at a steady rate reads as a straight line.
 */
+
+/** The twin: followed in its worker, ready to perform, or not to be had. */
+export type Twin =
+  { phase: 'following' } | { phase: 'ready'; run: TwinRun; repeat: number } | { phase: 'failed' };
 
 /** The twin's tone, in light on night and in ink on paper. */
 export const TWIN_TONE = {
@@ -215,6 +222,38 @@ export function performTwin(stage: TwinStage): (() => void) | void {
   };
   frame.current = requestAnimationFrame(perform);
   return () => cancelAnimationFrame(frame.current);
+}
+
+/**
+ * The twin's line: that it is being followed, how far apart the two stand, or where they
+ * parted and how fast the gap had grown.
+ */
+export function twinLine(
+  twin: Twin,
+  said: { taken: number; rested: boolean },
+  film: { steps: number; pace: number },
+  words: { t: Messages; number: Intl.NumberFormat; locale: string },
+): ReactNode {
+  const { t, number, locale } = words;
+  if (twin.phase === 'following') return fill(t.twinWorking, { body: 1 });
+  if (twin.phase === 'failed') return t.twinUnavailable;
+  const { run } = twin;
+  const { taken } = said;
+  const parts = (template: string, values: Record<string, ReactNode | string | number>) =>
+    fillParts<ReactNode>(template, values).map((part, i) => <Fragment key={i}>{part}</Fragment>);
+  if (run.parted !== null && taken >= run.parted)
+    return fill(t.twinParted, {
+      step: number.format(run.parted),
+      doubling: run.doubling ? number.format(Math.round(run.doubling / 100) * 100) : '—',
+    });
+  const gap = <Scientific value={gapAt(run, taken)} locale={locale} />;
+  if (said.rested) return parts(t.twinOneLine, { step: number.format(taken), gap });
+  const times = Math.round(twinPace(run, film.steps, film.pace) / film.pace);
+  return parts(t.twinApart, {
+    gap,
+    step: number.format(taken),
+    pace: times <= 1 ? t.twinAtFilmPace : fill(t.twinFaster, { times }),
+  });
 }
 
 /** The superscript digits of an exponent, with a true minus sign. */

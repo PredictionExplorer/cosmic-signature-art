@@ -1,7 +1,9 @@
+import { render } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
+import { messages } from '@/lib/i18n/messages';
 import type { TwinRun } from '@/lib/physics/twin';
 import { recordingContext } from '../../tests/canvas-support';
-import { TWIN_TONE, twinGrowth } from './orbit-twin';
+import { TWIN_TONE, twinGrowth, twinLine, type Twin } from './orbit-twin';
 
 /** A window of 1,000 steps; the twin followed 3,000 past it, its gap kept every 1,000. */
 const steps = 1_000;
@@ -89,5 +91,44 @@ describe('the gap’s growth beneath the twin', () => {
     const { drawn, on } = strip();
     twinGrowth(on, { ...run, until: 500, parted: null }, steps)(500);
     expect(drawn.named('fillRect')[0].args).toEqual([800, 0, 2, 100]);
+  });
+});
+
+describe('the twin’s line', () => {
+  const t = messages('en');
+  const words = { t, number: new Intl.NumberFormat('en'), locale: 'en' };
+  /** The line as a visitor reads it. */
+  const read = (twin: Twin, taken: number, rested = false, pace = 100) =>
+    render(<p>{twinLine(twin, { taken, rested }, { steps, pace }, words)}</p>).container
+      .textContent;
+  const ready: Twin = { phase: 'ready', run, repeat: 0 };
+
+  it('says that the twin is being followed, or that it cannot be', () => {
+    expect(read({ phase: 'following' }, steps)).toBe(t.twinWorking.replace('{body}', '1'));
+    expect(read({ phase: 'failed' }, steps)).toBe(t.twinUnavailable);
+  });
+
+  it('says how far apart the two stand, and at what pace they are carried', () => {
+    // The twin parts 2,000 steps past the window: carried at 100 steps a second it would take
+    // twenty, so it is carried at twice the film's pace, to part ten seconds in.
+    expect(read(ready, 2_000)).toBe('Apart by 1.0 × 10−5 · step 2,000 · 2 times the film’s pace');
+    // Where the film's own pace gets there in time, it is the film's pace.
+    expect(read(ready, 2_000, false, 500)).toMatch(/ · at the film’s pace$/);
+    // Between two kept gaps, evenly in the logarithm.
+    expect(read(ready, 1_500)).toMatch(/^Apart by 1\.0 × 10−7 · step 1,500 /);
+  });
+
+  it('says where they parted, and how fast the gap had grown, once the pair has reached it', () => {
+    expect(read(ready, 2_999)).toMatch(/· step 2,999 ·/);
+    expect(read(ready, 3_000)).toBe('Parted at step 3,000. The gap doubled about every 300 steps.');
+    // A doubling that could not be fitted is not made up.
+    expect(read({ phase: 'ready', run: { ...run, doubling: null }, repeat: 0 }, 3_000)).toMatch(
+      /every — steps\.$/,
+    );
+  });
+
+  it('says that the two stayed one line where the twin never parted', () => {
+    const never: Twin = { phase: 'ready', run: { ...run, parted: null }, repeat: 0 };
+    expect(read(never, 4_000, true)).toBe('Still one line at step 4,000, apart by 1.0 × 102');
   });
 });

@@ -1,6 +1,5 @@
 'use client';
 import {
-  Fragment,
   useEffect,
   useEffectEvent,
   useLayoutEffect,
@@ -12,7 +11,7 @@ import {
 } from 'react';
 import type { Locale } from '@/lib/i18n/routing';
 import type { Messages } from '@/lib/i18n/en';
-import { fill, fillParts } from '@/lib/i18n/format';
+import { fill } from '@/lib/i18n/format';
 import type { WorkOrbit } from '@/lib/art/orbit-records';
 import type { OrbitPlate } from '@/lib/art/orbit-plate';
 import {
@@ -22,8 +21,6 @@ import {
   stepsDrawnAt,
 } from '@/lib/physics/light-film';
 import { principalPlane, type Plane } from '@/lib/physics/plane';
-import { gapAt, twinPace, type TwinRun } from '@/lib/physics/twin';
-import type { TwinReply, TwinRequest } from '@/lib/physics/twin.worker';
 import { AFTER_THE_FRAME_EVENT } from '@/lib/venue-events';
 import { useMotion } from './motion-provider';
 import { useRememberedExpression, type Expression } from './turn';
@@ -50,9 +47,10 @@ import { useOrbitPresence } from './orbit-presence';
 import { OrbitRecord } from './orbit-record';
 import type { Sculpture } from './orbit-sculpture';
 import { OrbitSlider } from './orbit-timeline';
-import { Scientific, performTwin, type TwinPair } from './orbit-twin';
+import { performTwin, twinLine } from './orbit-twin';
+import { useTwin } from './orbit-twin-state';
 import { performWindow, playingLine, windowLine, windowScore } from './orbit-window';
-import { progressText, seedShort, twinWorker, verdict } from './orbit-proof';
+import { progressText, seedShort, verdict } from './orbit-proof';
 import { drawChoice, type Choice } from './orbit-choice';
 import { useWindowClock } from './orbit-clock';
 import { useChoosing } from './orbit-choosing';
@@ -75,10 +73,6 @@ type State = { phase: 'waiting' } | Derivation;
 
 /** Whether this browser could draw the orbit in depth: only then is it sampled for it. */
 const canTurn = () => typeof WebGL2RenderingContext !== 'undefined';
-
-/** One part in a trillion: the twin followed in its worker, ready to perform, or not to be had. */
-type Twin =
-  { phase: 'following' } | { phase: 'ready'; run: TwinRun; repeat: number } | { phase: 'failed' };
 
 /**
  * The orbit, re-performed: the work's orbit derived from its seed in this browser, drawn at
@@ -168,13 +162,6 @@ export function OrbitScore({
   /** The orbit can be taken in hand here, and is turned from the generator's view now. */
   /** The orbit is turned from the generator's view now. */
   const [turned, setTurned] = useState(false);
-  /** One part in a trillion: off (null), being followed, or ready; and where it has reached. */
-  const [twin, setTwin] = useState<Twin | null>(null);
-  const [twinTaken, setTwinTaken] = useState(0);
-  const [twinRested, setTwinRested] = useState(false);
-  const twinLive = useRef<TwinPair | null>(null);
-  /** The twin is followed once; a repeat or a return performs what was found. */
-  const twinCache = useRef<TwinRun | null>(null);
   /** After the frame as the visitor last left it; `beyond`, below, is what the section shows. */
   const [went, setWent] = useState<Beyond | null>(null);
   /** The plate's word asked for After the frame before its path was known: it is awaited. */
@@ -249,6 +236,9 @@ export function OrbitScore({
     () => (result ? principalPlane(result.samples.positions, result.samples.count) : null),
     [result],
   );
+  /** One part in a trillion: the twin, while it stands on the stage. */
+  const twinAct = useTwin({ orbit, steps, result, frame: plate?.frame });
+  const { twin, following } = twinAct;
 
   // The plate shows the expression the page's plate shows: the visitor's choice, remembered for
   // the visit, else the page's opening; and its still lies beneath only where the frame is borne
@@ -359,8 +349,7 @@ export function OrbitScore({
 
   const startBeyond = (waited: boolean, carried: BeyondPath | null | undefined) => {
     arriving.current = waited ? 'if-here' : 'bring';
-    setTwin(null);
-    twinLive.current = null;
+    twinAct.leave();
     setAwaited(false);
     setWanted(material);
     unpoint();
@@ -540,65 +529,15 @@ export function OrbitScore({
     unpoint();
     handOn.current = false;
     live.current = null;
-    twinLive.current = null;
     setAwaited(false);
-    setTwinRested(false);
-    setTwinTaken(steps);
     setReadout(null);
-    setTwin((current) =>
-      twinCache.current
-        ? {
-            phase: 'ready',
-            run: twinCache.current,
-            repeat: current?.phase === 'ready' ? current.repeat + 1 : 0,
-          }
-        : { phase: 'following' },
-    );
+    twinAct.go();
   };
   /** Back to the frame: the recorded window, drawn whole. */
   const leaveTwin = () => {
-    twinLive.current = null;
+    twinAct.leave();
     clock.rest();
-    setTwin(null);
-    setTwinRested(false);
   };
-  const following = twin?.phase === 'following';
-  const twinFrame = plate?.frame;
-  useEffect(() => {
-    if (!following || !result || !twinFrame) return;
-    let worker: Worker;
-    try {
-      worker = twinWorker();
-    } catch {
-      queueMicrotask(() => setTwin({ phase: 'failed' }));
-      return;
-    }
-    worker.onmessage = ({ data }: MessageEvent<TwinReply>) => {
-      worker.terminate();
-      if (data.type === 'done') {
-        twinCache.current = data.run;
-        setTwin({ phase: 'ready', run: data.run, repeat: 0 });
-      } else setTwin({ phase: 'failed' });
-    };
-    worker.onerror = () => {
-      worker.terminate();
-      setTwin({ phase: 'failed' });
-    };
-    const request: TwinRequest = {
-      start: {
-        masses: result.masses,
-        dt: orbit.generation.dt,
-        steps,
-        positions: result.windowStart.positions,
-        velocities: result.windowStart.velocities,
-      },
-      frame: twinFrame,
-      horizon: orbit.fate.horizonSteps,
-    };
-    worker.postMessage(request);
-    return () => worker.terminate();
-  }, [following, result, twinFrame, orbit, steps]);
-
   /** What happened past the frame is told: the line under the still says it (`fact`, above). */
   const tell = () => {
     setReadout(null);
@@ -759,10 +698,10 @@ export function OrbitScore({
         stride: STRIDE,
         still,
         inView,
-        live: twinLive,
+        live: twinAct.forDrawing.live,
         frame,
-        speak: (taken) => setTwinTaken(taken),
-        onRested: () => setTwinRested(true),
+        speak: twinAct.forDrawing.said,
+        onRested: twinAct.forDrawing.rested,
       });
     // The recorded window at its clock, over its score.
     const score = windowScore(sheet.strip, result, steps, STRIDE, hues);
@@ -910,30 +849,6 @@ export function OrbitScore({
             steps: number.format(orbit.generation.warmupSteps + steps),
           })} ${verdict(comparisons ?? [], t)}`
         : null;
-  // Where motion is unwelcome the window stands whole and the line says so, until the visitor
-  // takes the clock; then the line follows it.
-  /** One part in a trillion's line: following, how far apart they stand, or where they parted. */
-  const twinLine = ((): ReactNode => {
-    if (!twin) return null;
-    if (twin.phase === 'following') return fill(t.twinWorking, { body: 1 });
-    if (twin.phase === 'failed') return t.twinUnavailable;
-    const { run: found } = twin;
-    const parts = (template: string, values: Record<string, ReactNode | string | number>) =>
-      fillParts<ReactNode>(template, values).map((part, i) => <Fragment key={i}>{part}</Fragment>);
-    if (found.parted !== null && twinTaken >= found.parted)
-      return fill(t.twinParted, {
-        step: number.format(found.parted),
-        doubling: found.doubling ? number.format(Math.round(found.doubling / 100) * 100) : '—',
-      });
-    const gap = <Scientific value={gapAt(found, twinTaken)} locale={locale} />;
-    if (twinRested) return parts(t.twinOneLine, { step: number.format(twinTaken), gap });
-    const times = Math.round(twinPace(found, steps, pace) / pace);
-    return parts(t.twinApart, {
-      gap,
-      step: number.format(twinTaken),
-      pace: times <= 1 ? t.twinAtFilmPace : fill(t.twinFaster, { times }),
-    });
-  })();
   const factLine: ReactNode = fact ? <Sentences said={fact} t={t} /> : null;
   /** The question and what is told are read, in the book face; the running line is metered. */
   const read = !!beyond && (phase === 'choosing' || phase === 'told');
@@ -947,7 +862,7 @@ export function OrbitScore({
       )
     : null;
   const line: ReactNode = twin
-    ? twinLine
+    ? twinLine(twin, twinAct, { steps, pace }, { t, number, locale })
     : beyond
       ? phase === 'told'
         ? factLine
@@ -983,7 +898,7 @@ export function OrbitScore({
       : twin
         ? {
             act: 'twin',
-            onAgain: twinRested && !still ? goTwin : null,
+            onAgain: twinAct.rested && !still ? goTwin : null,
             onBeyond: canGoBeyond ? goBeyond : null,
             onLeave: leaveTwin,
           }
@@ -1021,7 +936,7 @@ export function OrbitScore({
         data-twin={
           twin
             ? twin.phase === 'ready'
-              ? twinRested
+              ? twinAct.rested
                 ? 'rested'
                 : 'running'
               : twin.phase
