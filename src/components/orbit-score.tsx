@@ -41,7 +41,7 @@ import { useMotion } from './motion-provider';
 import { drawScore } from './score-drawing';
 import { useRememberedExpression, type Expression } from './turn';
 import { keptPicture, planePicture, platePicture, type Material } from './orbit-picture';
-import { orbitPainter, pressedBody, type Target } from './orbit-painter';
+import { orbitPainter, type Target } from './orbit-painter';
 import {
   FADE_MS,
   REST_MS,
@@ -64,7 +64,8 @@ import type { Sculpture } from './orbit-sculpture';
 import { OrbitSlider } from './orbit-timeline';
 import { Scientific, TWIN_TONE, performTwin, type TwinPair } from './orbit-twin';
 import { progressText, seedShort, twinWorker, verdict } from './orbit-proof';
-import { OrbitFigure, type StageHand } from './orbit-figure';
+import { useChoice } from './orbit-choice';
+import { OrbitFigure } from './orbit-figure';
 import { OrbitSaid, Sentences } from './orbit-said';
 import { PressGuard, usePresses } from './orbit-word';
 import { OrbitWords, type Offered } from './orbit-words';
@@ -77,9 +78,6 @@ const BENEATH_HEAD = 6;
 const BENEATH_SPARE = 6;
 
 type State = { phase: 'waiting' } | Derivation;
-
-/** No body: the ring's rest. One array, so a state set to it again changes nothing. */
-const NO_BODIES: readonly number[] = [];
 
 /** Whether this browser could draw the orbit in depth: only then is it sampled for it. */
 const canTurn = () => typeof WebGL2RenderingContext !== 'undefined';
@@ -163,13 +161,6 @@ export function OrbitScore({
   const names = useRef<HTMLCanvasElement>(null);
   const numbered = useRef<((hinted: readonly number[]) => Target[]) | null>(null);
   const picks = useRef<Target[]>([]);
-  /**
-   * The press that last went down on the picture while the visitor chose: whether it was a
-   * finger's (a pen points as finely as a mouse), and the body it went down on, if any. And
-   * since when the picture has been one to press, on the clock a press is timed by.
-   */
-  const pressed = useRef<{ finger: boolean; body: number | null } | null>(null);
-  const pressableSince = useRef(0);
   const tooSoon = usePresses();
   const events = useRef<HTMLCanvasElement>(null);
   const slider = useRef<HTMLInputElement>(null);
@@ -212,31 +203,6 @@ export function OrbitScore({
   const [wanted, setWanted] = useState<Material | null>(null);
   /** After the frame: asked whom to stay with, performed, then the still alone in silence, then told. */
   const [phase, setPhase] = useState<BeyondPhase>('running');
-  /**
-   * While the visitor chooses, the bodies ringed in the picture, each for its own reason: the
-   * answer the focus is on (Enter stays with it), the answer a mouse is over, the body a mouse
-   * is on in the picture (a click stays with it), and the bodies a finger's press could not
-   * tell apart, so that the press is seen to have been taken in and the words can answer.
-   */
-  const [focused, setFocused] = useState<number | null>(null);
-  const [hovered, setHovered] = useState<number | null>(null);
-  const [aimed, setAimed] = useState<number | null>(null);
-  const [unsure, setUnsure] = useState<readonly number[]>(NO_BODIES);
-  const ringed = useMemo(
-    () => [
-      ...new Set(
-        [focused, hovered, aimed, ...unsure].filter((body): body is number => body !== null),
-      ),
-    ],
-    [focused, hovered, aimed, unsure],
-  );
-  /** Nothing in the picture is pointed at: a new question, an answer, or the way out. */
-  const unpoint = () => {
-    setFocused(null);
-    setHovered(null);
-    setAimed(null);
-    setUnsure(NO_BODIES);
-  };
   /**
    * The focus is to go to the line once it has its words: the visitor has asked for the
    * question (the keyboard and the screen reader are taken to it, and its answers follow it),
@@ -329,6 +295,13 @@ export function OrbitScore({
    */
   const beyond = canGoBeyond ? went : null;
   const choosing = !!beyond && phase === 'choosing';
+  const { ringed, aiming, point, unpoint, renew, hand } = useChoice({
+    stage,
+    picks,
+    asked: beyond && choosing ? beyond.run : null,
+    tooSoon,
+    onStay: (body) => stay(body),
+  });
   const performing = !!beyond && !choosing;
   /** The body the picture is kept on past the frame; none where it is the work's frame, held. */
   const keptOn = beyond?.kept ?? null;
@@ -544,7 +517,7 @@ export function OrbitScore({
       arriving.current = 'bring';
       compose(true);
       if (phase === 'choosing') {
-        pressableSince.current = performance.now();
+        renew();
         telling.current?.focus({ preventScroll: true });
       }
       return;
@@ -1041,21 +1014,13 @@ export function OrbitScore({
   useEffect(() => {
     if (numbered.current) picks.current = numbered.current(ringed);
   }, [ringed]);
-  // The picture becomes one to press as each question is asked, and anew whenever the page
-  // moves under the pointer while it stands: by the page's own glide to the picture, which
-  // may outlast the moment a press must wait, or by the visitor's scroll. And no press that
-  // went down before the question was asked is one on it.
-  useEffect(() => {
-    if (!choosing) return;
-    pressed.current = null;
-    const renew = () => {
-      pressableSince.current = performance.now();
-    };
-    renew();
-    window.addEventListener('scroll', renew, { passive: true });
-    return () => window.removeEventListener('scroll', renew);
-  }, [choosing, run]);
 
+  const resized = useEffectEvent(() => {
+    // At another size the picture is not where a resting mouse found it: it aims afresh when
+    // it next moves.
+    point('aim', null);
+    draw();
+  });
   useEffect(() => {
     const node = stage.current;
     if (!node || typeof ResizeObserver === 'undefined') return;
@@ -1065,10 +1030,7 @@ export function OrbitScore({
         first = false;
         return;
       }
-      // At another size the picture is not where a resting mouse found it: it aims afresh when
-      // it next moves.
-      setAimed(null);
-      draw();
+      resized();
     });
     observer.observe(node);
     // What stands beneath the picture takes another height at another width (a line more of
@@ -1122,13 +1084,6 @@ export function OrbitScore({
   const keepWords = () => {
     const box = wordsRow.current?.getBoundingClientRect();
     wordsWere.current = box ? { top: box.top, bottom: box.bottom } : null;
-  };
-  /** What a pointer finds in the picture while the visitor chooses (orbit-painter.ts, `pressedBody`). */
-  const pressAt = (event: { clientX: number; clientY: number }, finger = false) => {
-    const box = stage.current?.getBoundingClientRect();
-    return box
-      ? pressedBody(picks.current, event.clientX - box.left, event.clientY - box.top, finger)
-      : null;
   };
   /** Back to the frame: the recorded window, drawn whole. */
   const leaveBeyond = () => {
@@ -1275,42 +1230,6 @@ export function OrbitScore({
             onBeyond: canGoBeyond && finished ? goBeyond : null,
             onTwin: derivedFate && finished && placed ? goTwin : null,
           };
-  /** A pointer on the picture, while the visitor chooses a body in it. */
-  const hand: StageHand = {
-    onPointerDown: (event) => {
-      // A new press: what the last one could not tell apart is no longer shown.
-      const finger = event.pointerType === 'touch';
-      const at = pressAt(event, finger);
-      pressed.current = { finger, body: at && 'body' in at ? at.body : null };
-      setUnsure(NO_BODIES);
-    },
-    onClick: (event) => {
-      const down = pressed.current;
-      pressed.current = null;
-      // A pointer's press is one that went down on the picture since it asked:
-      // not the letting go of a hold begun on the orbit in the hand, which the
-      // question took from under it.
-      if (event.detail > 0 && !down) return;
-      // Not a press made before the picture had stood long enough to be read
-      // (the page may just have brought it under the finger that asked).
-      if (tooSoon(event, pressableSince.current)) return;
-      const at = pressAt(event, down?.finger);
-      if (!at) return;
-      // A finger that covers two bodies is shown both, and the words answer.
-      if ('unsure' in at) setUnsure(at.unsure);
-      // A press is on a body if it went down on it too: a drag across the
-      // picture that happens to end on one is not an answer.
-      else if (!down || down.body === at.body) stay(at.body);
-    },
-    onPointerMove: (event) => {
-      if (event.pointerType === 'touch') return;
-      const at = pressAt(event);
-      setAimed(at && 'body' in at ? at.body : null);
-    },
-    onPointerLeave: (event) => {
-      if (event.pointerType !== 'touch') setAimed(null);
-    },
-  };
 
   return (
     <PressGuard.Provider value={tooSoon}>
@@ -1381,8 +1300,8 @@ export function OrbitScore({
           still={still}
           act={beyond ? 'beyond' : twin ? 'twin' : 'window'}
           labelled={phase === 'running' || phase === 'choosing'}
-          hand={choosing ? hand : null}
-          aimed={aimed !== null}
+          hand={hand}
+          aimed={aiming}
           onTurned={setTurned}
           onPlayPause={playPause}
         />
@@ -1411,7 +1330,7 @@ export function OrbitScore({
                 (phase === 'resting' || phase === 'told' || (phase === 'running' && still))
               }
               onStay={derived && choosing ? stay : null}
-              onPoint={(by, body) => (by === 'focus' ? setFocused : setHovered)(body)}
+              onPoint={(by, body) => point(by === 'focus' ? 'focus' : 'hover', body)}
               room={
                 beyond && longestLine !== null
                   ? { asks: asksWhom(path), tellings, longestLine }
