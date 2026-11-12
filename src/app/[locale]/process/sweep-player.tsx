@@ -5,7 +5,7 @@ import { useMotion } from '@/components/motion-provider';
 import { SpectrumRule } from '@/components/spectrum-rule';
 import { workNumber } from '@/lib/art/number';
 import type { ArtFilm, ArtInterpretation } from '@/lib/art/types';
-import type { Messages } from '@/lib/i18n/en';
+import type { SweepPlayerWords } from './sweep-player.words';
 import styles from './process.module.css';
 import { clock } from '@/lib/i18n/format';
 
@@ -25,7 +25,7 @@ export function SweepPlayer({
   film?: ArtFilm;
   artworkId: number;
   wavelengthNm?: number;
-  t: Messages;
+  t: SweepPlayerWords;
 }) {
   const { theatre } = useMotion();
   const video = useRef<HTMLVideoElement>(null);
