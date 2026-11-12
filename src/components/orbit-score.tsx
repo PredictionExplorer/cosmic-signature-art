@@ -60,16 +60,17 @@ import type { BeyondPath } from '@/lib/physics/beyond';
 import { STRIDE, useOrbitDerivation, type Derivation } from './orbit-derivation';
 import { useOrbitPresence } from './orbit-presence';
 import { OrbitRecord } from './orbit-record';
-import { OrbitSculpture, type Sculpture } from './orbit-sculpture';
+import type { Sculpture } from './orbit-sculpture';
 import { OrbitSlider } from './orbit-timeline';
-import { PressGuard, Word, WordLink, usePresses } from './orbit-word';
 import { Scientific, TWIN_TONE, performTwin, type TwinPair } from './orbit-twin';
 import { progressText, seedShort, twinWorker, verdict } from './orbit-proof';
+import { OrbitFigure, type StageHand } from './orbit-figure';
+import { OrbitSaid, Sentences } from './orbit-said';
+import { PressGuard, usePresses } from './orbit-word';
+import { OrbitWords, type Offered } from './orbit-words';
 import recordStyles from './artwork-record.module.css';
 import styles from './orbit-score.module.css';
 
-/** The plate's still is laid out at the figure's width: the full width on a phone. */
-const STILL_SIZES = '(max-width: 860px) 100vw, 62vw';
 /** Past the frame the picture is brought this far beneath the running head, in pixels… */
 const BENEATH_HEAD = 6;
 /** …and this much of the screen is left to spare under what stands beneath it. */
@@ -192,7 +193,7 @@ export function OrbitScore({
   const [chosen, setChosen] = useState(false);
   const [clockState, setClockState] = useState<Clock>({ kind: 'playing', seconds: 0 });
   /** The orbit can be taken in hand here, and is turned from the generator's view now. */
-  const [turnable, setTurnable] = useState(false);
+  /** The orbit is turned from the generator's view now. */
   const [turned, setTurned] = useState(false);
   /** One part in a trillion: off (null), being followed, or ready; and where it has reached. */
   const [twin, setTwin] = useState<Twin | null>(null);
@@ -1142,23 +1143,6 @@ export function OrbitScore({
     setReadout(null);
     setDone(true);
   };
-  const published = orbit.published;
-  const closest = published.closestApproach;
-  // The caption says where the bodies are drawn, and, on the plate, that this is analysis.
-  const caption = plateStill
-    ? material === 'ink'
-      ? t.orbitCaptionInk
-      : t.orbitCaptionLight
-    : t.orbitCaption;
-  const description = fill(caption, {
-    m1: oneDecimal.format(published.masses[0]),
-    m2: oneDecimal.format(published.masses[1]),
-    m3: oneDecimal.format(published.masses[2]),
-    distance: oneDecimal.format(closest.distance),
-    pair: pairName(closest.pair),
-    step: number.format(closest.step),
-    seconds: oneDecimal.format(lightFilmSeconds(closest.step, steps)),
-  });
 
   // Each row is marked as it is checked; the fate is checked last, since it runs on past the
   // window to the horizon, and the summary speaks once every row has been.
@@ -1233,18 +1217,7 @@ export function OrbitScore({
       pace: times <= 1 ? t.twinAtFilmPace : fill(t.twinFaster, { times }),
     });
   })();
-  /** What stands between two sentences on one line: a space, or nothing in Japanese and Chinese. */
-  const betweenSentences = fill(t.sentences, { first: '', second: '' });
-  // What happened: each sentence a box of its own, so a line breaks between two before it
-  // breaks inside one.
-  const sentences = (said: readonly string[]): ReactNode =>
-    said.map((sentence, index) => (
-      <Fragment key={sentence}>
-        {index ? betweenSentences : null}
-        <span className={styles.sentence}>{sentence}</span>
-      </Fragment>
-    ));
-  const factLine: ReactNode = fact ? sentences(fact) : null;
+  const factLine: ReactNode = fact ? <Sentences said={fact} t={t} /> : null;
   /** The question and what is told are read, in the book face; the running line is metered. */
   const read = !!beyond && (phase === 'choosing' || phase === 'told');
   /** The longest line a performance can say here, for the room it is to keep. */
@@ -1273,77 +1246,71 @@ export function OrbitScore({
   const clockWord = playing ? t.pause : atEnd && (chosen || !still) ? t.again : t.play;
   const clockStep = stepsDrawnAt(clockState.seconds, steps);
 
-  /*
-    The words beside the line, each with a key. A word that stays from one state to the next
-    (After the frame and One part in a trillion in all of them; Tell me, which becomes Again)
-    stays the same element, so a keyboard that pressed it still stands on it afterwards. They are two groups: the words that come and go with the state, and the
-    two that stay, which keep their place whatever stands before them (on a phone, a row of
-    their own). Nothing is offered in the rest after a performance.
-
-    The answers to the question are not among them: they stand under the question, in the
-    line's own room, so that no word ever comes to stand where one was just pressed.
-  */
-  const passing: ReactNode[] = [];
-  const staying: ReactNode[] = [];
-  const answers: ReactNode[] = [];
-  if (derived && beyond) {
-    if (phase === 'choosing') {
-      // In the order of the question: one of the three, by the number it bears in the picture
-      // and in the record, or the frame. Pointing at a number rings its body.
-      for (const body of [0, 1, 2])
-        answers.push(
-          <Word
-            key={`stay-${body}`}
-            label={String(body + 1)}
-            name={fill(t.beyondStayBody, { body: body + 1 })}
-            onClick={() => stay(body)}
-            onPoint={(by, on) => (by === 'focus' ? setFocused : setHovered)(on ? body : null)}
-          />,
-        );
-      answers.push(
-        <Word
-          key="stay-frame"
-          label={t.beyondFrame}
-          name={t.beyondStayFrame}
-          onClick={() => stay(null)}
-        />,
-      );
-    } else if (phase === 'running') {
-      // Further on keeps its place for the whole performance, and is dimmed while it would save
-      // nothing: a word that came and went with the clock moved the others from under the hand.
-      passing.push(
-        <Word key="onward" label={t.beyondOnward} onClick={goFurther} disabled={!worthIt} />,
-        <Word key="main" label={t.beyondTell} onClick={tellNow} />,
-      );
-    } else if (phase === 'told') {
-      // Nothing was performed where the path held nothing: there is nothing to perform again.
-      if (!nothingPerformed) passing.push(<Word key="main" label={t.again} onClick={goBeyond} />);
-      passing.push(<WordLink key="record" label={t.beyondRecord} href="#proof" />);
-    }
-    if (phase !== 'resting') {
-      staying.push(<Word key="after" label={t.afterTheFrame} onClick={leaveBeyond} pressed />);
-      if (placed)
-        staying.push(<Word key="twin" label={t.oneInATrillion} onClick={goTwin} pressed={false} />);
-    }
-  } else if (derived && twin) {
-    if (twinRested && !still) passing.push(<Word key="again" label={t.again} onClick={goTwin} />);
-    if (canGoBeyond)
-      staying.push(<Word key="after" label={t.afterTheFrame} onClick={goBeyond} pressed={false} />);
-    staying.push(<Word key="twin" label={t.oneInATrillion} onClick={leaveTwin} pressed />);
-  } else if (derived) {
-    if (turned)
-      passing.push(
-        <Word key="view" label={t.orbitGeneratorView} onClick={() => sculpture.current?.back()} />,
-      );
-    passing.push(
-      <Word key="clock" label={clockWord} onClick={playPause} />,
-      <Word key="closest" label={t.toClosestApproach} onClick={toClosestApproach} />,
-    );
-    if (canGoBeyond && finished)
-      staying.push(<Word key="after" label={t.afterTheFrame} onClick={goBeyond} pressed={false} />);
-    if (derivedFate && finished && placed)
-      staying.push(<Word key="twin" label={t.oneInATrillion} onClick={goTwin} pressed={false} />);
-  }
+  const offered: Offered | null = !derived
+    ? null
+    : beyond
+      ? {
+          act: 'beyond',
+          phase,
+          worthIt,
+          onFurther: goFurther,
+          onTell: tellNow,
+          onAgain: nothingPerformed ? null : goBeyond,
+          onLeave: leaveBeyond,
+          onTwin: placed ? goTwin : null,
+        }
+      : twin
+        ? {
+            act: 'twin',
+            onAgain: twinRested && !still ? goTwin : null,
+            onBeyond: canGoBeyond ? goBeyond : null,
+            onLeave: leaveTwin,
+          }
+        : {
+            act: 'window',
+            clockWord,
+            onClock: playPause,
+            onClosest: toClosestApproach,
+            onGeneratorView: turned ? () => sculpture.current?.back() : null,
+            onBeyond: canGoBeyond && finished ? goBeyond : null,
+            onTwin: derivedFate && finished && placed ? goTwin : null,
+          };
+  /** A pointer on the picture, while the visitor chooses a body in it. */
+  const hand: StageHand = {
+    onPointerDown: (event) => {
+      // A new press: what the last one could not tell apart is no longer shown.
+      const finger = event.pointerType === 'touch';
+      const at = pressAt(event, finger);
+      pressed.current = { finger, body: at && 'body' in at ? at.body : null };
+      setUnsure(NO_BODIES);
+    },
+    onClick: (event) => {
+      const down = pressed.current;
+      pressed.current = null;
+      // A pointer's press is one that went down on the picture since it asked:
+      // not the letting go of a hold begun on the orbit in the hand, which the
+      // question took from under it.
+      if (event.detail > 0 && !down) return;
+      // Not a press made before the picture had stood long enough to be read
+      // (the page may just have brought it under the finger that asked).
+      if (tooSoon(event, pressableSince.current)) return;
+      const at = pressAt(event, down?.finger);
+      if (!at) return;
+      // A finger that covers two bodies is shown both, and the words answer.
+      if ('unsure' in at) setUnsure(at.unsure);
+      // A press is on a body if it went down on it too: a drag across the
+      // picture that happens to end on one is not an answer.
+      else if (!down || down.body === at.body) stay(at.body);
+    },
+    onPointerMove: (event) => {
+      if (event.pointerType === 'touch') return;
+      const at = pressAt(event);
+      setAimed(at && 'body' in at ? at.body : null);
+    },
+    onPointerLeave: (event) => {
+      if (event.pointerType !== 'touch') setAimed(null);
+    },
+  };
 
   return (
     <PressGuard.Provider value={tooSoon}>
@@ -1393,143 +1360,32 @@ export function OrbitScore({
                 : t.orbitLine}
           </p>
         </header>
-        <figure className={styles.figure}>
-          <div
-            ref={stage}
-            className={styles.stage}
-            data-drawing={plateStill ? 'plate' : 'plane'}
-            data-material={plateStill ? (material ?? undefined) : undefined}
-            data-pick={(choosing && aimed !== null) || undefined}
-            onPointerDown={
-              choosing
-                ? (event) => {
-                    // A new press: what the last one could not tell apart is no longer shown.
-                    const finger = event.pointerType === 'touch';
-                    const at = pressAt(event, finger);
-                    pressed.current = { finger, body: at && 'body' in at ? at.body : null };
-                    setUnsure(NO_BODIES);
-                  }
-                : undefined
-            }
-            onClick={
-              choosing
-                ? (event) => {
-                    const down = pressed.current;
-                    pressed.current = null;
-                    // A pointer's press is one that went down on the picture since it asked:
-                    // not the letting go of a hold begun on the orbit in the hand, which the
-                    // question took from under it.
-                    if (event.detail > 0 && !down) return;
-                    // Not a press made before the picture had stood long enough to be read
-                    // (the page may just have brought it under the finger that asked).
-                    if (tooSoon(event, pressableSince.current)) return;
-                    const at = pressAt(event, down?.finger);
-                    if (!at) return;
-                    // A finger that covers two bodies is shown both, and the words answer.
-                    if ('unsure' in at) setUnsure(at.unsure);
-                    // A press is on a body if it went down on it too: a drag across the
-                    // picture that happens to end on one is not an answer.
-                    else if (!down || down.body === at.body) stay(at.body);
-                  }
-                : undefined
-            }
-            onPointerMove={
-              choosing
-                ? (event) => {
-                    if (event.pointerType === 'touch') return;
-                    const at = pressAt(event);
-                    setAimed(at && 'body' in at ? at.body : null);
-                  }
-                : undefined
-            }
-            onPointerLeave={
-              choosing
-                ? (event) => {
-                    if (event.pointerType !== 'touch') setAimed(null);
-                  }
-                : undefined
-            }
-            style={
-              plateStill && plate
-                ? ({
-                    '--plate-aspect': `${plate.frame.width} / ${plate.frame.height}`,
-                    '--plate-ratio': plate.frame.width / plate.frame.height,
-                    '--plate-ground': plateStill.tone,
-                  } as CSSProperties)
-                : undefined
-            }
-          >
-            {/* The work's still, untouched: the drawing lies over it and never alters a pixel. It is
-              fetched once the section is a screen away, as its derivation begins, rather than at
-              each browser's own lazy margin, which Firefox keeps close to the viewport. */}
-            {plateStill ? (
-              <img
-                key={material}
-                className={styles.still}
-                src={plateStill.src}
-                srcSet={plateStill.srcSet}
-                sizes={plateStill.srcSet ? STILL_SIZES : undefined}
-                width={plateStill.width}
-                height={plateStill.height}
-                alt=""
-                decoding="async"
-                loading={near ? 'eager' : 'lazy'}
-                // Past the frame the still is what a pointer meets: a press that slips is not
-                // to drag it away.
-                draggable={false}
-              />
-            ) : null}
-            {/* The orbit in depth: shown only as the hand turns it, beneath the drawing it replaces. */}
-            {plateStill && space && material && !beyond && !twin ? (
-              <OrbitSculpture
-                key={`depth-${material}`}
-                handle={sculpture}
-                stage={stage}
-                space={space}
-                material={material}
-                tone={plateStill.tone}
-                colours={plateStill.colours}
-                hues={orbit.bodyHues}
-                closestStep={orbit.published.closestApproach.step}
-                still={still}
-                label={t.orbitStageLabel}
-                onReady={setTurnable}
-                onTurned={setTurned}
-                onPlayPause={playPause}
-              />
-            ) : null}
-            <canvas ref={trails} className={styles.layer} data-layer="trails" aria-hidden="true" />
-            <canvas
-              ref={continued}
-              className={styles.layer}
-              data-layer="continued"
-              aria-hidden="true"
-            />
-            <canvas ref={marks} className={styles.layer} data-layer="marks" aria-hidden="true" />
-            <canvas ref={names} className={styles.layer} data-layer="names" aria-hidden="true" />
-          </div>
-          {/* Past the frame the caption is the label alone, for as long as the derived picture
-            stands: the still that returns is the work, and needs none. Its line is kept. */}
-          <figcaption className={styles.caption}>
-            {beyond ? (
-              <span
-                className={styles.label}
-                data-shown={phase === 'running' || phase === 'choosing'}
-                aria-hidden={phase !== 'running' && phase !== 'choosing'}
-              >
-                {t.analysisNotWork}
-              </span>
-            ) : (
-              description
-            )}
-            {turnable && !beyond && !twin ? (
-              <span className={styles.hint}>
-                <span className={styles.hintPointer}>{t.orbitTurnHint}</span>
-                <span className={styles.hintTouch}>{t.orbitTurnHintTouch}</span>
-              </span>
-            ) : null}
-          </figcaption>
-        </figure>
+        <OrbitFigure
+          stage={stage}
+          trails={trails}
+          continued={continued}
+          marks={marks}
+          names={names}
+          sculpture={sculpture}
+          orbit={orbit}
+          t={t}
+          oneDecimal={oneDecimal}
+          number={number}
+          on={
+            plateStill && plate && material
+              ? { frame: plate.frame, still: plateStill, material }
+              : null
+          }
+          near={near}
+          space={space}
+          still={still}
+          act={beyond ? 'beyond' : twin ? 'twin' : 'window'}
+          labelled={phase === 'running' || phase === 'choosing'}
+          hand={choosing ? hand : null}
+          aimed={aimed !== null}
+          onTurned={setTurned}
+          onPlayPause={playPause}
+        />
         <div ref={beneath} className={styles.score}>
           <div className={styles.strip}>
             <canvas ref={events} className={styles.events} aria-hidden="true" />
@@ -1545,71 +1401,24 @@ export function OrbitScore({
             ) : null}
           </div>
           <div className={styles.readoutRow}>
-            <div className={styles.said}>
-              <div className={styles.shown}>
-                {/* Past the frame the line is said aloud once the performance is over: what
-                  happened, to a visitor who cannot see the picture empty. It is made live for
-                  the rest before it, while it stands empty. While the performance runs it
-                  changes four times a second, and is not; but where nothing plays it changes
-                  only when the visitor steps it with Further on, and each step is said. The
-                  question is said by the focus it is given. */}
-                <p
-                  ref={telling}
-                  id="orbit-said"
-                  className={read ? `${styles.readout} ${styles.book}` : styles.readout}
-                  tabIndex={-1}
-                  aria-live={
-                    beyond &&
-                    (phase === 'resting' || phase === 'told' || (phase === 'running' && still))
-                      ? 'polite'
-                      : undefined
-                  }
-                >
-                  {line}
-                </p>
-                {answers.length ? (
-                  <div className={styles.answers} role="group" aria-labelledby="orbit-said">
-                    {answers}
-                  </div>
-                ) : null}
-              </div>
-              {/* The room: everything that can come to stand here, laid out unseen in the same
-                place. Whatever the language and the width, the line's room is that of the
-                longest of them from the first, and nothing beneath it moves. */}
-              {beyond ? (
-                <>
-                  {asksWhom(path) ? (
-                    // The question over its answers: what stands here first, and goes.
-                    <div className={styles.fit} aria-hidden="true">
-                      <p className={`${styles.readout} ${styles.book}`}>{t.beyondAsk}</p>
-                      <div className={styles.answers}>
-                        {['1', '2', '3', t.beyondFrame].map((label) => (
-                          <span key={label} className={styles.again}>
-                            {label}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-                  ) : null}
-                  {tellings.map(({ kept, said }) => (
-                    <p
-                      key={kept ?? 'frame'}
-                      className={`${styles.readout} ${styles.book} ${styles.fit}`}
-                      aria-hidden="true"
-                    >
-                      {sentences(said)}
-                    </p>
-                  ))}
-                  <p className={`${styles.readout} ${styles.fit}`} aria-hidden="true">
-                    {longestLine}
-                  </p>
-                </>
-              ) : null}
-            </div>
-            <div ref={wordsRow} className={styles.words}>
-              <span className={styles.passing}>{passing}</span>
-              <span className={styles.staying}>{staying}</span>
-            </div>
+            <OrbitSaid
+              telling={telling}
+              t={t}
+              line={line}
+              read={read}
+              live={
+                !!beyond &&
+                (phase === 'resting' || phase === 'told' || (phase === 'running' && still))
+              }
+              onStay={derived && choosing ? stay : null}
+              onPoint={(by, body) => (by === 'focus' ? setFocused : setHovered)(body)}
+              room={
+                beyond && longestLine !== null
+                  ? { asks: asksWhom(path), tellings, longestLine }
+                  : null
+              }
+            />
+            <OrbitWords row={wordsRow} t={t} offered={offered} />
           </div>
         </div>
       </section>
