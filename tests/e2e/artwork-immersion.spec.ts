@@ -333,6 +333,89 @@ test('keys are silent while focus is in a field, and the remembered expression f
   await fresh.close();
 });
 
+/*
+  The Turn's commit follows its seam, whatever else the page is doing. It was once a transition,
+  which React sets aside for any other update and holds until the images it mounts have decoded:
+  on a slow machine a film's clock or an orbit being drawn kept it waiting for seconds after the
+  seam had landed (five, on CI's runners, where React's own limit let it through), and for that
+  long the strip, the keys and the screen reader still had the expression the picture had left.
+  Here the film on the plate reports its progress once for every task the browser runs, far more
+  often than a film does; a commit that can be set aside never lands under that, on any machine.
+*/
+test('a Turn lands when its seam does, however busy the page around it', async ({
+  page,
+}, testInfo) => {
+  test.skip(
+    testInfo.project.name.endsWith('reduced-motion'),
+    'Under a still preference no film plays and the Turn is one frame: nothing can hold it.',
+  );
+  // The page's own clock: when the seam is given its travel, how long that is, and the commit
+  // of Light, which this page opens without (artworkReady).
+  await page.addInitScript(() => {
+    const marks: { seam?: number; travel?: number; commit?: number } = {};
+    Object.assign(window, { __turn: marks });
+    const read = () => {
+      const root = document.documentElement;
+      if (marks.seam === undefined && root.hasAttribute('data-turning')) {
+        marks.seam = performance.now();
+        // The crossing's own pace where it is painted, the straight seam's elsewhere.
+        marks.travel = parseFloat(
+          root.style.getPropertyValue('--t-crossing') ||
+            getComputedStyle(root).getPropertyValue('--t-turn'),
+        );
+      }
+      const stage = [...document.querySelectorAll('[data-artwork-stage="page"]')].find(
+        (node) => node.getClientRects().length > 0,
+      );
+      if (marks.seam !== undefined && stage?.getAttribute('data-expression') === 'light')
+        marks.commit ??= performance.now();
+    };
+    new MutationObserver(read).observe(document, {
+      subtree: true,
+      attributes: true,
+      attributeFilter: ['data-turning', 'data-expression'],
+    });
+  });
+  await artworkReady(page, '/art/31');
+  const film = page.locator(`${current} video`).first();
+  await expect
+    .poll(
+      () =>
+        film.evaluate((element) => {
+          const player = element as HTMLVideoElement;
+          return player.readyState >= 2 && !player.paused && player.currentTime > 0;
+        }),
+      { timeout: 30_000 },
+    )
+    .toBe(true);
+  await page.evaluate(() => {
+    const busy = { on: true };
+    Object.assign(window, { __busy: busy });
+    const channel = new MessageChannel();
+    channel.port1.onmessage = () => {
+      if (!busy.on) return;
+      document
+        .querySelectorAll('[data-artwork-stage="page"] [data-layer-state="current"] video')
+        .forEach((player) => player.dispatchEvent(new Event('timeupdate')));
+      channel.port2.postMessage(null);
+    };
+    channel.port2.postMessage(null);
+  });
+  await turnWord(page, 'light').click();
+  await expect(page.locator(pageStage)).toHaveAttribute('data-expression', 'light');
+  const turn = await page.evaluate(() => {
+    const busy = (window as unknown as { __busy: { on: boolean } }).__busy;
+    busy.on = false;
+    return (window as unknown as { __turn: { seam: number; travel: number; commit: number } })
+      .__turn;
+  });
+  // The seam is asked for its commit 30 ms after its travel; the rest is the commit itself.
+  expect(turn.travel).toBeGreaterThan(0);
+  expect(turn.commit - (turn.seam + turn.travel)).toBeLessThan(2000);
+  await expect(page.locator('html')).not.toHaveAttribute('data-turning', /./);
+  await expect(turnWord(page, 'ink')).toHaveAttribute('aria-busy', 'false');
+});
+
 test('the night wing is drawn by the hand where the browser can, and is a hard edge elsewhere', async ({
   page,
 }) => {
@@ -730,7 +813,9 @@ test('native fullscreen enters when supported and returns to the same work', asy
 
 test('expression changes in the room stay contained, commit to the plate, and keep focus inside', async ({
   page,
-}) => {
+  browserName,
+}, testInfo) => {
+  await cinematicObserver(page);
   await artworkReady(page);
   const options = page.locator(current).getByRole('button', { name: t.ways, exact: true });
   await options.click();
@@ -743,6 +828,14 @@ test('expression changes in the room stay contained, commit to the plate, and ke
     'data-expression',
     'light',
   );
+  // The room's stage is the one place a Turn is the browser's own snapshot: one of them, where
+  // the browser takes snapshots and motion is welcome. Firefox runs on CI alone, so it is not
+  // counted here.
+  if (browserName !== 'firefox') {
+    const snapshots = await page.evaluate(() => typeof document.startViewTransition === 'function');
+    const still = testInfo.project.name.endsWith('reduced-motion');
+    expect(await transitionCount(page)).toBe(snapshots && !still ? 1 : 0);
+  }
   await expect(dialog.locator('img')).toHaveAttribute('alt', '№\u00a0031 · Light');
   await imageReady(dialog.locator('img'));
   await expect(dialog.locator('video')).toHaveCount(0);
