@@ -519,9 +519,9 @@ The recorder is kept as a tool: `npm run test:golden` (`tests/golden/`), with `n
 
 It also found three things that were so before the change and are left as they were, since mending them changes what a visitor meets: _Again_ beside the twin goes as it is pressed and the keyboard's focus falls to the page; _The generator's view_ does the same; and that word stays offered after the orbit in the hand has been taken off the stage and put back unturned.
 
-**Tests.** 121 new unit tests. Each new module with logic of its own has a file: the reducer, the clock, the twin's state and its worker, the twin's line and the gap's growth, the room's fit and scrolls, the ring and the presses, where the numbers stand, the painter, the window's line and its drawing, the canvases. They share one recording canvas (`tests/canvas-support.ts`). The figure, the line and a word are held by the section's own tests, now 98.
+**Tests.** 121 new unit tests. Each new module with logic of its own has a file: the reducer, the clock, the twin's state and its worker, the twin's line and the gap's growth, the room's fit and scrolls, the ring and the presses, where the numbers stand, the painter, the window's line and its drawing, the canvases. They share one recording canvas (`tests/canvas-support.ts`). The figure, the line and a word are held by the section's own tests: 98 on this branch, and 101 with the changes main made to that file meanwhile (the four edges as four tests).
 
-**What it cost.** A work's page loads 1.8 KiB more script as sent (358.7 to 360.5 KiB, against a budget of 370): the seams between the modules. No other route moved.
+**What it cost.** A work's page loads about 1.8 KiB more script as sent (358.7 KiB before, 360.6 after, against a budget of 370): the seams between the modules. No other route moved.
 
 **What it does not do yet.**
 
