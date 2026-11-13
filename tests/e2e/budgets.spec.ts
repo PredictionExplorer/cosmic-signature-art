@@ -50,11 +50,13 @@ const VISITS: Visit[] = [
   { title: 'a work page, № 031', path: '/art/31', firstVisit: false },
   // A slow connection in the one respect loopback hides: the route's script arrives late, the
   // document and its images as they do. A still that has loaded shows without it
-  // (src/lib/settle.ts), so the largest paint must not wait for the script; the delay is longer
-  // than the budget, and a still held back until the plate hydrates fails it.
+  // (src/lib/settle.ts), so neither the still nor the largest paint may wait for the script; the
+  // delay is longer than the budget, and a still held back until the plate hydrates fails it.
+  // The plate is asked to rest on its still: a film can only begin once the script has run, and
+  // on a phone its first frame, a few pixels larger than the preview, would be counted instead.
   {
-    title: 'a work page, № 031, its script three seconds late',
-    path: '/art/31',
+    title: 'a work page, № 031, at rest, its script three seconds late',
+    path: '/art/31?view=still',
     firstVisit: false,
     scriptDelayMs: 3_000,
   },
@@ -298,6 +300,13 @@ test.describe('paint and layout budgets', { tag: '@budget' }, () => {
           });
       }
       expect(lcp, summary).toBeLessThanOrEqual(BUDGET.largestContentfulPaintMs);
+      // On a phone the still is no larger than its preview and is never the LCP; it is held to
+      // the same line there by the moment it began to show.
+      if (visit.scriptDelayMs)
+        expect(
+          median(loads.map((load) => load.stillAt ?? Infinity)),
+          `The still showed without waiting for the route's script. ${summary}`,
+        ).toBeLessThanOrEqual(BUDGET.largestContentfulPaintMs);
       expect(cls, summary).toBeLessThanOrEqual(BUDGET.cumulativeLayoutShift);
     });
 });
