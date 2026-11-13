@@ -803,17 +803,8 @@ export function ArtworkRoom({
           ? t.wavelengthUnavailable
           : status;
   const roomFor = useMemo(
-    () =>
-      noticeLines({
-        artwork,
-        t,
-        derivedViews,
-        fullscreenAvailable,
-        constrained,
-        isStudy,
-        numbers,
-      }),
-    [artwork, t, derivedViews, fullscreenAvailable, constrained, numbers],
+    () => noticeLines({ artwork, t, derivedViews, constrained, isStudy, numbers }),
+    [artwork, t, derivedViews, constrained, numbers],
   );
   const retryStill = media?.still && stillFailed === media.still && !showFilm;
   const retryFilmOffer = showFilm && filmStatus === 'failed' && !studyHeld;

@@ -28,7 +28,6 @@ const lines = (over: Partial<Parameters<typeof noticeLines>[0]> = {}) =>
     artwork,
     t: en,
     derivedViews: true,
-    fullscreenAvailable: true,
     constrained: false,
     isStudy,
     numbers,
@@ -65,7 +64,15 @@ describe('the room’s notice', () => {
         expect.objectContaining({ words: noticeWords(en.analysisNotWork, caption), ramp: false }),
       );
     expect(words()).toEqual(
-      expect.arrayContaining([en.whenUnavailable, en.wavelengthUnavailable, en.loadingFilm]),
+      expect.arrayContaining([
+        en.whenUnavailable,
+        en.wavelengthUnavailable,
+        en.loadingFilm,
+        en.preparingExpression,
+        en.expressionFailed,
+        en.mediaUnavailable,
+        en.fullScreenUnavailable,
+      ]),
     );
     // No line is held twice.
     expect(new Set(held.map((line) => JSON.stringify(line))).size).toBe(held.length);
@@ -77,9 +84,6 @@ describe('the room’s notice', () => {
     expect(sale.some((line) => line.includes(en.analysisNotWork))).toBe(false);
     expect(sale).not.toContain(en.whenUnavailable);
     expect(sale).not.toContain(en.wavelengthUnavailable);
-    // Fullscreen is refused only where it is offered.
-    expect(words()).toContain(en.fullScreenUnavailable);
-    expect(words({ fullscreenAvailable: false })).not.toContain(en.fullScreenUnavailable);
     // A work without a sweep, or without a study, holds no room for theirs.
     const plain = words({ artwork: preserved, isStudy: () => false });
     expect(plain.some((line) => line.includes(en.wavelengthCaption))).toBe(false);

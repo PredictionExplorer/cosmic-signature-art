@@ -35,12 +35,15 @@ export type NoticeLine = { words: string; ramp?: boolean; press?: { word: string
 /**
  * Every line the notice of this room may come to say, the longest readings of each. The words
  * a visitor cannot meet here are left out, so a room without a lens holds no room for one.
+ *
+ * The list is whole on the room's first render and stays as it is while the room is open: a
+ * line added a moment later would move the work as the Expansion lands. So it asks nothing a
+ * browser answers only after mounting, such as whether fullscreen can be granted.
  */
 export function noticeLines({
   artwork,
   t,
   derivedViews,
-  fullscreenAvailable,
   constrained,
   isStudy,
   numbers,
@@ -49,7 +52,6 @@ export function noticeLines({
   t: Messages;
   /** The lenses are offered in this room (never on a sale surface). */
   derivedViews: boolean;
-  fullscreenAvailable: boolean;
   /** On a constrained connection a long study waits for a word. */
   constrained: boolean;
   /** Which films are the long studies is the room's to say. */
@@ -69,7 +71,7 @@ export function noticeLines({
   add(t.preparingExpression);
   add(t.expressionFailed);
   add(t.mediaUnavailable);
-  if (fullscreenAvailable) add(t.fullScreenUnavailable);
+  add(t.fullScreenUnavailable);
   for (const media of artwork.media) {
     if (media.films.length) add(t.loadingFilm);
     for (const film of media.films.filter(isStudy)) {
