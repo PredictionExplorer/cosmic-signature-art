@@ -246,8 +246,6 @@
   color: var(--room-muted);
   font-size: var(--fs-folio);
   line-height: 1.5;
-  /* One line stands in the middle of the 27 px the notice has always held. */
-  --notice-pad: calc((27px - 1.5 * var(--fs-folio)) / 2);
   /* Figures of one width: the loupe's readout keeps its length as the numbers turn. */
   font-variant-numeric: lining-nums tabular-nums;
 }
@@ -260,10 +258,6 @@
 .held > span {
   grid-area: 1 / 1;
   min-width: 0;
-}
-.said,
-.held > span {
-  padding-block: var(--notice-pad);
   overflow-wrap: break-word;
 }
 .held {
@@ -272,15 +266,8 @@
   visibility: hidden;
   pointer-events: none;
 }
-.held > span::before,
 .held [data-line]::before {
   content: attr(data-line);
-}
-/* A word to press keeps its 44 px in the notice; the part of it that would stand above and
-   below one line lies in the notice's own margins, so a row with a word is 44 px, as it was. */
-.said button,
-.word {
-  margin-block: calc(-1 * var(--notice-pad));
 }
 /* 18 px between a line's words and what stands after them, as wide as the strip's own gaps.
    It is a space made wide, so at the end or the start of a wrapped row it takes no room. */

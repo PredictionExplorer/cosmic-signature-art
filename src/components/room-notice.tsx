@@ -39,6 +39,11 @@ export type NoticeLine = { words: string; ramp?: boolean; press?: { word: string
  * The list is whole on the room's first render and stays as it is while the room is open: a
  * line added a moment later would move the work as the Expansion lands. So it asks nothing a
  * browser answers only after mounting, such as whether fullscreen can be granted.
+ *
+ * Two things are left to make their own room when they come: a failure said while a lens is on
+ * (the Turn failed, fullscreen was refused), and "Try again" after a still or a film has
+ * failed, whose word is 44 px tall. Holding room for them would take it from the work on every
+ * screen, always, for a line few visitors will meet; when one comes, the notice grows by it.
  */
 export function noticeLines({
   artwork,
