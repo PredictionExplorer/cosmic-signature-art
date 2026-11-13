@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, type RefObject } from 'react';
 import type { WorkOrbit } from '@/lib/art/orbit-records';
 import type { PlateFrame } from '@/lib/physics/framing';
 import type { Rederivation } from '@/lib/physics/orbit';
@@ -13,13 +13,15 @@ import type { Twin, TwinPair } from './orbit-twin';
   The twin is followed once, off the main thread (src/lib/physics/twin.worker.ts), and what was
   found is kept: a repeat or a return performs it again without following it anew. This hook
   owns whether the twin stands on the stage, how far the pair has got as the performance last
-  said, and the worker. The performance itself is the drawing's (orbit-twin.tsx).
+  said, the worker, and where the focus goes when Again, which asks for it once more, gives
+  way. The performance itself is the drawing's (orbit-twin.tsx).
 */
 export function useTwin({
   orbit,
   steps,
   result,
   frame,
+  telling,
 }: {
   orbit: WorkOrbit;
   steps: number;
@@ -27,6 +29,8 @@ export function useTwin({
   result: Rederivation | null;
   /** The work's frame, in which the twin is seen to part. None draws in the plane, with no twin. */
   frame: PlateFrame | undefined;
+  /** The line beneath the picture: the focus is handed it when a word it stood on goes. */
+  telling: RefObject<HTMLParagraphElement | null>;
 }) {
   /** Off the stage (null), being followed, ready to perform, or not to be had. */
   const [twin, setTwin] = useState<Twin | null>(null);
@@ -37,6 +41,11 @@ export function useTwin({
   const live = useRef<TwinPair | null>(null);
   /** The twin, once followed. */
   const found = useRef<TwinRun | null>(null);
+  /**
+   * The focus is to go to the line once the pair is performed again: Again was pressed with
+   * the focus on it, and goes until the pair has come to rest once more.
+   */
+  const handOn = useRef(false);
 
   const following = twin?.phase === 'following';
   useEffect(() => {
@@ -74,13 +83,25 @@ export function useTwin({
     return () => worker.terminate();
   }, [following, result, frame, orbit, steps]);
 
+  useEffect(() => {
+    if (!handOn.current || twin?.phase !== 'ready') return;
+    handOn.current = false;
+    // The line says how far apart the two now are: the keyboard and the screen reader go to it.
+    telling.current?.focus({ preventScroll: true });
+  }, [twin, telling]);
+
   return {
     twin,
     following,
     taken,
     rested,
-    /** The twin takes the stage: followed if it is new, performed afresh if it was found. */
-    go: () => {
+    /**
+     * The twin takes the stage: followed if it is new, performed afresh if it was found. Asked
+     * for by a word that goes as it is pressed, with the focus on it (`focus`), the focus goes
+     * to the line.
+     */
+    go: (focus = false) => {
+      handOn.current = focus;
       live.current = null;
       setRested(false);
       setTaken(steps);
@@ -96,6 +117,7 @@ export function useTwin({
     },
     /** The twin leaves the stage. What was found of it is kept. */
     leave: () => {
+      handOn.current = false;
       live.current = null;
       setTwin(null);
       setRested(false);

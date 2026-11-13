@@ -1,5 +1,5 @@
 'use client';
-import { createContext, useContext, useEffect, useRef, type KeyboardEvent } from 'react';
+import { createContext, useContext, useEffect, useRef, type KeyboardEvent, type Ref } from 'react';
 import { PRESSES_KEPT, pressedTooSoon, type Press } from '@/lib/second-press';
 import styles from './orbit-score.module.css';
 
@@ -49,6 +49,7 @@ const oncePerPress = (event: KeyboardEvent) => {
 
 /** One of the words beside the line: pressed or not where it is a mode, dimmed where it would do nothing. */
 export function Word({
+  ref,
   label,
   name,
   onClick,
@@ -56,6 +57,8 @@ export function Word({
   pressed,
   disabled = false,
 }: {
+  /** The word itself, where the section must know whether the focus stands on it. */
+  ref?: Ref<HTMLButtonElement>;
   label: string;
   /** What the word does, where its letters alone do not say: it contains them (WCAG 2.5.3). */
   name?: string;
@@ -76,6 +79,7 @@ export function Word({
   const tooSoon = useContext(PressGuard);
   return (
     <button
+      ref={ref}
       type="button"
       className={styles.again}
       aria-label={name}

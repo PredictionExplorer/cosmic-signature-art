@@ -54,14 +54,28 @@ export type Offered =
   The answers to the question are not among them: they stand under the question, in the
   line's own room (orbit-said.tsx), so that no word ever comes to stand where one was just
   pressed.
+
+  A word that goes while the focus stands on it would drop the focus to the page: a keyboard
+  would begin again from the top, and a screen reader would lose its place. So whoever takes a
+  word away hands its focus on first, while the word is still there to ask (the section does:
+  to the line, to the orbit in the hand, or to itself). Two words go by what they do: Again
+  beside the twin, and the generator's view.
 */
 export function OrbitWords({
   row,
+  view,
+  again,
   t,
   offered,
 }: {
   /** The row itself: the section measures where it stands, and asks whether the focus is in it. */
   row: RefObject<HTMLDivElement | null>;
+  /**
+   * The two words that go by what they do, while each is offered: the generator's view, and
+   * Again beside the twin. The section asks whether the focus stands on one as it goes.
+   */
+  view?: RefObject<HTMLButtonElement | null>;
+  again?: RefObject<HTMLButtonElement | null>;
   t: Messages;
   /** None until the orbit is derived. */
   offered: Offered | null;
@@ -96,7 +110,7 @@ export function OrbitWords({
     }
   } else if (offered?.act === 'twin') {
     if (offered.onAgain)
-      passing.push(<Word key="again" label={t.again} onClick={offered.onAgain} />);
+      passing.push(<Word key="again" ref={again} label={t.again} onClick={offered.onAgain} />);
     if (offered.onBeyond)
       staying.push(
         <Word key="after" label={t.afterTheFrame} onClick={offered.onBeyond} pressed={false} />,
@@ -105,7 +119,12 @@ export function OrbitWords({
   } else if (offered) {
     if (offered.onGeneratorView)
       passing.push(
-        <Word key="view" label={t.orbitGeneratorView} onClick={offered.onGeneratorView} />,
+        <Word
+          key="view"
+          ref={view}
+          label={t.orbitGeneratorView}
+          onClick={offered.onGeneratorView}
+        />,
       );
     passing.push(
       <Word key="clock" label={offered.clockWord} onClick={offered.onClock} />,

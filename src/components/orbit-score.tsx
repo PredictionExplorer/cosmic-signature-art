@@ -127,6 +127,12 @@ export function OrbitScore({
    */
   const telling = useRef<HTMLParagraphElement>(null);
   const wordsRow = useRef<HTMLDivElement>(null);
+  /**
+   * The two words that go by what they do (orbit-words.tsx): the generator's view, and Again
+   * beside the twin. The focus that stands on one is handed on as it goes.
+   */
+  const viewWord = useRef<HTMLButtonElement>(null);
+  const againWord = useRef<HTMLButtonElement>(null);
   const trails = useRef<HTMLCanvasElement>(null);
   const continued = useRef<HTMLCanvasElement>(null);
   const marks = useRef<HTMLCanvasElement>(null);
@@ -187,7 +193,7 @@ export function OrbitScore({
     [result],
   );
   /** One part in a trillion: the twin, while it stands on the stage. */
-  const twinAct = useTwin({ orbit, steps, result, frame: plate?.frame });
+  const twinAct = useTwin({ orbit, steps, result, frame: plate?.frame, telling });
   const { twin, following } = twinAct;
 
   // The plate shows the expression the page's plate shows: the visitor's choice, remembered for
@@ -276,13 +282,23 @@ export function OrbitScore({
     unpoint();
     past.stay(body);
   };
-  /** One part in a trillion: After the frame gives way, and the twin is followed if it is new. */
-  const goTwin = () => {
+  /**
+   * One part in a trillion: After the frame gives way, and the twin is followed if it is new.
+   * Asked for by a word that goes as it is pressed, the focus that stood on it (`focus`) goes
+   * to the line.
+   */
+  const goTwin = (focus = false) => {
     if (beyond) room.keepWords();
     unpoint();
     past.giveWay();
-    twinAct.go();
+    twinAct.go(focus);
   };
+  /**
+   * Again, beside the twin: the pair is performed afresh, and the word goes until the two have
+   * come to rest once more.
+   */
+  const twinAgain = () =>
+    goTwin(!!againWord.current && document.activeElement === againWord.current);
   /** Back to the frame from After the frame: the recorded window, whole. */
   const leaveBeyond = () => {
     room.keepWords();
@@ -294,6 +310,18 @@ export function OrbitScore({
   const leaveTwin = () => {
     twinAct.leave();
     clock.rest();
+  };
+  /**
+   * The orbit in the hand says whether it is turned. Back at the generator's view, the word
+   * that gives it back goes: a focus that stood on that word is given to the orbit it acted
+   * on, or kept in the section where the orbit has left the stage as well.
+   */
+  const orbitTurned = (now: boolean) => {
+    if (!now && viewWord.current && document.activeElement === viewWord.current) {
+      if (sculpture.current) sculpture.current.focus();
+      else section.current?.focus({ preventScroll: true });
+    }
+    setTurned(now);
   };
 
   // The drawing: trails accumulate, the bodies ride on a layer above, and the score beneath
@@ -608,12 +636,12 @@ export function OrbitScore({
           onTell: past.tellNow,
           onAgain: past.nothingPerformed ? null : goBeyond,
           onLeave: leaveBeyond,
-          onTwin: placed ? goTwin : null,
+          onTwin: placed ? () => goTwin() : null,
         }
       : twin
         ? {
             act: 'twin',
-            onAgain: twinAct.rested && !still ? goTwin : null,
+            onAgain: twinAct.rested && !still ? twinAgain : null,
             onBeyond: canGoBeyond ? goBeyond : null,
             onLeave: leaveTwin,
           }
@@ -626,7 +654,7 @@ export function OrbitScore({
               clock.toClosest(lightFilmSeconds(orbit.published.closestApproach.step, steps)),
             onGeneratorView: turned ? () => sculpture.current?.back() : null,
             onBeyond: canGoBeyond && clock.finished ? goBeyond : null,
-            onTwin: derivedFate && clock.finished && placed ? goTwin : null,
+            onTwin: derivedFate && clock.finished && placed ? () => goTwin() : null,
           };
 
   return (
@@ -694,7 +722,7 @@ export function OrbitScore({
           labelled={!!beyond && (phase === 'running' || phase === 'choosing')}
           hand={hand}
           aimed={ring.aiming}
-          onTurned={setTurned}
+          onTurned={orbitTurned}
           onPlayPause={clock.playPause}
         />
         <div ref={beneath} className={styles.score}>
@@ -729,7 +757,7 @@ export function OrbitScore({
                   : null
               }
             />
-            <OrbitWords row={wordsRow} t={t} offered={offered} />
+            <OrbitWords row={wordsRow} view={viewWord} again={againWord} t={t} offered={offered} />
           </div>
         </div>
       </section>

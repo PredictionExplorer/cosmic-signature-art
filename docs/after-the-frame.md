@@ -517,7 +517,7 @@ The recorder is kept as a tool: `npm run test:golden` (`tests/golden/`), with `n
 | No test ran the twin where motion is welcome, nor delivered a resize: the recording had never seen lines that several steps edited.                                                                                                              | Five tests added. Then the code before the change and the code after were both recorded through all 98: the new recording is the old with the four removals above and nothing else moved. |
 | `usePictureRoom` took one fact as two parameters; three comments pointed at where things used to be; a bare 250 stood for "four times a second" in two places; a test stub could not cancel a frame, so nothing held that a scroll is cancelled. | One parameter; the comments point where things are; the performances share their rhythm (`orbit-rhythm.ts`); the stub cancels, and a test holds it.                                       |
 
-It also found three things that were so before the change and are left as they were, since mending them changes what a visitor meets: _Again_ beside the twin goes as it is pressed and the keyboard's focus falls to the page; _The generator's view_ does the same; and that word stays offered after the orbit in the hand has been taken off the stage and put back unturned.
+It also found three things that were so before the change and are left as they were here, since mending them changes what a visitor meets: _Again_ beside the twin goes as it is pressed and the keyboard's focus falls to the page; _The generator's view_ does the same; and that word stays offered after the orbit in the hand has been taken off the stage and put back unturned. They are mended in §8.6.
 
 **Tests.** 121 new unit tests. Each new module with logic of its own has a file: the reducer, the clock, the twin's state and its worker, the twin's line and the gap's growth, the room's fit and scrolls, the ring and the presses, where the numbers stand, the painter, the window's line and its drawing, the canvases. They share one recording canvas (`tests/canvas-support.ts`). The figure, the line and a word are held by the section's own tests: 98 on this branch, and 101 with the changes main made to that file meanwhile (the four edges as four tests).
 
@@ -528,6 +528,26 @@ It also found three things that were so before the change and are left as they w
 - `OrbitScore` is still 747 lines, of which `draw` is 130: it is the one place that sees everything, and reads as a list of four.
 - `performBeyond` (110 lines) and `compose` (60) are as they were.
 - The stylesheet's lengths are still sums written out (172 px is 31.5 + 10 + 74 + 44 + 6.5 + 6), not `calc()` over named lengths. That is a change of its own, measured in a browser.
+
+### 8.6 The focus, where a word goes
+
+_13 November 2026, on the branch `claude/orbit-section-mend`, which stands on §8.5's. No step of §4: the three faults §8.5's review found and left._
+
+**What a visitor met.** A keyboard that pressed a word which then went lost its place. The focus fell to the page, the next Tab began again from the top, and a screen reader was left on nothing (WCAG 2.4.3, focus order).
+
+| The fault                                                                                                                                                  | Why                                                                     | Now                                                                                                                                         |
+| :--------------------------------------------------------------------------------------------------------------------------------------------------------- | :---------------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------ |
+| _Again_ beside the twin went as it was pressed.                                                                                                            | It is offered only while the pair rests, and pressing it ends the rest. | The focus goes to the line, once it says how far apart the two are again. A press that left the focus on another word moves nothing.        |
+| _The generator's view_ went as the orbit landed.                                                                                                           | It is offered only while the orbit is turned.                           | The focus is given to the orbit in the hand, which the word acted on: the arrow keys turn it again from there. The page is not moved to it. |
+| _The generator's view_ stayed offered, and did nothing, after a turned orbit had left the stage and come back unturned (the twin, or a turn of the plate). | The orbit in the hand never said that it had left.                      | It says so as it leaves.                                                                                                                    |
+
+**The rule, said once** (`orbit-words.tsx`): whoever takes a word away hands its focus on first, while the word is still there to ask: to the line, to the orbit, or to the section. Every word of the row was read against it. These were the two that go by what they do. The others stay the same element from one state to the next, or were handed on already (§8.3, §8.4).
+
+**Found on the way.** The orbit in the hand set its frame loop up afresh whenever the section handed it another function to be told by, and lost the frame it was waiting for. With the function it was given (a state's own setter, which never changes) that could not happen. With any other, a section that renders four times a second while it plays would have stopped the spring half way back. It is now told through an event of its own.
+
+**Tests.** Ten new unit tests. Seven fail on the code before; three hold that nothing more is done than was meant (a focus that stands elsewhere is left there; an orbit that leaves unturned says nothing; a twin left before it was found takes no focus). The recording of §8.5, made before and after through the section's 105 tests, is identical but for the three tests that press these two words.
+
+**In the browser, on a production build:** each word pressed from the keyboard in Chromium and WebKit, and the focus found on the orbit and on the line. Run against the build before, those lines fail in both engines. The four orbit specs pass on the six local projects (134 tests). No screen reader has been heard.
 
 ## Sources
 

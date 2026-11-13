@@ -80,6 +80,8 @@ function Staged(props: {
   material?: 'light' | 'ink';
   tone?: string;
   still?: boolean;
+  /** Another function to be told by, as a section that renders again hands one down. */
+  onTurned?: (turned: boolean) => void;
 }) {
   const stage = useRef<HTMLDivElement>(null);
   return (
@@ -91,18 +93,20 @@ function Staged(props: {
         material={props.material ?? 'light'}
         tone={props.tone}
         colours="/art/31-light-640.webp"
-        hues={[19.2, 22.5, 9.2]}
+        hues={HUES}
         closestStep={100}
         still={props.still ?? false}
         label="The orbit in depth"
         onReady={onReady}
-        onTurned={onTurned}
+        onTurned={props.onTurned ?? onTurned}
         onPlayPause={onPlayPause}
       />
     </div>
   );
 }
 const SPACE = space();
+/** The bodies' hues, the same array at every render, as a work's record hands them down. */
+const HUES = [19.2, 22.5, 9.2];
 
 async function staged(props: Partial<Parameters<typeof Staged>[0]> = {}) {
   const handle = createRef<Sculpture | null>() as React.RefObject<Sculpture | null>;
@@ -247,6 +251,64 @@ describe('the orbit in the hand', () => {
     act(() => handle.current!.back());
     nextFrame(now + SPRING_MS + 1);
     expect(canvas).toHaveAttribute('data-view', 'flat');
+  });
+
+  it('takes the focus when the section gives it, and the page is not moved to it', async () => {
+    const { canvas, handle } = await staged();
+    await waitFor(() => expect(onReady).toHaveBeenLastCalledWith(true));
+    const focused = vi.spyOn(canvas, 'focus');
+    act(() => handle.current!.focus());
+    expect(document.activeElement).toBe(canvas);
+    expect(focused).toHaveBeenCalledExactlyOnceWith({ preventScroll: true });
+  });
+
+  it('goes on springing back when the section hands it another function to be told by', async () => {
+    const { canvas, handle, rerender } = await staged();
+    await waitFor(() => expect(onReady).toHaveBeenLastCalledWith(true));
+    fireEvent.pointerDown(canvas, {
+      pointerId: 1,
+      pointerType: 'mouse',
+      button: 0,
+      clientX: 500,
+      clientY: 300,
+    });
+    fireEvent.pointerMove(canvas, {
+      pointerId: 1,
+      pointerType: 'mouse',
+      clientX: 300,
+      clientY: 340,
+    });
+    nextFrame(1_016);
+    fireEvent.pointerUp(canvas, { pointerId: 1, pointerType: 'mouse' });
+    nextFrame(1_016 + SPRING_MS / 2);
+    // Half way back, the section renders again (it does four times a second while it plays),
+    // and what it hands down is another function: the frame the spring waits for is not lost.
+    const told = vi.fn();
+    rerender(<Staged handle={handle} onTurned={told} />);
+    expect(frames.size).toBe(1);
+    nextFrame(1_016 + SPRING_MS + 1);
+    expect(canvas).toHaveAttribute('data-view', 'flat');
+    // It is the function now handed down that is told.
+    expect(told).toHaveBeenCalledExactlyOnceWith(false);
+  });
+
+  it('says it is turned no longer when it is taken off the stage turned', async () => {
+    const { canvas, unmount } = await staged();
+    await waitFor(() => expect(onReady).toHaveBeenLastCalledWith(true));
+    fireEvent.keyDown(canvas, { key: 'ArrowLeft', shiftKey: true });
+    nextFrame();
+    expect(onTurned).toHaveBeenLastCalledWith(true);
+    unmount();
+    // Whatever stands there next begins at the generator's view.
+    expect(onTurned).toHaveBeenLastCalledWith(false);
+    expect(onTurned).toHaveBeenCalledTimes(2);
+  });
+
+  it('says nothing as it leaves the stage at the generator’s view', async () => {
+    const { unmount } = await staged();
+    await waitFor(() => expect(onReady).toHaveBeenLastCalledWith(true));
+    unmount();
+    expect(onTurned).not.toHaveBeenCalled();
   });
 
   it('takes a finger only after a hold', async () => {
