@@ -26,6 +26,8 @@ async function expectNotHere(response: APIResponse, locale: Locale, words: strin
   expect(html, label).toMatch(/<html[^>]* data-room="night"/);
   expect(html, label).toContain('<meta name="robots" content="noindex"/>');
   expect(html.match(/<h1[^>]*>([^<]*)<\/h1>/)?.[1], label).toBe(words);
+  // Titled by what it says, in its language: never as the venue's home.
+  expect(html.match(/<title>([^<]*)<\/title>/)?.[1], label).toBe(`${words} · Cosmic Signature`);
 }
 
 /**
