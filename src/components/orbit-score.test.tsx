@@ -239,8 +239,39 @@ function framedOf(copies = 1): FramedSamples {
   };
 }
 
-/** The fate as the worker derives it: the real one for an ejection, an eternal dance in brief. */
+/**
+ * The fate as the worker derives it: the real one for an ejection, an eternal dance in brief.
+ *
+ * A work's is derived once for the file (a run of a million steps and more, which most tests
+ * here would otherwise each make) and kept by the work's number: every work these tests fate
+ * is the record's own, unaltered. Each test is handed a copy that shares nothing with the one
+ * kept, so what a test does to its fate no other test meets. The copy names every field: one
+ * added to a fate later will not compile here until it is copied too.
+ */
+const derivedFates = new Map<number, DerivedFate>();
 function fateOf(of: WorkOrbit): DerivedFate {
+  const kept = derivedFates.get(of.id) ?? deriveFateOf(of);
+  derivedFates.set(of.id, kept);
+  const { outcome, escaper, ejectionStep, horizonSteps, energy, windowEnd } = kept;
+  const { first, windowChange, change, broken } = energy;
+  return {
+    outcome,
+    escaper,
+    ejectionStep,
+    horizonSteps,
+    energy: {
+      first,
+      windowChange,
+      change,
+      broken: broken && { step: broken.step, change: broken.change, closest: broken.closest },
+    },
+    windowEnd: {
+      positions: windowEnd.positions.slice(),
+      velocities: windowEnd.velocities.slice(),
+    },
+  };
+}
+function deriveFateOf(of: WorkOrbit): DerivedFate {
   const [performed] = performedOrbits([of.id]);
   if (of.fate.outcome === 'eternal_dance')
     return {
