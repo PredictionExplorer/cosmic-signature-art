@@ -343,3 +343,101 @@ test('an edge plate keeps its hairline on both sides, above whatever plays on it
   expect(darkest(box.x)).toBeLessThanOrEqual(ground - 12);
   expect(darkest(box.x + box.width - 1)).toBeLessThanOrEqual(ground - 12);
 });
+
+/*
+  The layer that leaves goes inert, and the word that was pressed with it: without a hand-over
+  the focus falls to the page (WCAG 2.2, 2.4.3). Every other Turn in this suite is a click.
+*/
+const pageStage = '[data-artwork-stage="page"]';
+/** What has the focus: the strip's word by its mark and its layer, or the element's name. */
+const focused = () => {
+  const active = document.activeElement;
+  if (!active || active === document.body) return 'the page';
+  const layer = active.closest('[data-layer]');
+  const mark = ['data-turn', 'data-film-word', 'data-viewing-options'].find((name) =>
+    active.hasAttribute(name),
+  );
+  return layer && mark
+    ? `${mark} of the ${layer.getAttribute('data-layer-state')} layer`
+    : active.tagName.toLowerCase();
+};
+
+test('a Turn made from the keyboard hands the focus to the word of the layer now on view', async ({
+  page,
+  browserName,
+  isMobile,
+}) => {
+  test.slow();
+  // Safari's Tab passes buttons by unless Option is held, and Playwright's WebKit keeps that.
+  const tab = browserName === 'webkit' ? 'Alt+Tab' : 'Tab';
+  await page.goto('/art/31');
+  await expect(page.locator('html')).toHaveAttribute('data-keys', 'ready');
+  const stage = page.locator(pageStage);
+  await expect(stage).toHaveAttribute('data-expression', 'ink');
+  const turned = async (to: 'ink' | 'light') => {
+    await expect(stage).toHaveAttribute('data-expression', to, { timeout: 20_000 });
+    await expect(page.locator('html')).not.toHaveAttribute('data-turning', /./);
+  };
+  const turnWord = (to: 'ink' | 'light') => page.locator(`${current} [data-turn="${to}"]`);
+  const filmWord = page.locator(`${current} [data-film-word]`);
+
+  // The word, by Enter.
+  await turnWord('light').focus();
+  const scrolled = await page.evaluate(() => scrollY);
+  await page.keyboard.press('Enter');
+  await turned('light');
+  await expect(turnWord('ink')).toBeFocused();
+  expect(await page.evaluate(() => scrollY)).toBe(scrolled);
+  // The keyboard goes on from there: the next word is the same strip's.
+  await page.keyboard.press(tab);
+  await expect(filmWord).toBeFocused();
+
+  // The key, with the focus on another word of the strip: its match takes it.
+  await page.keyboard.press('i');
+  await turned('ink');
+  await expect(filmWord).toBeFocused();
+  expect(await page.evaluate(() => scrollY)).toBe(scrolled);
+
+  // The word again, by Space, and back at once by Enter on the word that took the focus.
+  await turnWord('light').focus();
+  await page.keyboard.press('Space');
+  await turned('light');
+  await expect(turnWord('ink')).toBeFocused();
+  await page.keyboard.press('Enter');
+  await turned('ink');
+  await expect(turnWord('light')).toBeFocused();
+
+  // A pointer's Turn moves no focus: the word of the layer that arrives is not given it.
+  if (isMobile) await turnWord('light').tap();
+  else await turnWord('light').click();
+  await turned('light');
+  expect(await page.evaluate(focused)).not.toBe('data-turn of the current layer');
+});
+
+test('a Turn made in the room keeps the focus there, and the room returns it to the matching word', async ({
+  page,
+}) => {
+  test.slow();
+  await page.goto('/art/31');
+  await expect(page.locator('html')).toHaveAttribute('data-keys', 'ready');
+  const stage = page.locator(pageStage);
+  await expect(stage).toHaveAttribute('data-expression', 'ink');
+  // Z opens the room from wherever the focus stands: here, the Turn's word.
+  await page.locator(`${current} [data-turn="light"]`).focus();
+  await page.keyboard.press('z');
+  const dialog = page.getByRole('dialog');
+  await expect(dialog).toBeVisible();
+  // The room's two words both stay, so the one pressed keeps the focus and says it is pressed.
+  const light = dialog
+    .getByRole('group', { name: catalogs.en.ways })
+    .getByRole('button', { name: catalogs.en.light, exact: true });
+  await light.focus();
+  await page.keyboard.press('Enter');
+  await expect(stage).toHaveAttribute('data-expression', 'light', { timeout: 20_000 });
+  await expect(light).toBeFocused();
+  await expect(light).toHaveAttribute('aria-pressed', 'true');
+  // The plate turned behind the room, and the word that opened it left with its layer.
+  await page.keyboard.press('Escape');
+  await expect(dialog).not.toBeVisible();
+  await expect(page.locator(`${current} [data-turn="ink"]`)).toBeFocused();
+});
