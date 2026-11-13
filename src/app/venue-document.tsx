@@ -7,6 +7,7 @@ import { ART_API_ORIGIN, ART_MEDIA_ORIGINS } from '@/lib/art/constants';
 import { compactWorks } from '@/lib/art/collection-index';
 import { CJK_STYLESHEETS, LITERATA_PRELOADS } from '@/lib/fonts';
 import { revealScript } from '@/lib/reveal';
+import { settleScript } from '@/lib/settle';
 import { roomScript, type Room } from '@/lib/room';
 import { ReadingPlace } from '@/components/reading-place';
 import { MotionProvider } from '@/components/motion-provider';
@@ -68,6 +69,8 @@ export function VenueDocument({
         {room ? null : <script dangerouslySetInnerHTML={{ __html: roomScript(venueDay) }} />}
         {/* Ahead of React's streaming runtime: reveals what WebKit would hold back until load. */}
         <script dangerouslySetInnerHTML={{ __html: revealScript }} />
+        {/* Ahead of every plate: a still that has loaded shows without waiting for the route's script. */}
+        <script dangerouslySetInnerHTML={{ __html: settleScript }} />
         <MotionProvider>
           <Suspense fallback={null}>
             <RoomGround />

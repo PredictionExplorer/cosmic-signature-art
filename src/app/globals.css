@@ -820,7 +820,9 @@ html[data-turning='overture'] .head-overlay {
   height: 100%;
   object-fit: contain;
 }
-/* The arrival: the preview paints the plate at once; the still settles over it on decode. */
+/* The arrival: the preview paints the plate at once; the still settles over it on decode. The
+   document's own script settles it, so it never waits for the plate to hydrate
+   (src/lib/settle.ts). */
 .art-media .art-preview {
   position: absolute;
   inset: 0;
