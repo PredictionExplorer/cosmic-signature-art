@@ -949,6 +949,11 @@ html[data-sit] .site-header {
     background-color var(--t-chrome) var(--ease-settle),
     color var(--t-chrome) var(--ease-settle);
 }
+/* A keyboard that stands in the head keeps it: the focus is never on a control that is not seen. */
+html[data-sit] .site-header:has(:focus-visible) {
+  opacity: 1;
+  pointer-events: auto;
+}
 
 /*
   The venue's one timed event, First Light (src/components/overture.tsx, docs/first-light.md §4,
