@@ -258,8 +258,39 @@ function framedOf(copies = 1): FramedSamples {
   };
 }
 
-/** The fate as the worker derives it: the real one for an ejection, an eternal dance in brief. */
+/**
+ * The fate as the worker derives it: the real one for an ejection, an eternal dance in brief.
+ *
+ * A work's is derived once for the file (a run of a million steps and more, which most tests
+ * here would otherwise each make) and kept by the work's number: every work these tests fate
+ * is the record's own, unaltered. Each test is handed a copy that shares nothing with the one
+ * kept, so what a test does to its fate no other test meets. The copy names every field: one
+ * added to a fate later will not compile here until it is copied too.
+ */
+const derivedFates = new Map<number, DerivedFate>();
 function fateOf(of: WorkOrbit): DerivedFate {
+  const kept = derivedFates.get(of.id) ?? deriveFateOf(of);
+  derivedFates.set(of.id, kept);
+  const { outcome, escaper, ejectionStep, horizonSteps, energy, windowEnd } = kept;
+  const { first, windowChange, change, broken } = energy;
+  return {
+    outcome,
+    escaper,
+    ejectionStep,
+    horizonSteps,
+    energy: {
+      first,
+      windowChange,
+      change,
+      broken: broken && { step: broken.step, change: broken.change, closest: broken.closest },
+    },
+    windowEnd: {
+      positions: windowEnd.positions.slice(),
+      velocities: windowEnd.velocities.slice(),
+    },
+  };
+}
+function deriveFateOf(of: WorkOrbit): DerivedFate {
   const [performed] = performedOrbits([of.id]);
   if (of.fate.outcome === 'eternal_dance')
     return {
@@ -1062,24 +1093,20 @@ describe('After the frame', () => {
       }
     });
 
-    it('turns a number onto the picture at each of its four edges', () => {
-      // A body 10 px from an edge, the other two well inside: its number's first place, away
-      // from the middle of the three, is off the picture.
-      const inside: [number, number][] = [
-        [1_500, 1_000],
-        [1_900, 1_200],
-      ];
-      for (const edge of [
-        [1_700, 40],
-        [1_700, 2_194],
-        [40, 1_100],
-        [3_416, 1_100],
-      ] as [number, number][]) {
-        // Each edge is its own section, with its own worker and observers.
-        workers = [];
-        observers = [];
-        const { unmount } = performed(ejected, leaving(), {
-          framed: framedWith([edge, ...inside]),
+    // One section a test: four of them in one test ran it close to its budget where coverage
+    // is counted.
+    it.each([
+      ['top', [1_700, 40]],
+      ['bottom', [1_700, 2_194]],
+      ['left', [40, 1_100]],
+      ['right', [3_416, 1_100]],
+    ] as [string, [number, number]][])(
+      'turns a number onto the picture at its %s edge',
+      (_name, edge) => {
+        // A body 10 px from the edge, the other two well inside: its number's first place,
+        // away from the middle of the three, is off the picture.
+        performed(ejected, leaving(), {
+          framed: framedWith([edge, [1_500, 1_000], [1_900, 1_200]]),
         });
         calls = [];
         fireEvent.click(afterTheFrame());
@@ -1096,9 +1123,8 @@ describe('After the frame', () => {
         const off = Math.hypot(fx - x, fy - y);
         expect(off).toBeGreaterThan(14);
         expect(off).toBeLessThan(20);
-        unmount();
-      }
-    });
+      },
+    );
 
     it('keeps each number nearer its own body than any other', () => {
       // Body 2 stands 24 px from body 1, where body 1's number would first go: 17 px from
