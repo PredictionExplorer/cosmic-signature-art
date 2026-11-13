@@ -549,6 +549,23 @@ describe('the focus across a Turn', () => {
     expect(turnWord('light')).toHaveFocus();
   });
 
+  it('hands the focus on at the home, where the Light strip carries a word Ink’s has not', async () => {
+    renderViewer({ presentation: 'home' });
+    pressByKey(turnWord('light'));
+    await travel();
+    expect(stage()).toHaveAttribute('data-expression', 'light');
+    expect(turnWord('ink')).toHaveFocus();
+    // The way through the spectrum has no match in the Ink strip: the Turn's word takes it.
+    const spectrum = within(layer('light') as HTMLElement).getByRole('link', {
+      name: new RegExp(en.throughSpectrum),
+    });
+    spectrum.focus();
+    await tapKey('i');
+    await travel();
+    expect(stage()).toHaveAttribute('data-expression', 'ink');
+    expect(turnWord('light')).toHaveFocus();
+  });
+
   it('hands the focus on after L or I, to the match of the word it stood on', async () => {
     renderViewer();
     await settle();
