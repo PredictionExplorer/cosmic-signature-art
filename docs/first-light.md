@@ -619,7 +619,7 @@ _8 November 2026: step 5 of the F2 plan, "the work in your hands" (§5C)._
     - a still more than twice the work's width is drawn down to it first, and one under twice is read as it is.
   - The whole suite passes: 1,588 tests, with the coverage thresholds held. `material.ts` is covered to 98.9 % of its statements and every branch.
 - **In the browser** (`tests/e2e/crossing.spec.ts`), against a production build on the venue day, in Chromium and WebKit, on desks, phones and with reduced motion: 40 passed, and 14 skipped by design (a finger answers touch only, and the reduced-motion projects prove the one-frame Turn instead). The tests of the change, the finger and the peek then passed twice more in the four projects that move.
-  - № 031, 023 and 035 each turn to Light and back. The Turns are slowed to the runner and sampled frame by frame:
+  - № 031, 023 and 035 each turn to Light and back. The Turns are slowed to six seconds, and the page itself keeps their frames:
     - every frame's ground lies between night and paper and moves one way only;
     - mid-Turn it is one ground, its quartiles within 0.12 of each other, which a front cannot be;
     - the running head and the strip wear it on the same frame, within 14 levels;
@@ -631,7 +631,8 @@ _8 November 2026: step 5 of the F2 plan, "the work in your hands" (§5C)._
   - Reduced motion turns in one frame, the straight seam is the Turn without WebGL, the crossing returns after Pause and Play, and the When lens is unchanged.
 - **The whole browser suite** passes in the same six projects: 1,573 passed and 149 skipped by design, in 21.8 minutes.
 - **The gates.** Lint, type-check, Prettier and a production build pass.
-- **On CI** Firefox offers no WebGL, so the crossing's own tests skip there, as they always have. Chromium and WebKit run them on software WebGL, with each Turn sized to the runner's screenshots, and each frame's rise and bloom read against its own ground, so a slow runner still finds the frames it needs.
+- **On CI** Firefox offers no WebGL, so the crossing's own tests skip there, as they always have. Chromium and WebKit run them on software WebGL, with each frame's rise and bloom read against its own ground.
+  - **The page keeps the Turn's frames itself.** The test first sampled each Turn by screenshot, with the Turn sized to sixteen screenshots at rest. While the canvas draws on CI, a screenshot takes 0.9 to 1.8 seconds, three to six times as long as at rest. The ground lies between a fifth and four fifths of its way for 19 % of a Turn, 1.15 seconds of six. On a slow runner no screenshot fell there, and the test failed about every other run of CI's Chromium (12 November). Now the page copies its canvas sixteen times a Turn, and whenever the ground has moved a quarter of its way, with the ground the running head and the strip wear on that frame, read from their styles. Every check is made on those frames. Screenshots are still taken once the page has kept the ground mid-way, and each must pass the same checks, but none is needed to find the middle.
   - **No screenshot stands between a decision and its act.** CI's screenshots take seconds mid-Turn. A peek that waited four seconds and then took one was let go after more than seven, with the ground already at night, so the test failed on CI's Chromium (8 November). It now lets go when the page says so.
 
 **Not yet.**
