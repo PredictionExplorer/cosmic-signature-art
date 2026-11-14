@@ -2,9 +2,10 @@ import { describe, expect, it } from 'vitest';
 import { workOrbit } from '@/lib/art/orbit-records';
 import { performedOrbits } from '@/lib/art/orbit-windows';
 import { plateFrame } from '@/lib/art/orbit-frames';
-import { Continuation, restingStep } from './continuation';
+import { beyondPath, confirmedAt } from './beyond';
+import { Continuation } from './continuation';
 import { HeldPlacement } from './framing';
-import { CHECK_INTERVAL, HYSTERESIS, deriveFate, escapingBody, type DerivedFate } from './orbit';
+import { deriveFate, escapingBody, type DerivedFate } from './orbit';
 
 /** № 054 ejects soonest: 90,000 steps after its window, so its fate is a tenth of a second. */
 const orbit = workOrbit(54)!;
@@ -22,10 +23,9 @@ const fate: DerivedFate = deriveFate(
     steps,
     threshold: orbit.fate.escapeThreshold,
     horizonSteps: orbit.fate.horizonSteps,
-    lead: 40_000,
   },
 );
-const fromTheEnd = (end = restingStep(fate, 0), stride = 100) =>
+const fromTheEnd = (end = confirmedAt(fate.ejectionStep!), stride = 100) =>
   new Continuation({
     masses: orbit.published.masses,
     dt: orbit.generation.dt,
@@ -35,7 +35,7 @@ const fromTheEnd = (end = restingStep(fate, 0), stride = 100) =>
     plane,
   });
 
-describe('After the frame’s physics', () => {
+describe('the orbit stepped on past its window', () => {
   it('meets the published fate, so the escape it performs is the record’s', () => {
     expect(fate).toMatchObject({
       outcome: orbit.fate.outcome,
@@ -44,20 +44,37 @@ describe('After the frame’s physics', () => {
     });
   });
 
-  it('passes through the fate run’s states bit for bit', () => {
-    const continued = fromTheEnd();
-    expect(fate.approach).not.toBeNull();
-    continued.advanceTo(fate.approach!.taken);
-    expect(continued.taken).toBe(fate.approach!.taken);
-    expect(Array.from(continued.state.positions)).toEqual(Array.from(fate.approach!.positions));
-    expect(Array.from(continued.state.velocities)).toEqual(Array.from(fate.approach!.velocities));
+  it('passes through the same states as the path carried once, sample for sample', () => {
+    // Two loops over the generator's one integrator, from the same bodies, placed on the same
+    // plate: beyond.ts carries After the frame's path off the main thread, and this class steps
+    // as a page watches.
+    const start = { masses: orbit.published.masses, dt: orbit.generation.dt, steps };
+    const continued = new Continuation({
+      masses: orbit.published.masses,
+      dt: orbit.generation.dt,
+      origin: { taken: steps, ...fate.windowEnd },
+      end: confirmedAt(fate.ejectionStep!),
+      stride: 100,
+      plate: new HeldPlacement(plateFrame(54)!, start),
+    });
+    continued.advanceTo(Number.MAX_SAFE_INTEGER);
+    const carried = beyondPath({
+      ...start,
+      fate,
+      pace: 33_300,
+      stride: 100,
+      plate: new HeldPlacement(plateFrame(54)!, start),
+    });
+    expect(carried.samples).toBeGreaterThan(continued.samples);
+    expect(continued.path.length).toBe(continued.samples * carried.copies * 6);
+    expect([...carried.pixels.subarray(0, continued.path.length)]).toEqual([...continued.path]);
   });
 
   it('rests where the escape is confirmed, with the escaping body unbound', () => {
     const continued = fromTheEnd();
     continued.advanceTo(Number.MAX_SAFE_INTEGER);
     expect(continued.resting).toBe(true);
-    expect(continued.taken).toBe(fate.ejectionStep! + 1 + (HYSTERESIS - 1) * CHECK_INTERVAL);
+    expect(continued.taken).toBe(confirmedAt(fate.ejectionStep!));
     const { positions, velocities } = continued.state;
     expect(
       escapingBody(orbit.published.masses, positions, velocities, orbit.fate.escapeThreshold),
@@ -116,14 +133,11 @@ describe('After the frame’s physics', () => {
     expect(begin({ plane }).width).toBe(6);
   });
 
-  it('can be brought to rest where it stands, and takes no step past it', () => {
-    const continued = fromTheEnd();
-    continued.advanceTo(steps + 2_500);
-    continued.restHere();
-    expect(continued.resting).toBe(true);
-    expect(continued.end).toBe(steps + 2_500);
+  it('takes no step past its end', () => {
+    const continued = fromTheEnd(steps + 2_500);
     continued.advanceTo(steps + 10_000);
     continued.perform(0.1, 1_000, 0.5);
+    expect(continued.resting).toBe(true);
     expect(continued.taken).toBe(steps + 2_500);
   });
 
@@ -144,23 +158,5 @@ describe('After the frame’s physics', () => {
     continued.advanceTo(steps + 20_000);
     continued.perform(0.1, 1_000, 0.5);
     expect(continued.taken).toBe(steps + 20_100);
-  });
-});
-
-describe('where After the frame rests', () => {
-  const ejection = {
-    outcome: 'ejection',
-    ejectionStep: 1_090_000,
-    horizonSteps: 8_000_000,
-  } as const;
-  it('a little after the fifth answer confirms an escape', () => {
-    expect(restingStep(ejection, 0)).toBe(1_090_000 + 1 + 4 * CHECK_INTERVAL);
-    expect(restingStep(ejection, 1_000)).toBe(1_131_001);
-  });
-  it('never past the horizon, where an eternal dance rests', () => {
-    expect(restingStep({ ...ejection, ejectionStep: 7_990_000 }, 100_000)).toBe(8_000_000);
-    expect(
-      restingStep({ outcome: 'eternal_dance', ejectionStep: null, horizonSteps: 8_000_000 }, 5),
-    ).toBe(8_000_000);
   });
 });

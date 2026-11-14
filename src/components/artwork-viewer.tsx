@@ -1,5 +1,6 @@
 'use client';
 import {
+  Fragment,
   Suspense,
   use,
   useCallback,
@@ -26,7 +27,7 @@ import type { Messages } from '@/lib/i18n/en';
 import { localizedPath, type Locale } from '@/lib/i18n/routing';
 import { AFTER_THE_FRAME_EVENT, SEAM_EVENT } from '@/lib/venue-events';
 import { HOME_RESOLVED_KEY } from '@/lib/storage-keys';
-import { ArtworkMedia, stillRequest } from './artwork-media';
+import { ArtworkMedia, LINED_PLATE_SIZES, stillRequest } from './artwork-media';
 import { useMotion } from './motion-provider';
 import { useMediaPolicy } from './media-policy';
 import { ArtworkTransition } from './artwork-transition';
@@ -61,6 +62,7 @@ import { ArtworkNeighbours, neighbourHref, type Neighbours } from './artwork-nei
 import { useArrivalCrossing } from './arrival-crossing';
 import { ArtworkGatefold } from './artwork-gatefold';
 import { useSit } from './sit';
+import { useTurnFocus } from './turn-focus';
 import { useCompactWall } from './compact-wall';
 import { excerptRange } from './collection-preview';
 import { useFilmScore } from './film-score-store';
@@ -102,6 +104,13 @@ type ArtworkViewerProps = {
   live?: Promise<Artwork | null>;
   /** The label line's words, read from the collection index on the server. */
   traits?: { structure?: string; underlay?: string };
+  /**
+   * The line under each expression's still, as its sentences, worded on the server: a work's,
+   * from its record, or the home's (src/lib/art/fate-line.ts). It stands where the label line
+   * stood, and the generator's vocabulary keeps its place in the entry, where it has its notes.
+   * Without one the strip keeps the label line; a sale's page keeps it whatever it is given.
+   */
+  lines?: Readonly<Record<Expression, readonly string[]>>;
   neighbours?: Neighbours;
   /** The night wing beneath the plate; the lot page has the bid rail there instead. */
   wing?: boolean;
@@ -176,6 +185,7 @@ function ArtworkViewerSession({
   inlinePreviews,
   live,
   traits,
+  lines,
   neighbours,
   wing = presentation !== 'auction',
   afterTheFrame = false,
@@ -274,7 +284,15 @@ function ArtworkViewerSession({
       // A Turn readies the twin as its plate asks for it, and a change of material in the room
       // as the room does: the rung each already shows, the original only where the room shows it.
       still: (target) =>
-        stillRequest(target, room ? { sizes: ROOM_SIZES } : { capped: policy.constrained }),
+        stillRequest(
+          target,
+          room
+            ? { sizes: ROOM_SIZES }
+            : { capped: policy.constrained, sizes: shownLines ? LINED_PLATE_SIZES : undefined },
+        ),
+      // The page's own stage takes no snapshot: the seam has shown the Turn by the time it
+      // commits, so the commit follows the seam at once. Only the room's stage takes one.
+      snapshot: room !== null,
       onCommit: (committed) => {
         const chosen = !quiet.current;
         quiet.current = false;
@@ -301,7 +319,12 @@ function ArtworkViewerSession({
         setHandoverWaiting(false);
         if (home) setResolvedOverride(null);
       },
-      onReady: (target, commit) => {
+      onReady: (target, ready) => {
+        // The focus is read as the Turn lands, while the layer that leaves is there to ask.
+        const commit = () => {
+          turnFocus.landing();
+          ready();
+        };
         if (failedLayers.current.delete(target))
           setAttempts((current) => ({ ...current, [target]: (current[target] ?? 0) + 1 }));
         // The twin is decoded. Instant crossings commit at once; otherwise the seam travels first.
@@ -455,6 +478,8 @@ function ArtworkViewerSession({
     ink, after a pre-roll of bare paper (third-physics-phase-e.md §6).
   */
   const orbit = presentation === 'auction' ? undefined : offeredOrbit;
+  // The line tells a work's fate from its record; like the orbit, it is not said beside a sale.
+  const shownLines = presentation === 'auction' ? undefined : lines;
   // The home opens on the opening clip and hands over to the complete film at the same frame.
   const openingFilm = home && !compact && !settlingPlate ? media?.openingFilm : undefined;
   // The plate's clock holds only when every film it plays keeps it: the opening clip as well.
@@ -553,7 +578,10 @@ function ArtworkViewerSession({
         : (artwork.media.find((item) => item.id === id)?.label ?? id);
 
   function openRoom(film: boolean, trigger: HTMLElement | null, at: number | null = null) {
-    returnFocusRef.current = trigger;
+    // A key opens the room from wherever the focus stands: a word of the strip is remembered
+    // as the word that opened it, so the focus finds its way back after a Turn in the room.
+    returnFocusRef.current = trigger ?? turnFocus.standing();
+    turnFocus.drop();
     setRoomStart(at);
     cancelPending();
     seam.end();
@@ -567,15 +595,9 @@ function ArtworkViewerSession({
   }
   function closeRoom() {
     cancelPending();
-    // The room may have crossed to the other ground: focus returns to the live layer's word.
-    const study = section.current?.querySelector<HTMLElement>(
-      '[data-layer-state="current"] [data-study]',
-    );
-    if (study && returnFocusRef.current && !study.isSameNode(returnFocusRef.current)) {
-      const previous = returnFocusRef.current;
-      if (!previous.isConnected || previous.closest('[data-layer-state="twin"]'))
-        returnFocusRef.current = study;
-    }
+    // The room may have crossed to the other ground, behind it: the focus stayed in the room,
+    // and returns to the word of the layer now on view that matches the one that opened it.
+    returnFocusRef.current = turnFocus.afterRoom(returnFocusRef.current);
     setRoom(null);
     setRoomStart(null);
   }
@@ -618,16 +640,23 @@ function ArtworkViewerSession({
   // The running head fades with the strip (<html data-sit>, mirrored by useSit); a rest, a
   // Turn or the room standing up returns the head as well.
 
-  /* The Turn's three drivers: the word (and a tap of I/L), a held key, and the finger. */
+  /*
+    The Turn's three drivers: the word (and a tap of I/L), a held key, and the finger. A Turn
+    made from the keyboard hands the focus on to the layer that arrives (turn-focus.ts); one
+    made by a pointer moves none.
+  */
+  const turnFocus = useTurnFocus({ section, expression, failedExpression });
   const canTurn = hasBoth && !room;
-  const turnTo = (to: Expression) => {
+  const turnTo = (to: Expression, byKey = false) => {
     if (!canTurn || to === expression) return;
+    if (byKey) turnFocus.note(to);
+    else turnFocus.drop();
     selectExpression(to);
   };
   function peekStart(to: Expression) {
     if (!canTurn || to === expression || peek.current) return;
     if (instant) {
-      selectExpression(to);
+      turnTo(to, true);
       return;
     }
     peek.current = { to, at: Date.now() };
@@ -639,6 +668,7 @@ function ArtworkViewerSession({
     if (!state || state.to !== to) return;
     peek.current = null;
     if (!lost && Date.now() - state.at < TAP_MS) {
+      turnFocus.note(to);
       selectExpression(to);
       return;
     }
@@ -738,7 +768,8 @@ function ArtworkViewerSession({
       <button
         type="button"
         className={styles.word}
-        onClick={() => turnTo(other)}
+        // A click made by Enter or Space counts no press of a pointer (detail 0).
+        onClick={(event) => turnTo(other, event.detail === 0)}
         aria-busy={current && (turning?.to === other || pendingExpression === other)}
         title={other === 'light' ? t.showLight : t.showInk}
         data-turn={other}
@@ -846,17 +877,36 @@ function ArtworkViewerSession({
     );
   }
 
-  /** The strip's centre: the label line, or the home's one line. */
+  /** What stands between two sentences on one line: a space, or nothing in Japanese and Chinese. */
+  const betweenSentences = fill(t.sentences, { first: '', second: '' });
+
+  /** The strip's centre: the line under the still, or else the label line. */
   function centre(layer: Expression): ReactNode {
-    if (home) {
-      if (layer !== 'ink') return <span />;
+    const alone = layer === 'light' && !ink?.still;
+    const line = shownLines?.[layer];
+    if (line?.length)
       return (
         <p className={styles.line}>
-          <em>{t.statementLine}</em> <span className="folio">{t.statementSigned}</span>
+          <em>
+            {line.map((sentence, index) => (
+              // Each sentence is a box of its own, so a line breaks between two before it breaks
+              // inside one; what stands between them is the language's own (t.sentences).
+              <Fragment key={sentence}>
+                {index ? betweenSentences : null}
+                <span>{sentence}</span>
+              </Fragment>
+            ))}
+          </em>
+          {alone && !home ? (
+            <>
+              {' '}
+              <span className="folio">{t.noInkPublished}</span>
+            </>
+          ) : null}
         </p>
       );
-    }
-    if (layer === 'light' && !ink?.still)
+    if (home) return <span />;
+    if (alone)
       return (
         <span>
           {t.light} · {t.noInkPublished}
@@ -910,6 +960,7 @@ function ArtworkViewerSession({
           current={current}
           settled={settledLayers.includes(id)}
           centre={centre(id)}
+          line={!!shownLines?.[id]?.length}
           words={<div className={styles.wordsRow}>{words(id)}</div>}
           foot={current ? transport : null}
           className={current ? 'viewer-plate' : ''}
@@ -931,6 +982,7 @@ function ArtworkViewerSession({
               ambient={current && ambientFilm}
               artworkId={artwork.id}
               previewSrc={previewSrc}
+              sizes={shownLines ? LINED_PLATE_SIZES : undefined}
               still={!current || still || homeResolved || !!room}
               startAt={current ? time.current : 0}
               restart={current ? restart : 0}
@@ -1005,7 +1057,7 @@ function ArtworkViewerSession({
       canTurn={canTurn && !instant}
       restSeam={restSeam}
       crossing={crossingCanvas}
-      onCommit={turnTo}
+      onCommit={(to) => turnTo(to)}
       onDragChange={(dragging) =>
         setTurning(dragging ? { to: expression === 'light' ? 'ink' : 'light', mode: 'drag' } : null)
       }
@@ -1027,6 +1079,7 @@ function ArtworkViewerSession({
         aria-label={t.ways}
         data-presentation={presentation}
         data-expression={expression}
+        data-lines={shownLines && !foreign ? '' : undefined}
         data-live={liveArtwork ? 'adopted' : undefined}
         data-turning={turning?.mode}
         data-sit={sit ? '' : undefined}
@@ -1058,7 +1111,8 @@ function ArtworkViewerSession({
                   id={artwork.id}
                   media={twinMedia}
                   current={false}
-                  centre={<span>{label(twin)}</span>}
+                  centre={shownLines?.[twin]?.length ? centre(twin) : <span>{label(twin)}</span>}
+                  line={!!shownLines?.[twin]?.length}
                   words={
                     <div className={styles.wordsRow}>
                       <span className={styles.state}>{t.still}</span>
@@ -1071,6 +1125,7 @@ function ArtworkViewerSession({
                     alt={`${workNumber(artwork.id)} · ${label(twin)}`}
                     artworkId={artwork.id}
                     previewSrc={inlinePreviews?.[twin]}
+                    sizes={shownLines ? LINED_PLATE_SIZES : undefined}
                     still
                   />
                 </Plate>

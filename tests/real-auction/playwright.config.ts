@@ -5,6 +5,8 @@ export default defineConfig({
   testMatch: 'lifecycle.spec.ts',
   timeout: 180_000,
   expect: { timeout: 15_000 },
+  // A test.only left in by mistake would have CI run that one test and pass: it fails there.
+  forbidOnly: !!process.env.CI,
   workers: 1,
   fullyParallel: false,
   reporter: [

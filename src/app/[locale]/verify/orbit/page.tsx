@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { isLocale, localizedPath } from '@/lib/i18n/routing';
 import { messages } from '@/lib/i18n/messages';
-import { metadata } from '@/lib/site';
+import { metadata, venueCard } from '@/lib/site';
 import { orbitIds } from '@/lib/art/orbit-records';
 import { workFolio, workNumber } from '@/lib/art/number';
 import { OrbitPicker } from '@/components/orbit-picker';
@@ -12,8 +12,8 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
   const { locale } = await params;
   if (!isLocale(locale)) return {};
   const t = messages(locale);
-  // A tool, not a derived image: the venue's card beside the home stands for it.
-  return metadata(locale, '/verify/orbit', t.verifyOrbit, t.verifyOrbitIntro, null);
+  // A tool, not a derived image: the venue's card stands for it.
+  return metadata(locale, '/verify/orbit', t.verifyOrbit, t.verifyOrbitIntro, venueCard(locale));
 }
 
 /**

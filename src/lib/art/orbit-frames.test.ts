@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import data from './orbit-frames.json' with { type: 'json' };
-import { bindFrame, frameOf, loadOrbitFrames, plateFrame } from './orbit-frames';
+import { bindFrame, drawsPositions, frameOf, loadOrbitFrames, plateFrame } from './orbit-frames';
 import { getCuratedArtwork } from './catalog';
 import collection from './collection-index.json' with { type: 'json' };
 import { getInterpretation } from './types';
@@ -54,6 +54,20 @@ describe('the orbit frames', () => {
     expect(bindFrame({ ...entry, box: { ...entry.box, width: 0 } }, 31)).toBeUndefined();
     expect(bindFrame(undefined, 31)).toBeUndefined();
     expect(plateFrame(9_999)).toBeUndefined();
+  });
+
+  it('say which works draw the bodies where they were: positions, each stroke once', () => {
+    // № 031 does; № 035 is plotted in cross-braid space, № 033 as a hodograph, № 001 as a phase
+    // portrait in four-fold symmetry, and № 008 draws positions six times over.
+    expect(drawsPositions(31)).toBe(true);
+    for (const id of [35, 33, 1, 8]) expect(drawsPositions(id)).toBe(false);
+    const all = [...frames.keys()];
+    expect(all).toHaveLength(72);
+    expect(all.filter((id) => !drawsPositions(id))).toEqual([
+      1, 6, 7, 8, 10, 11, 13, 15, 19, 33, 35, 40, 43, 46, 50, 54, 64,
+    ]);
+    // Nothing is said of a number without a frame.
+    expect(drawsPositions(9_999)).toBe(false);
   });
 
   it('refuse a malformed registry', () => {

@@ -26,6 +26,9 @@ parentPort.on('message', (record) => {
     parentPort.postMessage({
       id: record.id,
       comparisons: [...compare(publishedOf(record), derived), compareFate(published, fate)],
+      // What the energy watch found on the way to that fate: the venue's own measure, which
+      // the record does not publish (scripts/build-orbit-energy.mjs keeps it).
+      energy: fate.energy,
       profileDraws: derived.profileDraws,
       attempt: derived.attempt,
       milliseconds: derived.milliseconds,

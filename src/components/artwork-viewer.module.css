@@ -83,22 +83,65 @@
   white-space: nowrap;
   text-align: end;
 }
-/* The home's one line, italic at 15 px, signed. */
+/* The line under a still, italic at 15 px: the home's, and each work's own. Beyond a phone each
+   of its sentences is a box of its own, so the two stand on one line where they fit and
+   otherwise on a line each, never broken inside. The measure is wider than the widest sentence
+   in any language the venue speaks (592 px, measured), and at a wide desk the strip's centre
+   stays wider than that sentence while the words beside it grow (the film's readout, Again):
+   a browser test plays a film and measures. Two lines of it are 42 px. */
 .line {
   font-size: var(--fs-control);
-  line-height: 1.6;
+  line-height: 1.4;
   white-space: normal;
   color: var(--type);
   max-width: 44em;
+  text-wrap: balance;
 }
 .line em {
   font-style: italic;
 }
+.line em > span {
+  display: inline-block;
+}
+/* The note that a work has no Ink follows the line as a sentence of its own. */
 .line .folio,
 .line :global(.folio) {
+  display: inline-block;
   color: var(--muted);
   margin-left: 12px;
   white-space: nowrap;
+}
+.line :global(.folio)::first-letter {
+  text-transform: uppercase;
+}
+/* Between a phone and a wide desk the line has a row of its own under the numeral and the
+   words (plate.module.css): 56 px for theirs, two lines of 21 px, and 18 px beneath. In a room
+   tall enough to spare it the plate is fitted to what is left, so the work, its words and its
+   line still stand in one screen. The stage alone is told: the gatefold and the neighbours
+   below it keep the desk's strip. */
+@media (min-width: 767.02px) and (max-width: 1279.98px) and (min-height: 560.02px) {
+  .room[data-lines] :global([data-artwork-stage='page']) {
+    --strip: 116px;
+    --chrome: calc(var(--head) + var(--strip));
+    --plate-height: calc(100svh - var(--chrome));
+  }
+}
+@media (max-width: 767px) {
+  /* On a phone the line is read at the reading size, across the sheet, and its sentences run
+     on as one paragraph. Japanese breaks between phrases there (Chromium; elsewhere as
+     written), as its display lines do. */
+  .line {
+    max-width: none;
+    font-size: var(--fs-reading);
+    line-height: 1.5;
+    text-wrap: pretty;
+  }
+  .line em > span {
+    display: inline;
+  }
+  :global(html:lang(ja)) .line {
+    word-break: auto-phrase;
+  }
 }
 /* Sit: the strip and the time line fade while the film plays to its still; any input returns them. */
 .room :global(.strip),
@@ -239,9 +282,6 @@
     text-align: left;
   }
   .step img {
-    display: none;
-  }
-  .line {
     display: none;
   }
 }

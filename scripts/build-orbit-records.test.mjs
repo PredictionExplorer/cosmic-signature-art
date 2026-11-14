@@ -10,9 +10,11 @@ import {
   orbitRecord,
   serializeRegistry,
 } from './build-orbit-records.mjs';
+import { energyEntry } from './build-orbit-energy.mjs';
 import { generationOf, publishedOf, verifyOrbits } from './lib/orbit-verify.mjs';
 
 const registryUrl = new URL('../src/lib/art/orbit-records.json', import.meta.url);
+const energyUrl = new URL('../src/lib/art/orbit-energy.json', import.meta.url);
 const seed = '0x4a0d5b57e13cf40c56cddb4ee2c10f50ab7aff755e24c61a687855663713f5b5';
 const hash = 'a'.repeat(64);
 const work = {
@@ -157,6 +159,14 @@ test('every committed record re-derives from its seed to the last bit, its fate 
     assert.ok([23, 24].includes(result.profileDraws));
     assert.equal(result.comparisons.filter((row) => row.key === 'fate').length, 1);
   }
+  // The same 72 fate runs carry the energy watch, so the committed measure of each run's
+  // energy is checked here against the derivation from the seed, at no further arithmetic.
+  const kept = JSON.parse(await readFile(energyUrl, 'utf8'));
+  const byId = new Map(records.map((record) => [record.id, record]));
+  assert.deepEqual(
+    results.map((result) => energyEntry(byId.get(result.id), result.energy)),
+    kept.energies,
+  );
 });
 
 test('names a work whose derivation differs', () => {

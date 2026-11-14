@@ -1,5 +1,6 @@
 import { expect, test } from './fixtures';
 import { catalogs } from '../../src/lib/i18n/messages';
+import { fill } from '../../src/lib/i18n/format';
 import { locales, localizedPath } from '../../src/lib/i18n/routing';
 import { workOfTheDay } from '../../src/lib/art/work-of-the-day';
 import {
@@ -125,8 +126,23 @@ test.describe('localized home', () => {
         'alt',
         `№\u00a0${folio} · ${t.ink}`,
       );
-      if (!isMobile) {
-        await expect(page.locator(current).getByText(t.statementLine)).toBeVisible();
+      // The line under the still, on a phone as on a desk: what the picture is, in two
+      // sentences, the second this material's own. The day's work draws the bodies where they
+      // were (src/lib/art/fate-line.ts homeLine), so both are said.
+      const line = page.locator(`${current} .strip p`);
+      await expect(line).toBeVisible();
+      await expect(line).toHaveText(
+        fill(t.sentences, { first: t.homeLine, second: t.homeLineInk }),
+      );
+      // Light is told in its own sentence, one Turn away under the same plate.
+      const lightLine = fill(t.sentences, { first: t.homeLine, second: t.homeLineLight });
+      await expect(page.locator(`${nightLayer} .strip p`)).toHaveText(lightLine);
+      // Where the twin hangs on a screen of its own (a phone), it says its line there too.
+      if (isMobile) {
+        const twin = page.locator('.home [data-wing] > [data-ground="night"] .strip p');
+        await expect(twin).toHaveText(lightLine);
+        await twin.scrollIntoViewIfNeeded();
+        await expect(twin).toBeVisible();
       }
       // No headline, no kicker, no portal on the wall: the page's one h1 is the statement
       // screen's wordmark, below the plate.
@@ -326,4 +342,25 @@ test('Sit fades the strip and the time line; any input brings them back', async 
   await expect(page.locator('html')).not.toHaveAttribute('data-sit', /.*/);
   await expect(page.locator('.site-header')).toHaveCSS('opacity', '1', { timeout: 5000 });
   await expect(page.locator('.site-header')).toHaveCSS('pointer-events', 'auto');
+});
+
+test('Sit never hides the control a keyboard stands on', async ({ page, browserName }) => {
+  await page.emulateMedia({ reducedMotion: 'no-preference' });
+  await page.addInitScript(() => sessionStorage.setItem('cosmic-art-motion-v1', 'playing'));
+  await page.goto('/');
+  const plate = page.locator(current);
+  await expect(plate.locator('video')).toHaveClass(/has-frame/, { timeout: 15_000 });
+  const head = page.locator('.site-header');
+  const inHead = () => head.evaluate((node) => node.contains(document.activeElement));
+  // The keyboard walks into the running head, and Sit is pressed from there. (WebKit, as
+  // Safari is set by default, stops at buttons and links only with Option held.)
+  const tab = browserName === 'webkit' ? 'Alt+Tab' : 'Tab';
+  for (let presses = 0; presses < 8 && !(await inHead()); presses++) await page.keyboard.press(tab);
+  expect(await inHead()).toBe(true);
+  await page.keyboard.press('s');
+  await expect(page.locator('html')).toHaveAttribute('data-sit', '');
+  // The strip rests, as it does for anyone. The head stays: the focus is in it.
+  await expect(plate.locator('.strip')).toHaveCSS('opacity', '0', { timeout: 5000 });
+  await expect(head).toHaveCSS('opacity', '1');
+  await expect(head).toHaveCSS('pointer-events', 'auto');
 });

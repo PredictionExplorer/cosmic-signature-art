@@ -8,6 +8,7 @@ import {
   useSyncExternalStore,
   type CSSProperties,
   type ReactNode,
+  type RefObject,
 } from 'react';
 import { preload } from 'react-dom';
 import { useMotion } from './motion-provider';
@@ -38,6 +39,14 @@ export const REWIND_WAIT_MS = 4000;
  * fitted by height to the room (100svh − head − strip) in the work's own proportion.
  */
 export const PLATE_SIZES = '(max-width: 767px) 100vw, min(100vw, calc((100svh - 104px) * 1.547))';
+/**
+ * The same for a plate whose strip carries the line under the still. Between a phone and a wide
+ * desk that strip is two rows, 116 px, and the plate is fitted to what is left of a room tall
+ * enough to spare it (artwork-viewer.module.css); without this the ladder would be asked for a
+ * rung wider than the plate.
+ */
+export const LINED_PLATE_SIZES =
+  '(max-width: 767px) 100vw, (min-height: 560.02px) and (max-width: 1279.98px) min(100vw, calc((100svh - 164px) * 1.547)), min(100vw, calc((100svh - 104px) * 1.547))';
 /** On a constrained connection the resting still is this rung, never the 3,456 px file. */
 const CONSTRAINED_RUNG_PX = 1280;
 /**
@@ -117,7 +126,9 @@ type ArtworkMediaProps = {
 /** A different source starts a new media session, including failure and playback state. */
 export function ArtworkMedia(props: ArtworkMediaProps) {
   const identity = `${props.media?.id}:${props.media?.still}:${props.thumbnail ? props.media?.thumbnail : ''}:${props.media?.films[0]?.src}`;
-  return <ArtworkMediaSession key={identity} {...props} />;
+  // The still the last session left showing, for the session that takes its place: see attachStill.
+  const shownStill = useRef<string | undefined>(undefined);
+  return <ArtworkMediaSession key={identity} {...props} shownStill={shownStill} />;
 }
 
 function settleImage(image: HTMLImageElement, settle: () => void) {
@@ -218,7 +229,8 @@ function ArtworkMediaSession({
   onEnded,
   onHandover,
   onFailure,
-}: ArtworkMediaProps) {
+  shownStill,
+}: ArtworkMediaProps & { shownStill: RefObject<string | undefined> }) {
   const { paused, theatre, reducedMotion } = useMotion();
   const { constrained } = useMediaPolicy();
   const hushed = theatre === 'hushed';
@@ -416,16 +428,45 @@ function ArtworkMediaSession({
     },
   );
   const settle = useCallback(() => setSettled(true), []);
+  /** This session's still took the place of one the visitor was looking at: see attachStill. */
+  const [takenOver, setTakenOver] = useState(false);
   const attachStill = useCallback(
     (image: HTMLImageElement | null) => {
+      if (!image) return;
+      // A session that takes the place of one over the same still (a phone's plate changes its
+      // film once it knows its screen) takes over a still the visitor is already looking at. It
+      // is shown at once, in the commit that mounts it, never faded in again over its preview,
+      // and decoded in step with that first paint: WebKit decodes the new element afresh, and
+      // left to do so off the main thread it paints the preview alone for a frame.
+      if (shownStill.current === stillSrc) {
+        setTakenOver(true);
+        settle();
+      }
       // A cached or server-painted still can complete before React attaches its handlers.
-      if (image && image.complete && image.naturalWidth > 0) settleImage(image, settle);
+      else if (image.complete && image.naturalWidth > 0) settleImage(image, settle);
+      return () => {
+        // Read from the element, not from this session's state: the document's script may have
+        // settled the still before the plate did (src/lib/settle.ts).
+        shownStill.current = image.classList.contains('is-settled') ? stillSrc : undefined;
+      };
     },
-    [settle],
+    [settle, shownStill, stillSrc],
   );
   useEffect(() => {
     if (settled || !layered) reportSettled();
   }, [settled, layered]);
+  // Once the still that was taken over has been painted, it decodes as every still does.
+  useEffect(() => {
+    if (!takenOver) return;
+    let second = 0;
+    const first = requestAnimationFrame(() => {
+      second = requestAnimationFrame(() => setTakenOver(false));
+    });
+    return () => {
+      cancelAnimationFrame(first);
+      cancelAnimationFrame(second);
+    };
+  }, [takenOver]);
   useEffect(() => {
     const observer = new IntersectionObserver(([entry]) => setVisible(entry.isIntersecting), {
       threshold: 0.08,
@@ -653,10 +694,13 @@ function ArtworkMediaSession({
           alt={alt}
           width={media?.width ?? ART_WIDTH}
           height={media?.height ?? ART_HEIGHT}
-          decoding="async"
+          decoding={takenOver ? 'sync' : 'async'}
           loading={loading}
           onLoad={(event) => settleImage(event.currentTarget, settle)}
           onError={() => setImageFailed(true)}
+          // The document's script may have settled the still before the plate hydrated
+          // (src/lib/settle.ts): the class it added is kept, and is no mismatch to report.
+          suppressHydrationWarning
         />
       </>
     );

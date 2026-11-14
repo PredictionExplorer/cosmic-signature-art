@@ -1,14 +1,15 @@
 import { act, cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import { ArtworkViewer } from './artwork-viewer';
+import { LINED_PLATE_SIZES, PLATE_SIZES } from './artwork-media';
 import { getCuratedArtwork } from '@/lib/art/catalog';
 import { artworkFromIndex } from '@/lib/art/collection-cards';
 import { indexedWork } from '@/lib/art/collection-index';
 import { withCollectionPreviews } from '@/lib/art/collection-previews';
 import type { Artwork } from '@/lib/art/types';
 import { en } from '@/lib/i18n/en';
+import { ja } from '@/lib/i18n/ja';
 import { AFTER_THE_FRAME_EVENT, SEAM_EVENT } from '@/lib/venue-events';
-import { PLATE_SIZES } from './artwork-media';
 import { ROOM_SIZES } from './artwork-room';
 import { BREATH_MS, forgetExpression } from './turn';
 import { closeSheet, openSheet } from './sheets-store';
@@ -230,6 +231,93 @@ describe('the plate and its strip', () => {
     expect(screen.queryByRole('button', { name: en.ink })).toBeNull();
     expect(document.querySelector('[data-wing]')).toBeNull();
   });
+
+  it('sets the line under each still where the label stood, each sentence a box of its own', () => {
+    const line = ['Three bodies, together for all the steps.', 'One of them is no longer bound.'];
+    renderViewer({ lines: { ink: line, light: line } });
+    expect(document.querySelector('.viewing-room')).toHaveAttribute('data-lines');
+    for (const id of ['ink', 'light']) {
+      const strip = layer(id).querySelector('.strip')!;
+      // The strip is marked, so that the line keeps its place where a label gives way.
+      expect(strip).toHaveAttribute('data-line');
+      const said = strip.querySelector('p')!;
+      expect(said.textContent).toBe(
+        'Three bodies, together for all the steps. One of them is no longer bound.',
+      );
+      // A line breaks between two sentences before it breaks inside one.
+      expect([...said.querySelectorAll('em > span')].map((span) => span.textContent)).toEqual(line);
+    }
+    // The generator's vocabulary has left the strip; the entry keeps it, with its notes.
+    expect(screen.queryByText(/Orbit Ribbons/)).toBeNull();
+  });
+
+  it('runs two sentences together as the language does: no space between them in Japanese', () => {
+    const line = ['一つ目の文。', '二つ目の文。'];
+    renderViewer({ t: ja, locale: 'ja', lines: { ink: line, light: line } });
+    expect(layer('ink').querySelector('.strip p')!.textContent).toBe('一つ目の文。二つ目の文。');
+  });
+
+  it('says its line under the twin’s own screen too, each material’s its own', () => {
+    renderViewer({
+      lines: { ink: ['Three bodies.', 'This is ink.'], light: ['Three bodies.', 'This is light.'] },
+    });
+    // Beneath an Ink plate the wing hangs the Light twin, on a screen of its own where no
+    // scroll draws it over the plate: a phone, reduced motion, an older browser.
+    const twin = document.querySelector('[data-wing]')!.lastElementChild!;
+    expect(twin).toHaveAttribute('data-ground', 'night');
+    expect(twin.querySelector('.strip')).toHaveAttribute('data-line');
+    expect(twin.querySelector('.strip p')!.textContent).toBe('Three bodies. This is light.');
+    expect(layer('ink').querySelector('.strip p')!.textContent).toBe('Three bodies. This is ink.');
+  });
+
+  it('keeps the material’s name under the twin’s screen in a room without lines', () => {
+    renderViewer();
+    const twin = document.querySelector('[data-wing]')!.lastElementChild!;
+    expect(twin.querySelector('.strip')).not.toHaveAttribute('data-line');
+    expect(within(twin.querySelector('.strip') as HTMLElement).getByText('Light')).toBeVisible();
+  });
+
+  it('says after a work’s line, as a sentence of its own, that no Ink is published', () => {
+    const line = ['Three bodies, together for all the steps.', 'They are still bound.'];
+    renderViewer({
+      artwork: getCuratedArtwork(2)!,
+      traits: undefined,
+      lines: { ink: line, light: line },
+    });
+    const said = layer('light').querySelector('.strip p')!;
+    // The whole paragraph, in order: the two sentences, a space, the note.
+    expect(said.textContent).toBe(
+      `Three bodies, together for all the steps. They are still bound. ${en.noInkPublished}`,
+    );
+    expect(said.lastElementChild).toHaveTextContent(en.noInkPublished);
+    expect(said.lastElementChild).toHaveClass('folio');
+    expect(screen.queryByText(`${en.light} · ${en.noInkPublished}`)).toBeNull();
+  });
+
+  it('asks the still ladder for the plate a line leaves room for', () => {
+    const line = ['Three bodies.'];
+    const sizesOf = () =>
+      document.querySelector('[data-layer-state="current"] img.art-still')!.getAttribute('sizes');
+    const lined = renderViewer({ lines: { ink: line, light: line } });
+    expect(sizesOf()).toBe(LINED_PLATE_SIZES);
+    lined.unmount();
+    renderViewer();
+    expect(sizesOf()).toBe(PLATE_SIZES);
+  });
+
+  it('keeps the label line on a sale’s page, whatever line it is given', () => {
+    const line = ['Three bodies, together for all the steps.', 'One of them is no longer bound.'];
+    renderViewer({ presentation: 'auction', lines: { ink: line, light: line } });
+    // A work's fate is not told beside its sale: the viewer cuts the line as it cuts the orbit.
+    expect(document.querySelector('.viewing-room')).not.toHaveAttribute('data-lines');
+    const strip = layer('ink').querySelector('.strip')!;
+    expect(strip).not.toHaveAttribute('data-line');
+    expect(strip.querySelector('p')).toBeNull();
+    expect(
+      within(strip as HTMLElement).getByText('Orbit Ribbons · Harmonic Weave · Ink'),
+    ).toBeInTheDocument();
+    expect(document.querySelector('img.art-still')).toHaveAttribute('sizes', PLATE_SIZES);
+  });
 });
 
 describe('the Turn', () => {
@@ -422,6 +510,17 @@ describe('the Turn', () => {
     ]);
   });
 
+  it('readies the twin of a plate that carries its line at that plate’s own width', () => {
+    // The strip with the line under the still is two rows on a middling screen, and its plate is
+    // fitted to what is left: the Turn must ask at that width, or it readies a wider rung.
+    const line = ['Three bodies.', 'One orbit.'];
+    renderViewer({ lines: { ink: line, light: line } });
+    const twin = layer('light').querySelector<HTMLImageElement>('img.art-still')!;
+    const probe = readiedBy(() => fireEvent.click(word(en.light)));
+    expect(asks(probe)).toEqual(asks(twin));
+    expect(probe.getAttribute('sizes')).toBe(LINED_PLATE_SIZES);
+  });
+
   it('readies the capped ladder on a constrained connection, as its plate shows it', () => {
     Object.defineProperty(navigator, 'connection', {
       configurable: true,
@@ -477,6 +576,276 @@ describe('the Turn', () => {
     renderViewer({ artwork: getCuratedArtwork(2)!, traits: undefined, initialExpression: 'light' });
     await act(async () => {});
     expect(sessionStorage.getItem(EXPRESSION_KEY)).toBe('ink');
+  });
+});
+
+/*
+  The layer that leaves goes inert, and a word that held the focus there would drop it to the
+  page. jsdom keeps the focus on an inert control, so these cases prove the hand-over is made;
+  that the focus is lost without it is the browser suite's to prove (tests/e2e/artwork.spec.ts).
+*/
+describe('the focus across a Turn', () => {
+  const turnWord = (to: 'ink' | 'light') =>
+    document.querySelector<HTMLElement>(`[data-layer-state="current"] [data-turn="${to}"]`)!;
+  const filmWord = () =>
+    document.querySelector<HTMLElement>('[data-layer-state="current"] [data-film-word]')!;
+  /** Enter or Space on a button: the click it makes counts no press of a pointer. */
+  const pressByKey = (control: HTMLElement) => {
+    control.focus();
+    fireEvent.click(control, { detail: 0 });
+  };
+  /** A mouse or a finger: the browser gives the pressed button the focus, and the click counts one. */
+  const pressByPointer = (control: HTMLElement) => {
+    control.focus();
+    fireEvent.click(control, { detail: 1 });
+  };
+  const tapKey = async (key: string) => {
+    fireEvent.keyDown(window, { key });
+    await act(async () => {
+      vi.advanceTimersByTime(100);
+    });
+    fireEvent.keyUp(window, { key });
+  };
+  afterEach(() => {
+    act(() => setOverturePhase(null));
+  });
+
+  it('hands the focus to the word of the layer now on view when the word is pressed from the keyboard, without a scroll', async () => {
+    renderViewer();
+    const focus = vi.spyOn(HTMLElement.prototype, 'focus');
+    pressByKey(turnWord('light'));
+    focus.mockClear();
+    await travel();
+    expect(stage()).toHaveAttribute('data-expression', 'light');
+    expect(turnWord('ink')).toHaveFocus();
+    expect(turnWord('ink').closest('[inert]')).toBeNull();
+    expect(focus).toHaveBeenCalledTimes(1);
+    expect(focus).toHaveBeenCalledWith({ preventScroll: true });
+    // And back: the word that took the focus turns the plate again.
+    fireEvent.click(turnWord('ink'), { detail: 0 });
+    await travel();
+    expect(stage()).toHaveAttribute('data-expression', 'ink');
+    expect(turnWord('light')).toHaveFocus();
+  });
+
+  it('hands the focus on at the home, where the Light strip carries a word Ink’s has not', async () => {
+    renderViewer({ presentation: 'home' });
+    pressByKey(turnWord('light'));
+    await travel();
+    expect(stage()).toHaveAttribute('data-expression', 'light');
+    expect(turnWord('ink')).toHaveFocus();
+    // The way through the spectrum has no match in the Ink strip: the Turn's word takes it.
+    const spectrum = within(layer('light') as HTMLElement).getByRole('link', {
+      name: new RegExp(en.throughSpectrum),
+    });
+    spectrum.focus();
+    await tapKey('i');
+    await travel();
+    expect(stage()).toHaveAttribute('data-expression', 'ink');
+    expect(turnWord('light')).toHaveFocus();
+  });
+
+  it('hands the focus on after L or I, to the match of the word it stood on', async () => {
+    renderViewer();
+    await settle();
+    filmWord().focus();
+    await tapKey('l');
+    await travel();
+    expect(stage()).toHaveAttribute('data-expression', 'light');
+    expect(filmWord()).toHaveFocus();
+    // The options are a control of each layer too, and are mounted afresh as the layer changes.
+    word(en.ways).focus();
+    await tapKey('i');
+    await travel();
+    expect(stage()).toHaveAttribute('data-expression', 'ink');
+    expect(word(en.ways)).toHaveFocus();
+  });
+
+  it('hands the focus on when the Turn is one frame: paused, reduced or hushed', async () => {
+    for (const quiet of ['paused', 'reducedMotion', 'theatre'] as const) {
+      motion.paused = quiet === 'paused';
+      motion.reducedMotion = quiet === 'reducedMotion';
+      motion.theatre = quiet === 'theatre' ? 'hushed' : 'playing';
+      const view = renderViewer();
+      turnWord('light').focus();
+      fireEvent.keyDown(window, { key: 'l' });
+      await act(async () => {});
+      expect(stage()).toHaveAttribute('data-expression', 'light');
+      expect(turnWord('ink')).toHaveFocus();
+      pressByKey(turnWord('ink'));
+      await act(async () => {});
+      expect(stage()).toHaveAttribute('data-expression', 'ink');
+      expect(turnWord('light')).toHaveFocus();
+      view.unmount();
+    }
+  });
+
+  it('moves no focus for a pointer’s Turn, nor for a key with the focus outside the strip', async () => {
+    renderViewer();
+    const pressed = turnWord('light');
+    pressByPointer(pressed);
+    await travel();
+    expect(stage()).toHaveAttribute('data-expression', 'light');
+    expect(pressed).toHaveFocus();
+    expect(turnWord('ink')).not.toHaveFocus();
+    // A key with nothing of the strip in focus turns the plate and leaves the focus alone.
+    pressed.blur();
+    expect(document.body).toHaveFocus();
+    await tapKey('i');
+    await travel();
+    expect(stage()).toHaveAttribute('data-expression', 'ink');
+    expect(document.body).toHaveFocus();
+  });
+
+  it('a pointer’s Turn drops what a key had noted', async () => {
+    // The Light still is slow: the key's Turn is still being readied when the pointer asks.
+    let ready = () => {};
+    Object.defineProperty(HTMLImageElement.prototype, 'decode', {
+      configurable: true,
+      value: () => new Promise<void>((resolve) => (ready = resolve)),
+    });
+    renderViewer();
+    const pressed = turnWord('light');
+    pressByKey(pressed);
+    await act(async () => {});
+    fireEvent.click(pressed, { detail: 1 });
+    await act(async () => ready());
+    await travel();
+    expect(stage()).toHaveAttribute('data-expression', 'light');
+    expect(turnWord('ink')).not.toHaveFocus();
+  });
+
+  it('keeps the note through a slow Turn, for as long as the still takes', async () => {
+    let ready = () => {};
+    Object.defineProperty(HTMLImageElement.prototype, 'decode', {
+      configurable: true,
+      value: () => new Promise<void>((resolve) => (ready = resolve)),
+    });
+    renderViewer();
+    const pressed = turnWord('light');
+    pressByKey(pressed);
+    await act(async () => {
+      vi.advanceTimersByTime(6000);
+    });
+    expect(stage()).toHaveAttribute('data-expression', 'ink');
+    expect(pressed).toHaveFocus();
+    await act(async () => ready());
+    await travel();
+    expect(stage()).toHaveAttribute('data-expression', 'light');
+    expect(turnWord('ink')).toHaveFocus();
+  });
+
+  it('leaves the focus where the visitor moved it while the Turn was on its way', async () => {
+    const elsewhere = document.createElement('button');
+    document.body.append(elsewhere);
+    try {
+      renderViewer();
+      pressByKey(turnWord('light'));
+      await act(async () => {
+        vi.advanceTimersByTime(BREATH_MS + 400);
+      });
+      elsewhere.focus();
+      await travel();
+      expect(stage()).toHaveAttribute('data-expression', 'light');
+      expect(elsewhere).toHaveFocus();
+      // The bare page, pressed mid-way, keeps it as well.
+      const back = turnWord('ink');
+      pressByKey(back);
+      await act(async () => {
+        vi.advanceTimersByTime(BREATH_MS + 400);
+      });
+      back.blur();
+      await travel();
+      expect(stage()).toHaveAttribute('data-expression', 'ink');
+      expect(document.body).toHaveFocus();
+    } finally {
+      elsewhere.remove();
+    }
+  });
+
+  it('hands on the word the visitor moved to inside the strip while the Turn was on its way', async () => {
+    renderViewer();
+    await settle();
+    pressByKey(turnWord('light'));
+    await act(async () => {
+      vi.advanceTimersByTime(BREATH_MS + 400);
+    });
+    filmWord().focus();
+    await travel();
+    expect(stage()).toHaveAttribute('data-expression', 'light');
+    expect(filmWord()).toHaveFocus();
+  });
+
+  it('drops the note when the still cannot be had', async () => {
+    const decode = HTMLImageElement.prototype.decode;
+    Object.defineProperty(HTMLImageElement.prototype, 'decode', {
+      configurable: true,
+      value: vi.fn().mockRejectedValue(new Error('undecodable')),
+    });
+    renderViewer();
+    const pressed = turnWord('light');
+    pressByKey(pressed);
+    await act(async () => {});
+    expect(screen.getByText(en.expressionFailed)).toBeInTheDocument();
+    expect(stage()).toHaveAttribute('data-expression', 'ink');
+    expect(pressed).toHaveFocus();
+    // A move that is not the visitor's then puts the plate in Light: the failed Turn's note
+    // is not there for it to spend.
+    Object.defineProperty(HTMLImageElement.prototype, 'decode', {
+      configurable: true,
+      value: decode,
+    });
+    act(() => setOverturePhase('playing'));
+    await act(async () => {});
+    expect(stage()).toHaveAttribute('data-expression', 'light');
+    expect(turnWord('ink')).not.toHaveFocus();
+  });
+
+  it('keeps the focus in the room through a Turn made there, and returns it to the matching word', async () => {
+    renderViewer();
+    await settle();
+    // Z opens the room from wherever the focus stands: here, the Turn's word.
+    turnWord('light').focus();
+    fireEvent.keyDown(window, { key: 'z' });
+    const dialog = screen.getByRole('dialog');
+    expect(dialog).toContainElement(document.activeElement as HTMLElement);
+    // The room's two words both stay: the one pressed keeps the focus, and says it is pressed.
+    const ways = within(dialog).getByRole('group', { name: en.ways });
+    const light = within(ways).getByRole('button', { name: en.light });
+    light.focus();
+    fireEvent.click(light, { detail: 0 });
+    await act(async () => {});
+    expect(stage()).toHaveAttribute('data-expression', 'light');
+    expect(light).toHaveFocus();
+    expect(light).toHaveAttribute('aria-pressed', 'true');
+    // The room's own key, with the focus on its close word.
+    const close = within(dialog).getByRole('button', { name: en.close });
+    close.focus();
+    fireEvent.keyDown(dialog, { key: 'i' });
+    await act(async () => {});
+    expect(stage()).toHaveAttribute('data-expression', 'ink');
+    expect(close).toHaveFocus();
+    fireEvent.keyDown(dialog, { key: 'l' });
+    await act(async () => {});
+    expect(stage()).toHaveAttribute('data-expression', 'light');
+    // The plate turned behind the room: the word that opened it is in the layer that left.
+    fireEvent.click(close);
+    expect(screen.queryByRole('dialog')).toBeNull();
+    expect(turnWord('ink')).toHaveFocus();
+  });
+
+  it('returns the focus to the options of the layer now on view when Study opened the room', async () => {
+    renderViewer();
+    fireEvent.click(word(en.ways));
+    fireEvent.click(word(en.enlarge));
+    const dialog = screen.getByRole('dialog');
+    fireEvent.keyDown(dialog, { key: 'l' });
+    await act(async () => {});
+    expect(stage()).toHaveAttribute('data-expression', 'light');
+    fireEvent.click(within(dialog).getByRole('button', { name: en.close }));
+    expect(screen.queryByRole('dialog')).toBeNull();
+    expect(word(en.ways)).toHaveFocus();
+    expect(word(en.ways).closest('[data-layer]')).toHaveAttribute('data-layer', 'light');
   });
 });
 
@@ -738,9 +1107,17 @@ describe('the room and the keys', () => {
 
 describe('the home', () => {
   it('sets the one line in the strip, remembers a resolved arrival, and opens the night wing’s words', async () => {
-    const { container } = renderViewer({ presentation: 'home' });
-    expect(within(layer('ink') as HTMLElement).getByText(en.statementLine)).toBeInTheDocument();
-    expect(within(layer('ink') as HTMLElement).getByText(en.statementSigned)).toBeInTheDocument();
+    const { container } = renderViewer({
+      presentation: 'home',
+      lines: { ink: [en.homeLine, en.homeLineInk], light: [en.homeLine, en.homeLineLight] },
+    });
+    // Each material's still is told in its own second sentence.
+    expect(layer('ink').querySelector('.strip p')).toHaveTextContent(
+      'Three bodies, each pulling on the other two. This is the ink their motion stirred.',
+    );
+    expect(layer('light').querySelector('.strip p')).toHaveTextContent(
+      'Three bodies, each pulling on the other two. This is a long exposure of their motion.',
+    );
     expect(screen.queryByRole('button', { name: en.enlarge })).toBeNull();
     expect(
       within(layer('light') as HTMLElement).getByRole('link', {

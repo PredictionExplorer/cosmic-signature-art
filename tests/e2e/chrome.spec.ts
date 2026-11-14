@@ -1,8 +1,29 @@
-import { expect, test } from './fixtures';
+import { expect, test, type Page } from './fixtures';
 import { catalogs } from '../../src/lib/i18n/messages';
 import { noHorizontalOverflow } from './helpers';
 
 const t = catalogs.en;
+
+/**
+ * The page as a visitor has it, before anything is read of its faces. A streamed page first
+ * shows its loading plate; its own content is revealed on a frame after it arrives, and on a
+ * busy machine that frame can come after `load`. A face is asked for only once words set in it
+ * are laid out, so a reading taken at `load` can find the frame's faces alone.
+ */
+async function stands(page: Page) {
+  await expect(page.locator('main.loading-room, div[hidden][id^="S:"]')).toHaveCount(0);
+  await page.evaluate(() => document.fonts.ready);
+}
+
+/** The families the page has loaded so far, each named once. */
+const loadedFaces = (page: Page) =>
+  page.evaluate(() =>
+    [...document.fonts]
+      .filter((font) => font.status === 'loaded')
+      // Firefox quotes a family name that contains spaces; the name itself is what matters.
+      .map((font) => font.family.replace(/^"|"$/g, ''))
+      .filter((family, index, all) => all.indexOf(family) === index),
+  );
 
 test('public browsing hides auctions while their direct URL remains available', async ({
   page,
@@ -99,7 +120,8 @@ test('a CJK locale links its own sliced display face and the Latin pages load no
     if (request.url().includes('/fonts/cjk/')) requests.push(request.url());
   });
   await page.goto('/auctions');
-  await page.evaluate(() => document.fonts.ready);
+  // The whole page, not its frame alone, asks for no CJK face.
+  await stands(page);
   expect(requests).toEqual([]);
   // The Latin roman the first paint reads in arrives with the page.
   await expect(
@@ -111,21 +133,15 @@ test('a CJK locale links its own sliced display face and the Latin pages load no
   await expect(page.locator('link[rel="stylesheet"][href="/fonts/cjk/ja.css"]')).toHaveCount(1);
   await expect.poll(() => requests.some((url) => url.endsWith('/fonts/cjk/ja.css'))).toBe(true);
   expect(requests.some((url) => url.endsWith('/fonts/cjk/ja.css'))).toBe(true);
-  const loaded = await page.evaluate(async () => {
-    await document.fonts.ready;
-    return (
-      [...document.fonts]
-        .filter((font) => font.status === 'loaded')
-        // Firefox quotes a family name that contains spaces; the name itself is what matters.
-        .map((font) => font.family.replace(/^"|"$/g, ''))
-        .filter((family, index, all) => all.indexOf(family) === index)
-    );
-  });
+  await stands(page);
   // The wordmark in Literata itself, Latin words in Japanese lines in Literata set to the kana
-  // ('Literata Han'), the instrument in Plex Mono, the Japanese in its own Mincho.
-  expect(loaded).toEqual(
-    expect.arrayContaining(['Literata', 'Literata Han', 'IBM Plex Mono', 'Shippori Mincho B1']),
-  );
+  // ('Literata Han'), the instrument in Plex Mono, the Japanese in its own Mincho. Read until
+  // they are all there: the instrument stands in the page's own content, the last to be laid out.
+  await expect
+    .poll(() => loadedFaces(page))
+    .toEqual(
+      expect.arrayContaining(['Literata', 'Literata Han', 'IBM Plex Mono', 'Shippori Mincho B1']),
+    );
 });
 
 for (const path of ['/collection/orrery', '/ja/collection/orrery']) {
@@ -133,6 +149,9 @@ for (const path of ['/collection/orrery', '/ja/collection/orrery']) {
     page,
   }) => {
     await page.goto(path);
+    // The line is measured as it is drawn: in the page that stands, with its figures' face in.
+    await stands(page);
+    await expect.poll(() => loadedFaces(page)).toContain('IBM Plex Mono');
     await page.evaluate(() => document.fonts.ready);
     // Plex Mono draws № in one cell, 0.6 em; Literata sets the sign as a book does, near an em.
     const advances = await page.evaluate(() => {

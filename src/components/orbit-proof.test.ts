@@ -5,6 +5,7 @@ import type { Comparison } from '@/lib/physics/orbit';
 import { pairName } from '@/lib/physics/film-score';
 import {
   MEASUREMENTS,
+  derivedSummary,
   derivedValue,
   digitsKept,
   energyText,
@@ -59,9 +60,11 @@ describe('the proof, in words', () => {
       fate: 'bound through 8,000,000 steps',
     });
     expect(record.braidWord).toBe(calm.published.braid.word);
-    expect(recordValues(ejecting, en, english).fate).toBe('body 2 escapes at step 1,090,000');
+    expect(recordValues(ejecting, en, english).fate).toBe(
+      'body 2 no longer bound at step 1,090,000',
+    );
     expect(recordValues(ejecting, ja, new Intl.NumberFormat('ja')).fate).toBe(
-      '天体 2 が第 1,090,000 ステップで脱出',
+      '第 1,090,000 ステップで天体 2 はもう束縛されていない',
     );
   });
 
@@ -87,6 +90,28 @@ describe('the proof, in words', () => {
     expect(verdict([row(true), row(true)], en)).toBe(en.orbitAllExact);
     expect(verdict([row(true), row(false), row(false)], en)).toBe(
       '2 of 3 measurements differ from the published record.',
+    );
+  });
+
+  it('sums the derivation up once every row is checked: how it was derived, and the verdict', () => {
+    const tenth = new Intl.NumberFormat('en', {
+      minimumFractionDigits: 1,
+      maximumFractionDigits: 1,
+    });
+    const { generation } = calm;
+    const said = derivedSummary(1.234, generation, [row(true), row(true)], en, english, tenth);
+    // In its own time, from the work's seed, the candidate the generator chose, of all it tried,
+    // through the warm-up and the recorded window; and then the verdict.
+    expect(said).toContain('1.2');
+    expect(said).toContain(seedShort(generation.seed));
+    expect(said).toContain(english.format(generation.selectedIndex));
+    expect(said).toContain(
+      english.format(generation.candidatesPerAttempt * (generation.retryCount + 1)),
+    );
+    expect(said).toContain(english.format(generation.warmupSteps + generation.steps));
+    expect(said.endsWith(` ${en.orbitAllExact}`)).toBe(true);
+    expect(derivedSummary(1, generation, [row(false)], en, english, tenth)).toMatch(
+      / 1 of 1 measurements differ from the published record\.$/,
     );
   });
 });
@@ -123,6 +148,10 @@ describe('the energy the computation kept, in words', () => {
     expect(energyText(later, steps, en, english)).toBe(
       'As computed here, the energy holds to 12 digits through the recorded window. Near step 1,535,000 two bodies pass 0.11 apart, closer than the computation’s fixed step can follow, and its energy changes by 780%. Gravity keeps energy constant, so past that step this is the computation, not an orbit.',
     );
+    // Japanese sets its sentences together, with no space after the full stop.
+    const said = energyText(later, steps, ja, new Intl.NumberFormat('ja'));
+    expect(said).toContain('12 桁まで保たれています。第 1,535,000 ステップ付近で');
+    expect(said).not.toContain('。 ');
   });
 
   it('says only the break when it lies inside the window', () => {

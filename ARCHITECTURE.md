@@ -42,10 +42,11 @@ Every page sits under `src/app/[locale]/`. The proxy (`src/proxy.ts`) gives an a
 
 The sharing cards (`opengraph-image.tsx`, `twitter-image.tsx`, drawn by `src/components/sharing-card.tsx`), `sitemap.ts`, `robots.ts` and `manifest.ts` are routes too. The sitemap lists every work in the collection index, in every locale, and names no address the proxy would refuse. An address no route answers gets the venue's own 404 (`src/app/global-not-found.tsx`), which speaks the visitor's language.
 
-**The document.** `src/app/venue-document.tsx` is the `<html>` every locale shares. Before anything paints, it runs two small inline scripts:
+**The document.** `src/app/venue-document.tsx` is the `<html>` every locale shares. Before anything paints, it runs three small inline scripts:
 
 - `roomScript` (`src/lib/room.ts`) chooses the ground, paper or night, so the running head is never the wrong material for a frame. On the home, a first visit is marked `<html data-overture="pending">`, which is First Light's gate.
 - `revealScript` (`src/lib/reveal.ts`) lets WebKit paint a streamed page that it would otherwise hold back.
+- `settleScript` (`src/lib/settle.ts`) shows a plate's still as soon as the still has loaded and decoded. The server sends the still clear over its inline preview, and without this script it would stay clear until the route's script had hydrated the plate.
 
 The document also holds the motion provider, the running head, the index and key sheets, and the colophon.
 
@@ -56,6 +57,13 @@ The document also holds the motion provider, the running head, the index and key
 - `artwork-viewer.tsx` composes the plate, the Turn and the room.
 - `artwork-media.tsx` paints one expression: the inline preview, then the still, then a film if motion is welcome.
 - `artwork-room.tsx` is the full viewing room, with the films and the lenses.
+
+Beneath them stands the orbit section, "The orbit, re-performed". `orbit-score.tsx` is where its parts meet, and two rules shape them:
+
+- **Each thing that changes has one owner**, a hook: the recorded window's clock (`orbit-clock.ts`), After the frame (`orbit-beyond-state.ts`), the twin (`orbit-twin-state.ts`), the choosing by hand (`orbit-choosing.ts`) and the picture's room on the page (`orbit-room.ts`).
+- **Each thing that can stand on its stage has one performer**, a plain function with no hooks, which draws and keeps time: the recorded window (`orbit-window.ts`), the question (`orbit-choice.ts`), After the frame (`orbit-beyond.ts`) and the twin (`orbit-twin.tsx`). All four draw with one painter (`orbit-painter.ts`) on one picture (`orbit-picture.ts`).
+
+[docs/after-the-frame.md](docs/after-the-frame.md) §8.5 lists every file and says how the section was parted without changing what a visitor meets.
 
 `src/lib/` holds what pages know:
 
@@ -98,13 +106,13 @@ Each work is a recorded three-body orbit. The generator, `CS-Image-Generation`, 
 
 Anything that takes more than a frame runs in a Web Worker. The page keeps answering, and the result is handed back by transfer, without a copy. Each worker is a module next to the code it runs, created with `new Worker(new URL('…worker.ts', import.meta.url), { type: 'module' })` so the bundler can find it.
 
-| Worker                                  | Started by                           | What it does                                                                                                                                                                |
-| :-------------------------------------- | :----------------------------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `src/lib/physics/orbit.worker.ts`       | `src/components/orbit-proof.ts`      | Re-derives a work's orbit, compares it with the record, and samples it for drawing. It replays the window on the plate, and runs on past the window to the fate when asked. |
-| `src/lib/physics/score.worker.ts`       | `src/components/film-score-store.ts` | Measures a Light film's score from the window's verified first state.                                                                                                       |
-| `src/lib/physics/beginnings.worker.ts`  | `src/components/choice-field.tsx`    | Walks a work's hundred thousand beginnings, the candidates the generator drew, and measures each at the generator's gate.                                                   |
-| `src/lib/physics/orrery.worker.ts`      | `src/components/orrery.tsx`          | Performs all 72 orbits on 72 `OffscreenCanvas`es. It keeps no beat of its own: the page lends it frames (`orrery-pace.ts`).                                                 |
-| `src/lib/first-light/samples.worker.ts` | `src/components/first-light-show.ts` | Samples the window in the generator's view space for First Light.                                                                                                           |
+| Worker                                  | Started by                           | What it does                                                                                                                                                                                                                                   |
+| :-------------------------------------- | :----------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `src/lib/physics/orbit.worker.ts`       | `src/components/orbit-proof.ts`      | Re-derives a work's orbit, compares it with the record, and samples it for drawing. It replays the window on the plate, runs on past the window to the fate when asked, and last carries the orbit's path past the window for After the frame. |
+| `src/lib/physics/score.worker.ts`       | `src/components/film-score-store.ts` | Measures a Light film's score from the window's verified first state.                                                                                                                                                                          |
+| `src/lib/physics/beginnings.worker.ts`  | `src/components/choice-field.tsx`    | Walks a work's hundred thousand beginnings, the candidates the generator drew, and measures each at the generator's gate.                                                                                                                      |
+| `src/lib/physics/orrery.worker.ts`      | `src/components/orrery.tsx`          | Performs all 72 orbits on 72 `OffscreenCanvas`es. It keeps no beat of its own: the page lends it frames (`orrery-pace.ts`).                                                                                                                    |
+| `src/lib/first-light/samples.worker.ts` | `src/components/first-light-show.ts` | Samples the window in the generator's view space for First Light.                                                                                                                                                                              |
 
 The build scripts use Node's worker threads in the same way (`scripts/lib/orbit-*-worker.mjs`).
 
@@ -143,6 +151,7 @@ Every plate has two expressions, Ink and Light, and the Turn moves between them.
 - **The Turn** is `src/components/turn.tsx`. Its `SeamController` drives one CSS property, `--seam`, and `data-turning` on the document. Ground, work and running head all follow that one value, so they cannot drift apart. The word `Light` or `Ink`, the keys, holding `L` to peek, a finger across the plate, the Dusk and the scroll into the night wing all drive the same seam.
 - **The crossing** is `src/components/arrival-crossing.ts`. It replaces the wipe: night spreads in the order the work's Light film drew it, and paper returns in the order the Ink film's sumi came to rest. A WebGL shader reveals one published still over the other, ordered by the work's **arrival map**. The map records, for each pixel, when its mark first arrived in the film (`npm run art:arrival`, `arrival-maps.json`). Every pixel shown is a pixel of one of the two stills, except across the soft edge of the front, where the two are mixed as it passes.
 - **Beyond the plate**, the walls, the running head and the strip turn when the same front reaches them (`src/lib/crossing/front.ts`). One clock, read from the same CSS tokens as the seam, keeps all of it in step (`timing.ts`).
+- **The commit** follows the seam. Thirty milliseconds after its travel the page sets the new expression by an ordinary update (`useArtworkExpression` in `artwork-stage.tsx`), never by a React transition. A transition is the one update React sets aside for every other, and holds until the images it mounts have decoded. On a slow machine a film's clock or an orbit being derived once kept the Turn's commit waiting until React's own five-second limit, and for that long the strip, the keys and the screen reader still had the expression the picture had left. Only the room's stage commits by a transition, because there the browser's snapshot is the Turn.
 - **The When lens** (`src/lib/crossing/when.ts`) shows that order itself: the still with each mark coloured by when its film reached it, blue first, then rose, then pale gold. It is labelled "Analysis, not the work".
 
 ## 9. The pipelines
@@ -165,6 +174,7 @@ Nothing writes a published asset, and nothing records a fact the publisher did n
 | `npm run art:windows`  | `build-orbit-windows.mjs`       | `orbit-windows.json`                       | Each window's first state and plane, kept only when the same derivation matches the record. |
 | `npm run art:frames`   | `build-orbit-frames.mjs`        | `orbit-frames.json`                        | Each work's frame on its Light film, checked against the film frame by frame.               |
 | `npm run art:hollows`  | `build-orbit-hollows.mjs`       | `orbit-hollows.json`                       | Where each body came to rest on the Ink still, found as the hollow it left in the ink.      |
+| `npm run art:energy`   | `build-orbit-energy.mjs`        | `orbit-energy.json`                        | Whether each computation kept its energy to its published fate, which every run must meet.  |
 | `npm run art:arrival`  | `build-arrival-maps.mjs`        | `arrival-maps.json`                        | When each part of each still arrived in its film, for the crossing.                         |
 | `npm run art:light`    | `build-all-the-light.mjs`       | `all-the-light.json`                       | All the light, summed in linear light from the verified stills.                             |
 | `npm run art:sweep`    | `build-sweep-spans.mjs`         | `sweep-spans.json`                         | Which wavelengths each work's spectral sweep travels, for the Wavelength lens.              |
@@ -192,6 +202,8 @@ English, Simplified Chinese, Traditional Chinese for Taiwan and for Hong Kong, U
 | Scripts    | `node:test`                           | `scripts/**/*.test.mjs`  | The pipelines, their proofs and the budget check.                                                                                                              |
 | Browsers   | Playwright                            | `tests/e2e/*.spec.ts`    | The venue in real engines, with axe for accessibility.                                                                                                         |
 | Auction UI | Playwright, against a Vite fixture    | `tests/auction-harness/` | The bid panel with a synthetic contract and wallet.                                                                                                            |
+
+**A golden master** (`tests/golden/`, `npm run test:golden`) records the orbit section through its unit tests: every canvas call and property set in order, every change of the page, the focus and the scrolls. It is for a change that must alter nothing a visitor meets: record before, compare after.
 
 **Playwright's seven projects** (`playwright.config.ts`): Chromium, Firefox and WebKit on a desk (1440 × 1000); Chromium and WebKit on a phone (390 × 844, touch); and Chromium and WebKit with reduced motion. Reduced motion is a project of its own because it is a promise, not a setting (README, principles). The suite meets the venue as a returning visitor, and a spec starts afresh when it needs a first visit.
 
@@ -225,7 +237,7 @@ The targets are set in [docs/first-light.md](docs/first-light.md) §9: the still
 
 **First-load JavaScript, per route.** `npm run test:budgets:js` (`scripts/check-js-budgets.mjs`) reads the production build. For each route it counts the framework's root main files plus the client chunks of every layout and page on the route. It compresses each chunk as Vercel sends it to a browser, Brotli at quality 3, and holds the total to the route's budget. Next 16 no longer prints this "First Load JS" column, but still writes the chunk list to `.next/diagnostics/route-bundle-stats.json`, which is what the script reads. Script loaded later by `import()`, such as First Light's performance or the workers, is not counted, because it does not hold up the first paint. A route without a budget fails, and so does a budget for a route that is gone. Each budget is the size measured below plus about a tenth, rounded up to 5 KiB: room to grow, but not to hide a library pulled into a page by mistake.
 
-**Paint and layout.** `npm run test:budgets:paint` runs `tests/e2e/budgets.spec.ts` in Chromium, on a desk and on a phone, against a production server. It loads three pages: the home on a first visit (measured through the whole of First Light), the home for a returning visitor, and `/art/31`. Each is loaded three times in a fresh browser context. A `PerformanceObserver` records every LCP candidate and layout shift. The median LCP must be within 2,500 ms and the median CLS within 0.1, the Core Web Vitals lines for "good". The spec also checks what was painted: the largest paint must lie in the artwork's media (its inline preview, its still or its film). Text or a placeholder fails. Sometimes the page removes the painted element before its entry is read, as when a plate rendered again after hydration replaces its media with the same media. The spec then matches the entry's URL against the media taken out of an artwork's frame. CI runs the spec on a runner of its own, one page at a time, because a timing measured beside other tests measures them too. The browser jobs skip it with `--grep-invert @budget`.
+**Paint and layout.** `npm run test:budgets:paint` runs `tests/e2e/budgets.spec.ts` in Chromium, on a desk and on a phone, against a production server. It loads three pages: the home on a first visit (measured through the whole of First Light), the home for a returning visitor, and `/art/31`. It loads `/art/31` once more, at rest on its still, with every script of the route held back for three seconds, which is longer than the budget: neither the still nor the largest paint may wait for script. Each is loaded three times in a fresh browser context. A `PerformanceObserver` records every LCP candidate and layout shift. The median LCP must be within 2,500 ms and the median CLS within 0.1, the Core Web Vitals lines for "good". The spec also checks what was painted: the largest paint must lie in the artwork's media (its inline preview, its still or its film). Text or a placeholder fails. Sometimes the page removes the painted element before its entry is read, as when a plate rendered again after hydration replaces its media with the same media. The spec then matches the entry's URL against the media taken out of an artwork's frame. CI runs the spec on a runner of its own, one page at a time, because a timing measured beside other tests measures them too. The browser jobs skip it with `--grep-invert @budget`.
 
 **The baseline**, measured on 8 November 2026 on an Apple M4 Max with Playwright's Chromium 156, against a production build (`COSMIC_VENUE_DATE=2026-11-06 npm run build`, then `next start`). The spec ran three times; each figure is a median of three loads, and a range spans the three runs' medians.
 
@@ -234,6 +246,21 @@ The targets are set in [docs/first-light.md](docs/first-light.md) §9: the still
 | The home, first visit, through First Light | 704–776 ms, the Ink still (1,920 px) | 36–56 ms, the inline preview                 | 0 / 0.0089        |
 | The home, returning                        | 668–672 ms, the Ink still            | 40–128 ms, the inline preview or the excerpt | 0 / 0             |
 | `/art/31`                                  | 676–696 ms, the Ink still            | 68–156 ms, the inline preview or the excerpt | 0 / 0             |
+
+- **The still does not wait for script.** Until 13 November 2026 the still stayed clear over its preview until React had hydrated the plate, so on a desk the LCP waited for the route's script to download, compile and run. The document's `settleScript` (§2) now shows a still when it has loaded and decoded, and the plate hydrates around it. Measured that day on the same machine with Playwright's Chromium, three runs before the change and three after; a range spans the three runs' medians:
+
+  | Load                                            | Before: LCP              | After: LCP | Before: the still begins to show | After    |
+  | :---------------------------------------------- | :----------------------- | :--------- | :------------------------------- | :------- |
+  | Desk, the home, first visit                     | 736–1,092 ms             | 724–760 ms | 125–134 ms                       | 51–57 ms |
+  | Desk, the home, returning                       | 668–688 ms               | 568–572 ms | 128–137 ms                       | 36–49 ms |
+  | Desk, `/art/31`                                 | 696–700 ms               | 596–620 ms | 170–172 ms                       | 60–72 ms |
+  | Desk, `/art/31`, its script three seconds late  | 3,676–3,684 ms           | 576–596 ms | 3,135–3,149 ms                   | 47–55 ms |
+  | Phone, `/art/31`                                | 68–76 ms                 | 68–72 ms   | 143–145 ms                       | 64–67 ms |
+  | Phone, `/art/31`, its script three seconds late | 52–60 ms, or about 3.1 s | the same   | 3,118–3,120 ms                   | 47–55 ms |
+
+  Loopback hides most of the gain, because there the script arrives about a tenth of a second after the document; the rows with the script held back show what a slow connection gains. Three things in these figures are not obvious. Chromium usually reports the still's paint when its 500 ms fade ends, so a desk's LCP is the moment the still begins to show plus about 530 ms; in a few loads it reports it at once (88–108 ms). On a phone the LCP is the inline preview either way, so the gain there is in when the sharp still shows, not in the LCP. And on a phone with a late script the excerpt's first frame, which can only come after the script, is sometimes counted as the LCP at about 3.1 s (the next point), before this change and after it; the budget's late-script load is therefore asked to rest on its still (`?view=still`), where it measured 108–592 ms on the desk and 48–52 ms on the phone.
+
+  A phone's plate changes its film once it knows its screen, which starts a new media session and mounts its images again (`artwork-media.tsx`, `ArtworkMedia`). A still already shown would have dropped to its preview and faded in a second time, so the session that takes its place shows it in the commit that mounts it, decoded in step with that first paint. `tests/e2e/plate-settle.spec.ts` holds the scripts back, sees the still at full strength, then lets them through and watches every frame: the still must never dim.
 
 - **The phone's LCP is earlier.** On a phone the inline preview already fills the plate at its displayed size. The full still, painted later, is no larger, so it is not a new LCP candidate. Where the plate's catalogue excerpt starts playing, its first frame is a few pixels larger than the preview, so it can become the LCP instead. Either way, the largest paint is the art.
 - **The phone's first-visit CLS** comes from the statement section, which shifts twice by 0.0045 within a few milliseconds, at about 1 s and again at about 12 s, while First Light performs. The two bursts are seconds apart, so CLS is one of them, 0.0089.

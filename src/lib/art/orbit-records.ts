@@ -79,7 +79,10 @@ export interface WorkOrbit {
   traitsSha256: string;
   generation: OrbitGeneration;
   published: PublishedPhysics;
-  /** Who escapes and when, or how long the dance held, with the threshold it was asked with. */
+  /**
+   * Which body is found free and at which step, or how long the three stayed bound, with the
+   * threshold it was asked with.
+   */
   fate: PublishedFate;
   bodyHues: [number, number, number];
 }

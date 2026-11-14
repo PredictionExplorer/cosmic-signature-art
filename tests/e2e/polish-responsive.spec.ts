@@ -9,6 +9,10 @@ const cases: { locale: Locale; width: number; height: number; label: string }[] 
   { locale: 'en', width: 834, height: 1112, label: 'portrait iPad' },
   { locale: 'en', width: 1024, height: 768, label: 'landscape iPad' },
   { locale: 'en', width: 1440, height: 900, label: 'laptop' },
+  // The narrowest desk that sets the line inside the strip, in the language with the longest words.
+  { locale: 'uk', width: 1280, height: 720, label: 'small laptop' },
+  // A phone on its side: as wide as a tablet, with no height to give the line a row.
+  { locale: 'en', width: 844, height: 390, label: 'phone on its side' },
   { locale: 'uk', width: 320, height: 740, label: 'small phone' },
   { locale: 'ja', width: 390, height: 844, label: 'phone' },
   { locale: 'uk', width: 834, height: 1112, label: 'portrait iPad' },
@@ -57,6 +61,35 @@ for (const { locale, width, height, label } of cases) {
     await expect(image).toHaveCSS('object-fit', 'contain');
     const strip = await withinViewport(current.locator('.strip'), width, height);
     expect(strip.y).toBeGreaterThanOrEqual(media.y + media.height - 1);
+
+    // The line under the still is whole and in view with the work, inside its strip: beside the
+    // numeral on a wide desk, and on a row of its own beneath the words anywhere narrower, where
+    // a room tall enough has had the plate give up that row's height.
+    const words = (await current.locator('.strip-words').boundingBox())!;
+    const said = current.locator('.strip p');
+    if (width >= 768 && width < 1280 && height <= 560) {
+      // A screen that wide and that short keeps the picture's room and the strip's one row. The
+      // line is not shown, and is still there to be read aloud.
+      expect(strip.height).toBe(56);
+      expect(Math.abs(media.height - (height - 48 - 56))).toBeLessThanOrEqual(1);
+      await expect(said).toHaveText(/\S/);
+      const kept = (await current.locator('.strip [data-line]').boundingBox())!;
+      expect([kept.width, kept.height]).toEqual([1, 1]);
+    } else {
+      const line = await withinViewport(said, width, height);
+      expect(line.y).toBeGreaterThanOrEqual(strip.y - 1);
+      expect(line.y + line.height).toBeLessThanOrEqual(strip.y + strip.height + 1);
+      if (width >= 1280) {
+        expect(strip.height).toBe(56);
+        expect(line.x + line.width).toBeLessThanOrEqual(words.x);
+      } else {
+        expect(line.y).toBeGreaterThanOrEqual(words.y + words.height - 1);
+        // Each sentence is whole on its line wherever the sheet is wide enough to hold one.
+        if (width >= 768)
+          for (const sentence of await said.locator('em > span').all())
+            expect((await sentence.boundingBox())!.height).toBeLessThan(24);
+      }
+    }
 
     if (width < 768) {
       // The whole artwork screen must fit comfortably without a blank viewport below it.

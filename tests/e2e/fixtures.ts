@@ -8,6 +8,7 @@ export type {
   Locator,
   Page,
   Response,
+  Route,
   TestInfo,
 } from '@playwright/test';
 

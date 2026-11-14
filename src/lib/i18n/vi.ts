@@ -72,7 +72,7 @@ export const vi: Messages = {
   massBalance: 'Cân bằng khối lượng',
   fate: 'Kết cục',
   chaos: 'Hỗn loạn',
-  syzygies: 'Các lần thiên thể thẳng hàng',
+  syzygies: 'Các lần ba vật thể thẳng hàng',
   simulation: 'Mô phỏng',
   integrator: 'Bộ tích phân',
   simulationSteps: 'Số bước mô phỏng',
@@ -99,7 +99,7 @@ export const vi: Messages = {
   choreography: 'Vũ điệu tiếp diễn',
   follow: 'Đi theo điều',
   intro:
-    'Quỹ đạo trở thành dòng chảy. Dòng chảy để lại dấu vết. Mỗi Cosmic Signature bắt đầu từ ba thiên thể chuyển động, rồi tìm thấy một đời sống khác trong mực.',
+    'Quỹ đạo trở thành dòng chảy. Dòng chảy để lại dấu vết. Mỗi Cosmic Signature bắt đầu từ ba vật thể chuyển động, rồi tìm thấy một đời sống khác trong mực.',
   selectedWorks: 'Tác phẩm tuyển chọn',
   auctionIntro:
     'Mỗi chu kỳ trình diễn, tám tác phẩm mới gia nhập cùng bộ sưu tập Cosmic Signature. Khoản thanh toán cuối cùng từ đấu giá được chuyển về quỹ dự trữ hiện có của giao thức.',
@@ -139,7 +139,7 @@ export const vi: Messages = {
     'Tác phẩm là dấu vết của một hệ chuyển động. Hai lớp vật lý tạo nên hình hài của dấu vết ấy.',
   gravityTitle: 'Trước tiên, một quỹ đạo.',
   gravityCopy:
-    'Ba thiên thể tương tác qua trọng lực. Những quỹ đạo biến đổi của chúng trở thành các đường nét tạo nên bố cục.',
+    'Ba vật thể tương tác qua trọng lực. Những quỹ đạo biến đổi của chúng trở thành các đường nét tạo nên bố cục.',
   fluidTitle: 'Sau đó, một dòng chảy.',
   fluidCopy:
     'Những quỹ đạo ấy đưa sắc tố vào mô phỏng chất lưu tuân theo phương trình Navier–Stokes. Dòng chảy kéo giãn, gấp cuộn và khuếch tán mực trên nền giấy có sắc ấm.',
@@ -256,7 +256,7 @@ export const vi: Messages = {
   firstLightComputed: 'Vừa được tính từ hạt giống của nó, ngay trong trình duyệt này.',
   excerpt: 'Trích đoạn',
   pauseAmbientMotion: 'Tạm dừng chuyển động nền',
-  markLabel: 'Ba thiên thể, một quỹ đạo — Cosmic Signature',
+  markLabel: 'Ba vật thể, một quỹ đạo — Cosmic Signature',
   preserved: 'Tuyển tập đã lưu',
   next: 'Tiếp',
   previous: 'Trước',
@@ -364,6 +364,16 @@ export const vi: Messages = {
   statementLine:
     'Mỗi tác phẩm là một quỹ đạo ba vật thể được ghi lại, kết xuất hai lần, thành ánh sáng và thành mực. Cả hai là cùng một token.',
   statementSigned: 'Cosmic Signature · Tháng 10 năm 2026',
+  homeLine: 'Ba vật thể, mỗi vật hút hai vật còn lại.',
+  homeLineLight: 'Đây là một lần phơi sáng lâu ghi lại chuyển động của chúng.',
+  homeLineInk: 'Đây là mực mà chuyển động của chúng đã khuấy lên.',
+  fateTogether: 'Ba vật thể, ở bên nhau suốt {steps} bước mà tác phẩm này ghi lại.',
+  fateLeaves:
+    '{time} sau khi phim kết thúc, một trong số chúng không còn gắn kết với hai vật còn lại.',
+  fateStill: 'Chúng vẫn gắn kết với nhau tại bước {steps}, nơi hồ sơ ngừng dõi theo.',
+  fateSeconds: '{n} giây',
+  fateMinutes: '{n} phút',
+  sentences: '{first} {second}',
   livingCollection: 'Một bộ sưu tập sống gồm những quỹ đạo được ghi lại',
   cyclesSpan: 'Chu kỳ {first} đến chu kỳ {last}',
   since: 'từ {date}',
@@ -526,7 +536,7 @@ export const vi: Messages = {
   trailTurbulenceRule:
     'Những tác phẩm có độ hỗn độn đã công bố từ 24 trở lên, trên thang 100: những quỹ đạo bị xáo trộn nhất.',
   trailTurbulenceNote:
-    'Ở đầu kia của cùng một phép đo, những quỹ đạo này nhạy cảm nhất với điểm khởi đầu. Các dải cắt nhau và quay ngược; mực bị cuốn xa nhất khỏi nơi các thiên thể đi qua. Sáu mươi chín, ở mức 28, là quỹ đạo nhiễu động nhất được ghi nhận khi lối đi này được treo.',
+    'Ở đầu kia của cùng một phép đo, những quỹ đạo này nhạy cảm nhất với điểm khởi đầu. Các dải cắt nhau và quay ngược; mực bị cuốn xa nhất khỏi nơi các vật thể đi qua. Sáu mươi chín, ở mức 28, là quỹ đạo nhiễu động nhất được ghi nhận khi lối đi này được treo.',
   trailLightBecomingTrace: 'Ánh sáng thành dấu vết',
   trailLightBecomingTraceRule:
     'Những tác phẩm có số giao cắt bím đã công bố từ 50 trở lên: những dải quỹ đạo cắt nhau thường xuyên nhất.',
@@ -609,7 +619,7 @@ export const vi: Messages = {
   orbitClosest: 'Khoảng cách gần nhất',
   orbitClosestWhere: 'Vị trí gần nhất',
   orbitBodiesAt: 'vật thể {pair} · bước {step}',
-  orbitSyzygies: 'Các lần thiên thể thẳng hàng',
+  orbitSyzygies: 'Các lần ba vật thể thẳng hàng',
   orbitBraidCrossings: 'Số điểm giao của các đường bện',
   orbitBraidWord: 'Từ bện',
   orbitExact: 'chính xác',
@@ -620,14 +630,45 @@ export const vi: Messages = {
     'Phim và ảnh tĩnh là các bản kết xuất được ghi lại của tác phẩm. Hình vẽ này là quỹ đạo nằm bên dưới chúng, được trình duyệt của bạn tính theo đúng trình tự của bộ tạo: dòng ngẫu nhiên của nó, việc chọn ứng viên {index}, và {steps} bước của bộ tích phân Yoshida bậc bốn.',
   afterTheFrame: 'Sau khung hình',
   afterTheFrameNote:
-    'Quá cửa sổ đã ghi, cùng một vật lý ấy vẫn tiếp diễn, theo nhịp của phim. Đây không phải tác phẩm: đây là điều quỹ đạo của tác phẩm làm tiếp theo.',
+    'Quá cửa sổ đã ghi, cùng một vật lý ấy vẫn tiếp diễn, theo nhịp của phim, và máy quay đứng yên ở nơi phim để lại. Đây không phải tác phẩm: đây là điều quỹ đạo của tác phẩm làm tiếp theo.',
+  afterTheFrameNoteAsk:
+    'Quá cửa sổ đã ghi, cùng một vật lý ấy vẫn tiếp diễn, theo nhịp của phim. Khung hình đứng yên ở nơi phim để lại, hoặc ở lại với một trong ba vật thể, khi đó vật thể ấy đứng yên trong khung hình. Đây không phải tác phẩm: đây là điều quỹ đạo của tác phẩm làm tiếp theo.',
   orbitFate: 'Số phận',
-  orbitFateEjection: 'vật thể {body} thoát ra ở bước {step}',
+  orbitFateEjection: 'vật thể {body} không còn gắn kết ở bước {step}',
   orbitFateDance: 'còn gắn kết qua {steps} bước',
-  orbitBeyond: 'Sau khung hình · bước {step} · {clock} sau phim',
-  orbitEscaped: 'Vật thể {body} đã thoát ra, ở bước {step}',
-  orbitHeld: 'Vũ điệu giữ vững qua cả {steps} bước',
-  toTheEjection: 'Đến lúc thoát ra',
+  orbitBeyond: '{clock} sau phim · bước {step}',
+  beyondAway:
+    '{clock} sau phim · vật thể {body} ở ngoài khung hình, cách {widths} lần chiều rộng khung hình',
+  beyondOut: '{clock} sau phim · vật thể {body} ở ngoài khung hình',
+  beyondAwayTwo: '{clock} sau phim · vật thể {a} và {b} ở ngoài khung hình',
+  beyondEmptyNow: '{clock} sau phim · cả ba vật thể đều ở ngoài khung hình',
+  beyondOnward: 'Đi tiếp',
+  beyondTell: 'Chuyện gì đã xảy ra',
+  beyondRecord: 'Đến hồ sơ',
+  beyondLeft: 'Vật thể {body} rời khung hình {time} sau khi phim kết thúc.',
+  beyondLeftAgain: 'Vật thể {body} lại rời khung hình {time} sau khi phim kết thúc.',
+  beyondLeftLast: 'Vật thể {body} rời khung hình lần cuối {time} sau khi phim kết thúc.',
+  beyondBack: 'Nó quay lại sau {time}.',
+  beyondEmptied: '{time} sau đó, hai vật còn lại cũng đã ở ngoài khung hình.',
+  beyondAlreadyEmpty: 'Hai vật còn lại đã rời khung hình từ trước.',
+  beyondStayed: '{time} sau đó, hai vật còn lại vẫn ở trong khung hình.',
+  beyondNotBack:
+    'Tại bước {steps}, nơi hồ sơ ngừng dõi theo, nó vẫn chưa quay lại, và cả ba vẫn gắn kết với nhau.',
+  beyondFree: 'Hồ sơ ghi nhận vật thể {body} không còn gắn kết với hai vật còn lại ở bước {step}.',
+  beyondStill: 'Cả ba vẫn gắn kết với nhau tại bước {steps}, nơi hồ sơ ngừng dõi theo.',
+  beyondAsk: 'Ở lại với một trong ba vật thể, hoặc với khung hình của phim.',
+  beyondStayBody: 'Ở lại với vật thể {body}',
+  beyondFrame: 'Khung hình của phim',
+  beyondStayFrame: 'Ở lại với khung hình của phim',
+  beyondKeptLine: 'Ở lại với vật thể {body} · {line}',
+  beyondKept: 'Khung hình đã ở lại với vật thể {body}.',
+  beyondAlone: 'Từ {time} sau khi phim kết thúc, chỉ còn vật thể {body} trong khung hình.',
+  beyondAloneAgain: 'Từ {time} sau khi phim kết thúc, lại chỉ còn vật thể {body} trong khung hình.',
+  beyondAloneFor:
+    'Từ {time} sau khi phim kết thúc, suốt {span} chỉ còn vật thể {body} trong khung hình.',
+  beyondAloneForAgain:
+    'Từ {time} sau khi phim kết thúc, suốt {span} lại chỉ còn vật thể {body} trong khung hình.',
+  beyondOneStayed: '{time} sau đó, vật thể {body} vẫn ở trong khung hình.',
   orbitAdrift: 'Sau bước {step} không còn là quỹ đạo: năng lượng tính được đổi {change}.',
   orbitEnergyHeld:
     'Theo phép tính tại đây, năng lượng được giữ đến {digits} chữ số trong suốt cửa sổ đã ghi.',
@@ -642,8 +683,8 @@ export const vi: Messages = {
   orbitTimeLabel: 'Khoảnh khắc trong phim Ánh sáng',
   oneInATrillion: 'Một phần nghìn tỷ',
   oneInATrillionNote:
-    'Ở bước đầu của khoảng được ghi lại, thiên thể {body} được dời một phần nghìn tỷ theo trục x. Sau khung hình, cùng một vật lý tiếp tục đưa tác phẩm và bản song sinh của nó đi cùng nhau, cho tới khi bản song sinh tách ra. Đây không phải tác phẩm: đó là điều một phần nghìn tỷ lẽ ra đã làm với nó.',
-  twinWorking: 'Đang dời thiên thể {body} một phần nghìn tỷ và theo cả hai qua khung hình…',
+    'Ở bước đầu của khoảng được ghi lại, vật thể {body} được dời một phần nghìn tỷ theo trục x. Sau khung hình, cùng một vật lý tiếp tục đưa tác phẩm và bản song sinh của nó đi cùng nhau, cho tới khi bản song sinh tách ra. Đây không phải tác phẩm: đó là điều một phần nghìn tỷ lẽ ra đã làm với nó.',
+  twinWorking: 'Đang dời vật thể {body} một phần nghìn tỷ và theo cả hai qua khung hình…',
   twinApart: 'Cách nhau {gap} · bước {step} · {pace}',
   twinAtFilmPace: 'theo nhịp của phim',
   twinFaster: 'nhanh gấp {times} lần phim',

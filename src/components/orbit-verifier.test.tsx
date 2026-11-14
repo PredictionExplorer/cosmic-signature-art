@@ -93,8 +93,7 @@ function fateOf(of: WorkOrbit): DerivedFate {
     ejectionStep: of.fate.ejectionStep,
     horizonSteps: of.fate.horizonSteps,
     energy: { first: -1, windowChange: 3e-13, change: 3e-13, broken: null },
-    windowEnd: { positions: new Float64Array(9), velocities: new Float64Array(9), watchRun: 0 },
-    approach: null,
+    windowEnd: { positions: new Float64Array(9), velocities: new Float64Array(9) },
   };
 }
 
@@ -149,9 +148,9 @@ describe('Verify an orbit', () => {
       {
         generation: orbit.generation,
         published: orbit.published,
-        // Nothing is drawn here: one sample of the window, and no bodies kept before an escape.
+        // Nothing is drawn here: one sample of the window, and no path past it.
         stride: 1_000_000,
-        fate: { published: orbit.fate, lead: 0 },
+        fate: { published: orbit.fate },
       },
     ]);
     expect(lines()).toEqual(['0.0 sSeed 0x4a0d…f5b5']);
@@ -256,7 +255,7 @@ describe('Verify an orbit', () => {
     const { container } = render(<OrbitVerifier orbit={ejecting} t={t} locale="en" />);
     derive(ejecting);
     expect(container.querySelector('[data-key="fate"]')).toHaveTextContent(
-      'Fatebody 2 escapes at step 1,090,000exact',
+      'Fatebody 2 no longer bound at step 1,090,000exact',
     );
     expect(section(container)).toHaveAttribute('data-exact', 'true');
   });

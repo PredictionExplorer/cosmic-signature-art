@@ -27,6 +27,8 @@ import { OrbitScore } from '@/components/orbit-score';
 import { Overture } from '@/components/overture';
 import { showWorkOf } from '@/lib/art/first-light-work';
 import { workOrbit } from '@/lib/art/orbit-records';
+import { workEnergy } from '@/lib/art/orbit-energy';
+import { fateLine } from '@/lib/art/fate-line';
 import { filmOrbit } from '@/lib/art/orbit-windows';
 import { orbitPlate } from '@/lib/art/orbit-plate';
 import recordStyles from '@/components/artwork-record.module.css';
@@ -152,6 +154,9 @@ export default async function ArtworkPage({
   // The orbit beneath the work, re-derived in the browser and checked against its record, and
   // drawn on the plate where its frame binds: over the still the page's plate shows.
   const orbit = workOrbit(tokenId);
+  // The line under the still: what the record says of the three, each sentence said only where
+  // it is true of this work (src/lib/art/fate-line.ts). The same under either expression.
+  const line = orbit ? fateLine(orbit, workEnergy(tokenId), t, locale) : null;
   const both = !!getInterpretation(work, 'ink')?.still && !!getInterpretation(work, 'light')?.still;
   return (
     <main id="main" className="work-page" data-opening-expression={expression}>
@@ -165,6 +170,7 @@ export default async function ArtworkPage({
         inlinePreviews={inlinePreviews}
         live={curated ? live.then((result) => result.artwork) : undefined}
         traits={{ structure: indexed?.traits.structure, underlay: indexed?.traits.underlay }}
+        lines={line ? { ink: line, light: line } : undefined}
         neighbours={neighboursFor(tokenId)}
         afterTheFrame={!!orbit}
         orbit={filmOrbit(tokenId)}

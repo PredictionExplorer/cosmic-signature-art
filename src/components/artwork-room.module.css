@@ -123,12 +123,19 @@
   aspect-ratio: var(--ratio);
   background: rgb(9 9 10);
 }
-/* The lens's stated ramp, first to last, beside its label. */
+/* The lens's stated ramp, first to last, after its label: it wraps whole, never in two. */
 .whenScale {
   display: inline-flex;
   align-items: center;
   gap: 9px;
   white-space: nowrap;
+}
+/* In the room held for it (room-notice.tsx) the ramp's two words are drawn, not written. */
+.whenScale[data-first]::before {
+  content: attr(data-first);
+}
+.whenScale[data-last]::after {
+  content: attr(data-last);
 }
 .whenScale i {
   width: 72px;
@@ -172,7 +179,8 @@
   color: var(--room-ink);
 }
 .strip button,
-.notice button {
+.notice button,
+.word {
   display: inline-flex;
   align-items: baseline;
   justify-content: center;
@@ -229,23 +237,42 @@
 }
 /* Status lives on the strip's second line, never over the work. */
 .notice {
-  display: flex;
-  align-items: center;
-  gap: 18px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
   min-height: 27px;
   /* 12 px above the transport's line, wherever the device sets the line: clear of the score. */
   padding: 0 max(var(--gutter), env(safe-area-inset-right))
     calc(env(safe-area-inset-bottom, 0px) + 12px) max(var(--gutter), env(safe-area-inset-left));
   color: var(--room-muted);
   font-size: var(--fs-folio);
+  line-height: 1.5;
+  /* Figures of one width: the loupe's readout keeps its length as the numbers turn. */
+  font-variant-numeric: lining-nums tabular-nums;
 }
-/* The line is held even when empty, so a status appearing never moves the work above it. */
-.statusText {
+/* What the notice says wraps where the screen is narrow, and nothing of it is cut. Beneath it,
+   unseen, lie the lines it may come to say in this room, each wrapped as it would be here
+   (room-notice.tsx). All share one cell, so the notice is always as tall as the tallest of
+   them, and a lens or a status arriving never moves the work above it. */
+.said,
+.held,
+.held > span {
+  grid-area: 1 / 1;
   min-width: 0;
-  min-height: 1lh;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  overflow-wrap: break-word;
+}
+.held {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  visibility: hidden;
+  pointer-events: none;
+}
+.held [data-line]::before {
+  content: attr(data-line);
+}
+/* 18 px between a line's words and what stands after them, as wide as the strip's own gaps.
+   It is a space made wide, so at the end or the start of a wrapped row it takes no room. */
+.apart {
+  word-spacing: calc(18px - 0.25em);
 }
 .hint {
   position: absolute;

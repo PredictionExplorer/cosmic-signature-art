@@ -15,7 +15,8 @@ export default defineConfig({
     testTimeout: process.env.CI ? 15_000 : 5_000,
     coverage: {
       provider: 'v8',
-      include: ['src/lib/**/*.ts', 'src/components/**/*.tsx'],
+      // The orbit section's hooks and performers are plain .ts beside their components.
+      include: ['src/lib/**/*.ts', 'src/components/**/*.tsx', 'src/components/orbit-*.ts'],
       exclude: ['**/*.test.*'],
       thresholds: {
         lines: 75,

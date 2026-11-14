@@ -12,6 +12,8 @@ export default defineConfig({
   timeout: 45_000,
   expect: { timeout: 12_000 },
   fullyParallel: true,
+  // A test.only left in by mistake would have CI run that one test and pass: it fails there.
+  forbidOnly: !!process.env.CI,
   workers: process.env.CI ? 2 : 2,
   retries: process.env.CI ? 1 : 0,
   reporter: [['list'], ['html', { open: 'never' }]],

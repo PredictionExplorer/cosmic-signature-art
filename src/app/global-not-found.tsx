@@ -3,9 +3,14 @@ import { headers } from 'next/headers';
 import { ADDRESS_HEADER, visitorAddress } from '@/lib/addresses';
 import { VenueDocument, venueMetadata } from './venue-document';
 import { nightViewport } from './viewport';
+import { notFoundHeading } from './not-found-title';
 import { NotFoundPage } from './[locale]/not-found-page';
 
-export const metadata: Metadata = venueMetadata;
+/** Titled by what the page says, in the language it says it in (not as the venue's home). */
+export async function generateMetadata(): Promise<Metadata> {
+  const { locale, address } = visitorAddress((await headers()).get(ADDRESS_HEADER));
+  return { ...venueMetadata, title: `${notFoundHeading(locale, address)} · Cosmic Signature` };
+}
 export const viewport: Viewport = nightViewport;
 
 /**

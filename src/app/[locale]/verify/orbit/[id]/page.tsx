@@ -4,7 +4,7 @@ import { connection } from 'next/server';
 import { isLocale, localizedPath } from '@/lib/i18n/routing';
 import { messages } from '@/lib/i18n/messages';
 import { fill } from '@/lib/i18n/format';
-import { metadata } from '@/lib/site';
+import { metadata, venueCard } from '@/lib/site';
 import { workOrbit } from '@/lib/art/orbit-records';
 import { workNumber } from '@/lib/art/number';
 import { OrbitVerifier } from '@/components/orbit-verifier';
@@ -28,13 +28,13 @@ export async function generateMetadata({ params }: { params: Params }) {
   if (!orbit) return {};
   const t = messages(locale);
   const work = workNumber(orbit.id);
-  // A tool, not a derived image: the venue's card beside the home stands for it.
+  // A tool, not a derived image: the venue's card stands for it.
   return metadata(
     locale,
     `/verify/orbit/${orbit.id}`,
     fill(t.verifyOrbitOf, { work }),
     fill(t.verifyOrbitWorkIntro, { work }),
-    null,
+    venueCard(locale),
   );
 }
 

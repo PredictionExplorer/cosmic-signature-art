@@ -3,6 +3,13 @@ import { catalogs } from '../../src/lib/i18n/messages';
 import { noHorizontalOverflow } from './helpers';
 
 const t = catalogs.en;
+/** The languages the notice is measured in: the two longest, the Latin default and a CJK one. */
+const noticeLocales = ['en', 'uk', 'vi', 'ja'] as const;
+/** A phone, and the narrowest screen the venue promises. */
+const noticeScreens = [
+  { width: 390, height: 844 },
+  { width: 320, height: 568 },
+];
 const pageStage = '[data-artwork-stage="page"]:visible';
 const current = `${pageStage} [data-layer-state="current"]`;
 const roomSelector = '[data-testid="artwork-room"]';
@@ -264,3 +271,101 @@ test('the spread shows both plates whole at once: side by side on a desk, stacke
   }
   await noHorizontalOverflow(page);
 });
+
+/**
+ * Every word the room's notice shows, by the rectangles its glyphs are laid out in, and whether
+ * each lies inside the screen and inside every ancestor that would cut it. An ellipsis leaves
+ * the cut words in the page, so reading the text proves nothing: the geometry does.
+ */
+function noticeWords(page: Page) {
+  return page.locator(`${roomSelector} footer`).evaluate((footer) => {
+    const words: { text: string; cut: string | null }[] = [];
+    const walker = document.createTreeWalker(footer.lastElementChild!, NodeFilter.SHOW_TEXT);
+    for (let node = walker.nextNode(); node; node = walker.nextNode()) {
+      const holder = node.parentElement!;
+      if (!node.textContent?.trim() || getComputedStyle(holder).visibility === 'hidden') continue;
+      const range = document.createRange();
+      range.selectNodeContents(node);
+      let cut: string | null = null;
+      for (const rect of range.getClientRects()) {
+        if (rect.left < -0.5 || rect.right > innerWidth + 0.5 || rect.bottom > innerHeight + 0.5)
+          cut = 'the screen';
+        for (let box: Element | null = holder; box && box !== footer; box = box.parentElement) {
+          const style = getComputedStyle(box);
+          if (style.overflowX === 'visible' && style.overflowY === 'visible') continue;
+          const bounds = box.getBoundingClientRect();
+          if (rect.right > bounds.right + 0.5 || rect.bottom > bounds.bottom + 0.5)
+            cut = `its ${box.tagName.toLowerCase()}`;
+        }
+      }
+      words.push({ text: node.textContent.replace(/\s+/g, ' ').trim(), cut });
+    }
+    return words;
+  });
+}
+
+for (const locale of noticeLocales)
+  for (const screen of noticeScreens) {
+    const words = catalogs[locale];
+    test(`a lens’s label is shown whole on a phone, first on its line, and the work keeps its place (${locale}, ${screen.width} px)`, async ({
+      page,
+    }) => {
+      // The sweep is 14 MB and the lens says what it is while it loads: no film is needed here.
+      await page.route(/\.mp4(?:\?|$)/, () => {});
+      await page.setViewportSize(screen);
+      await artworkReady(page, `${locale === 'en' ? '' : `/${locale}`}/art/31?view=still`);
+      await page.locator(current).getByRole('button', { name: words.ways, exact: true }).click();
+      await page.locator(current).getByRole('button', { name: words.enlarge, exact: true }).click();
+      const dialog = page.getByRole('dialog');
+      const still = dialog.locator('img');
+      await expect(still).toBeVisible();
+      // The room opens with the Expansion; the still is measured where it comes to rest.
+      await expect.poll(() => still.evaluate((image) => image.getAnimations().length)).toBe(0);
+      const strip = dialog.locator('footer');
+      const rested = { still: (await still.boundingBox())!, strip: (await strip.boundingBox())! };
+
+      // The When lens: its label first, every word of the line and of the ramp on screen.
+      await page.keyboard.press('t');
+      const drawn = dialog.locator('canvas[data-room-media]');
+      await expect(drawn).toHaveAttribute('data-when', 'painted', { timeout: 15_000 });
+      await expect(dialog.getByRole('status')).toHaveText(
+        `${words.analysisNotWork} · ${words.whenInk}`,
+      );
+      const when = await noticeWords(page);
+      expect(when.map((word) => word.text)).toEqual([
+        `${words.analysisNotWork} · ${words.whenInk}`,
+        words.whenFirst,
+        words.whenLast,
+      ]);
+      expect(when.filter((word) => word.cut)).toEqual([]);
+      // The room for the line was there before the lens was: the lens lies where the still lay.
+      const lens = (await drawn.boundingBox())!;
+      for (const key of ['x', 'y', 'width', 'height'] as const) {
+        expect(Math.abs(lens[key] - rested.still[key])).toBeLessThan(1.5);
+        expect(Math.abs((await strip.boundingBox())![key] - rested.strip[key])).toBeLessThan(0.5);
+      }
+      await noHorizontalOverflow(page);
+      await page.keyboard.press('t');
+      await expect(still).toBeVisible();
+
+      // Light, and the Wavelength lens as it loads: the same label, whole, on a strip that
+      // stands where Light's stood.
+      await page.keyboard.press('l');
+      await expect(page.locator(frameSelector).first()).toHaveAttribute('data-material', 'light');
+      await expect(still).toBeVisible();
+      // The sweep's word joins the strip with the work's live record; the strip is measured then.
+      await expect(
+        dialog.getByRole('button', { name: words.wavelengthLens, exact: true }),
+      ).toBeVisible();
+      const light = (await strip.boundingBox())!;
+      await page.keyboard.press('n');
+      await expect(dialog.getByRole('status')).toHaveText(
+        `${words.analysisNotWork} · ${words.wavelengthLoading}`,
+      );
+      const wavelength = await noticeWords(page);
+      expect(wavelength.filter((word) => word.cut)).toEqual([]);
+      for (const key of ['x', 'y', 'width', 'height'] as const)
+        expect(Math.abs((await strip.boundingBox())![key] - light[key])).toBeLessThan(0.5);
+      await noHorizontalOverflow(page);
+    });
+  }

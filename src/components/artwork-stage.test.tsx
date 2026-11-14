@@ -436,6 +436,75 @@ describe('expression preparation', () => {
     expect(state.addTransitionType).not.toHaveBeenCalled();
   });
 
+  it('commits at once where no stage takes a snapshot: the change has been shown already', async () => {
+    const onCommit = vi.fn();
+    const { result } = renderHook(() =>
+      useArtworkExpression({ openingExpression: 'ink', media, snapshot: false, onCommit }),
+    );
+    act(() => result.current.selectExpression('light'));
+    expect(result.current.expression).toBe('ink');
+    await ready();
+    expect(result.current.expression).toBe('light');
+    expect(onCommit).toHaveBeenCalledExactlyOnceWith('light');
+    expect(state.addTransitionType).not.toHaveBeenCalled();
+  });
+
+  it('is not held behind what is not ready, as a transition is: the commit is made', async () => {
+    // The same work that keeps a transition waiting (above) cannot keep this commit waiting.
+    const suspense = deferred();
+    const onCommit = vi.fn();
+    let blocked = true;
+    function Material({ expression }: { expression: string }) {
+      if (expression === 'light' && blocked) throw suspense.promise;
+      return <p data-testid="visible-expression">{expression}</p>;
+    }
+    function Viewer() {
+      const selection = useArtworkExpression({
+        openingExpression: 'ink',
+        media,
+        snapshot: false,
+        onCommit,
+      });
+      return (
+        <>
+          <button onClick={() => selection.selectExpression('light')}>Light</button>
+          <Suspense fallback={<p>Preparing</p>}>
+            <Material expression={selection.expression} />
+          </Suspense>
+        </>
+      );
+    }
+    render(<Viewer />);
+    fireEvent.click(screen.getByRole('button', { name: 'Light' }));
+    await ready();
+    expect(onCommit).toHaveBeenCalledExactlyOnceWith('light');
+    expect(screen.getByText('Preparing')).toBeInTheDocument();
+    await act(async () => {
+      blocked = false;
+      suspense.resolve();
+    });
+    expect(screen.getByTestId('visible-expression')).toHaveTextContent('light');
+  });
+
+  it('follows a snapshot’s stage that came on view, or left, while the still was decoding', async () => {
+    let snapshot = false;
+    const { result, rerender } = renderHook(() =>
+      useArtworkExpression({ openingExpression: 'ink', media, snapshot }),
+    );
+    act(() => result.current.selectExpression('light'));
+    snapshot = true;
+    rerender();
+    await ready();
+    expect(result.current.expression).toBe('light');
+    expect(state.addTransitionType).toHaveBeenCalledExactlyOnceWith('cosmic-expression-to-light');
+    act(() => result.current.selectExpression('ink'));
+    snapshot = false;
+    rerender();
+    await ready();
+    expect(result.current.expression).toBe('ink');
+    expect(state.addTransitionType).toHaveBeenCalledOnce();
+  });
+
   it('falls back to a successful load in browsers without image.decode', () => {
     supportsDecode = false;
     const { result } = renderHook(() => useArtworkExpression({ openingExpression: 'ink', media }));
