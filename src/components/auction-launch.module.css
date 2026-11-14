@@ -13,20 +13,18 @@
   align-items: baseline;
   gap: 9px 24px;
 }
-.count {
-  font-size: var(--fs-control);
-  color: var(--muted);
-}
 .copy {
   display: grid;
   gap: 9px;
   justify-items: start;
   max-width: 36em;
 }
-.copy > .eyebrow {
+/* The eyebrow is the venue's own class (globals.css). Written bare, a class in a module is the
+   module's, and would select nothing the component wears. */
+.copy > :global(.eyebrow) {
   color: var(--muted);
 }
-.copy > p:not(.eyebrow) {
+.copy > p:not(:global(.eyebrow)) {
   font-size: var(--fs-reading);
   color: var(--muted);
 }
