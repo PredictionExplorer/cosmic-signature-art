@@ -438,6 +438,139 @@ describe('expression preparation', () => {
     expect(state.addTransitionType).toHaveBeenCalledOnce();
   });
 
+  /*
+    A snapshot's commit must be a transition, and a transition can be kept waiting. Here it is
+    held behind content that is not ready; in a browser every other update sets it aside, and
+    throws it away while it waits for the images it mounts.
+  */
+  type Gate = { blocked: Promise<void> | null };
+  /** A promise and its resolve, made by hand: `Promise.withResolvers` is newer than ES2022. */
+  function heldPromise() {
+    let resolve!: () => void;
+    const promise = new Promise<void>((settle) => {
+      resolve = settle;
+    });
+    return { promise, resolve };
+  }
+  function HeldMaterial({ expression, gate }: { expression: string; gate: Gate }) {
+    if (expression === 'light' && gate.blocked) throw gate.blocked;
+    return <p data-testid="visible-expression">{expression}</p>;
+  }
+  function HeldViewer({ gate, onCommit }: { gate: Gate; onCommit: (expression: string) => void }) {
+    const selection = useArtworkExpression({ openingExpression: 'ink', media, onCommit });
+    return (
+      <>
+        <button onClick={() => selection.selectExpression('ink')}>Ink</button>
+        <button onClick={() => selection.selectExpression('light')}>Light</button>
+        <output data-testid="expression">{selection.expression}</output>
+        <Suspense fallback={<p>Preparing</p>}>
+          <HeldMaterial expression={selection.expression} gate={gate} />
+        </Suspense>
+      </>
+    );
+  }
+
+  it('gives a transition one second, then makes the same commit at once, and only once', async () => {
+    const held = heldPromise();
+    const gate: Gate = { blocked: held.promise };
+    const onCommit = vi.fn();
+    render(<HeldViewer gate={gate} onCommit={onCommit} />);
+    fireEvent.click(screen.getByRole('button', { name: 'Light' }));
+    await ready();
+    // Asked for as a transition, and kept waiting: nothing has changed.
+    expect(state.addTransitionType).toHaveBeenCalledExactlyOnceWith('cosmic-expression-to-light');
+    expect(screen.getByTestId('expression')).toHaveTextContent('ink');
+    expect(screen.getByTestId('visible-expression')).toHaveTextContent('ink');
+    act(() => vi.advanceTimersByTime(999));
+    expect(screen.getByTestId('expression')).toHaveTextContent('ink');
+    expect(onCommit).not.toHaveBeenCalled();
+    // The deadline: the commit is made by an ordinary update, which nothing holds.
+    act(() => vi.advanceTimersByTime(1));
+    expect(screen.getByTestId('expression')).toHaveTextContent('light');
+    expect(onCommit).toHaveBeenCalledExactlyOnceWith('light');
+    expect(state.addTransitionType).toHaveBeenCalledOnce();
+    // The transition lands at last. The expression is set already: it commits nothing more.
+    await act(async () => {
+      gate.blocked = null;
+      held.resolve();
+    });
+    expect(screen.getByTestId('visible-expression')).toHaveTextContent('light');
+    expect(screen.getByTestId('expression')).toHaveTextContent('light');
+    act(() => vi.advanceTimersByTime(5000));
+    expect(onCommit).toHaveBeenCalledOnce();
+  });
+
+  it('calls the deadline off when the transition commits in time: it never commits again', async () => {
+    const onCommit = vi.fn();
+    const { result } = renderHook(() =>
+      useArtworkExpression({ openingExpression: 'ink', media, onCommit }),
+    );
+    act(() => result.current.selectExpression('light'));
+    await ready();
+    expect(result.current.expression).toBe('light');
+    expect(vi.getTimerCount()).toBe(0);
+    act(() => vi.advanceTimersByTime(5000));
+    expect(result.current.expression).toBe('light');
+    expect(onCommit).toHaveBeenCalledExactlyOnceWith('light');
+  });
+
+  it('calls the deadline off with its Turn: a waiting transition that is superseded stays called off', async () => {
+    const held = heldPromise();
+    const gate: Gate = { blocked: held.promise };
+    const onCommit = vi.fn();
+    render(<HeldViewer gate={gate} onCommit={onCommit} />);
+    fireEvent.click(screen.getByRole('button', { name: 'Light' }));
+    await ready();
+    act(() => vi.advanceTimersByTime(500));
+    // The visitor chooses Ink again while Light's transition waits.
+    fireEvent.click(screen.getByRole('button', { name: 'Ink' }));
+    expect(vi.getTimerCount()).toBe(0);
+    act(() => vi.advanceTimersByTime(5000));
+    await act(async () => {
+      gate.blocked = null;
+      held.resolve();
+    });
+    expect(screen.getByTestId('expression')).toHaveTextContent('ink');
+    expect(screen.getByTestId('visible-expression')).toHaveTextContent('ink');
+    expect(onCommit).not.toHaveBeenCalled();
+  });
+
+  it('leaves no deadline behind when the page is left while a transition waits', async () => {
+    const held = heldPromise();
+    const onCommit = vi.fn();
+    const { unmount } = render(<HeldViewer gate={{ blocked: held.promise }} onCommit={onCommit} />);
+    fireEvent.click(screen.getByRole('button', { name: 'Light' }));
+    await ready();
+    unmount();
+    expect(vi.getTimerCount()).toBe(0);
+    act(() => vi.advanceTimersByTime(5000));
+    expect(onCommit).not.toHaveBeenCalled();
+  });
+
+  it('sets no deadline where the commit is no transition: there is nothing to wait for', async () => {
+    const setTimer = vi.spyOn(globalThis, 'setTimeout');
+    const delays = () => setTimer.mock.calls.map(([, delay]) => delay);
+    try {
+      const { result } = renderHook(() =>
+        useArtworkExpression({ openingExpression: 'ink', media, snapshot: false }),
+      );
+      act(() => result.current.selectExpression('light'));
+      await ready();
+      expect(result.current.expression).toBe('light');
+      // The eight seconds a still is given to decode, and no second for a commit.
+      expect(delays()).toContain(8000);
+      expect(delays()).not.toContain(1000);
+      // The same Turn as a transition is given its second.
+      setTimer.mockClear();
+      const snapshot = renderHook(() => useArtworkExpression({ openingExpression: 'ink', media }));
+      act(() => snapshot.result.current.selectExpression('light'));
+      await ready();
+      expect(delays()).toContain(1000);
+    } finally {
+      setTimer.mockRestore();
+    }
+  });
+
   it('falls back to a successful load in browsers without image.decode', () => {
     supportsDecode = false;
     const { result } = renderHook(() => useArtworkExpression({ openingExpression: 'ink', media }));

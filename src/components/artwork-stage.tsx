@@ -15,6 +15,14 @@ import { useMotion } from './motion-provider';
 import styles from './artwork-stage.module.css';
 
 const preparationDeadline = 8000;
+/**
+ * How long a commit asked for as a transition may wait to be made. React itself stops waiting
+ * for a transition's images 800 ms after it began, and the snapshot before it fades for 650 ms
+ * (--t-expand), so a transition still not committed a second on is waiting for nothing it will
+ * be given: it is being set aside. A calm room commits in about 20 ms, and in under half a
+ * second on a machine twenty times slower.
+ */
+const commitDeadline = 1000;
 const transitionTypes = {
   ink: 'cosmic-expression-to-ink',
   light: 'cosmic-expression-to-light',
@@ -49,7 +57,9 @@ export function useArtworkExpression({
    * the one update React sets aside for every other and holds back until the images it mounts
    * have decoded: under a film's clock or an orbit being drawn, a slow machine kept the Turn's
    * commit waiting for seconds after its seam had landed, until React's own five-second limit
-   * let it through.
+   * let it through. The snapshot's stage can be kept waiting the same way, by its own film, so
+   * its transition is given `commitDeadline`: past that the same commit is made at once, without
+   * the snapshot, and the transition changes nothing when it lands.
    */
   snapshot?: boolean;
   onCommit?: (expression: string) => void;
@@ -66,6 +76,8 @@ export function useArtworkExpression({
   const [pendingExpression, setPendingExpression] = useState<string | null>(null);
   const [failedExpression, setFailedExpression] = useState<string | null>(null);
   const preparation = useRef<(() => void) | null>(null);
+  /** Calls off the deadline of a commit asked for as a transition and not yet made. */
+  const deadline = useRef<(() => void) | null>(null);
   const request = useRef(0);
   const previousExpression = useRef(expression);
   const reportCommit = useEffectEvent((committed: string) => onCommit?.(committed));
@@ -78,6 +90,9 @@ export function useArtworkExpression({
   useEffect(() => {
     if (previousExpression.current === expression) return;
     previousExpression.current = expression;
+    // The commit is made, by its transition or by its deadline: the other has nothing to do.
+    deadline.current?.();
+    deadline.current = null;
     // A prepared transition can still suspend or be superseded. Report only a real
     // commit, so canceled selections never reset a parent's active transport state.
     reportCommit(expression);
@@ -92,6 +107,7 @@ export function useArtworkExpression({
     () => () => {
       request.current += 1;
       preparation.current?.();
+      deadline.current?.();
     },
     [],
   );
@@ -100,6 +116,8 @@ export function useArtworkExpression({
     request.current += 1;
     preparation.current?.();
     preparation.current = null;
+    deadline.current?.();
+    deadline.current = null;
     // Supersede even a decoded selection whose concurrent render has not committed.
     // A request-id check alone cannot invalidate React's eagerly evaluated state update.
     setExpression(expression);
@@ -165,6 +183,13 @@ export function useArtworkExpression({
             );
             commit();
           });
+          // Any other update sets a transition aside, and throws away one that is waiting for
+          // its images: a film reporting its progress can do that for as long as it plays. Past
+          // the deadline the same commit is made by an ordinary update, which nothing holds. A
+          // transition that lands afterwards finds the expression set and commits nothing.
+          deadline.current?.();
+          const overdue = setTimeout(commit, commitDeadline);
+          deadline.current = () => clearTimeout(overdue);
         } else commit();
       };
       const handler = readyHandler.current;
