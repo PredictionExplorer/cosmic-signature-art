@@ -4,6 +4,8 @@ export default defineConfig({
   testMatch: 'auction-live.spec.ts',
   timeout: 45_000,
   expect: { timeout: 10_000 },
+  // A test.only left in by mistake would have CI run that one test and pass: it fails there.
+  forbidOnly: !!process.env.CI,
   workers: 2,
   reporter: [['list']],
   outputDir: '../../test-results/auction-harness',

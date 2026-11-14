@@ -90,7 +90,7 @@
 .lookup input {
   min-height: 44px;
   padding: 9px 12px;
-  border: 1px solid var(--rule);
+  border: 1px solid var(--rule-strong);
   background: transparent;
   color: var(--type);
   font-family: var(--font-mono);
