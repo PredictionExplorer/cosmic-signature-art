@@ -1,10 +1,10 @@
 /** Public, serializable art records. Safe to import from client components. */
 import { ART_WIDTH } from './constants';
 /**
- * Where a record was read. `live` is the indexer, asked for this request. The other two are the
- * venue's own copies, which stand in when the indexer cannot be read and state the day they
- * were read (`provenance.checkedOn`): the identity-verified registry of a few works, and the
- * build-time index of them all.
+ * Where a record was read. `live` is the indexer's own answer. The other two are the venue's
+ * own copies, which stand in when the indexer cannot be read and state the day they were read
+ * (`provenance.checkedOn`): the identity-verified registry of a few works, and the build-time
+ * index of them all.
  */
 export type ArtSource = 'live' | 'curated-fallback' | 'index-snapshot';
 export type InterpretationId = 'light' | 'ink' | (string & {});
