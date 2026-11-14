@@ -92,6 +92,16 @@ test('the keys turn it and leave it where they put it; Escape gives it back', as
   await page.keyboard.press('ArrowRight');
   await orbit.getByRole('button', { name: t.orbitGeneratorView }).click();
   await expect(depth).toHaveAttribute('data-view', 'flat', { timeout: 3_000 });
+  // Pressed from the keyboard, the word goes as the orbit lands, and hands the focus to the
+  // orbit it gave back: it does not fall to the page.
+  await depth.focus();
+  await page.keyboard.press('ArrowRight');
+  const back = orbit.getByRole('button', { name: t.orbitGeneratorView });
+  await back.focus();
+  await page.keyboard.press('Enter');
+  await expect(back).toHaveCount(0);
+  await expect(depth).toBeFocused();
+  await expect(depth).toHaveAttribute('data-view', 'flat');
 });
 
 test('the score is a slider that sets the moment, either way', async ({ page }) => {

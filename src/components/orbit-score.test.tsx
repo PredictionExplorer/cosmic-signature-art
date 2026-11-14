@@ -1,4 +1,4 @@
-import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { messages } from '@/lib/i18n/messages';
 import { workOrbit, type WorkOrbit } from '@/lib/art/orbit-records';
@@ -6,6 +6,7 @@ import { performedOrbits } from '@/lib/art/orbit-windows';
 import { getCuratedArtwork } from '@/lib/art/catalog';
 import { orbitPlate, type OrbitPlate } from '@/lib/art/orbit-plate';
 import { plateFrame } from '@/lib/art/orbit-frames';
+import type { PlateSpace } from '@/lib/first-light/samples';
 import type { BeyondPath } from '@/lib/physics/beyond';
 import type { FramedSamples } from '@/lib/physics/framing';
 import { lightFilmDuration } from '@/lib/physics/light-film';
@@ -41,6 +42,21 @@ vi.mock('./orbit-beyond', async (original) => {
     },
   };
 });
+
+// The engine the orbit in depth is drawn with, and the still that colours its light: neither
+// is asked for unless a test stages the orbit in depth (a browser with WebGL 2, and the window
+// sampled in depth).
+vi.mock('./first-light-engines', () => ({
+  createEngine: async () => ({
+    lost: false,
+    look: { intensity: 1, width: 1, glow: 0, exposure: 1, bodySize: 1 },
+    setScene() {},
+    resize() {},
+    draw() {},
+    dispose() {},
+  }),
+}));
+vi.mock('./decoded-image', () => ({ decoded: async () => ({ width: 640 }) }));
 
 const t = messages('en');
 /** A work whose record finds its three bound, and the one that ejects soonest after its window. */
@@ -2925,6 +2941,86 @@ describe('the orbit in the hand, in the section', () => {
   it('carries a small rung of the Light still to colour the light in depth', () => {
     expect(plate031.stills.light!.colours).toMatch(/\/31-light-(640|960|1280)-/);
   });
+
+  /** The window in depth, as the worker samples it: three moments of it are enough to turn. */
+  const inDepth: PlateSpace = {
+    stride: 100,
+    count: 3,
+    steps: Float64Array.from([0, 100, 199]),
+    width: 3_456,
+    height: 2_234,
+    scale: 1,
+    points: Float32Array.from({ length: 27 }, (_, i) => (i % 7) * 10),
+    drift: new Float32Array(9),
+    depthCentre: 0,
+    centre: [0, 0, 0],
+    copies: [{ cos: 1, sin: 0, scale: 1, mirror: false }],
+  };
+  /** № 031 on its plate, drawn whole, with its orbit offered to the hand. */
+  async function inTheHand() {
+    vi.stubGlobal('WebGL2RenderingContext', class {});
+    const staged = render(
+      <OrbitScore orbit={orbit} t={t} locale="en" plate={plate031} opening="ink" both />,
+    );
+    approach();
+    view(true);
+    derive();
+    workers[0].reply({ type: 'framed', framed: framedOf() });
+    workers[0].reply({ type: 'space', space: inDepth });
+    fated();
+    const depth = staged.container.querySelector<HTMLCanvasElement>('canvas[data-layer="light"]')!;
+    await waitFor(() => expect(depth).toHaveAttribute('data-turns', 'true'));
+    return { ...staged, depth };
+  }
+  const generatorView = () => screen.queryByRole('button', { name: t.orbitGeneratorView });
+
+  it('gives the focus back to the orbit when the word that returned it goes', async () => {
+    const { depth } = await inTheHand();
+    expect(generatorView()).not.toBeInTheDocument();
+    fireEvent.keyDown(depth, { key: 'ArrowLeft' });
+    nextFrame();
+    // Turned, the way back is offered. A keyboard goes to it, and presses it.
+    const back = generatorView()!;
+    back.focus();
+    fireEvent.click(back);
+    nextFrame();
+    // The orbit is back at the generator's view, so the word has gone: the focus that stood on
+    // it is on the orbit it acted on, not fallen to the page.
+    expect(depth).toHaveAttribute('data-view', 'flat');
+    expect(generatorView()).not.toBeInTheDocument();
+    expect(document.activeElement).toBe(depth);
+  });
+
+  it('leaves the focus where it stands when the orbit goes back without that word', async () => {
+    const { depth } = await inTheHand();
+    fireEvent.keyDown(depth, { key: 'ArrowLeft' });
+    nextFrame();
+    expect(generatorView()).toBeInTheDocument();
+    // The focus is on another word when the orbit is given back by its own key.
+    const play = screen.getByRole('button', { name: t.play });
+    play.focus();
+    fireEvent.keyDown(depth, { key: 'Escape' });
+    nextFrame();
+    expect(generatorView()).not.toBeInTheDocument();
+    expect(document.activeElement).toBe(play);
+  });
+
+  it('offers no way back to an orbit that left the stage turned and returned as the generator saw it', async () => {
+    const { container, depth } = await inTheHand();
+    fireEvent.keyDown(depth, { key: 'ArrowLeft' });
+    nextFrame();
+    expect(generatorView()).toBeInTheDocument();
+    // One part in a trillion takes the stage, and the orbit in the hand leaves it as it was.
+    const twin = () => screen.getByRole('button', { name: t.oneInATrillion });
+    fireEvent.click(twin());
+    expect(container.querySelector('canvas[data-layer="light"]')).toBeNull();
+    // Back at the window, the orbit stands there anew, at the generator's view.
+    fireEvent.click(twin());
+    const anew = container.querySelector<HTMLCanvasElement>('canvas[data-layer="light"]')!;
+    expect(anew).not.toBe(depth);
+    expect(anew).toHaveAttribute('data-view', 'flat');
+    expect(generatorView()).not.toBeInTheDocument();
+  });
 });
 
 describe('one part in a trillion', () => {
@@ -3070,6 +3166,30 @@ describe('one part in a trillion', () => {
     view(true);
     expect(frames.size).toBe(1);
     framesUntil(rested, 2_000);
+  });
+
+  it('hands the focus to the line when Again, pressed from the keyboard, goes', () => {
+    Object.assign(motion, { paused: false, reducedMotion: false });
+    const { container } = onThePlate();
+    const line = container.querySelector('#orbit-said')!;
+    const rested = () => section(container).getAttribute('data-twin') === 'rested';
+    const again = () => screen.getByRole('button', { name: t.again });
+    framesUntil(() => !!screen.queryByRole('button', { name: t.oneInATrillion }), 1_000);
+    fireEvent.click(twinButton());
+    workers[1].reply({ type: 'done', run: found() } as unknown as OrbitReply);
+    framesUntil(rested, 2_000);
+    // Again goes as it is pressed, until the pair has come to rest once more. The focus that
+    // stood on it goes to the line, which says how far apart the two now are.
+    again().focus();
+    fireEvent.click(again());
+    expect(screen.queryByRole('button', { name: t.again })).not.toBeInTheDocument();
+    expect(document.activeElement).toBe(line);
+    expect(line.textContent).toMatch(/^Apart by /);
+    // Pressed by a pointer that left the focus on a word that stays, it takes no focus.
+    framesUntil(rested, 2_000);
+    twinButton().focus();
+    fireEvent.click(again());
+    expect(document.activeElement).toBe(twinButton());
   });
 
   it('says plainly when this browser cannot follow the twin', () => {

@@ -46,6 +46,8 @@ export interface Sculpture {
   at(step: number): void;
   /** Back to the generator's view. */
   back(): void;
+  /** The focus, given to the orbit: the page is not moved to it. */
+  focus(): void;
 }
 
 /** Arrow keys: steps of yaw and pitch, as the hand turns it (drawn right, the near side follows). */
@@ -153,6 +155,19 @@ export function OrbitSculpture({
 
   const reportReady = useEffectEvent((value: boolean) => onReady(value));
   useEffect(() => reportReady(ready), [ready]);
+  // Said through an event of its own, so the frame loop is not set up afresh (and the frame it
+  // was waiting for lost) each time the section hands down another function.
+  const reportTurned = useEffectEvent((value: boolean) => onTurned(value));
+  // Taken off the stage while it is turned, it says it is turned no longer: whatever stands here
+  // next begins at the generator's view, and the section is not to go on offering the way back.
+  useEffect(
+    () => () => {
+      if (!turned.current) return;
+      turned.current = false;
+      reportTurned(false);
+    },
+    [],
+  );
 
   // The frame loop, set up afresh whenever what it draws with changes. Each frame reads the hand's
   // turn, sets the cover it gives, and draws the event in depth if any of it shows. It asks for
@@ -182,7 +197,7 @@ export function OrbitSculpture({
       node.dataset.view = nowTurned ? 'turned' : 'flat';
       if (nowTurned !== turned.current) {
         turned.current = nowTurned;
-        onTurned(nowTurned);
+        reportTurned(nowTurned);
       }
       if (cover > 0 && !made.lost) {
         const width = node.clientWidth;
@@ -210,7 +225,7 @@ export function OrbitSculpture({
       cancelAnimationFrame(frame.current);
       driver.current = null;
     };
-  }, [still, material, space, stage, radius, peak, onTurned]);
+  }, [still, material, space, stage, radius, peak]);
   const request = () => driver.current?.request();
 
   useImperativeHandle(
@@ -223,6 +238,9 @@ export function OrbitSculpture({
       back() {
         hand.current = nextHand(hand.current, { kind: 'back', at: performance.now() }, still);
         driver.current?.request();
+      },
+      focus() {
+        canvas.current?.focus({ preventScroll: true });
       },
     }),
     [still],

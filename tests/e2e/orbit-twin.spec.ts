@@ -35,6 +35,18 @@ test('a twin moved by a trillionth is carried past the frame until it parts', as
   await expect(
     orbit.getByText(/^Parted at step 1,904,600\. The gap doubled about every [\d,]+ steps\.$/),
   ).toBeVisible();
+  // Again goes as it is pressed, until the pair has come to rest once more: pressed from the
+  // keyboard, it hands the focus to the line, which says how far apart the two now are. Where
+  // nothing plays there is nothing to perform again, and the word is not offered.
+  const again = orbit.getByRole('button', { name: t.again });
+  if (info.project.name.includes('reduced-motion')) await expect(again).toHaveCount(0);
+  else {
+    await again.focus();
+    await page.keyboard.press('Enter');
+    await expect(again).toHaveCount(0);
+    await expect(orbit.locator('#orbit-said')).toBeFocused();
+    await expect(orbit).toHaveAttribute('data-twin', 'running');
+  }
   // After the frame is a word away, and the twin gives way to it.
   await orbit.getByRole('button', { name: t.afterTheFrame }).click();
   await expect(orbit).not.toHaveAttribute('data-twin');

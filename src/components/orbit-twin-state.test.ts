@@ -36,14 +36,23 @@ class FakeWorker {
   }
 }
 
+/** The line beneath the picture, as the section has it: not a control, and it can take the focus. */
+let telling: { current: HTMLParagraphElement };
 beforeEach(() => {
   workers = [];
   vi.stubGlobal('Worker', FakeWorker);
+  const line = document.createElement('p');
+  line.tabIndex = -1;
+  document.body.append(line);
+  telling = { current: line };
 });
-afterEach(() => vi.unstubAllGlobals());
+afterEach(() => {
+  telling.current.remove();
+  vi.unstubAllGlobals();
+});
 
 const staged = (with_: Partial<Parameters<typeof useTwin>[0]> = {}) =>
-  renderHook(() => useTwin({ orbit, steps, result, frame, ...with_ }));
+  renderHook(() => useTwin({ orbit, steps, result, frame, telling, ...with_ }));
 
 describe('the twin, as the visitor moves through it', () => {
   it('is off the stage until asked for, and follows nothing', () => {
@@ -101,6 +110,44 @@ describe('the twin, as the visitor moves through it', () => {
     expect(workers).toHaveLength(1);
   });
 
+  it('hands the focus to the line when the word that asked for it again has gone', () => {
+    const { result: twin } = staged();
+    const elsewhere = document.createElement('button');
+    document.body.append(elsewhere);
+    elsewhere.focus();
+    act(() => twin.current.go());
+    workers[0].reply({ type: 'done', run: found });
+    // Asked for by a word that stays: the focus is left where it stands.
+    expect(document.activeElement).toBe(elsewhere);
+    act(() => twin.current.forDrawing.rested());
+    // Again, with the focus on it, goes as it is pressed: the line is given the focus once the
+    // pair is performed again, and without moving the page to it.
+    const focused = vi.spyOn(telling.current, 'focus');
+    act(() => twin.current.go(true));
+    expect(twin.current.twin).toMatchObject({ phase: 'ready', repeat: 1 });
+    expect(document.activeElement).toBe(telling.current);
+    expect(focused).toHaveBeenCalledExactlyOnceWith({ preventScroll: true });
+    // Given once: a later performance asked for by a word that stays moves no focus.
+    elsewhere.focus();
+    act(() => twin.current.go());
+    expect(document.activeElement).toBe(elsewhere);
+    elsewhere.remove();
+  });
+
+  it('hands no focus on to a twin the visitor left before it was found', () => {
+    const { result: twin } = staged();
+    // Asked for with the focus to hand on while it is still being followed…
+    act(() => twin.current.go(true));
+    expect(twin.current.following).toBe(true);
+    expect(document.activeElement).not.toBe(telling.current);
+    // …and left: come back to and found, it takes no focus.
+    act(() => twin.current.leave());
+    act(() => twin.current.go());
+    workers[1].reply({ type: 'done', run: found });
+    expect(twin.current.twin).toMatchObject({ phase: 'ready' });
+    expect(document.activeElement).not.toBe(telling.current);
+  });
+
   it('forgets the pair it carried when the twin takes the stage or leaves it', () => {
     const { result: twin } = staged();
     const { live } = twin.current.forDrawing;
@@ -142,7 +189,7 @@ describe('the twin, as the visitor moves through it', () => {
   it('waits for the derived window before it follows, and follows nothing in the plane', () => {
     const waiting = renderHook(
       ({ derived }: { derived: Rederivation | null }) =>
-        useTwin({ orbit, steps, result: derived, frame }),
+        useTwin({ orbit, steps, result: derived, frame, telling }),
       { initialProps: { derived: null as Rederivation | null } },
     );
     act(() => waiting.result.current.go());
