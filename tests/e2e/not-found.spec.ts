@@ -1,10 +1,21 @@
 import { expect, test, type APIResponse, type Response, type TestInfo } from '@playwright/test';
+import { readdirSync } from 'node:fs';
 import { catalogs } from '../../src/lib/i18n/messages';
 import { INDEXED_WORKS } from '../../src/lib/addresses';
 import { workNumber } from '../../src/lib/art/number';
 import { fill } from '../../src/lib/i18n/format';
 import { locales, localizedPath, type Locale } from '../../src/lib/i18n/routing';
 import { noHorizontalOverflow } from './helpers';
+
+/** A rung of a work's still ladder, by the name its file was given (scripts/build-still-ladder.mjs). */
+function stillRung(id: number, expression: 'ink' | 'light', width: number) {
+  const name = new RegExp(`^${id}-${expression}-${width}-[a-f0-9]{16}\\.webp$`);
+  const file = readdirSync(new URL('../../public/art/stills', import.meta.url)).find((entry) =>
+    name.test(entry),
+  );
+  if (!file) throw new Error(`No ${width} px ${expression} rung for work ${id}`);
+  return `/art/stills/${file}`;
+}
 
 /**
  * What does not exist is refused before its page can stream (src/proxy.ts, src/lib/addresses.ts):
@@ -53,12 +64,23 @@ for (const locale of locales) {
       '/verify/orbit/999',
       '/verify/orbit/031',
       '/zzz',
-    ])
+      // A dot is no way past the proxy: a number with a sentence's full stop glued on, a
+      // fraction, a page asked for as a file, and a file asked for under a locale.
+      '/art/31.',
+      '/art/31.5',
+      '/exhibitions/a-hang.html',
+      '/verify/orbit/3.1',
+      '/zzz.b',
+      '/art/31-ink.webp',
+    ]) {
+      // English is the address without a locale, and there the last one is the still itself.
+      if (locale === 'en' && path === '/art/31-ink.webp') continue;
       await expectNotHere(
         await request.get(localizedPath(locale, path)),
         locale,
         wordsFor(path, locale),
       );
+    }
     for (const path of ['/art/31', '/exhibitions/a-hang', '/exhibitions/cycle-2']) {
       const response = await request.get(localizedPath(locale, path));
       expect(response.status(), path).toBe(200);
@@ -66,6 +88,31 @@ for (const locale of locales) {
     }
   });
 }
+
+test('the venue’s own files are served as files, which the proxy never takes for pages', async ({
+  request,
+}, info) => {
+  oneProjectAsks(info);
+  // One of each shape the proxy's matcher names (src/proxy.ts); proxy.test.ts reads every file.
+  const rung = stillRung(31, 'ink', 1280);
+  for (const [path, type] of [
+    ['/favicon.ico', /^image\//],
+    ['/icon.svg', /^image\/svg\+xml/],
+    ['/apple-icon.png', /^image\/png/],
+    ['/manifest.webmanifest', /^application\/manifest\+json/],
+    ['/robots.txt', /^text\/plain/],
+    ['/sitemap.xml', /^application\/xml/],
+    ['/icons/mark-192.png', /^image\/png/],
+    ['/art/31-ink.webp', /^image\/webp/],
+    [rung, /^image\/webp/],
+    ['/art/31-ink-preview.mp4', /^video\/mp4/],
+  ] as const) {
+    // A film is asked for by range, as a player asks: its first bytes say what it is.
+    const response = await request.get(path, { headers: { range: 'bytes=0-1023' } });
+    expect([200, 206], path).toContain(response.status());
+    expect(response.headers()['content-type'], path).toMatch(type);
+  }
+});
 
 test('a number beyond the index is the indexer’s to refuse', async ({ request }, info) => {
   oneProjectAsks(info);

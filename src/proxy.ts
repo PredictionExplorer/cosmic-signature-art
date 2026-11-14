@@ -33,6 +33,16 @@ export async function proxy(request: NextRequest) {
   url.pathname = `/${locales[0]}${path === '/' ? '' : path}`;
   return NextResponse.rewrite(url, { request: { headers } });
 }
+/*
+  Every address runs through the proxy except the venue's files, named here by folder or by name:
+  the API, the framework's and the host's own paths, the fonts, the icons, the stills, films and
+  maps under /art, and the six files the app serves from its root. The rule was once "anything
+  with a dot in it", which let /uk/art/31.5 past to a streamed 200. Next reads a matcher at
+  build time, so it has to be written out; proxy.test.ts reads the files themselves, and fails
+  for one this does not name, which would otherwise be rewritten under a locale and lost.
+*/
 export const config = {
-  matcher: ['/((?!api|_next|fonts/|favicon.ico|robots.txt|sitemap.xml|.*\\..*).*)'],
+  matcher: [
+    '/((?!api/|_next/|_vercel/|fonts/|icons/|art/.+\\.(?:webp|mp4)$|(?:favicon\\.ico|icon\\.svg|apple-icon\\.png|manifest\\.webmanifest|robots\\.txt|sitemap\\.xml)$).*)',
+  ],
 };

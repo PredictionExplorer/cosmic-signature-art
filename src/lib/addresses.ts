@@ -30,11 +30,22 @@ export function notHere(locale: Locale): string {
 export const ADDRESS_HEADER = 'x-venue-address';
 
 /**
- * The visitor's address as the venue's 404 trusts it: a path on this site, as the proxy writes
- * one, or nothing. "//host" and "/\host" are other sites to a browser.
+ * A path as the proxy writes one: a URL's pathname, so printable ASCII with everything else
+ * percent-encoded. By then Next has redirected any address that held two slashes together or a
+ * backslash, so the proxy writes neither.
+ */
+const WRITTEN = /^(?!.*\/\/)\/[\x21-\x5b\x5d-\x7e]*$/;
+
+/**
+ * The visitor's address as the venue's 404 trusts it: a path on this site exactly as the proxy
+ * writes one, or nothing. The proxy runs for every page, but not for the venue's files, and a
+ * file that is missing meets the same 404 with whatever header its client sent. "//host" and
+ * "/\host" are other sites to a browser, which also drops a tab or a line break from an address;
+ * and the running head cuts the locale from the front before it links to the rest. So none of
+ * them may stand anywhere in the address, not only at its start.
  */
 export function visitorAddress(header: string | null): { locale: Locale; address?: string } {
-  const address = header && /^\/(?![/\\])/.test(header) ? header : undefined;
+  const address = header && WRITTEN.test(header) ? header : undefined;
   const segment = address?.split('/')[1] ?? '';
   return { locale: isLocale(segment) ? segment : locales[0], address };
 }
