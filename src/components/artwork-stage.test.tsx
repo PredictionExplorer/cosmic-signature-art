@@ -36,6 +36,16 @@ type PreparedImage = {
   reject: () => void;
   removeAttribute: ReturnType<typeof vi.fn>;
 };
+/** A promise settled from outside, by hand: the type library stops at ES2022 (tsconfig.json). */
+function deferred() {
+  let resolve!: () => void;
+  let reject!: (reason: Error) => void;
+  const promise = new Promise<void>((yes, no) => {
+    resolve = yes;
+    reject = no;
+  });
+  return { promise, resolve, reject };
+}
 let images: PreparedImage[];
 let supportsDecode: boolean;
 const media = getCuratedArtwork(31)!.media;
@@ -54,7 +64,7 @@ beforeEach(() => {
     'Image',
     class {
       constructor() {
-        const readiness = Promise.withResolvers<void>();
+        const readiness = deferred();
         const sources = { src: '', srcset: '', sizes: '' };
         const given: string[] = [];
         const image = {
@@ -282,7 +292,7 @@ describe('expression preparation', () => {
   });
 
   it('cancels an already decoded transition whose concurrent render has not committed', async () => {
-    const suspense = Promise.withResolvers<void>();
+    const suspense = deferred();
     const onCommit = vi.fn();
     let blocked = true;
     function Material({ expression }: { expression: string }) {
