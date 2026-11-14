@@ -1,4 +1,4 @@
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Page } from './fixtures';
 import { catalogs } from '../../src/lib/i18n/messages';
 import { readFileSync } from 'node:fs';
 import { noHorizontalOverflow } from './helpers';

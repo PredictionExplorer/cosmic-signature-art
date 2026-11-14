@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { expect, test } from './fixtures';
 import sharp from 'sharp';
 import { catalogs } from '../../src/lib/i18n/messages';
 import {

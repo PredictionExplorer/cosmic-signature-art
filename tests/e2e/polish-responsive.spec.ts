@@ -1,4 +1,4 @@
-import { expect, test, type Locator } from '@playwright/test';
+import { expect, test, type Locator } from './fixtures';
 import { catalogs } from '../../src/lib/i18n/messages';
 import { localizedPath, type Locale } from '../../src/lib/i18n/routing';
 import { imageLoaded, noHorizontalOverflow, pauseAmbientMotion } from './helpers';

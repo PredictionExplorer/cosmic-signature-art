@@ -1,6 +1,6 @@
 import AxeBuilder from '@axe-core/playwright';
 import sharp from 'sharp';
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Page } from './fixtures';
 import { fill } from '../../src/lib/i18n/format';
 import { catalogs } from '../../src/lib/i18n/messages';
 import { locales, localizedPath } from '../../src/lib/i18n/routing';

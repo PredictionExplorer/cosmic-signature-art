@@ -23,6 +23,12 @@ const countdownDynamicImport =
   'ImportExpression[source.value=/(^|\\/)countdown(\\.[cm]?[jt]sx?)?$/]';
 const countdownImportPattern =
   '(^|/)auction/countdown(\\.[cm]?[jt]sx?)?$|^\\.{1,2}/countdown(\\.[cm]?[jt]sx?)?$';
+/**
+ * The browser suite's `test` listens for the page's faults (tests/e2e/fixtures.ts). A spec that
+ * took Playwright's own would run, and pass, with nobody listening.
+ */
+const suiteTestMessage =
+  "Import `test` from './fixtures' (tests/e2e/fixtures.ts), not from Playwright: the suite's own fails a test whose page threw, logged an error or was answered a 5xx.";
 
 export default tseslint.config(
   {
@@ -55,6 +61,19 @@ export default tseslint.config(
         'error',
         { selector: oneSecondInterval, message: intervalMessage },
         { selector: countdownDynamicImport, message: countdownMessage },
+      ],
+    },
+  },
+  {
+    // A later setting of a rule replaces an earlier one, so the countdown's pattern is said again.
+    files: ['tests/e2e/**/*.spec.ts'],
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          paths: [{ name: '@playwright/test', importNames: ['test'], message: suiteTestMessage }],
+          patterns: [{ regex: countdownImportPattern, message: countdownMessage }],
+        },
       ],
     },
   },

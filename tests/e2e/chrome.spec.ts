@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { expect, test } from './fixtures';
 import { catalogs } from '../../src/lib/i18n/messages';
 import { noHorizontalOverflow } from './helpers';
 

@@ -1,4 +1,11 @@
-import { expect, test, type APIResponse, type Response, type TestInfo } from '@playwright/test';
+import {
+  expect,
+  failedToLoad,
+  test,
+  type APIResponse,
+  type Response,
+  type TestInfo,
+} from './fixtures';
 import { readdirSync } from 'node:fs';
 import { catalogs } from '../../src/lib/i18n/messages';
 import { INDEXED_WORKS } from '../../src/lib/addresses';
@@ -136,8 +143,12 @@ test('a work’s number in another spelling goes to its one spelling, for good',
   }
 });
 
-test('the venue’s 404 is its own page, in the visitor’s language, on black', async ({ page }) => {
+test('the venue’s 404 is its own page, in the visitor’s language, on black', async ({
+  page,
+  faults,
+}) => {
   const uk = catalogs.uk;
+  faults.allow(failedToLoad('/uk/art/abc'));
   const response = await page.goto('/uk/art/abc');
   expect(response?.status()).toBe(404);
   await expect(page.locator('html')).toHaveAttribute('lang', 'uk');
@@ -164,8 +175,10 @@ test('the venue’s 404 is its own page, in the visitor’s language, on black',
 
 test('a number the collection does not hold is next door to the nearest work it does', async ({
   page,
+  faults,
 }) => {
   const t = catalogs.en;
+  faults.allow(failedToLoad('/art/999'));
   const response = await page.goto('/art/999');
   expect(response?.status()).toBe(404);
   await expect(page.getByRole('heading', { level: 1 })).toHaveText(
@@ -241,7 +254,8 @@ test('an English address is never taken for the home in a locale of its name', a
     ]);
 });
 
-test('a typed number without a record arrives at the venue’s 404', async ({ page }) => {
+test('a typed number without a record arrives at the venue’s 404', async ({ page, faults }) => {
+  faults.allow(failedToLoad('/art/9999'));
   await page.goto('/collection');
   await expect(page.locator('html')).toHaveAttribute('data-keys', 'ready');
   // The router asks for the work, meets the 404 and loads the venue's page whole.

@@ -1,4 +1,4 @@
-import { expect, test, type Locator, type Page } from '@playwright/test';
+import { expect, failedToLoad, syntheticFinger, test, type Locator, type Page } from './fixtures';
 import AxeBuilder from '@axe-core/playwright';
 import { readFileSync } from 'node:fs';
 import { catalogs } from '../../src/lib/i18n/messages';
@@ -307,6 +307,7 @@ test('holding L peeks at Light and lets go; a tap completes the Turn', async ({ 
 test('keys are silent while focus is in a field, and the remembered expression follows the visit', async ({
   page,
   context,
+  faults,
 }) => {
   await page.emulateMedia({ reducedMotion: 'no-preference' });
   await artworkReady(page);
@@ -334,6 +335,7 @@ test('keys are silent while focus is in a field, and the remembered expression f
   );
   // A new visit always opens on Ink.
   const fresh = await context.browser()!.newContext();
+  faults.watch(fresh);
   const next = await fresh.newPage();
   await next.goto(`${new URL(page.url()).origin}/art/35?view=still`);
   await expect(next.locator(pageStage)).toHaveAttribute('data-expression', 'ink');
@@ -439,8 +441,10 @@ test('the paper wing beneath a Light plate is drawn back from the left by the ha
 test('a finger carries the seam: past 40 % the Turn completes, short of it the seam springs back', async ({
   page,
   isMobile,
+  faults,
 }) => {
   test.skip(!isMobile, 'Drag-to-Turn answers touch only.');
+  faults.allow(syntheticFinger);
   await page.emulateMedia({ reducedMotion: 'no-preference' });
   await artworkReady(page);
   const stage = page.locator(pageStage);
@@ -512,10 +516,11 @@ test('a slower expression keeps the current work visible and the latest choice w
 
 test('a failed expression keeps the current artwork and offers a successful retry', async ({
   page,
+  faults,
 }) => {
+  // The Light still is cut off on purpose, on every rung a plate asks for.
+  faults.allow(failedToLoad(/\/art\/stills\/31-light-\d+-[a-f0-9]{16}\.webp/));
   await page.route(isLightStill, (route) => route.abort('failed'));
-  const errors: string[] = [];
-  page.on('pageerror', (error) => errors.push(error.message));
   await artworkReady(page);
   const stage = page.locator(pageStage);
   const original = await page.locator(`${current} img.art-still`).getAttribute('src');
@@ -528,7 +533,6 @@ test('a failed expression keeps the current artwork and offers a successful retr
   await expect(stage).toHaveAttribute('data-expression', 'light', { timeout: 5000 });
   await imageReady(page.locator(`${current} img.art-still`));
   await expect(page.getByText(t.expressionFailed, { exact: true })).toHaveCount(0);
-  expect(errors).toEqual([]);
 });
 
 /** The file the committed plate's still shows: the candidate the browser chose from its ladder. */
@@ -750,8 +754,6 @@ test('a rejected native fullscreen request preserves the complete viewing room',
       },
     });
   });
-  const errors: string[] = [];
-  page.on('pageerror', (error) => errors.push(error.message));
   await artworkReady(page);
   await page.locator(current).getByRole('button', { name: t.ways, exact: true }).click();
   await page.locator(current).getByRole('button', { name: t.enlarge, exact: true }).click();
@@ -767,7 +769,6 @@ test('a rejected native fullscreen request preserves the complete viewing room',
   ).toBe(1);
   await dialog.getByRole('button', { name: t.close, exact: true }).click();
   await expect(dialog).not.toBeVisible();
-  expect(errors).toEqual([]);
 });
 
 test('native fullscreen enters when supported and returns to the same work', async ({ page }) => {

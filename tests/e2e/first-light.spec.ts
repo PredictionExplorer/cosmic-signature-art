@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { expect, test } from './fixtures';
 
 /*
   First Light's proof (docs/first-light.md §8, F0) on № 031: the still is the first thing on the

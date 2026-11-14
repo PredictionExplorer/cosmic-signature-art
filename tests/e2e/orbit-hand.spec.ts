@@ -1,4 +1,4 @@
-import { expect, test, type Locator, type Page } from '@playwright/test';
+import { expect, test, type Locator, type Page } from './fixtures';
 import sharp from 'sharp';
 import { catalogs } from '../../src/lib/i18n/messages';
 
@@ -120,7 +120,13 @@ test('the score is a slider that sets the moment, either way', async ({ page }) 
 test('on a phone a swipe over the orbit scrolls the page, and a hold takes it', async ({
   page,
   browserName,
+  faults,
 }, info) => {
+  // A fault of the page's own, known and left for the sculpture's next change: its touchmove
+  // listener cancels a move the browser has already begun to scroll with (orbit-sculpture.tsx),
+  // and Chromium says each time that it will not. When the listener asks `event.cancelable`
+  // first, this line goes.
+  faults.allow(/^console error: Ignored attempt to cancel a touchmove event with cancelable=false/);
   test.skip(
     !info.project.name.includes('mobile') || browserName !== 'chromium',
     'Touch is driven through Chromium’s own protocol; WebKit’s native scroll cannot be driven.',
