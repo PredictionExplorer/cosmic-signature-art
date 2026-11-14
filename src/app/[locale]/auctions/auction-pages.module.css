@@ -1,11 +1,4 @@
 /* The page keeps the 9 px rhythm the lot strip set: 27, 36, 54, 72. */
-.page,
-.lotPage {
-  padding-bottom: 27px;
-}
-.catalogue {
-  scroll-margin-top: var(--head);
-}
 .rules {
   border-top: 1px solid var(--rule);
   margin-top: 72px;

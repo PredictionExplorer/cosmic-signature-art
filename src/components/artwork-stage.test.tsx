@@ -24,6 +24,10 @@ vi.mock('react', async (importOriginal) => ({
 
 type PreparedImage = {
   src: string;
+  srcset: string;
+  sizes: string;
+  /** The order the sources were given in: an engine may act on each as it is set. */
+  given: string[];
   decoding: string;
   onload: (() => void) | null;
   onerror: (() => void) | null;
@@ -32,6 +36,16 @@ type PreparedImage = {
   reject: () => void;
   removeAttribute: ReturnType<typeof vi.fn>;
 };
+/** A promise settled from outside, by hand: the type library stops at ES2022 (tsconfig.json). */
+function deferred() {
+  let resolve!: () => void;
+  let reject!: (reason: Error) => void;
+  const promise = new Promise<void>((yes, no) => {
+    resolve = yes;
+    reject = no;
+  });
+  return { promise, resolve, reject };
+}
 let images: PreparedImage[];
 let supportsDecode: boolean;
 const media = getCuratedArtwork(31)!.media;
@@ -50,16 +64,27 @@ beforeEach(() => {
     'Image',
     class {
       constructor() {
-        const readiness = Promise.withResolvers<void>();
-        const image: PreparedImage = {
-          src: '',
+        const readiness = deferred();
+        const sources = { src: '', srcset: '', sizes: '' };
+        const given: string[] = [];
+        const image = {
+          given,
           decoding: '',
           onload: null,
           onerror: null,
           resolve: () => readiness.resolve(),
           reject: () => readiness.reject(new Error('Image cannot be decoded')),
           removeAttribute: vi.fn(),
-        };
+        } as PreparedImage;
+        for (const name of ['src', 'srcset', 'sizes'] as const)
+          Object.defineProperty(image, name, {
+            enumerable: true,
+            get: () => sources[name],
+            set: (value: string) => {
+              sources[name] = value;
+              given.push(name);
+            },
+          });
         if (supportsDecode) image.decode = vi.fn(() => readiness.promise);
         images.push(image);
         return image;
@@ -141,6 +166,48 @@ describe('expression preparation', () => {
     expect(state.addTransitionType).toHaveBeenCalledExactlyOnceWith('cosmic-expression-to-light');
     expect(images[0].removeAttribute).toHaveBeenCalledWith('src');
     expect(vi.getTimerCount()).toBe(0);
+  });
+
+  it('asks for the still as its surface does: the layout width and the candidates, then the source', async () => {
+    const light = media.find((item) => item.id === 'light')!;
+    const asked = {
+      src: light.still!,
+      srcSet: `${light.rungs![0].src} 1280w, ${light.still} 3456w`,
+      sizes: '100vw',
+    };
+    const still = vi.fn(() => asked);
+    const { result } = renderHook(() =>
+      useArtworkExpression({ openingExpression: 'ink', media, still }),
+    );
+    act(() => result.current.selectExpression('light'));
+    expect(still).toHaveBeenCalledExactlyOnceWith(light);
+    expect(images[0]).toMatchObject({ src: asked.src, srcset: asked.srcSet, sizes: asked.sizes });
+    // An engine that fetches as each attribute is set must already know which rung is asked.
+    expect(images[0].given).toEqual(['sizes', 'srcset', 'src']);
+    await ready();
+    expect(result.current.expression).toBe('light');
+    // Every source is let go, so a fetch still on its way is abandoned whichever rung it was;
+    // the source goes first, or for a moment it would stand alone and be fetched.
+    expect(images[0].removeAttribute.mock.calls.flat()).toEqual(['src', 'srcset', 'sizes']);
+  });
+
+  it('asks for the published still alone where the surface names no ladder, or nothing is said', () => {
+    const light = media.find((item) => item.id === 'light')!;
+    const bare = renderHook(() =>
+      useArtworkExpression({
+        openingExpression: 'ink',
+        media,
+        still: (target) => ({ src: target.still! }),
+      }),
+    );
+    act(() => bare.result.current.selectExpression('light'));
+    const unsaid = renderHook(() => useArtworkExpression({ openingExpression: 'ink', media }));
+    act(() => unsaid.result.current.selectExpression('light'));
+    for (const image of images) {
+      expect(image).toMatchObject({ src: light.still, srcset: '', sizes: '' });
+      expect(image.given).toEqual(['src']);
+    }
+    expect(images).toHaveLength(2);
   });
 
   it('uses the inverse sweep for Ink and a dissolve for future expressions', async () => {
@@ -225,7 +292,7 @@ describe('expression preparation', () => {
   });
 
   it('cancels an already decoded transition whose concurrent render has not committed', async () => {
-    const suspense = Promise.withResolvers<void>();
+    const suspense = deferred();
     const onCommit = vi.fn();
     let blocked = true;
     function Material({ expression }: { expression: string }) {
@@ -384,7 +451,7 @@ describe('expression preparation', () => {
 
   it('is not held behind what is not ready, as a transition is: the commit is made', async () => {
     // The same work that keeps a transition waiting (above) cannot keep this commit waiting.
-    const suspense = Promise.withResolvers<void>();
+    const suspense = deferred();
     const onCommit = vi.fn();
     let blocked = true;
     function Material({ expression }: { expression: string }) {

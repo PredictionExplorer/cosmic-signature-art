@@ -1,5 +1,5 @@
 import { readFileSync } from 'node:fs';
-import { expect, test } from '@playwright/test';
+import { expect, failedToLoad, test } from './fixtures';
 import AxeBuilder from '@axe-core/playwright';
 import { catalogs } from '../../src/lib/i18n/messages';
 import { fill } from '../../src/lib/i18n/format';
@@ -148,10 +148,11 @@ test('a phone holds the whole transcript within its width, in a long language to
     expect(box).toBeLessThanOrEqual(width);
 });
 
-test('a number without a record is not here', async ({ page }) => {
+test('a number without a record is not here', async ({ page, faults }) => {
   // Refused before the page renders (src/lib/addresses.ts): a true 404, with the venue's own
   // not-found in the visitor's language, marked noindex.
   const notHere = async (path: string, words: string, locale: 'en' | 'ja' = 'en') => {
+    faults.allow(failedToLoad(path));
     const response = await page.goto(path);
     expect(response?.status(), path).toBe(404);
     await expect(page.locator('html')).toHaveAttribute('lang', locale);

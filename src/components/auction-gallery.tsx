@@ -14,6 +14,7 @@ import { getInterpretation, type Artwork, type ArtworkResult } from '@/lib/art/t
 import { expressionWord, fill } from '@/lib/i18n/format';
 import type { Messages } from '@/lib/i18n/en';
 import { localizedPath, type Locale } from '@/lib/i18n/routing';
+import { withDeadline } from '@/lib/abort';
 import { useCollectionMotion } from './collection-motion';
 import { ArtworkMedia, HOLD_MS } from './artwork-media';
 import { ArtworkTransition } from './artwork-transition';
@@ -28,6 +29,8 @@ const SIT_GRACE_MS = 600;
 const STALE_MS = 25000;
 /** A finished clip holds its last frame for --t-hold and fades to the still before the lease moves on. */
 const REEL_MS = 700;
+/** A lot's media is read for this long at most; past it the lot says its media is unavailable. */
+const MEDIA_DEADLINE_MS = 15000;
 /**
  * What the venue could learn about a lot's media: the publisher's record was read and advertises
  * none (`unpublished`), or the read itself failed, timed out or found the indexer away
@@ -127,10 +130,10 @@ export default function AuctionGallery({ locale, t, traits, curated }: AuctionGa
       for (let start = 0; start < ids.length && live; start += 4) {
         await Promise.all(
           ids.slice(start, start + 4).map(async (id) => {
+            // The read stops when the gallery is left or after its deadline, whichever is first.
+            const deadline = withDeadline(abort.signal, MEDIA_DEADLINE_MS);
             try {
-              const response = await fetch(`/api/art/${id}`, {
-                signal: AbortSignal.any([abort.signal, AbortSignal.timeout(15000)]),
-              });
+              const response = await fetch(`/api/art/${id}`, { signal: deadline.signal });
               if (!response.ok) {
                 note(id, 'unavailable');
                 return;
@@ -160,6 +163,8 @@ export default function AuctionGallery({ locale, t, traits, curated }: AuctionGa
               // The lot link and on-chain bidding remain available without media; the venue
               // says only that it could not read the media, never that none was published.
               note(id, 'unavailable');
+            } finally {
+              deadline.done();
             }
           }),
         );

@@ -1,4 +1,4 @@
-import { expect, test, type Locator, type Page } from '@playwright/test';
+import { expect, failedToLoad, test, type Locator, type Page } from './fixtures';
 
 const previewSelector = '#works [data-collection-preview]';
 const filmSelector = `${previewSelector} video[src]`;
@@ -297,14 +297,15 @@ test('a work hangs as its pair across the seam, and both halves wake under one l
 
 test('an unavailable preview leaves the authentic image and usable artwork link', async ({
   page,
+  faults,
 }) => {
+  // The work's clips are cut off on purpose.
+  faults.allow(failedToLoad(/\/art\/(?:previews|clips)\/31-[a-z0-9-]+\.mp4/));
   let rejectedRequests = 0;
   await page.route(/\/(?:previews|clips)\/31-[a-z0-9-]+\.mp4(?:\?|$)/, async (route) => {
     rejectedRequests += 1;
     await route.abort('failed');
   });
-  const errors: string[] = [];
-  page.on('pageerror', (error) => errors.push(error.message));
   const cards = await collectionReady(page);
   const work = cards.first();
   const image = work.locator('img');
@@ -324,7 +325,6 @@ test('an unavailable preview leaves the authentic image and usable artwork link'
   await work.click();
   await expect(page).toHaveURL(/\/art\/31\?expression=ink$/);
   await expect(page.getByRole('heading', { level: 1 })).toHaveText(/^Signature 031/);
-  expect(errors).toEqual([]);
 });
 
 test('artwork navigation and browser Back work without native view-transition support', async ({
@@ -336,8 +336,6 @@ test('artwork navigation and browser Back work without native view-transition su
       value: undefined,
     });
   });
-  const errors: string[] = [];
-  page.on('pageerror', (error) => errors.push(error.message));
   const cards = await collectionReady(page);
   await cards.first().click();
   await expect(page).toHaveURL(/\/art\/31\?expression=ink$/);
@@ -346,7 +344,6 @@ test('artwork navigation and browser Back work without native view-transition su
   await page.goBack();
   await expect(page).toHaveURL(/\/collection\?expression=ink&q=31$/);
   await expect(page.locator('#works a[data-preview-id="31"]')).toBeVisible();
-  expect(errors).toEqual([]);
 });
 
 test('native artwork transitions complete without delaying navigation or breaking browser Back', async ({
@@ -381,8 +378,6 @@ test('native artwork transitions complete without delaying navigation or breakin
       return transition;
     };
   });
-  const errors: string[] = [];
-  page.on('pageerror', (error) => errors.push(error.message));
   // The morph needs the destination in the router before the click: the active card
   // prefetches its route, and a click that beats that response on a slow runner arrives
   // through the loading boundary instead, where no shared element exists to animate.
@@ -465,5 +460,4 @@ test('native artwork transitions complete without delaying navigation or breakin
     await expect(page).toHaveURL(/\/collection\?expression=ink&q=31$/);
     await popup.close();
   }
-  expect(errors).toEqual([]);
 });

@@ -23,7 +23,7 @@ The reasons:
 
 ## 2. Routes
 
-Every page sits under `src/app/[locale]/`. The proxy (`src/proxy.ts`) gives an address without a locale to English, so `/art/31` is served by `/en/art/31`. It also refuses a work, an exhibition or an orbit number that does not exist, using the short lists in `src/lib/addresses.ts`. Every route streams behind its loading plate (`[locale]/loading.tsx`), so by the time a page's own `notFound()` runs, the response has already begun as a 200. A true 404 has to be said before that.
+Every page sits under `src/app/[locale]/`. The proxy (`src/proxy.ts`) gives an address without a locale to English, so `/art/31` is served by `/en/art/31`. It also refuses a work, an exhibition or an orbit number that does not exist, using the short lists in `src/lib/addresses.ts`. Every route streams behind its loading plate (`[locale]/loading.tsx`), so by the time a page's own `notFound()` runs, the response has already begun as a 200. A true 404 has to be said before that. The proxy runs for every address except the venue's own files, which its matcher names by folder and by name (a matcher is read at build time and cannot be computed); `src/proxy.test.ts` reads `public/` and fails for a file the matcher does not name.
 
 | Address                               | What it is                                                                                                                                                | Rendered                                      |
 | :------------------------------------ | :-------------------------------------------------------------------------------------------------------------------------------------------------------- | :-------------------------------------------- |
@@ -40,7 +40,7 @@ Every page sits under `src/app/[locale]/`. The proxy (`src/proxy.ts`) gives an a
 | `/terms`, `/privacy`                  | The terms and the privacy notice.                                                                                                                         | prerendered                                   |
 | `/api/art/[id]`                       | One work's public record as JSON. It has no signing, wallet or financial authority.                                                                       | on request                                    |
 
-The sharing cards (`opengraph-image.tsx`, `twitter-image.tsx`, drawn by `src/components/sharing-card.tsx`), `sitemap.ts`, `robots.ts` and `manifest.ts` are routes too. An address no route answers gets the venue's own 404 (`src/app/global-not-found.tsx`), which speaks the visitor's language.
+The sharing cards (`opengraph-image.tsx`, `twitter-image.tsx`, drawn by `src/components/sharing-card.tsx`), `sitemap.ts`, `robots.ts` and `manifest.ts` are routes too. The sitemap lists every work in the collection index, in every locale, and names no address the proxy would refuse. An address no route answers gets the venue's own 404 (`src/app/global-not-found.tsx`), which speaks the visitor's language.
 
 **The document.** `src/app/venue-document.tsx` is the `<html>` every locale shares. Before anything paints, it runs three small inline scripts:
 
@@ -206,6 +206,18 @@ English, Simplified Chinese, Traditional Chinese for Taiwan and for Hong Kong, U
 **A golden master** (`tests/golden/`, `npm run test:golden`) records the orbit section through its unit tests: every canvas call and property set in order, every change of the page, the focus and the scrolls. It is for a change that must alter nothing a visitor meets: record before, compare after.
 
 **Playwright's seven projects** (`playwright.config.ts`): Chromium, Firefox and WebKit on a desk (1440 × 1000); Chromium and WebKit on a phone (390 × 844, touch); and Chromium and WebKit with reduced motion. Reduced motion is a project of its own because it is a promise, not a setting (README, principles). The suite meets the venue as a returning visitor, and a spec starts afresh when it needs a first visit.
+
+**A fault fails the test.** Every spec imports `test` from `tests/e2e/fixtures.ts`, never from Playwright (a lint rule holds them to it). That `test` listens while a test runs: an uncaught error, an error on the console or a 5xx from the venue fails the test that met it, whatever else it was checking. A test that provokes a fault on purpose (it visits the 404, or cuts a file off) names it with `faults.allow`. `tests/e2e/fixtures.spec.ts` proves each kind of fault is caught.
+
+**Guards that read the code.** A few unit tests read the repository instead of running it, so a house rule fails the suite when it is broken:
+
+- `src/lib/art/client-boundary.test.ts`: the registries stay on the server (§1);
+- `src/app/stylesheet-floor.test.ts`: the 12 px floor and the motion tokens;
+- `src/app/stylesheet-classes.test.ts`: every `styles.name` a component reads exists in its CSS module, and every class a module defines is read;
+- `src/app/image-optimizer.test.ts`: Next's image optimizer stays closed, and nothing imports it;
+- `src/proxy.test.ts`: the proxy runs for no file the venue serves.
+
+**The browsers the venue supports** are named once, in `package.json` (`browserslist`): Chrome, Edge and Firefox 111 and Safari 16.4, which are Next's own targets. `tsconfig.json`'s `lib` stops at ES2022, the language all of them have, so the compiler refuses a newer built-in; the two later array methods that every one of them does have, `findLast` and `findLastIndex`, are declared by name in `src/supported-language.d.ts`. The DOM's types carry no dates, so a newer browser call still compiles: test for a feature before calling it, as the engines' own components do. The one call that got through, `AbortSignal.any`, is refused by name in `eslint.config.mjs`; `src/lib/abort.ts` does its work with what every supported browser has.
 
 **The venue day.** The day's work and the day's expression follow the UTC date. Tests pin the day, `COSMIC_VENUE_DATE=2026-11-06`, an Ink day, for the build and the server alike. `tests/e2e/global-setup.ts` refuses a server built on another day.
 

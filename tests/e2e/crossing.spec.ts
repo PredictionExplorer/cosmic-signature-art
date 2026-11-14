@@ -1,5 +1,5 @@
 import { readFileSync } from 'node:fs';
-import { expect, test, type Page } from '@playwright/test';
+import { expect, syntheticFinger, test, type Page } from './fixtures';
 import sharp from 'sharp';
 import { catalogs } from '../../src/lib/i18n/messages';
 import { pauseAmbientMotion, playAmbientMotion } from './helpers';
@@ -729,7 +729,9 @@ for (const id of [31, 23, 35]) {
 test('a finger’s Turn keeps the crossing pixel by pixel, from the two stills and nothing else', async ({
   page,
   isMobile,
+  faults,
 }) => {
+  faults.allow(syntheticFinger);
   test.skip(!isMobile, 'Drag-to-Turn answers touch only.');
   test.slow();
   await watchCanvas(page);

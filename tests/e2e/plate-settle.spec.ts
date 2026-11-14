@@ -1,4 +1,4 @@
-import { expect, test, type Page, type Route } from '@playwright/test';
+import { expect, test, type Page, type Route } from './fixtures';
 
 /*
   The still shows when it has loaded, not when script has run (src/lib/settle.ts).

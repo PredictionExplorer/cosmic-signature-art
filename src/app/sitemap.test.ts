@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import { locales, localizedPath } from '@/lib/i18n/routing';
+import { locales, localizedPath, unlocalizedPath } from '@/lib/i18n/routing';
+import { collectionIndex } from '@/lib/art/collection-index';
 import { orbitIds } from '@/lib/art/orbit-records';
+import { readAddress } from '@/lib/addresses';
 import sitemap from './sitemap';
 import { metadata as auctionMetadata } from './[locale]/auctions/layout';
 import { generateMetadata as termsMetadata } from './[locale]/terms/page';
@@ -33,6 +35,30 @@ describe('direct-link auction pages', () => {
         expect(paths).toContain(localizedPath(locale, `/verify/orbit/${id}`));
     }
     expect(paths.filter((path) => path.endsWith('/verify/orbit/31'))).toHaveLength(locales.length);
+  });
+
+  it('lists every work in the collection index, and no other, once in every locale', () => {
+    const paths = sitemap().map(({ url }) => new URL(url).pathname);
+    const works = collectionIndex.works.map(({ id }) => id);
+    expect(works.length).toBeGreaterThan(0);
+    for (const locale of locales)
+      expect(
+        paths
+          .map((path) => new RegExp(`^${localizedPath(locale, '/art/')}(\\d+)$`).exec(path)?.[1])
+          .filter((id) => id !== undefined)
+          .map(Number),
+      ).toEqual(works);
+    expect(new Set(paths).size).toBe(paths.length);
+  });
+
+  it('names no address the proxy would refuse, respell or have to ask the indexer about', () => {
+    // The sitemap says what exists and the proxy refuses what does not (src/lib/addresses.ts):
+    // the two must never disagree.
+    for (const { url } of sitemap())
+      expect([url, readAddress(unlocalizedPath(new URL(url).pathname))]).toEqual([
+        url,
+        { kind: 'here' },
+      ]);
   });
 
   it('asks crawlers not to index the auction route family or its terms', async () => {

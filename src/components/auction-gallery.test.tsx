@@ -242,6 +242,86 @@ describe('the catalogue keeps financial access independent of media', () => {
     );
   });
 
+  it('reads a lot’s media in the oldest browsers the venue supports, which have no AbortSignal.any', async () => {
+    // Chrome 111 to 115, Firefox 111 to 123 and Safari 16.4 to 17.3 (package.json, browserslist).
+    // There a request that names AbortSignal.any throws before it is sent, and every lot beyond
+    // the curated few would hang without its picture and never say why.
+    const any = Object.getOwnPropertyDescriptor(AbortSignal, 'any');
+    Object.defineProperty(AbortSignal, 'any', { configurable: true, value: undefined });
+    try {
+      mocked.readBatch.mockResolvedValue({
+        count: 1n,
+        ids: [72],
+        blockTime: 110n,
+        lots: [{ tokenId: 72, lot }],
+      });
+      const published = getCuratedArtwork(31)!;
+      const fetch = vi.fn((url: string, init?: RequestInit) => {
+        void url;
+        expect(init?.signal?.aborted).toBe(false);
+        return Promise.resolve(
+          Response.json({
+            status: 'found',
+            source: 'live',
+            artwork: { ...published, id: 72 },
+          }),
+        );
+      });
+      vi.stubGlobal('fetch', fetch);
+      render(<AuctionGallery locale="en" t={en} />);
+      const article = await screen.findByRole('article', { name: lotName(1, 72) });
+      await waitFor(() => expect(article.querySelector('img')).not.toBeNull());
+      expect(fetch).toHaveBeenCalledExactlyOnceWith('/api/art/72', expect.anything());
+      expect(within(article).queryByText(en.mediaUnavailable)).toBeNull();
+    } finally {
+      if (any) Object.defineProperty(AbortSignal, 'any', any);
+      else Reflect.deleteProperty(AbortSignal, 'any');
+    }
+  });
+
+  it('gives a media read its deadline, and lets go of it once the read is over', async () => {
+    vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
+    mocked.readBatch.mockResolvedValue({
+      count: 1n,
+      ids: [72, 73],
+      blockTime: 110n,
+      lots: [72, 73].map((tokenId) => ({ tokenId, lot })),
+    });
+    const signals: AbortSignal[] = [];
+    vi.stubGlobal(
+      'fetch',
+      vi.fn((url: string, init?: RequestInit) => {
+        signals.push(init!.signal!);
+        // The first lot's read never answers; the second's is over at once.
+        return url.endsWith('/72')
+          ? new Promise<Response>((_, reject) =>
+              init!.signal!.addEventListener('abort', () => reject(init!.signal!.reason)),
+            )
+          : Promise.resolve(Response.json({ artwork: null }, { status: 503 }));
+      }),
+    );
+    render(<AuctionGallery locale="en" t={en} />);
+    await vi.waitFor(() => expect(signals).toHaveLength(2));
+    const pending = screen.getByRole('article', { name: lotName(1, 72) });
+    await vi.waitFor(() =>
+      expect(
+        within(screen.getByRole('article', { name: lotName(2, 73) })).getByText(
+          en.mediaUnavailable,
+        ),
+      ).toBeInTheDocument(),
+    );
+    expect(within(pending).queryByText(en.mediaUnavailable)).toBeNull();
+    await act(async () => {
+      vi.advanceTimersByTime(15_000);
+    });
+    expect(signals[0].reason).toMatchObject({ name: 'TimeoutError' });
+    await vi.waitFor(() =>
+      expect(within(pending).getByText(en.mediaUnavailable)).toBeInTheDocument(),
+    );
+    // The read that was over long before its deadline was never stopped by it.
+    expect(signals[1].aborted).toBe(false);
+  });
+
   it('limits media requests to four concurrently and aborts on unmount', async () => {
     const ids = Array.from({ length: 8 }, (_, i) => 72 + i);
     mocked.readBatch.mockResolvedValue({

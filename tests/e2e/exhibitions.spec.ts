@@ -1,4 +1,4 @@
-import { expect, test, type Page } from '@playwright/test';
+import { expect, failedToLoad, test, type Page } from './fixtures';
 import { catalogs } from '../../src/lib/i18n/messages';
 import { noHorizontalOverflow } from './helpers';
 
@@ -150,8 +150,10 @@ test('the sharing cards are drawn from the works’ own rungs for a work, the ho
 
 test('an unknown exhibition is not here, and the venue says which work is next door', async ({
   page,
+  faults,
 }) => {
   // Refused before its page can stream (src/lib/addresses.ts): a true 404, the venue's own.
+  faults.allow(failedToLoad('/exhibitions/nowhere'));
   const response = await page.goto('/exhibitions/nowhere');
   expect(response?.status()).toBe(404);
   // An exhibition is a page, not a work: the page is what is not here.

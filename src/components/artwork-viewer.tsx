@@ -27,12 +27,12 @@ import type { Messages } from '@/lib/i18n/en';
 import { localizedPath, type Locale } from '@/lib/i18n/routing';
 import { AFTER_THE_FRAME_EVENT, SEAM_EVENT } from '@/lib/venue-events';
 import { HOME_RESOLVED_KEY } from '@/lib/storage-keys';
-import { ArtworkMedia, LINED_PLATE_SIZES } from './artwork-media';
+import { ArtworkMedia, LINED_PLATE_SIZES, stillRequest } from './artwork-media';
 import { useMotion } from './motion-provider';
 import { useMediaPolicy } from './media-policy';
 import { ArtworkTransition } from './artwork-transition';
 import { ArtworkStage, useArtworkExpression } from './artwork-stage';
-import { ArtworkRoom } from './artwork-room';
+import { ArtworkRoom, ROOM_SIZES } from './artwork-room';
 import { ArtworkOptions } from './artwork-options';
 import { Plate } from './plate';
 import {
@@ -281,6 +281,15 @@ function ArtworkViewerSession({
       media: artwork.media,
       initialExpression,
       openingExpression,
+      // A Turn readies the twin as its plate asks for it, and a change of material in the room
+      // as the room does: the rung each already shows, the original only where the room shows it.
+      still: (target) =>
+        stillRequest(
+          target,
+          room
+            ? { sizes: ROOM_SIZES }
+            : { capped: policy.constrained, sizes: shownLines ? LINED_PLATE_SIZES : undefined },
+        ),
       // The page's own stage takes no snapshot: the seam has shown the Turn by the time it
       // commits, so the commit follows the seam at once. Only the room's stage takes one.
       snapshot: room !== null,

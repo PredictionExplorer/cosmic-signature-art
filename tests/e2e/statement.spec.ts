@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { expect, failedToLoad, test } from './fixtures';
 import AxeBuilder from '@axe-core/playwright';
 import { catalogs } from '../../src/lib/i18n/messages';
 import { locales, localizedPath } from '../../src/lib/i18n/routing';
@@ -41,7 +41,9 @@ for (const locale of locales) {
 
 test('the quiet pages belong to the venue: the 404 hangs the work next door on black', async ({
   page,
+  faults,
 }) => {
+  faults.allow(failedToLoad('/art/not-a-work'));
   const response = await page.goto('/art/not-a-work');
   expect(response?.status()).toBe(404);
   await expect(page.getByRole('heading', { level: 1 })).toHaveText(catalogs.en.notFound);

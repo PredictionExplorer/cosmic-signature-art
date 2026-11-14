@@ -1,4 +1,4 @@
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Page } from './fixtures';
 import { OVERTURE_KEY, VISIT_KEY } from '../../src/lib/storage-keys';
 import { performs, stored, watchTheGate } from './helpers';
 
