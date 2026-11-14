@@ -2,11 +2,20 @@ import { expect, test, type Locator, type Page } from '@playwright/test';
 
 const previewSelector = '#works [data-collection-preview]';
 const filmSelector = `${previewSelector} video[src]`;
-/** On a desk the lease plays the settling clip, the film's own ending; a phone's budget keeps the 8 s excerpt. */
+/**
+ * A settling clip at 1280 px, or its 640 rung: a card plays the smallest encode at least as wide
+ * as itself in device pixels, so a phone's Light card or a desk's small card takes the rung.
+ */
+const settlingClip = (id: string, expression: 'ink' | 'light', rung?: 640) =>
+  new RegExp(
+    `/art/clips/${id}-${expression}-settling-${rung ? `${rung}-` : ''}[a-f0-9]{16}\\.mp4$`,
+  );
+/**
+ * On a desk the lease plays the settling clip, the film's own ending, whole at 1440 px, where the
+ * single hang's cards are 662 px and more; a phone's budget keeps the 8 s excerpt.
+ */
 const leaseFilm = (isMobile: boolean, id = '[0-9]+') =>
-  isMobile
-    ? new RegExp(`/art/previews/${id}-[a-f0-9]+\\.mp4$`)
-    : new RegExp(`/art/clips/${id}-ink-settling-[a-f0-9]{16}\\.mp4$`);
+  isMobile ? new RegExp(`/art/previews/${id}-[a-f0-9]+\\.mp4$`) : settlingClip(id, 'ink');
 
 /** Ink's lease is proved on Ink's own ground; the pairs across the seam are proved below. */
 async function collectionReady(page: Page, path = '/collection?expression=ink&q=31') {
@@ -255,11 +264,12 @@ test('Light hangs alone with its own clip and opens the same expression in the v
   const work = page.locator('#works a[data-preview-id="31"]');
   await expect(work).toHaveAttribute('href', '/art/31?expression=light');
   await expect(work.locator('[data-material]')).toHaveAttribute('data-material', 'light');
-  // Light moves as Ink does: its settling clip, on a desk and on a phone alike.
+  // Light moves as Ink does: its settling clip, on a desk and on a phone alike, where the
+  // phone's 390 px plate takes the 640 rung.
   await work.focus();
   await expect(page.locator(filmSelector)).toHaveAttribute(
     'src',
-    /\/art\/clips\/31-light-settling-[a-f0-9]{16}\.mp4$/,
+    settlingClip('31', 'light', isMobile ? 640 : undefined),
   );
   await work.click();
   await expect(page).toHaveURL(/\/art\/31\?expression=light$/);
@@ -284,15 +294,89 @@ test('a work hangs as its pair across the seam, and both halves wake under one l
     'data-ground',
     'night',
   );
-  // One lease for the pair: both halves wake together, each into its own clip.
+  // One lease for the pair: both halves wake together, each into its own clip. A leaf's lead is
+  // 634 px on a desk at 1440 and 195 px on a phone, so at one device pixel to the CSS pixel the
+  // 640 rung covers either.
   await ink.focus();
   await expect(ink.locator('video[src]')).toHaveCount(1);
   await expect(light.locator('video[src]')).toHaveAttribute(
     'src',
-    /\/art\/clips\/31-light-settling-[a-f0-9]{16}\.mp4$/,
+    settlingClip('31', 'light', 640),
   );
   await light.click();
   await expect(page).toHaveURL(/\/art\/31\?expression=light$/);
+});
+
+/** The paths of the films a page requests, from the moment the test starts. */
+function filmRequests(page: Page) {
+  const films: string[] = [];
+  page.on('request', (request) => {
+    if (/\.mp4(?:\?|$)/.test(request.url())) films.push(new URL(request.url()).pathname);
+  });
+  return films;
+}
+
+test('a pair’s small card loads the 640 rung, never the clip it stands in for', async ({
+  page,
+  isMobile,
+}) => {
+  test.skip(isMobile, 'A phone’s Ink card plays the excerpt; its Light rung is proved above.');
+  const films = filmRequests(page);
+  await collectionReady(page, '/collection');
+  expect(await page.evaluate(() => devicePixelRatio)).toBe(1);
+  await allowMotion(page);
+  // A card in a row of two pairs is 288 px at 1440, so the 640 rung covers it.
+  const card = page
+    .locator('#works [data-shape="2"] a[data-preview-available="true"][data-expression="ink"]')
+    .first();
+  await card.scrollIntoViewIfNeeded();
+  const id = (await card.getAttribute('data-preview-id'))!;
+  const box = await card
+    .locator('[data-collection-preview]')
+    .evaluate((element) => element.getBoundingClientRect().width);
+  expect(box).toBeLessThanOrEqual(640);
+  await card.focus();
+  const film = card.locator('video[src]');
+  await expect(film).toHaveAttribute('src', settlingClip(id, 'ink', 640));
+  await expect
+    .poll(() => film.evaluate((video: HTMLVideoElement) => video.videoWidth))
+    .toBeGreaterThan(0);
+  // Chromium reports the 640 × 414 rung as 641 wide from its display aspect ratio.
+  expect(await film.evaluate((video: HTMLVideoElement) => video.videoWidth)).toBeLessThanOrEqual(
+    641,
+  );
+  // Its pair's Light half wakes under the same lease, into its own rung.
+  const twin = page.locator(
+    `#works a[data-preview-id="${id}"][data-expression="light"] video[src]`,
+  );
+  if (await twin.count()) await expect(twin).toHaveAttribute('src', settlingClip(id, 'light', 640));
+  expect(films.filter((path) => settlingClip(id, 'ink', 640).test(path)).length).toBeGreaterThan(0);
+  expect(films.filter((path) => settlingClip(id, 'ink').test(path))).toEqual([]);
+});
+
+test('a plate on its own ground fills the wall and keeps the 1280 clip', async ({
+  page,
+  isMobile,
+}) => {
+  test.skip(isMobile, 'A phone’s Ink card plays the excerpt; its Light rung is proved above.');
+  const films = filmRequests(page);
+  await collectionReady(page, '/collection?expression=ink&q=31');
+  expect(await page.evaluate(() => devicePixelRatio)).toBe(1);
+  await allowMotion(page);
+  const plate = page.locator('#works a[data-preview-id="31"]');
+  await plate.scrollIntoViewIfNeeded();
+  expect(
+    await plate
+      .locator('[data-collection-preview]')
+      .evaluate((element) => element.getBoundingClientRect().width),
+  ).toBeGreaterThan(640);
+  await plate.focus();
+  const clip = plate.locator('video[src]');
+  await expect(clip).toHaveAttribute('src', settlingClip('31', 'ink'));
+  await expect
+    .poll(() => clip.evaluate((video: HTMLVideoElement) => video.videoWidth))
+    .toBeGreaterThanOrEqual(1280);
+  expect(films.filter((path) => settlingClip('31', 'ink', 640).test(path))).toEqual([]);
 });
 
 test('an unavailable preview leaves the authentic image and usable artwork link', async ({
