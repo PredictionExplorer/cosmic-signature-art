@@ -416,6 +416,109 @@ test('a Turn lands when its seam does, however busy the page around it', async (
   await expect(turnWord(page, 'ink')).toHaveAttribute('aria-busy', 'false');
 });
 
+/*
+  The room's Turn is the one commit that stays a transition, because there the browser's own
+  snapshot is the Turn and only a transition takes one. So the room's film can set it aside as
+  the plate's once did. It is given a second from the moment its still is ready: past that the
+  commit is made by an ordinary update, without the snapshot. Here the room's film reports its
+  progress once for every task the browser runs, and a transition alone never lands under that.
+*/
+test('a Turn in the room lands within its second, however busy the room around it', async ({
+  page,
+}, testInfo) => {
+  test.skip(
+    testInfo.project.name.endsWith('reduced-motion'),
+    'Under a still preference the room’s Turn is an ordinary update already: nothing can hold it.',
+  );
+  await cinematicObserver(page);
+  // The page's own clock: the pressed word stops reading busy when its still has decoded, which
+  // is when the commit is asked for, and the room's stage reads Light when it has been made.
+  await page.addInitScript(() => {
+    const marks: { ready?: number; commit?: number; commits: number } = { commits: 0 };
+    Object.assign(window, { __roomTurn: marks });
+    new MutationObserver((records) => {
+      for (const record of records) {
+        const node = record.target as Element;
+        if (!node.closest('[data-testid="artwork-room"]')) continue;
+        if (record.attributeName === 'aria-busy' && record.oldValue === 'true')
+          marks.ready ??= performance.now();
+        if (record.attributeName === 'data-expression' && node.matches('[data-artwork-stage]')) {
+          marks.commits += 1;
+          if (node.getAttribute('data-expression') === 'light') marks.commit ??= performance.now();
+        }
+      }
+    }).observe(document, {
+      subtree: true,
+      attributes: true,
+      attributeOldValue: true,
+      attributeFilter: ['aria-busy', 'data-expression'],
+    });
+  });
+  await artworkReady(page);
+  await page.locator(current).getByRole('button', { name: t.ways, exact: true }).click();
+  await page.locator(current).getByRole('button', { name: t.enlarge, exact: true }).click();
+  const dialog = page.getByRole('dialog');
+  await dialog
+    .getByRole('group', { name: t.sources, exact: true })
+    .getByRole('button', { name: t.film, exact: true })
+    .click();
+  await expect
+    .poll(
+      () =>
+        dialog.locator('video').evaluate((element) => {
+          const player = element as HTMLVideoElement;
+          return player.readyState >= 2 && !player.paused && player.currentTime > 0;
+        }),
+      { timeout: 30_000 },
+    )
+    .toBe(true);
+  await page.evaluate(() => {
+    // The clock starts here: nothing the room did while it opened is counted.
+    const marks = (window as unknown as { __roomTurn: object }).__roomTurn;
+    Object.assign(marks, { ready: undefined, commit: undefined, commits: 0 });
+    const busy = { on: true };
+    Object.assign(window, { __busy: busy });
+    const channel = new MessageChannel();
+    channel.port1.onmessage = () => {
+      if (!busy.on) return;
+      document
+        .querySelectorAll('[data-testid="artwork-room"] video')
+        .forEach((player) => player.dispatchEvent(new Event('timeupdate')));
+      channel.port2.postMessage(null);
+    };
+    channel.port2.postMessage(null);
+  });
+  const stage = dialog.locator('[data-artwork-stage="room"]');
+  await dialog
+    .getByRole('group', { name: t.ways, exact: true })
+    .getByRole('button', { name: /^Light$/ })
+    .click();
+  await expect(stage).toHaveAttribute('data-expression', 'light');
+  const turn = await page.evaluate(() => {
+    const busy = (window as unknown as { __busy: { on: boolean } }).__busy;
+    busy.on = false;
+    return (window as unknown as { __roomTurn: { ready: number; commit: number } }).__roomTurn;
+  });
+  // The deadline is a second from there; the commit itself is given the two seconds the page's is.
+  expect(turn.ready).toBeGreaterThan(0);
+  expect(turn.commit - turn.ready).toBeLessThan(1000 + 2000);
+  // The room keeps what a Turn there always kept: its focus, and one work on its stage, now Light.
+  expect(await dialog.evaluate((element) => element.contains(document.activeElement))).toBe(true);
+  await expect(dialog).toHaveAttribute('data-material', 'light');
+  await expect(stage.locator('[data-room-media]')).toHaveCount(1);
+  await page.keyboard.press('Escape');
+  await expect(dialog).not.toBeVisible();
+  await expect(page.locator(pageStage)).toHaveAttribute('data-expression', 'light');
+  await expect(page.locator('html')).not.toHaveAttribute('data-turning', /./);
+  // The transition the deadline overtook lands late and changes nothing: the stage was turned
+  // once, and no snapshot is taken of a Turn already made.
+  const after = await page.evaluate(
+    () => (window as unknown as { __roomTurn: { commits: number } }).__roomTurn.commits,
+  );
+  expect(after).toBe(1);
+  expect(await transitionCount(page)).toBeLessThanOrEqual(1);
+});
+
 test('the night wing is drawn by the hand where the browser can, and is a hard edge elsewhere', async ({
   page,
 }) => {
