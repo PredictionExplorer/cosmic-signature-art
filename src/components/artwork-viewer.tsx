@@ -62,6 +62,7 @@ import { ArtworkNeighbours, neighbourHref, type Neighbours } from './artwork-nei
 import { useArrivalCrossing } from './arrival-crossing';
 import { ArtworkGatefold } from './artwork-gatefold';
 import { useSit } from './sit';
+import { useTurnFocus } from './turn-focus';
 import { useCompactWall } from './compact-wall';
 import { excerptRange } from './collection-preview';
 import { useFilmScore } from './film-score-store';
@@ -309,7 +310,12 @@ function ArtworkViewerSession({
         setHandoverWaiting(false);
         if (home) setResolvedOverride(null);
       },
-      onReady: (target, commit) => {
+      onReady: (target, ready) => {
+        // The focus is read as the Turn lands, while the layer that leaves is there to ask.
+        const commit = () => {
+          turnFocus.landing();
+          ready();
+        };
         if (failedLayers.current.delete(target))
           setAttempts((current) => ({ ...current, [target]: (current[target] ?? 0) + 1 }));
         // The twin is decoded. Instant crossings commit at once; otherwise the seam travels first.
@@ -563,7 +569,10 @@ function ArtworkViewerSession({
         : (artwork.media.find((item) => item.id === id)?.label ?? id);
 
   function openRoom(film: boolean, trigger: HTMLElement | null, at: number | null = null) {
-    returnFocusRef.current = trigger;
+    // A key opens the room from wherever the focus stands: a word of the strip is remembered
+    // as the word that opened it, so the focus finds its way back after a Turn in the room.
+    returnFocusRef.current = trigger ?? turnFocus.standing();
+    turnFocus.drop();
     setRoomStart(at);
     cancelPending();
     seam.end();
@@ -577,15 +586,9 @@ function ArtworkViewerSession({
   }
   function closeRoom() {
     cancelPending();
-    // The room may have crossed to the other ground: focus returns to the live layer's word.
-    const study = section.current?.querySelector<HTMLElement>(
-      '[data-layer-state="current"] [data-study]',
-    );
-    if (study && returnFocusRef.current && !study.isSameNode(returnFocusRef.current)) {
-      const previous = returnFocusRef.current;
-      if (!previous.isConnected || previous.closest('[data-layer-state="twin"]'))
-        returnFocusRef.current = study;
-    }
+    // The room may have crossed to the other ground, behind it: the focus stayed in the room,
+    // and returns to the word of the layer now on view that matches the one that opened it.
+    returnFocusRef.current = turnFocus.afterRoom(returnFocusRef.current);
     setRoom(null);
     setRoomStart(null);
   }
@@ -628,16 +631,23 @@ function ArtworkViewerSession({
   // The running head fades with the strip (<html data-sit>, mirrored by useSit); a rest, a
   // Turn or the room standing up returns the head as well.
 
-  /* The Turn's three drivers: the word (and a tap of I/L), a held key, and the finger. */
+  /*
+    The Turn's three drivers: the word (and a tap of I/L), a held key, and the finger. A Turn
+    made from the keyboard hands the focus on to the layer that arrives (turn-focus.ts); one
+    made by a pointer moves none.
+  */
+  const turnFocus = useTurnFocus({ section, expression, failedExpression });
   const canTurn = hasBoth && !room;
-  const turnTo = (to: Expression) => {
+  const turnTo = (to: Expression, byKey = false) => {
     if (!canTurn || to === expression) return;
+    if (byKey) turnFocus.note(to);
+    else turnFocus.drop();
     selectExpression(to);
   };
   function peekStart(to: Expression) {
     if (!canTurn || to === expression || peek.current) return;
     if (instant) {
-      selectExpression(to);
+      turnTo(to, true);
       return;
     }
     peek.current = { to, at: Date.now() };
@@ -649,6 +659,7 @@ function ArtworkViewerSession({
     if (!state || state.to !== to) return;
     peek.current = null;
     if (!lost && Date.now() - state.at < TAP_MS) {
+      turnFocus.note(to);
       selectExpression(to);
       return;
     }
@@ -748,7 +759,8 @@ function ArtworkViewerSession({
       <button
         type="button"
         className={styles.word}
-        onClick={() => turnTo(other)}
+        // A click made by Enter or Space counts no press of a pointer (detail 0).
+        onClick={(event) => turnTo(other, event.detail === 0)}
         aria-busy={current && (turning?.to === other || pendingExpression === other)}
         title={other === 'light' ? t.showLight : t.showInk}
         data-turn={other}
@@ -1036,7 +1048,7 @@ function ArtworkViewerSession({
       canTurn={canTurn && !instant}
       restSeam={restSeam}
       crossing={crossingCanvas}
-      onCommit={turnTo}
+      onCommit={(to) => turnTo(to)}
       onDragChange={(dragging) =>
         setTurning(dragging ? { to: expression === 'light' ? 'ink' : 'light', mode: 'drag' } : null)
       }
