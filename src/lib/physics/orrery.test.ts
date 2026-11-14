@@ -276,7 +276,7 @@ function raster(across = 200, down = 130, marks: Marks = new Map()) {
       // In the order they were laid, body by body. A head laid again just where one lay before
       // is the same mark: the latest is the one.
       return [...found]
-        .map((made) => fills.map((fill) => fill.mark).lastIndexOf(made))
+        .map((made) => fills.findLastIndex((fill) => fill.mark === made))
         .sort((a, b) => a - b)
         .map((at) => fills[at]);
     },
@@ -305,7 +305,7 @@ function lit(
 function fronts(canvas: ReturnType<typeof raster>) {
   const lines = bodyStrokes(hues).map(({ line }) => line);
   return lines.map((line) => {
-    const last = canvas.strokes.filter((stroke) => stroke.style === line).at(-1)!.points;
+    const last = canvas.strokes.findLast((stroke) => stroke.style === line)!.points;
     return [last.at(-2), last.at(-1)];
   });
 }
