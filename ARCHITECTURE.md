@@ -260,22 +260,22 @@ The targets are set in [docs/first-light.md](docs/first-light.md) §9: the still
 - **The phone's first-visit CLS** comes from the statement section, which shifts twice by 0.0045 within a few milliseconds, at about 1 s and again at about 12 s, while First Light performs. The two bursts are seconds apart, so CLS is one of them, 0.0089.
 - **CI's margin.** With the GPU off (SwiftShader) and the CPU slowed fourfold, the desk's worst load was 1,104 ms and the phone's 488 ms. CI's own runner (four vCPUs, no GPU) first ran the spec on 8 November 2026. Its medians were 1,284 / 932 / 916 ms on the desk and 112 / 120 / 364 ms on the phone (home first visit / home returning / `/art/31`), with CLS as above. Its slowest single load was 1,316 ms, so about half the 2.5 s line is left.
 
-First-load JavaScript, in KiB as sent (Brotli, quality 3), measured again on 12 November 2026, when the message catalogues left the browser's script:
+First-load JavaScript, in KiB as sent (Brotli, quality 3), measured again on 14 November 2026, when the message catalogues left the browser's script:
 
 | Route                         | Sent KiB | Budget | Route                                       | Sent KiB | Budget |
 | :---------------------------- | -------: | -----: | :------------------------------------------ | -------: | -----: |
-| `/[locale]` (the home)        |    228.5 |    255 | `/[locale]/collection`                      |    197.3 |    220 |
-| `/[locale]/art/[id]`          |    257.7 |    285 | `/[locale]/collection/all-the-light`        |    194.7 |    215 |
-| `/[locale]/auctions/[id]`     |    326.7 |    360 | `/[locale]/collection/orrery`               |    193.5 |    215 |
-| `/[locale]/auctions`          |    205.4 |    230 | `/[locale]/exhibitions`                     |    191.0 |    215 |
-| `/[locale]/first-light/[id]`  |    210.4 |    235 | `/[locale]/exhibitions/[slug]`              |    197.0 |    220 |
-| `/[locale]/verify/orbit`      |    191.8 |    215 | `/[locale]/process`                         |    197.8 |    220 |
-| `/[locale]/verify/orbit/[id]` |    195.0 |    215 | `/[locale]/statement`, `/terms`, `/privacy` |    190.9 |    210 |
-| `/_not-found`                 |    163.2 |    180 |                                             |          |        |
+| `/[locale]` (the home)        |    229.8 |    255 | `/[locale]/collection`                      |    197.5 |    220 |
+| `/[locale]/art/[id]`          |    265.5 |    295 | `/[locale]/collection/all-the-light`        |    194.9 |    215 |
+| `/[locale]/auctions/[id]`     |    328.0 |    365 | `/[locale]/collection/orrery`               |    193.7 |    215 |
+| `/[locale]/auctions`          |    205.7 |    230 | `/[locale]/exhibitions`                     |    191.3 |    215 |
+| `/[locale]/first-light/[id]`  |    210.7 |    235 | `/[locale]/exhibitions/[slug]`              |    197.2 |    220 |
+| `/[locale]/verify/orbit`      |    192.0 |    215 | `/[locale]/process`                         |    198.1 |    220 |
+| `/[locale]/verify/orbit/[id]` |    195.4 |    215 | `/[locale]/statement`, `/terms`, `/privacy` |    191.1 |    215 |
+| `/_not-found`                 |    163.3 |    180 |                                             |          |        |
 
 Of every route's total, 132.0 KiB is the root files every page loads first: React and the Next.js runtime. About 59 KiB more is shared by every page under `[locale]`: the venue's document and what its pages have in common. The rest is the page's own. The sale's page is the heaviest because it carries the contract client: viem and the wallet discovery.
 
-- **What left on 12 November.** Until then every route also loaded the copy of all eight locales, one chunk of 95.6 KiB as sent (327 KiB before compression): the error page and the 404 imported every catalogue to find their own two and six strings. The home was 323.9 KiB and a work's page 353.1. The two are now given their strings by the server (§2, §10), and every route lost that chunk.
+- **What left with the catalogues.** Until then every route also loaded the copy of all eight locales, one chunk of 96.8 KiB as sent (336 KiB before compression): the error page and the 404 imported every catalogue to find their own two and six strings. The home was 326.4 KiB and a work's page 362.1. The two are now given their strings by the server (§2, §10), and every route lost that chunk.
 - **Why Brotli at quality 3.** It is what Vercel sends a browser that accepts it. On 8 November 2026 every Brotli chunk cosmic.art served matched quality 3 to within a byte. Gzip, the old column's measure, can mislead, because its window is 32 KiB. While every route carried the locales' copy, the three Chinese catalogues came to about 31 KiB each, so gzip compressed each against the one before; copy that pushed them past 32 KiB would have added some 20 KiB of gzip to every route, while what visitors downloaded grew by about 3 KiB.
 
 **Changing a budget.** When a route grows on purpose, raise its number in `scripts/budgets.json` in the same change and say why in the commit. When it grows by accident, `npx next analyze` shows which module did it, and `import()` moves what the first paint does not need out of the first load. The paint budgets may become stricter than the field's lines, but never looser.
