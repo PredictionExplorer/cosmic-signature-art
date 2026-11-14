@@ -32,10 +32,7 @@ const COMPUTED: Record<string, { read: string; classes: string[] }> = {
  * Each must still be defined and still be unread, so an entry cannot outlive its reason.
  */
 const UNREAD: Record<string, string[]> = {
-  // `.line .folio`, beside `.line :global(.folio)`: the strip wears the venue's global folio, so
-  // the bare one selects nothing. Left while another change is open on these very lines, where
-  // taking it out would not merge; it goes, and this entry with it, once that change has landed.
-  'src/components/artwork-viewer.module.css': ['folio'],
+  // None now. An entry reads: 'src/components/some.module.css': ['name'], with its reason above it.
 };
 
 function files(directory: string, keep: (name: string) => boolean): string[] {
