@@ -11,6 +11,7 @@ import {
   type ReactNode,
 } from 'react';
 import type { ArtInterpretation } from '@/lib/art/types';
+import type { StillRequest } from './artwork-media';
 import { useMotion } from './motion-provider';
 import styles from './artwork-stage.module.css';
 
@@ -24,12 +25,15 @@ const transitionTypes = {
 /**
  * Prepare only an explicitly requested still. The current work remains visible until
  * its replacement can be decoded; a slow or unavailable image never leaves a blank room.
+ * What is readied is what will be shown: the still is asked for as the surface asks for it, so
+ * the browser resolves it to the rung that surface already holds, never to a wider file.
  * The enclosing viewer keys this hook by artwork identity and initial expression.
  */
 export function useArtworkExpression({
   media,
   initialExpression,
   openingExpression,
+  still: stillFor,
   onCommit,
   onReady,
 }: {
@@ -41,6 +45,11 @@ export function useArtworkExpression({
    * server. Without one the plate opens on the first published medium: no expression leads.
    */
   openingExpression?: string;
+  /**
+   * How the surface that will show an expression asks for its still: its `<img>`'s own src,
+   * srcset and sizes (stillRequest in artwork-media.tsx). Without it, the published file alone.
+   */
+  still?: (target: ArtInterpretation) => StillRequest | undefined;
   onCommit?: (expression: string) => void;
   /**
    * The requested still has decoded. When given, the caller decides the moment of the
@@ -107,14 +116,19 @@ export function useArtworkExpression({
     }
 
     const identity = request.current;
+    const asked: StillRequest = stillFor?.(target) ?? { src: target.still };
     const image = new window.Image();
     let settled = false;
     const release = () => {
       clearTimeout(timer);
       image.onload = null;
       image.onerror = null;
-      // Removing the source also abandons unnecessary bytes on cancellation.
+      // Removing every source also abandons unnecessary bytes on cancellation. They go in the
+      // reverse of the order they came in: an engine that acts on each change as it is made would
+      // fetch the published still if the candidates left first and the source still stood.
       image.removeAttribute('src');
+      image.removeAttribute('srcset');
+      image.removeAttribute('sizes');
     };
     preparation.current = () => {
       settled = true;
@@ -166,7 +180,13 @@ export function useArtworkExpression({
       if (typeof image.decode !== 'function') finish(true);
     };
     image.onerror = () => finish(false);
-    image.src = target.still;
+    // The layout width, then the candidates, then the source: an engine that acts on each
+    // attribute as it is set (WebKit) then chooses one rung, once, and never the source alone.
+    if (asked.srcSet) {
+      if (asked.sizes) image.sizes = asked.sizes;
+      image.srcset = asked.srcSet;
+    }
+    image.src = asked.src;
     if (typeof image.decode === 'function') {
       void image.decode().then(
         () => finish(true),

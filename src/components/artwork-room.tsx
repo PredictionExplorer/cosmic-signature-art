@@ -26,6 +26,7 @@ import { heldNm, startingNm, wavelengthRange } from '@/lib/art/spectral-sweep';
 import { clock, expressionWord, fill, filmLabel, formatBytes } from '@/lib/i18n/format';
 import type { Messages } from '@/lib/i18n/en';
 import type { Locale } from '@/lib/i18n/routing';
+import { stillRequest } from './artwork-media';
 import { ArtworkStage } from './artwork-stage';
 import { inField } from './keys';
 import { Loupe, type LoupeView } from './loupe';
@@ -47,7 +48,6 @@ import {
 } from '@/lib/physics/film-score';
 import { lightFilmDuration } from '@/lib/physics/light-film';
 import { ART_HEIGHT, ART_WIDTH } from '@/lib/art/constants';
-import { stillSourceSet } from '@/lib/art/types';
 import { tokenMs } from './turn';
 
 /*
@@ -111,6 +111,9 @@ export function isStudy(film: ArtFilm) {
   return film.id === 'medium' || film.id === 'slow';
 }
 
+/** The room's still is as wide as the room: its layout width for the still ladder. */
+export const ROOM_SIZES = '100vw';
+
 /** The rungs and the published still as one srcset: a phone rests on the 1280 rung. */
 function RoomStill({
   media,
@@ -123,15 +126,17 @@ function RoomStill({
   attempt: number;
   onFailure: () => void;
 }) {
-  if (!media.still) return null;
+  // The whole ladder, whatever the connection: the room is where the original is asked for.
+  const still = stillRequest(media, { sizes: ROOM_SIZES });
+  if (!still) return null;
   return (
     <div className={styles.still}>
       <img
         key={attempt}
         className={styles.image}
-        src={media.still}
-        srcSet={stillSourceSet(media)}
-        sizes="100vw"
+        src={still.src}
+        srcSet={still.srcSet}
+        sizes={still.sizes}
         alt={label}
         width={media.width ?? ART_WIDTH}
         height={media.height ?? ART_HEIGHT}

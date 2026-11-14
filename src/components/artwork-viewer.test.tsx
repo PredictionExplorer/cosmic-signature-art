@@ -8,6 +8,8 @@ import { withCollectionPreviews } from '@/lib/art/collection-previews';
 import type { Artwork } from '@/lib/art/types';
 import { en } from '@/lib/i18n/en';
 import { AFTER_THE_FRAME_EVENT, SEAM_EVENT } from '@/lib/venue-events';
+import { PLATE_SIZES } from './artwork-media';
+import { ROOM_SIZES } from './artwork-room';
 import { BREATH_MS, forgetExpression } from './turn';
 import { closeSheet, openSheet } from './sheets-store';
 import { EXPRESSION_KEY, HOME_RESOLVED_KEY } from '@/lib/storage-keys';
@@ -388,6 +390,73 @@ describe('the Turn', () => {
     expect(root().hasAttribute('data-turning')).toBe(false);
     expect(root().style.getPropertyValue('--seam')).toBe('');
     expect(stage()).toHaveAttribute('data-expression', 'ink');
+  });
+
+  /** What an image asks the browser for: the three attributes a rung is chosen from. */
+  const asks = (image: HTMLImageElement) =>
+    (['src', 'srcset', 'sizes'] as const).map((name) => image.getAttribute(name));
+  /** The one image a Turn readies as it is asked for: made off the page, and asked to decode. */
+  function readiedBy(turn: () => void) {
+    const decode = vi.mocked(HTMLImageElement.prototype.decode);
+    const before = decode.mock.contexts.length;
+    turn();
+    const made = (decode.mock.contexts.slice(before) as HTMLImageElement[]).filter(
+      (image) => !image.isConnected,
+    );
+    expect(made).toHaveLength(1);
+    return made[0];
+  }
+
+  it('readies the twin as its plate asks for it: the ladder at the plate’s width, not the published still alone', () => {
+    renderViewer();
+    const twin = layer('light').querySelector<HTMLImageElement>('img.art-still')!;
+    const probe = readiedBy(() => fireEvent.click(word(en.light)));
+    // The same three attributes, so the browser resolves the rung the plate already holds.
+    expect(asks(probe)).toEqual(asks(twin));
+    expect(asks(probe)).toEqual([
+      '/art/31-light.webp',
+      expect.stringMatching(
+        /^\/art\/stills\/31-light-1280-[a-f0-9]{16}\.webp 1280w, \/art\/stills\/31-light-1920-[a-f0-9]{16}\.webp 1920w, \/art\/31-light\.webp 3456w$/,
+      ),
+      PLATE_SIZES,
+    ]);
+  });
+
+  it('readies the capped ladder on a constrained connection, as its plate shows it', () => {
+    Object.defineProperty(navigator, 'connection', {
+      configurable: true,
+      value: Object.assign(new EventTarget(), { saveData: true }),
+    });
+    try {
+      renderViewer();
+      const twin = layer('light').querySelector<HTMLImageElement>('img.art-still')!;
+      const probe = readiedBy(() => fireEvent.click(word(en.light)));
+      expect(asks(probe)).toEqual(asks(twin));
+      // The 1280 rung is the only candidate: the 3,456 px file is never fetched to be thrown away.
+      expect(probe.getAttribute('srcset')).toMatch(
+        /^\/art\/stills\/31-light-1280-[a-f0-9]{16}\.webp 1280w$/,
+      );
+    } finally {
+      Reflect.deleteProperty(navigator, 'connection');
+    }
+  });
+
+  it('readies a change of material in the room as the room asks for it, at the room’s width', async () => {
+    renderViewer();
+    fireEvent.click(word(en.ways));
+    fireEvent.click(word(en.enlarge));
+    const dialog = screen.getByRole('dialog');
+    const asked = asks(readiedBy(() => fireEvent.keyDown(dialog, { key: 'l' })));
+    expect(asked[2]).toBe(ROOM_SIZES);
+    // The whole ladder: the room is where a screen wide enough is given the original.
+    expect(asked[1]).toMatch(/1280w, .* 1920w, \/art\/31-light\.webp 3456w$/);
+    await act(async () => {});
+    expect(stage()).toHaveAttribute('data-expression', 'light');
+    const shown = screen
+      .getByRole('dialog')
+      .querySelector<HTMLImageElement>('img[data-room-media]')!;
+    expect(shown).toHaveAttribute('alt', expect.stringContaining(en.light));
+    expect(asks(shown)).toEqual(asked);
   });
 
   it('follows the session’s remembered expression when the URL names none, remembers what a URL asks for, and never a work with one expression', async () => {
