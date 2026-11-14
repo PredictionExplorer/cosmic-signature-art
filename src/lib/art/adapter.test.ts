@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import { createArtRepository } from './adapter';
 import { curatedArtworks, getCuratedArtwork } from './catalog';
+import { collectionIndex, indexedWork } from './collection-index';
 import { ART_API_ORIGIN } from './constants';
 
 const seed = `0x${'a'.repeat(64)}`;
@@ -175,9 +176,12 @@ describe('individual artwork reads', () => {
     const repository = createArtRepository({
       fetch: vi.fn().mockRejectedValue(new Error('offline')),
     });
+    // 999 is in neither the registry nor the index: the venue cannot say, and does not guess.
+    expect(indexedWork(999)).toBeUndefined();
     expect(await repository.getArtwork(999)).toMatchObject({
       artwork: null,
       status: 'unavailable',
+      source: 'curated-fallback',
       notice: 'indexer-unavailable',
     });
   });
@@ -187,6 +191,11 @@ describe('individual artwork reads', () => {
       fetch: vi.fn().mockResolvedValue(response({ status: 1, TokenInfo: row(42) })),
     });
     expect((await repository.getArtwork(100)).status).toBe('unavailable');
+    // Nor for a work the index holds: the wrong record is an unreadable one, and the snapshot
+    // stands in with its own seed, never the other token's.
+    const held = await repository.getArtwork(17);
+    expect(held).toMatchObject({ status: 'found', source: 'index-snapshot' });
+    expect(held.artwork).toMatchObject({ id: 17, seed: indexedWork(17)!.seed });
   });
 
   it('uses only the matching archived token and never returns stale ownership', async () => {
@@ -199,6 +208,105 @@ describe('individual artwork reads', () => {
     expect(result.artwork?.provenance.ownership).toBe('unavailable');
     result.artwork!.title = 'Changed';
     expect(curatedArtworks.find((item) => item.id === 31)?.title).toBe('Signature 31');
+  });
+
+  // 17 is in the build-time index and not in the curated registry, as 57 of the 72 works are.
+  const outages: [string, () => Promise<Response>][] = [
+    ['rejects', () => Promise.reject(new TypeError('fetch failed'))],
+    ['answers 500', async () => response({ error: 'internal' }, 500)],
+    ['answers 503 with a page of HTML', async () => new Response('<html>', { status: 503 })],
+    ['answers nonsense', async () => response({ status: 1, TokenInfo: { TokenId: '../1' } })],
+    ['answers without its envelope', async () => response({ TokenInfo: row(17) })],
+  ];
+  it.each(outages)('finds a work the index holds when the indexer %s', async (_name, fetcher) => {
+    expect(getCuratedArtwork(17)).toBeUndefined();
+    const indexed = indexedWork(17)!;
+    const result = await createArtRepository({ fetch: fetcher }).getArtwork(17);
+    expect(result).toMatchObject({
+      status: 'found',
+      source: 'index-snapshot',
+      notice: 'indexer-unavailable',
+    });
+    const artwork = result.artwork!;
+    expect(artwork).toMatchObject({ id: 17, seed: indexed.seed, cycle: indexed.cycle });
+    // Both expressions with the still's local rungs, so the plate paints from this origin.
+    for (const expression of ['ink', 'light'] as const) {
+      const media = artwork.media.find((item) => item.id === expression)!;
+      expect(media.stillSha256).toBe(indexed.media[expression]!.still!.sha256);
+      expect(media.rungs!.length).toBeGreaterThan(0);
+      for (const rung of media.rungs!) expect(rung.src).toMatch(/^\/art\//);
+    }
+  });
+
+  it('finds a work the index holds when the indexer stalls past the deadline', async () => {
+    vi.useFakeTimers();
+    try {
+      const pending = createArtRepository({
+        timeoutMs: 100,
+        fetch: () => new Promise<Response>(() => {}),
+      }).getArtwork(17);
+      await vi.advanceTimersByTimeAsync(100);
+      expect(await pending).toMatchObject({
+        status: 'found',
+        source: 'index-snapshot',
+        notice: 'indexer-unavailable',
+        artwork: { id: 17 },
+      });
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('dates a record from the index by the day the index was read, and names no holder', async () => {
+    const result = await createArtRepository({
+      fetch: vi.fn().mockRejectedValue(new Error('offline')),
+    }).getArtwork(17);
+    const { provenance } = result.artwork!;
+    // The entry stamps the present moment on a live record only (artwork-entry.tsx): a
+    // snapshot must never be called live, or the page would say it was read just now.
+    expect(provenance.source).toBe('index-snapshot');
+    expect(provenance.checkedOn).toBe(collectionIndex.checkedOn);
+    expect(provenance.checkedOn).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+    expect(provenance.ownership).toBe('unavailable');
+    expect(result.artwork!.owner).toBeUndefined();
+  });
+
+  it('hands out its own copy of an indexed record each time', async () => {
+    const repository = createArtRepository({
+      fetch: vi.fn().mockRejectedValue(new Error('offline')),
+    });
+    const first = (await repository.getArtwork(17)).artwork!;
+    first.title = 'Changed';
+    first.media.length = 0;
+    const second = (await repository.getArtwork(17)).artwork!;
+    expect(second.title).not.toBe('Changed');
+    expect(second.media.length).toBeGreaterThan(0);
+  });
+
+  it('does not find an indexed work the indexer says does not exist', async () => {
+    const repository = createArtRepository({
+      fetch: vi.fn().mockResolvedValue(response({ error: 'record not found' }, 400)),
+    });
+    expect(indexedWork(17)).toBeDefined();
+    expect(await repository.getArtwork(17)).toEqual({
+      artwork: null,
+      status: 'not-found',
+      source: 'live',
+    });
+  });
+
+  it('prefers the curated registry to the index for a work both hold', async () => {
+    const repository = createArtRepository({
+      fetch: vi.fn().mockRejectedValue(new Error('offline')),
+    });
+    expect(indexedWork(31)).toBeDefined();
+    const result = await repository.getArtwork(31);
+    expect(result).toMatchObject({
+      status: 'found',
+      source: 'curated-fallback',
+      notice: 'indexer-unavailable',
+    });
+    expect(result.artwork).toEqual(getCuratedArtwork(31));
   });
 
   it('retains indexed custody separately from the verified anchoring participant', async () => {
@@ -220,6 +328,66 @@ describe('individual artwork reads', () => {
     expect(result.artwork?.owner).toBe(`0x${'1'.repeat(40)}`);
     expect(result.artwork?.anchoring?.participant).toBe(`0x${'2'.repeat(40)}`);
     expect(result.artwork?.availability.ink).toBe('not-advertised');
+  });
+});
+
+describe('a search for a number', () => {
+  const offline = () => vi.fn().mockRejectedValue(new Error('offline'));
+
+  it('is a search of the collection while the indexer answers', async () => {
+    const found = vi
+      .fn()
+      .mockResolvedValueOnce(response({ status: 1, TokenInfo: row(17) }))
+      .mockResolvedValueOnce(response({ schema_version: 2, assets: [] }));
+    expect(
+      await createArtRepository({ fetch: found }).getCollection({ query: '#17' }),
+    ).toMatchObject({ source: 'live', scope: 'search', total: 1, notice: undefined });
+    const absent = vi.fn().mockResolvedValue(response({ error: 'record not found' }, 400));
+    expect(
+      await createArtRepository({ fetch: absent }).getCollection({ query: '17' }),
+    ).toMatchObject({ source: 'live', scope: 'search', total: 0, items: [], notice: undefined });
+  });
+
+  it.each(['17', '#17'])(
+    'finds %s in the index during an outage, and never calls that a search of the collection',
+    async (query) => {
+      const repository = createArtRepository({ fetch: offline() });
+      const result = await repository.getCollection({ query });
+      expect(result.items.map((item) => item.id)).toEqual([17]);
+      expect(result.items[0].provenance.source).toBe('index-snapshot');
+      expect(result).toMatchObject({
+        source: 'index-snapshot',
+        scope: 'curated-selection',
+        notice: 'search-unavailable',
+        total: 1,
+        hasMore: false,
+        nextOffset: null,
+      });
+      // The one work is the whole answer: a later page of it holds nothing.
+      expect((await repository.getCollection({ query, offset: 24 })).items).toEqual([]);
+    },
+  );
+
+  it('answers from the registry for a curated number during an outage, as before', async () => {
+    const result = await createArtRepository({ fetch: offline() }).getCollection({ query: '31' });
+    expect(result.items).toEqual([getCuratedArtwork(31)]);
+    expect(result).toMatchObject({
+      source: 'curated-fallback',
+      scope: 'curated-selection',
+      notice: 'search-unavailable',
+      total: 1,
+    });
+  });
+
+  it('cannot count a number the venue does not hold during an outage', async () => {
+    const result = await createArtRepository({ fetch: offline() }).getCollection({ query: '999' });
+    expect(result).toMatchObject({
+      items: [],
+      source: 'curated-fallback',
+      scope: 'curated-selection',
+      notice: 'search-unavailable',
+      total: null,
+    });
   });
 });
 

@@ -1,6 +1,12 @@
 /** Public, serializable art records. Safe to import from client components. */
 import { ART_WIDTH } from './constants';
-export type ArtSource = 'live' | 'curated-fallback';
+/**
+ * Where a record was read. `live` is the indexer, asked for this request. The other two are the
+ * venue's own copies, which stand in when the indexer cannot be read and state the day they
+ * were read (`provenance.checkedOn`): the identity-verified registry of a few works, and the
+ * build-time index of them all.
+ */
+export type ArtSource = 'live' | 'curated-fallback' | 'index-snapshot';
 export type InterpretationId = 'light' | 'ink' | (string & {});
 /** The two authored expressions; any other interpretation id is a future medium. */
 export type Expression = 'light' | 'ink';
@@ -193,6 +199,10 @@ export interface CollectionResult {
   nextOffset: number | null;
   /** Null when the indexer does not report a total. Never infer from max token ID. */
   total: number | null;
+  /**
+   * `curated-selection`: the venue's own copies stood in for the indexer, so what is listed is
+   * what the venue holds and never a search of the whole collection.
+   */
   scope: 'collection' | 'search' | 'curated-selection';
   /** Stable code for localized UI copy; never render an upstream error verbatim. */
   notice?: 'indexer-unavailable' | 'search-unavailable' | 'partial-records';
