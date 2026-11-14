@@ -8,9 +8,10 @@ export const PRIMARY_NAVIGATION = [
   '/collection',
   '/exhibitions',
 ] as const satisfies readonly NavigationPath[];
-export const NAVIGATION_LABEL: Record<NavigationPath, keyof Messages> = {
+/** Each room's word, by its literal key, so a component that reads some rooms names only theirs. */
+export const NAVIGATION_LABEL = {
   '/collection': 'collection',
   '/exhibitions': 'exhibitions',
   '/process': 'process',
   '/statement': 'statement',
-};
+} as const satisfies Record<NavigationPath, keyof Messages>;

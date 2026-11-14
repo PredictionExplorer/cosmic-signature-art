@@ -13,10 +13,10 @@ import {
   type Locale,
 } from '@/lib/i18n/routing';
 import { PRIMARY_NAVIGATION, NAVIGATION_LABEL } from '@/lib/navigation';
-import type { Messages } from '@/lib/i18n/en';
+import type { RunningHeadWords, WordmarkWords } from './running-head.words';
 
 /** The wordmark is typeset in Literata small caps; the mark is one static derivation. */
-export function Wordmark({ t }: { t: Messages }) {
+export function Wordmark({ t }: { t: WordmarkWords }) {
   return (
     <>
       <span className="brand-name">Cosmic Signature</span>
@@ -47,7 +47,7 @@ export function LanguageMenu({
 }: {
   locale: Locale;
   pathname: string;
-  t: Messages;
+  t: Pick<RunningHeadWords, 'language'>;
 }) {
   const native = useSyncExternalStore(noSubscription, popoverSupported, noPopoverOnServer);
   const id = useId();
@@ -189,7 +189,7 @@ export function RunningHead({
   address,
 }: {
   locale: Locale;
-  t: Messages;
+  t: RunningHeadWords;
   /**
    * The visitor's own address, where the route is not it: the venue's 404 is rendered for an
    * address no route answers (src/app/global-not-found.tsx), and its language menu points at

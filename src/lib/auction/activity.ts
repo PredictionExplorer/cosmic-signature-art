@@ -2,7 +2,7 @@ import { erc721Abi, isAddress, isAddressEqual, type Address } from 'viem';
 import { auctionAbi } from './abi';
 import { publicClient, readBatch, AuctionConfigurationError } from './client';
 import { auctionAddress } from './config';
-import { NFT_ADDRESS } from '../site';
+import { NFT_ADDRESS } from '../contracts';
 import { isLeading } from './catalogue';
 
 /**

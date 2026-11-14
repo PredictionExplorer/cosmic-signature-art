@@ -54,13 +54,13 @@ export default defineConfig({
       enforce: 'pre',
       async resolveId(request, importer) {
         if (
-          request !== '../site' &&
-          request !== '@/lib/site' &&
-          request !== `${source}/lib/site.ts`
+          request !== '../contracts' &&
+          request !== '@/lib/contracts' &&
+          request !== `${source}/lib/contracts.ts`
         )
           return null;
         const resolved = await this.resolve(request, importer, { skipSelf: true });
-        return resolved?.id.split('?')[0] === `${source}/lib/site.ts`
+        return resolved?.id.split('?')[0] === `${source}/lib/contracts.ts`
           ? `${directory}identity.ts`
           : null;
       },

@@ -1,7 +1,7 @@
 'use client';
 import { useEffect, useEffectEvent, useMemo, useRef, useState } from 'react';
 import type { Locale } from '@/lib/i18n/routing';
-import type { Messages } from '@/lib/i18n/en';
+import type { ChoiceFieldWords } from './choice-field.words';
 import { fill } from '@/lib/i18n/format';
 import type { OrbitGeneration } from '@/lib/physics/orbit';
 import type { Beginnings, BeginningsChunk, QUICK_GATE } from '@/lib/physics/beginnings';
@@ -153,7 +153,7 @@ export function ChoiceField({
   generation: OrbitGeneration;
   /** The quick gate the worker measures every beginning against (QUICK_GATE). */
   gate: typeof QUICK_GATE;
-  t: Messages;
+  t: ChoiceFieldWords;
   locale: Locale;
 }) {
   const figure = useRef<HTMLElement>(null);

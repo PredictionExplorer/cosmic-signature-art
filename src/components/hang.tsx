@@ -4,7 +4,7 @@ import { useRef, useState, type CSSProperties, type MouseEvent, type PointerEven
 import { getInterpretation, twinOf, type Artwork, type Expression } from '@/lib/art/types';
 import { workFolio, workNumber } from '@/lib/art/number';
 import { getPlateGround } from '@/lib/art/plate-records';
-import type { Messages } from '@/lib/i18n/en';
+import type { HangWords } from './hang.words';
 import { localizedPath, type Locale } from '@/lib/i18n/routing';
 import { ArtworkMedia } from './artwork-media';
 import styles from './hang.module.css';
@@ -32,7 +32,7 @@ export function Hang({
 }: {
   works: Artwork[];
   locale: Locale;
-  t: Messages;
+  t: HangWords;
   /** One line per work beneath its numeral, e.g. the structure and underlay words. */
   labels?: Record<number, string>;
   /** The day's expression, in which the first leaf hangs. */

@@ -21,8 +21,6 @@ export function deploymentUrl(env: Record<string, string | undefined>): string {
   return env.NEXT_PUBLIC_SITE_URL || 'https://cosmic.art';
 }
 export const DEPLOYMENT_URL = deploymentUrl(process.env);
-export const NFT_ADDRESS = '0xbb84Be3500A63581d3F2d5AC3bdF8685AAedad25' as const;
-export const GAME_ADDRESS = '0x6a714Ae7B5b6eA520F6BCA23d2E609C4Fd5863F2' as const;
 /**
  * The venue's own sharing card in a language (src/app/[locale]/opengraph-image.tsx, at the
  * size of src/components/sharing-card.tsx's CARD), for a page that draws none of its own. It

@@ -2,10 +2,12 @@ import Link from 'next/link';
 import type { Messages } from '@/lib/i18n/en';
 import { localizedPath, type Locale } from '@/lib/i18n/routing';
 import { fill } from '@/lib/i18n/format';
+import { words } from '@/lib/i18n/words';
 import { NAVIGATION, NAVIGATION_LABEL } from '@/lib/navigation';
 import { collectionIndex } from '@/lib/art/collection-index';
 import { bindNumbers } from '@/lib/typography';
 import { Wordmark } from './running-head';
+import { WORDMARK_WORDS } from './running-head.words';
 import styles from './colophon.module.css';
 
 /** The venue's last word: what the plates are, when the record was read, how it is set. */
@@ -17,7 +19,7 @@ export function Colophon({ locale, t }: { locale: Locale; t: Messages }) {
     <footer className={`site-footer ${styles.colophon}`}>
       <div className={styles.lines}>
         <Link className="brand" href={localizedPath(locale)} aria-label="Cosmic Signature">
-          <Wordmark t={t} />
+          <Wordmark t={words(t, WORDMARK_WORDS)} />
         </Link>
         <p>{bindNumbers(t.colophonPlates)}</p>
         <p>{bindNumbers(t.colophonFilms)}</p>

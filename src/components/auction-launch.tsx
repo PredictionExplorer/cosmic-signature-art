@@ -2,7 +2,7 @@
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import type { Locale } from '@/lib/i18n/routing';
-import type { Messages } from '@/lib/i18n/en';
+import type { AuctionLaunchWords } from './auction-launch.words';
 import type { Artwork } from '@/lib/art/types';
 import type { LotTraitsById } from '@/lib/auction/catalogue';
 import { auctionConfigured } from '@/lib/auction/config';
@@ -23,7 +23,7 @@ export function AuctionLaunch({
   curated,
 }: {
   locale: Locale;
-  t: Messages;
+  t: AuctionLaunchWords;
   cycle: number;
   traits?: LotTraitsById;
   curated?: Record<number, Artwork>;

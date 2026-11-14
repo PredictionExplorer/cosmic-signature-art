@@ -20,7 +20,6 @@ import {
 } from '@/lib/art/collection-traits';
 import { workFolio, workNumber } from '@/lib/art/number';
 import { fill } from '@/lib/i18n/format';
-import type { Messages } from '@/lib/i18n/en';
 import {
   localeNames,
   locales,
@@ -35,18 +34,19 @@ import { useMotion } from './motion-provider';
 import { PreviewImage } from './preview-image';
 import { keepPlaceOnClick } from './reading-place';
 import { closeSheet, useOpenSheet } from './sheets-store';
+import type { IndexSheetWords } from './index-sheet.words';
 import { EXPRESSION_KEY } from '@/lib/storage-keys';
 import styles from './index-sheet.module.css';
 
 export type { Expression };
-const TRAIT_LABEL: Record<TraitKey, keyof Messages> = {
+const TRAIT_LABEL = {
   structure: 'structure',
   underlay: 'underlay',
   palette: 'palette',
   spectralClass: 'spectralClass',
   massBalance: 'massBalance',
   fate: 'fate',
-};
+} as const satisfies Record<TraitKey, keyof IndexSheetWords>;
 const ORDERS = ['number', 'cycle', 'spectrum'] as const;
 /**
  * The collection's two other indexes, each the whole collection at once: its light in one
@@ -173,7 +173,7 @@ export function IndexSheet({
 }: {
   works: CompactWork[];
   locale: Locale;
-  t: Messages;
+  t: IndexSheetWords;
   /** The day's-work pool, so the sheet knows today's work and expression for itself. */
   pool: readonly number[];
   /** The server's pin of the venue's day (COSMIC_VENUE_DATE), when it has one. */
@@ -239,7 +239,7 @@ function SheetBody({
 }: {
   works: CompactWork[];
   locale: Locale;
-  t: Messages;
+  t: IndexSheetWords;
   pathname: string;
   pool: readonly number[];
   pinned?: string;

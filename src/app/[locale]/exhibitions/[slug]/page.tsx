@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation';
 import { isLocale, localizedPath } from '@/lib/i18n/routing';
 import { messages } from '@/lib/i18n/messages';
 import { fill } from '@/lib/i18n/format';
+import { words } from '@/lib/i18n/words';
 import { metadata } from '@/lib/site';
 import { cycles, indexedWork } from '@/lib/art/collection-index';
 import { artworkFromIndex } from '@/lib/art/collection-cards';
@@ -10,7 +11,9 @@ import { workNumber } from '@/lib/art/number';
 import { getInterpretation } from '@/lib/art/types';
 import { artworkSharingImage } from '@/lib/art/sharing';
 import { PlateSequence } from '@/components/plate-sequence';
+import { PLATE_SEQUENCE_WORDS } from '@/components/plate-sequence.words';
 import { Hang } from '@/components/hang';
+import { HANG_WORDS } from '@/components/hang.words';
 import {
   CURATOR,
   exhibition,
@@ -87,7 +90,13 @@ export default async function ExhibitionPage({ params }: { params: Params }) {
         <p className={`reading ${styles.note}`}>{note}</p>
       </header>
       {item.kind === 'hang' ? (
-        <Hang works={works} locale={locale} t={t} labels={labels} day={expressionOfTheDay()} />
+        <Hang
+          works={works}
+          locale={locale}
+          t={words(t, HANG_WORDS)}
+          labels={labels}
+          day={expressionOfTheDay()}
+        />
       ) : (
         <>
           {item.kind === 'cycle' ? (
@@ -96,7 +105,7 @@ export default async function ExhibitionPage({ params }: { params: Params }) {
           <PlateSequence
             works={works}
             locale={locale}
-            t={t}
+            t={words(t, PLATE_SEQUENCE_WORDS)}
             expression="both"
             eagerFirstRow
             chapters="none"
