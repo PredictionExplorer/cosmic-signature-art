@@ -23,7 +23,22 @@
         "mean": 2.552,
         "max": 45,
         "over": 0
-      }
+      },
+      "rungs": [
+        {
+          "src": "/art/clips/0-ink-settling-640-62052786dbc472fa.mp4",
+          "sha256": "62052786dbc472fa385d11c648010fe0b1a3249896223fada1c92bf7fb9a6e0a",
+          "bytes": 1418767,
+          "width": 640,
+          "height": 414,
+          "crf": 22,
+          "stillMatch": {
+            "mean": 3.032,
+            "max": 45,
+            "over": 0
+          }
+        }
+      ]
     },
     {
       "id": 0,
@@ -47,7 +62,22 @@
         "mean": 0.645,
         "max": 42,
         "over": 0
-      }
+      },
+      "rungs": [
+        {
+          "src": "/art/clips/0-light-settling-640-1357e0b8101db249.mp4",
+          "sha256": "1357e0b8101db24937436504d6ad40815cb9f3f02a7bff7ae843bf562e922126",
+          "bytes": 107708,
+          "width": 640,
+          "height": 414,
+          "crf": 22,
+          "stillMatch": {
+            "mean": 0.71,
+            "max": 42,
+            "over": 0
+          }
+        }
+      ]
     },
     {
       "id": 1,
@@ -71,7 +101,22 @@
         "mean": 2.073,
         "max": 30,
         "over": 0
-      }
+      },
+      "rungs": [
+        {
+          "src": "/art/clips/1-ink-settling-640-f6d454f808c86f44.mp4",
+          "sha256": "f6d454f808c86f4461ff0361591bfa824d39100082f5719af5bbd5d6d26793c1",
+          "bytes": 1036544,
+          "width": 640,
+          "height": 414,
+          "crf": 22,
+          "stillMatch": {
+            "mean": 2.493,
+            "max": 31,
+            "over": 0
+          }
+        }
+      ]
     },
     {
       "id": 1,
@@ -95,7 +140,22 @@
         "mean": 0.576,
         "max": 44,
         "over": 0
-      }
+      },
+      "rungs": [
+        {
+          "src": "/art/clips/1-light-settling-640-03e08fd1ab366763.mp4",
+          "sha256": "03e08fd1ab366763f7a953662e3cc892ac94e085898922c0de39acf71c890d79",
+          "bytes": 108420,
+          "width": 640,
+          "height": 414,
+          "crf": 22,
+          "stillMatch": {
+            "mean": 0.616,
+            "max": 95,
+            "over": 0.00006
+          }
+        }
+      ]
     },
     {
       "id": 2,
@@ -119,7 +179,22 @@
         "mean": 2.831,
         "max": 41,
         "over": 0
-      }
+      },
+      "rungs": [
+        {
+          "src": "/art/clips/2-ink-settling-640-a3ae8e27fe00739c.mp4",
+          "sha256": "a3ae8e27fe00739cd0a6ee26f76077c0e167e8229523367a2bae69544c9262b6",
+          "bytes": 2034144,
+          "width": 640,
+          "height": 414,
+          "crf": 22,
+          "stillMatch": {
+            "mean": 3.316,
+            "max": 59,
+            "over": 0.00002
+          }
+        }
+      ]
     },
     {
       "id": 2,
@@ -143,7 +218,22 @@
         "mean": 0.746,
         "max": 46,
         "over": 0
-      }
+      },
+      "rungs": [
+        {
+          "src": "/art/clips/2-light-settling-640-5ba251b416ea975a.mp4",
+          "sha256": "5ba251b416ea975aa9792ccc1c90cd513c4301f24149f86f4c5bd851f399628c",
+          "bytes": 122690,
+          "width": 640,
+          "height": 414,
+          "crf": 22,
+          "stillMatch": {
+            "mean": 0.799,
+            "max": 53,
+            "over": 0.00001
+          }
+        }
+      ]
     },
     {
       "id": 3,
@@ -167,7 +257,22 @@
         "mean": 2.3,
         "max": 46,
         "over": 0
-      }
+      },
+      "rungs": [
+        {
+          "src": "/art/clips/3-ink-settling-640-77bfeecb7ec96a2a.mp4",
+          "sha256": "77bfeecb7ec96a2a047a19daf382ba7fef3622d43f75c38fe81cca8ecbc499f8",
+          "bytes": 988764,
+          "width": 640,
+          "height": 414,
+          "crf": 22,
+          "stillMatch": {
+            "mean": 2.768,
+            "max": 48,
+            "over": 0
+          }
+        }
+      ]
     },
     {
       "id": 3,
@@ -191,7 +296,22 @@
         "mean": 0.674,
         "max": 33,
         "over": 0
-      }
+      },
+      "rungs": [
+        {
+          "src": "/art/clips/3-light-settling-640-68988a77d9f0c481.mp4",
+          "sha256": "68988a77d9f0c4811f492ab9f2a721902c2eedd68f69e10acfe8b7621724b172",
+          "bytes": 101063,
+          "width": 640,
+          "height": 414,
+          "crf": 22,
+          "stillMatch": {
+            "mean": 0.743,
+            "max": 32,
+            "over": 0
+          }
+        }
+      ]
     },
     {
       "id": 4,
@@ -215,7 +335,22 @@
         "mean": 2.994,
         "max": 44,
         "over": 0
-      }
+      },
+      "rungs": [
+        {
+          "src": "/art/clips/4-ink-settling-640-d689db90e0434d61.mp4",
+          "sha256": "d689db90e0434d619eecd58e8a09418bb9d94c62bfbb445d7c840ca129fe36f2",
+          "bytes": 2150981,
+          "width": 640,
+          "height": 414,
+          "crf": 22,
+          "stillMatch": {
+            "mean": 3.534,
+            "max": 48,
+            "over": 0
+          }
+        }
+      ]
     },
     {
       "id": 4,
@@ -239,7 +374,22 @@
         "mean": 0.776,
         "max": 32,
         "over": 0
-      }
+      },
+      "rungs": [
+        {
+          "src": "/art/clips/4-light-settling-640-61ee8dec686846a2.mp4",
+          "sha256": "61ee8dec686846a2d6347cf499c49d1ba84cef4b9fc15bcce93136f813319c7b",
+          "bytes": 138779,
+          "width": 640,
+          "height": 414,
+          "crf": 22,
+          "stillMatch": {
+            "mean": 0.867,
+            "max": 36,
+            "over": 0
+          }
+        }
+      ]
     },
     {
       "id": 5,
@@ -263,7 +413,22 @@
         "mean": 2.429,
         "max": 39,
         "over": 0
-      }
+      },
+      "rungs": [
+        {
+          "src": "/art/clips/5-ink-settling-640-f45ca4f3f664b68e.mp4",
+          "sha256": "f45ca4f3f664b68e3aa5d50e64d0d8717a0dd760df7ffb7d5f6943f607a8e7c2",
+          "bytes": 1059457,
+          "width": 640,
+          "height": 414,
+          "crf": 22,
+          "stillMatch": {
+            "mean": 2.894,
+            "max": 46,
+            "over": 0
+          }
+        }
+      ]
     },
     {
       "id": 5,
@@ -287,7 +452,22 @@
         "mean": 0.537,
         "max": 42,
         "over": 0
-      }
+      },
+      "rungs": [
+        {
+          "src": "/art/clips/5-light-settling-640-d81ce4fbc63b4c45.mp4",
+          "sha256": "d81ce4fbc63b4c45b7c0cb5de60169b29dcc070e9af4c5aaa0aa21bbbe8ad74e",
+          "bytes": 87583,
+          "width": 640,
+          "height": 414,
+          "crf": 22,
+          "stillMatch": {
+            "mean": 0.577,
+            "max": 53,
+            "over": 0.00001
+          }
+        }
+      ]
     },
     {
       "id": 6,
@@ -311,7 +491,22 @@
         "mean": 2.667,
         "max": 38,
         "over": 0
-      }
+      },
+      "rungs": [
+        {
+          "src": "/art/clips/6-ink-settling-640-3d46e72b99ee2f83.mp4",
+          "sha256": "3d46e72b99ee2f8392b9b9da52e83f839cb06be9de31ca9bb0121aef4555a8d3",
+          "bytes": 1719607,
+          "width": 640,
+          "height": 414,
+          "crf": 22,
+          "stillMatch": {
+            "mean": 3.203,
+            "max": 47,
+            "over": 0
+          }
+        }
+      ]
     },
     {
       "id": 6,
@@ -335,7 +530,22 @@
         "mean": 0.443,
         "max": 40,
         "over": 0
-      }
+      },
+      "rungs": [
+        {
+          "src": "/art/clips/6-light-settling-640-ed7184e89623ffc9.mp4",
+          "sha256": "ed7184e89623ffc93f5cbffd6395716a3072814634b1ba82ce3bdf2de801ffe4",
+          "bytes": 97939,
+          "width": 640,
+          "height": 414,
+          "crf": 22,
+          "stillMatch": {
+            "mean": 0.497,
+            "max": 36,
+            "over": 0
+          }
+        }
+      ]
     },
     {
       "id": 7,
@@ -359,7 +569,22 @@
         "mean": 2.691,
         "max": 46,
         "over": 0
-      }
+      },
+      "rungs": [
+        {
+          "src": "/art/clips/7-ink-settling-640-c2512195fd7ab5de.mp4",
+          "sha256": "c2512195fd7ab5de759a27960d9a2086b39277f832e33291482fa2cbf9c1b019",
+          "bytes": 1758717,
+          "width": 640,
+          "height": 414,
+          "crf": 22,
+          "stillMatch": {
+            "mean": 3.206,
+            "max": 53,
+            "over": 0.00001
+          }
+        }
+      ]
     },
     {
       "id": 7,
@@ -383,7 +608,22 @@
         "mean": 0.799,
         "max": 36,
         "over": 0
-      }
+      },
+      "rungs": [
+        {
+          "src": "/art/clips/7-light-settling-640-e94c8c8ac74f546c.mp4",
+          "sha256": "e94c8c8ac74f546c4a085bb665f9a25f395c2d3d0000c971a9f9c82c2c0b83df",
+          "bytes": 147875,
+          "width": 640,
+          "height": 414,
+          "crf": 22,
+          "stillMatch": {
+            "mean": 0.908,
+            "max": 43,
+            "over": 0
+          }
+        }
+      ]
     },
     {
       "id": 8,
@@ -407,7 +647,22 @@
         "mean": 2.408,
         "max": 41,
         "over": 0
-      }
+      },
+      "rungs": [
+        {
+          "src": "/art/clips/8-ink-settling-640-81d3ed4ea6cd3e81.mp4",
+          "sha256": "81d3ed4ea6cd3e81423786a2ee0ecec9d045a4157b9171153dfd33537948d554",
+          "bytes": 1055199,
+          "width": 640,
+          "height": 414,
+          "crf": 22,
+          "stillMatch": {
+            "mean": 2.908,
+            "max": 55,
+            "over": 0.00001
+          }
+        }
+      ]
     },
     {
       "id": 8,
@@ -431,7 +686,22 @@
         "mean": 0.625,
         "max": 28,
         "over": 0
-      }
+      },
+      "rungs": [
+        {
+          "src": "/art/clips/8-light-settling-640-7bd1d2668bfa0725.mp4",
+          "sha256": "7bd1d2668bfa0725f6815ec7c81b3c3d7b5cb37a656f4afffe9279aabe282385",
+          "bytes": 130995,
+          "width": 640,
+          "height": 414,
+          "crf": 22,
+          "stillMatch": {
+            "mean": 0.714,
+            "max": 27,
+            "over": 0
+          }
+        }
+      ]
     },
     {
       "id": 9,
@@ -455,7 +725,22 @@
         "mean": 3.285,
         "max": 40,
         "over": 0
-      }
+      },
+      "rungs": [
+        {
+          "src": "/art/clips/9-ink-settling-640-c28190491a5f82d7.mp4",
+          "sha256": "c28190491a5f82d7d4ce3ee6c94fd5655d657920c3fef69963437b611bb693a1",
+          "bytes": 2701753,
+          "width": 640,
+          "height": 414,
+          "crf": 22,
+          "stillMatch": {
+            "mean": 3.796,
+            "max": 45,
+            "over": 0
+          }
+        }
+      ]
     },
     {
       "id": 9,
@@ -479,7 +764,22 @@
         "mean": 0.829,
         "max": 43,
         "over": 0
-      }
+      },
+      "rungs": [
+        {
+          "src": "/art/clips/9-light-settling-640-0e0bbf1ed183c8ae.mp4",
+          "sha256": "0e0bbf1ed183c8aedc2677aa7d2d58e029da188b329246689bfe43c9fb8f2bb6",
+          "bytes": 147705,
+          "width": 640,
+          "height": 414,
+          "crf": 22,
+          "stillMatch": {
+            "mean": 0.936,
+            "max": 45,
+            "over": 0
+          }
+        }
+      ]
     },
     {
       "id": 10,
@@ -503,7 +803,22 @@
         "mean": 2.962,
         "max": 41,
         "over": 0
-      }
+      },
+      "rungs": [
+        {
+          "src": "/art/clips/10-ink-settling-640-f2efd6a710a8f697.mp4",
+          "sha256": "f2efd6a710a8f697b0f58b8f1fd71783e0c3d1110385b29bf13cf8551062a588",
+          "bytes": 1740950,
+          "width": 640,
+          "height": 414,
+          "crf": 22,
+          "stillMatch": {
+            "mean": 3.465,
+            "max": 48,
+            "over": 0
+          }
+        }
+      ]
     },
     {
       "id": 10,
@@ -527,7 +842,22 @@
         "mean": 0.499,
         "max": 31,
         "over": 0
-      }
+      },
+      "rungs": [
+        {
+          "src": "/art/clips/10-light-settling-640-d95fd04b958a4647.mp4",
+          "sha256": "d95fd04b958a4647be21eed77eca6cda593db43b8db95d9151bc2d849b02efb5",
+          "bytes": 101320,
+          "width": 640,
+          "height": 414,
+          "crf": 22,
+          "stillMatch": {
+            "mean": 0.562,
+            "max": 36,
+            "over": 0
+          }
+        }
+      ]
     },
     {
       "id": 11,
@@ -551,7 +881,22 @@
         "mean": 2.999,
         "max": 42,
         "over": 0
-      }
+      },
+      "rungs": [
+        {
+          "src": "/art/clips/11-ink-settling-640-84ae8b516b339b82.mp4",
+          "sha256": "84ae8b516b339b8244944bbaa652bd4a727c359a17a440f43b5fa2c41251c97a",
+          "bytes": 2406468,
+          "width": 640,
+          "height": 414,
+          "crf": 22,
+          "stillMatch": {
+            "mean": 3.539,
+            "max": 47,
+            "over": 0
+          }
+        }
+      ]
     },
     {
       "id": 11,
@@ -575,7 +920,22 @@
         "mean": 0.971,
         "max": 35,
         "over": 0
-      }
+      },
+      "rungs": [
+        {
+          "src": "/art/clips/11-light-settling-640-a11cb4db385f11bf.mp4",
+          "sha256": "a11cb4db385f11bf9cb95fcb853f7c3be879694869234f3b983d7e3e2bba259b",
+          "bytes": 181760,
+          "width": 640,
+          "height": 414,
+          "crf": 22,
+          "stillMatch": {
+            "mean": 1.15,
+            "max": 49,
+            "over": 0.00001
+          }
+        }
+      ]
     },
     {
       "id": 12,
@@ -599,7 +959,22 @@
         "mean": 2.349,
         "max": 45,
         "over": 0
-      }
+      },
+      "rungs": [
+        {
+          "src": "/art/clips/12-ink-settling-640-d7a79f13dd48a41e.mp4",
+          "sha256": "d7a79f13dd48a41e4c3300de32e97beb4c1784e65e800d9ce97c84c43f3ea3c9",
+          "bytes": 1404931,
+          "width": 640,
+          "height": 414,
+          "crf": 22,
+          "stillMatch": {
+            "mean": 2.827,
+            "max": 47,
+            "over": 0
+          }
+        }
+      ]
     },
     {
       "id": 12,
@@ -623,7 +998,22 @@
         "mean": 0.534,
         "max": 28,
         "over": 0
-      }
+      },
+      "rungs": [
+        {
+          "src": "/art/clips/12-light-settling-640-470a63a00ae9d144.mp4",
+          "sha256": "470a63a00ae9d1447306a93204446816d598c1d7c0ead8fe9ecbf7118ef356bb",
+          "bytes": 99595,
+          "width": 640,
+          "height": 414,
+          "crf": 22,
+          "stillMatch": {
+            "mean": 0.621,
+            "max": 34,
+            "over": 0
+          }
+        }
+      ]
     },
     {
       "id": 13,
@@ -647,7 +1037,22 @@
         "mean": 2.525,
         "max": 44,
         "over": 0
-      }
+      },
+      "rungs": [
+        {
+          "src": "/art/clips/13-ink-settling-640-ab38578835f901f1.mp4",
+          "sha256": "ab38578835f901f141889dfdf5285a070a3e98358fe638435ea9335d41f74a94",
+          "bytes": 1373488,
+          "width": 640,
+          "height": 414,
+          "crf": 22,
+          "stillMatch": {
+            "mean": 2.999,
+            "max": 50,
+            "over": 0.00001
+          }
+        }
+      ]
     },
     {
       "id": 13,
@@ -671,7 +1076,22 @@
         "mean": 1.564,
         "max": 31,
         "over": 0
-      }
+      },
+      "rungs": [
+        {
+          "src": "/art/clips/13-light-settling-640-3ae2f6e016d0152b.mp4",
+          "sha256": "3ae2f6e016d0152b14f3b1e3bfc311589626de28af86fc8324d5c1c437953a30",
+          "bytes": 201550,
+          "width": 640,
+          "height": 414,
+          "crf": 22,
+          "stillMatch": {
+            "mean": 1.701,
+            "max": 34,
+            "over": 0
+          }
+        }
+      ]
     },
     {
       "id": 14,
@@ -695,7 +1115,22 @@
         "mean": 3.04,
         "max": 46,
         "over": 0
-      }
+      },
+      "rungs": [
+        {
+          "src": "/art/clips/14-ink-settling-640-6ff609154a116d81.mp4",
+          "sha256": "6ff609154a116d8183411274ad6e14f90f50166f535196e78acd80b3bc276288",
+          "bytes": 2566823,
+          "width": 640,
+          "height": 414,
+          "crf": 22,
+          "stillMatch": {
+            "mean": 3.586,
+            "max": 50,
+            "over": 0.00001
+          }
+        }
+      ]
     },
     {
       "id": 14,
@@ -719,7 +1154,22 @@
         "mean": 0.686,
         "max": 40,
         "over": 0
-      }
+      },
+      "rungs": [
+        {
+          "src": "/art/clips/14-light-settling-640-b4d79043dd8e29f8.mp4",
+          "sha256": "b4d79043dd8e29f88eb5b6f9475f94c70ba813653749975e420e365041afdef3",
+          "bytes": 103193,
+          "width": 640,
+          "height": 414,
+          "crf": 22,
+          "stillMatch": {
+            "mean": 0.74,
+            "max": 46,
+            "over": 0
+          }
+        }
+      ]
     },
     {
       "id": 15,
@@ -743,7 +1193,22 @@
         "mean": 2.325,
         "max": 37,
         "over": 0
-      }
+      },
+      "rungs": [
+        {
+          "src": "/art/clips/15-ink-settling-640-98c3087b589b2bb0.mp4",
+          "sha256": "98c3087b589b2bb01fc5c0ecc1845882c63b220be7fe73e78ba8629cafbe9544",
+          "bytes": 1371347,
+          "width": 640,
+          "height": 414,
+          "crf": 22,
+          "stillMatch": {
+            "mean": 2.811,
+            "max": 39,
+            "over": 0
+          }
+        }
+      ]
     },
     {
       "id": 15,
@@ -767,7 +1232,22 @@
         "mean": 0.482,
         "max": 33,
         "over": 0
-      }
+      },
+      "rungs": [
+        {
+          "src": "/art/clips/15-light-settling-640-a7f55d85599f0ea8.mp4",
+          "sha256": "a7f55d85599f0ea8029ee2fda5cb7090ddf5d410bcce541d69e8239caba6434f",
+          "bytes": 84607,
+          "width": 640,
+          "height": 414,
+          "crf": 22,
+          "stillMatch": {
+            "mean": 0.515,
+            "max": 38,
+            "over": 0
+          }
+        }
+      ]
     },
     {
       "id": 16,
@@ -791,7 +1271,22 @@
         "mean": 2.69,
         "max": 46,
         "over": 0
-      }
+      },
+      "rungs": [
+        {
+          "src": "/art/clips/16-ink-settling-640-c3f1677646430546.mp4",
+          "sha256": "c3f1677646430546f581935c0afad975b4b1f6fe053885e16948bf2fe38f23d9",
+          "bytes": 1485842,
+          "width": 640,
+          "height": 414,
+          "crf": 22,
+          "stillMatch": {
+            "mean": 3.19,
+            "max": 50,
+            "over": 0.00001
+          }
+        }
+      ]
     },
     {
       "id": 16,
@@ -815,7 +1310,22 @@
         "mean": 0.503,
         "max": 51,
         "over": 0.00001
-      }
+      },
+      "rungs": [
+        {
+          "src": "/art/clips/16-light-settling-640-a242b256d208b306.mp4",
+          "sha256": "a242b256d208b306dd082c05ce5c4f77b61492b5360d714dd7b156066ddcc871",
+          "bytes": 86356,
+          "width": 640,
+          "height": 414,
+          "crf": 22,
+          "stillMatch": {
+            "mean": 0.552,
+            "max": 65,
+            "over": 0.00001
+          }
+        }
+      ]
     },
     {
       "id": 17,
@@ -839,7 +1349,22 @@
         "mean": 2.659,
         "max": 46,
         "over": 0
-      }
+      },
+      "rungs": [
+        {
+          "src": "/art/clips/17-ink-settling-640-ea13da6688d836e6.mp4",
+          "sha256": "ea13da6688d836e696966a88af5d6af8b19c987f3ac21e88497f4e2642cdac64",
+          "bytes": 1530645,
+          "width": 640,
+          "height": 414,
+          "crf": 22,
+          "stillMatch": {
+            "mean": 3.111,
+            "max": 55,
+            "over": 0.00003
+          }
+        }
+      ]
     },
     {
       "id": 17,
@@ -863,7 +1388,22 @@
         "mean": 0.557,
         "max": 29,
         "over": 0
-      }
+      },
+      "rungs": [
+        {
+          "src": "/art/clips/17-light-settling-640-5e8e427a17f04500.mp4",
+          "sha256": "5e8e427a17f0450095666add5c0a2dba70fccee969b42d8daa0110fbd0bde63e",
+          "bytes": 93822,
+          "width": 640,
+          "height": 414,
+          "crf": 22,
+          "stillMatch": {
+            "mean": 0.614,
+            "max": 35,
+            "over": 0
+          }
+        }
+      ]
     },
     {
       "id": 18,
@@ -887,7 +1427,22 @@
         "mean": 2.401,
         "max": 41,
         "over": 0
-      }
+      },
+      "rungs": [
+        {
+          "src": "/art/clips/18-ink-settling-640-4e0d0b0555ddef66.mp4",
+          "sha256": "4e0d0b0555ddef6660b633f05cbb91988389d7c48b5d1a95d369a1b53bb9f676",
+          "bytes": 1100441,
+          "width": 640,
+          "height": 414,
+          "crf": 22,
+          "stillMatch": {
+            "mean": 2.863,
+            "max": 49,
+            "over": 0.00001
+          }
+        }
+      ]
     },
     {
       "id": 18,
@@ -911,7 +1466,22 @@
         "mean": 0.349,
         "max": 33,
         "over": 0
-      }
+      },
+      "rungs": [
+        {
+          "src": "/art/clips/18-light-settling-640-11e802e6d688d7d6.mp4",
+          "sha256": "11e802e6d688d7d694ec7bcb100e64ab9a36619b35fbba8d4681c6069afa1625",
+          "bytes": 73680,
+          "width": 640,
+          "height": 414,
+          "crf": 22,
+          "stillMatch": {
+            "mean": 0.4,
+            "max": 39,
+            "over": 0
+          }
+        }
+      ]
     },
     {
       "id": 19,
@@ -935,7 +1505,22 @@
         "mean": 2.534,
         "max": 41,
         "over": 0
-      }
+      },
+      "rungs": [
+        {
+          "src": "/art/clips/19-ink-settling-640-b8067b568de507de.mp4",
+          "sha256": "b8067b568de507de52e0a6d50eae963c4c57975d3553351b698da5e9b41be98c",
+          "bytes": 1532948,
+          "width": 640,
+          "height": 414,
+          "crf": 22,
+          "stillMatch": {
+            "mean": 3.039,
+            "max": 45,
+            "over": 0
+          }
+        }
+      ]
     },
     {
       "id": 19,
@@ -959,7 +1544,22 @@
         "mean": 0.564,
         "max": 46,
         "over": 0
-      }
+      },
+      "rungs": [
+        {
+          "src": "/art/clips/19-light-settling-640-c3a9eee5b263c3a6.mp4",
+          "sha256": "c3a9eee5b263c3a6c58471f36d27f0f10615e1bf9440ec960d38015e29591bdd",
+          "bytes": 86266,
+          "width": 640,
+          "height": 414,
+          "crf": 22,
+          "stillMatch": {
+            "mean": 0.614,
+            "max": 75,
+            "over": 0.00003
+          }
+        }
+      ]
     },
     {
       "id": 20,
@@ -983,7 +1583,22 @@
         "mean": 2.37,
         "max": 40,
         "over": 0
-      }
+      },
+      "rungs": [
+        {
+          "src": "/art/clips/20-ink-settling-640-39c9f4b585b2d1cb.mp4",
+          "sha256": "39c9f4b585b2d1cbea465d1c87270d97e46d9d3c6283b5960478dcac891e5b42",
+          "bytes": 1082875,
+          "width": 640,
+          "height": 414,
+          "crf": 22,
+          "stillMatch": {
+            "mean": 2.838,
+            "max": 67,
+            "over": 0.00002
+          }
+        }
+      ]
     },
     {
       "id": 20,
@@ -1007,7 +1622,22 @@
         "mean": 0.669,
         "max": 37,
         "over": 0
-      }
+      },
+      "rungs": [
+        {
+          "src": "/art/clips/20-light-settling-640-2bedf305760823a7.mp4",
+          "sha256": "2bedf305760823a773bad9723f1d66c74a8f00d435fac09da7f94f833fbf7253",
+          "bytes": 101337,
+          "width": 640,
+          "height": 414,
+          "crf": 22,
+          "stillMatch": {
+            "mean": 0.744,
+            "max": 41,
+            "over": 0
+          }
+        }
+      ]
     },
     {
       "id": 21,
@@ -1031,7 +1661,22 @@
         "mean": 2.481,
         "max": 44,
         "over": 0
-      }
+      },
+      "rungs": [
+        {
+          "src": "/art/clips/21-ink-settling-640-3d5b4f0baaf8a8ce.mp4",
+          "sha256": "3d5b4f0baaf8a8ce98324d59f2da64425860aa96277a8f6f38ad26ad59d4aec5",
+          "bytes": 1266505,
+          "width": 640,
+          "height": 414,
+          "crf": 22,
+          "stillMatch": {
+            "mean": 2.989,
+            "max": 48,
+            "over": 0
+          }
+        }
+      ]
     },
     {
       "id": 21,
@@ -1055,7 +1700,22 @@
         "mean": 0.716,
         "max": 50,
         "over": 0.00001
-      }
+      },
+      "rungs": [
+        {
+          "src": "/art/clips/21-light-settling-640-580dc0e33c2d2f94.mp4",
+          "sha256": "580dc0e33c2d2f94856875088bc9f3ff80da5c8df1b29207f05e28ead6dbdc4e",
+          "bytes": 89486,
+          "width": 640,
+          "height": 414,
+          "crf": 22,
+          "stillMatch": {
+            "mean": 0.781,
+            "max": 56,
+            "over": 0.00001
+          }
+        }
+      ]
     },
     {
       "id": 22,
@@ -1079,7 +1739,22 @@
         "mean": 2.605,
         "max": 51,
         "over": 0.00001
-      }
+      },
+      "rungs": [
+        {
+          "src": "/art/clips/22-ink-settling-640-8fd52176c53577b2.mp4",
+          "sha256": "8fd52176c53577b2e4630bce5fd0e929852bdb038149e48d9a922a35dd60340d",
+          "bytes": 1633639,
+          "width": 640,
+          "height": 414,
+          "crf": 22,
+          "stillMatch": {
+            "mean": 3.118,
+            "max": 49,
+            "over": 0.00001
+          }
+        }
+      ]
     },
     {
       "id": 22,
@@ -1103,7 +1778,22 @@
         "mean": 0.498,
         "max": 31,
         "over": 0
-      }
+      },
+      "rungs": [
+        {
+          "src": "/art/clips/22-light-settling-640-c6d6d42ed2f16a54.mp4",
+          "sha256": "c6d6d42ed2f16a547c10b87367c9fc6761141759f67d7cc540f431000ebd9a83",
+          "bytes": 105556,
+          "width": 640,
+          "height": 414,
+          "crf": 22,
+          "stillMatch": {
+            "mean": 0.558,
+            "max": 30,
+            "over": 0
+          }
+        }
+      ]
     },
     {
       "id": 23,
@@ -1147,7 +1837,22 @@
         "mean": 2.429,
         "max": 48,
         "over": 0
-      }
+      },
+      "rungs": [
+        {
+          "src": "/art/clips/23-ink-settling-640-f231396529ec8251.mp4",
+          "sha256": "f231396529ec825174c81b06cfdebf7232fc5ac187ae46c8bd5b84795b25cd4f",
+          "bytes": 1180484,
+          "width": 640,
+          "height": 414,
+          "crf": 22,
+          "stillMatch": {
+            "mean": 2.95,
+            "max": 49,
+            "over": 0.00001
+          }
+        }
+      ]
     },
     {
       "id": 23,
@@ -1191,7 +1896,22 @@
         "mean": 0.523,
         "max": 37,
         "over": 0
-      }
+      },
+      "rungs": [
+        {
+          "src": "/art/clips/23-light-settling-640-7a2e8e5d376d6aeb.mp4",
+          "sha256": "7a2e8e5d376d6aeb3260578c25452615c268fde221d3ab31a397cf7a87d5e090",
+          "bytes": 99447,
+          "width": 640,
+          "height": 414,
+          "crf": 22,
+          "stillMatch": {
+            "mean": 0.58,
+            "max": 37,
+            "over": 0
+          }
+        }
+      ]
     },
     {
       "id": 24,
@@ -1215,7 +1935,22 @@
         "mean": 2.388,
         "max": 45,
         "over": 0
-      }
+      },
+      "rungs": [
+        {
+          "src": "/art/clips/24-ink-settling-640-edc39e9b6812c198.mp4",
+          "sha256": "edc39e9b6812c1989dcf84a00d809bfc8539cb0d6929d91466a72daf9e8f9ccf",
+          "bytes": 1152735,
+          "width": 640,
+          "height": 414,
+          "crf": 22,
+          "stillMatch": {
+            "mean": 2.846,
+            "max": 48,
+            "over": 0
+          }
+        }
+      ]
     },
     {
       "id": 24,
@@ -1239,7 +1974,22 @@
         "mean": 0.812,
         "max": 46,
         "over": 0
-      }
+      },
+      "rungs": [
+        {
+          "src": "/art/clips/24-light-settling-640-dc9ce8b175d2fa38.mp4",
+          "sha256": "dc9ce8b175d2fa38879c09be2b5d14dfd39ea52af750f98afab2fb80886ae50e",
+          "bytes": 121665,
+          "width": 640,
+          "height": 414,
+          "crf": 22,
+          "stillMatch": {
+            "mean": 0.866,
+            "max": 42,
+            "over": 0
+          }
+        }
+      ]
     },
     {
       "id": 25,
@@ -1263,7 +2013,22 @@
         "mean": 2.933,
         "max": 51,
         "over": 0.00001
-      }
+      },
+      "rungs": [
+        {
+          "src": "/art/clips/25-ink-settling-640-479887fa71409bc6.mp4",
+          "sha256": "479887fa71409bc671e46e5df5881db58f502e14792567c03a942f73f5a6516b",
+          "bytes": 1822020,
+          "width": 640,
+          "height": 414,
+          "crf": 22,
+          "stillMatch": {
+            "mean": 3.453,
+            "max": 54,
+            "over": 0.00001
+          }
+        }
+      ]
     },
     {
       "id": 25,
@@ -1287,7 +2052,22 @@
         "mean": 0.663,
         "max": 27,
         "over": 0
-      }
+      },
+      "rungs": [
+        {
+          "src": "/art/clips/25-light-settling-640-105c7c81cba2cdc1.mp4",
+          "sha256": "105c7c81cba2cdc10e9dd3201e0ab8c5ecb6dea0f4c4d59ac485ebd8980d644e",
+          "bytes": 115504,
+          "width": 640,
+          "height": 414,
+          "crf": 22,
+          "stillMatch": {
+            "mean": 0.76,
+            "max": 30,
+            "over": 0
+          }
+        }
+      ]
     },
     {
       "id": 26,
@@ -1311,7 +2091,22 @@
         "mean": 2.413,
         "max": 46,
         "over": 0
-      }
+      },
+      "rungs": [
+        {
+          "src": "/art/clips/26-ink-settling-640-efc4e278272dec45.mp4",
+          "sha256": "efc4e278272dec4501d6ff7b4d363caa1fa20c3e5fd8b967af36ebd5140c37fc",
+          "bytes": 1054782,
+          "width": 640,
+          "height": 414,
+          "crf": 22,
+          "stillMatch": {
+            "mean": 2.885,
+            "max": 55,
+            "over": 0.00001
+          }
+        }
+      ]
     },
     {
       "id": 26,
@@ -1335,7 +2130,22 @@
         "mean": 0.451,
         "max": 37,
         "over": 0
-      }
+      },
+      "rungs": [
+        {
+          "src": "/art/clips/26-light-settling-640-5db76354b1b182c5.mp4",
+          "sha256": "5db76354b1b182c5aa21018c5ce606a064522394cf82960a454e455b78cfe899",
+          "bytes": 93847,
+          "width": 640,
+          "height": 414,
+          "crf": 22,
+          "stillMatch": {
+            "mean": 0.497,
+            "max": 37,
+            "over": 0
+          }
+        }
+      ]
     },
     {
       "id": 27,
@@ -1359,7 +2169,22 @@
         "mean": 2.57,
         "max": 47,
         "over": 0
-      }
+      },
+      "rungs": [
+        {
+          "src": "/art/clips/27-ink-settling-640-bb0b6c938256e78d.mp4",
+          "sha256": "bb0b6c938256e78d1a88d116435b97906cea3f8a7d21c544ac46562705e0aef6",
+          "bytes": 1434614,
+          "width": 640,
+          "height": 414,
+          "crf": 22,
+          "stillMatch": {
+            "mean": 3.043,
+            "max": 53,
+            "over": 0.00001
+          }
+        }
+      ]
     },
     {
       "id": 27,
@@ -1383,7 +2208,22 @@
         "mean": 0.337,
         "max": 40,
         "over": 0
-      }
+      },
+      "rungs": [
+        {
+          "src": "/art/clips/27-light-settling-640-6d81d7f5b657dc38.mp4",
+          "sha256": "6d81d7f5b657dc3875039f811624ad5be4f2a70f1591692f76132ba282082783",
+          "bytes": 63169,
+          "width": 640,
+          "height": 414,
+          "crf": 22,
+          "stillMatch": {
+            "mean": 0.362,
+            "max": 47,
+            "over": 0
+          }
+        }
+      ]
     },
     {
       "id": 28,
@@ -1407,7 +2247,22 @@
         "mean": 2.414,
         "max": 39,
         "over": 0
-      }
+      },
+      "rungs": [
+        {
+          "src": "/art/clips/28-ink-settling-640-ac6aaacaa842f73c.mp4",
+          "sha256": "ac6aaacaa842f73c7767e4387872e96bb8b88bf73b02b72dd281e568d0f38258",
+          "bytes": 1177842,
+          "width": 640,
+          "height": 414,
+          "crf": 22,
+          "stillMatch": {
+            "mean": 2.915,
+            "max": 45,
+            "over": 0
+          }
+        }
+      ]
     },
     {
       "id": 28,
@@ -1431,7 +2286,22 @@
         "mean": 0.683,
         "max": 46,
         "over": 0
-      }
+      },
+      "rungs": [
+        {
+          "src": "/art/clips/28-light-settling-640-edd39ecc42102c7a.mp4",
+          "sha256": "edd39ecc42102c7a1e614c4f7ba078bed27b35cf6586668f5f30a790a63ee702",
+          "bytes": 114366,
+          "width": 640,
+          "height": 414,
+          "crf": 22,
+          "stillMatch": {
+            "mean": 0.715,
+            "max": 52,
+            "over": 0.00001
+          }
+        }
+      ]
     },
     {
       "id": 29,
@@ -1455,7 +2325,22 @@
         "mean": 2.385,
         "max": 49,
         "over": 0.00001
-      }
+      },
+      "rungs": [
+        {
+          "src": "/art/clips/29-ink-settling-640-e5a2b78cadd5992b.mp4",
+          "sha256": "e5a2b78cadd5992b66a794703ed8299b41916f69280c782ffb2fb3fd1cbf0232",
+          "bytes": 1115660,
+          "width": 640,
+          "height": 414,
+          "crf": 22,
+          "stillMatch": {
+            "mean": 2.842,
+            "max": 51,
+            "over": 0.00001
+          }
+        }
+      ]
     },
     {
       "id": 29,
@@ -1479,7 +2364,22 @@
         "mean": 0.526,
         "max": 39,
         "over": 0
-      }
+      },
+      "rungs": [
+        {
+          "src": "/art/clips/29-light-settling-640-c04783abd8110a7c.mp4",
+          "sha256": "c04783abd8110a7cc07a574b3d8ec1d2f9e9cc18eb033b580f2569bb0a5f2e89",
+          "bytes": 100953,
+          "width": 640,
+          "height": 414,
+          "crf": 22,
+          "stillMatch": {
+            "mean": 0.592,
+            "max": 34,
+            "over": 0
+          }
+        }
+      ]
     },
     {
       "id": 30,
@@ -1503,7 +2403,22 @@
         "mean": 2.853,
         "max": 40,
         "over": 0
-      }
+      },
+      "rungs": [
+        {
+          "src": "/art/clips/30-ink-settling-640-a57742694153b30b.mp4",
+          "sha256": "a57742694153b30b5a3f44dd3512f0ab3038e280d0379e2e64eccda9b50a0a14",
+          "bytes": 2231903,
+          "width": 640,
+          "height": 414,
+          "crf": 22,
+          "stillMatch": {
+            "mean": 3.347,
+            "max": 46,
+            "over": 0
+          }
+        }
+      ]
     },
     {
       "id": 30,
@@ -1527,7 +2442,22 @@
         "mean": 0.583,
         "max": 48,
         "over": 0
-      }
+      },
+      "rungs": [
+        {
+          "src": "/art/clips/30-light-settling-640-fe88fe510a86b2bc.mp4",
+          "sha256": "fe88fe510a86b2bc06ace8fc1647b1689e9eab1a3b1780f128c316e243ed1e1d",
+          "bytes": 92418,
+          "width": 640,
+          "height": 414,
+          "crf": 22,
+          "stillMatch": {
+            "mean": 0.644,
+            "max": 45,
+            "over": 0
+          }
+        }
+      ]
     },
     {
       "id": 31,
@@ -1571,7 +2501,22 @@
         "mean": 2.958,
         "max": 41,
         "over": 0
-      }
+      },
+      "rungs": [
+        {
+          "src": "/art/clips/31-ink-settling-640-e42a338e0bc8fe0d.mp4",
+          "sha256": "e42a338e0bc8fe0d3199795f53a16302a37d78308601e0be61c4c7cf2a6e39eb",
+          "bytes": 2163765,
+          "width": 640,
+          "height": 414,
+          "crf": 22,
+          "stillMatch": {
+            "mean": 3.466,
+            "max": 41,
+            "over": 0
+          }
+        }
+      ]
     },
     {
       "id": 31,
@@ -1615,7 +2560,22 @@
         "mean": 0.867,
         "max": 33,
         "over": 0
-      }
+      },
+      "rungs": [
+        {
+          "src": "/art/clips/31-light-settling-640-1f1e683bedbe2f46.mp4",
+          "sha256": "1f1e683bedbe2f46bdbdb5beaf2fb16aa88be6192828d3d2a3e84a2b1270c26b",
+          "bytes": 147303,
+          "width": 640,
+          "height": 414,
+          "crf": 22,
+          "stillMatch": {
+            "mean": 0.974,
+            "max": 39,
+            "over": 0
+          }
+        }
+      ]
     },
     {
       "id": 32,
@@ -1639,7 +2599,22 @@
         "mean": 2.974,
         "max": 43,
         "over": 0
-      }
+      },
+      "rungs": [
+        {
+          "src": "/art/clips/32-ink-settling-640-9e89ddb2f741936e.mp4",
+          "sha256": "9e89ddb2f741936eae7f10604467e3570644fa813097f5440bb213c8bbe7b628",
+          "bytes": 2740013,
+          "width": 640,
+          "height": 414,
+          "crf": 22,
+          "stillMatch": {
+            "mean": 3.542,
+            "max": 44,
+            "over": 0
+          }
+        }
+      ]
     },
     {
       "id": 32,
@@ -1663,7 +2638,22 @@
         "mean": 0.943,
         "max": 30,
         "over": 0
-      }
+      },
+      "rungs": [
+        {
+          "src": "/art/clips/32-light-settling-640-b20c08770e834fc7.mp4",
+          "sha256": "b20c08770e834fc7b776e6f5139b6821e705793218786ba9457706cfc452a7f2",
+          "bytes": 204280,
+          "width": 640,
+          "height": 414,
+          "crf": 22,
+          "stillMatch": {
+            "mean": 1.049,
+            "max": 52,
+            "over": 0.00001
+          }
+        }
+      ]
     },
     {
       "id": 33,
@@ -1687,7 +2677,22 @@
         "mean": 2.76,
         "max": 43,
         "over": 0
-      }
+      },
+      "rungs": [
+        {
+          "src": "/art/clips/33-ink-settling-640-68bdf3440796d8ec.mp4",
+          "sha256": "68bdf3440796d8ec472e787321a5ed127992e7cd7efdb9d25ce657f090442e8a",
+          "bytes": 1822390,
+          "width": 640,
+          "height": 414,
+          "crf": 22,
+          "stillMatch": {
+            "mean": 3.254,
+            "max": 45,
+            "over": 0
+          }
+        }
+      ]
     },
     {
       "id": 33,
@@ -1711,7 +2716,22 @@
         "mean": 0.944,
         "max": 43,
         "over": 0
-      }
+      },
+      "rungs": [
+        {
+          "src": "/art/clips/33-light-settling-640-e3d9295f4cba442c.mp4",
+          "sha256": "e3d9295f4cba442c1c9507fc4a1f86b6e7001ee129ae1fb49b0c2f965cfc55fe",
+          "bytes": 138973,
+          "width": 640,
+          "height": 414,
+          "crf": 22,
+          "stillMatch": {
+            "mean": 1.045,
+            "max": 38,
+            "over": 0
+          }
+        }
+      ]
     },
     {
       "id": 34,
@@ -1735,7 +2755,22 @@
         "mean": 2.509,
         "max": 41,
         "over": 0
-      }
+      },
+      "rungs": [
+        {
+          "src": "/art/clips/34-ink-settling-640-54a8fab57b02c78f.mp4",
+          "sha256": "54a8fab57b02c78fd50ab36539b7b62e62902bb53df09f3065440ba07073252a",
+          "bytes": 1287394,
+          "width": 640,
+          "height": 414,
+          "crf": 22,
+          "stillMatch": {
+            "mean": 3.033,
+            "max": 44,
+            "over": 0
+          }
+        }
+      ]
     },
     {
       "id": 34,
@@ -1759,7 +2794,22 @@
         "mean": 0.598,
         "max": 47,
         "over": 0
-      }
+      },
+      "rungs": [
+        {
+          "src": "/art/clips/34-light-settling-640-d05c45de31f2bf39.mp4",
+          "sha256": "d05c45de31f2bf39e239936fd99ae7135ac41b98bf7a12af89134c6751657642",
+          "bytes": 98509,
+          "width": 640,
+          "height": 414,
+          "crf": 22,
+          "stillMatch": {
+            "mean": 0.671,
+            "max": 41,
+            "over": 0
+          }
+        }
+      ]
     },
     {
       "id": 35,
@@ -1803,7 +2853,22 @@
         "mean": 2.358,
         "max": 48,
         "over": 0
-      }
+      },
+      "rungs": [
+        {
+          "src": "/art/clips/35-ink-settling-640-89df72a528f79784.mp4",
+          "sha256": "89df72a528f79784906a3228cde41dab6740ffec491b855b2242a9e088e75b28",
+          "bytes": 1161314,
+          "width": 640,
+          "height": 414,
+          "crf": 22,
+          "stillMatch": {
+            "mean": 2.833,
+            "max": 48,
+            "over": 0
+          }
+        }
+      ]
     },
     {
       "id": 35,
@@ -1847,7 +2912,22 @@
         "mean": 0.655,
         "max": 38,
         "over": 0
-      }
+      },
+      "rungs": [
+        {
+          "src": "/art/clips/35-light-settling-640-cd8ec8e889831b73.mp4",
+          "sha256": "cd8ec8e889831b735b4bd3e1230eaa9d953c6a6ff9171e5e8fd74dfefe53e9c5",
+          "bytes": 98659,
+          "width": 640,
+          "height": 414,
+          "crf": 22,
+          "stillMatch": {
+            "mean": 0.732,
+            "max": 44,
+            "over": 0
+          }
+        }
+      ]
     },
     {
       "id": 36,
@@ -1871,7 +2951,22 @@
         "mean": 2.944,
         "max": 38,
         "over": 0
-      }
+      },
+      "rungs": [
+        {
+          "src": "/art/clips/36-ink-settling-640-4450d974a68d334e.mp4",
+          "sha256": "4450d974a68d334e9a0fb5399ba993583efc093a8c94cbb2945c1eaa5dc2403d",
+          "bytes": 1958375,
+          "width": 640,
+          "height": 414,
+          "crf": 22,
+          "stillMatch": {
+            "mean": 3.436,
+            "max": 50,
+            "over": 0.00001
+          }
+        }
+      ]
     },
     {
       "id": 36,
@@ -1895,7 +2990,22 @@
         "mean": 1.008,
         "max": 45,
         "over": 0
-      }
+      },
+      "rungs": [
+        {
+          "src": "/art/clips/36-light-settling-640-6eec0355540cc0de.mp4",
+          "sha256": "6eec0355540cc0deebd0c0f4db585bbcf3d3c5c1fd2b77f8a7e51b3a0fa4ca7a",
+          "bytes": 139059,
+          "width": 640,
+          "height": 414,
+          "crf": 22,
+          "stillMatch": {
+            "mean": 1.115,
+            "max": 69,
+            "over": 0.00001
+          }
+        }
+      ]
     },
     {
       "id": 37,
@@ -1919,7 +3029,22 @@
         "mean": 3.262,
         "max": 43,
         "over": 0
-      }
+      },
+      "rungs": [
+        {
+          "src": "/art/clips/37-ink-settling-640-b143b5e2b2ffa8c0.mp4",
+          "sha256": "b143b5e2b2ffa8c0dabaf607be456576b500f371456243a202a4e19a889efbdb",
+          "bytes": 2411258,
+          "width": 640,
+          "height": 414,
+          "crf": 22,
+          "stillMatch": {
+            "mean": 3.822,
+            "max": 51,
+            "over": 0.00002
+          }
+        }
+      ]
     },
     {
       "id": 37,
@@ -1943,7 +3068,22 @@
         "mean": 0.894,
         "max": 37,
         "over": 0
-      }
+      },
+      "rungs": [
+        {
+          "src": "/art/clips/37-light-settling-640-517648189f4cbb83.mp4",
+          "sha256": "517648189f4cbb83570a901390a5938065c01a2cc0d9912cc80964f288488c6b",
+          "bytes": 149936,
+          "width": 640,
+          "height": 414,
+          "crf": 22,
+          "stillMatch": {
+            "mean": 0.982,
+            "max": 50,
+            "over": 0.00001
+          }
+        }
+      ]
     },
     {
       "id": 38,
@@ -1967,7 +3107,22 @@
         "mean": 2.638,
         "max": 41,
         "over": 0
-      }
+      },
+      "rungs": [
+        {
+          "src": "/art/clips/38-ink-settling-640-93dfab8769ae3a1c.mp4",
+          "sha256": "93dfab8769ae3a1c9f67f71b41ae6eee5a53f04c22ee4e3e3679f9615dbcf294",
+          "bytes": 2224964,
+          "width": 640,
+          "height": 414,
+          "crf": 22,
+          "stillMatch": {
+            "mean": 3.181,
+            "max": 66,
+            "over": 0.00002
+          }
+        }
+      ]
     },
     {
       "id": 38,
@@ -1991,7 +3146,22 @@
         "mean": 0.73,
         "max": 43,
         "over": 0
-      }
+      },
+      "rungs": [
+        {
+          "src": "/art/clips/38-light-settling-640-ab21ef43a04603cb.mp4",
+          "sha256": "ab21ef43a04603cbebe75d474c97e4aba1543e65a129fafd576e842511c3ba5b",
+          "bytes": 121879,
+          "width": 640,
+          "height": 414,
+          "crf": 22,
+          "stillMatch": {
+            "mean": 0.807,
+            "max": 47,
+            "over": 0
+          }
+        }
+      ]
     },
     {
       "id": 39,
@@ -2015,7 +3185,22 @@
         "mean": 2.337,
         "max": 38,
         "over": 0
-      }
+      },
+      "rungs": [
+        {
+          "src": "/art/clips/39-ink-settling-640-32bda6a3876c2e5c.mp4",
+          "sha256": "32bda6a3876c2e5c3e20ea751ed5b8544dd8823f2e8285b02c9ce2d10327a8d3",
+          "bytes": 930539,
+          "width": 640,
+          "height": 414,
+          "crf": 22,
+          "stillMatch": {
+            "mean": 2.805,
+            "max": 45,
+            "over": 0
+          }
+        }
+      ]
     },
     {
       "id": 39,
@@ -2039,7 +3224,22 @@
         "mean": 0.63,
         "max": 32,
         "over": 0
-      }
+      },
+      "rungs": [
+        {
+          "src": "/art/clips/39-light-settling-640-9ee99c247d916aa2.mp4",
+          "sha256": "9ee99c247d916aa257cb1e61da9d5e4b36c884f431e15669e73bcfe054185256",
+          "bytes": 112622,
+          "width": 640,
+          "height": 414,
+          "crf": 22,
+          "stillMatch": {
+            "mean": 0.698,
+            "max": 43,
+            "over": 0
+          }
+        }
+      ]
     },
     {
       "id": 40,
@@ -2063,7 +3263,22 @@
         "mean": 3.463,
         "max": 48,
         "over": 0
-      }
+      },
+      "rungs": [
+        {
+          "src": "/art/clips/40-ink-settling-640-503be3c11f412727.mp4",
+          "sha256": "503be3c11f4127279797b788755593c1b5c9b05ba1fe34d918285eb0e140c563",
+          "bytes": 3242013,
+          "width": 640,
+          "height": 414,
+          "crf": 22,
+          "stillMatch": {
+            "mean": 4,
+            "max": 49,
+            "over": 0.00001
+          }
+        }
+      ]
     },
     {
       "id": 40,
@@ -2087,7 +3302,22 @@
         "mean": 1.049,
         "max": 34,
         "over": 0
-      }
+      },
+      "rungs": [
+        {
+          "src": "/art/clips/40-light-settling-640-a8abb8b2652da488.mp4",
+          "sha256": "a8abb8b2652da488566d6db8768e0213c3a9702c473aab7971febba7a6d21d0e",
+          "bytes": 193305,
+          "width": 640,
+          "height": 414,
+          "crf": 22,
+          "stillMatch": {
+            "mean": 1.204,
+            "max": 36,
+            "over": 0
+          }
+        }
+      ]
     },
     {
       "id": 41,
@@ -2111,7 +3341,22 @@
         "mean": 3.114,
         "max": 44,
         "over": 0
-      }
+      },
+      "rungs": [
+        {
+          "src": "/art/clips/41-ink-settling-640-e1b7cdf7962f0057.mp4",
+          "sha256": "e1b7cdf7962f0057b94e10355db54fa601b4b0bc6ff025443a8caf466f05a4cf",
+          "bytes": 3328679,
+          "width": 640,
+          "height": 414,
+          "crf": 22,
+          "stillMatch": {
+            "mean": 3.666,
+            "max": 51,
+            "over": 0.00001
+          }
+        }
+      ]
     },
     {
       "id": 41,
@@ -2135,7 +3380,22 @@
         "mean": 1.053,
         "max": 40,
         "over": 0
-      }
+      },
+      "rungs": [
+        {
+          "src": "/art/clips/41-light-settling-640-a3b9bf0a344e4df0.mp4",
+          "sha256": "a3b9bf0a344e4df01a10c20937c24d3ebc2b9be395e9d7cd6bc98693ae322d0c",
+          "bytes": 162845,
+          "width": 640,
+          "height": 414,
+          "crf": 22,
+          "stillMatch": {
+            "mean": 1.184,
+            "max": 64,
+            "over": 0.00001
+          }
+        }
+      ]
     },
     {
       "id": 42,
@@ -2159,7 +3419,22 @@
         "mean": 2.33,
         "max": 48,
         "over": 0
-      }
+      },
+      "rungs": [
+        {
+          "src": "/art/clips/42-ink-settling-640-b869aa0b2dcce550.mp4",
+          "sha256": "b869aa0b2dcce550f5be9df8206530335a78ec7c8f85d339e4668e7b5fe9213c",
+          "bytes": 1065499,
+          "width": 640,
+          "height": 414,
+          "crf": 22,
+          "stillMatch": {
+            "mean": 2.79,
+            "max": 46,
+            "over": 0
+          }
+        }
+      ]
     },
     {
       "id": 42,
@@ -2183,7 +3458,22 @@
         "mean": 0.408,
         "max": 34,
         "over": 0
-      }
+      },
+      "rungs": [
+        {
+          "src": "/art/clips/42-light-settling-640-f9d5d8fc5c36d1ba.mp4",
+          "sha256": "f9d5d8fc5c36d1ba0ea1053b426c16bf5a40d78a4a9a11572c178034ad3c05a6",
+          "bytes": 83045,
+          "width": 640,
+          "height": 414,
+          "crf": 22,
+          "stillMatch": {
+            "mean": 0.448,
+            "max": 49,
+            "over": 0.00001
+          }
+        }
+      ]
     },
     {
       "id": 43,
@@ -2207,7 +3497,22 @@
         "mean": 2.47,
         "max": 38,
         "over": 0
-      }
+      },
+      "rungs": [
+        {
+          "src": "/art/clips/43-ink-settling-640-b4827b9e3cdfd28f.mp4",
+          "sha256": "b4827b9e3cdfd28fe92cf44d238bf6dfe8d982f9b7ec5fe0abf1f5075bbbdb71",
+          "bytes": 1447633,
+          "width": 640,
+          "height": 414,
+          "crf": 22,
+          "stillMatch": {
+            "mean": 2.953,
+            "max": 42,
+            "over": 0
+          }
+        }
+      ]
     },
     {
       "id": 43,
@@ -2231,7 +3536,22 @@
         "mean": 0.478,
         "max": 31,
         "over": 0
-      }
+      },
+      "rungs": [
+        {
+          "src": "/art/clips/43-light-settling-640-3882a2d60cf830c1.mp4",
+          "sha256": "3882a2d60cf830c1e167219eabb820252769d7232a3e9322be42eaaef45f4f28",
+          "bytes": 84791,
+          "width": 640,
+          "height": 414,
+          "crf": 22,
+          "stillMatch": {
+            "mean": 0.514,
+            "max": 33,
+            "over": 0
+          }
+        }
+      ]
     },
     {
       "id": 44,
@@ -2255,7 +3575,22 @@
         "mean": 2.686,
         "max": 43,
         "over": 0
-      }
+      },
+      "rungs": [
+        {
+          "src": "/art/clips/44-ink-settling-640-64588ad4e0af766b.mp4",
+          "sha256": "64588ad4e0af766bd51c2f1513f9fb554629fd86b00de357d994932894814d54",
+          "bytes": 2576660,
+          "width": 640,
+          "height": 414,
+          "crf": 22,
+          "stillMatch": {
+            "mean": 3.134,
+            "max": 46,
+            "over": 0
+          }
+        }
+      ]
     },
     {
       "id": 44,
@@ -2279,7 +3614,22 @@
         "mean": 0.733,
         "max": 34,
         "over": 0
-      }
+      },
+      "rungs": [
+        {
+          "src": "/art/clips/44-light-settling-640-473487cc740a7ec5.mp4",
+          "sha256": "473487cc740a7ec59778205dfb355fdcb811328d549b70bc19ad736e56140a08",
+          "bytes": 151110,
+          "width": 640,
+          "height": 414,
+          "crf": 22,
+          "stillMatch": {
+            "mean": 0.814,
+            "max": 29,
+            "over": 0
+          }
+        }
+      ]
     },
     {
       "id": 45,
@@ -2303,7 +3653,22 @@
         "mean": 2.598,
         "max": 42,
         "over": 0
-      }
+      },
+      "rungs": [
+        {
+          "src": "/art/clips/45-ink-settling-640-dd3b39b5419753ef.mp4",
+          "sha256": "dd3b39b5419753efe17c6a1b3fcc87be48d3d2528e5692681da7be5384ed7a95",
+          "bytes": 1542120,
+          "width": 640,
+          "height": 414,
+          "crf": 22,
+          "stillMatch": {
+            "mean": 3.069,
+            "max": 45,
+            "over": 0
+          }
+        }
+      ]
     },
     {
       "id": 45,
@@ -2327,7 +3692,22 @@
         "mean": 0.535,
         "max": 33,
         "over": 0
-      }
+      },
+      "rungs": [
+        {
+          "src": "/art/clips/45-light-settling-640-521466aaa2e47850.mp4",
+          "sha256": "521466aaa2e478501c800d1a526f5ac9a4be987c74758a533c799bbc72c20608",
+          "bytes": 88967,
+          "width": 640,
+          "height": 414,
+          "crf": 22,
+          "stillMatch": {
+            "mean": 0.596,
+            "max": 40,
+            "over": 0
+          }
+        }
+      ]
     },
     {
       "id": 46,
@@ -2351,7 +3731,22 @@
         "mean": 2.639,
         "max": 40,
         "over": 0
-      }
+      },
+      "rungs": [
+        {
+          "src": "/art/clips/46-ink-settling-640-21e67a3969282dbe.mp4",
+          "sha256": "21e67a3969282dbe3b42a4f5d7991d36088205385d33d386630bd854cc6be71d",
+          "bytes": 1698177,
+          "width": 640,
+          "height": 414,
+          "crf": 22,
+          "stillMatch": {
+            "mean": 3.148,
+            "max": 38,
+            "over": 0
+          }
+        }
+      ]
     },
     {
       "id": 46,
@@ -2375,7 +3770,22 @@
         "mean": 0.42,
         "max": 38,
         "over": 0
-      }
+      },
+      "rungs": [
+        {
+          "src": "/art/clips/46-light-settling-640-6c955667391c72ef.mp4",
+          "sha256": "6c955667391c72efb8b482c114af2c6ea65aa556f8bf53b62fba6f1b7d1412d1",
+          "bytes": 85938,
+          "width": 640,
+          "height": 414,
+          "crf": 22,
+          "stillMatch": {
+            "mean": 0.461,
+            "max": 42,
+            "over": 0
+          }
+        }
+      ]
     },
     {
       "id": 47,
@@ -2399,7 +3809,22 @@
         "mean": 3.714,
         "max": 41,
         "over": 0
-      }
+      },
+      "rungs": [
+        {
+          "src": "/art/clips/47-ink-settling-640-85ec101fac9b7104.mp4",
+          "sha256": "85ec101fac9b7104147ecaa801116572063dd7ce89bf3a1f2648a6f0ccaca02f",
+          "bytes": 3556796,
+          "width": 640,
+          "height": 414,
+          "crf": 22,
+          "stillMatch": {
+            "mean": 4.317,
+            "max": 44,
+            "over": 0
+          }
+        }
+      ]
     },
     {
       "id": 47,
@@ -2423,7 +3848,22 @@
         "mean": 0.926,
         "max": 30,
         "over": 0
-      }
+      },
+      "rungs": [
+        {
+          "src": "/art/clips/47-light-settling-640-ddd502a232afc265.mp4",
+          "sha256": "ddd502a232afc2652536468c24c8d174b4897a76055659fc79c19a665189c42f",
+          "bytes": 169264,
+          "width": 640,
+          "height": 414,
+          "crf": 22,
+          "stillMatch": {
+            "mean": 1.057,
+            "max": 31,
+            "over": 0
+          }
+        }
+      ]
     },
     {
       "id": 48,
@@ -2447,7 +3887,22 @@
         "mean": 2.391,
         "max": 42,
         "over": 0
-      }
+      },
+      "rungs": [
+        {
+          "src": "/art/clips/48-ink-settling-640-ba58b0d354a971c4.mp4",
+          "sha256": "ba58b0d354a971c41343644f19ac5db9cdfd7e67e39a6fb6bbffa50da9ac137a",
+          "bytes": 1199106,
+          "width": 640,
+          "height": 414,
+          "crf": 22,
+          "stillMatch": {
+            "mean": 2.819,
+            "max": 47,
+            "over": 0
+          }
+        }
+      ]
     },
     {
       "id": 48,
@@ -2471,7 +3926,22 @@
         "mean": 0.444,
         "max": 38,
         "over": 0
-      }
+      },
+      "rungs": [
+        {
+          "src": "/art/clips/48-light-settling-640-b1655f72c15ae779.mp4",
+          "sha256": "b1655f72c15ae7794cd8916129df79fc9c29586393dc15b98787ea3fe3a4ed71",
+          "bytes": 84450,
+          "width": 640,
+          "height": 414,
+          "crf": 22,
+          "stillMatch": {
+            "mean": 0.501,
+            "max": 40,
+            "over": 0
+          }
+        }
+      ]
     },
     {
       "id": 49,
@@ -2495,7 +3965,22 @@
         "mean": 2.795,
         "max": 45,
         "over": 0
-      }
+      },
+      "rungs": [
+        {
+          "src": "/art/clips/49-ink-settling-640-dfd999e69007b542.mp4",
+          "sha256": "dfd999e69007b5420f12b566cb8d0288c98705852c4ed71459d1c553b8e91bfd",
+          "bytes": 1794462,
+          "width": 640,
+          "height": 414,
+          "crf": 22,
+          "stillMatch": {
+            "mean": 3.322,
+            "max": 45,
+            "over": 0
+          }
+        }
+      ]
     },
     {
       "id": 49,
@@ -2519,7 +4004,22 @@
         "mean": 0.435,
         "max": 32,
         "over": 0
-      }
+      },
+      "rungs": [
+        {
+          "src": "/art/clips/49-light-settling-640-98158ec5fedeb1c3.mp4",
+          "sha256": "98158ec5fedeb1c39295edbb6fa727410aaa537c76ebe2c8fac7ed8016f5d8c9",
+          "bytes": 93508,
+          "width": 640,
+          "height": 414,
+          "crf": 22,
+          "stillMatch": {
+            "mean": 0.504,
+            "max": 43,
+            "over": 0
+          }
+        }
+      ]
     },
     {
       "id": 50,
@@ -2543,7 +4043,22 @@
         "mean": 2.439,
         "max": 38,
         "over": 0
-      }
+      },
+      "rungs": [
+        {
+          "src": "/art/clips/50-ink-settling-640-3dc55bccd2d1f0ee.mp4",
+          "sha256": "3dc55bccd2d1f0ee529d26ea72ccee04f2e1448f1c566d2851ee037a2cc0fb36",
+          "bytes": 1512018,
+          "width": 640,
+          "height": 414,
+          "crf": 22,
+          "stillMatch": {
+            "mean": 2.927,
+            "max": 44,
+            "over": 0
+          }
+        }
+      ]
     },
     {
       "id": 50,
@@ -2567,7 +4082,22 @@
         "mean": 0.675,
         "max": 35,
         "over": 0
-      }
+      },
+      "rungs": [
+        {
+          "src": "/art/clips/50-light-settling-640-604175c959dcfcdc.mp4",
+          "sha256": "604175c959dcfcdc4bcf62c8e92ac6fa9ed7b0bf7752864c64ad06935a9a4077",
+          "bytes": 151842,
+          "width": 640,
+          "height": 414,
+          "crf": 22,
+          "stillMatch": {
+            "mean": 0.809,
+            "max": 42,
+            "over": 0
+          }
+        }
+      ]
     },
     {
       "id": 51,
@@ -2591,7 +4121,22 @@
         "mean": 2.486,
         "max": 44,
         "over": 0
-      }
+      },
+      "rungs": [
+        {
+          "src": "/art/clips/51-ink-settling-640-aba80c2301776e05.mp4",
+          "sha256": "aba80c2301776e05548506b488b6379feaeec200173d40dc894521efbefe7a4a",
+          "bytes": 1470057,
+          "width": 640,
+          "height": 414,
+          "crf": 22,
+          "stillMatch": {
+            "mean": 2.992,
+            "max": 44,
+            "over": 0
+          }
+        }
+      ]
     },
     {
       "id": 51,
@@ -2615,7 +4160,22 @@
         "mean": 0.436,
         "max": 26,
         "over": 0
-      }
+      },
+      "rungs": [
+        {
+          "src": "/art/clips/51-light-settling-640-a90d6b5b6e0173ae.mp4",
+          "sha256": "a90d6b5b6e0173ae7ffd6d6900e3b7f4f1a9f19740c1e241bbcfd38438987470",
+          "bytes": 81595,
+          "width": 640,
+          "height": 414,
+          "crf": 22,
+          "stillMatch": {
+            "mean": 0.519,
+            "max": 42,
+            "over": 0
+          }
+        }
+      ]
     },
     {
       "id": 52,
@@ -2639,7 +4199,22 @@
         "mean": 2.805,
         "max": 48,
         "over": 0
-      }
+      },
+      "rungs": [
+        {
+          "src": "/art/clips/52-ink-settling-640-9c7baf85f900fcab.mp4",
+          "sha256": "9c7baf85f900fcaba8852d22837f67d564085749dc3d1ae3c71c4b7111ef83c7",
+          "bytes": 1951319,
+          "width": 640,
+          "height": 414,
+          "crf": 22,
+          "stillMatch": {
+            "mean": 3.339,
+            "max": 48,
+            "over": 0
+          }
+        }
+      ]
     },
     {
       "id": 52,
@@ -2663,7 +4238,22 @@
         "mean": 0.63,
         "max": 42,
         "over": 0
-      }
+      },
+      "rungs": [
+        {
+          "src": "/art/clips/52-light-settling-640-4b8248287684afcc.mp4",
+          "sha256": "4b8248287684afcc5b658d230ec383156de6746792f885de87e9cb9525be3414",
+          "bytes": 141317,
+          "width": 640,
+          "height": 414,
+          "crf": 22,
+          "stillMatch": {
+            "mean": 0.764,
+            "max": 41,
+            "over": 0
+          }
+        }
+      ]
     },
     {
       "id": 53,
@@ -2687,7 +4277,22 @@
         "mean": 2.665,
         "max": 42,
         "over": 0
-      }
+      },
+      "rungs": [
+        {
+          "src": "/art/clips/53-ink-settling-640-7c03d9228803e3de.mp4",
+          "sha256": "7c03d9228803e3dedd7b7f4f0af40c4c4b89b76b74edc50b0080c323ed5dd568",
+          "bytes": 1676965,
+          "width": 640,
+          "height": 414,
+          "crf": 22,
+          "stillMatch": {
+            "mean": 3.193,
+            "max": 46,
+            "over": 0
+          }
+        }
+      ]
     },
     {
       "id": 53,
@@ -2711,7 +4316,22 @@
         "mean": 0.792,
         "max": 45,
         "over": 0
-      }
+      },
+      "rungs": [
+        {
+          "src": "/art/clips/53-light-settling-640-9808078dd8bfaa74.mp4",
+          "sha256": "9808078dd8bfaa74986f4a95b8558820a7fd4ccb58373f0d194f8c8997375cf4",
+          "bytes": 115009,
+          "width": 640,
+          "height": 414,
+          "crf": 22,
+          "stillMatch": {
+            "mean": 0.902,
+            "max": 55,
+            "over": 0.00001
+          }
+        }
+      ]
     },
     {
       "id": 54,
@@ -2735,7 +4355,22 @@
         "mean": 2.756,
         "max": 60,
         "over": 0.00002
-      }
+      },
+      "rungs": [
+        {
+          "src": "/art/clips/54-ink-settling-640-6c86ef01a7bfe123.mp4",
+          "sha256": "6c86ef01a7bfe12333c377e8c7089dddf7148c4e702e59743f71167a457e7650",
+          "bytes": 2316034,
+          "width": 640,
+          "height": 414,
+          "crf": 22,
+          "stillMatch": {
+            "mean": 3.296,
+            "max": 62,
+            "over": 0.00002
+          }
+        }
+      ]
     },
     {
       "id": 54,
@@ -2759,7 +4394,22 @@
         "mean": 0.72,
         "max": 36,
         "over": 0
-      }
+      },
+      "rungs": [
+        {
+          "src": "/art/clips/54-light-settling-640-5ae1f1ac36a023e0.mp4",
+          "sha256": "5ae1f1ac36a023e0f92b72ef12df8c6bdd969d7ec3c6564e0cc99914b5dccff1",
+          "bytes": 161848,
+          "width": 640,
+          "height": 414,
+          "crf": 22,
+          "stillMatch": {
+            "mean": 0.834,
+            "max": 64,
+            "over": 0.00001
+          }
+        }
+      ]
     },
     {
       "id": 55,
@@ -2783,7 +4433,22 @@
         "mean": 2.708,
         "max": 36,
         "over": 0
-      }
+      },
+      "rungs": [
+        {
+          "src": "/art/clips/55-ink-settling-640-7935029623912388.mp4",
+          "sha256": "79350296239123882f2b94c39b6321c5c4b115264545a9901252b8dd397b170c",
+          "bytes": 1958884,
+          "width": 640,
+          "height": 414,
+          "crf": 22,
+          "stillMatch": {
+            "mean": 3.282,
+            "max": 42,
+            "over": 0
+          }
+        }
+      ]
     },
     {
       "id": 55,
@@ -2807,7 +4472,22 @@
         "mean": 0.722,
         "max": 52,
         "over": 0.00001
-      }
+      },
+      "rungs": [
+        {
+          "src": "/art/clips/55-light-settling-640-10805d5d52e90628.mp4",
+          "sha256": "10805d5d52e90628f15895d7c2627674699fa9bc315a40bd8333cfc3f8e2d998",
+          "bytes": 106165,
+          "width": 640,
+          "height": 414,
+          "crf": 22,
+          "stillMatch": {
+            "mean": 0.814,
+            "max": 71,
+            "over": 0.00002
+          }
+        }
+      ]
     },
     {
       "id": 56,
@@ -2831,7 +4511,22 @@
         "mean": 2.455,
         "max": 41,
         "over": 0
-      }
+      },
+      "rungs": [
+        {
+          "src": "/art/clips/56-ink-settling-640-973b1c2d376f7434.mp4",
+          "sha256": "973b1c2d376f7434ce612655aefaa194d8075aa00245cd4b6ebb00f548da5bb7",
+          "bytes": 1386820,
+          "width": 640,
+          "height": 414,
+          "crf": 22,
+          "stillMatch": {
+            "mean": 2.931,
+            "max": 42,
+            "over": 0
+          }
+        }
+      ]
     },
     {
       "id": 56,
@@ -2855,7 +4550,22 @@
         "mean": 0.457,
         "max": 35,
         "over": 0
-      }
+      },
+      "rungs": [
+        {
+          "src": "/art/clips/56-light-settling-640-156d3c454ce8c94d.mp4",
+          "sha256": "156d3c454ce8c94d517ad03d53f1a4a3e7a7962a5217546d7b0de72c9daa0e6c",
+          "bytes": 84383,
+          "width": 640,
+          "height": 414,
+          "crf": 22,
+          "stillMatch": {
+            "mean": 0.537,
+            "max": 38,
+            "over": 0
+          }
+        }
+      ]
     },
     {
       "id": 57,
@@ -2879,7 +4589,22 @@
         "mean": 2.698,
         "max": 46,
         "over": 0
-      }
+      },
+      "rungs": [
+        {
+          "src": "/art/clips/57-ink-settling-640-57a25f62c99126d4.mp4",
+          "sha256": "57a25f62c99126d4631dcaf5f75f29106383e027a1f2e9c0d009d43208fd8698",
+          "bytes": 1680005,
+          "width": 640,
+          "height": 414,
+          "crf": 22,
+          "stillMatch": {
+            "mean": 3.191,
+            "max": 47,
+            "over": 0
+          }
+        }
+      ]
     },
     {
       "id": 57,
@@ -2903,7 +4628,22 @@
         "mean": 0.841,
         "max": 29,
         "over": 0
-      }
+      },
+      "rungs": [
+        {
+          "src": "/art/clips/57-light-settling-640-ed15982db1e2be16.mp4",
+          "sha256": "ed15982db1e2be16b3d64bb4e104b72a54e25e58d1fc31df21de89c546d8ff4c",
+          "bytes": 171065,
+          "width": 640,
+          "height": 414,
+          "crf": 22,
+          "stillMatch": {
+            "mean": 1.009,
+            "max": 34,
+            "over": 0
+          }
+        }
+      ]
     },
     {
       "id": 58,
@@ -2927,7 +4667,22 @@
         "mean": 2.491,
         "max": 42,
         "over": 0
-      }
+      },
+      "rungs": [
+        {
+          "src": "/art/clips/58-ink-settling-640-96da85cc64cdb062.mp4",
+          "sha256": "96da85cc64cdb0629b7c2f9fa509941e75bb7e68237211a3f3b3ffa53d04b66e",
+          "bytes": 1494742,
+          "width": 640,
+          "height": 414,
+          "crf": 22,
+          "stillMatch": {
+            "mean": 2.971,
+            "max": 56,
+            "over": 0.00002
+          }
+        }
+      ]
     },
     {
       "id": 58,
@@ -2951,7 +4706,22 @@
         "mean": 0.729,
         "max": 31,
         "over": 0
-      }
+      },
+      "rungs": [
+        {
+          "src": "/art/clips/58-light-settling-640-87b33fd052db4ef5.mp4",
+          "sha256": "87b33fd052db4ef506749ee4fae874edaed28cf7bbb40d630df5a61b67c08016",
+          "bytes": 131695,
+          "width": 640,
+          "height": 414,
+          "crf": 22,
+          "stillMatch": {
+            "mean": 0.874,
+            "max": 46,
+            "over": 0
+          }
+        }
+      ]
     },
     {
       "id": 59,
@@ -2975,7 +4745,22 @@
         "mean": 2.555,
         "max": 43,
         "over": 0
-      }
+      },
+      "rungs": [
+        {
+          "src": "/art/clips/59-ink-settling-640-6529731ac2610ba7.mp4",
+          "sha256": "6529731ac2610ba748d14c81139b102142b8eb8ac56c32ca93149748d955fac7",
+          "bytes": 1571039,
+          "width": 640,
+          "height": 414,
+          "crf": 22,
+          "stillMatch": {
+            "mean": 3.036,
+            "max": 43,
+            "over": 0
+          }
+        }
+      ]
     },
     {
       "id": 59,
@@ -2999,7 +4784,22 @@
         "mean": 0.392,
         "max": 51,
         "over": 0.00001
-      }
+      },
+      "rungs": [
+        {
+          "src": "/art/clips/59-light-settling-640-78ae0bbdbcd6ff79.mp4",
+          "sha256": "78ae0bbdbcd6ff79ceb67325def5415c190ad4b76ff9ad011c44204dad3b8482",
+          "bytes": 75500,
+          "width": 640,
+          "height": 414,
+          "crf": 22,
+          "stillMatch": {
+            "mean": 0.453,
+            "max": 57,
+            "over": 0.00002
+          }
+        }
+      ]
     },
     {
       "id": 60,
@@ -3023,7 +4823,22 @@
         "mean": 2.403,
         "max": 46,
         "over": 0
-      }
+      },
+      "rungs": [
+        {
+          "src": "/art/clips/60-ink-settling-640-5e7a7065ace56b69.mp4",
+          "sha256": "5e7a7065ace56b69e6f7330aa7fe6610410da619c0944d276bd285f6c977316d",
+          "bytes": 1399367,
+          "width": 640,
+          "height": 414,
+          "crf": 22,
+          "stillMatch": {
+            "mean": 2.913,
+            "max": 61,
+            "over": 0.00002
+          }
+        }
+      ]
     },
     {
       "id": 60,
@@ -3047,7 +4862,22 @@
         "mean": 0.389,
         "max": 35,
         "over": 0
-      }
+      },
+      "rungs": [
+        {
+          "src": "/art/clips/60-light-settling-640-84535c2bc6a188d8.mp4",
+          "sha256": "84535c2bc6a188d884b8fc13aa36aa74b7823200d4cbec637e35ecd8f2c1f301",
+          "bytes": 82478,
+          "width": 640,
+          "height": 414,
+          "crf": 22,
+          "stillMatch": {
+            "mean": 0.461,
+            "max": 42,
+            "over": 0
+          }
+        }
+      ]
     },
     {
       "id": 61,
@@ -3071,7 +4901,22 @@
         "mean": 2.945,
         "max": 40,
         "over": 0
-      }
+      },
+      "rungs": [
+        {
+          "src": "/art/clips/61-ink-settling-640-1a86c2bb82e06896.mp4",
+          "sha256": "1a86c2bb82e06896ff6665c89dc8e5e352fbd8c6d6636f9225e83f34ae43c9d3",
+          "bytes": 2250127,
+          "width": 640,
+          "height": 414,
+          "crf": 22,
+          "stillMatch": {
+            "mean": 3.481,
+            "max": 44,
+            "over": 0
+          }
+        }
+      ]
     },
     {
       "id": 61,
@@ -3095,7 +4940,22 @@
         "mean": 0.732,
         "max": 35,
         "over": 0
-      }
+      },
+      "rungs": [
+        {
+          "src": "/art/clips/61-light-settling-640-8244aacf4668e5c5.mp4",
+          "sha256": "8244aacf4668e5c57c4c8b44d64d71804ad81d66fb4b6fde7febfffb2b906947",
+          "bytes": 132102,
+          "width": 640,
+          "height": 414,
+          "crf": 22,
+          "stillMatch": {
+            "mean": 0.808,
+            "max": 34,
+            "over": 0
+          }
+        }
+      ]
     },
     {
       "id": 62,
@@ -3119,7 +4979,22 @@
         "mean": 2.228,
         "max": 40,
         "over": 0
-      }
+      },
+      "rungs": [
+        {
+          "src": "/art/clips/62-ink-settling-640-e13a88bf66560613.mp4",
+          "sha256": "e13a88bf665606136b4862b9383d3da97d9d3b8bbc71ee2cd2ca7d9d423f1095",
+          "bytes": 769137,
+          "width": 640,
+          "height": 414,
+          "crf": 22,
+          "stillMatch": {
+            "mean": 2.674,
+            "max": 53,
+            "over": 0.00001
+          }
+        }
+      ]
     },
     {
       "id": 62,
@@ -3143,7 +5018,22 @@
         "mean": 0.29,
         "max": 52,
         "over": 0.00001
-      }
+      },
+      "rungs": [
+        {
+          "src": "/art/clips/62-light-settling-640-aae617512f581f2a.mp4",
+          "sha256": "aae617512f581f2a4bb7ab62a7cf0f6df9c0566168ae69ee8484c43612c75d0f",
+          "bytes": 56357,
+          "width": 640,
+          "height": 414,
+          "crf": 22,
+          "stillMatch": {
+            "mean": 0.316,
+            "max": 52,
+            "over": 0.00001
+          }
+        }
+      ]
     },
     {
       "id": 63,
@@ -3167,7 +5057,22 @@
         "mean": 2.604,
         "max": 42,
         "over": 0
-      }
+      },
+      "rungs": [
+        {
+          "src": "/art/clips/63-ink-settling-640-0f81baa9c15ec4ec.mp4",
+          "sha256": "0f81baa9c15ec4ecab66653c01218a87d9f9e5e9ab2b8bb37641dd25c3af0020",
+          "bytes": 1687658,
+          "width": 640,
+          "height": 414,
+          "crf": 22,
+          "stillMatch": {
+            "mean": 3.084,
+            "max": 44,
+            "over": 0
+          }
+        }
+      ]
     },
     {
       "id": 63,
@@ -3191,7 +5096,22 @@
         "mean": 0.472,
         "max": 39,
         "over": 0
-      }
+      },
+      "rungs": [
+        {
+          "src": "/art/clips/63-light-settling-640-16c3d9df89bfacbe.mp4",
+          "sha256": "16c3d9df89bfacbe48ff1b44f032baf612150501c6f1c8c3a21b7b94968bbf9b",
+          "bytes": 91918,
+          "width": 640,
+          "height": 414,
+          "crf": 22,
+          "stillMatch": {
+            "mean": 0.562,
+            "max": 41,
+            "over": 0
+          }
+        }
+      ]
     },
     {
       "id": 64,
@@ -3215,7 +5135,22 @@
         "mean": 3.32,
         "max": 37,
         "over": 0
-      }
+      },
+      "rungs": [
+        {
+          "src": "/art/clips/64-ink-settling-640-e15539efbd7ea9a7.mp4",
+          "sha256": "e15539efbd7ea9a7e4468f5d7bc8c07e183082dd66a20d813a94137cf993221d",
+          "bytes": 2930086,
+          "width": 640,
+          "height": 414,
+          "crf": 22,
+          "stillMatch": {
+            "mean": 3.877,
+            "max": 44,
+            "over": 0
+          }
+        }
+      ]
     },
     {
       "id": 64,
@@ -3239,7 +5174,22 @@
         "mean": 0.611,
         "max": 42,
         "over": 0
-      }
+      },
+      "rungs": [
+        {
+          "src": "/art/clips/64-light-settling-640-bb9c272b41c5dd2c.mp4",
+          "sha256": "bb9c272b41c5dd2c755f1398da5cda8a21f8f50036d944c79cfebf380dc7014e",
+          "bytes": 130500,
+          "width": 640,
+          "height": 414,
+          "crf": 22,
+          "stillMatch": {
+            "mean": 0.731,
+            "max": 59,
+            "over": 0.00001
+          }
+        }
+      ]
     },
     {
       "id": 65,
@@ -3263,7 +5213,22 @@
         "mean": 2.407,
         "max": 48,
         "over": 0
-      }
+      },
+      "rungs": [
+        {
+          "src": "/art/clips/65-ink-settling-640-08c5614ee535cdc3.mp4",
+          "sha256": "08c5614ee535cdc378e97f114d61af39bb989172a180e5b22a20616f51be2530",
+          "bytes": 1160169,
+          "width": 640,
+          "height": 414,
+          "crf": 22,
+          "stillMatch": {
+            "mean": 2.85,
+            "max": 41,
+            "over": 0
+          }
+        }
+      ]
     },
     {
       "id": 65,
@@ -3287,7 +5252,22 @@
         "mean": 0.639,
         "max": 27,
         "over": 0
-      }
+      },
+      "rungs": [
+        {
+          "src": "/art/clips/65-light-settling-640-05a475ef91350e2f.mp4",
+          "sha256": "05a475ef91350e2f1a8cd449c01cef15a925a2b3ac5bec4980ae749d9c99bbd5",
+          "bytes": 109555,
+          "width": 640,
+          "height": 414,
+          "crf": 22,
+          "stillMatch": {
+            "mean": 0.747,
+            "max": 44,
+            "over": 0
+          }
+        }
+      ]
     },
     {
       "id": 66,
@@ -3311,7 +5291,22 @@
         "mean": 2.976,
         "max": 44,
         "over": 0
-      }
+      },
+      "rungs": [
+        {
+          "src": "/art/clips/66-ink-settling-640-293536ceb7c54989.mp4",
+          "sha256": "293536ceb7c54989db0fd5411db946ee8fa7fa84bb279b8169099a336468a9bd",
+          "bytes": 2820317,
+          "width": 640,
+          "height": 414,
+          "crf": 22,
+          "stillMatch": {
+            "mean": 3.451,
+            "max": 46,
+            "over": 0
+          }
+        }
+      ]
     },
     {
       "id": 66,
@@ -3335,7 +5330,22 @@
         "mean": 0.609,
         "max": 35,
         "over": 0
-      }
+      },
+      "rungs": [
+        {
+          "src": "/art/clips/66-light-settling-640-877fb825c7a9f735.mp4",
+          "sha256": "877fb825c7a9f735859a524bbefd3f428e632ec68ffff7445ed53e1f214b1e7e",
+          "bytes": 127527,
+          "width": 640,
+          "height": 414,
+          "crf": 22,
+          "stillMatch": {
+            "mean": 0.715,
+            "max": 36,
+            "over": 0
+          }
+        }
+      ]
     },
     {
       "id": 67,
@@ -3359,7 +5369,22 @@
         "mean": 2.718,
         "max": 45,
         "over": 0
-      }
+      },
+      "rungs": [
+        {
+          "src": "/art/clips/67-ink-settling-640-0c39e14561d7ac34.mp4",
+          "sha256": "0c39e14561d7ac34aaf087d5b2d4c6b7b8097191a042f9b442f7deb1138bab8e",
+          "bytes": 1832853,
+          "width": 640,
+          "height": 414,
+          "crf": 22,
+          "stillMatch": {
+            "mean": 3.226,
+            "max": 48,
+            "over": 0
+          }
+        }
+      ]
     },
     {
       "id": 67,
@@ -3383,7 +5408,22 @@
         "mean": 0.612,
         "max": 31,
         "over": 0
-      }
+      },
+      "rungs": [
+        {
+          "src": "/art/clips/67-light-settling-640-d04ea16376341765.mp4",
+          "sha256": "d04ea16376341765d110af39751dbffc60c32c9f1386c94c37a8439ec63c51c4",
+          "bytes": 133244,
+          "width": 640,
+          "height": 414,
+          "crf": 22,
+          "stillMatch": {
+            "mean": 0.743,
+            "max": 32,
+            "over": 0
+          }
+        }
+      ]
     },
     {
       "id": 68,
@@ -3407,7 +5447,22 @@
         "mean": 2.684,
         "max": 37,
         "over": 0
-      }
+      },
+      "rungs": [
+        {
+          "src": "/art/clips/68-ink-settling-640-7465b7622f8f3df4.mp4",
+          "sha256": "7465b7622f8f3df4db9e95040577c74c2f8d2369828c9340d9d3a4d3ff291a4f",
+          "bytes": 1757424,
+          "width": 640,
+          "height": 414,
+          "crf": 22,
+          "stillMatch": {
+            "mean": 3.206,
+            "max": 47,
+            "over": 0
+          }
+        }
+      ]
     },
     {
       "id": 68,
@@ -3431,7 +5486,22 @@
         "mean": 0.386,
         "max": 29,
         "over": 0
-      }
+      },
+      "rungs": [
+        {
+          "src": "/art/clips/68-light-settling-640-6f516b4db7f786a5.mp4",
+          "sha256": "6f516b4db7f786a53de139ee883671af5841002539a5f964bc893e7dd839ec0d",
+          "bytes": 99209,
+          "width": 640,
+          "height": 414,
+          "crf": 22,
+          "stillMatch": {
+            "mean": 0.455,
+            "max": 34,
+            "over": 0
+          }
+        }
+      ]
     },
     {
       "id": 69,
@@ -3455,7 +5525,22 @@
         "mean": 3.137,
         "max": 40,
         "over": 0
-      }
+      },
+      "rungs": [
+        {
+          "src": "/art/clips/69-ink-settling-640-22392703049c677c.mp4",
+          "sha256": "22392703049c677c09cc012e1e20ab141897c2bf8cbdf014ab65b8c330c80401",
+          "bytes": 2375873,
+          "width": 640,
+          "height": 414,
+          "crf": 22,
+          "stillMatch": {
+            "mean": 3.73,
+            "max": 50,
+            "over": 0.00001
+          }
+        }
+      ]
     },
     {
       "id": 69,
@@ -3479,7 +5564,22 @@
         "mean": 0.772,
         "max": 29,
         "over": 0
-      }
+      },
+      "rungs": [
+        {
+          "src": "/art/clips/69-light-settling-640-f2b47a98c5d06075.mp4",
+          "sha256": "f2b47a98c5d060755d28a845a409dbed94a37a8752a7d429e9abef8501462f84",
+          "bytes": 160431,
+          "width": 640,
+          "height": 414,
+          "crf": 22,
+          "stillMatch": {
+            "mean": 0.94,
+            "max": 48,
+            "over": 0
+          }
+        }
+      ]
     },
     {
       "id": 70,
@@ -3503,7 +5603,22 @@
         "mean": 2.538,
         "max": 46,
         "over": 0
-      }
+      },
+      "rungs": [
+        {
+          "src": "/art/clips/70-ink-settling-640-033601532bb52689.mp4",
+          "sha256": "033601532bb5268990a40947c695721fc6308d59dbb9cf5f5f42e3bd1dc0aa99",
+          "bytes": 1320148,
+          "width": 640,
+          "height": 414,
+          "crf": 22,
+          "stillMatch": {
+            "mean": 3.04,
+            "max": 54,
+            "over": 0.00002
+          }
+        }
+      ]
     },
     {
       "id": 70,
@@ -3527,7 +5642,22 @@
         "mean": 0.576,
         "max": 39,
         "over": 0
-      }
+      },
+      "rungs": [
+        {
+          "src": "/art/clips/70-light-settling-640-0b9484882944a44e.mp4",
+          "sha256": "0b9484882944a44e3fe25677a5c8847ff511f70fad0b6ea1163cdc12978463c8",
+          "bytes": 115400,
+          "width": 640,
+          "height": 414,
+          "crf": 22,
+          "stillMatch": {
+            "mean": 0.688,
+            "max": 41,
+            "over": 0
+          }
+        }
+      ]
     },
     {
       "id": 71,
@@ -3551,7 +5681,22 @@
         "mean": 3.325,
         "max": 43,
         "over": 0
-      }
+      },
+      "rungs": [
+        {
+          "src": "/art/clips/71-ink-settling-640-3fd582625dfc4aae.mp4",
+          "sha256": "3fd582625dfc4aaec0916654a98a26f0817fe7b10a9a48c14f471417a495eb6e",
+          "bytes": 2906286,
+          "width": 640,
+          "height": 414,
+          "crf": 22,
+          "stillMatch": {
+            "mean": 3.844,
+            "max": 48,
+            "over": 0
+          }
+        }
+      ]
     },
     {
       "id": 71,
@@ -3575,7 +5720,22 @@
         "mean": 0.581,
         "max": 36,
         "over": 0
-      }
+      },
+      "rungs": [
+        {
+          "src": "/art/clips/71-light-settling-640-dcf94e069a34ebb9.mp4",
+          "sha256": "dcf94e069a34ebb9b4436cbf7335ee6c040b9ae92f9323cd639cfa8d08893bdf",
+          "bytes": 119522,
+          "width": 640,
+          "height": 414,
+          "crf": 22,
+          "stillMatch": {
+            "mean": 0.686,
+            "max": 44,
+            "over": 0
+          }
+        }
+      ]
     }
   ]
 }
