@@ -444,6 +444,14 @@ describe('expression preparation', () => {
     throws it away while it waits for the images it mounts.
   */
   type Gate = { blocked: Promise<void> | null };
+  /** A promise and its resolve, made by hand: `Promise.withResolvers` is newer than ES2022. */
+  function heldPromise() {
+    let resolve!: () => void;
+    const promise = new Promise<void>((settle) => {
+      resolve = settle;
+    });
+    return { promise, resolve };
+  }
   function HeldMaterial({ expression, gate }: { expression: string; gate: Gate }) {
     if (expression === 'light' && gate.blocked) throw gate.blocked;
     return <p data-testid="visible-expression">{expression}</p>;
@@ -463,7 +471,7 @@ describe('expression preparation', () => {
   }
 
   it('gives a transition one second, then makes the same commit at once, and only once', async () => {
-    const held = Promise.withResolvers<void>();
+    const held = heldPromise();
     const gate: Gate = { blocked: held.promise };
     const onCommit = vi.fn();
     render(<HeldViewer gate={gate} onCommit={onCommit} />);
@@ -507,7 +515,7 @@ describe('expression preparation', () => {
   });
 
   it('calls the deadline off with its Turn: a waiting transition that is superseded stays called off', async () => {
-    const held = Promise.withResolvers<void>();
+    const held = heldPromise();
     const gate: Gate = { blocked: held.promise };
     const onCommit = vi.fn();
     render(<HeldViewer gate={gate} onCommit={onCommit} />);
@@ -528,7 +536,7 @@ describe('expression preparation', () => {
   });
 
   it('leaves no deadline behind when the page is left while a transition waits', async () => {
-    const held = Promise.withResolvers<void>();
+    const held = heldPromise();
     const onCommit = vi.fn();
     const { unmount } = render(<HeldViewer gate={{ blocked: held.promise }} onCommit={onCommit} />);
     fireEvent.click(screen.getByRole('button', { name: 'Light' }));
