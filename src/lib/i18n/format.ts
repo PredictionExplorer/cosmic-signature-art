@@ -1,5 +1,5 @@
 import type { ArtFilm, ArtInterpretation } from '@/lib/art/types';
-import type { Messages } from './en';
+import type { ExpressionWords, FilmLabelWords, FilmSpanWords } from './format.words';
 
 /** Fill `{name}` placeholders in a catalog string; unknown names are left visible, never dropped. */
 export function fill(template: string, values: Record<string, string | number>): string {
@@ -61,7 +61,7 @@ const MINUTE = 60;
  * A stretch of a film's time in words: "6.3 seconds", "1.7 minutes". One decimal either way, so
  * the unit keeps one form in every language the venue speaks.
  */
-export function filmSpan(seconds: number, t: Messages, locale: string): string {
+export function filmSpan(seconds: number, t: FilmSpanWords, locale: string): string {
   const tenth = new Intl.NumberFormat(locale, {
     minimumFractionDigits: 1,
     maximumFractionDigits: 1,
@@ -75,7 +75,7 @@ export function filmSpan(seconds: number, t: Messages, locale: string): string {
 /** The word for an expression: the catalog's for Ink and Light, the publisher's label otherwise. */
 export function expressionWord(
   media: Pick<ArtInterpretation, 'id' | 'label'> | string | undefined,
-  t: Messages,
+  t: ExpressionWords,
 ): string | undefined {
   const id = typeof media === 'string' ? media : media?.id;
   if (id === 'ink') return t.ink;
@@ -84,7 +84,7 @@ export function expressionWord(
 }
 
 /** The word for a film variant: the catalog's for the published roles, the publisher's label otherwise. */
-export function filmLabel(film: ArtFilm, t: Messages): string {
+export function filmLabel(film: ArtFilm, t: FilmLabelWords): string {
   return film.id === 'normal'
     ? t.film
     : film.id === 'medium'

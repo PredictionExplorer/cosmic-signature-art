@@ -18,7 +18,13 @@ const NEAR_PX = 200;
  * settled and every batch was read it prints nothing at all, because the works above are
  * the exhibition.
  */
-export function CycleResults({ ids, t }: { ids: number[]; t: Messages }) {
+export function CycleResults({
+  ids,
+  t,
+}: {
+  ids: number[];
+  t: Pick<Messages, 'results' | 'settled' | 'resultsPartial'>;
+}) {
   const section = useRef<HTMLElement>(null);
   const [near, setNear] = useState(false);
   const [results, setResults] = useState<{

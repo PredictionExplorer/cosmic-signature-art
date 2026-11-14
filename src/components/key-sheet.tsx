@@ -1,11 +1,11 @@
 'use client';
 import { useEffect, useRef } from 'react';
-import type { Messages } from '@/lib/i18n/en';
 import { closeSheet, useOpenSheet } from './sheets-store';
+import type { KeySheetWords } from './key-sheet.words';
 import styles from './key-sheet.module.css';
 
 /** The `?` sheet: every key the venue answers to, in the visitor's language. */
-export function KeySheet({ t }: { t: Messages }) {
+export function KeySheet({ t }: { t: KeySheetWords }) {
   const open = useOpenSheet() === 'keys';
   const dialog = useRef<HTMLDialogElement>(null);
   useEffect(() => {

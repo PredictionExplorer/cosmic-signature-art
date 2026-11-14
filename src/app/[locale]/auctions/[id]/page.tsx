@@ -3,6 +3,7 @@ import { artworkSharingImage } from '@/lib/art/sharing';
 import { notFound } from 'next/navigation';
 import { isLocale, localizedPath } from '@/lib/i18n/routing';
 import { messages } from '@/lib/i18n/messages';
+import { words } from '@/lib/i18n/words';
 import { getArtwork } from '@/lib/art/server';
 import { indexedWork } from '@/lib/art/collection-index';
 import { getCuratedArtwork } from '@/lib/art/catalog';
@@ -13,8 +14,11 @@ import { workNumber } from '@/lib/art/number';
 import { metadata } from '@/lib/site';
 import { auctionConfigured } from '@/lib/auction/config';
 import { AuctionPanel } from '@/components/auction-panel';
+import { LIVE_AUCTION_WORDS } from '@/components/live-auction.words';
 import { AuctionLot } from '@/components/auction-lot';
+import { AUCTION_LOT_WORDS } from '@/components/auction-lot.words';
 import { ArtworkViewer } from '@/components/artwork-viewer';
+import { ARTWORK_VIEWER_WORDS } from '@/components/artwork-viewer.words';
 import { AuctionAvailability } from '@/components/auction-summary';
 import { AuctionRules } from '@/components/auction-rules';
 import { artworkViewParams, type ArtworkViewQuery } from '@/lib/art/view';
@@ -85,7 +89,7 @@ export default async function AuctionWork({
       {artwork ? (
         <ArtworkViewer
           artwork={artwork}
-          t={t}
+          t={words(t, ARTWORK_VIEWER_WORDS)}
           locale={locale}
           presentation="auction"
           initialStill={view.get('view') === 'still'}
@@ -117,9 +121,11 @@ export default async function AuctionWork({
         {auctionConfigured ? (
           <AuctionLot
             tokenId={tokenId}
-            t={t}
+            t={words(t, AUCTION_LOT_WORDS)}
             locale={locale}
-            panel={<AuctionPanel locale={locale} tokenId={tokenId} t={t} />}
+            panel={
+              <AuctionPanel locale={locale} tokenId={tokenId} t={words(t, LIVE_AUCTION_WORDS)} />
+            }
           />
         ) : (
           <aside id="lot-actions" className={styles.bidRail} data-keys-suppressed="">

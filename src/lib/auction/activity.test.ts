@@ -11,7 +11,7 @@ vi.mock('./config', () => ({
 
 import { BATCH_SIZE, batchForToken, readActivity, type ActivityClient } from './activity';
 import type { AuctionRecord } from './rules';
-import { NFT_ADDRESS } from '../site';
+import { NFT_ADDRESS } from '../contracts';
 
 const account = '0x0000000000000000000000000000000000000031';
 const other = '0x0000000000000000000000000000000000000035';

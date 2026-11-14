@@ -3,8 +3,8 @@ import { Suspense } from 'react';
 import { notFound } from 'next/navigation';
 import { isLocale, localizedPath } from '@/lib/i18n/routing';
 import { messages } from '@/lib/i18n/messages';
-import type { Messages } from '@/lib/i18n/en';
 import { fill } from '@/lib/i18n/format';
+import { words } from '@/lib/i18n/words';
 import { metadata } from '@/lib/site';
 import { getCuratedArtwork } from '@/lib/art/catalog';
 import { indexedWork } from '@/lib/art/collection-index';
@@ -15,8 +15,11 @@ import { QUICK_GATE } from '@/lib/physics/beginnings';
 import { getArtwork } from '@/lib/art/server';
 import { getInterpretation, type Artwork } from '@/lib/art/types';
 import { ChoiceField } from '@/components/choice-field';
+import { CHOICE_FIELD_WORDS } from '@/components/choice-field.words';
 import { ChapterPlate } from './chapter-plate';
+import { CHAPTER_PLATE_WORDS, type ChapterPlateWords } from './chapter-plate.words';
 import { SweepPlayer } from './sweep-player';
+import { SWEEP_PLAYER_WORDS, type SweepPlayerWords } from './sweep-player.words';
 import { RoomSeams } from './room-seams';
 import styles from './process.module.css';
 import { nightViewport } from '@/app/viewport';
@@ -44,7 +47,7 @@ async function liveWork(work: Artwork): Promise<Artwork> {
   return live.artwork && live.artwork.seed === work.seed ? live.artwork : work;
 }
 
-async function LiveLightChapter({ work, t }: { work: Artwork; t: Messages }) {
+async function LiveLightChapter({ work, t }: { work: Artwork; t: ChapterPlateWords }) {
   const matching = await liveWork(work);
   return (
     <ChapterPlate
@@ -55,7 +58,7 @@ async function LiveLightChapter({ work, t }: { work: Artwork; t: Messages }) {
   );
 }
 
-async function LiveSweep({ work, t }: { work: Artwork; t: Messages }) {
+async function LiveSweep({ work, t }: { work: Artwork; t: SweepPlayerWords }) {
   const matching = await liveWork(work);
   const light = getInterpretation(matching, 'light') ?? getInterpretation(work, 'light');
   return (
@@ -80,6 +83,9 @@ export default async function Process({ params }: { params: Promise<{ locale: st
   const { locale } = await params;
   if (!isLocale(locale)) notFound();
   const t = messages(locale);
+  // Each live part's words, picked once: its fallback and its streamed self are handed the same.
+  const plateWords = words(t, CHAPTER_PLATE_WORDS);
+  const sweepWords = words(t, SWEEP_PLAYER_WORDS);
   const work = getCuratedArtwork(workOfTheDay())!;
   const indexed = indexedWork(work.id);
   const number = new Intl.NumberFormat(locale);
@@ -149,7 +155,12 @@ export default async function Process({ params }: { params: Promise<{ locale: st
             // route's loading plate), and the essay with the field inside outgrew that size.
             // Now only the field, which needs the browser anyway, can follow the essay's words.
             <Suspense fallback={null}>
-              <ChoiceField generation={orbit.generation} gate={QUICK_GATE} t={t} locale={locale} />
+              <ChoiceField
+                generation={orbit.generation}
+                gate={QUICK_GATE}
+                t={words(t, CHOICE_FIELD_WORDS)}
+                locale={locale}
+              />
             </Suspense>
           ) : null}
         </div>
@@ -171,10 +182,14 @@ export default async function Process({ params }: { params: Promise<{ locale: st
         </header>
         <Suspense
           fallback={
-            <ChapterPlate media={getInterpretation(work, 'light')} artworkId={work.id} t={t} />
+            <ChapterPlate
+              media={getInterpretation(work, 'light')}
+              artworkId={work.id}
+              t={plateWords}
+            />
           }
         >
-          <LiveLightChapter work={work} t={t} />
+          <LiveLightChapter work={work} t={plateWords} />
         </Suspense>
       </section>
 
@@ -191,7 +206,7 @@ export default async function Process({ params }: { params: Promise<{ locale: st
             <p>{t.fluidCopy}</p>
           </div>
         </header>
-        <ChapterPlate media={getInterpretation(work, 'ink')} artworkId={work.id} t={t} />
+        <ChapterPlate media={getInterpretation(work, 'ink')} artworkId={work.id} t={plateWords} />
       </section>
 
       <section
@@ -213,11 +228,11 @@ export default async function Process({ params }: { params: Promise<{ locale: st
               still={getInterpretation(work, 'light')}
               artworkId={work.id}
               wavelengthNm={indexed?.wavelengthNm}
-              t={t}
+              t={sweepWords}
             />
           }
         >
-          <LiveSweep work={work} t={t} />
+          <LiveSweep work={work} t={sweepWords} />
         </Suspense>
       </section>
 

@@ -1,7 +1,7 @@
 'use client';
 import { useState, type ChangeEvent } from 'react';
 import { fill } from '@/lib/i18n/format';
-import type { Messages } from '@/lib/i18n/en';
+import type { VerifyDownloadWords } from './verify-download.words';
 import { CopyButton } from './copy-button';
 import styles from './verify-download.module.css';
 
@@ -34,7 +34,7 @@ type Status =
  * plain sentence. Nothing is uploaded. Without JavaScript the disclosure still prints the
  * hashes, which is the verification by hand.
  */
-export function VerifyDownload({ files, t }: { files: VerifiableFile[]; t: Messages }) {
+export function VerifyDownload({ files, t }: { files: VerifiableFile[]; t: VerifyDownloadWords }) {
   const [status, setStatus] = useState<Status>({ kind: 'idle' });
   async function chosen(event: ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0];

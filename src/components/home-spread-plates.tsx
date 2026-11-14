@@ -11,7 +11,7 @@ import {
 import { getPlateGround } from '@/lib/art/plate-records';
 import { workFolio, workNumber } from '@/lib/art/number';
 import { localizedPath, type Locale } from '@/lib/i18n/routing';
-import type { Messages } from '@/lib/i18n/en';
+import type { SpreadPlatesWords } from './home-spread-plates.words';
 import { ArtworkTransition } from './artwork-transition';
 import { useCollectionMotion } from './collection-motion';
 import { CollectionPreview, excerptRange, getCollectionPreviewFilm } from './collection-preview';
@@ -32,7 +32,7 @@ export function SpreadPlates({
 }: {
   leaves: { work: Artwork; expression: Expression }[];
   locale: Locale;
-  t: Messages;
+  t: SpreadPlatesWords;
 }) {
   const hung = leaves.flatMap(({ work, expression }) => {
     const media = getInterpretation(work, expression) ?? work.media[0];

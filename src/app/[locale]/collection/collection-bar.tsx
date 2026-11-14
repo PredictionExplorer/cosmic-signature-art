@@ -2,7 +2,7 @@
 import Link from 'next/link';
 import { openSheet, useOpenSheet } from '@/components/sheets-store';
 import { useScrollEdges } from '@/components/scroll-edges';
-import type { Messages } from '@/lib/i18n/en';
+import type { CollectionBarWords } from './collection-bar.words';
 import styles from './collection.module.css';
 
 /**
@@ -17,7 +17,7 @@ export function CollectionBar({
   previousHref,
   nextHref,
 }: {
-  t: Messages;
+  t: CollectionBarWords;
   orderings: { label: string; href: string; current: boolean }[];
   /**
    * Each expression's word hangs it alone, or both again when it is alone; none on the

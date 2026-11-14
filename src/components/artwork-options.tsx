@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useId, useRef, useState, type ReactNode } from 'react';
-import type { Messages } from '@/lib/i18n/en';
+import type { ArtworkOptionsWords } from './artwork-options.words';
 import { fill } from '@/lib/i18n/format';
 import styles from './artwork-options.module.css';
 
@@ -13,7 +13,7 @@ export function ArtworkOptions({
   closest,
   readout,
 }: {
-  t: Messages;
+  t: ArtworkOptionsWords;
   onStudy?: (trigger: HTMLButtonElement | null) => void;
   onSit?: () => void;
   /** The Light film opened at its closest approach (third-physics.md §5.5), and when that is. */

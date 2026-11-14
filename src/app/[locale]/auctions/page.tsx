@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation';
 import { isLocale, localizedPath } from '@/lib/i18n/routing';
 import { messages } from '@/lib/i18n/messages';
 import { fill } from '@/lib/i18n/format';
+import { words } from '@/lib/i18n/words';
 import { metadata } from '@/lib/site';
 import { auctionConfigured } from '@/lib/auction/config';
 import { comingCycle } from '@/lib/auction/sale';
@@ -12,6 +13,7 @@ import { curatedArtworks } from '@/lib/art/catalog';
 import type { Artwork } from '@/lib/art/types';
 import { AuctionRules } from '@/components/auction-rules';
 import { AuctionLaunch } from '@/components/auction-launch';
+import { AUCTION_LAUNCH_WORDS } from '@/components/auction-launch.words';
 import { CycleRow } from '@/components/home-screens';
 import styles from './sale.module.css';
 
@@ -81,7 +83,7 @@ export default async function Auctions({ params }: { params: Promise<{ locale: s
       <div id="auction-catalogue" className={auctionConfigured ? styles.lots : styles.catalogue}>
         <AuctionLaunch
           locale={locale}
-          t={t}
+          t={words(t, AUCTION_LAUNCH_WORDS)}
           cycle={comingCycle()}
           traits={auctionConfigured ? lotTraits() : undefined}
           curated={auctionConfigured ? curatedById() : undefined}

@@ -7,7 +7,7 @@ import { useSit } from '@/components/sit';
 import { getPlateGround } from '@/lib/art/plate-records';
 import { workNumber } from '@/lib/art/number';
 import type { ArtInterpretation } from '@/lib/art/types';
-import type { Messages } from '@/lib/i18n/en';
+import type { ChapterPlateWords } from './chapter-plate.words';
 import styles from './process.module.css';
 import { clock, expressionWord } from '@/lib/i18n/format';
 
@@ -27,7 +27,7 @@ export function ChapterPlate({
 }: {
   media?: ArtInterpretation;
   artworkId: number;
-  t: Messages;
+  t: ChapterPlateWords;
   eager?: boolean;
 }) {
   const { paused, toggle } = useMotion();

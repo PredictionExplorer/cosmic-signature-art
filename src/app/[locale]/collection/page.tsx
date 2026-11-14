@@ -6,6 +6,7 @@ import type { Messages } from '@/lib/i18n/en';
 import { isLocale, localizedPath } from '@/lib/i18n/routing';
 import { messages } from '@/lib/i18n/messages';
 import { fill } from '@/lib/i18n/format';
+import { words } from '@/lib/i18n/words';
 import { metadata } from '@/lib/site';
 import { getCollection } from '@/lib/art/server';
 import {
@@ -23,8 +24,10 @@ import { artworkFromIndex } from '@/lib/art/collection-cards';
 import { artworkForView } from '@/lib/art/view-media';
 import { workFolio } from '@/lib/art/number';
 import { PlateSequence, type Hanging } from '@/components/plate-sequence';
+import { PLATE_SEQUENCE_WORDS } from '@/components/plate-sequence.words';
 import { CollectionRoom } from './collection-room';
 import { CollectionBar } from './collection-bar';
+import { COLLECTION_BAR_WORDS } from './collection-bar.words';
 import { SpectrumWall } from './spectrum-wall';
 import styles from './collection.module.css';
 
@@ -310,7 +313,7 @@ export default async function Collection({
               key={expression}
               works={works.map((work) => artworkForView(artworkFromIndex(work), 'card'))}
               locale={locale}
-              t={t}
+              t={words(t, PLATE_SEQUENCE_WORDS)}
               expression={expression}
               eagerFirstRow
               animated
@@ -336,7 +339,7 @@ export default async function Collection({
           ) : null}
         </section>
         <CollectionBar
-          t={t}
+          t={words(t, COLLECTION_BAR_WORDS)}
           orderings={orderings}
           expressions={expressions}
           previousHref={previousHref}
@@ -376,7 +379,7 @@ async function SearchResults({
           key={expression}
           works={result.items.map((work) => artworkForView(work, 'card'))}
           locale={locale}
-          t={t}
+          t={words(t, PLATE_SEQUENCE_WORDS)}
           expression={expression}
           eagerFirstRow
           animated

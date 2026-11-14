@@ -10,7 +10,7 @@ import { getPlateGround } from '@/lib/art/plate-records';
 import { workFolio, workNumber } from '@/lib/art/number';
 import { getInterpretation, type ArtInterpretation, type Artwork } from '@/lib/art/types';
 import { fill } from '@/lib/i18n/format';
-import type { Messages } from '@/lib/i18n/en';
+import type { ArtworkGatefoldWords } from './artwork-gatefold.words';
 import type { Locale } from '@/lib/i18n/routing';
 import styles from './artwork-gatefold.module.css';
 import { ART_HEIGHT, ART_WIDTH } from '@/lib/art/constants';
@@ -60,7 +60,7 @@ export function ArtworkGatefold({
   artwork: Artwork;
   /** The committed expression; the spread shows both regardless. */
   expression: string;
-  t: Messages;
+  t: ArtworkGatefoldWords;
   locale: Locale;
 }) {
   const ink = getInterpretation(artwork, 'ink');

@@ -2,7 +2,7 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { readAuction, AuctionConfigurationError, type Snapshot } from '@/lib/auction/client';
 import { chainStateLine } from '@/lib/auction/catalogue';
-import type { Messages } from '@/lib/i18n/en';
+import type { AuctionLotWords } from './auction-lot.words';
 import type { Locale } from '@/lib/i18n/routing';
 import { BidHistory } from './bid-history';
 import { BidSheet } from './bid-sheet';
@@ -29,7 +29,7 @@ export function AuctionLot({
   panel,
 }: {
   tokenId: number;
-  t: Messages;
+  t: AuctionLotWords;
   locale: Locale;
   panel: ReactNode;
 }) {

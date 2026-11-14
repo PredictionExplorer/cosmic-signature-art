@@ -3,9 +3,10 @@ import { formatEther } from 'viem';
 import { MINIMUM_BID } from '@/lib/auction/rules';
 import type { Messages } from '@/lib/i18n/en';
 import { localizedPath, type Locale } from '@/lib/i18n/routing';
+import type { AuctionSummaryWords } from './auction-summary.words';
 import styles from './auction-summary.module.css';
 
-export function AuctionSummary({ locale, t }: { locale: Locale; t: Messages }) {
+export function AuctionSummary({ locale, t }: { locale: Locale; t: AuctionSummaryWords }) {
   return (
     <section className={styles.summary} aria-label={t.auctionAtAGlance}>
       <p className="eyebrow">{t.auctionAtAGlance}</p>

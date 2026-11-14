@@ -1,7 +1,7 @@
 'use client';
 import type { ReactNode, RefObject } from 'react';
 import { workNumber } from '@/lib/art/number';
-import type { Messages } from '@/lib/i18n/en';
+import type { BidSheetWords } from './bid-sheet.words';
 import type { Locale } from '@/lib/i18n/routing';
 import { AuctionSheet } from './auction-sheet';
 import { AuctionSummary } from './auction-summary';
@@ -25,7 +25,7 @@ export function BidSheet({
   onClose: () => void;
   returnFocusRef?: RefObject<HTMLElement | null>;
   tokenId: number;
-  t: Messages;
+  t: BidSheetWords;
   locale: Locale;
   /** The live panel for this lot, provided by the page so the sheet never chooses a client. */
   panel: ReactNode;

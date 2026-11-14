@@ -3,7 +3,7 @@ import Link from 'next/link';
 import { workFolio, workNumber } from '@/lib/art/number';
 import { fill } from '@/lib/i18n/format';
 import { bindNumbers, SEPARATOR } from '@/lib/typography';
-import type { Messages } from '@/lib/i18n/en';
+import type { ArtworkNeighboursWords } from './artwork-neighbours.words';
 import { localizedPath, type Locale } from '@/lib/i18n/routing';
 import styles from './artwork-viewer.module.css';
 
@@ -38,7 +38,7 @@ export function ArtworkNeighbours({
   neighbours: Neighbours;
   expression: string;
   locale: Locale;
-  t: Messages;
+  t: ArtworkNeighboursWords;
 }) {
   const { previous, next, spectral, lot } = neighbours;
   const step = (neighbour: Neighbour | undefined, direction: 'previous' | 'next') =>

@@ -18,8 +18,8 @@ import { log, error } from 'node:console';
  * How it is measured. Each chunk is compressed as Vercel sends it to a browser: Brotli at quality
  * 3, which matched every Brotli chunk cosmic.art served on 8 November 2026 to within a byte. A
  * route's total is the sum of its chunks. The raw size is reported too, since a browser parses and
- * compiles the uncompressed bytes. Gzip, the old column's measure, would mislead: its window is
- * 32 KiB, so when text that repeats (the eight locales' copy, which every page carries) grows
+ * compiles the uncompressed bytes. Gzip, the old column's measure, can mislead: its window is
+ * 32 KiB, so when text that repeats (the eight locales' copy, while every page carried it) grows
  * further apart than that, gzip's size jumps by tens of KiB while what a visitor downloads barely
  * moves.
  *

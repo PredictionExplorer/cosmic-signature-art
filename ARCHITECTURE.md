@@ -19,6 +19,7 @@ The reasons:
 - **The server renders the work.** Every page is a server component. It reads the registries and the public indexer and sends HTML that already holds the plate. The day's plate even carries its own 640 px preview inline (`src/lib/art/inline-preview.ts`). JavaScript adds motion, instruments and choices; the art never waits for it.
 - **The library is plain TypeScript.** Nothing in `src/lib` renders. `src/lib/physics/orbit.ts` imports nothing at all, so one file runs in a browser worker, in the build scripts (through Node's type stripping) and in the tests. A page and the script that checked it can never disagree.
 - **Registries stay on the server.** The JSON registries in `src/lib/art/` are measured offline and weigh more than a page should carry. A server component reads them and hands each client component only its own work's facts. `src/lib/art/client-boundary.test.ts` fails the suite if a client component imports a module that carries one.
+- **Catalogues stay on the server.** A catalogue holds every string the venue says in one language. A client component names the strings it reads, and a server component hands it those alone, because every prop that crosses to the browser is written into the document (§10). `src/lib/i18n/client-boundary.test.ts` fails the suite if a client component can reach a catalogue through its imports, or is handed a whole one.
 - **Measured once, offline.** The pipelines that read the publisher's films and stills run by hand, never in the build, and commit what they measured (§9). Every visitor and every build sees the same facts.
 
 ## 2. Routes
@@ -48,7 +49,7 @@ The sharing cards (`opengraph-image.tsx`, `twitter-image.tsx`, drawn by `src/com
 - `revealScript` (`src/lib/reveal.ts`) lets WebKit paint a streamed page that it would otherwise hold back.
 - `settleScript` (`src/lib/settle.ts`) shows a plate's still as soon as the still has loaded and decoded. The server sends the still clear over its inline preview, and without this script it would stay clear until the route's script had hydrated the plate.
 
-The document also holds the motion provider, the running head, the index and key sheets, and the colophon.
+The document also holds the motion provider, the running head, the index and key sheets, and the colophon. Around every page it provides the error page's two strings (`[locale]/error-context.tsx`). Next renders `error.tsx` itself and gives it the error and nothing else, so no parent can hand it props; a context whose value never changes is how the document tells it the visitor's language. Next's `catchError` makes a boundary that takes props, but importing it brings the Pages Router's error page along: every route measured 14.6 KiB of script heavier with it, 4.5 KiB as sent.
 
 ## 3. Components and library
 
@@ -192,6 +193,11 @@ English, Simplified Chinese, Traditional Chinese for Taiwan and for Hong Kong, U
 
 - **Addresses.** English addresses carry no prefix, and every other locale keeps its exact tag: `/art/31`, `/zh-TW/art/31`. `localizedPath` builds them, and the proxy rewrites the unprefixed ones.
 - **Words.** Each locale is one catalogue (`en.ts`, `zh.ts`, …). `en.ts` defines the `Messages` type, so a missing string in any catalogue is a type error, not a blank on the page. `fill` (`format.ts`) puts values into a string's `{placeholders}` and leaves an unknown name visible rather than dropping it. Every date the venue prints is formatted in UTC, the venue's day.
+- **Words in the browser.** A server component holds the whole catalogue (`messages(locale)`). A client component does not:
+  - It lists the keys it reads in a file beside it (`key-sheet.words.ts` beside `key-sheet.tsx`), and its `t` prop is typed from that list, so reading a string the list does not name is a type error.
+  - A list includes the lists of the client components and helpers it hands `t` on to (`artwork-viewer.words.ts` spreads the room's, the gatefold's and the rest), so the lists compose as the components do.
+  - The server picks the strings with `words(t, LIST)` (`words.ts`) where it renders the component. Pick once and reuse the object where a page renders a component twice: React writes an object into the document once however often it is handed over.
+  - The venue's 404 is told its language by the server too: inside the frame, `not-found.tsx` reads the locale as a root parameter (`next/root-params`), since a not-found file is given no params.
 - **Faces.** Each CJK locale links only its own sliced display face (`scripts/build-font-subsets.mjs`, `src/lib/fonts.ts`), so the English venue loads none of them. `npm run test:fonts` (`scripts/check-font-coverage.mjs`) fails if any string in any locale has a character the shipped faces do not draw, or asks Literata for a feature its cuts lack.
 
 ## 11. Testing
@@ -254,22 +260,23 @@ The targets are set in [docs/first-light.md](docs/first-light.md) §9: the still
 - **The phone's first-visit CLS** comes from the statement section, which shifts twice by 0.0045 within a few milliseconds, at about 1 s and again at about 12 s, while First Light performs. The two bursts are seconds apart, so CLS is one of them, 0.0089.
 - **CI's margin.** With the GPU off (SwiftShader) and the CPU slowed fourfold, the desk's worst load was 1,104 ms and the phone's 488 ms. CI's own runner (four vCPUs, no GPU) first ran the spec on 8 November 2026. Its medians were 1,284 / 932 / 916 ms on the desk and 112 / 120 / 364 ms on the phone (home first visit / home returning / `/art/31`), with CLS as above. Its slowest single load was 1,316 ms, so about half the 2.5 s line is left.
 
-First-load JavaScript from the same build, in KiB as sent (Brotli, quality 3):
+First-load JavaScript, in KiB as sent (Brotli, quality 3), measured again on 14 November 2026, when the message catalogues left the browser's script:
 
 | Route                         | Sent KiB | Budget | Route                                       | Sent KiB | Budget |
 | :---------------------------- | -------: | -----: | :------------------------------------------ | -------: | -----: |
-| `/[locale]` (the home)        |    317.4 |    350 | `/[locale]/collection`                      |    288.4 |    320 |
-| `/[locale]/art/[id]`          |    331.9 |    370 | `/[locale]/collection/all-the-light`        |    274.9 |    305 |
-| `/[locale]/auctions/[id]`     |    416.0 |    460 | `/[locale]/collection/orrery`               |    273.6 |    305 |
-| `/[locale]/auctions`          |    273.4 |    305 | `/[locale]/exhibitions`                     |    282.3 |    315 |
-| `/[locale]/first-light/[id]`  |    289.2 |    320 | `/[locale]/exhibitions/[slug]`              |    288.3 |    320 |
-| `/[locale]/verify/orbit`      |    271.8 |    300 | `/[locale]/process`                         |    289.6 |    320 |
-| `/[locale]/verify/orbit/[id]` |    274.4 |    305 | `/[locale]/statement`, `/terms`, `/privacy` |    270.9 |    300 |
-| `/_not-found`                 |    247.2 |    275 |                                             |          |        |
+| `/[locale]` (the home)        |    229.8 |    255 | `/[locale]/collection`                      |    197.5 |    220 |
+| `/[locale]/art/[id]`          |    265.5 |    295 | `/[locale]/collection/all-the-light`        |    194.9 |    215 |
+| `/[locale]/auctions/[id]`     |    328.0 |    365 | `/[locale]/collection/orrery`               |    193.7 |    215 |
+| `/[locale]/auctions`          |    205.7 |    230 | `/[locale]/exhibitions`                     |    191.3 |    215 |
+| `/[locale]/first-light/[id]`  |    210.7 |    235 | `/[locale]/exhibitions/[slug]`              |    197.2 |    220 |
+| `/[locale]/verify/orbit`      |    192.0 |    215 | `/[locale]/process`                         |    198.1 |    220 |
+| `/[locale]/verify/orbit/[id]` |    195.4 |    215 | `/[locale]/statement`, `/terms`, `/privacy` |    191.1 |    215 |
+| `/_not-found`                 |    163.3 |    180 |                                             |          |        |
 
-Of every route's total, 131.9 KiB is the root files every page loads first: React and the Next.js runtime. About 139 KiB more is the venue's locale layout, shared by every page under `[locale]`. Most of that, 88.7 KiB, is the copy of all eight locales, which every page carries. The rest is the page's own. The sale's page is the heaviest because it carries the contract client: viem and the wallet discovery.
+Of every route's total, 132.0 KiB is the root files every page loads first: React and the Next.js runtime. About 59 KiB more is shared by every page under `[locale]`: the venue's document and what its pages have in common. The rest is the page's own. The sale's page is the heaviest because it carries the contract client: viem and the wallet discovery.
 
-- **Why Brotli at quality 3.** It is what Vercel sends a browser that accepts it. On 8 November 2026 every Brotli chunk cosmic.art served matched quality 3 to within a byte. Gzip, the old column's measure, would mislead here, because its window is 32 KiB. The three Chinese locales' copy came to about 31 KiB each, so gzip compressed each against the one before. Copy that pushes them past 32 KiB would add some 20 KiB of gzip to every route, while what visitors download grows by about 3 KiB.
+- **What left with the catalogues.** Until then every route also loaded the copy of all eight locales, one chunk of 96.8 KiB as sent (336 KiB before compression): the error page and the 404 imported every catalogue to find their own two and six strings. The home was 326.4 KiB and a work's page 362.1. The two are now given their strings by the server (§2, §10), and every route lost that chunk.
+- **Why Brotli at quality 3.** It is what Vercel sends a browser that accepts it. On 8 November 2026 every Brotli chunk cosmic.art served matched quality 3 to within a byte. Gzip, the old column's measure, can mislead, because its window is 32 KiB. While every route carried the locales' copy, the three Chinese catalogues came to about 31 KiB each, so gzip compressed each against the one before; copy that pushed them past 32 KiB would have added some 20 KiB of gzip to every route, while what visitors downloaded grew by about 3 KiB.
 
 **Changing a budget.** When a route grows on purpose, raise its number in `scripts/budgets.json` in the same change and say why in the commit. When it grows by accident, `npx next analyze` shows which module did it, and `import()` moves what the first paint does not need out of the first load. The paint budgets may become stricter than the field's lines, but never looser.
 

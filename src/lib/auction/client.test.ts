@@ -9,7 +9,7 @@ import {
   type Hex,
 } from 'viem';
 import { auctionAbi } from './abi';
-import { GAME_ADDRESS, NFT_ADDRESS } from '../site';
+import { GAME_ADDRESS, NFT_ADDRESS } from '../contracts';
 import { MINIMUM_BID, type AuctionRecord } from './rules';
 
 const mocks = vi.hoisted(() => ({

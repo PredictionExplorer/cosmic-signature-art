@@ -1,7 +1,7 @@
 import { formatEther, isAddressEqual, zeroAddress, type Address } from 'viem';
-import type { Messages } from '../i18n/en';
 import type { Locale } from '../i18n/routing';
 import { fill } from '../i18n/format';
+import type { ChainDateWords, ChainStateWords } from './catalogue.words';
 import { auctionPhase, MINIMUM_BID, type AuctionRecord } from './rules';
 
 /**
@@ -42,7 +42,7 @@ export function chainDate(timestamp: bigint): Date | null {
 export function formatChainDate(
   timestamp: bigint,
   locale: Locale,
-  t: Messages,
+  t: ChainDateWords,
   timeZone?: string,
 ): string | null {
   const date = chainDate(timestamp);
@@ -81,7 +81,7 @@ export function formatEth(value: bigint): string {
 export function chainStateLine(
   lot: AuctionRecord,
   blockTime: bigint,
-  t: Messages,
+  t: ChainStateWords,
   locale: Locale,
   timeZone?: string,
 ): { phase: Phase; line: string } {

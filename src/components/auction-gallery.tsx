@@ -12,7 +12,7 @@ import { getPlateGround } from '@/lib/art/plate-records';
 import { workNumber } from '@/lib/art/number';
 import { getInterpretation, type Artwork, type ArtworkResult } from '@/lib/art/types';
 import { expressionWord, fill } from '@/lib/i18n/format';
-import type { Messages } from '@/lib/i18n/en';
+import type { AuctionGalleryWords } from './auction-gallery.words';
 import { localizedPath, type Locale } from '@/lib/i18n/routing';
 import { useCollectionMotion } from './collection-motion';
 import { ArtworkMedia, HOLD_MS } from './artwork-media';
@@ -38,7 +38,7 @@ type MediaState = 'unpublished' | 'unavailable';
 type Batch = Awaited<ReturnType<typeof readBatch>>;
 type AuctionGalleryProps = {
   locale: Locale;
-  t: Messages;
+  t: AuctionGalleryWords;
   /** The entry words the collection index lends each lot, read on the server. */
   traits?: LotTraitsById;
   /** The curated archive's works, read on the server, so a lot paints before its record arrives. */
@@ -277,7 +277,7 @@ const Lots = memo(function Lots({
   curated?: Record<number, Artwork>;
   traits?: LotTraitsById;
   locale: Locale;
-  t: Messages;
+  t: AuctionGalleryWords;
   unavailable: boolean;
 }) {
   const [intentId, setIntentId] = useState<number | null>(null);

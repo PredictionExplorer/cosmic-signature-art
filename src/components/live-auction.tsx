@@ -21,7 +21,7 @@ import { auctionAddress, chainId } from '@/lib/auction/config';
 import { auctionPhase, bidFunding, parseEthInput } from '@/lib/auction/rules';
 import { formatCountdown } from '@/lib/auction/countdown';
 import { workNumber } from '@/lib/art/number';
-import type { Messages } from '@/lib/i18n/en';
+import type { LiveAuctionWords } from './live-auction.words';
 import type { Locale } from '@/lib/i18n/routing';
 import { setTheatre } from './motion-provider';
 import styles from './live-auction.module.css';
@@ -37,7 +37,7 @@ function deadlineDate(timestamp: bigint): Date | null {
     return null;
   return new Date(milliseconds);
 }
-type LiveAuctionProps = { tokenId: number; t: Messages; locale: Locale };
+type LiveAuctionProps = { tokenId: number; t: LiveAuctionWords; locale: Locale };
 
 export function LiveAuction(props: LiveAuctionProps) {
   // A reviewed payment and all asynchronous wallet work belong to exactly one lot.

@@ -6,7 +6,7 @@ import { readActivity, type Activity, type ActivityScope } from '@/lib/auction/a
 import { compactAddress, formatEth } from '@/lib/auction/catalogue';
 import { workNumber } from '@/lib/art/number';
 import { fill } from '@/lib/i18n/format';
-import type { Messages } from '@/lib/i18n/en';
+import type { YourActivityWords } from './your-activity.words';
 import { localizedPath, type Locale } from '@/lib/i18n/routing';
 import { AuctionSheet } from './auction-sheet';
 import styles from './auction-sheets.module.css';
@@ -30,7 +30,7 @@ export function YourActivity({
   open: boolean;
   onClose: () => void;
   returnFocusRef?: RefObject<HTMLElement | null>;
-  t: Messages;
+  t: YourActivityWords;
   locale: Locale;
   /** The lots the view is read against: the sale's current page, or the batch of this lot. */
   scope: ActivityScope;

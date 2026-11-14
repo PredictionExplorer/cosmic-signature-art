@@ -4,11 +4,13 @@ import type { ArtFilm, ArtInterpretation, Artwork } from '@/lib/art/types';
 import type { Messages } from '@/lib/i18n/en';
 import { expressionWord, filmLabel, formatBytes } from '@/lib/i18n/format';
 import { localizedPath, type Locale } from '@/lib/i18n/routing';
+import { words } from '@/lib/i18n/words';
 import { indexedAssetUrl, indexedWork, type IndexedWork } from '@/lib/art/collection-index';
 import { workOrbit } from '@/lib/art/orbit-records';
 import { NBSP, SEPARATOR, unbroken } from '@/lib/typography';
 import { CopyButton } from './copy-button';
 import { VerifyDownload, type VerifiableFile } from './verify-download';
+import { VERIFY_DOWNLOAD_WORDS } from './verify-download.words';
 import styles from './artwork-record.module.css';
 
 export function RecordRow({ label, children }: { label: string; children: ReactNode }) {
@@ -280,7 +282,9 @@ export function ArtworkSources({
         })}
         {!work.media.length ? <p className={styles.note}>{t.noMediaFiles}</p> : null}
       </div>
-      {verifiable.length ? <VerifyDownload files={verifiable} t={t} /> : null}
+      {verifiable.length ? (
+        <VerifyDownload files={verifiable} t={words(t, VERIFY_DOWNLOAD_WORDS)} />
+      ) : null}
       {/* Beside Verify a download, the orbit's own check: a page of this venue, so no arrow. */}
       {workOrbit(work.id) ? (
         <p className={styles.verifyOrbit}>
