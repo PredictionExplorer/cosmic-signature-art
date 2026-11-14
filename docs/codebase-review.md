@@ -7,7 +7,7 @@ _What stands between this codebase and one a student could learn excellent web e
 - A first audit of main at `f48082d` scored the code 8.2 out of 10 and named twelve gaps.
 - Seven reviewers then each took one dimension (architecture, types, tests, performance, accessibility and languages, security and operations, CSS and consistency) and looked for what the audit had missed: 56 findings.
 - A sceptic re-read the code for each finding, told to refute it. The 46 below were re-read and every one was confirmed, most with a correction to a count or a claim. The accessibility, CSS and half of the first audit's findings were not re-read before a usage limit, and are not listed.
-- Nothing here has been fixed yet. Each entry is checked again by whoever fixes it.
+- Six entries were fixed on 10 November, the small and independent ones first; each says so below, with what the fix found that the review had not. The rest are as they were. Each entry is checked again by whoever fixes it.
 
 ## What to keep
 
@@ -38,6 +38,7 @@ _Defect._
 - **Why it matters:** The Turn is the venue's signature interaction, and on a phone it starts only after a 0.14 to 0.79 MB download from the image host and a 31 MB decode of a file the phone will not display: seconds of 'Opening this expression...' on slow 4G.
 - **Proposed:** Ready what the plate shows: give the probe the layer's srcset and sizes (stillSourceSet(target) and PLATE_SIZES) so it resolves to the rung already in cache, or call decode() on the twin layer's own img.art-still. Keep the original for the loupe and the room. Add a browser test that a Turn at 390 px wide requests no 3456w file.
 - **The sceptic's correction:** Nothing wrong in the counts or lines. It understates the problem in three ways. The probe runs on every Turn, not only the first to each expression (later ones come from cache but decode again), and on the room's material switch too (src/components/artwork-viewer.tsx:1114).
+- **Fixed, 10 November:** the plate, the room and the Turn's probe now ask for a still through one function (`stillRequest` in `artwork-media.tsx`), so the probe resolves to the rung its surface shows. Two things the review had not seen: in Chromium the plate then took the original for itself, since it prefers a wider candidate once one is cached; and WebKit acts on each image attribute as it is set, so the order they go on and come off decides what is fetched. Left for later: the crossing's own preparation still loads a rung wider than a height-fitted plate shows, because `arrival-crossing.ts` reads a responsive image's `naturalWidth`, which is its density-corrected width.
 
 ### Class names are unchecked in both directions; one mistake shows on the sale page now
 
@@ -47,6 +48,7 @@ _Defect._
 - **Why it matters:** styles is typed as a string index, so a typo compiles and renders as a missing style. Visitors already see one result. A teaching codebase should show how the seam between CSS and TypeScript is closed.
 - **Proposed:** Write :global(.eyebrow) in auction-launch.module.css:26 and :29; delete styles.cell and the five dead classes. Then guard the seam with one unit test in the style of src/lib/art/client-boundary.test.ts: every styles.x exists in its stylesheet and every local class is read, with a short allow-list.
 - **The sceptic's correction:** Counts match except trivia: I count 646 static reads against 640 claimed, and 101 className template literals with a simpler pattern against 103. Three more classes (gallery, home, auction in artwork-viewer.module.css) are read only through styles[presentation] at artwork-viewer.tsx:1022, so a …
+- **Fixed, 10 November:** `:global(.eyebrow)` in `auction-launch.module.css` (the line was 18 px where an eyebrow is 12), and `src/app/stylesheet-classes.test.ts` reads both directions, with the one computed read listed. The counts held: one read no stylesheet defined and five classes nothing read. Four are gone; the fifth, `.line .folio` in `artwork-viewer.module.css`, is excused by name in the test until a change open on those lines has landed.
 
 ### Nothing fails a test when the page throws or the console reports an error
 
@@ -56,6 +58,7 @@ _Weakness._
 - **Why it matters:** Uncaught errors are the cheapest regressions to catch and the commonest to miss. One shared fixture is how a professional suite catches them in every test at once, and here it would also turn each silent engine fallback (a shader that will not compile, a worker that throws) into a named failure instead of a quiet degradation.
 - **Proposed:** Add tests/e2e/fixtures.ts that exports test = base.extend with an automatic fixture: it collects pageerror events, console messages of type error and warning, and same-origin responses of 500 or more, and asserts the list empty after each test, with a per-test allow-list for the cases that provoke a failure on purpose (artwork-immersion.spec.ts:509 aborts an image, for …
 - **The sceptic's correction:** The counts hold exactly: 33 spec files all import test from @playwright/test, nothing calls .extend, 8 pageerror listeners sit in 4 specs and cover 15 tests, and my own count of tests per project is 308. One sentence is wrong: 'no test reads them'.
+- **Fixed, 10 November:** `tests/e2e/fixtures.ts` exports the suite's `test`, every spec imports it, and a lint rule refuses Playwright's own. Warnings are left out, as the sceptic advised. Not foreseen: WebKit reports the requests it cuts short when a page is left as errors, and `next start` on a loopback address fetches every English address from itself, which now and then answers a prefetch with a 500; the fixture sets both aside and says why. It found one fault of the venue's own: on a phone the orbit in depth cancels a touchmove the browser will no longer let be cancelled. Not done: making `console.error` throw in the unit tests.
 
 ### The server/client boundary is guarded by a direct-import regex, and one registry crosses it on every route through the 404 view
 
@@ -74,6 +77,7 @@ _Weakness._
 - **Why it matters:** An unused, unauthenticated endpoint that fetches and transcodes is attack surface and metered cost with no benefit: the venue serves its own hash-named derivatives and never calls the optimizer. A teaching codebase closes what it does not use, and checks that it stays closed.
 - **Proposed:** Set images: { unoptimized: true } in next.config.ts and drop remotePatterns; the handler then renders the 404 (next-server.js:193). Add one browser check that /_next/image?url=%2Fart%2F23-ink.webp&w=640&q=75 answers 404. If the optimizer is ever wanted, allow only remote pathname '/images/new/cosmicsignature/**' and localPatterns [{ pathname: '/art/**' }].
 - **The sceptic's correction:** None on the facts. Two additions: on the host the path is served by the platform's optimizer from the build manifest (the Node handler answers 400 in minimal mode, next-server.js:160-163), so the 404 at line 193 is what `next start` shows.
+- **Fixed, 10 November:** `images.unoptimized` in `next.config.ts`, with a unit test that holds the setting and the absence of any `next/image` import together, and a browser check that the endpoint answers 404. Checked under `next start`; a preview deployment has not been asked.
 
 ## Second (priority 2)
 
@@ -94,6 +98,7 @@ _Defect._
 - **Why it matters:** A visitor on Safari 16.4 to 17.3, or a Chrome or Firefox from early 2023, would meet a sale whose new lots have no pictures, and the catch keeps it silent. For students it shows that lib esnext plus DOM types answers 'does this exist somewhere', never 'does it exist for our visitors'.
 - **Proposed:** Replace the call with a small helper that links the two signals by hand, or test 'any' in AbortSignal and fall back to the timeout signal. State the target in package.json (browserslist: chrome 111, edge 111, firefox 111, safari 16.4). Set lib to [dom, dom.iterable, es2022] and adjust the two test lines.
 - **The sceptic's correction:** The facts hold, but the defect is latent, not live: AuctionGallery mounts only when a contract is configured (auction-launch.tsx:31) and .env.example leaves the address empty, so no visitor meets it until a sale opens.
+- **Fixed, 10 November:** `browserslist` in `package.json` (equal to Next's default: the build's files are unchanged), `src/lib/abort.ts` in place of the call, `lib` at ES2022, and a lint rule that names `AbortSignal.any`. `eslint-plugin-compat` 7.0.2 was tried with ESLint 10.13 and does not report this call, nor `Promise.withResolvers` or `Object.groupBy`, so it was not added. A check that follows types into browser-compat-data would catch the next one, and is still to be written.
 
 ### An indexer outage blanks 57 of the 72 work pages, though the venue holds each one's record and stills
 
@@ -112,6 +117,7 @@ _Defect._
 - **Why it matters:** The works are what the venue most wants found, and the sitemap is the one place it states what exists: four in five are absent while every verification page is present. The proxy was built so that what does not exist is a true 404, and a blanket exclusion reopens that hole for a common malformed link, such as /uk/art/31.
 - **Proposed:** Build the work entries from the collection index and add a test that every indexed work is listed in every locale; add lastModified from mintedAt. Narrow the matcher's exclusion to the static prefixes and real file extensions (the /art files, icons/, fonts/, _next/, the metadata files), add '/uk/art/31.5' to the matcher cases in proxy.test.ts and a status check to …
 - **The sceptic's correction:** Part 1 holds exactly: 103 addresses per locale, 824 in all, 456 work addresses missing. Part 2 is true of the matcher but smaller than stated: the three dotted examples reach their routes and render [locale]/not-found.tsx, which reads no header, as a 200 that carries noindex.
+- **Fixed, 10 November:** the sitemap lists every indexed work; the proxy's matcher names the venue's files instead of skipping every dot, and `src/proxy.test.ts` reads `public/` to keep it so. The 404 now trusts only an address the proxy could have written: the old check read two characters, and `/en//host` came out as a link to another site (only for a client that sent the header itself). `lastModified` was not added: a mint date is not when a page changed.
 
 ### Errors and field vitals are not reported
 
