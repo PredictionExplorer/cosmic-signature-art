@@ -31,6 +31,7 @@ import { inField } from './keys';
 import { Loupe, type LoupeView } from './loupe';
 import { useMediaPolicy } from './media-policy';
 import { useMotion } from './motion-provider';
+import { Apart, NoticeRoom, NOTICE_JOIN, WhenRamp, noticeLines, noticeWords } from './room-notice';
 import { WavelengthSlider, wavelengthForKey } from './spectrum-rule';
 import { WavelengthLens } from './wavelength-lens';
 import { WhenLens } from './when-lens';
@@ -782,8 +783,29 @@ export function ArtworkRoom({
               : filmShown && filmStatus === 'loading'
                 ? t.loadingFilm
                 : slow
-                  ? `${t.slowRoom} · ${fill(t.elapsed, { time: clock(time.current) })}`
+                  ? t.slowRoom
                   : '';
+  // The Slow room's clock stands beside its name, outside the words a screen reader is told:
+  // inside them, a status that changed every second would be read out every second.
+  const slowClock = slow && status === t.slowRoom && fill(t.elapsed, { time: clock(time.current) });
+  // What the notice says. A lens's label comes first, so it is never the part that gives way.
+  const said = whenShown
+    ? noticeWords(t.analysisNotWork, whenCaption, status)
+    : wavelengthShown
+      ? noticeWords(
+          t.analysisNotWork,
+          wavelengthLoading ? t.wavelengthLoading : t.wavelengthCaption,
+          status,
+        )
+      : whenUnavailable && !status
+        ? t.whenUnavailable
+        : wavelengthUnavailable && !status
+          ? t.wavelengthUnavailable
+          : status;
+  const roomFor = useMemo(
+    () => noticeLines({ artwork, t, derivedViews, constrained, isStudy, numbers }),
+    [artwork, t, derivedViews, constrained, numbers],
+  );
   const retryStill = media?.still && stillFailed === media.still && !showFilm;
   const retryFilmOffer = showFilm && filmStatus === 'failed' && !studyHeld;
   const hintRows: [string, string][] = [
@@ -1020,83 +1042,63 @@ export function ArtworkRoom({
               </button>
             </div>
           </div>
-          <div
-            className={styles.notice}
-            role={
-              status ||
-              loupe ||
-              whenShown ||
-              whenUnavailable ||
-              wavelengthShown ||
-              wavelengthUnavailable
-                ? 'status'
-                : undefined
-            }
-            aria-live={loupe ? 'off' : 'polite'}
-          >
-            <span className={styles.statusText}>
-              {loupe && stillShown ? (
-                <DetailReadout
-                  store={views}
-                  folio={workFolio(artwork.id)}
-                  t={t}
-                  numbers={numbers}
-                />
-              ) : whenShown ? (
-                [whenCaption, t.analysisNotWork, status].filter(Boolean).join(' · ')
-              ) : wavelengthShown ? (
-                [
-                  wavelengthLoading ? t.wavelengthLoading : t.wavelengthCaption,
-                  t.analysisNotWork,
-                  status,
-                ]
-                  .filter(Boolean)
-                  .join(' · ')
-              ) : whenUnavailable && !status ? (
-                t.whenUnavailable
-              ) : wavelengthUnavailable && !status ? (
-                t.wavelengthUnavailable
-              ) : (
-                status
-              )}
-            </span>
-            {whenShown ? (
-              <span className={styles.whenScale} aria-hidden="true">
-                {t.whenFirst}
-                <i />
-                {t.whenLast}
+          <div className={styles.notice}>
+            <div className={styles.said}>
+              <span
+                role={said || loupe ? 'status' : undefined}
+                aria-live={loupe ? 'off' : 'polite'}
+              >
+                {loupe && stillShown ? (
+                  <DetailReadout
+                    store={views}
+                    folio={workFolio(artwork.id)}
+                    t={t}
+                    numbers={numbers}
+                  />
+                ) : (
+                  said
+                )}
               </span>
-            ) : null}
-            {retryStill ? (
-              <button
-                type="button"
-                onClick={() => {
-                  setStillFailed(null);
-                  setStillAttempt((value) => value + 1);
-                }}
-              >
-                {t.retry}
-              </button>
-            ) : retryFilmOffer ? (
-              <button type="button" onClick={retryFilm}>
-                {t.retry}
-              </button>
-            ) : showFilm && studyHeld && film ? (
-              <button
-                type="button"
-                onClick={() => setAllowedStudies((current) => [...current, film.id])}
-              >
-                {t.playAnyway}
-                {film.durationSeconds ? (
-                  <>
-                    {' · '}
-                    <span className={styles.meta}>
-                      {fill(t.durationSeconds, { n: Math.round(film.durationSeconds) })}
-                    </span>
-                  </>
-                ) : null}
-              </button>
-            ) : null}
+              {slowClock ? (
+                <span aria-hidden="true">
+                  {NOTICE_JOIN}
+                  {slowClock}
+                </span>
+              ) : null}
+              {whenShown ? <WhenRamp first={t.whenFirst} last={t.whenLast} /> : null}
+              {retryStill || retryFilmOffer || (showFilm && studyHeld) ? <Apart /> : null}
+              {retryStill ? (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setStillFailed(null);
+                    setStillAttempt((value) => value + 1);
+                  }}
+                >
+                  {t.retry}
+                </button>
+              ) : retryFilmOffer ? (
+                <button type="button" onClick={retryFilm}>
+                  {t.retry}
+                </button>
+              ) : showFilm && studyHeld && film ? (
+                <button
+                  type="button"
+                  onClick={() => setAllowedStudies((current) => [...current, film.id])}
+                >
+                  {t.playAnyway}
+                  {film.durationSeconds ? (
+                    <>
+                      {' · '}
+                      <span className={styles.meta}>
+                        {fill(t.durationSeconds, { n: Math.round(film.durationSeconds) })}
+                      </span>
+                    </>
+                  ) : null}
+                </button>
+              ) : null}
+            </div>
+            <NoticeRoom lines={roomFor} first={t.whenFirst} last={t.whenLast} />
           </div>
         </footer>
         {hint ? (

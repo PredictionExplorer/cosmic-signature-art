@@ -105,7 +105,7 @@ test('the Wavelength lens holds 031’s sweep where the keys choose: readout, sl
   // It opens on the work's own dominant wavelength, ticked on the rule.
   await heldAt(dialog, 632);
   await expect(dialog.getByRole('status')).toHaveText(
-    `${t.wavelengthCaption} · ${t.analysisNotWork}`,
+    `${t.analysisNotWork} · ${t.wavelengthCaption}`,
   );
   expect(sweeps.length).toBeGreaterThan(0);
   // On the rule: one nanometre an arrow, ten with Shift.

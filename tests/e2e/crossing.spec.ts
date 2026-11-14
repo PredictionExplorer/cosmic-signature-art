@@ -945,7 +945,7 @@ test('the When lens colours each mark by its moment, labelled analysis, never th
   await expect(drawn).toHaveAttribute('data-when', 'painted', { timeout: 15_000 });
   await expect(drawn).toHaveAttribute('role', 'img');
   await expect(drawn).toHaveAttribute('aria-label', new RegExp(t.analysisNotWork));
-  await expect(dialog.getByRole('status')).toContainText(`${t.whenInk} · ${t.analysisNotWork}`);
+  await expect(dialog.getByRole('status')).toHaveText(`${t.analysisNotWork} · ${t.whenInk}`);
   // The lens lies exactly where the still lay.
   const box = (await drawn.boundingBox())!;
   for (const key of ['x', 'y', 'width', 'height'] as const)

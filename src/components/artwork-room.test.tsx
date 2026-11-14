@@ -625,7 +625,7 @@ describe('immersive artwork room', () => {
     expect(room.querySelector('video')).toHaveAttribute('src', '/complete-ink.mp4');
   });
 
-  it('names the Slow room while a long study plays, with its elapsed clock in minutes and seconds', () => {
+  it('names the Slow room while a long study plays; its clock stands beside the name, never in the words read out', () => {
     const { room } = openRoom(true);
     const frame = room.firstElementChild as HTMLElement;
     expect(frame).not.toHaveAttribute('data-slow');
@@ -637,12 +637,23 @@ describe('immersive artwork room', () => {
     fireEvent.canPlay(study);
     study.currentTime = 75;
     fireEvent.timeUpdate(study);
-    expect(within(room).getByRole('status')).toHaveTextContent(
-      `${en.slowRoom} · 01:15 ${en.elapsed.replace('{time} ', '')}`,
-    );
+    // The status is the room's name alone: a clock inside it would be read out every second.
+    const status = within(room).getByRole('status');
+    expect(status.textContent).toBe(en.slowRoom);
+    const elapsed = within(room).getByText(fill(en.elapsed, { time: '01:15' }), { exact: false });
+    expect(elapsed).toHaveAttribute('aria-hidden', 'true');
+    expect(elapsed).toHaveTextContent(`· ${fill(en.elapsed, { time: '01:15' })}`);
+    expect(status).not.toContainElement(elapsed);
+    expect(status.nextElementSibling).toBe(elapsed);
+    // A second later the clock has moved and the status has not.
+    study.currentTime = 76;
+    fireEvent.timeUpdate(study);
+    expect(elapsed).toHaveTextContent(fill(en.elapsed, { time: '01:16' }));
+    expect(within(room).getByRole('status')).toBe(status);
+    expect(status.textContent).toBe(en.slowRoom);
     expect(within(room).getByRole('slider', { name: en.filmPosition })).toHaveAttribute(
       'aria-valuetext',
-      '01:15 of 01:55',
+      '01:16 of 01:55',
     );
     fireEvent.click(within(sources).getByRole('button', { name: en.film }));
     expect(frame).not.toHaveAttribute('data-slow');
@@ -726,8 +737,9 @@ describe('immersive artwork room', () => {
     });
     expect(drawn.tagName).toBe('CANVAS');
     expect(drawn).toHaveAttribute('data-room-media');
-    expect(within(room).getByRole('status')).toHaveTextContent(
-      `${en.whenInk} · ${en.analysisNotWork}`,
+    // The label comes first: it is never the part that gives way.
+    expect(within(room).getByRole('status').textContent).toBe(
+      `${en.analysisNotWork}\u00a0· ${en.whenInk}`,
     );
     // Light keeps the lens and reads its own order.
     fireEvent.keyDown(room, { key: 'l' });
@@ -752,6 +764,51 @@ describe('immersive artwork room', () => {
     expect(lens).toHaveAttribute('aria-pressed', 'false');
     fireEvent.keyDown(room, { key: '?' });
     expect(within(room).getByLabelText(en.roomKeys)).toHaveTextContent(en.keyWhen);
+  });
+
+  it('holds room for each line before it is said, in lines that are never text or read out', () => {
+    const { room } = openRoom();
+    const held = () =>
+      [...room.querySelectorAll('[data-notice-room] > [data-line]')].map((line) => ({
+        words: line.getAttribute('data-line'),
+        ramp: !!line.querySelector('[data-first]'),
+      }));
+    /** The line on screen: the status and what stands beside it, its clock at rest. */
+    const said = () =>
+      within(room).getByRole('status').parentElement!.textContent!.trim().replace(/\d/g, '0');
+    // Before any lens is on, the room for its line is there, and the label is nowhere as text.
+    expect(within(room).queryByRole('status')).toBeNull();
+    expect(held()).toContainEqual({
+      words: `${en.analysisNotWork}\u00a0· ${en.whenInk}`,
+      ramp: true,
+    });
+    expect(within(room).queryByText(en.analysisNotWork, { exact: false })).toBeNull();
+    expect(room.querySelector('[data-notice-room]')).toHaveAttribute('aria-hidden', 'true');
+    // The lens's line with its ramp, on Ink and on Light.
+    fireEvent.keyDown(room, { key: 't' });
+    const ramp = `${en.whenFirst}${en.whenLast}`;
+    expect(said()).toBe(`${en.analysisNotWork}\u00a0· ${en.whenInk} ${ramp}`);
+    expect(held()).toContainEqual({
+      words: within(room).getByRole('status').textContent,
+      ramp: true,
+    });
+    fireEvent.keyDown(room, { key: 'l' });
+    expect(held()).toContainEqual({
+      words: within(room).getByRole('status').textContent,
+      ramp: true,
+    });
+    fireEvent.keyDown(room, { key: 'i' });
+    // A film as it loads, and the Slow room with its clock.
+    fireEvent.keyDown(room, { key: 'f' });
+    expect(held()).toContainEqual({ words: en.loadingFilm, ramp: false });
+    const sources = within(room).getByRole('group', { name: en.sources });
+    fireEvent.click(within(sources).getByRole('button', { name: longStudy }));
+    const study = room.querySelector('video')!;
+    Object.defineProperty(study, 'duration', { configurable: true, value: 115.8 });
+    fireEvent.canPlay(study);
+    study.currentTime = 75;
+    fireEvent.timeUpdate(study);
+    expect(held()).toContainEqual({ words: said(), ramp: false });
   });
 
   it('rests the When word and says so when the lens cannot be painted', async () => {
@@ -1161,12 +1218,12 @@ describe('the Wavelength lens in the room', () => {
     // A quiet loading state until the first held frame is decoded.
     expect(word).toHaveAttribute('aria-busy', 'true');
     expect(within(room).getByRole('status')).toHaveTextContent(
-      `${en.wavelengthLoading} · ${en.analysisNotWork}`,
+      `${en.analysisNotWork} · ${en.wavelengthLoading}`,
     );
     decoded(video);
     expect(word).not.toHaveAttribute('aria-busy');
     expect(within(room).getByRole('status')).toHaveTextContent(
-      `${en.wavelengthCaption} · ${en.analysisNotWork}`,
+      `${en.analysisNotWork} · ${en.wavelengthCaption}`,
     );
     // From anywhere in the room the arrows step it, Shift by ten, Home and End to the ends.
     fireEvent.keyDown(room, { key: 'ArrowLeft' });
