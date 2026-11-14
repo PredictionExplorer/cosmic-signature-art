@@ -2,8 +2,8 @@ import type { ArtFilm, Artwork } from '@/lib/art/types';
 import { ART_HEIGHT, ART_WIDTH } from '@/lib/art/constants';
 import { workFolio } from '@/lib/art/number';
 import { clock, fill } from '@/lib/i18n/format';
-import type { Messages } from '@/lib/i18n/en';
 import styles from './artwork-room.module.css';
+import type { RoomNoticeWords } from './room-notice.words';
 
 /*
   The room's notice is the one line beneath the strip: a lens's label, a status, the loupe's
@@ -54,7 +54,7 @@ export function noticeLines({
   numbers,
 }: {
   artwork: Artwork;
-  t: Messages;
+  t: RoomNoticeWords;
   /** The lenses are offered in this room (never on a sale surface). */
   derivedViews: boolean;
   /** On a constrained connection a long study waits for a word. */

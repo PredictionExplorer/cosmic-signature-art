@@ -1,9 +1,11 @@
 import { EXPRESSION_WORDS, FILM_LABEL_WORDS } from '@/lib/i18n/format.words';
 import type { WordList, Words } from '@/lib/i18n/words';
+import { ROOM_NOTICE_WORDS } from './room-notice.words';
 
 /**
  * The viewing room: its strip of expressions and films, the transport, the loupe's readout, the
- * two lenses, its key sheet, and what it says while a film or an expression is on its way.
+ * two lenses, its key sheet, and what it says while a film or an expression is on its way. Its
+ * notice holds room for the lines it may come to say, and lists them itself.
  */
 export const ARTWORK_ROOM_WORDS = [
   'viewingRoom',
@@ -63,5 +65,6 @@ export const ARTWORK_ROOM_WORDS = [
   'keyHelp',
   ...EXPRESSION_WORDS,
   ...FILM_LABEL_WORDS,
+  ...ROOM_NOTICE_WORDS,
 ] as const satisfies WordList;
 export type ArtworkRoomWords = Words<typeof ARTWORK_ROOM_WORDS>;
