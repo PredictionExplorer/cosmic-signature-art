@@ -22,9 +22,19 @@ export function deploymentUrl(env: Record<string, string | undefined>): string {
 }
 export const DEPLOYMENT_URL = deploymentUrl(process.env);
 /**
+ * The venue's own sharing card in a language (src/app/[locale]/opengraph-image.tsx, at the
+ * size of src/components/sharing-card.tsx's CARD), for a page that draws none of its own. It
+ * must be named: a page's sharing words replace the frame's whole, its card with them, so a
+ * page that names no image is shared as bare text.
+ */
+export function venueCard(locale: Locale) {
+  return { url: `/${locale}/opengraph-image`, width: 1200, height: 630, alt: 'Cosmic Signature' };
+}
+/**
  * A page's metadata. `image` undefined is the venue's still of 023; an object is that page's
- * own; null names no image here at all, so the sharing card drawn beside the route (an
- * opengraph-image.tsx) stands: Next adds a file-based card only where the page set none.
+ * own; null names no image here at all, so the sharing card drawn beside the route itself (an
+ * opengraph-image.tsx in its own folder) stands: Next adds a file-based card only where the
+ * page set none, and only from the page's own segment.
  */
 export function metadata(
   locale: Locale,

@@ -574,4 +574,60 @@ test.describe('the Index sheet', () => {
     await expect(page.getByRole('navigation', { name: t.ordering })).toBeVisible();
     await expect(page.getByRole('navigation', { name: t.collectionViews })).toHaveCount(0);
   });
+
+  /**
+   * How an element's words stand against what is painted behind them (WCAG 2.2's contrast
+   * ratio): its colour, faded by every opacity between it and the nearest ground that is
+   * painted. What paints the ground fades its words and its ground alike, and is not counted.
+   */
+  const contrastOf = (page: Page, selector: string) =>
+    page
+      .locator(selector)
+      .first()
+      .evaluate((node) => {
+        const parse = (colour: string) => (colour.match(/[\d.]+/g) ?? []).map(Number);
+        const luminance = ([r, g, b]: number[]) => {
+          const [x, y, z] = [r, g, b].map((value) => {
+            const c = value / 255;
+            return c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
+          });
+          return 0.2126 * x + 0.7152 * y + 0.0722 * z;
+        };
+        let ground = [255, 255, 255];
+        let fade = 1;
+        for (let at: Element | null = node; at; at = at.parentElement) {
+          const style = getComputedStyle(at);
+          const [r, g, b, alpha = 1] = parse(style.backgroundColor);
+          if (alpha === 1) {
+            ground = [r, g, b];
+            break;
+          }
+          fade *= Number(style.opacity);
+        }
+        const [r, g, b] = parse(getComputedStyle(node).color);
+        const seen = [r, g, b].map((value, at) => value * fade + ground[at] * (1 - fade));
+        const [lighter, darker] = [luminance(seen), luminance(ground)].sort((a, b) => b - a);
+        return (lighter + 0.05) / (darker + 0.05);
+      });
+
+  test('its small words are read on paper and on night', async ({ page }) => {
+    // On paper: the cycles' labels are the sheet's smallest type.
+    await ready(page, '/collection');
+    await page.getByRole('button', { name: t.index, exact: true }).first().click();
+    await expect(page.locator('[class*="cycleLabel"]').first()).toBeVisible();
+    expect(await contrastOf(page, '[class*="cycleLabel"]')).toBeGreaterThanOrEqual(4.5);
+  });
+
+  test('under a finger, the wall says how to hang a work in words that are read in a night room', async ({
+    page,
+    isMobile,
+  }) => {
+    test.skip(!isMobile, 'The wall says so only where there is no pointing.');
+    // The wall is paper whatever room the sheet is opened in: here, a night room.
+    await ready(page, '/collection/orrery');
+    await page.getByRole('button', { name: t.index, exact: true }).first().click();
+    const hint = page.getByText(t.indexWallHint);
+    await expect(hint).toBeVisible();
+    expect(await contrastOf(page, '[class*="wallHint"]')).toBeGreaterThanOrEqual(4.5);
+  });
 });

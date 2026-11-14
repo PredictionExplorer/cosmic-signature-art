@@ -38,18 +38,33 @@ const LOADS = 3;
 /** A page stands still once nothing larger has painted and nothing has shifted for this long. */
 const QUIET_MS = 3_000;
 
-type Visit = { title: string; path: string; firstVisit: boolean };
+/** Every script the route loads before it can hydrate. */
+const ROUTE_SCRIPT = /\/_next\/static\/chunks\/.+\.js(\?|$)/;
+
+type Visit = { title: string; path: string; firstVisit: boolean; scriptDelayMs?: number };
 const VISITS: Visit[] = [
   // The gate holds the head back while First Light performs; the day's plate must still be the
   // first paint, and the measurement lasts until the performance has given the page back.
   { title: 'the home on a first visit, through First Light', path: '/', firstVisit: true },
   { title: 'the home for a returning visitor', path: '/', firstVisit: false },
   { title: 'a work page, № 031', path: '/art/31', firstVisit: false },
+  // A slow connection in the one respect loopback hides: the route's script arrives late, the
+  // document and its images as they do. A still that has loaded shows without it
+  // (src/lib/settle.ts), so neither the still nor the largest paint may wait for the script; the
+  // delay is longer than the budget, and a still held back until the plate hydrates fails it.
+  // The plate is asked to rest on its still: a film can only begin once the script has run, and
+  // on a phone its first frame, a few pixels larger than the preview, would be counted instead.
+  {
+    title: 'a work page, № 031, at rest, its script three seconds late',
+    path: '/art/31?view=still',
+    firstVisit: false,
+    scriptDelayMs: 3_000,
+  },
 ];
 
 type Paint = { time: number; size: number; art: boolean; element: string };
 type Shift = { time: number; value: number; sources: string[] };
-type Seen = { paints: Paint[]; shifts: Shift[]; lastAt: number };
+type Seen = { paints: Paint[]; shifts: Shift[]; lastAt: number; stillAt?: number };
 type Watched = { __vitals: Seen };
 /** The layout-shift entry, which the DOM's TypeScript types do not carry yet. */
 type LayoutShift = PerformanceEntry & {
@@ -104,6 +119,18 @@ function observeVitals() {
     );
   const seen: Seen = { paints: [], shifts: [], lastAt: 0 };
   Object.defineProperty(window, '__vitals', { value: seen });
+  // When the first screen's still began to show over its preview: the class that fades it in.
+  const shown = new MutationObserver(() => {
+    if (!document.querySelector('[data-layer-state="current"] img.art-still.is-settled')) return;
+    seen.stillAt = performance.now();
+    shown.disconnect();
+  });
+  shown.observe(document, {
+    attributes: true,
+    attributeFilter: ['class'],
+    childList: true,
+    subtree: true,
+  });
   new PerformanceObserver((list) => {
     for (const entry of list.getEntries() as LargestContentfulPaint[])
       seen.paints.push({
@@ -185,12 +212,22 @@ async function measure(browser: Browser, info: TestInfo, visit: Visit) {
   });
   try {
     await context.addInitScript(observeVitals);
+    const { scriptDelayMs } = visit;
+    if (scriptDelayMs)
+      await context.route(ROUTE_SCRIPT, async (route) => {
+        await new Promise((resolve) => setTimeout(resolve, scriptDelayMs));
+        // A script still on its way when the measurement ends has no page left to answer.
+        await route.continue().catch(() => {});
+      });
     const page = await context.newPage();
     await page.goto(visit.path, { waitUntil: 'load' });
     await page.waitForFunction(standsStill, QUIET_MS, { polling: 250, timeout: 60_000 });
-    const { paints, shifts } = await page.evaluate(() => (window as unknown as Watched).__vitals);
-    return { lcp: paints.at(-1), cls: cumulativeLayoutShift(shifts), shifts };
+    const { paints, shifts, stillAt } = await page.evaluate(
+      () => (window as unknown as Watched).__vitals,
+    );
+    return { lcp: paints.at(-1), cls: cumulativeLayoutShift(shifts), shifts, stillAt };
   } finally {
+    await context.unrouteAll({ behavior: 'ignoreErrors' });
     await context.close();
   }
 }
@@ -238,7 +275,8 @@ test.describe('paint and layout budgets', { tag: '@budget' }, () => {
       const cls = median(loads.map((load) => load.cls));
       const summary =
         `${info.project.name}, ${visit.title}: LCP ${loads.map((l) => Math.round(l.lcp?.time ?? -1)).join(' / ')} ms ` +
-        `(median ${Math.round(lcp)}, budget ${BUDGET.largestContentfulPaintMs}), ${loads[0].lcp?.element}; ` +
+        `(median ${Math.round(lcp)}, budget ${BUDGET.largestContentfulPaintMs}), ${[...new Set(loads.map((l) => l.lcp?.element))].join(' or ')}; ` +
+        `the still shown from ${loads.map((l) => Math.round(l.stillAt ?? -1)).join(' / ')} ms; ` +
         `CLS ${loads.map((l) => l.cls.toFixed(4)).join(' / ')} (budget ${BUDGET.cumulativeLayoutShift})`;
       info.annotations.push({ type: 'budget', description: summary });
       console.log(summary);
@@ -262,6 +300,13 @@ test.describe('paint and layout budgets', { tag: '@budget' }, () => {
           });
       }
       expect(lcp, summary).toBeLessThanOrEqual(BUDGET.largestContentfulPaintMs);
+      // On a phone the still is no larger than its preview and is never the LCP; it is held to
+      // the same line there by the moment it began to show.
+      if (visit.scriptDelayMs)
+        expect(
+          median(loads.map((load) => load.stillAt ?? Infinity)),
+          `The still showed without waiting for the route's script. ${summary}`,
+        ).toBeLessThanOrEqual(BUDGET.largestContentfulPaintMs);
       expect(cls, summary).toBeLessThanOrEqual(BUDGET.cumulativeLayoutShift);
     });
 });

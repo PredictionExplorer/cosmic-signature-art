@@ -20,6 +20,31 @@ const { records } = JSON.parse(
  */
 const DERIVED_MS = 150_000;
 
+test('the door and a work’s proof are shared with the venue’s card, never as bare text', async ({
+  page,
+  request,
+}, info) => {
+  test.skip(info.project.name !== 'chromium-desktop', 'A page’s head is the same in every engine.');
+  for (const path of ['/verify/orbit', '/verify/orbit/31', '/uk/verify/orbit/31']) {
+    await page.goto(path, { waitUntil: 'domcontentloaded' });
+    const locale = path.startsWith('/uk/') ? 'uk' : 'en';
+    const head = (name: string) =>
+      page
+        .locator(`meta[property="${name}"], meta[name="${name}"]`)
+        .first()
+        .getAttribute('content');
+    const card = await head('og:image');
+    expect(card, `${path} names a picture`).toMatch(new RegExp(`/${locale}/opengraph-image$`));
+    expect(await head('og:image:width')).toBe('1200');
+    expect(await head('og:image:height')).toBe('630');
+    expect(await head('twitter:image')).toBe(card);
+    // The tag names the deployment's origin; the card itself is served by the server under test.
+    const response = await request.get(new URL(card!).pathname);
+    expect(response.status(), `${path}: the card answers`).toBe(200);
+    expect(response.headers()['content-type']).toContain('image/png');
+  }
+});
+
 test('the door lists every number with a record, and its field goes on to the work', async ({
   page,
 }) => {

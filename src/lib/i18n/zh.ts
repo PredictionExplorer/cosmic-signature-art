@@ -597,6 +597,8 @@ export const zh: Messages = {
   afterTheFrame: '画面之后',
   afterTheFrameNote:
     '越过记录的时段，同样的物理以影片的速度继续运行，镜头停在影片结束时的位置。这不是作品：这是作品的轨道接下来的样子。',
+  afterTheFrameNoteAsk:
+    '越过记录的时段，同样的物理以影片的速度继续运行。画面停在影片结束时的位置，或跟随三个天体中的一个，这时该天体在画面中保持不动。这不是作品：这是作品的轨道接下来的样子。',
   orbitFate: '命运',
   orbitFateEjection: '天体 {body} 在第 {step} 步已不再受束缚',
   orbitFateDance: '在 {steps} 步内始终束缚',
@@ -618,6 +620,17 @@ export const zh: Messages = {
   beyondNotBack: '到第 {steps} 步，也就是记录停止观察之处，它还没有回来，三个天体仍相互束缚。',
   beyondFree: '记录显示，在第 {step} 步，天体 {body} 已不再受另外两个束缚。',
   beyondStill: '到第 {steps} 步，也就是记录停止观察之处，三个天体仍相互束缚。',
+  beyondAsk: '跟随三个天体中的一个，或留在原画面。',
+  beyondStayBody: '跟随天体 {body}',
+  beyondFrame: '原画面',
+  beyondStayFrame: '留在原画面',
+  beyondKeptLine: '跟随天体 {body} · {line}',
+  beyondKept: '画面一直跟随天体 {body}。',
+  beyondAlone: '影片结束 {time}后起，画面中只剩天体 {body}。',
+  beyondAloneAgain: '影片结束 {time}后起，画面中又只剩天体 {body}。',
+  beyondAloneFor: '影片结束 {time}后起，画面中只剩天体 {body}，持续了 {span}。',
+  beyondAloneForAgain: '影片结束 {time}后起，画面中又只剩天体 {body}，持续了 {span}。',
+  beyondOneStayed: '{time}后，天体 {body} 仍在画面中。',
   orbitAdrift: '第 {step} 步之后不再是轨道：计算出的能量改变了 {change}。',
   orbitEnergyHeld: '按此处的计算，能量在整个记录的时段内保持到 {digits} 位数字。',
   orbitEnergyBroken:

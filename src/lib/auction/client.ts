@@ -28,9 +28,17 @@ const chain =
         rpcUrls: { default: { http: [rpcUrl] } },
       })
     : arbitrum;
+/**
+ * The venue reads the chain through one address, the RPC it names. An answer may not send the
+ * browser anywhere else: viem would otherwise follow a revert that asks for an off-chain lookup
+ * (EIP-3668, which only names on other chains need) to whatever address the revert gives, so a
+ * hostile RPC could make a bidder's browser call any host, with the contract and the call in
+ * the request. Nothing the sale reads asks for one.
+ */
 export const publicClient = createPublicClient({
   chain,
   transport: http(rpcUrl, { timeout: 12000, retryCount: 1, batch: true }),
+  ccipRead: false,
 });
 export type Snapshot = {
   lot: AuctionRecord;

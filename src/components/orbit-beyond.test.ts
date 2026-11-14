@@ -5,7 +5,7 @@ import { performedOrbits } from '@/lib/art/orbit-windows';
 import { catalogs } from '@/lib/i18n/messages';
 import { locales } from '@/lib/i18n/routing';
 import { beyondPath, type BeyondPath } from '@/lib/physics/beyond';
-import { HeldPlacement } from '@/lib/physics/framing';
+import { HeldPlacement, framedSamples } from '@/lib/physics/framing';
 import { lightFilmDuration } from '@/lib/physics/light-film';
 import { deriveFate, type DerivedFate } from '@/lib/physics/orbit';
 import {
@@ -17,7 +17,7 @@ import {
   worthGoingOn,
   type HeldScript,
 } from './orbit-beyond';
-import { platePicture, type Material, type Picture } from './orbit-picture';
+import { keptPicture, platePicture, type Material, type Picture } from './orbit-picture';
 
 const en = catalogs.en;
 const english = new Intl.NumberFormat('en');
@@ -37,16 +37,44 @@ const pictureOf = (copies = 1, material: Material = 'light', frame = FRAME): Pic
     1,
   );
 
-/** A work's own path past its window, as the worker carries it. */
+/** A recorded window in which the three never left the middle: the film showed none of them out. */
+const QUIET_FILM = {
+  count: 1,
+  copies: 1,
+  pixels: Float32Array.from({ length: 12 }, (_, i) => (i % 2 ? 1_117 : 1_728)),
+};
+
+/**
+ * A work's own path past its window, as the worker carries it: on from the bodies at the
+ * window's end, to the fate the record states.
+ *
+ * The worker derives that fate first, by running on to the record's horizon. Here the record's
+ * is taken instead. Every work's derived fate is its published one, exactly: `npm run
+ * art:energy` runs all 72 to their fates and keeps its registry only when each meets the
+ * record, and orbit.test.ts derives several. And the path is then the same to the last bit,
+ * since it takes nothing else of the fate run than the bodies at the window's end and the
+ * energy the window began with, which a run to the window's end gives. Deriving the fates here
+ * as well ran five of these eleven works to step 8,000,000 twice over; with coverage counting
+ * every step, that took a CI runner more than three minutes.
+ */
 function carried(id: number) {
   const orbit = workOrbit(id)!;
   const [performed] = performedOrbits([id]);
   const steps = orbit.generation.steps;
   const start = { masses: orbit.published.masses, dt: orbit.generation.dt, steps };
-  const fate = deriveFate(
-    { ...start, positions: performed.window.positions, velocities: performed.window.velocities },
-    { steps, threshold: orbit.fate.escapeThreshold, horizonSteps: orbit.fate.horizonSteps },
-  );
+  const window = {
+    ...start,
+    positions: performed.window.positions,
+    velocities: performed.window.velocities,
+  };
+  const { outcome, escaper, ejectionStep, horizonSteps, escapeThreshold } = orbit.fate;
+  const fate: DerivedFate = {
+    ...deriveFate(window, { steps, threshold: escapeThreshold, horizonSteps: steps }),
+    outcome,
+    escaper,
+    ejectionStep,
+    horizonSteps,
+  };
   const frame = plateFrame(id)!;
   const path = beyondPath({
     ...start,
@@ -55,18 +83,30 @@ function carried(id: number) {
     stride: 100,
     plate: new HeldPlacement(frame, start),
   });
-  /** The path read for the work's plate in a material, as the page reads it. */
-  const on = (material: Material) => ({
-    fate,
-    path,
-    script: heldScript(
-      path,
-      pictureOf(path.copies, material, frame),
+  /**
+   * The recorded window as the frame places it: what the film itself showed. A picture kept on
+   * a body reads it; it is placed when the first one asks.
+   */
+  let framed: ReturnType<typeof framedSamples> | null = null;
+  const filmed = () => (framed ??= framedSamples(window, frame, 100));
+  /**
+   * The path read for the work's plate in a material, as the page reads it: in the work's own
+   * frame, or in the picture kept on a body.
+   */
+  const on = (material: Material, kept: number | null = null) => {
+    const own = pictureOf(path.copies, material, frame);
+    return {
       fate,
-      PACE,
-      frame.projection === 'position',
-    ),
-  });
+      path,
+      script: heldScript(
+        path,
+        kept === null ? own : keptPicture(own, frame, filmed(), path.pixels, kept, 900, 582),
+        fate,
+        PACE,
+        frame.projection === 'position',
+      ),
+    };
+  };
   return { ...on('light'), on };
 }
 
@@ -94,6 +134,8 @@ function made(
   fate: Pick<DerivedFate, 'outcome' | 'escaper' | 'ejectionStep' | 'horizonSteps'> = bound,
   lost: BeyondPath['lost'] = null,
   names = true,
+  /** The body the picture stays with; none reads the path in the work's own frame. */
+  held: number | null = null,
 ) {
   const samples = Math.round(seconds * PER_SECOND) + 1;
   const pixels = new Float32Array(samples * 6);
@@ -107,7 +149,11 @@ function made(
       pixels[(sample * 3 + body) * 2 + 1] = 1_117;
     }
   const path: BeyondPath = { from: STEPS, stride: 100, samples, pixels, copies: 1, lost };
-  return { fate, path, script: heldScript(path, pictureOf(), fate, PACE, names) };
+  const picture =
+    held === null
+      ? pictureOf()
+      : keptPicture(pictureOf(), FRAME, QUIET_FILM, pixels, held, 900, 582);
+  return { fate, path, script: heldScript(path, picture, fate, PACE, names) };
 }
 type Read = ReturnType<typeof made>;
 const fact = ({ fate, path, script }: Read, t = en, number = english) =>
@@ -117,12 +163,21 @@ const lineAt = ({ script, path }: Read, second: number, t = en, number = english
   beyondLine(script, path, Math.ceil(second * PER_SECOND), t, number);
 const seconds = (script: HeldScript, sample: number) => sample / script.perSecond;
 
-describe('what the picture shows of eight works, past their frames', () => {
-  let works: Record<number, ReturnType<typeof carried>>;
-  beforeAll(() => {
-    works = Object.fromEntries([25, 31, 16, 4, 30, 14, 54, 8].map((id) => [id, carried(id)]));
-  }, 240_000);
+/**
+ * Eleven works carried past their windows once, for every test that reads one. Five are
+ * carried to the record's horizon, seven million steps on: about 7 s in all on a laptop, and
+ * about two minutes on a CI runner that counts coverage. The budget is there to catch a hang,
+ * and is sized to a runner several times slower than that: one was 1.6 times slower than the
+ * usual on 12 November 2026.
+ */
+let works: Record<number, ReturnType<typeof carried>>;
+beforeAll(() => {
+  works = Object.fromEntries(
+    [25, 31, 16, 4, 30, 14, 54, 8, 62, 37, 63].map((id) => [id, carried(id)]),
+  );
+}, 600_000);
 
+describe('what the picture shows of eight works, past their frames', () => {
   it('№ 025: body 2 leaves, and the other two are out of the picture 7.2 seconds later', () => {
     const { script, path, fate } = works[25];
     expect(script.ending.kind).toBe('empty');
@@ -280,21 +335,64 @@ describe('what is said of an ending, each sentence only where it is so', () => {
     ]);
   });
 
+  it('a body that came back for a second and stands just outside to the horizon: not said to have come back', () => {
+    // Far out from 10 to 16 seconds, on the picture for one, then just past the edge for as far
+    // as the record looks. The line's last word and the telling agree: it is out of the picture.
+    const hovers = made(60, [
+      { body: 2, from: 10, to: 16 },
+      { body: 2, from: 17, far: 0.05 },
+    ]);
+    expect(fact(hovers)).toEqual([
+      'Body 3 last left the picture 17.0 seconds after the film ended.',
+      'At step 8,000,000, where the record stops looking, it has not come back, and all three are still bound to one another.',
+    ]);
+    const { script } = hovers;
+    expect(script.ending.kind).toBe('away');
+    expect(seconds(script, script.ending.sample)).toBeCloseTo(25, 1);
+    expect(lineAt(hovers, 25)).toMatch(/body 3 is out of the picture/);
+    // Its last leaving is a moment to go to, with the two a visitor saw.
+    expect(script.moments.map((moment) => Math.round(seconds(script, moment)))).toEqual([
+      10, 16, 17,
+    ]);
+  });
+
+  it('a body gone to the horizon while another goes and comes back: the one gone is told', () => {
+    const both = made(120, [
+      { body: 0, from: 10 },
+      { body: 2, from: 80, to: 90 },
+    ]);
+    expect(fact(both)).toEqual([
+      'Body 1 left the picture 10.0 seconds after the film ended.',
+      'At step 8,000,000, where the record stops looking, it has not come back, and all three are still bound to one another.',
+    ]);
+    // Performed for eight seconds past its leaving, not for the minute and a half to the
+    // other's return.
+    expect(seconds(both.script, both.script.ending.sample)).toBeCloseTo(18, 1);
+  });
+
   it('a leaving after an earlier one: left again where it came back, last left where it did not', () => {
-    // A graze of half a second is an earlier leaving too.
+    // An earlier absence that lasted, which the line named, however near the edge it stood.
     const again = made(30, [
-      { body: 2, from: 2, to: 2.5 },
+      { body: 2, from: 2, to: 6, far: 0.05 },
       { body: 2, from: 10, to: 16 },
     ]);
+    expect(lineAt(again, 4)).toMatch(/body 3 is out of the picture/);
     expect(fact(again).slice(0, 2)).toEqual([
       'Body 3 left the picture again 10.0 seconds after the film ended.',
       'It came back 6.0 seconds later.',
     ]);
     const last = made(30, [
-      { body: 2, from: 2, to: 2.5 },
+      { body: 2, from: 2, to: 6, far: 0.05 },
       { body: 2, from: 25 },
     ]);
     expect(fact(last)[0]).toBe('Body 3 last left the picture 25.0 seconds after the film ended.');
+    // A graze of half a second, which neither the line nor the eye registers, makes no "again".
+    const grazed = made(30, [
+      { body: 2, from: 2, to: 2.5 },
+      { body: 2, from: 10, to: 16 },
+    ]);
+    expect(lineAt(grazed, 2.2)).toMatch(/^00:02 past the film · step [\d,]+$/);
+    expect(fact(grazed)[0]).toBe('Body 3 left the picture 10.0 seconds after the film ended.');
     // Another body's earlier leaving is not this one's.
     const first = made(30, [
       { body: 0, from: 2, to: 2.5 },
@@ -369,6 +467,21 @@ describe('what is said of an ending, each sentence only where it is so', () => {
       'Body 2 left the picture 6.0 seconds after the film ended.',
       'The record finds body 2 no longer bound to the other two at step 1,090,000.',
     ]);
+    // Out for a while in between and back at the last: not said to have been "still in it".
+    const between = made(
+      30,
+      [
+        { body: 1, from: 6 },
+        { body: 0, from: 8, to: 12, far: 0.02 },
+      ],
+      freed,
+    );
+    expect(between.script.ending).toMatchObject({ kind: 'parted' });
+    expect(fact(between)).toHaveLength(2);
+    // In the picture throughout, the two are said to be.
+    expect(fact(made(30, [{ body: 1, from: 6 }], freed))[1]).toBe(
+      '8.0 seconds later the other two were still in it.',
+    );
   });
 
   it('a body that left and came back before the computation lost its energy', () => {
@@ -498,16 +611,21 @@ describe('Further on', () => {
     expect(worthGoingOn(script, sample(41), false)).toBe(true);
     expect(worthGoingOn(script, sample(51), false)).toBe(false);
   });
-  it('steps to a second past each moment where nothing plays, then to the end, then on', () => {
+  it('steps to a second past each moment where nothing plays, then to the end, and no further', () => {
     expect(worthGoingOn(script, 0, true)).toBe(true);
     // Each step starts where the last one landed.
     const first = furtherOn(script, 0, true) as number;
     expect(second(first)).toBe(41);
     const next = furtherOn(script, first, true) as number;
     expect(second(next)).toBe(51);
+    // It is the only way on, so it is offered however near the next stop is…
+    expect(worthGoingOn(script, next, true)).toBe(true);
     expect(furtherOn(script, next, true)).toBe(script.ending.sample);
+    // …and at the end it goes nowhere: it is not the word that tells, or a visitor stepping
+    // with it would step on into whatever came to stand in its place.
     expect(furtherOn(script, script.ending.sample, true)).toBe('end');
-    expect(worthGoingOn(script, script.ending.sample, true)).toBe(true);
+    expect(worthGoingOn(script, script.ending.sample, true)).toBe(false);
+    expect(worthGoingOn(script, script.ending.sample, false)).toBe(false);
   });
   it('does not stop twice on moments the picture already shows together', () => {
     // Two bodies leave a fifth of a second apart: a second past the first, both are out.
@@ -519,5 +637,410 @@ describe('Further on', () => {
     expect(second(first)).toBe(11);
     // The next stop is the first return, not the leaving a fifth of a second on.
     expect(second(furtherOn(close, first, true))).toBe(21);
+  });
+});
+
+describe('what a picture that stays with one body shows', () => {
+  const kept = (id: number, body: number, material: Material = 'light') =>
+    works[id].on(material, body - 1);
+  const bound =
+    'All three are still bound to one another at step 8,000,000, where the record stops looking.';
+
+  it('№ 025, with the body the record finds free: the other two go, and it is alone', () => {
+    const read = kept(25, 2);
+    expect(read.script.kept).toBe(1);
+    expect(read.script.ending).toMatchObject({ kind: 'alone' });
+    // The other two are out 1.2 seconds after the film; eight more on the one body, alone.
+    expect(seconds(read.script, read.script.ending.sample)).toBeCloseTo(9.2, 1);
+    expect(fact(read)).toEqual([
+      'The picture stayed with body 2.',
+      'Body 2 was alone in it from 1.2 seconds after the film ended.',
+      'The record finds body 2 no longer bound to the other two at step 1,210,000.',
+    ]);
+    // The line says first whom the picture stays with, and never that all three are out.
+    expect(lineAt(read, 0)).toBe('Staying with body 2 · 00:00 past the film · step 1,000,000');
+    expect(lineAt(read, 5)).toBe(
+      'Staying with body 2 · 00:05 past the film · bodies 1 and 3 are out of the picture',
+    );
+    // The body it stays with is in its picture from the first sample to the last.
+    expect(read.script.outside(0, 1)).toBe(0);
+    expect(read.script.outside(read.path.samples - 1, 1)).toBe(0);
+  });
+
+  it('№ 025, with one of the two it leaves: that body goes, and the other is still there', () => {
+    expect(fact(kept(25, 1))).toEqual([
+      'The picture stayed with body 1.',
+      'Body 2 left the picture 1.2 seconds after the film ended.',
+      '8.0 seconds later body 3 was still in it.',
+      'The record finds body 2 no longer bound to the other two at step 1,210,000.',
+    ]);
+    const third = kept(25, 3);
+    expect(third.script.ending).toMatchObject({ kind: 'parted' });
+    // It ends eight seconds after the body left, not at the step that confirms the record's
+    // finding, 7.5 seconds after the film.
+    expect(seconds(third.script, third.script.ending.sample)).toBeCloseTo(8.2, 1);
+    expect(fact(third)).toEqual([
+      'The picture stayed with body 3.',
+      'Body 2 left the picture 0.2 seconds after the film ended.',
+      '8.0 seconds later body 1 was still in it.',
+      'The record finds body 2 no longer bound to the other two at step 1,210,000.',
+    ]);
+    expect(lineAt(third, 4)).toMatch(
+      /^Staying with body 3 · 00:04 past the film · body 2 is out of the picture, [\d.]+ picture widths away$/,
+    );
+  });
+
+  it('№ 031, a bound orbit: only what goes farther than the film showed is told, from each body alike', () => {
+    // From body 3 the film itself showed body 1 a fifth of a picture outside, again and again.
+    const third = kept(31, 3);
+    expect(third.script.rules.filmed.map((far) => far.toFixed(2))).toEqual([
+      '0.21',
+      '0.07',
+      '0.00',
+    ]);
+    // Twenty-three seconds after the film body 1 is out of it once more, for three seconds and
+    // no farther than that: the line says so, and it is no event.
+    expect(lineAt(third, 24)).toMatch(/^Staying with body 3 · 00:24 past the film · body 1 is out/);
+    expect(
+      third.script.moments.map((moment) => seconds(third.script, moment).toFixed(0)),
+    ).not.toContain('23');
+    // What is told is the excursion the work's own frame tells (body 3 gone from it 33.6 seconds
+    // after the film): from body 3, the other two are the ones that go.
+    expect(fact(third)).toEqual([
+      'The picture stayed with body 3.',
+      'Body 3 was alone in it for 10.8 seconds, from 33.1 seconds after the film ended.',
+      bound,
+    ]);
+    // From body 1 it is body 3 that goes; the line had named it out before, so "again".
+    expect(fact(kept(31, 1))).toEqual([
+      'The picture stayed with body 1.',
+      'Body 3 left the picture again 33.1 seconds after the film ended.',
+      'It came back 11.3 seconds later.',
+      bound,
+    ]);
+  });
+
+  it('№ 014: a body alone before, with the other two back for a moment, is alone again', () => {
+    const read = kept(14, 2);
+    expect(fact(read)).toEqual([
+      'The picture stayed with body 2.',
+      'Body 2 was again alone in it from 28.3 seconds after the film ended.',
+      'The record finds body 2 no longer bound to the other two at step 1,930,000.',
+    ]);
+    // The line had said so for more than twenty seconds, long before.
+    expect(lineAt(read, 10)).toBe(
+      'Staying with body 2 · 00:10 past the film · bodies 1 and 3 are out of the picture',
+    );
+  });
+
+  it('№ 062 and № 037: a body that goes and is not back when the record stops looking', () => {
+    const first = kept(62, 1);
+    expect(first.script.ending).toMatchObject({ kind: 'away', absence: { body: 2 } });
+    // Eight seconds after it went, not a hundred more to the record's horizon.
+    expect(seconds(first.script, first.script.ending.sample)).toBeCloseTo(105, 0);
+    const notBack =
+      'At step 8,000,000, where the record stops looking, it has not come back, and all three are still bound to one another.';
+    expect(fact(first)).toEqual([
+      'The picture stayed with body 1.',
+      'Body 3 last left the picture 1.6 minutes after the film ended.',
+      notBack,
+    ]);
+    // With that body, the other two are the ones gone: it is alone, and the three are bound.
+    expect(fact(kept(62, 3))).toEqual([
+      'The picture stayed with body 3.',
+      'Body 3 was alone in it from 1.6 minutes after the film ended.',
+      bound,
+    ]);
+    // № 037's body 2 comes back a dozen times, for a quarter of a second at the first, and is
+    // away from 108 seconds on. It is not told as a body that left and came back.
+    const wanderer = kept(37, 3);
+    expect(wanderer.script.ending).toMatchObject({ kind: 'away', absence: { body: 1 } });
+    expect(seconds(wanderer.script, wanderer.script.ending.sample)).toBeCloseTo(115.7, 0);
+    expect(fact(wanderer)).toEqual([
+      'The picture stayed with body 3.',
+      'Body 2 last left the picture 1.8 minutes after the film ended.',
+      notBack,
+    ]);
+  });
+
+  it('№ 063 with body 2: back from its one excursion, a swing the film had shown does not undo the return', () => {
+    // Body 1 goes farther than the film showed it go once, forty seconds after the film. Back
+    // from that, it is out of the picture again within eight seconds, but only as far as the
+    // film had shown: the orbit doing what it had been doing. The return stands and is told.
+    const read = kept(63, 2);
+    expect(read.script.ending.kind).toBe('returned');
+    expect(seconds(read.script, read.script.ending.sample)).toBeCloseTo(54.2, 1);
+    expect(fact(read)).toEqual([
+      'The picture stayed with body 2.',
+      'Body 1 left the picture 39.7 seconds after the film ended.',
+      'It came back 12.4 seconds later.',
+      bound,
+    ]);
+  });
+
+  it('№ 031 with body 2: alone, and not again, since it had not been before', () => {
+    // From body 2 the picture shows body 3's excursion at 32 seconds undone three seconds after
+    // its return, when bodies 1 and 3 both go: the first return that stays is body 1's, and what
+    // is told is the stretch in which both were out.
+    expect(fact(kept(31, 2))).toEqual([
+      'The picture stayed with body 2.',
+      'Body 2 was alone in it for 7.4 seconds, from 47.0 seconds after the film ended.',
+      bound,
+    ]);
+  });
+
+  it('№ 030 and № 004: where the computation lost its energy, the last sentence says so', () => {
+    const lost = 'Past step 5,106,000 this is not an orbit: the computed energy changed by 0.3%.';
+    expect(fact(kept(30, 3))).toEqual([
+      'The picture stayed with body 3.',
+      'Body 3 was again alone in it from 1.9 minutes after the film ended.',
+      'The record finds body 3 no longer bound to the other two at step 4,830,000.',
+      lost,
+    ]);
+    // With one of the two it leaves, the other is in the picture at the last; the energy has
+    // the last word, and four sentences are what a phone has room for.
+    expect(fact(kept(30, 1))).toEqual([
+      'The picture stayed with body 1.',
+      'Body 3 last left the picture 1.9 minutes after the film ended.',
+      'The record finds body 3 no longer bound to the other two at step 4,830,000.',
+      lost,
+    ]);
+    // Nothing is seen to go before № 004's energy breaks: whom the picture stayed with, and that.
+    expect(fact(kept(4, 1))).toEqual([
+      'The picture stayed with body 1.',
+      'Past step 1,535,000 this is not an orbit: the computed energy changed by 780%.',
+    ]);
+  });
+
+  it('№ 008, drawn twelve times: every copy of the body stands at the middle, on Light and on Ink', () => {
+    const light = kept(8, 3);
+    const ink = kept(8, 3, 'ink');
+    expect(light.script.copies).toBe(12);
+    expect(ink.script.copies).toBe(1);
+    expect(fact(light)).toEqual([
+      'The picture stayed with body 3.',
+      'Body 3 was alone in it for 16.1 seconds, from 40.7 seconds after the film ended.',
+      bound,
+    ]);
+    expect(fact(ink)).toEqual(fact(light));
+  });
+
+  it('says it in every reader’s language, and names the body the picture stays with first', () => {
+    for (const locale of locales) {
+      const t = catalogs[locale];
+      const told = fact(kept(25, 2), t, new Intl.NumberFormat(locale));
+      expect(told, locale).toHaveLength(3);
+      expect(told[0], locale).toBe(t.beyondKept.replace('{body}', '2'));
+      for (const sentence of told) expect(sentence, locale).not.toMatch(/\{\w+\}/);
+      const line = lineAt(kept(25, 2), 5, t, new Intl.NumberFormat(locale));
+      expect(line, locale).not.toMatch(/\{\w+\}/);
+      // Its first words are that language's own, whatever stands on which side of the number.
+      const [before, after] = t.beyondKeptLine.replace('{body}', '2').split('{line}');
+      expect(line.startsWith(before) && line.endsWith(after), locale).toBe(true);
+      expect(before, locale).toMatch(/2/);
+    }
+    const uk = catalogs.uk;
+    expect(fact(kept(25, 2), uk, new Intl.NumberFormat('uk'))).toEqual([
+      'Кадр лишався з тілом 2.',
+      'Через 1,2 секунди після кінця фільму тіло 2 лишилося в кадрі одне.',
+      'За записом, на кроці 1 210 000 тіло 2 уже не зв’язане з двома іншими.',
+    ]);
+    // How long, and from when: each in its own place in every language.
+    const aloneFor: Record<string, string> = {
+      en: 'Body 3 was alone in it for 10.8 seconds, from 33.1 seconds after the film ended.',
+      uk: 'Через 33,1 секунди після кінця фільму тіло 3 на 10,8 секунди лишилося в кадрі одне.',
+      ja: '映像が終わって 33.1 秒後から 10.8 秒のあいだ、フレームの中は天体 3 だけでした。',
+      ko: '영상이 끝나고 33.1초 뒤부터 10.8초 동안 프레임 안에는 3번 천체만 있었습니다.',
+      zh: '影片结束 33.1 秒后起，画面中只剩天体 3，持续了 10.8 秒。',
+      'zh-TW': '影片結束 33.1 秒後起，畫面中只剩天體 3，持續了 10.8 秒。',
+      'zh-HK': '影片結束 33.1 秒後起，畫面中只剩天體 3，持續了 10.8 秒。',
+      vi: 'Từ 33,1 giây sau khi phim kết thúc, suốt 10,8 giây chỉ còn vật thể 3 trong khung hình.',
+    };
+    for (const locale of locales)
+      expect(fact(kept(31, 3), catalogs[locale], new Intl.NumberFormat(locale))[1], locale).toBe(
+        aloneFor[locale],
+      );
+  });
+});
+
+describe('what is said of a picture that stays with a body, each sentence only where it is so', () => {
+  /** Body 2 is the one the record finds free; a path of a minute reaches the step that says so. */
+  const keptOn = (
+    kept: number,
+    out: Parameters<typeof made>[1],
+    fate: Parameters<typeof made>[2] = freed,
+    lost: BeyondPath['lost'] = null,
+    seconds_ = 60,
+  ) => made(seconds_, out, fate, lost, true, kept);
+  const free = 'The record finds body 2 no longer bound to the other two at step 1,090,000.';
+  const boundStill =
+    'All three are still bound to one another at step 8,000,000, where the record stops looking.';
+
+  it('the one that stayed by the body is said to be still there only if it is', () => {
+    // Body 2 goes at five seconds; body 3 is out of the picture when the eight are over.
+    const read = keptOn(0, [
+      { body: 1, from: 5 },
+      { body: 2, from: 12, to: 20 },
+    ]);
+    expect(fact(read)).toEqual([
+      'The picture stayed with body 1.',
+      'Body 2 left the picture 5.0 seconds after the film ended.',
+      free,
+    ]);
+    // Nor where it was out for most of the eight seconds and is back as they end: "still" is
+    // said of the whole of them.
+    const between = keptOn(0, [
+      { body: 1, from: 5 },
+      { body: 2, from: 6, to: 12.5 },
+    ]);
+    expect(between.script.ending).toMatchObject({ kind: 'parted' });
+    expect(fact(between)).toEqual([
+      'The picture stayed with body 1.',
+      'Body 2 left the picture 5.0 seconds after the film ended.',
+      free,
+    ]);
+    // Where it is, it is said…
+    expect(fact(keptOn(0, [{ body: 1, from: 5 }]))).toEqual([
+      'The picture stayed with body 1.',
+      'Body 2 left the picture 5.0 seconds after the film ended.',
+      '8.0 seconds later body 3 was still in it.',
+      free,
+    ]);
+    // …but not where the path stops at lost energy, which has the last word.
+    const lost = { step: 1_900_000, change: 0.02 } as NonNullable<BeyondPath['lost']>;
+    const cut = fact(keptOn(0, [{ body: 1, from: 5 }], freed, lost, 20));
+    expect(cut.slice(0, 3)).toEqual([
+      'The picture stayed with body 1.',
+      'Body 2 left the picture 5.0 seconds after the film ended.',
+      free,
+    ]);
+    expect(cut[3]).toMatch(/^Past step 1,900,000 this is not an orbit/);
+    expect(cut).toHaveLength(4);
+  });
+
+  it('a body that stayed with the free one, whose other two never both go: the record’s word alone', () => {
+    // The picture stays with body 2, which the record finds free; body 1 goes, body 3 does not.
+    const read = keptOn(1, [{ body: 0, from: 5 }]);
+    expect(read.script.ending.kind).toBe('parted');
+    expect(fact(read)).toEqual(['The picture stayed with body 2.', free]);
+  });
+
+  it('a body alone for less than half of the other’s absence: that body’s leaving and return', () => {
+    const told = (alone: { from: number; to: number }[]) =>
+      fact(
+        keptOn(
+          0,
+          [{ body: 1, from: 5, to: 45 }, ...alone.map((one) => ({ body: 2, ...one }))],
+          bound,
+        ),
+      );
+    const single = [
+      'The picture stayed with body 1.',
+      'Body 2 left the picture 5.0 seconds after the film ended.',
+      'It came back 40.0 seconds later.',
+      boundStill,
+    ];
+    // Body 2 is away for forty seconds; body 3 with it for four of them, or for eighteen.
+    expect(told([{ from: 10, to: 14 }])).toEqual(single);
+    expect(told([{ from: 10, to: 28 }])).toEqual(single);
+    // For half of it or more, what is told is how long the body was alone.
+    expect(told([{ from: 10, to: 31 }])[1]).toBe(
+      'Body 1 was alone in it for 21.0 seconds, from 10.0 seconds after the film ended.',
+    );
+    // Of two such stretches, the longer.
+    const twice = fact(
+      keptOn(
+        0,
+        [
+          { body: 1, from: 5, to: 75 },
+          { body: 2, from: 10, to: 16 },
+          { body: 2, from: 30, to: 70 },
+        ],
+        bound,
+        null,
+        90,
+      ),
+    );
+    // It had been alone before, for long enough that the line said so: "again".
+    expect(twice[1]).toBe(
+      'Body 1 was again alone in it for 40.0 seconds, from 30.0 seconds after the film ended.',
+    );
+    // An earlier stretch of two seconds, which the line never named, does not make it "again".
+    const once = fact(
+      keptOn(
+        0,
+        [
+          { body: 1, from: 5, to: 75 },
+          { body: 2, from: 10, to: 12 },
+          { body: 2, from: 30, to: 70 },
+        ],
+        bound,
+        null,
+        90,
+      ),
+    );
+    expect(once[1]).toBe(
+      'Body 1 was alone in it for 40.0 seconds, from 30.0 seconds after the film ended.',
+    );
+  });
+
+  it('a picture in which nothing goes farther than the film showed: the record’s word alone', () => {
+    const read = keptOn(0, [], bound);
+    expect(read.script.ending.kind).toBe('record');
+    expect(fact(read)).toEqual(['The picture stayed with body 1.', boundStill]);
+  });
+
+  it('a body away on a path that stops short of an ejection the record dates is not called bound', () => {
+    // The record dates an ejection confirmed 3.9 seconds after the film; this path is 3.5 long.
+    const read = keptOn(0, [{ body: 2, from: 1 }], freed, null, 3.5);
+    expect(read.script.ending.kind).toBe('away');
+    expect(fact(read)).toEqual([
+      'The picture stayed with body 1.',
+      'Body 3 left the picture 1.0 seconds after the film ended.',
+    ]);
+    // Where the record dates none, the horizon is said once, of the body and of the three.
+    expect(fact(keptOn(0, [{ body: 2, from: 1 }], bound, null, 3.5))).toEqual([
+      'The picture stayed with body 1.',
+      'Body 3 left the picture 1.0 seconds after the film ended.',
+      'At step 8,000,000, where the record stops looking, it has not come back, and all three are still bound to one another.',
+    ]);
+  });
+
+  it('"again" and "last" are said only after an absence the line had named', () => {
+    // A crossing of a tenth of a second, then the leaving: plain "left".
+    const grazed = keptOn(0, [
+      { body: 1, from: 2, to: 2.1 },
+      { body: 1, from: 5 },
+    ]);
+    expect(fact(grazed)[1]).toBe('Body 2 left the picture 5.0 seconds after the film ended.');
+    // An absence of four seconds, which the line named, then the leaving: "last left".
+    const named = keptOn(0, [
+      { body: 1, from: 2, to: 6, far: 0.05 },
+      { body: 1, from: 9 },
+    ]);
+    expect(lineAt(named, 4)).toBe(
+      'Staying with body 1 · 00:04 past the film · body 2 is out of the picture, 0.1 picture widths away',
+    );
+    expect(fact(named)[1]).toBe('Body 2 last left the picture 9.0 seconds after the film ended.');
+  });
+
+  it('the line never says all three are out: the body the picture stays with is in it', () => {
+    const read = keptOn(1, [
+      { body: 0, from: 5 },
+      { body: 2, from: 6 },
+    ]);
+    expect(read.script.ending).toMatchObject({ kind: 'alone' });
+    expect(lineAt(read, 5.5)).toMatch(
+      /^Staying with body 2 · 00:05 past the film · body 1 is out of the picture/,
+    );
+    expect(lineAt(read, 10)).toBe(
+      'Staying with body 2 · 00:10 past the film · bodies 1 and 3 are out of the picture',
+    );
+    expect(outNow(read.script, read.script.ending.sample)).toEqual([0, 2]);
+    // Further on goes to the moment the body is left alone.
+    expect(read.script.moments.map((moment) => seconds(read.script, moment).toFixed(0))).toEqual([
+      '5',
+      '6',
+    ]);
   });
 });

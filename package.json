@@ -15,6 +15,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
+    "test:golden": "vitest run --config tests/golden/vitest.config.ts",
+    "test:golden:removed": "node --experimental-strip-types tests/golden/removed.ts",
     "test:scripts": "node --experimental-strip-types --test 'scripts/**/*.test.mjs'",
     "test:budgets:js": "node scripts/check-js-budgets.mjs",
     "test:budgets:paint": "playwright test tests/e2e/budgets.spec.ts --project=chromium-desktop --project=chromium-mobile --workers=1",

@@ -30,6 +30,7 @@ export function useArtworkExpression({
   media,
   initialExpression,
   openingExpression,
+  snapshot = true,
   onCommit,
   onReady,
 }: {
@@ -41,6 +42,16 @@ export function useArtworkExpression({
    * server. Without one the plate opens on the first published medium: no expression leads.
    */
   openingExpression?: string;
+  /**
+   * A stage that shows the change as the browser's own snapshot is on view (an ArtworkStage
+   * that is not disabled: the room's). The commit is then a transition, which the snapshot
+   * needs. Where nothing takes a snapshot the commit is made at once, because a transition is
+   * the one update React sets aside for every other and holds back until the images it mounts
+   * have decoded: under a film's clock or an orbit being drawn, a slow machine kept the Turn's
+   * commit waiting for seconds after its seam had landed, until React's own five-second limit
+   * let it through.
+   */
+  snapshot?: boolean;
   onCommit?: (expression: string) => void;
   /**
    * The requested still has decoded. When given, the caller decides the moment of the
@@ -71,11 +82,12 @@ export function useArtworkExpression({
     // commit, so canceled selections never reset a parent's active transport state.
     reportCommit(expression);
   }, [expression]);
-  // A preference change while decoding must apply to the eventual transition too.
-  const motion = useRef({ paused, reducedMotion, theatre });
+  // A preference change while decoding must apply to the eventual transition too, and so must
+  // a snapshot's stage that came on view or left it.
+  const motion = useRef({ paused, reducedMotion, theatre, snapshot });
   useEffect(() => {
-    motion.current = { paused, reducedMotion, theatre };
-  }, [paused, reducedMotion, theatre]);
+    motion.current = { paused, reducedMotion, theatre, snapshot };
+  }, [paused, reducedMotion, theatre, snapshot]);
   useEffect(
     () => () => {
       request.current += 1;
@@ -134,9 +146,11 @@ export function useArtworkExpression({
         // A newer click can supersede a transition before React commits it.
         setExpression((current) => (identity === request.current ? target.id : current));
       };
-      // A hushed theatre (a collector reviewing a bid) crosses instantly, like reduced motion.
+      // A hushed theatre (a collector reviewing a bid) crosses instantly, like reduced motion,
+      // and so does a stage with no snapshot to take: its change has been shown already.
       const run = () => {
         if (
+          motion.current.snapshot &&
           !motion.current.paused &&
           !motion.current.reducedMotion &&
           motion.current.theatre !== 'hushed'

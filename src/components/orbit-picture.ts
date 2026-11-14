@@ -1,6 +1,7 @@
-import { outsideFrame } from '@/lib/physics/absences';
+import { awayAt, outsideFrame, type Outside } from '@/lib/physics/absences';
 import { BODY_REACH_SHARE, bodyReach } from '@/lib/physics/body-light';
 import type { FramedSamples } from '@/lib/physics/framing';
+import { keptAt, keptPlacement } from '@/lib/physics/kept';
 import type { Plane } from '@/lib/physics/plane';
 
 /*
@@ -46,6 +47,23 @@ export interface Picture {
   outside(path: Float32Array, width: number, index: number, drawn: number): number;
   /** How far a body's light reaches (Light), or the radius of its outline (Ink). */
   reach(mass: number): number;
+  /**
+   * Past the window the picture stays with one body (keptPicture, below): which, how far towards
+   * the picture's middle it was brought, and where a drawn body stood in the work's own frame as
+   * the film ended, which is where it is brought from.
+   */
+  kept?: {
+    body: number;
+    towards: number;
+    from(path: Float32Array, width: number, drawn: number): [number, number];
+    /**
+     * How far outside this picture the film itself showed each body stand at most, in widths of
+     * the picture: the recorded window read through the picture, as the path past it is. An
+     * absence that takes a body no farther is the orbit doing what it had been doing
+     * (absences.ts, `seen`). Read once, when first asked for.
+     */
+    readonly filmed: readonly number[];
+  };
 }
 
 /** Phase A's drawing: the plane of greatest extent, fitted inside a margin and centred. */
@@ -124,6 +142,90 @@ export function platePicture(
         ? INK_BODY_RADIUS * height
         : Math.min(bodyReach(mass) * ratio, BODY_REACH_SHARE * height),
   };
+}
+
+/**
+ * The plate's picture past the window, staying with one body (src/lib/physics/kept.ts): the same
+ * frame at the same size, moved along with one `body`, which holds still in it. `path` is the orbit
+ * past the window as the frame places it; the body is placed from its first sample, where the
+ * film ended. `window` is the recorded window as the frame places it, which this picture reads
+ * for what the film showed. The window's own strokes keep the work's places (`x` and `y`): they
+ * are drawn in this picture only while the bodies are brought to it, and go with the still.
+ */
+export function keptPicture(
+  picture: Picture,
+  frame: { width: number; height: number },
+  window: Pick<FramedSamples, 'pixels' | 'count' | 'copies'>,
+  path: Float32Array,
+  body: number,
+  width: number,
+  height: number,
+): Picture {
+  const sx = width / frame.width;
+  const sy = height / frame.height;
+  const copies = picture.drawn / 3;
+  const kept = keptPlacement(path, copies, body, frame.width, frame.height);
+  const outside = (pixels: ArrayLike<number>, size: number, index: number, drawn: number) => {
+    const [x, y] = keptAt(kept, pixels, size, index, drawn);
+    return outsideFrame(x, y, frame.width, frame.height);
+  };
+  let filmed: number[] | null = null;
+  /** The window, sample by sample: the farthest each body stood outside this picture. */
+  const showedByFilm = () => {
+    const during: Outside = (sample, drawn) =>
+      outside(window.pixels, window.copies * 6, sample, drawn);
+    const farthest = [0, 0, 0];
+    for (let sample = 0; sample <= window.count; sample++)
+      for (let of = 0; of < 3; of++)
+        farthest[of] = Math.max(farthest[of], awayAt(during, sample, of, copies));
+    return farthest;
+  };
+  return {
+    ...picture,
+    continued: (pixels, size, index, drawn) => {
+      const [x, y] = keptAt(kept, pixels, size, index, drawn);
+      return [x * sx, y * sy];
+    },
+    outside,
+    kept: {
+      body,
+      towards: kept.towards,
+      from: (pixels, size, drawn) => picture.continued(pixels, size, 0, drawn),
+      get filmed() {
+        return (filmed ??= showedByFilm());
+      },
+    },
+  };
+}
+
+/** What the orbit is drawn on, once its places there are known: the work's plate, or its plane. */
+export type Surface =
+  | {
+      kind: 'plate';
+      /** The recorded window as the work's frame places it. */
+      window: FramedSamples;
+      frame: { width: number; height: number };
+      material: Material;
+    }
+  | { kind: 'plane'; plane: Plane; count: number };
+
+/**
+ * The picture of a surface at a size: the one the section draws, at the canvas's size, and the
+ * one it reads a path through, at any size (a body is on the picture or off it at every size).
+ * Past the window the plate's picture may stay with one `body` of the `path` there; the plane has
+ * no frame to move along, and is never kept.
+ */
+export function pictureOn(
+  surface: Surface,
+  size: { width: number; height: number; ratio: number },
+  kept: { path: Float32Array; body: number } | null = null,
+): Picture {
+  const { width, height, ratio } = size;
+  if (surface.kind === 'plane')
+    return planePicture(surface.plane, surface.count, width, height, ratio);
+  const { window, frame, material } = surface;
+  const own = platePicture(window, frame, material, width, height, ratio);
+  return kept ? keptPicture(own, frame, window, kept.path, kept.body, width, height) : own;
 }
 
 /** How each material is drawn: light adds on night; on paper, graphite and sumi darken. */

@@ -28,3 +28,6 @@ src/lib/art/*.json.*.tmp
 public/art/clips/.partial-*
 public/art/stills/.partial-*
 public/art/previews/.partial-*
+
+# Recordings of the orbit section's golden master (tests/golden/vitest.config.ts)
+.golden/

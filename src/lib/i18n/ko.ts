@@ -619,6 +619,8 @@ export const ko: Messages = {
   afterTheFrame: '프레임 너머',
   afterTheFrameNote:
     '기록된 구간 너머에서도 같은 물리가 영상의 속도로 이어지고, 카메라는 영상이 끝난 자리에 머뭅니다. 이것은 작품이 아니라, 작품의 궤도가 그다음에 하는 일입니다.',
+  afterTheFrameNoteAsk:
+    '기록된 구간 너머에서도 같은 물리가 영상의 속도로 이어집니다. 프레임은 영상이 끝난 자리에 머물거나, 세 천체 중 하나를 따라갑니다. 그때 그 천체는 프레임 안에서 움직이지 않습니다. 이것은 작품이 아니라, 작품의 궤도가 그다음에 하는 일입니다.',
   orbitFate: '운명',
   orbitFateEjection: '{step}번째 단계에서 {body}번 천체는 더 이상 묶여 있지 않음',
   orbitFateDance: '{steps}단계 동안 묶여 있음',
@@ -632,16 +634,30 @@ export const ko: Messages = {
   beyondRecord: '기록으로',
   beyondLeft: '영상이 끝나고 {time} 뒤, {body}번 천체가 프레임 밖으로 나갔습니다.',
   beyondLeftAgain: '영상이 끝나고 {time} 뒤, {body}번 천체가 다시 프레임 밖으로 나갔습니다.',
-  beyondLeftLast: '영상이 끝나고 {time} 뒤, {body}번 천체가 마지막으로 프레임 밖으로 나갔습니다.',
+  beyondLeftLast:
+    '{body}번 천체가 마지막으로 프레임 밖으로 나간 것은 영상이 끝나고 {time} 뒤입니다.',
   beyondBack: '그리고 {time} 뒤에 돌아왔습니다.',
   beyondEmptied: '다시 {time} 뒤에는 나머지 둘도 프레임 밖에 있었습니다.',
   beyondAlreadyEmpty: '나머지 둘은 이미 프레임 밖에 있었습니다.',
-  beyondStayed: '{time} 뒤에도 나머지 둘은 프레임 안에 있었습니다.',
+  beyondStayed: '그로부터 {time} 뒤에도 나머지 둘은 프레임 안에 있었습니다.',
   beyondNotBack:
     '기록이 지켜본 마지막인 {steps}번째 단계에서도 돌아오지 않았고, 셋은 여전히 서로 묶여 있습니다.',
   beyondFree:
     '기록에 따르면 {step}번째 단계에서 {body}번 천체는 더 이상 나머지 둘에 묶여 있지 않습니다.',
   beyondStill: '기록이 지켜본 마지막인 {steps}번째 단계에서도 셋은 여전히 서로 묶여 있습니다.',
+  beyondAsk: '셋 중 하나를 따라가거나, 원래 프레임에 머무르세요.',
+  beyondStayBody: '{body}번 천체 따라가기',
+  beyondFrame: '원래 프레임',
+  beyondStayFrame: '원래 프레임에 머무르기',
+  beyondKeptLine: '{body}번 천체를 따라가는 중 · {line}',
+  beyondKept: '프레임은 {body}번 천체를 따라갔습니다.',
+  beyondAlone: '영상이 끝나고 {time} 뒤부터 프레임 안에는 {body}번 천체만 남았습니다.',
+  beyondAloneAgain: '영상이 끝나고 {time} 뒤부터 프레임 안에는 다시 {body}번 천체만 남았습니다.',
+  beyondAloneFor:
+    '영상이 끝나고 {time} 뒤부터 {span} 동안 프레임 안에는 {body}번 천체만 있었습니다.',
+  beyondAloneForAgain:
+    '영상이 끝나고 {time} 뒤부터 {span} 동안 프레임 안에는 다시 {body}번 천체만 있었습니다.',
+  beyondOneStayed: '그로부터 {time} 뒤에도 {body}번 천체는 프레임 안에 있었습니다.',
   orbitAdrift: '{step}번째 단계 이후는 궤도가 아닙니다. 계산된 에너지가 {change} 달라졌습니다.',
   orbitEnergyHeld: '여기서 계산한 바로는, 기록된 구간 내내 에너지가 {digits}자리까지 유지됩니다.',
   orbitEnergyBroken:

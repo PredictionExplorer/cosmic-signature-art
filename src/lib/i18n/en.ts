@@ -631,6 +631,8 @@ export const en = {
   afterTheFrame: 'After the frame',
   afterTheFrameNote:
     'Past the recorded window the same physics runs on, at the film’s pace, and the camera stays where the film left it. This is not the work: it is what the work’s orbit does next.',
+  afterTheFrameNoteAsk:
+    'Past the recorded window the same physics runs on, at the film’s pace. The picture stays with the frame, held where the film left it, or with one of the three bodies, which then holds still in it. This is not the work: it is what the work’s orbit does next.',
   orbitFate: 'Fate',
   orbitFateEjection: 'body {body} no longer bound at step {step}',
   orbitFateDance: 'bound through {steps} steps',
@@ -657,6 +659,20 @@ export const en = {
   beyondFree: 'The record finds body {body} no longer bound to the other two at step {step}.',
   beyondStill:
     'All three are still bound to one another at step {steps}, where the record stops looking.',
+  // The picture staying with one body (src/lib/physics/kept.ts): the question, its four
+  // answers, the line's first words, and what happened in that picture
+  beyondAsk: 'Stay with one of the three, or with the frame.',
+  beyondStayBody: 'Stay with body {body}',
+  beyondFrame: 'The frame',
+  beyondStayFrame: 'Stay with the frame',
+  beyondKeptLine: 'Staying with body {body} · {line}',
+  beyondKept: 'The picture stayed with body {body}.',
+  beyondAlone: 'Body {body} was alone in it from {time} after the film ended.',
+  beyondAloneAgain: 'Body {body} was again alone in it from {time} after the film ended.',
+  beyondAloneFor: 'Body {body} was alone in it for {span}, from {time} after the film ended.',
+  beyondAloneForAgain:
+    'Body {body} was again alone in it for {span}, from {time} after the film ended.',
+  beyondOneStayed: '{time} later body {body} was still in it.',
   // The energy the computation keeps (EnergyWatch in src/lib/physics/orbit.ts)
   orbitAdrift: 'Past step {step} this is not an orbit: the computed energy changed by {change}.',
   orbitEnergyHeld:

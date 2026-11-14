@@ -177,7 +177,7 @@
 .panel input {
   width: 100%;
   min-width: 0;
-  border: 1px solid var(--rule);
+  border: 1px solid var(--rule-strong);
   border-radius: 0;
   background: #fff2;
   padding: 14px 15px;
