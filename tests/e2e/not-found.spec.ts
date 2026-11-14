@@ -12,7 +12,7 @@ import { INDEXED_WORKS } from '../../src/lib/addresses';
 import { workNumber } from '../../src/lib/art/number';
 import { fill } from '../../src/lib/i18n/format';
 import { locales, localizedPath, type Locale } from '../../src/lib/i18n/routing';
-import { noHorizontalOverflow } from './helpers';
+import { archivedMedia, noHorizontalOverflow } from './helpers';
 
 /** A rung of a work's still ladder, by the name its file was given (scripts/build-still-ladder.mjs). */
 function stillRung(id: number, expression: 'ink' | 'light', width: number) {
@@ -118,6 +118,22 @@ test('the venue’s own files are served as files, which the proxy never takes f
     const response = await request.get(path, { headers: { range: 'bytes=0-1023' } });
     expect([200, 206], path).toContain(response.status());
     expect(response.headers()['content-type'], path).toMatch(type);
+  }
+});
+
+test('the image optimizer is closed: Next fetches and re-encodes nothing for anyone', async ({
+  request,
+}, info) => {
+  oneProjectAsks(info);
+  // The venue serves its own rungs and asks Next to resize nothing (next.config.ts). Left open,
+  // this endpoint re-encoded any file in public/ and any file on the publisher's host.
+  const published = archivedMedia.find((work) => work.id === 31)!.media[0].sourceUrl;
+  for (const picture of ['/art/23-ink.webp', '/icons/mark-512.png', published]) {
+    const response = await request.get(
+      `/_next/image?url=${encodeURIComponent(picture)}&w=640&q=75`,
+    );
+    expect(response.status(), picture).toBe(404);
+    expect(response.headers()['content-type'], picture).not.toMatch(/^image\//);
   }
 });
 
