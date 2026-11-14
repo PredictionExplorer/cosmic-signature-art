@@ -469,10 +469,65 @@ Three changes to the rule that no test caught now have a made path each; the bro
 - The choice is not kept from one work to the next, nor through a turn of the plate while the question stands: the plate is asked again in its other material.
 - In a window too short for all of it the last of the words is scrolled to: on a small phone on its side (568 × 320) for every work, where the plate is at its floor and 80 px tall, and for № 030's four sentences in Japanese on the smallest phone held upright (320 × 568).
 - At the frame, on the narrowest phones, the three words offered while the orbit is turned in the hand take a line more, and move the two that stay.
-- `OrbitScore` is one function of some 1,500 lines (1,540 as this is written), and this slice added to it. The second review's fifth reader set out how to part it (a reducer for After the frame's phases, the words and the line as components, the window's drawing a module of its own, the continued trails shared with the twin, which keeps a copy of them); that is a change of its own, made before more is added.
+- `OrbitScore` was one function of some 1,500 lines, and this slice added to it. It has been parted since, with nothing a visitor meets changed: §8.5.
 - No screen reader has been heard, and no phone held: the focus and the announcements are as the code and the tests have them.
 - A native reader for the seven translations. Japanese, Korean and Chinese say "follow" where English says "stay with"; the reviewer who reads them judged that right.
 - Firefox has run none of this before CI.
+
+### 8.5 The section, parted
+
+_12 November 2026, on the branch `claude/orbit-score-split`, which stands on §8.4's. No step of §4: the change §8.4 said had to come before more is built on the section._
+
+**Why.** `OrbitScore` (`src/components/orbit-score.tsx`) had become one function of 1,759 lines. It held 19 states and 18 refs, a drawing function of 330 lines, and handlers that each set several states of their own and of their neighbours. What could stand on the stage (the recorded window, the question, After the frame, the twin) was nowhere said in one place.
+
+**The rule of the change: nothing a visitor meets changes.** It was held three ways.
+
+- The section's 93 unit tests were not edited, and pass.
+- **A recording.** Those tests were run with a recorder added on the way in: every call and every property set on the canvas, in order; every change of the page; and the focus, the scrolls and the page itself at each test's end. About 19 million lines. It was made before anything moved and compared after each step.
+- The recording was identical at every step but two, each made on purpose and alone (below).
+
+The recorder is kept as a tool: `npm run test:golden` (`tests/golden/`), with `npm run test:golden:removed` for a change that takes calls out on purpose.
+
+**What stands where now.**
+
+| File                                                                      | What it holds                                                                                                                                                         |
+| :------------------------------------------------------------------------ | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `orbit-score.tsx` (747 lines)                                             | Where the parts meet: what is known, the changes of what stands on the stage, the plate's word, one drawing that hands on to four performers, and which line is said. |
+| `orbit-clock.ts`                                                          | `useWindowClock`: the recorded window's clock in the visitor's hands.                                                                                                 |
+| `orbit-beyond-state.ts`                                                   | `useBeyond`: where After the frame has got to, what each picture shows of the path, the focus, the rest. Its four phases move by a pure reducer, `beyondReducer`.     |
+| `orbit-twin-state.ts`                                                     | `useTwin`: whether the twin stands on the stage, how far the pair has got, and the worker that follows it once.                                                       |
+| `orbit-room.ts`                                                           | `usePictureRoom`: the height the picture is fitted to past the frame, and the page's scroll to it. Nothing in it moves the page unasked.                              |
+| `orbit-choosing.ts`, `orbit-choice.ts`                                    | The choosing by hand (what is pointed at; what a press means), and the picture it is made in: where the three numbers stand and what a pointer may press are pure.    |
+| `orbit-layers.ts`, `orbit-picture.ts`, `orbit-painter.ts`                 | The five canvases; the picture of a surface (`pictureOn`); the painter, which now traces the trails past the window too (three copies of one loop before).            |
+| `orbit-window.ts`                                                         | The recorded window performed: its score, its clock's drawing, and what its line says at a moment (`windowLine`, pure).                                               |
+| `orbit-beyond.ts`, `orbit-twin.tsx`                                       | The two performances past the frame, and their words. The twin draws the gap's growth itself (`twinGrowth`).                                                          |
+| `orbit-figure.tsx`, `orbit-said.tsx`, `orbit-words.tsx`, `orbit-word.tsx` | The tree: the picture and its caption, the line in its room with the answers, the words beside it, and a word.                                                        |
+
+**How the section reads.** In order: what is known (the derivation, the plate on view, the surface the orbit is drawn on); who owns what changes (the clock, After the frame, the twin, the room, the ring); the changes of the stage, a few lines each, which name what leaves with it (the ring, the twin, the words' place on the page); `draw`, which lays out the canvases and hands on to the question, After the frame, the twin or the recorded window; what a press on the picture means, and the plate's word; and the choice of what the line says.
+
+**Taken out on purpose.** Four things the drawing did that no visitor could meet: a dimmed state of the score that nothing ever asked for; two clears of canvases just after they were sized (a canvas is wiped by being sized); the score drawn on a spare canvas before the twin, which never shows it; and the clock said twice in one task. The recording after is the one before with those calls removed and nothing else moved.
+
+**The one difference.** The line beneath the picture was one state for two speakers, the window's performance and After the frame's. Each now keeps its own. On the site nothing differs. In the one case no work is in (a plate turned, past the frame, to a material its orbit is not drawn on, and back: a test builds it), the line used to be emptied for one render and said again; it now stands as it was.
+
+**A review**, of the whole change: three readers, each blind to the others (what changed that the recording cannot see; whether one could teach from it; React and the screen reader), and a sceptic set on each reader's findings to refute them. Twenty-two points, twelve upheld.
+
+| What the review found                                                                                                                                                                                                                            | Now                                                                                                                                                                                       |
+| :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| One step had moved the moment "the picture is one to press" from after the question is drawn to before it. A slow drawing shortened the 0.4 s wait by its own length. No test saw it: the tests' clock does not move inside a commit.            | After the drawing again: the choosing is two hooks, one read by the drawing, one called after it. A test whose clock moves while the canvases are made holds the order.                   |
+| No test ran the twin where motion is welcome, nor delivered a resize: the recording had never seen lines that several steps edited.                                                                                                              | Five tests added. Then the code before the change and the code after were both recorded through all 98: the new recording is the old with the four removals above and nothing else moved. |
+| `usePictureRoom` took one fact as two parameters; three comments pointed at where things used to be; a bare 250 stood for "four times a second" in two places; a test stub could not cancel a frame, so nothing held that a scroll is cancelled. | One parameter; the comments point where things are; the performances share their rhythm (`orbit-rhythm.ts`); the stub cancels, and a test holds it.                                       |
+
+It also found three things that were so before the change and are left as they were, since mending them changes what a visitor meets: _Again_ beside the twin goes as it is pressed and the keyboard's focus falls to the page; _The generator's view_ does the same; and that word stays offered after the orbit in the hand has been taken off the stage and put back unturned.
+
+**Tests.** 121 new unit tests. Each new module with logic of its own has a file: the reducer, the clock, the twin's state and its worker, the twin's line and the gap's growth, the room's fit and scrolls, the ring and the presses, where the numbers stand, the painter, the window's line and its drawing, the canvases. They share one recording canvas (`tests/canvas-support.ts`). The figure, the line and a word are held by the section's own tests: 98 on this branch, and 101 with the changes main made to that file meanwhile (the four edges as four tests).
+
+**What it cost.** A work's page loads about 1.8 KiB more script as sent (358.7 KiB before, 360.6 after, against a budget of 370): the seams between the modules. No other route moved.
+
+**What it does not do yet.**
+
+- `OrbitScore` is still 747 lines, of which `draw` is 130: it is the one place that sees everything, and reads as a list of four.
+- `performBeyond` (110 lines) and `compose` (60) are as they were.
+- The stylesheet's lengths are still sums written out (172 px is 31.5 + 10 + 74 + 44 + 6.5 + 6), not `calc()` over named lengths. That is a change of its own, measured in a browser.
 
 ## Sources
 

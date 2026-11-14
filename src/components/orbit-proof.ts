@@ -13,8 +13,9 @@ import { pairName } from '@/lib/physics/film-score';
 /*
   The proof, in words: what the orbit section (orbit-score.tsx) and Verify an orbit
   (orbit-verifier.tsx) both print of one derivation. The published record as text, each
-  measurement's label, the worker's progress, a value derived here that differs, and the
-  verdict. One module, so the two pages never word the same check two ways.
+  measurement's label, the worker's progress, a value derived here that differs, the verdict,
+  and the section's summary of a derivation. One module, so the two pages never word the same
+  check two ways.
 */
 
 export const MINUS = '−';
@@ -164,6 +165,31 @@ export function energyText(
     change: shareText(broken.change, locale),
   });
   return broken.step <= steps ? said : fill(t.sentences, { first: held, second: said });
+}
+
+/**
+ * The summary, once every row has been checked: how the orbit was derived in this browser, and
+ * the verdict on its rows.
+ */
+export function derivedSummary(
+  seconds: number,
+  generation: Pick<
+    OrbitGeneration,
+    'seed' | 'selectedIndex' | 'candidatesPerAttempt' | 'retryCount' | 'warmupSteps' | 'steps'
+  >,
+  rows: readonly Comparison[],
+  t: Messages,
+  number: Intl.NumberFormat,
+  oneDecimal: Intl.NumberFormat,
+): string {
+  const derived = fill(t.orbitDerived, {
+    seconds: oneDecimal.format(seconds),
+    seed: seedShort(generation.seed),
+    index: number.format(generation.selectedIndex),
+    total: number.format(generation.candidatesPerAttempt * (generation.retryCount + 1)),
+    steps: number.format(generation.warmupSteps + generation.steps),
+  });
+  return `${derived} ${verdict(rows, t)}`;
 }
 
 /** The verdict on the rows checked: every one is the record, or so many of them differ. */

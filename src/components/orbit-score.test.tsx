@@ -54,6 +54,15 @@ const PER_SECOND = pace / 100;
 let observers: { callback: IntersectionObserverCallback; options?: IntersectionObserverInit }[] =
   [];
 let workers: FakeWorker[] = [];
+/** The section's resize observers as it made them: what each watches, and whether it still does. */
+let resizers: { callback: () => void; targets: Element[]; live: boolean }[] = [];
+/** The observed element whose class name it is takes another size: its observer reports. */
+const resize = (named: RegExp) =>
+  act(() =>
+    resizers
+      .find((one) => one.live && one.targets.some((target) => named.test(target.className)))!
+      .callback(),
+  );
 let frames = new Map<number, FrameRequestCallback>();
 let frameIds = 0;
 let drawCalls: string[] = [];
@@ -99,6 +108,7 @@ const context = new Proxy(
 beforeEach(() => {
   observers = [];
   workers = [];
+  resizers = [];
   frames = new Map();
   drawCalls = [];
   calls = [];
@@ -121,8 +131,17 @@ beforeEach(() => {
   vi.stubGlobal(
     'ResizeObserver',
     class {
-      observe() {}
-      disconnect() {}
+      targets: Element[] = [];
+      live = true;
+      constructor(public callback: () => void) {
+        resizers.push(this);
+      }
+      observe(target: Element) {
+        this.targets.push(target);
+      }
+      disconnect() {
+        this.live = false;
+      }
     },
   );
   vi.stubGlobal('Worker', FakeWorker);
@@ -891,6 +910,53 @@ describe('After the frame', () => {
     nextFrame();
     nextFrame();
     expect(scrolledTo).not.toHaveBeenCalled();
+  });
+
+  it('carries on at another size, and draws nothing there once the still has returned', () => {
+    const { container } = performed(ejected, pathOf({ seconds: 20 }));
+    pastTheFrame();
+    nextFrame();
+    perform(3);
+    expect(line(container)).toMatch(/^00:0[23] past the film/);
+    // The observer's first report is of the size the picture already has. The second is a
+    // resize: the picture is drawn again where the performance stands, and it goes on.
+    resize(/_stage_/);
+    resize(/_stage_/);
+    expect(phase(container)).toBe('running');
+    nextFrame();
+    perform(0.3);
+    expect(line(container)).toMatch(/^00:03 past the film/);
+    // Told, the still stands over the last frame: a resize draws nothing and starts nothing.
+    fireEvent.click(word(t.beyondTell));
+    expect(phase(container)).toBe('told');
+    calls = [];
+    resize(/_stage_/);
+    expect(calls).toHaveLength(0);
+    expect(frames.size).toBe(0);
+  });
+
+  it('fits the plate again when what stands beneath it takes another height, as the section then stands', () => {
+    let beneathBottom = 700;
+    const { container } = performed(ejected, pathOf({ seconds: 20 }));
+    laidOut({ picture: [100, 500], beneath: () => [520, beneathBottom] });
+    const measured = () => sectionOf(container).style.getPropertyValue('--beneath-measured');
+    // At the frame the plate is the size it always was, whatever stands beneath it.
+    resize(/_score_/);
+    expect(measured()).toBe('');
+    pastTheFrame();
+    expect(measured()).toBe('212px');
+    // A telling takes a line more: the room beneath the picture is measured again.
+    beneathBottom = 730;
+    resize(/_score_/);
+    expect(measured()).toBe('242px');
+    // Back at the frame, the same report fits nothing; past it again, it fits.
+    fireEvent.click(afterTheFrame());
+    expect(phase(container)).toBeNull();
+    resize(/_score_/);
+    expect(measured()).toBe('');
+    pastTheFrame();
+    resize(/_score_/);
+    expect(measured()).toBe('242px');
   });
 
   describe('whom to stay with', () => {
@@ -1715,6 +1781,65 @@ describe('After the frame', () => {
       act(() => rememberExpression('light'));
       expect(sectionOf(container)).toHaveAttribute('data-kept', '1');
       expect(scrolledTo).not.toHaveBeenCalled();
+    });
+
+    it('draws the question again at another size, aims afresh, and still knows what a press finds', () => {
+      const { container } = performed(ejected, leaving(), { framed: framedWith(apart) });
+      fireEvent.click(afterTheFrame());
+      const stage = stageOf(container);
+      const [x, y] = css(apart[0]);
+      fireEvent.pointerMove(stage, { clientX: x + 10, clientY: y - 8, pointerType: 'mouse' });
+      expect(stage).toHaveAttribute('data-pick');
+      fireEvent.focus(stayWith(3));
+      // The observer's first report is of the size the picture already has: nothing is drawn.
+      calls = [];
+      resize(/_stage_/);
+      expect(calls).toHaveLength(0);
+      expect(stage).toHaveAttribute('data-pick');
+      // At another size the picture is not where a resting mouse found it: the aim is let go,
+      // and the question is drawn again, the window with its numbers.
+      resize(/_stage_/);
+      expect(phase(container)).toBe('choosing');
+      expect(stage).not.toHaveAttribute('data-pick');
+      expect(calls.some((call) => call.name === 'lineTo')).toBe(true);
+      expect(calls.some((call) => call.name === 'fillText')).toBe(true);
+      // A press on a body answers as before: the picture drawn again knows its bodies.
+      clockNow += 5_000;
+      fireEvent.pointerDown(stage, { clientX: x, clientY: y, pointerType: 'mouse' });
+      fireEvent.click(stage, { clientX: x, clientY: y, detail: 1 });
+      expect(phase(container)).toBe('running');
+      expect(sectionOf(container)).toHaveAttribute('data-kept', '1');
+    });
+
+    it('times a press on the picture from when the question stood drawn, however long that took', () => {
+      const { container } = performed(ejected, leaving(), { framed: framedWith(apart) });
+      const press = (target: Element, at: { clientX: number; clientY: number }) => {
+        fireEvent.pointerDown(target, { ...at, pointerType: 'mouse' });
+        fireEvent.click(target, { ...at, detail: 1 });
+      };
+      // The word is pressed where body 1 will stand, on a device that takes 0.3 s to draw the
+      // question: each of its five canvases is 60 ms in the making.
+      const [x, y] = css(apart[0]);
+      const here = { clientX: x, clientY: y };
+      clockNow += 1_000;
+      let drawing = true;
+      vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockImplementation(() => {
+        if (drawing) clockNow += 60;
+        return context as unknown as CanvasRenderingContext2D;
+      });
+      press(afterTheFrame(), here);
+      drawing = false;
+      expect(phase(container)).toBe('choosing');
+      // A second press there a tenth of a second after the picture stood drawn is no answer,
+      // though 0.4 s have passed since the first: the wait is counted from the picture.
+      clockNow += 100;
+      press(stageOf(container), here);
+      expect(phase(container)).toBe('choosing');
+      // 0.4 s after the picture stood drawn, it is.
+      clockNow += 300;
+      press(stageOf(container), here);
+      expect(phase(container)).toBe('running');
+      expect(sectionOf(container)).toHaveAttribute('data-kept', '1');
     });
 
     it('takes a key’s press at once, and a held key’s only once', () => {
@@ -2898,6 +3023,53 @@ describe('one part in a trillion', () => {
     fireEvent.click(twinButton());
     expect(section(container)).not.toHaveAttribute('data-twin');
     expect(screen.getByText(t.orbitLine)).toBeInTheDocument();
+  });
+
+  it('performs the pair where motion is welcome, rests, and performs afresh without following anew', () => {
+    Object.assign(motion, { paused: false, reducedMotion: false });
+    const { container } = onThePlate();
+    const line = () => container.querySelector('#orbit-said')!.textContent!;
+    const rested = () => section(container).getAttribute('data-twin') === 'rested';
+    // The window plays to its end first; then the twin is asked for, and found.
+    framesUntil(() => !!screen.queryByRole('button', { name: t.oneInATrillion }), 1_000);
+    fireEvent.click(twinButton());
+    workers[1].reply({ type: 'done', run: found() } as unknown as OrbitReply);
+    expect(section(container)).toHaveAttribute('data-twin', 'running');
+    calls = [];
+    clockNow += 100;
+    nextFrame();
+    clockNow += 100;
+    nextFrame();
+    // Each frame adds to the two trails past the frame, and rings the twin's bodies in its red.
+    expect(calls.filter((call) => call.name === 'stroke').length).toBeGreaterThan(0);
+    expect(calls.some((call) => call.name === 'arc' && call.args[2] === 5)).toBe(true);
+    expect(line()).toMatch(/^Apart by /);
+    framesUntil(rested, 2_000);
+    expect(line()).toBe('Parted at step 1,020,000. The gap doubled about every 40,000 steps.');
+    // Again: the same twin performed afresh from the window's end, with no second following.
+    fireEvent.click(screen.getByRole('button', { name: t.again }));
+    expect(workers).toHaveLength(2);
+    expect(section(container)).toHaveAttribute('data-twin', 'running');
+    expect(screen.queryByRole('button', { name: t.again })).not.toBeInTheDocument();
+    expect(line()).toMatch(/^Apart by /);
+    framesUntil(rested, 2_000);
+    // Left and come back to: performed afresh once more, still with no third worker.
+    fireEvent.click(twinButton());
+    expect(section(container)).not.toHaveAttribute('data-twin');
+    fireEvent.click(twinButton());
+    expect(workers).toHaveLength(2);
+    expect(section(container)).toHaveAttribute('data-twin', 'running');
+    expect(line()).toMatch(/^Apart by /);
+    // Out of view the pair waits; back in view it carries on from where it stood.
+    clockNow += 100;
+    nextFrame();
+    clockNow += 100;
+    nextFrame();
+    view(false);
+    expect(frames.size).toBe(0);
+    view(true);
+    expect(frames.size).toBe(1);
+    framesUntil(rested, 2_000);
   });
 
   it('says plainly when this browser cannot follow the twin', () => {

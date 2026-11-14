@@ -198,6 +198,36 @@ export function keptPicture(
   };
 }
 
+/** What the orbit is drawn on, once its places there are known: the work's plate, or its plane. */
+export type Surface =
+  | {
+      kind: 'plate';
+      /** The recorded window as the work's frame places it. */
+      window: FramedSamples;
+      frame: { width: number; height: number };
+      material: Material;
+    }
+  | { kind: 'plane'; plane: Plane; count: number };
+
+/**
+ * The picture of a surface at a size: the one the section draws, at the canvas's size, and the
+ * one it reads a path through, at any size (a body is on the picture or off it at every size).
+ * Past the window the plate's picture may stay with one `body` of the `path` there; the plane has
+ * no frame to move along, and is never kept.
+ */
+export function pictureOn(
+  surface: Surface,
+  size: { width: number; height: number; ratio: number },
+  kept: { path: Float32Array; body: number } | null = null,
+): Picture {
+  const { width, height, ratio } = size;
+  if (surface.kind === 'plane')
+    return planePicture(surface.plane, surface.count, width, height, ratio);
+  const { window, frame, material } = surface;
+  const own = platePicture(window, frame, material, width, height, ratio);
+  return kept ? keptPicture(own, frame, window, kept.path, kept.body, width, height) : own;
+}
+
 /** How each material is drawn: light adds on night; on paper, graphite and sumi darken. */
 export const MATERIALS = {
   light: {

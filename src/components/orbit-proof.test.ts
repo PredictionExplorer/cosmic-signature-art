@@ -5,6 +5,7 @@ import type { Comparison } from '@/lib/physics/orbit';
 import { pairName } from '@/lib/physics/film-score';
 import {
   MEASUREMENTS,
+  derivedSummary,
   derivedValue,
   digitsKept,
   energyText,
@@ -89,6 +90,28 @@ describe('the proof, in words', () => {
     expect(verdict([row(true), row(true)], en)).toBe(en.orbitAllExact);
     expect(verdict([row(true), row(false), row(false)], en)).toBe(
       '2 of 3 measurements differ from the published record.',
+    );
+  });
+
+  it('sums the derivation up once every row is checked: how it was derived, and the verdict', () => {
+    const tenth = new Intl.NumberFormat('en', {
+      minimumFractionDigits: 1,
+      maximumFractionDigits: 1,
+    });
+    const { generation } = calm;
+    const said = derivedSummary(1.234, generation, [row(true), row(true)], en, english, tenth);
+    // In its own time, from the work's seed, the candidate the generator chose, of all it tried,
+    // through the warm-up and the recorded window; and then the verdict.
+    expect(said).toContain('1.2');
+    expect(said).toContain(seedShort(generation.seed));
+    expect(said).toContain(english.format(generation.selectedIndex));
+    expect(said).toContain(
+      english.format(generation.candidatesPerAttempt * (generation.retryCount + 1)),
+    );
+    expect(said).toContain(english.format(generation.warmupSteps + generation.steps));
+    expect(said.endsWith(` ${en.orbitAllExact}`)).toBe(true);
+    expect(derivedSummary(1, generation, [row(false)], en, english, tenth)).toMatch(
+      / 1 of 1 measurements differ from the published record\.$/,
     );
   });
 });

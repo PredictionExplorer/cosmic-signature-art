@@ -18,7 +18,8 @@ import { confirmedAt, type BeyondPath } from '@/lib/physics/beyond';
 import type { DerivedFate } from '@/lib/physics/orbit';
 import { shareText } from './orbit-proof';
 import { MATERIALS, type Picture } from './orbit-picture';
-import type { Painter, Target } from './orbit-painter';
+import { FADE_EVERY_SECONDS, type Continued, type Painter } from './orbit-painter';
+import { LONGEST_FRAME_SECONDS, SAID_EVERY_MS } from './orbit-rhythm';
 
 /*
   After the frame (third-physics.md §5.6; docs/after-the-frame.md §8.3). The same physics runs on
@@ -39,15 +40,6 @@ import type { Painter, Target } from './orbit-painter';
   it for what the picture shows (src/lib/physics/absences.ts), plays it, and words it. Its
   trails are the bodies' hues drained of colour, each remembered for as long as the film runs.
 */
-
-/**
- * After the frame: a count, so that a repeat starts afresh, and the body the picture stays
- * with (none: the frame, held where the film left it).
- */
-export type Beyond = { run: number; kept: number | null };
-
-/** Asked whom to stay with; performed; then the still alone, in silence; then told. */
-export type BeyondPhase = 'choosing' | 'running' | 'resting' | 'told';
 
 /** An absence lasts when it runs this long, in seconds of film, or to the path's end… */
 const LASTING_SECONDS = 3;
@@ -70,12 +62,6 @@ const LEAD_SECONDS = 4;
 const WORTH_SECONDS = 4;
 /** Where nothing plays, a step lands this long after the moment, so the picture shows it. */
 const PAST_SECONDS = 1;
-/** A trail fades to a twentieth over the film's length: a step every half second performed. */
-const FADE_EVERY_SECONDS = 0.5;
-/** The continued trails: the bodies' hues drained of colour. */
-const CONTINUED_ALPHA = 0.3;
-/** No frame advances the performance by more than this, so a tab coming back resumes it. */
-const LONGEST_FRAME_SECONDS = 0.1;
 
 /** What the picture shows of a path past the window, and where a performance of it ends. */
 export type HeldScript = {
@@ -230,6 +216,22 @@ export function beyondLine(
 ): string {
   const line = lineOf(script, path, sample, t, number);
   return script.kept === null ? line : fill(t.beyondKeptLine, { body: script.kept + 1, line });
+}
+
+/**
+ * The longest line a performance can say here, for the room the section keeps under the
+ * picture: a body far away, said from a picture that stays with one where the visitor is asked
+ * whom to stay with. Where the picture draws no body where it was, no line names one.
+ */
+export function longestBeyondLine(
+  { names, asks, horizon }: { names: boolean; asks: boolean; horizon: number },
+  t: Messages,
+  number: Intl.NumberFormat,
+  oneDecimal: Intl.NumberFormat,
+): string {
+  if (!names) return fill(t.orbitBeyond, { clock: clock(0), step: number.format(horizon) });
+  const line = fill(t.beyondAway, { clock: clock(0), body: 3, widths: oneDecimal.format(88.8) });
+  return asks ? fill(t.beyondKeptLine, { body: 3, line }) : line;
 }
 
 function lineOf(
@@ -530,13 +532,10 @@ export interface BeyondStage {
   /** Nothing plays: the picture stands where it is, and Further on steps it. */
   still: boolean;
   inView: boolean;
-  /** The continued trails' canvas, and the bodies'. */
-  beyondTrail: CanvasRenderingContext2D;
+  /** The bodies' canvas, and its size in device pixels. */
   mark: CanvasRenderingContext2D;
   width: number;
   height: number;
-  ratio: number;
-  hues: readonly number[];
   painter: Painter;
   /**
    * How far the performance has run, in samples of the path: a redraw or a return carries on.
@@ -562,7 +561,7 @@ export interface BeyondStage {
  */
 export function performBeyond(stage: BeyondStage): (() => void) | void {
   const { path, script, key, picture, film, still } = stage;
-  const { beyondTrail, mark, width, height, ratio, hues, painter, live, frame, speak } = stage;
+  const { mark, width, height, painter, live, frame, speak } = stage;
   const paint = MATERIALS[picture.material];
   const size = path.copies * 6;
   const { perSecond, ending } = script;
@@ -575,33 +574,13 @@ export function performBeyond(stage: BeyondStage): (() => void) | void {
   const stacked = (body: number) =>
     kept !== null && kept.towards === 1 && body >= 3 && picture.body(body) === kept.body;
   const once = (body: number) => (stacked(body) ? 0 : 1);
-  const trace = (first: number, last: number, alpha: number) => {
-    if (last <= first) return;
-    beyondTrail.globalCompositeOperation = paint.blend;
-    beyondTrail.lineWidth = picture.material === 'ink' ? 0.75 * ratio : ratio;
-    beyondTrail.lineJoin = 'round';
-    for (let body = 0; body < picture.drawn; body++) {
-      // The body the picture stays with draws no trail in it: it does not move there.
-      if (kept !== null && picture.body(body) === kept.body) continue;
-      beyondTrail.strokeStyle = paint.continued(hues[picture.body(body)], alpha);
-      beyondTrail.beginPath();
-      beyondTrail.moveTo(...place(first, body));
-      for (let index = first + 1; index <= last; index++) beyondTrail.lineTo(...place(index, body));
-      beyondTrail.stroke();
-    }
+  const trail: Continued = {
+    place,
+    // The body the picture stays with draws no trail in it: it does not move there.
+    still: kept ? (body) => picture.body(body) === kept.body : undefined,
   };
-  // Drawn whole (a resize, a return, a step), the last film's length of the path is traced in
-  // quarters, each as faded as the performance would have left it.
+  /** A trail is remembered for as long as the film runs: this many samples of the path. */
   const memory = Math.max(4, Math.round(film * perSecond));
-  const retrace = (last: number) => {
-    beyondTrail.clearRect(0, 0, width, height);
-    for (let quarter = 3; quarter >= 0; quarter--)
-      trace(
-        Math.max(0, last - Math.round(((quarter + 1) * memory) / 4)),
-        Math.max(0, last - Math.round((quarter * memory) / 4)),
-        CONTINUED_ALPHA * 0.05 ** (quarter / 4),
-      );
-  };
   const lightsAt = (index: number) => {
     mark.clearRect(0, 0, width, height);
     painter.lights((body) => place(index, body), once);
@@ -641,7 +620,7 @@ export function performBeyond(stage: BeyondStage): (() => void) | void {
   else if (arriving) painter.strokes(0, picture.last);
   const sampleAt = (sample: number) => Math.min(ending.sample, Math.max(0, Math.floor(sample)));
   let index = sampleAt(playhead.sample);
-  retrace(index);
+  painter.retraced(memory, [trail, index]);
   if (arriving) bring(brought(performance.now()));
   else lightsAt(index);
   speak(index, !arriving);
@@ -665,14 +644,12 @@ export function performBeyond(stage: BeyondStage): (() => void) | void {
     index = sampleAt(playhead.sample);
     if (unfaded >= FADE_EVERY_SECONDS) {
       unfaded = 0;
-      beyondTrail.globalCompositeOperation = 'destination-out';
-      beyondTrail.fillStyle = `rgb(0 0 0 / ${1 - 0.05 ** (FADE_EVERY_SECONDS / film)})`;
-      beyondTrail.fillRect(0, 0, width, height);
+      painter.fade(film);
     }
-    trace(before, index, CONTINUED_ALPHA);
+    painter.continued(trail, before, index);
     lightsAt(index);
     const ended = index >= ending.sample;
-    if (now - spoken > 250 || ended) {
+    if (now - spoken > SAID_EVERY_MS || ended) {
       spoken = now;
       speak(index, true);
     }
@@ -699,36 +676,4 @@ export function performBeyond(stage: BeyondStage): (() => void) | void {
     frame.current = requestAnimationFrame(arrive);
   } else frame.current = requestAnimationFrame(perform);
   return () => cancelAnimationFrame(frame.current);
-}
-
-/** The choosing, as the section has set it out. */
-export interface ChoiceStage {
-  picture: Picture;
-  painter: Painter;
-  /** The bodies' canvas, and the one their numbers are drawn on. */
-  mark: CanvasRenderingContext2D;
-  names: CanvasRenderingContext2D;
-  width: number;
-  height: number;
-  /** The face the numbers are set in, and the ground they must read on. */
-  font: string;
-  ground: string;
-}
-
-/**
- * The picture a visitor chooses in: the recorded window drawn whole over its still, and the
- * three bodies where the film left them. Returns how to number them, which is drawn again, alone,
- * whenever the bodies a word or a pointer points at change: each body's number beside it, those
- * bodies ringed, and what a pointer may press, in CSS pixels of the stage.
- */
-export function drawChoice(stage: ChoiceStage): (hinted: readonly number[]) => Target[] {
-  const { picture, painter, mark, names, width, height, font, ground } = stage;
-  const at = (body: number): [number, number] => [
-    picture.x(picture.last, body),
-    picture.y(picture.last, body),
-  ];
-  if (picture.last > 0) painter.strokes(0, picture.last);
-  mark.clearRect(0, 0, width, height);
-  painter.lights(at);
-  return (hinted) => painter.numbers(names, at, { font, ground, hinted });
 }
