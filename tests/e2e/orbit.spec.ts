@@ -1,4 +1,4 @@
-import { expect, test, type Locator, type Page } from '@playwright/test';
+import { expect, test, type Locator, type Page } from './fixtures';
 import { catalogs } from '../../src/lib/i18n/messages';
 import { fill } from '../../src/lib/i18n/format';
 import { SETTLE_MS } from '../../src/lib/second-press';

@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { expect, test } from './fixtures';
 
 /**
  * A large Suspense boundary streams behind its fallback: React sends the content in a hidden

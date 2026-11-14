@@ -162,9 +162,6 @@
   max-width: 44em;
   margin-top: 9px;
 }
-.chapterHead .note {
-  margin-top: 18px;
-}
 .stage {
   position: sticky;
   top: var(--head);

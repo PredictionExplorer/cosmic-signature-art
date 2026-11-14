@@ -1,11 +1,5 @@
 import { readFileSync } from 'node:fs';
-import {
-  expect,
-  test,
-  type APIRequestContext,
-  type Browser,
-  type TestInfo,
-} from '@playwright/test';
+import { expect, test, type APIRequestContext, type Browser, type TestInfo } from './fixtures';
 
 /**
  * The venue's paint and layout budgets (docs/first-light.md §9), measured on a production build

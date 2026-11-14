@@ -1,4 +1,4 @@
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Page } from './fixtures';
 import AxeBuilder from '@axe-core/playwright';
 import { readFileSync } from 'node:fs';
 import { catalogs } from '../../src/lib/i18n/messages';
@@ -58,8 +58,6 @@ test('the essay opens on night, pins the day’s Light film, crosses a hard edge
 }, testInfo) => {
   // The day's work is deterministic per UTC date; a test that spans midnight may see either.
   const day = workOfTheDay();
-  const errors: string[] = [];
-  page.on('pageerror', (error) => errors.push(error.message));
   await page.goto('/process');
   await pauseAmbientMotion(page);
   const header = page.locator('.site-header');
@@ -186,7 +184,6 @@ test('the essay opens on night, pins the day’s Light film, crosses a hard edge
   await expect(page.locator('.process-page:visible')).toHaveCount(0);
   await expect(header).not.toHaveCSS('background-color', 'rgb(0, 0, 0)');
   await expect(header).toHaveCSS('color', 'rgb(34, 35, 31)');
-  expect(errors).toEqual([]);
 });
 
 test('with ambient motion allowed the Light chapter plays the published film from frame 0 and offers Sit', async ({
@@ -242,8 +239,6 @@ test('the choice derives every beginning of the day’s work in the browser and 
       Number(record.physics.masses[2]),
     ],
   });
-  const errors: string[] = [];
-  page.on('pageerror', (error) => errors.push(error.message));
   await page.goto('/process');
   // The figure sits within a screen of the top, so it derives without a scroll; every check
   // below re-reads it, so none holds on to a node the page has since rendered anew.
@@ -297,5 +292,4 @@ test('the choice derives every beginning of the day’s work in the browser and 
       }),
     )
     .toBeGreaterThan(1_000);
-  expect(errors).toEqual([]);
 });

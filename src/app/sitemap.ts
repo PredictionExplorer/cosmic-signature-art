@@ -1,7 +1,7 @@
 import type { MetadataRoute } from 'next';
 import { SITE_URL } from '@/lib/site';
 import { locales, localizedPath } from '@/lib/i18n/routing';
-import { curatedArtworks } from '@/lib/art/catalog';
+import { collectionIndex } from '@/lib/art/collection-index';
 import { orbitIds } from '@/lib/art/orbit-records';
 import { exhibitions } from '@/lib/exhibitions/exhibitions';
 export default function sitemap(): MetadataRoute.Sitemap {
@@ -17,7 +17,9 @@ export default function sitemap(): MetadataRoute.Sitemap {
       '/statement',
       '/privacy',
       ...exhibitions().map((item) => `/exhibitions/${item.slug}`),
-      ...curatedArtworks.map((work) => `/art/${work.id}`),
+      // Every work in the collection index, not only the few the venue holds its own copies of:
+      // the works are what the venue most wants found.
+      ...collectionIndex.works.map((work) => `/art/${work.id}`),
       // Verify an orbit is a tool, not a derived image: its door and every work's page are public.
       '/verify/orbit',
       ...orbitIds().map((id) => `/verify/orbit/${id}`),

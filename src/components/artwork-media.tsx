@@ -58,6 +58,22 @@ export function cappedSourceSet(media?: ArtInterpretation, cap = CONSTRAINED_RUN
   const rungs = (media?.rungs ?? []).filter((rung) => rung.width <= cap);
   return rungs.length ? rungs.map((rung) => `${rung.src} ${rung.width}w`).join(', ') : undefined;
 }
+/** What a surface asks the browser for when it shows a still: its `<img>`'s own three attributes. */
+export type StillRequest = { src: string; srcSet?: string; sizes?: string };
+/**
+ * The still as a surface asks for it: the published file, the ladder as its srcset (cut to the
+ * cap on a constrained connection), and the surface's layout width, the plate's by default.
+ * Every surface that shows a still, and the Turn that readies one before it shows
+ * (artwork-stage.tsx), asks through here, so what is readied is the rung that is shown.
+ */
+export function stillRequest(
+  media: ArtInterpretation | undefined,
+  { capped = false, sizes = PLATE_SIZES }: { capped?: boolean; sizes?: string } = {},
+): StillRequest | undefined {
+  if (!media?.still) return undefined;
+  const srcSet = capped ? cappedSourceSet(media) : stillSourceSet(media);
+  return { src: media.still, srcSet, sizes: srcSet ? sizes : undefined };
+}
 const noSubscription = () => () => {};
 /** False while the server's markup is being hydrated, true from the first client render after. */
 function useHydrated() {
@@ -335,10 +351,11 @@ function ArtworkMediaSession({
   // The cap applies only once the client knows its connection, so the hero still is fetched
   // once: the server's markup and the hydrating client's are the same.
   const hydrated = useHydrated();
-  const capped = hydrated && constrained;
-  const stillSrc = media?.still;
-  const stillSet = capped ? cappedSourceSet(media) : stillSourceSet(media);
-  const stillSizes = stillSet ? (sizes ?? PLATE_SIZES) : undefined;
+  const {
+    src: stillSrc,
+    srcSet: stillSet,
+    sizes: stillSizes,
+  } = stillRequest(media, { capped: hydrated && constrained, sizes }) ?? {};
   if (priority && preview && !preview.startsWith('data:')) {
     preload(preview, { as: 'image', fetchPriority: 'high' });
   }

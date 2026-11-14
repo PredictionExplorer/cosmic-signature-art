@@ -170,6 +170,30 @@ describe('the address no route answers', () => {
     'trusts no address that is not a path on this site: %s',
     (header) => expect(visitorAddress(header)).toEqual({ locale: 'en', address: undefined }),
   );
+
+  // The running head cuts the locale from the front of the address before it links to it, and a
+  // browser drops a tab or a line break from an address: each of these would then lead off the
+  // site. The proxy writes none of them, so a client did.
+  it.each([
+    ['two slashes after the locale', '/en//evil.example'],
+    ['a backslash after the locale', '/en/\\evil.example'],
+    ['a tab a browser would drop', '/\t/evil.example'],
+    ['a line break', '/uk/art/31\n'],
+    ['a space', '/uk/art/ 31'],
+    ['a letter the proxy would have percent-encoded', '/uk/мистецтво'],
+  ])('trusts no address the proxy could not have written: %s', (_, header) => {
+    expect(visitorAddress(header)).toEqual({ locale: 'en', address: undefined });
+  });
+
+  it('trusts an address as the proxy writes it: a URL’s pathname, percent-encoded', () => {
+    const written = new URL('/uk/мистецтво/a b', 'https://cosmic.art').pathname;
+    expect(written).toBe('/uk/%D0%BC%D0%B8%D1%81%D1%82%D0%B5%D1%86%D1%82%D0%B2%D0%BE/a%20b');
+    expect(visitorAddress(written)).toEqual({ locale: 'uk', address: written });
+    expect(visitorAddress('/zh-TW/art/31.5')).toEqual({
+      locale: 'zh-TW',
+      address: '/zh-TW/art/31.5',
+    });
+  });
 });
 
 describe('the work an address asked for', () => {

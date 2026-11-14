@@ -1,4 +1,4 @@
-import { expect, test, type Locator, type Page } from '@playwright/test';
+import { expect, failedToLoad, syntheticFinger, test, type Locator, type Page } from './fixtures';
 import AxeBuilder from '@axe-core/playwright';
 import { readFileSync } from 'node:fs';
 import { catalogs } from '../../src/lib/i18n/messages';
@@ -16,14 +16,21 @@ const nightLayer = `${pageStage} [data-layer="light"]`;
 const roomSelector = '[data-testid="artwork-room"]';
 const light = archive.find((work) => work.id === 31)!.media.find((media) => media.id === 'light')!;
 const ink = archive.find((work) => work.id === 31)!.media.find((media) => media.id === 'ink')!;
-// Fault injection is limited to this real work's authenticated delivery locations.
-const isLightStill = (url: URL) => url.pathname === light.still || url.href === light.sourceUrl;
-// The still arrives as the published file or as one of its ladder rungs, whichever the plate's
-// width asks for; holding any of them holds the still.
+/** A rung of this work's still ladder (scripts/build-still-ladder.mjs): any width, or the one named. */
+const rungOf = (expression: 'ink' | 'light', width?: number) =>
+  new RegExp(`^/art/stills/31-${expression}-${width ?? '\\d+'}-[a-f0-9]{16}\\.webp$`);
+// Fault injection is limited to this real work's authenticated delivery locations. A still
+// arrives as the published file or as one of its ladder rungs, whichever the plate's width asks
+// for, and the Turn readies the same one; holding any of them holds the still.
+const isLightStill = (url: URL) =>
+  url.pathname === light.still ||
+  url.href === light.sourceUrl ||
+  rungOf('light').test(url.pathname);
 const isInkStill = (url: URL) =>
-  url.pathname === ink.still ||
-  url.href === ink.sourceUrl ||
-  /^\/art\/stills\/31-ink-\d+-[a-f0-9]{16}\.webp$/.test(url.pathname);
+  url.pathname === ink.still || url.href === ink.sourceUrl || rungOf('ink').test(url.pathname);
+/** The published still at its full 3,456 px, from this venue or from its publisher. */
+const isOriginalStill = (url: URL) =>
+  [light, ink].some((still) => url.pathname === still.still || url.href === still.sourceUrl);
 // Only a complete published original counts; the hash-verified local film plays inline.
 const originalFilm = (url: string) => /\/videos\/web\/[^/]+\.mp4(?:\?|$)/.test(url);
 
@@ -300,6 +307,7 @@ test('holding L peeks at Light and lets go; a tap completes the Turn', async ({ 
 test('keys are silent while focus is in a field, and the remembered expression follows the visit', async ({
   page,
   context,
+  faults,
 }) => {
   await page.emulateMedia({ reducedMotion: 'no-preference' });
   await artworkReady(page);
@@ -327,6 +335,7 @@ test('keys are silent while focus is in a field, and the remembered expression f
   );
   // A new visit always opens on Ink.
   const fresh = await context.browser()!.newContext();
+  faults.watch(fresh);
   const next = await fresh.newPage();
   await next.goto(`${new URL(page.url()).origin}/art/35?view=still`);
   await expect(next.locator(pageStage)).toHaveAttribute('data-expression', 'ink');
@@ -515,8 +524,10 @@ test('the paper wing beneath a Light plate is drawn back from the left by the ha
 test('a finger carries the seam: past 40 % the Turn completes, short of it the seam springs back', async ({
   page,
   isMobile,
+  faults,
 }) => {
   test.skip(!isMobile, 'Drag-to-Turn answers touch only.');
+  faults.allow(syntheticFinger);
   await page.emulateMedia({ reducedMotion: 'no-preference' });
   await artworkReady(page);
   const stage = page.locator(pageStage);
@@ -588,10 +599,11 @@ test('a slower expression keeps the current work visible and the latest choice w
 
 test('a failed expression keeps the current artwork and offers a successful retry', async ({
   page,
+  faults,
 }) => {
+  // The Light still is cut off on purpose, on every rung a plate asks for.
+  faults.allow(failedToLoad(/\/art\/stills\/31-light-\d+-[a-f0-9]{16}\.webp/));
   await page.route(isLightStill, (route) => route.abort('failed'));
-  const errors: string[] = [];
-  page.on('pageerror', (error) => errors.push(error.message));
   await artworkReady(page);
   const stage = page.locator(pageStage);
   const original = await page.locator(`${current} img.art-still`).getAttribute('src');
@@ -604,7 +616,68 @@ test('a failed expression keeps the current artwork and offers a successful retr
   await expect(stage).toHaveAttribute('data-expression', 'light', { timeout: 5000 });
   await imageReady(page.locator(`${current} img.art-still`));
   await expect(page.getByText(t.expressionFailed, { exact: true })).toHaveCount(0);
-  expect(errors).toEqual([]);
+});
+
+/** The file the committed plate's still shows: the candidate the browser chose from its ladder. */
+const stillShown = (page: Page) =>
+  page
+    .locator(`${current} img.art-still`)
+    .evaluate((image) => new URL((image as HTMLImageElement).currentSrc).pathname);
+
+test('a Turn readies the rung its plate shows, and never asks for the 3,456 px original', async ({
+  page,
+  isMobile,
+}) => {
+  // The ladder's arithmetic at the suite's two sizes, one device pixel to a CSS pixel: a phone's
+  // plate is 390 px wide and a desk's 1,386 px, so they rest on the 1280 and the 1920 rung.
+  const rung = isMobile ? 1280 : 1920;
+  const asked: URL[] = [];
+  page.on('request', (request) => asked.push(new URL(request.url())));
+  await artworkReady(page);
+  const stage = page.locator(pageStage);
+  expect(await stillShown(page)).toMatch(rungOf('ink', rung));
+  // There and back: every Turn readies its twin, not only the first to each expression.
+  await turnWord(page, 'light').click();
+  await expect(stage).toHaveAttribute('data-expression', 'light', { timeout: 5000 });
+  await imageReady(page.locator(`${current} img.art-still`));
+  expect(await stillShown(page)).toMatch(rungOf('light', rung));
+  await turnWord(page, 'ink').click();
+  await expect(stage).toHaveAttribute('data-expression', 'ink', { timeout: 5000 });
+  expect(await stillShown(page)).toMatch(rungOf('ink', rung));
+  // Both rungs were fetched, for the plates that show them. The originals are the room's and the
+  // loupe's to ask for, and neither was opened.
+  expect(asked.some((url) => rungOf('light', rung).test(url.pathname))).toBe(true);
+  expect(asked.filter(isOriginalStill).map((url) => url.href)).toEqual([]);
+});
+
+test.describe('on a desk too short for a plate as wide as its window', () => {
+  // At 1440 × 700 the plate is fitted by height, to 922 px, and rests on the 1280 rung; an image
+  // as wide as the window would be given the 1920 one. So this is where a Turn shows whether it
+  // asks at the plate's own width (PLATE_SIZES) or at a browser's default, 100vw.
+  test.use({ viewport: { width: 1440, height: 700 } });
+
+  test('a Turn asks for its twin at the plate’s own width', async ({ page, isMobile }) => {
+    test.skip(isMobile, 'A phone’s plate is as wide as its window.');
+    // The crossing in the work's own order prepares stills of its own (arrival-crossing.ts);
+    // without WebGL the straight seam is the Turn, and what is asked for is the Turn's alone.
+    await straightSeam(page);
+    const asked: URL[] = [];
+    page.on('request', (request) => asked.push(new URL(request.url())));
+    await artworkReady(page);
+    expect(await stillShown(page)).toMatch(rungOf('ink', 1280));
+    await imageReady(page.locator(`${nightLayer} img.art-still`));
+    const before = asked.length;
+    await turnWord(page, 'light').click();
+    await expect(page.locator(pageStage)).toHaveAttribute('data-expression', 'light', {
+      timeout: 5000,
+    });
+    expect(await stillShown(page)).toMatch(rungOf('light', 1280));
+    // Whatever the Turn asked for of the Light still, it is the rung the plate holds.
+    const during = asked.slice(before).filter(isLightStill);
+    expect(
+      during.map((url) => url.pathname).filter((path) => !rungOf('light', 1280).test(path)),
+    ).toEqual([]);
+  });
 });
 
 for (const preference of ['reduced motion', 'paused motion'] as const) {
@@ -764,8 +837,6 @@ test('a rejected native fullscreen request preserves the complete viewing room',
       },
     });
   });
-  const errors: string[] = [];
-  page.on('pageerror', (error) => errors.push(error.message));
   await artworkReady(page);
   await page.locator(current).getByRole('button', { name: t.ways, exact: true }).click();
   await page.locator(current).getByRole('button', { name: t.enlarge, exact: true }).click();
@@ -781,7 +852,6 @@ test('a rejected native fullscreen request preserves the complete viewing room',
   ).toBe(1);
   await dialog.getByRole('button', { name: t.close, exact: true }).click();
   await expect(dialog).not.toBeVisible();
-  expect(errors).toEqual([]);
 });
 
 test('native fullscreen enters when supported and returns to the same work', async ({ page }) => {

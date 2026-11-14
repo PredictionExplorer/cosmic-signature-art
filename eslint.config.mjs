@@ -23,6 +23,21 @@ const countdownDynamicImport =
   'ImportExpression[source.value=/(^|\\/)countdown(\\.[cm]?[jt]sx?)?$/]';
 const countdownImportPattern =
   '(^|/)auction/countdown(\\.[cm]?[jt]sx?)?$|^\\.{1,2}/countdown(\\.[cm]?[jt]sx?)?$';
+/**
+ * The browsers the venue supports are named once, in package.json ("browserslist"), and the type
+ * library stops at the language they all have (tsconfig.json, "lib"). The DOM's types carry no
+ * dates, so a call that arrived later compiles: AbortSignal.any did, and in Chrome before 116,
+ * Firefox before 124 and Safari before 17.4 it is not a function. No lint plugin tried reports
+ * it, so the one known trap is named here, with the way round it.
+ */
+const abortSignalAnyMessage =
+  'AbortSignal.any is newer than the browsers the venue supports (package.json, "browserslist"). Link the signals with withDeadline (src/lib/abort.ts).';
+/**
+ * The browser suite's `test` listens for the page's faults (tests/e2e/fixtures.ts). A spec that
+ * took Playwright's own would run, and pass, with nobody listening.
+ */
+const suiteTestMessage =
+  "Import `test` from './fixtures' (tests/e2e/fixtures.ts), not from Playwright: the suite's own fails a test whose page threw, logged an error or was answered a 5xx.";
 
 export default tseslint.config(
   {
@@ -55,6 +70,28 @@ export default tseslint.config(
         'error',
         { selector: oneSecondInterval, message: intervalMessage },
         { selector: countdownDynamicImport, message: countdownMessage },
+      ],
+    },
+  },
+  {
+    files: ['src/**/*.{ts,tsx}'],
+    rules: {
+      'no-restricted-properties': [
+        'error',
+        { object: 'AbortSignal', property: 'any', message: abortSignalAnyMessage },
+      ],
+    },
+  },
+  {
+    // A later setting of a rule replaces an earlier one, so the countdown's pattern is said again.
+    files: ['tests/e2e/**/*.spec.ts'],
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          paths: [{ name: '@playwright/test', importNames: ['test'], message: suiteTestMessage }],
+          patterns: [{ regex: countdownImportPattern, message: countdownMessage }],
+        },
       ],
     },
   },

@@ -1,5 +1,5 @@
 import { readFileSync } from 'node:fs';
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Page } from './fixtures';
 import { workOfTheDay } from '../../src/lib/art/work-of-the-day';
 import { REWIND_LEAD_S } from '../../src/lib/crossing/rewind';
 

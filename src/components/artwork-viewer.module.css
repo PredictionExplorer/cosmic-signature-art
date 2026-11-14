@@ -104,7 +104,6 @@
   display: inline-block;
 }
 /* The note that a work has no Ink follows the line as a sentence of its own. */
-.line .folio,
 .line :global(.folio) {
   display: inline-block;
   color: var(--muted);

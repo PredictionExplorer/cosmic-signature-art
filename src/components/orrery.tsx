@@ -219,7 +219,7 @@ export function Orrery({
           </h2>
           <ol className={styles.cells}>
             {cycle.works.map((work) => (
-              <li key={work.id} className={styles.cell}>
+              <li key={work.id}>
                 <Link
                   className={styles.link}
                   href={work.href}

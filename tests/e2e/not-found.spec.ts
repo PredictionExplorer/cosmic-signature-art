@@ -1,10 +1,28 @@
-import { expect, test, type APIResponse, type Response, type TestInfo } from '@playwright/test';
+import {
+  expect,
+  failedToLoad,
+  test,
+  type APIResponse,
+  type Response,
+  type TestInfo,
+} from './fixtures';
+import { readdirSync } from 'node:fs';
 import { catalogs } from '../../src/lib/i18n/messages';
 import { INDEXED_WORKS } from '../../src/lib/addresses';
 import { workNumber } from '../../src/lib/art/number';
 import { fill } from '../../src/lib/i18n/format';
 import { locales, localizedPath, type Locale } from '../../src/lib/i18n/routing';
-import { noHorizontalOverflow } from './helpers';
+import { archivedMedia, noHorizontalOverflow } from './helpers';
+
+/** A rung of a work's still ladder, by the name its file was given (scripts/build-still-ladder.mjs). */
+function stillRung(id: number, expression: 'ink' | 'light', width: number) {
+  const name = new RegExp(`^${id}-${expression}-${width}-[a-f0-9]{16}\\.webp$`);
+  const file = readdirSync(new URL('../../public/art/stills', import.meta.url)).find((entry) =>
+    name.test(entry),
+  );
+  if (!file) throw new Error(`No ${width} px ${expression} rung for work ${id}`);
+  return `/art/stills/${file}`;
+}
 
 /**
  * What does not exist is refused before its page can stream (src/proxy.ts, src/lib/addresses.ts):
@@ -55,12 +73,23 @@ for (const locale of locales) {
       '/verify/orbit/999',
       '/verify/orbit/031',
       '/zzz',
-    ])
+      // A dot is no way past the proxy: a number with a sentence's full stop glued on, a
+      // fraction, a page asked for as a file, and a file asked for under a locale.
+      '/art/31.',
+      '/art/31.5',
+      '/exhibitions/a-hang.html',
+      '/verify/orbit/3.1',
+      '/zzz.b',
+      '/art/31-ink.webp',
+    ]) {
+      // English is the address without a locale, and there the last one is the still itself.
+      if (locale === 'en' && path === '/art/31-ink.webp') continue;
       await expectNotHere(
         await request.get(localizedPath(locale, path)),
         locale,
         wordsFor(path, locale),
       );
+    }
     for (const path of ['/art/31', '/exhibitions/a-hang', '/exhibitions/cycle-2']) {
       const response = await request.get(localizedPath(locale, path));
       expect(response.status(), path).toBe(200);
@@ -68,6 +97,47 @@ for (const locale of locales) {
     }
   });
 }
+
+test('the venue’s own files are served as files, which the proxy never takes for pages', async ({
+  request,
+}, info) => {
+  oneProjectAsks(info);
+  // One of each shape the proxy's matcher names (src/proxy.ts); proxy.test.ts reads every file.
+  const rung = stillRung(31, 'ink', 1280);
+  for (const [path, type] of [
+    ['/favicon.ico', /^image\//],
+    ['/icon.svg', /^image\/svg\+xml/],
+    ['/apple-icon.png', /^image\/png/],
+    ['/manifest.webmanifest', /^application\/manifest\+json/],
+    ['/robots.txt', /^text\/plain/],
+    ['/sitemap.xml', /^application\/xml/],
+    ['/icons/mark-192.png', /^image\/png/],
+    ['/art/31-ink.webp', /^image\/webp/],
+    [rung, /^image\/webp/],
+    ['/art/31-ink-preview.mp4', /^video\/mp4/],
+  ] as const) {
+    // A film is asked for by range, as a player asks: its first bytes say what it is.
+    const response = await request.get(path, { headers: { range: 'bytes=0-1023' } });
+    expect([200, 206], path).toContain(response.status());
+    expect(response.headers()['content-type'], path).toMatch(type);
+  }
+});
+
+test('the image optimizer is closed: Next fetches and re-encodes nothing for anyone', async ({
+  request,
+}, info) => {
+  oneProjectAsks(info);
+  // The venue serves its own rungs and asks Next to resize nothing (next.config.ts). Left open,
+  // this endpoint re-encoded any file in public/ and any file on the publisher's host.
+  const published = archivedMedia.find((work) => work.id === 31)!.media[0].sourceUrl;
+  for (const picture of ['/art/23-ink.webp', '/icons/mark-512.png', published]) {
+    const response = await request.get(
+      `/_next/image?url=${encodeURIComponent(picture)}&w=640&q=75`,
+    );
+    expect(response.status(), picture).toBe(404);
+    expect(response.headers()['content-type'], picture).not.toMatch(/^image\//);
+  }
+});
 
 test('a number beyond the index is the indexer’s to refuse', async ({ request }, info) => {
   oneProjectAsks(info);
@@ -91,8 +161,12 @@ test('a work’s number in another spelling goes to its one spelling, for good',
   }
 });
 
-test('the venue’s 404 is its own page, in the visitor’s language, on black', async ({ page }) => {
+test('the venue’s 404 is its own page, in the visitor’s language, on black', async ({
+  page,
+  faults,
+}) => {
   const uk = catalogs.uk;
+  faults.allow(failedToLoad('/uk/art/abc'));
   const response = await page.goto('/uk/art/abc');
   expect(response?.status()).toBe(404);
   await expect(page.locator('html')).toHaveAttribute('lang', 'uk');
@@ -119,8 +193,10 @@ test('the venue’s 404 is its own page, in the visitor’s language, on black',
 
 test('a number the collection does not hold is next door to the nearest work it does', async ({
   page,
+  faults,
 }) => {
   const t = catalogs.en;
+  faults.allow(failedToLoad('/art/999'));
   const response = await page.goto('/art/999');
   expect(response?.status()).toBe(404);
   await expect(page.getByRole('heading', { level: 1 })).toHaveText(
@@ -196,7 +272,8 @@ test('an English address is never taken for the home in a locale of its name', a
     ]);
 });
 
-test('a typed number without a record arrives at the venue’s 404', async ({ page }) => {
+test('a typed number without a record arrives at the venue’s 404', async ({ page, faults }) => {
+  faults.allow(failedToLoad('/art/9999'));
   await page.goto('/collection');
   await expect(page.locator('html')).toHaveAttribute('data-keys', 'ready');
   // The router asks for the work, meets the 404 and loads the venue's page whole.

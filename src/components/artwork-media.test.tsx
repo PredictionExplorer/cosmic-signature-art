@@ -4,7 +4,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { getCuratedArtwork } from '@/lib/art/catalog';
 import type { ArtInterpretation } from '@/lib/art/types';
 import { renderToString } from 'react-dom/server';
-import { ArtworkMedia, PLATE_SIZES, cappedSourceSet } from './artwork-media';
+import { ArtworkMedia, PLATE_SIZES, cappedSourceSet, stillRequest } from './artwork-media';
 import { REWIND_LEAD_S } from '@/lib/crossing/rewind';
 
 const motion = vi.hoisted(() => ({ paused: false, theatre: 'playing' as 'playing' | 'hushed' }));
@@ -639,6 +639,38 @@ describe('artwork media delivery', () => {
     } finally {
       Reflect.deleteProperty(navigator, 'connection');
     }
+  });
+
+  it('states a still as a surface asks for it: one request for the plate, the room and the Turn', () => {
+    const ladder =
+      /^\/art\/stills\/31-ink-1280-[a-f0-9]{16}\.webp 1280w, \/art\/stills\/31-ink-1920-[a-f0-9]{16}\.webp 1920w, \/art\/31-ink\.webp 3456w$/;
+    expect(stillRequest(ink(31))).toEqual({
+      src: '/art/31-ink.webp',
+      srcSet: expect.stringMatching(ladder),
+      sizes: PLATE_SIZES,
+    });
+    // Another surface names its own width; a constrained connection is offered the 1280 rung alone.
+    expect(stillRequest(ink(31), { sizes: '100vw' })).toMatchObject({ sizes: '100vw' });
+    expect(stillRequest(ink(31), { capped: true })).toEqual({
+      src: '/art/31-ink.webp',
+      srcSet: cappedSourceSet(ink(31)),
+      sizes: PLATE_SIZES,
+    });
+    // A still without a ladder is its published file: a width would describe no candidate.
+    expect(stillRequest({ ...ink(31), rungs: undefined }, { capped: true })).toEqual({
+      src: '/art/31-ink.webp',
+      srcSet: undefined,
+      sizes: undefined,
+    });
+    expect(stillRequest({ ...ink(31), still: undefined })).toBeUndefined();
+    expect(stillRequest(undefined)).toBeUndefined();
+    // The plate's own image is that request, attribute for attribute.
+    render(<ArtworkMedia media={ink(31)} alt="Signature 31" />);
+    const still = screen.getByRole('img');
+    const asked = stillRequest(ink(31))!;
+    expect(still).toHaveAttribute('src', asked.src);
+    expect(still).toHaveAttribute('srcset', asked.srcSet);
+    expect(still).toHaveAttribute('sizes', asked.sizes);
   });
 
   it('cues the complete film behind the opening clip without pausing the clip', () => {

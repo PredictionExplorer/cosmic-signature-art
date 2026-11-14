@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { expect, test } from './fixtures';
 import { locales, localizedPath } from '../../src/lib/i18n/routing';
 import { collectionLoaded, noHorizontalOverflow, pauseAmbientMotion } from './helpers';
 

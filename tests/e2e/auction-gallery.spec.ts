@@ -1,4 +1,4 @@
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Locator, type Page } from './fixtures';
 import AxeBuilder from '@axe-core/playwright';
 import { catalogs } from '../../src/lib/i18n/messages';
 import { locales, localizedPath } from '../../src/lib/i18n/routing';
@@ -51,6 +51,14 @@ for (const locale of locales) {
         .getByRole('region', { name: t.contractStatusLabel })
         .getByText(new RegExp(`^${t.cycle} \\d+$`)),
     ).toBeVisible();
+    // Its status line is set as the venue's eyebrow, at the size the title spread's own keeps.
+    const eyebrowSize = (eyebrow: Locator) =>
+      eyebrow.evaluate((element) => getComputedStyle(element).fontSize);
+    expect(
+      await eyebrowSize(
+        page.getByRole('region', { name: t.contractStatusLabel }).locator('p.eyebrow'),
+      ),
+    ).toBe(await eyebrowSize(page.locator('main .eyebrow').first()));
     // Until a sale is offered, the last imprinted cycle hangs below, labelled as not offered:
     // each work is described as such and leads to its own page, never to a lot.
     const meanwhile = page.getByRole('region', {

@@ -6,6 +6,12 @@
   "engines": {
     "node": ">=22.12.0"
   },
+  "browserslist": [
+    "chrome 111",
+    "edge 111",
+    "firefox 111",
+    "safari 16.4"
+  ],
   "scripts": {
     "dev": "next dev --hostname 127.0.0.1 --port 4318",
     "build": "next build",

@@ -7,7 +7,12 @@ const nextConfig: NextConfig = {
   // An address no route answers gets the venue's own 404 (src/app/global-not-found.tsx): the
   // proxy sends unknown works, exhibitions and orbit numbers there, so they are true 404s.
   experimental: { globalNotFound: true },
-  images: { remotePatterns: [{ protocol: 'https', hostname: 'a1.cosmicsignature.com' }] },
+  // The optimizer is closed. The venue serves its own hash-named rungs and previews and asks Next
+  // to resize nothing (no module imports next/image), so /_next/image is a 404; left at its
+  // default it fetched and transcoded any file in public/, and with the media host allowed, any
+  // file on that host, for anyone who asked. To open it again, name what it may serve and no
+  // more: remotePatterns with the publisher's pathname, localPatterns with /art/**.
+  images: { unoptimized: true },
   // The sharing cards read a CJK locale's sliced face by name at render time
   // (src/components/sharing-card.tsx), which no bundler can trace; the slices and their
   // range tables travel with the card routes.

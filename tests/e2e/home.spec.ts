@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { expect, test } from './fixtures';
 import { catalogs } from '../../src/lib/i18n/messages';
 import { fill } from '../../src/lib/i18n/format';
 import { locales, localizedPath } from '../../src/lib/i18n/routing';
@@ -116,8 +116,6 @@ test.describe('localized home', () => {
       isMobile,
     }) => {
       const t = catalogs[locale];
-      const errors: string[] = [];
-      page.on('pageerror', (error) => errors.push(error.message));
       await page.goto(localizedPath(locale));
       await expect(page.locator('html')).toHaveAttribute('lang', locale);
       await expect(page.locator(stage)).toHaveAttribute('data-expression', 'ink');
@@ -161,7 +159,6 @@ test.describe('localized home', () => {
           .click();
         await expect(page).toHaveURL(new RegExp(`${localizedPath(locale, '/collection')}$`));
       }
-      expect(errors).toEqual([]);
     });
   }
 });
