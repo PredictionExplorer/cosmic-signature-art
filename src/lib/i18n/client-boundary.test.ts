@@ -25,9 +25,10 @@ const english = join(src, 'lib/i18n/en.ts');
 const CATALOGS = ['messages', ...locales].map((name) => join(src, 'lib/i18n', `${name}.ts`));
 
 /**
- * Client Components still handed the whole catalog. The orbit files declare `t: Messages` and
- * are left as they are while another branch rewrites them; each comes off this list in the
- * change that lists its words, and the test below fails if one stays here after that.
+ * Client Components still handed the whole catalog: the orbit section, its verifier and its
+ * picker declare `t: Messages`, and so do the files the section is parted into, which it hands
+ * its catalog on to in the browser. Listing their words is a change of its own; each name comes
+ * off this list in it, and the test below fails if one stays here after that.
  */
 const PENDING = ['OrbitPicker', 'OrbitScore', 'OrbitVerifier'];
 

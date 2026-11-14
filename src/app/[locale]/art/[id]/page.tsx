@@ -179,8 +179,8 @@ export default async function ArtworkPage({
       />
       {/* First Light, when this work is the page a first visit opens on: a shared link (§16). */}
       <Overture work={showWorkOf(work)} skip={t.firstLightSkip} />
-      {/* The orbit section is the one part still handed the whole catalog: its files are being
-          rewritten, and list their words afterwards (PENDING in client-boundary.test.ts). */}
+      {/* The orbit section is the one part still handed the whole catalog: its words are not
+          listed yet (PENDING in src/lib/i18n/client-boundary.test.ts). */}
       {orbit ? (
         <OrbitScore
           key={tokenId}
