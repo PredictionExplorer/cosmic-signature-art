@@ -26,6 +26,13 @@ describe('where After the frame stands', () => {
     expect(after(ask, stay(null))).toEqual({ run: 2, phase: 'running', kept: null });
   });
 
+  it('performs from the frame with an answer given there, where the film ran on into the question', () => {
+    // No asking went before it: the answer is itself what enters After the frame (§8.7). The
+    // reducer always allowed it; this holds it to that, now that the section relies on it.
+    expect(after(stay(2))).toEqual({ run: 1, phase: 'running', kept: 2 });
+    expect(after(stay(null))).toEqual({ run: 1, phase: 'running', kept: null });
+  });
+
   it('counts each asking and each answer as a performance of its own', () => {
     // A repeat starts afresh: the drawing and the page are keyed by the count.
     expect(after(ask, stay(0), tell, ask)).toEqual({ run: 3, phase: 'choosing' });

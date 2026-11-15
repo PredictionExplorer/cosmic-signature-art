@@ -1,4 +1,4 @@
-import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { messages } from '@/lib/i18n/messages';
 import { workOrbit, type WorkOrbit } from '@/lib/art/orbit-records';
@@ -179,6 +179,8 @@ afterEach(() => {
   cleanup();
   vi.unstubAllGlobals();
   vi.restoreAllMocks();
+  // A test that fakes the timers and fails before it restores them fakes nobody else's.
+  vi.useRealTimers();
 });
 
 /** Runs every frame now due, at `now`; a frame cancelled before it runs never does. */
@@ -2499,6 +2501,1243 @@ describe('After the frame', () => {
     act(() => window.dispatchEvent(new Event(AFTER_THE_FRAME_EVENT)));
     expect(section(container)).toHaveAttribute('data-beyond', 'running');
     expect(document.activeElement).toBe(section(container));
+  });
+});
+
+describe('the film runs on into the question', () => {
+  /** № 025: its picture draws the bodies where they were, and its path holds something to perform. */
+  const ejected = workOrbit(25)!;
+  const asked = (container: HTMLElement) => section(container).hasAttribute('data-asked');
+  const ended = (container: HTMLElement) => section(container).getAttribute('data-ended');
+  const question = (container: HTMLElement) => container.querySelector<HTMLElement>('#orbit-ask');
+  const account = (container: HTMLElement) =>
+    container.querySelector<HTMLElement>('figcaption [class*="account"]')!;
+  const answers = (container: HTMLElement) =>
+    [...container.querySelectorAll('#orbit figcaption [class*="answers"] button')].map((answer) =>
+      answer.getAttribute('aria-label'),
+    );
+  const line = (container: HTMLElement) => container.querySelector('#orbit-said')!.textContent;
+  const words = (container: HTMLElement) =>
+    [...container.querySelectorAll('#orbit [class*="words"] :is(button, a)')].map(
+      (word) => word.textContent,
+    );
+  const word = (name: string) => screen.getByRole('button', { name });
+  const stayWith = (body: number) => word(fill(t.beyondStayBody, { body }));
+  /**
+   * Every call on the numbers' own layer, since it was last emptied. The file's other canvases
+   * share one record, where a call cannot be told from another layer's: here the numbers' layer
+   * keeps its own, so that "drawn" and "left bare" are said of that layer alone.
+   */
+  let onNames: { name: string; args: unknown[] }[] = [];
+  const namesContext = new Proxy(
+    {},
+    {
+      get:
+        (_, property) =>
+        (...args: unknown[]) => {
+          onNames.push({ name: String(property), args });
+          return args;
+        },
+      // Written as a method: the recorder of tests/golden finds the shared canvas above by
+      // its own `set`, which must stand in this file once.
+      set() {
+        return true;
+      },
+    },
+  );
+  /** The numbers drawn on their layer since its record was last emptied. */
+  const numbersDrawn = () =>
+    onNames.filter((call) => call.name === 'fillText').map((call) => call.args[0]);
+  /** The bodies ringed when the numbers' layer was last drawn. */
+  const rings = () =>
+    onNames
+      .slice(onNames.map((call) => call.name).lastIndexOf('clearRect'))
+      .filter((call) => call.name === 'arc').length;
+  /** The numbers' layer stands bare: the last thing done on it was to clear it whole. */
+  const bare = () => onNames.at(-1)?.name === 'clearRect';
+  /** The caption comes into sight, or leaves it (the section's fourth observer). */
+  const captionSeen = (visible: boolean) =>
+    act(() =>
+      observers[3].callback(
+        [{ isIntersecting: visible } as IntersectionObserverEntry],
+        {} as IntersectionObserver,
+      ),
+    );
+  const AT_THE_END = 'Step 1,000,000 of 1,000,000 · 00:30 into the Light film';
+
+  /**
+   * A work on its Light plate, in view, derived and placed, its film playing from the first
+   * step where motion is welcome. Its path past the window is known unless it is `held` back:
+   * it is the worker's last reply.
+   */
+  function staged(
+    of: WorkOrbit = ejected,
+    {
+      path = pathOf(),
+      held = false,
+      still = false,
+      turns = false,
+      unplaced = false,
+    }: {
+      path?: BeyondPath | null;
+      held?: boolean;
+      still?: boolean;
+      turns?: boolean;
+      /** The worker has derived the orbit and has yet to place it on its plate. */
+      unplaced?: boolean;
+    } = {},
+  ) {
+    Object.assign(motion, { paused: still, reducedMotion: still });
+    const sized = vi
+      .spyOn(HTMLCanvasElement.prototype, 'getBoundingClientRect')
+      .mockReturnValue({ width: 900, height: 580 } as DOMRect);
+    const moved = vi.spyOn(window, 'scrollTo').mockImplementation(() => {});
+    onNames = [];
+    vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockImplementation(function (
+      this: HTMLCanvasElement,
+    ) {
+      const layer = this.getAttribute('data-layer') === 'names' ? namesContext : context;
+      return layer as unknown as CanvasRenderingContext2D;
+    });
+    // A plate of one still; or, where the test turns it, of both expressions.
+    const plate: OrbitPlate | null = turns
+      ? {
+          frame: plateFrame(of.id)!,
+          stills: {
+            light: { src: '/light.webp', width: 1920, height: 1242 },
+            ink: { src: '/ink.webp', width: 1920, height: 1242 },
+          },
+        }
+      : plateOf(of.id);
+    const element = () => (
+      <OrbitScore orbit={of} t={t} locale="en" plate={plate} opening="light" both={turns} />
+    );
+    const view_ = render(element());
+    approach();
+    view(true);
+    derive(derivation(of), workers[0], of);
+    /** The worker's later replies: the window on its plate, the fate, the path past it. */
+    const placed = () => {
+      workers[0].reply({ type: 'framed', framed: framedOf() });
+      const fate = fateOf(of);
+      workers[0].reply({ type: 'fate', fate, comparison: compareFate(of.fate, fate) });
+      if (!held) workers[0].reply({ type: 'beyond', beyond: path });
+    };
+    if (!unplaced) placed();
+    /** The venue's motion changes under the section: its Pause, or the system's setting. */
+    const motionNow = (now: Partial<typeof motion>) => {
+      Object.assign(motion, now);
+      view_.rerender(element());
+    };
+    return { ...view_, sized, moved, motionNow, placed };
+  }
+  /** The film watched to its end: frames half a second apart, as a slow display would draw it. */
+  function playOut(container: HTMLElement) {
+    for (let frame = 0; frame < 80 && ended(container) === null; frame++) {
+      clockNow += 500;
+      nextFrame();
+    }
+    expect(ended(container)).toBe('played');
+  }
+  /** Long enough after a thing came by the clock for a pointer's press on it to be taken. */
+  const settle = () => {
+    clockNow += 500;
+  };
+  /** When the task now running, and whatever a browser does at its end, is over. */
+  const aTaskLater = () => new Promise<void>((resolve) => void setTimeout(resolve, 0));
+
+  it('asks under the picture when the film plays out, and moves nothing to do it', () => {
+    const { container, sized, moved } = staged();
+    captionSeen(true);
+    const pause = word(t.pause);
+    const closest = word(t.toClosestApproach);
+    const slider = screen.getByRole('slider');
+    // While the film plays: the caption's account, no question, and its room kept unseen.
+    expect(asked(container)).toBe(false);
+    expect(question(container)).toBeEmptyDOMElement();
+    expect(question(container)).toHaveAttribute('aria-live', 'polite');
+    expect(account(container)).not.toHaveAttribute('data-given-way');
+    // Its cell lies over the account, and takes no pointer until it holds the question.
+    expect(question(container)!.parentElement).not.toHaveAttribute('data-put');
+    expect(answers(container)).toEqual([]);
+    const sizedBefore = sized.mock.calls.length;
+    expect(onNames).toEqual([]);
+    playOut(container);
+
+    // The question, in the caption's cell: the label, the question, its four answers in order.
+    expect(asked(container)).toBe(true);
+    expect(question(container)).toHaveTextContent(t.beyondAsk);
+    expect(answers(container)).toEqual([
+      'Stay with body 1',
+      'Stay with body 2',
+      'Stay with body 3',
+      t.beyondStayFrame,
+    ]);
+    const group = container.querySelector('figcaption [role="group"]')!;
+    expect(group).toHaveAttribute('aria-labelledby', 'orbit-ask');
+    expect(
+      within(container.querySelector('figcaption')!).getByText(t.analysisNotWork),
+    ).toBeVisible();
+    expect(account(container)).toHaveAttribute('data-given-way');
+    expect(question(container)!.parentElement).toHaveAttribute('data-put');
+    // Each body's number beside it, on the numbers' own layer, none ringed: no canvas was
+    // sized for it.
+    expect(numbersDrawn()).toEqual(['1', '2', '3']);
+    expect(rings()).toBe(0);
+    expect(sized.mock.calls.length).toBe(sizedBefore);
+
+    // Nothing has been entered, and nothing has left: the same words, the same slider at the
+    // end of its track, the line saying where the film stands.
+    expect(section(container)).not.toHaveAttribute('data-beyond');
+    expect(word(t.again)).toBe(pause);
+    expect(word(t.toClosestApproach)).toBe(closest);
+    expect(screen.getByRole('slider')).toBe(slider);
+    expect(slider).toBeEnabled();
+    expect(slider).toHaveValue('1801');
+    expect(slider).toHaveAttribute('aria-valuetext', AT_THE_END);
+    // A keyboard that stands on the slider is told the question stands, after its value.
+    expect(slider).toHaveAttribute('aria-describedby', 'orbit-ask');
+    expect(line(container)).toBe(AT_THE_END);
+    expect(words(container)).toEqual([
+      t.again,
+      t.toClosestApproach,
+      t.afterTheFrame,
+      t.oneInATrillion,
+    ]);
+    // The page has not moved, and the focus is where it was.
+    expect(moved).not.toHaveBeenCalled();
+    expect(scrolled).toEqual([]);
+    expect(document.body).toHaveFocus();
+    expect(section(container).style.getPropertyValue('--beneath-measured')).toBe('');
+  });
+
+  it('keeps the focus on the word that says Again, where a keyboard had pressed Pause', () => {
+    const { container } = staged();
+    const pause = word(t.pause);
+    pause.focus();
+    playOut(container);
+    expect(word(t.again)).toBe(pause);
+    expect(pause).toHaveFocus();
+  });
+
+  it('is said aloud only where its own place is in sight, by a paragraph live before it has words', () => {
+    const { container } = staged();
+    // The section is in view, but not its caption: a reader in the record below is not told of
+    // a question they are not at.
+    expect(question(container)).not.toHaveAttribute('aria-live');
+    captionSeen(true);
+    // Live before it has any words, so that their coming is what is said.
+    expect(question(container)).toBeEmptyDOMElement();
+    expect(question(container)).toHaveAttribute('aria-live', 'polite');
+    captionSeen(false);
+    playOut(container);
+    expect(question(container)).toHaveTextContent(t.beyondAsk);
+    expect(question(container)).not.toHaveAttribute('aria-live');
+    // The line that changes four times a second while the film plays is never live at the frame.
+    expect(container.querySelector('#orbit-said')).not.toHaveAttribute('aria-live');
+  });
+
+  it('keeps the caption’s account for a reader who is being read to, and its label for the eye', () => {
+    const { container } = staged();
+    playOut(container);
+    // Given way in sight (the stylesheet), not taken from the page: a screen reader that was
+    // reading it when the film ended goes on reading it.
+    expect(account(container)).toHaveAttribute('data-given-way');
+    expect(account(container)).not.toHaveAttribute('aria-hidden');
+    expect(account(container)).toHaveTextContent(/Analysis, not the work\.$/);
+    // So the label over the question is for the eye alone: the page says it once aloud.
+    const label = within(container.querySelector('figcaption')!).getByText(t.analysisNotWork);
+    expect(label).toHaveAttribute('aria-hidden', 'true');
+  });
+
+  it('asks where the film was watched to its last half second, however long its last frame stalled', () => {
+    const { container } = staged();
+    const slider = screen.getByRole('slider') as HTMLInputElement;
+    // Half a second a frame, to the film's last half second.
+    for (let frame = 0; frame < 80 && Number(slider.value) < 1770; frame++) {
+      clockNow += 500;
+      nextFrame();
+    }
+    expect(ended(container)).toBeNull();
+    expect(Number(slider.value)).toBeGreaterThanOrEqual(1770);
+    // The frame that crosses the end takes three seconds: it passes over half a second of film.
+    clockNow += 3_000;
+    nextFrame();
+    expect(ended(container)).toBe('played');
+    expect(asked(container)).toBe(true);
+  });
+
+  it('does not ask where one late frame found the film over: a tab that came back', () => {
+    const { container } = staged();
+    clockNow += 31_000;
+    nextFrame();
+    expect(ended(container)).toBe('late');
+    expect(asked(container)).toBe(false);
+    expect(question(container)).toBeEmptyDOMElement();
+    expect(answers(container)).toEqual([]);
+    // Today's ending, as it was.
+    expect(words(container)).toEqual([
+      t.again,
+      t.toClosestApproach,
+      t.afterTheFrame,
+      t.oneInATrillion,
+    ]);
+    // Watched again to its end, it asks.
+    settle();
+    fireEvent.click(word(t.again));
+    playOut(container);
+    expect(asked(container)).toBe(true);
+  });
+
+  it('does not ask where the window stands whole unwatched: motion unwelcome, nothing pressed', () => {
+    const { container } = staged(ejected, { still: true });
+    expect(ended(container)).toBeNull();
+    expect(asked(container)).toBe(false);
+    expect(answers(container)).toEqual([]);
+    expect(numbersDrawn()).toEqual([]);
+    // After the frame stands from the first, as it did: one press away.
+    expect(words(container)).toEqual([
+      t.play,
+      t.toClosestApproach,
+      t.afterTheFrame,
+      t.oneInATrillion,
+    ]);
+  });
+
+  it('asks where the visitor’s hand sets the slider on its last notch, and says step 1,000,000 there', () => {
+    const { container } = staged(ejected, { still: true });
+    const slider = screen.getByRole('slider');
+    // Where nothing plays this is the stepped way to it: back a notch, and to the end again.
+    fireEvent.change(slider, { target: { value: '1800' } });
+    expect(asked(container)).toBe(false);
+    expect(slider.getAttribute('aria-valuetext')).toMatch(/^Step 999,\d{3} of 1,000,000/);
+    fireEvent.change(slider, { target: { value: '1801' } });
+    expect(ended(container)).toBe('hand');
+    expect(asked(container)).toBe(true);
+    // The last notch is the film's end: the word is Again, and the slider says what the line says.
+    expect(word(t.again)).toBeInTheDocument();
+    expect(slider).toHaveAttribute('aria-valuetext', AT_THE_END);
+    expect(line(container)).toBe(AT_THE_END);
+    // The hand that set it there is taken at once on an answer: nothing came by the clock.
+    fireEvent.click(stayWith(1), { detail: 1 });
+    expect(section(container)).toHaveAttribute('data-beyond', 'running');
+  });
+
+  it('asks at the End key where the slider already stands on its last notch', () => {
+    const { container } = staged(ejected, { still: true });
+    const slider = screen.getByRole('slider');
+    expect(slider).toHaveValue('1801');
+    // The native slider says nothing has changed there: the hand has set it all the same.
+    fireEvent.keyDown(slider, { key: 'End' });
+    expect(ended(container)).toBe('hand');
+    expect(asked(container)).toBe(true);
+  });
+
+  it.each(['ArrowRight', 'ArrowUp', 'PageUp'])(
+    'asks at %s there too: the key that asks for more than there is',
+    (key) => {
+      const { container } = staged(ejected, { still: true });
+      expect(ended(container)).toBeNull();
+      fireEvent.keyDown(screen.getByRole('slider'), { key });
+      expect(ended(container)).toBe('hand');
+      expect(asked(container)).toBe(true);
+    },
+  );
+
+  it('is made where the clock stands, so no key ends a film that has yet to begin', () => {
+    // Derived, and not yet placed on its plate: the film is at its first step, and so is the
+    // slider. (It was made on its last notch, where a key that asked for a frame less began
+    // the film a frame from its end, and the visitor was asked about a film of two frames.)
+    const { container, placed } = staged(ejected, { unplaced: true });
+    const slider = screen.getByRole('slider');
+    expect(slider).toHaveValue('0');
+    for (const press of [
+      { key: 'ArrowRight' },
+      { key: 'ArrowUp' },
+      { key: 'ArrowLeft' },
+      { key: 'PageUp' },
+      { key: 'ArrowRight', shiftKey: true },
+      { key: 'PageDown' },
+    ]) {
+      fireEvent.keyDown(slider, press);
+      expect(ended(container), `after ${press.shiftKey ? 'Shift+' : ''}${press.key}`).toBeNull();
+    }
+    expect(Number((slider as HTMLInputElement).value)).toBeLessThan(120);
+    // Placed, the film plays on from where those keys left it, near its first step.
+    placed();
+    expect(word(t.pause)).toBeInTheDocument();
+    expect(ended(container)).toBeNull();
+    expect(asked(container)).toBe(false);
+    expect(Number((slider as HTMLInputElement).value)).toBeLessThan(120);
+    playOut(container);
+    expect(asked(container)).toBe(true);
+  });
+
+  it('is made on its last notch where the window stands whole', () => {
+    staged(ejected, { still: true, unplaced: true });
+    expect(screen.getByRole('slider')).toHaveValue('1801');
+  });
+
+  it('leaves the browser’s own chords alone there: Alt with an arrow is its way forward', () => {
+    const { container } = staged(ejected, { still: true });
+    const slider = screen.getByRole('slider');
+    for (const chord of [{ altKey: true }, { metaKey: true }, { ctrlKey: true }]) {
+      // Not held back from the browser, and nothing set.
+      expect(fireEvent.keyDown(slider, { key: 'ArrowRight', ...chord })).toBe(true);
+      expect(fireEvent.keyDown(slider, { key: 'End', ...chord })).toBe(true);
+    }
+    expect(ended(container)).toBeNull();
+    expect(asked(container)).toBe(false);
+  });
+
+  it('takes the track’s last pixels for its last notch, and nothing while the hand still holds it there', () => {
+    const { container } = staged();
+    // Ten seconds of film, and the film still plays.
+    for (let frame = 0; frame < 20; frame++) {
+      clockNow += 500;
+      nextFrame();
+    }
+    const slider = screen.getByRole('slider');
+    slider.getBoundingClientRect = () =>
+      ({ left: 0, width: 900, top: 0, height: 54, right: 900, bottom: 54 }) as DOMRect;
+    // Three pixels from the end of a 900 px track: no hand finds the quarter pixel the last
+    // notch is.
+    fireEvent.pointerDown(slider, { pointerId: 5, pointerType: 'mouse', button: 0, clientX: 897 });
+    expect(slider).toHaveValue('1801');
+    // Held there, the window does not yet stand at its end: no word comes that would go again
+    // as the hand moved back, and the slider says what the line says.
+    expect(asked(container)).toBe(false);
+    expect(words(container)).toEqual([t.play, t.toClosestApproach]);
+    expect(slider.getAttribute('aria-valuetext')).toBe(line(container));
+    fireEvent.pointerMove(slider, { pointerId: 5, pointerType: 'mouse', clientX: 450 });
+    expect(words(container)).toEqual([t.play, t.toClosestApproach]);
+    fireEvent.pointerMove(slider, { pointerId: 5, pointerType: 'mouse', clientX: 899 });
+    fireEvent.pointerUp(slider, { pointerId: 5, pointerType: 'mouse' });
+    // Let go there, it stands at the film's end by the visitor's hand.
+    expect(ended(container)).toBe('hand');
+    expect(asked(container)).toBe(true);
+    expect(slider).toHaveAttribute('aria-valuetext', AT_THE_END);
+  });
+
+  it('does not take a finger that came down on the score to scroll the page', () => {
+    const { container } = staged();
+    playOut(container);
+    const slider = screen.getByRole('slider');
+    slider.getBoundingClientRect = () =>
+      ({ left: 0, width: 300, top: 0, height: 54, right: 300, bottom: 54 }) as DOMRect;
+    // A finger lands on the strip under the answers, and the browser takes it for a scroll.
+    fireEvent.pointerDown(slider, { pointerId: 7, pointerType: 'touch', clientX: 120 });
+    expect(asked(container)).toBe(true);
+    fireEvent.pointerMove(slider, { pointerId: 7, pointerType: 'touch', clientX: 122 });
+    fireEvent.pointerCancel(slider, { pointerId: 7, pointerType: 'touch' });
+    // Nothing was set: the question stands, the film's end as it was.
+    expect(asked(container)).toBe(true);
+    expect(ended(container)).toBe('played');
+    expect(slider).toHaveValue('1801');
+    // Moved sideways, the finger takes the score, and the record is in the hand again.
+    fireEvent.pointerDown(slider, { pointerId: 8, pointerType: 'touch', clientX: 120 });
+    fireEvent.pointerMove(slider, { pointerId: 8, pointerType: 'touch', clientX: 150 });
+    expect(asked(container)).toBe(false);
+    expect(Number((slider as HTMLInputElement).value)).toBe(Math.round((150 / 300) * 1801));
+    fireEvent.pointerUp(slider, { pointerId: 8, pointerType: 'touch' });
+    // And a tap sets the moment where it landed.
+    fireEvent.pointerDown(slider, { pointerId: 9, pointerType: 'touch', clientX: 60 });
+    fireEvent.pointerUp(slider, { pointerId: 9, pointerType: 'touch', clientX: 60 });
+    expect(Number((slider as HTMLInputElement).value)).toBe(Math.round((60 / 300) * 1801));
+  });
+
+  it('puts back what the browser’s own slider sets while a finger is down, through a scroll of the page', async () => {
+    const { container } = staged();
+    playOut(container);
+    const slider = screen.getByRole('slider');
+    slider.getBoundingClientRect = () =>
+      ({ left: 0, width: 300, top: 0, height: 54, right: 300, bottom: 54 }) as DOMRect;
+    // Chromium's own slider sets itself where a finger lands, at once: the finger has taken
+    // nothing, so nothing is set and nobody is told.
+    fireEvent.pointerDown(slider, {
+      pointerId: 7,
+      pointerType: 'touch',
+      clientX: 120,
+      clientY: 20,
+    });
+    fireEvent.touchStart(slider);
+    fireEvent.change(slider, { target: { value: '720' } });
+    expect(slider).toHaveValue('1801');
+    expect(asked(container)).toBe(true);
+    expect(ended(container)).toBe('played');
+    // The browser takes the finger for a scroll: its pointer is over, but the finger is still
+    // down, and the slider goes on following it as it drifts.
+    fireEvent.pointerCancel(slider, { pointerId: 7, pointerType: 'touch' });
+    fireEvent.change(slider, { target: { value: '760' } });
+    expect(slider).toHaveValue('1801');
+    expect(asked(container)).toBe(true);
+    expect(ended(container)).toBe('played');
+    // Lifted, and that task over, the slider is a key's and a screen reader's to set again.
+    fireEvent.touchEnd(slider);
+    await aTaskLater();
+    fireEvent.change(slider, { target: { value: '1800' } });
+    expect(asked(container)).toBe(false);
+    expect(slider).toHaveValue('1800');
+  });
+
+  it('puts back what the browser’s own slider sets as the finger lifts, after the page has heard the touch end', async () => {
+    const { container } = staged();
+    playOut(container);
+    const slider = screen.getByRole('slider');
+    slider.getBoundingClientRect = () =>
+      ({ left: 0, width: 300, top: 0, height: 54, right: 300, bottom: 54 }) as DOMRect;
+    // A finger carries the score to the end of its track and lifts there.
+    fireEvent.pointerDown(slider, {
+      pointerId: 7,
+      pointerType: 'touch',
+      clientX: 100,
+      clientY: 20,
+    });
+    fireEvent.touchStart(slider);
+    fireEvent.pointerMove(slider, {
+      pointerId: 7,
+      pointerType: 'touch',
+      clientX: 298,
+      clientY: 21,
+    });
+    fireEvent.pointerUp(slider, { pointerId: 7, pointerType: 'touch', clientX: 298, clientY: 21 });
+    fireEvent.touchEnd(slider);
+    expect(ended(container)).toBe('hand');
+    // Firefox's own slider reads the lift a few notches short, in the same task.
+    fireEvent.change(slider, { target: { value: '1790' } });
+    expect(slider).toHaveValue('1801');
+    expect(ended(container)).toBe('hand');
+    expect(asked(container)).toBe(true);
+    // A new hand on the score does not wait for that task to end.
+    fireEvent.pointerDown(slider, { pointerId: 8, pointerType: 'mouse', button: 0, clientX: 150 });
+    fireEvent.pointerUp(slider, { pointerId: 8, pointerType: 'mouse', clientX: 150 });
+    expect(Number((slider as HTMLInputElement).value)).toBe(Math.round((150 / 300) * 1801));
+    await aTaskLater();
+    fireEvent.change(slider, { target: { value: '1200' } });
+    expect(slider).toHaveValue('1200');
+  });
+
+  it('keeps a second finger’s slider from the first finger’s lift', async () => {
+    const { container } = staged();
+    playOut(container);
+    const slider = screen.getByRole('slider') as HTMLInputElement;
+    slider.getBoundingClientRect = () =>
+      ({ left: 0, width: 300, top: 0, height: 54, right: 300, bottom: 54 }) as DOMRect;
+    // A tap, and its lift waits for its task to end.
+    fireEvent.pointerDown(slider, {
+      pointerId: 7,
+      pointerType: 'touch',
+      clientX: 150,
+      clientY: 20,
+    });
+    fireEvent.touchStart(slider);
+    fireEvent.pointerUp(slider, { pointerId: 7, pointerType: 'touch', clientX: 150, clientY: 20 });
+    fireEvent.touchEnd(slider);
+    const tapped = slider.value;
+    // A second finger lands before it has: the first lift is over at once, and does not come
+    // a task later to give this finger's slider to the keys.
+    fireEvent.pointerDown(slider, { pointerId: 8, pointerType: 'touch', clientX: 40, clientY: 20 });
+    fireEvent.touchStart(slider);
+    await aTaskLater();
+    fireEvent.change(slider, { target: { value: '240' } });
+    expect(slider).toHaveValue(tapped);
+    expect(asked(container)).toBe(false);
+    expect(slider.getAttribute('aria-valuetext')).toMatch(/^Step 50\d,\d{3} of 1,000,000/);
+  });
+
+  it('settles on what it read from the finger, not on what the slider then says', () => {
+    const { container } = staged();
+    playOut(container);
+    const slider = screen.getByRole('slider') as HTMLInputElement;
+    slider.getBoundingClientRect = () =>
+      ({ left: 0, width: 300, top: 0, height: 54, right: 300, bottom: 54 }) as DOMRect;
+    fireEvent.pointerDown(slider, {
+      pointerId: 7,
+      pointerType: 'touch',
+      clientX: 100,
+      clientY: 20,
+    });
+    fireEvent.touchStart(slider);
+    fireEvent.pointerMove(slider, {
+      pointerId: 7,
+      pointerType: 'touch',
+      clientX: 298,
+      clientY: 21,
+    });
+    // The browser's own slider has the last word on the value, and nothing says so.
+    Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value')!.set!.call(slider, '1790');
+    fireEvent.pointerUp(slider, { pointerId: 7, pointerType: 'touch', clientX: 298, clientY: 21 });
+    expect(ended(container)).toBe('hand');
+    expect(asked(container)).toBe(true);
+  });
+
+  it('gives the slider back a task after a touch the browser cancels', async () => {
+    const { container } = staged();
+    playOut(container);
+    const slider = screen.getByRole('slider');
+    fireEvent.pointerDown(slider, {
+      pointerId: 7,
+      pointerType: 'touch',
+      clientX: 120,
+      clientY: 20,
+    });
+    fireEvent.touchStart(slider);
+    fireEvent.pointerCancel(slider, { pointerId: 7, pointerType: 'touch' });
+    fireEvent.touchCancel(slider);
+    fireEvent.change(slider, { target: { value: '720' } });
+    expect(slider).toHaveValue('1801');
+    await aTaskLater();
+    fireEvent.change(slider, { target: { value: '1800' } });
+    expect(asked(container)).toBe(false);
+  });
+
+  it('puts back the film’s end where the film ended under a finger that then lifts', () => {
+    const { container } = staged();
+    const slider = screen.getByRole('slider') as HTMLInputElement;
+    for (let frame = 0; frame < 80 && Number(slider.value) < 1740; frame++) {
+      clockNow += 500;
+      nextFrame();
+    }
+    // A finger scrolls the page from the score, and rests.
+    fireEvent.pointerDown(slider, {
+      pointerId: 7,
+      pointerType: 'touch',
+      clientX: 120,
+      clientY: 20,
+    });
+    fireEvent.touchStart(slider);
+    fireEvent.pointerCancel(slider, { pointerId: 7, pointerType: 'touch' });
+    fireEvent.touchMove(slider);
+    expect(Number(slider.value)).toBeLessThan(1801);
+    // The film ends under it; then it lifts, and the browser's own slider answers the lift.
+    playOut(container);
+    expect(slider).toHaveValue('1801');
+    fireEvent.touchEnd(slider);
+    fireEvent.change(slider, { target: { value: '1500' } });
+    expect(slider).toHaveValue('1801');
+    expect(asked(container)).toBe(true);
+  });
+
+  it('puts back where the film stands now, not where the finger found it', () => {
+    const { container } = staged();
+    for (let frame = 0; frame < 20; frame++) {
+      clockNow += 500;
+      nextFrame();
+    }
+    const slider = screen.getByRole('slider') as HTMLInputElement;
+    const found = Number(slider.value);
+    // A finger lands on the score and the browser takes it for a scroll of the page.
+    fireEvent.pointerDown(slider, {
+      pointerId: 7,
+      pointerType: 'touch',
+      clientX: 120,
+      clientY: 20,
+    });
+    fireEvent.touchStart(slider);
+    fireEvent.pointerCancel(slider, { pointerId: 7, pointerType: 'touch' });
+    // The film plays on under it.
+    for (let frame = 0; frame < 10; frame++) {
+      clockNow += 500;
+      nextFrame();
+    }
+    const now = Number(slider.value);
+    expect(now).toBeGreaterThan(found);
+    // The finger drifts, and the browser's own slider follows it: put back to where the film is.
+    fireEvent.touchMove(slider);
+    fireEvent.change(slider, { target: { value: '700' } });
+    expect(Number(slider.value)).toBe(now);
+    expect(word(t.pause)).toBeInTheDocument();
+    expect(ended(container)).toBeNull();
+  });
+
+  it.each(['touch', 'pen'] as const)(
+    'gives the slider back to the keys when a %s’s pointer ends where no touch events are sent',
+    (pointerType) => {
+      const { container } = staged();
+      playOut(container);
+      const slider = screen.getByRole('slider');
+      fireEvent.pointerDown(slider, { pointerId: 7, pointerType, clientX: 120, clientY: 20 });
+      // It has taken nothing yet: the question stands, and the browser's own slider is put back.
+      expect(asked(container)).toBe(true);
+      fireEvent.change(slider, { target: { value: '720' } });
+      expect(slider).toHaveValue('1801');
+      fireEvent.pointerCancel(slider, { pointerId: 7, pointerType });
+      expect(asked(container)).toBe(true);
+      fireEvent.change(slider, { target: { value: '1800' } });
+      expect(asked(container)).toBe(false);
+    },
+  );
+
+  it('forgets a pen that lifted where the score did not hear it', () => {
+    const { container } = staged();
+    playOut(container);
+    const slider = screen.getByRole('slider');
+    slider.getBoundingClientRect = () =>
+      ({ left: 0, width: 300, top: 0, height: 54, right: 300, bottom: 54 }) as DOMRect;
+    // A pen presses the score, leaves it and lifts elsewhere: no lift is said here. Hovering
+    // back over the score it presses nothing, so it sets nothing, however far it has moved.
+    fireEvent.pointerDown(slider, { pointerId: 7, pointerType: 'pen', clientX: 120, clientY: 20 });
+    fireEvent.pointerMove(slider, {
+      pointerId: 7,
+      pointerType: 'pen',
+      buttons: 0,
+      clientX: 220,
+      clientY: 22,
+    });
+    expect(asked(container)).toBe(true);
+    expect(slider).toHaveValue('1801');
+    // And the slider is the keys' again.
+    fireEvent.change(slider, { target: { value: '1800' } });
+    expect(asked(container)).toBe(false);
+    // The same where the browser says only that the pen is the score's no longer.
+    fireEvent.change(slider, { target: { value: '1801' } });
+    expect(asked(container)).toBe(true);
+    fireEvent.pointerDown(slider, { pointerId: 8, pointerType: 'pen', clientX: 120, clientY: 20 });
+    fireEvent.lostPointerCapture(slider, { pointerId: 8, pointerType: 'pen' });
+    fireEvent.change(slider, { target: { value: '1800' } });
+    expect(asked(container)).toBe(false);
+  });
+
+  it.each(['touch', 'pen'] as const)(
+    'takes a %s only when it moves farther sideways than along the page',
+    (pointerType) => {
+      const { container } = staged();
+      playOut(container);
+      const slider = screen.getByRole('slider');
+      slider.getBoundingClientRect = () =>
+        ({ left: 0, width: 300, top: 0, height: 54, right: 300, bottom: 54 }) as DOMRect;
+      const down = { pointerId: 7, pointerType, buttons: 1 };
+      fireEvent.pointerDown(slider, { ...down, clientX: 120, clientY: 20 });
+      // A scroll that drifts: seven pixels sideways in twenty along the page.
+      fireEvent.pointerMove(slider, { ...down, clientX: 127, clientY: 40 });
+      expect(asked(container)).toBe(true);
+      expect(slider).toHaveValue('1801');
+      // Farther sideways than along it, it has taken the score.
+      fireEvent.pointerMove(slider, { ...down, clientX: 150, clientY: 42 });
+      expect(asked(container)).toBe(false);
+      expect(Number((slider as HTMLInputElement).value)).toBe(Math.round((150 / 300) * 1801));
+    },
+  );
+
+  it('sets the film’s end by a finger let go at the end of the track, whatever the browser’s own slider made of it', () => {
+    const { container } = staged();
+    playOut(container);
+    const slider = screen.getByRole('slider');
+    slider.getBoundingClientRect = () =>
+      ({ left: 0, width: 300, top: 0, height: 54, right: 300, bottom: 54 }) as DOMRect;
+    fireEvent.pointerDown(slider, {
+      pointerId: 7,
+      pointerType: 'touch',
+      clientX: 100,
+      clientY: 20,
+    });
+    fireEvent.touchStart(slider);
+    fireEvent.pointerMove(slider, {
+      pointerId: 7,
+      pointerType: 'touch',
+      clientX: 200,
+      clientY: 21,
+    });
+    expect(asked(container)).toBe(false);
+    // Two pixels from the end of the track is its last notch; the browser's own slider reads
+    // the same finger a few notches short, after the venue has read it, and is put back.
+    fireEvent.pointerMove(slider, {
+      pointerId: 7,
+      pointerType: 'touch',
+      clientX: 298,
+      clientY: 21,
+    });
+    fireEvent.change(slider, { target: { value: '1790' } });
+    expect(slider).toHaveValue('1801');
+    fireEvent.pointerUp(slider, { pointerId: 7, pointerType: 'touch', clientX: 298, clientY: 21 });
+    fireEvent.touchEnd(slider);
+    expect(ended(container)).toBe('hand');
+    expect(asked(container)).toBe(true);
+    expect(slider).toHaveAttribute('aria-valuetext', AT_THE_END);
+  });
+
+  it('withdraws when the clock is taken back into the record, and stands again at the next end', () => {
+    const { container } = staged();
+    playOut(container);
+    settle();
+    expect(bare()).toBe(false);
+    fireEvent.click(word(t.again));
+    expect(ended(container)).toBeNull();
+    expect(asked(container)).toBe(false);
+    expect(question(container)).toBeEmptyDOMElement();
+    expect(answers(container)).toEqual([]);
+    expect(account(container)).not.toHaveAttribute('data-given-way');
+    expect(screen.getByRole('slider')).not.toHaveAttribute('aria-describedby');
+    // The numbers' own layer is left bare.
+    expect(bare()).toBe(true);
+    onNames = [];
+    playOut(container);
+    expect(asked(container)).toBe(true);
+    // The closest approach is the record too.
+    settle();
+    fireEvent.click(word(t.toClosestApproach));
+    expect(asked(container)).toBe(false);
+  });
+
+  it('hands a focus that stood on an answer to the line, as the question goes', () => {
+    const { container } = staged();
+    playOut(container);
+    settle();
+    stayWith(3).focus();
+    expect(stayWith(3)).toHaveFocus();
+    // A pointer presses Again while the keyboard stands on an answer.
+    fireEvent.click(word(t.again), { detail: 1 });
+    expect(asked(container)).toBe(false);
+    expect(container.querySelector('#orbit-said')).toHaveFocus();
+  });
+
+  it('takes no pointer on an answer in its first moments, and a key at once', () => {
+    const { container } = staged();
+    playOut(container);
+    // A tenth of a second after the question came, a pointer was on its way elsewhere.
+    clockNow += 100;
+    fireEvent.click(stayWith(2), { detail: 1 });
+    expect(section(container)).not.toHaveAttribute('data-beyond');
+    expect(asked(container)).toBe(true);
+    // A key is always taken.
+    fireEvent.click(stayWith(2), { detail: 0 });
+    expect(section(container)).toHaveAttribute('data-beyond', 'running');
+    expect(section(container)).toHaveAttribute('data-kept', '2');
+  });
+
+  it('enters After the frame on the answer, with the answer given: the press brings what a press may', () => {
+    const { container } = staged();
+    playOut(container);
+    settle();
+    const made = readings.made;
+    stayWith(2).focus();
+    fireEvent.click(stayWith(2));
+    // Entered with the answer already given: no question past the frame, the picture kept on
+    // body 2, and the four pictures read under this press.
+    expect(section(container)).toHaveAttribute('data-beyond', 'running');
+    expect(section(container)).toHaveAttribute('data-kept', '2');
+    expect(asked(container)).toBe(false);
+    expect(readings.made - made).toBe(4);
+    expect(answers(container)).toEqual([]);
+    expect(container.querySelector('figcaption')!.textContent).toBe(t.analysisNotWork);
+    expect(screen.queryByRole('slider')).not.toBeInTheDocument();
+    expect(word(t.afterTheFrame)).toHaveAttribute('aria-pressed', 'true');
+    // The answer is gone, and the focus is not on the page: it was kept in the section as the
+    // answer went, and is on the line now that it says whom the picture stays with.
+    expect(document.body).not.toHaveFocus();
+    expect(line(container)).toMatch(/^Staying with body 2 · /);
+    expect(container.querySelector('#orbit-said')).toHaveFocus();
+  });
+
+  it('holds the frame on the answer that keeps it', () => {
+    const { container } = staged();
+    playOut(container);
+    settle();
+    fireEvent.click(word(t.beyondStayFrame));
+    expect(section(container)).toHaveAttribute('data-beyond', 'running');
+    expect(section(container)).not.toHaveAttribute('data-kept');
+  });
+
+  it('asks when a path that came after the film’s end comes, and draws the numbers after it', () => {
+    const { container } = staged(ejected, { held: true });
+    playOut(container);
+    // The film has ended, and nothing can yet be performed past it: today's ending, without
+    // the word for it.
+    expect(asked(container)).toBe(false);
+    expect(words(container)).toEqual([t.again, t.toClosestApproach, t.oneInATrillion]);
+    expect(onNames).toEqual([]);
+    clockNow += 3_000;
+    workers[0].reply({ type: 'beyond', beyond: pathOf() });
+    expect(asked(container)).toBe(true);
+    expect(answers(container)).toHaveLength(4);
+    // The path's coming lays the window out again, which wipes every layer: the numbers are
+    // drawn after it.
+    expect(numbersDrawn()).toEqual(['1', '2', '3']);
+    // The film's clock brought the question all the same: a pointer is not taken on it at once.
+    fireEvent.click(stayWith(1), { detail: 1 });
+    expect(section(container)).not.toHaveAttribute('data-beyond');
+    settle();
+    fireEvent.click(stayWith(1), { detail: 1 });
+    expect(section(container)).toHaveAttribute('data-kept', '1');
+  });
+
+  it('does not ask when the visitor took the clock back before the path came', () => {
+    const { container } = staged(ejected, { held: true });
+    playOut(container);
+    settle();
+    fireEvent.click(word(t.again));
+    workers[0].reply({ type: 'beyond', beyond: pathOf() });
+    expect(asked(container)).toBe(false);
+    expect(answers(container)).toEqual([]);
+  });
+
+  it('never asks where no path can be carried, or the path holds nothing to perform', () => {
+    const none = staged(ejected, { path: null });
+    playOut(none.container);
+    expect(asked(none.container)).toBe(false);
+    expect(words(none.container)).toEqual([t.again, t.toClosestApproach, t.oneInATrillion]);
+    cleanup();
+    workers = [];
+    observers = [];
+    // A path of one sample: the computation lost its energy inside the window (№ 022, 066, 068).
+    const nothing = staged(ejected, { path: { ...pathOf(), samples: 1 } });
+    playOut(nothing.container);
+    expect(asked(nothing.container)).toBe(false);
+    expect(answers(nothing.container)).toEqual([]);
+  });
+
+  it('never asks where the picture is not the bodies’ positions, and keeps no room for it', () => {
+    // № 054 is a cross-braid: a mark is two bodies' coordinates, and there is no body to stay with.
+    const { container } = staged(soonest);
+    playOut(container);
+    expect(asked(container)).toBe(false);
+    expect(question(container)).toBeNull();
+    expect(container.querySelector('figcaption [class*="askRoom"]')).toBeNull();
+    expect(numbersDrawn()).toEqual([]);
+  });
+
+  it('keeps the question’s room under the picture from the first, drawn from attributes', () => {
+    const { container } = staged();
+    const room = container.querySelector('figcaption [class*="askRoom"]')!;
+    expect(room).toHaveAttribute('aria-hidden', 'true');
+    // The words the room is sized by are in attributes, so the page holds each of them once.
+    expect(room.textContent).toBe('');
+    expect(
+      [...room.querySelectorAll('[data-line]')].map((kept) => kept.getAttribute('data-line')),
+    ).toEqual([t.analysisNotWork, t.beyondAsk, '1', '2', '3', t.beyondFrame]);
+    playOut(container);
+    expect(screen.getAllByText(t.beyondAsk)).toHaveLength(1);
+  });
+
+  it('does not ask on the way back from past the frame, until the film is watched again', () => {
+    const { container } = staged();
+    playOut(container);
+    settle();
+    // The composed way in still stands beside it, and takes the stage from the question.
+    fireEvent.click(afterTheFrame());
+    expect(asked(container)).toBe(false);
+    expect(section(container)).toHaveAttribute('data-beyond', 'choosing');
+    expect(question(container)).toBeNull();
+    // Back at the frame: brought back whole, not watched to an end.
+    fireEvent.click(afterTheFrame());
+    expect(section(container)).not.toHaveAttribute('data-beyond');
+    expect(ended(container)).toBe('returned');
+    expect(asked(container)).toBe(false);
+    expect(answers(container)).toEqual([]);
+    settle();
+    fireEvent.click(word(t.again));
+    playOut(container);
+    expect(asked(container)).toBe(true);
+  });
+
+  it('gives the stage to the twin, and the question goes with it', () => {
+    const { container } = staged();
+    playOut(container);
+    settle();
+    fireEvent.click(word(t.oneInATrillion));
+    expect(asked(container)).toBe(false);
+    expect(answers(container)).toEqual([]);
+    expect(section(container)).toHaveAttribute('data-twin');
+  });
+
+  it('rings the body an answer points at, and none once the question has gone', () => {
+    const { container } = staged();
+    playOut(container);
+    settle();
+    onNames = [];
+    fireEvent.focus(stayWith(2));
+    // The numbers' layer alone is drawn again, with body 2 ringed.
+    expect(numbersDrawn()).toEqual(['1', '2', '3']);
+    expect(rings()).toBe(1);
+    fireEvent.click(word(t.again));
+    onNames = [];
+    playOut(container);
+    // Asked again, no body is ringed for an answer that went with the last asking.
+    expect(asked(container)).toBe(true);
+    expect(numbersDrawn()).toEqual(['1', '2', '3']);
+    expect(rings()).toBe(0);
+  });
+
+  it('draws the numbers again after every drawing that wipes their layer, while the question stands', () => {
+    const { container, motionNow } = staged();
+    playOut(container);
+    // The picture takes another size: every layer is sized, which wipes it, and the numbers
+    // are the last thing drawn on theirs each time.
+    onNames = [];
+    resize(/_stage_/);
+    resize(/_stage_/);
+    expect(numbersDrawn().slice(-3)).toEqual(['1', '2', '3']);
+    expect(bare()).toBe(false);
+    // The section leaves the screen and comes back.
+    onNames = [];
+    view(false);
+    view(true);
+    expect(numbersDrawn().slice(-3)).toEqual(['1', '2', '3']);
+    expect(bare()).toBe(false);
+    // The venue is paused, and plays again: the film was watched, and its question stands.
+    onNames = [];
+    motionNow({ paused: true });
+    expect(asked(container)).toBe(true);
+    expect(numbersDrawn().slice(-3)).toEqual(['1', '2', '3']);
+    onNames = [];
+    motionNow({ paused: false });
+    expect(asked(container)).toBe(true);
+    expect(numbersDrawn().slice(-3)).toEqual(['1', '2', '3']);
+    expect(bare()).toBe(false);
+  });
+
+  it('draws the numbers again when the plate is turned to its other material', () => {
+    const { container } = staged(ejected, { turns: true });
+    playOut(container);
+    expect(asked(container)).toBe(true);
+    // The Turn draws the window again in the other material: every layer is laid out anew.
+    onNames = [];
+    act(() => rememberExpression('ink'));
+    expect(section(container)).toHaveAttribute('data-drawing', 'plate');
+    expect(asked(container)).toBe(true);
+    expect(numbersDrawn().slice(-3)).toEqual(['1', '2', '3']);
+    expect(bare()).toBe(false);
+    onNames = [];
+    act(() => rememberExpression('light'));
+    expect(asked(container)).toBe(true);
+    expect(numbersDrawn().slice(-3)).toEqual(['1', '2', '3']);
+    expect(bare()).toBe(false);
+  });
+
+  it('does not ask where the venue is paused while the film plays: drawn whole, not watched', () => {
+    const { container, motionNow } = staged();
+    for (let frame = 0; frame < 20; frame++) {
+      clockNow += 500;
+      nextFrame();
+    }
+    expect(word(t.pause)).toBeInTheDocument();
+    motionNow({ paused: true });
+    // The window stands whole at once, as it does wherever motion is unwelcome.
+    expect(ended(container)).toBeNull();
+    expect(asked(container)).toBe(false);
+    expect(answers(container)).toEqual([]);
+    expect(numbersDrawn()).toEqual([]);
+    expect(words(container)).toEqual([
+      t.play,
+      t.toClosestApproach,
+      t.afterTheFrame,
+      t.oneInATrillion,
+    ]);
+  });
+
+  it('is not timed: it stands for as long as the visitor likes', () => {
+    vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout', 'setInterval', 'clearInterval'] });
+    const { container } = staged();
+    playOut(container);
+    const stands = container.querySelector('figcaption')!.innerHTML;
+    act(() => vi.advanceTimersByTime(600_000));
+    expect(asked(container)).toBe(true);
+    expect(section(container)).not.toHaveAttribute('data-beyond');
+    expect(container.querySelector('figcaption')!.innerHTML).toBe(stands);
+    // Nothing waits to happen.
+    expect(vi.getTimerCount()).toBe(0);
+    vi.useRealTimers();
+  });
+
+  it('is answered by its words alone: the picture stays the orbit’s to turn', () => {
+    const { container } = staged();
+    playOut(container);
+    settle();
+    const stage = container.querySelector<HTMLElement>('figure [class*="stage"]')!;
+    // Where body 1's number is drawn. A press there answers nothing at the frame…
+    const [, clientX, clientY] = onNames
+      .filter((call) => call.name === 'fillText' && call.args[0] === '1')
+      .at(-1)!.args as [string, number, number];
+    const press = () => {
+      fireEvent.pointerDown(stage, {
+        pointerId: 2,
+        pointerType: 'mouse',
+        button: 0,
+        clientX,
+        clientY,
+      });
+      fireEvent.click(stage, { detail: 1, clientX, clientY });
+    };
+    press();
+    expect(asked(container)).toBe(true);
+    expect(section(container)).not.toHaveAttribute('data-beyond');
+    expect(stage).not.toHaveAttribute('data-pick');
+    // …and the same press stays with body 1 once the question is composed past the frame, by
+    // its word: so it was on a body.
+    fireEvent.click(word(t.afterTheFrame), { detail: 0 });
+    expect(section(container)).toHaveAttribute('data-beyond', 'choosing');
+    settle();
+    press();
+    expect(section(container)).toHaveAttribute('data-kept', '1');
+  });
+
+  it('hands the focus on from an answer when the twin, or After the frame, takes the stage', () => {
+    const twin = staged();
+    playOut(twin.container);
+    settle();
+    stayWith(1).focus();
+    fireEvent.focus(stayWith(1));
+    // A pointer presses One part in a trillion while the keyboard stands on an answer.
+    fireEvent.click(word(t.oneInATrillion), { detail: 1 });
+    expect(asked(twin.container)).toBe(false);
+    expect(twin.container.querySelector('#orbit-said')).toHaveFocus();
+    cleanup();
+    workers = [];
+    observers = [];
+    const beyond = staged();
+    playOut(beyond.container);
+    settle();
+    stayWith(2).focus();
+    fireEvent.focus(stayWith(2));
+    // What stood when the line was given the focus: the composed question gives it the focus
+    // in any case, a render later, so that it ends there proves nothing of the hand-on.
+    const said = beyond.container.querySelector<HTMLElement>('#orbit-said')!;
+    const stoodThen: number[] = [];
+    const focus = said.focus.bind(said);
+    said.focus = (options) => {
+      stoodThen.push(answers(beyond.container).length);
+      focus(options);
+    };
+    onNames = [];
+    fireEvent.click(afterTheFrame(), { detail: 1 });
+    expect(section(beyond.container)).toHaveAttribute('data-beyond', 'choosing');
+    // Handed on while the answer it stood on was still there to ask: never on the page.
+    expect(stoodThen[0]).toBe(4);
+    expect(said).toHaveFocus();
+    // And no body stays ringed, in the composed question, for an answer that is gone.
+    expect(rings()).toBe(0);
+  });
+
+  it('hands the focus on from a word that goes when the film is played again', () => {
+    const { container } = staged();
+    playOut(container);
+    settle();
+    // A keyboard stands on After the frame; a pointer presses Again, in a browser where a
+    // pressed button takes no focus. The two words that stay go while the window plays.
+    afterTheFrame().focus();
+    fireEvent.click(word(t.again), { detail: 1 });
+    expect(words(container)).toEqual([t.pause, t.toClosestApproach]);
+    expect(container.querySelector('#orbit-said')).toHaveFocus();
+  });
+
+  it('leaves the focus on a word that stays, where the clock is taken and the window stands whole all the same', () => {
+    const { container } = staged(ejected, { still: true });
+    afterTheFrame().focus();
+    // Where nothing plays the window stands whole whatever the slider says: the word stays.
+    fireEvent.change(screen.getByRole('slider'), { target: { value: '900' } });
+    expect(afterTheFrame()).toHaveFocus();
+    expect(asked(container)).toBe(false);
+  });
+
+  it('keeps the focus in the section when an answer takes away what the focus stood on', () => {
+    const { container } = staged();
+    playOut(container);
+    settle();
+    // The focus stands on the slider; a pointer presses an answer, in a browser where a
+    // pressed button takes no focus. The slider goes with the composition the answer brings.
+    screen.getByRole('slider').focus();
+    fireEvent.click(stayWith(3), { detail: 1 });
+    expect(section(container)).toHaveAttribute('data-kept', '3');
+    expect(document.body).not.toHaveFocus();
+    expect(container.querySelector('#orbit-said')).toHaveFocus();
+  });
+
+  it('says the answer by the focus it gives the line, from a word that stays too', () => {
+    const { container } = staged();
+    playOut(container);
+    settle();
+    // A keyboard stands on After the frame, which stays; a pointer presses an answer, in a
+    // browser where a pressed button takes no focus. The line says whom the picture stays with,
+    // and is given the focus to say it, as it is past the frame.
+    afterTheFrame().focus();
+    fireEvent.click(stayWith(2), { detail: 1 });
+    expect(section(container)).toHaveAttribute('data-kept', '2');
+    expect(container.querySelector('#orbit-said')).toHaveFocus();
+  });
+
+  it('brings the page to the picture on the answer: once, and at once wherever motion is unwelcome', () => {
+    /** The picture below the fold, in a window 800 px tall under a head of 48. */
+    const below = () =>
+      vi.spyOn(HTMLDivElement.prototype, 'getBoundingClientRect').mockImplementation(function (
+        this: HTMLDivElement,
+      ) {
+        const [top, bottom] = /_stage_/.test(this.className)
+          ? [700, 1_200]
+          : /_score_/.test(this.className)
+            ? [1_210, 1_380]
+            : [0, 0];
+        return { top, bottom } as DOMRect;
+      });
+    const welcome = staged();
+    below();
+    playOut(welcome.container);
+    settle();
+    fireEvent.click(stayWith(2));
+    // Glided, two frames on (orbit-room.ts): the answer is the visitor's press.
+    expect(welcome.moved).not.toHaveBeenCalled();
+    nextFrame();
+    nextFrame();
+    expect(welcome.moved).toHaveBeenCalledTimes(1);
+    expect(welcome.moved).toHaveBeenCalledWith(expect.objectContaining({ behavior: 'smooth' }));
+    cleanup();
+    vi.restoreAllMocks();
+    workers = [];
+    observers = [];
+    // The venue's own Pause, with the system's setting off: the film was asked for and watched,
+    // and the page is put at the picture, not glided to it.
+    vi.spyOn(performance, 'now').mockImplementation(() => clockNow);
+    const paused = staged();
+    below();
+    playOut(paused.container);
+    paused.motionNow({ paused: true, reducedMotion: false });
+    settle();
+    fireEvent.click(stayWith(2));
+    expect(paused.moved).toHaveBeenCalledTimes(1);
+    expect(paused.moved).toHaveBeenCalledWith(expect.objectContaining({ behavior: 'instant' }));
+  });
+
+  it('keeps the pictures it read for the answer, through leaving and asking again', () => {
+    const { container } = staged();
+    playOut(container);
+    settle();
+    fireEvent.click(stayWith(2));
+    const made = readings.made;
+    // Back at the frame, and asked again by the word: nothing is read anew in this material.
+    fireEvent.click(afterTheFrame());
+    expect(section(container)).not.toHaveAttribute('data-beyond');
+    fireEvent.click(afterTheFrame());
+    expect(section(container)).toHaveAttribute('data-beyond', 'choosing');
+    expect(readings.made).toBe(made);
+  });
+
+  it('does not hear the venue’s keys at the answers: a digit typed there is no work’s number', () => {
+    const { container } = staged();
+    playOut(container);
+    const group = container.querySelector('figcaption [role="group"]')!;
+    expect(group).toHaveAttribute('data-keys-suppressed');
+    // Past the frame the same answers stand in the line's room, and are as deaf to them.
+    settle();
+    fireEvent.click(afterTheFrame());
+    expect(container.querySelector('#orbit [class*="_said_"] [role="group"]')).toHaveAttribute(
+      'data-keys-suppressed',
+    );
+  });
+
+  it('keeps the hint’s room on every plate at the frame, and none past it', () => {
+    const { container } = staged();
+    const room = () => container.querySelector('figcaption [class*="hintRoom"]');
+    // No engine turns the orbit here, and the room is kept all the same: an empty line costs
+    // less than everything beneath it moving when that is found out.
+    expect(room()).toHaveAttribute('aria-hidden', 'true');
+    expect(room()!.textContent).toBe('');
+    expect(
+      [...room()!.querySelectorAll('[data-line]')].map((kept) => kept.getAttribute('data-line')),
+    ).toEqual([t.orbitTurnHint, t.orbitTurnHintTouch]);
+    playOut(container);
+    expect(room()).not.toBeNull();
+    settle();
+    fireEvent.click(stayWith(1));
+    expect(room()).toBeNull();
   });
 });
 

@@ -15,6 +15,7 @@ import type { PlateSpace } from '@/lib/first-light/samples';
 import { pairName } from '@/lib/physics/film-score';
 import { lightFilmSeconds } from '@/lib/physics/light-film';
 import type { Material } from './orbit-picture';
+import { Answers } from './orbit-said';
 import { OrbitSculpture, type Sculpture } from './orbit-sculpture';
 import styles from './orbit-score.module.css';
 
@@ -27,6 +28,24 @@ export interface StageHand {
   onClick: (event: MouseEvent<HTMLDivElement>) => void;
   onPointerMove: (event: PointerEvent<HTMLDivElement>) => void;
   onPointerLeave: (event: PointerEvent<HTMLDivElement>) => void;
+}
+
+/**
+ * The question at the frame, where the film runs on into it (docs/after-the-frame.md §8.7):
+ * on a plate whose picture draws the bodies where they were. Its room under the picture is kept
+ * from the first, whether or not it is ever asked.
+ */
+export interface FrameQuestion {
+  /** It stands now. */
+  asking: boolean;
+  /** It is said aloud as it comes: its own place, the caption, is in sight. */
+  said: boolean;
+  /** It came by the film's clock, and not by the visitor's hand on the slider. */
+  byClock: boolean;
+  /** The visitor's answer: one of the three, or (null) the frame. */
+  onStay: (body: number | null) => void;
+  /** The focus, or a mouse, has come to a body's answer or left it. */
+  onPoint: (by: 'focus' | 'mouse', body: number | null) => void;
 }
 
 /**
@@ -54,6 +73,9 @@ export function OrbitFigure({
   aimed,
   onTurned,
   onPlayPause,
+  question,
+  answers,
+  captionCell,
 }: {
   /** The stage: the section measures it, draws on its layers and finds a pointer's place in it. */
   stage: RefObject<HTMLDivElement | null>;
@@ -84,6 +106,12 @@ export function OrbitFigure({
   aimed: boolean;
   onTurned: (turned: boolean) => void;
   onPlayPause: () => void;
+  /** None where the picture is not the bodies' positions: no body there to stay with. */
+  question: FrameQuestion | null;
+  /** The question's answers: the section asks whether the focus stands on one as they go. */
+  answers: RefObject<HTMLDivElement | null>;
+  /** The caption itself: the section watches whether it is in sight. */
+  captionCell: RefObject<HTMLElement | null>;
 }) {
   /** The orbit can be taken in hand here. */
   const [turnable, setTurnable] = useState(false);
@@ -107,6 +135,15 @@ export function OrbitFigure({
     step: number.format(closest.step),
     seconds: oneDecimal.format(lightFilmSeconds(closest.step, steps)),
   });
+  /** The question stands under the picture now, in the caption's cell. */
+  const asking = act === 'window' && !!question?.asking;
+  /**
+   * The hint's room is kept on every plate at the frame, from the first render, so that its
+   * coming, when the engine that turns the orbit is ready, moves nothing beneath it. It is kept
+   * where the orbit will never be turned as well (a browser that draws no depth): an empty line
+   * under a caption costs less than everything beneath it moving when that is found out.
+   */
+  const hintRoom = !!plateStill && act === 'window';
   return (
     <figure className={styles.figure}>
       <div
@@ -180,20 +217,79 @@ export function OrbitFigure({
       </div>
       {/* Past the frame the caption is the label alone, for as long as the derived picture
         stands: the still that returns is the work, and needs none. Its line is kept. */}
-      <figcaption className={styles.caption}>
+      <figcaption ref={captionCell} className={styles.caption}>
         {act === 'beyond' ? (
           <span className={styles.label} data-shown={labelled} aria-hidden={!labelled}>
             {t.analysisNotWork}
           </span>
         ) : (
-          description
+          <>
+            {/* The caption's account of the window. Where the film has run on into the
+              question it gives way to it in sight, and keeps its room and its place for a
+              reader who is being read to: nothing is taken from under a screen reader. It
+              stands again as soon as the visitor takes the clock back into the record. */}
+            <div className={styles.account} data-given-way={asking || undefined}>
+              {description}
+              {turnable && act === 'window' ? (
+                <span className={styles.hint}>
+                  <span className={styles.hintPointer}>{t.orbitTurnHint}</span>
+                  <span className={styles.hintTouch}>{t.orbitTurnHintTouch}</span>
+                </span>
+              ) : hintRoom ? (
+                // The hint's room, until the orbit can be turned: its words are drawn from
+                // attributes, so the page does not hold them before they are true.
+                <span className={`${styles.hint} ${styles.hintRoom}`} aria-hidden="true">
+                  <span className={styles.hintPointer} data-line={t.orbitTurnHint} />
+                  <span className={styles.hintTouch} data-line={t.orbitTurnHintTouch} />
+                </span>
+              ) : null}
+            </div>
+            {question && plateStill ? (
+              <>
+                {/* The question the film runs on into: the label, since the account that
+                  carried it has given way; the question, in a paragraph of its own that is
+                  live before it has words, so it is said once as it comes and takes no focus
+                  to be heard; and its answers. It lies over the account in their one cell, so
+                  it takes no pointer until it holds the question: the account beneath it is
+                  text to be selected. */}
+                <div className={styles.put} data-put={asking || undefined}>
+                  {/* The label is for the eye: the account, which a reader still has, says it. */}
+                  <span className={styles.label} aria-hidden="true">
+                    {asking ? t.analysisNotWork : null}
+                  </span>
+                  <p
+                    id="orbit-ask"
+                    className={styles.ask}
+                    aria-live={question.said ? 'polite' : undefined}
+                  >
+                    {asking ? t.beyondAsk : null}
+                  </p>
+                  {asking ? (
+                    <Answers
+                      ref={answers}
+                      t={t}
+                      labelledBy="orbit-ask"
+                      onStay={question.onStay}
+                      onPoint={question.onPoint}
+                      unasked={question.byClock}
+                    />
+                  ) : null}
+                </div>
+                {/* Its room, laid out unseen in the same cell from the first: the words are
+                  drawn from attributes, so the page holds each of them once. */}
+                <div className={styles.askRoom} aria-hidden="true">
+                  <span className={styles.label} data-line={t.analysisNotWork} />
+                  <p className={styles.ask} data-line={t.beyondAsk} />
+                  <div className={styles.answers}>
+                    {['1', '2', '3', t.beyondFrame].map((label) => (
+                      <span key={label} className={styles.again} data-line={label} />
+                    ))}
+                  </div>
+                </div>
+              </>
+            ) : null}
+          </>
         )}
-        {turnable && act === 'window' ? (
-          <span className={styles.hint}>
-            <span className={styles.hintPointer}>{t.orbitTurnHint}</span>
-            <span className={styles.hintTouch}>{t.orbitTurnHintTouch}</span>
-          </span>
-        ) : null}
       </figcaption>
     </figure>
   );

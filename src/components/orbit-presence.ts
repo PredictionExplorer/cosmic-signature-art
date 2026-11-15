@@ -47,6 +47,29 @@ export function useOrbitPresence(section: RefObject<HTMLElement | null>) {
 }
 
 /**
+ * Whether any of a thing is in sight. The section is taller than a screen, and is in view while
+ * any of it shows: what is said aloud where it comes to stand (the question the film runs on
+ * into, docs/after-the-frame.md §8.7) is said only where its own place is on the screen, so a
+ * reader in the record below is not told of a question they are not at. Its own place, and not
+ * the picture's: on a phone on its side, or a page enlarged, the picture and what stands under
+ * it do not share a screen. A browser without IntersectionObserver is taken to show it.
+ */
+export function useInSight(thing: RefObject<HTMLElement | null>) {
+  const [inSight, setInSight] = useState(false);
+  useEffect(() => {
+    const node = thing.current;
+    if (!node || typeof IntersectionObserver === 'undefined') {
+      queueMicrotask(() => setInSight(true));
+      return;
+    }
+    const sight = new IntersectionObserver(([entry]) => setInSight(entry.isIntersecting));
+    sight.observe(node);
+    return () => sight.disconnect();
+  }, [thing]);
+  return inSight;
+}
+
+/**
  * Hears the plate's word for After the frame: the link beneath the work's still, which asks for
  * the orbit from the top of the page (src/lib/venue-events.ts). What it is to do is the
  * section's to say, as it stands when the word comes.
