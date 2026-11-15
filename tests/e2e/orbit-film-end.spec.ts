@@ -48,6 +48,13 @@ async function onItsPlate(page: Page, path: string) {
   return orbit;
 }
 
+/**
+ * A length as layout has it, to a thousandth of a pixel. A browser reports a box that stands at
+ * a fractional place through its own arithmetic: Firefox says 43.99999237 of a target that is
+ * 44 px tall.
+ */
+const laidOut = (length: number) => Math.round(length * 1000) / 1000;
+
 const answersOf = (orbit: Locator) => orbit.locator('figcaption [class*="answers"] button');
 const questionOf = (orbit: Locator) => orbit.locator('#orbit-ask');
 const sliderOf = (orbit: Locator) => orbit.getByRole('slider');
@@ -204,7 +211,7 @@ test.describe('where motion is welcome', () => {
       for (const answer of await answersOf(orbit).all()) {
         await expect(answer).toBeInViewport({ ratio: 1 });
         const box = (await answer.boundingBox())!;
-        expect(Math.min(box.width, box.height)).toBeGreaterThanOrEqual(44);
+        expect(laidOut(Math.min(box.width, box.height))).toBeGreaterThanOrEqual(44);
       }
       await expect(orbit.locator('figure [class*="stage"]')).toBeInViewport({ ratio: 1 });
       // Nothing has been entered: the film's own words, its slider at the end of its track, and
@@ -353,7 +360,7 @@ test('on the narrowest phone, in the longest answers, the question keeps to its 
     expect(box!.y).toBeGreaterThanOrEqual(cell.y);
     expect(box!.y + box!.height).toBeLessThanOrEqual(cell.y + cell.height + 0.5);
     expect(box!.x + box!.width).toBeLessThanOrEqual(320);
-    expect(Math.min(box!.width, box!.height)).toBeGreaterThanOrEqual(44);
+    expect(laidOut(Math.min(box!.width, box!.height))).toBeGreaterThanOrEqual(44);
   }
   const [one, two, three, frame] = boxes.map((box) => box!);
   expect([two.y, three.y]).toEqual([one.y, one.y]);
