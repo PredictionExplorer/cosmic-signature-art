@@ -1,6 +1,6 @@
 'use client';
 import { createContext, useContext, useEffect, useRef, type KeyboardEvent, type Ref } from 'react';
-import { PRESSES_KEPT, pressedTooSoon, type Press } from '@/lib/second-press';
+import { PRESSES_KEPT, SETTLE_MS, pressedTooSoon, type Press } from '@/lib/second-press';
 import styles from './orbit-score.module.css';
 
 /**
@@ -56,6 +56,7 @@ export function Word({
   onPoint,
   pressed,
   disabled = false,
+  unasked = false,
 }: {
   /** The word itself, where the section must know whether the focus stands on it. */
   ref?: Ref<HTMLButtonElement>;
@@ -70,6 +71,13 @@ export function Word({
   onPoint?: (by: 'focus' | 'mouse', on: boolean) => void;
   pressed?: boolean;
   disabled?: boolean;
+  /**
+   * The word came, or came to say this, by the clock and not by a press: where the film ran
+   * out (docs/after-the-frame.md §8.7). No press went before it for the guard to measure by,
+   * so a pointer on its way to what stood here a moment ago is not taken in its first moments.
+   * A key is always taken: the focus was moved there on purpose.
+   */
+  unasked?: boolean;
 }) {
   /** When the word became what it now says, on the clock a press is timed by. */
   const became = useRef(0);
@@ -86,6 +94,7 @@ export function Word({
       aria-pressed={pressed}
       aria-disabled={disabled || undefined}
       onClick={(event) => {
+        if (unasked && event.detail > 0 && performance.now() - became.current < SETTLE_MS) return;
         if (!tooSoon(event, became.current)) onClick();
       }}
       onKeyDown={oncePerPress}

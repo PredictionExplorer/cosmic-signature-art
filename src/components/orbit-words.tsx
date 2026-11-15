@@ -20,6 +20,12 @@ export type Offered =
       onGeneratorView: (() => void) | null;
       onBeyond: (() => void) | null;
       onTwin: (() => void) | null;
+      /**
+       * The film ran to its end by itself: Again where Pause stood, and the two words that
+       * join the row there, came by the film's clock and not by a press (orbit-word.tsx).
+       * Not where the visitor's own hand set the slider at the end: that was their act.
+       */
+      byClock: boolean;
     }
   | {
       act: 'beyond';
@@ -127,22 +133,41 @@ export function OrbitWords({
         />,
       );
     passing.push(
-      <Word key="clock" label={offered.clockWord} onClick={offered.onClock} />,
+      <Word
+        key="clock"
+        label={offered.clockWord}
+        onClick={offered.onClock}
+        unasked={offered.byClock}
+      />,
       <Word key="closest" label={t.toClosestApproach} onClick={offered.onClosest} />,
     );
     if (offered.onBeyond)
       staying.push(
-        <Word key="after" label={t.afterTheFrame} onClick={offered.onBeyond} pressed={false} />,
+        <Word
+          key="after"
+          label={t.afterTheFrame}
+          onClick={offered.onBeyond}
+          pressed={false}
+          unasked={offered.byClock}
+        />,
       );
     if (offered.onTwin)
       staying.push(
-        <Word key="twin" label={t.oneInATrillion} onClick={offered.onTwin} pressed={false} />,
+        <Word
+          key="twin"
+          label={t.oneInATrillion}
+          onClick={offered.onTwin}
+          pressed={false}
+          unasked={offered.byClock}
+        />,
       );
   }
   return (
     <div ref={row} className={styles.words}>
       <span className={styles.passing}>{passing}</span>
-      <span className={styles.staying}>{staying}</span>
+      <span className={styles.staying} data-staying="">
+        {staying}
+      </span>
     </div>
   );
 }

@@ -1,5 +1,5 @@
 'use client';
-import { Fragment, type ReactNode, type RefObject } from 'react';
+import { Fragment, type ReactNode, type Ref, type RefObject } from 'react';
 import type { Messages } from '@/lib/i18n/en';
 import { fill } from '@/lib/i18n/format';
 import { Word } from './orbit-word';
@@ -18,6 +18,63 @@ export function Sentences({ said, t }: { said: readonly string[]; t: Messages })
       <span className={styles.sentence}>{sentence}</span>
     </Fragment>
   ));
+}
+
+/**
+ * The answers to the question, in its order: one of the three, by the number it bears in the
+ * picture and in the record, or the frame. Pointing at a number rings its body. They stand
+ * under the question wherever it is asked: in the line's room past the frame, and under the
+ * picture where the film ran on into it (orbit-figure.tsx).
+ */
+export function Answers({
+  ref,
+  t,
+  labelledBy,
+  onStay,
+  onPoint,
+  unasked = false,
+}: {
+  /** The group itself, where the section must know whether the focus stands in it. */
+  ref?: Ref<HTMLDivElement>;
+  t: Messages;
+  /** The id of the question they answer. */
+  labelledBy: string;
+  /** The visitor's answer: one of the three, or (null) the frame. */
+  onStay: (body: number | null) => void;
+  /** The focus, or a mouse, has come to a body's answer or left it. */
+  onPoint: (by: 'focus' | 'mouse', body: number | null) => void;
+  /** They came by the clock, not by a press (orbit-word.tsx). */
+  unasked?: boolean;
+}) {
+  return (
+    // The venue's keys are not heard here (keys.tsx): the answers are 1, 2 and 3, and a digit
+    // typed at them, then Enter, would otherwise leave for the work of that number.
+    <div
+      ref={ref}
+      className={styles.answers}
+      role="group"
+      aria-labelledby={labelledBy}
+      data-keys-suppressed=""
+    >
+      {[0, 1, 2].map((body) => (
+        <Word
+          key={`stay-${body}`}
+          label={String(body + 1)}
+          name={fill(t.beyondStayBody, { body: body + 1 })}
+          onClick={() => onStay(body)}
+          onPoint={(by, on) => onPoint(by, on ? body : null)}
+          unasked={unasked}
+        />
+      ))}
+      <Word
+        key="stay-frame"
+        label={t.beyondFrame}
+        name={t.beyondStayFrame}
+        onClick={() => onStay(null)}
+        unasked={unasked}
+      />
+    </div>
+  );
 }
 
 /** Everything that can come to stand in the line's room past the frame. */
@@ -78,25 +135,7 @@ export function OrbitSaid({
           {line}
         </p>
         {onStay ? (
-          // In the order of the question: one of the three, by the number it bears in the
-          // picture and in the record, or the frame. Pointing at a number rings its body.
-          <div className={styles.answers} role="group" aria-labelledby="orbit-said">
-            {[0, 1, 2].map((body) => (
-              <Word
-                key={`stay-${body}`}
-                label={String(body + 1)}
-                name={fill(t.beyondStayBody, { body: body + 1 })}
-                onClick={() => onStay(body)}
-                onPoint={(by, on) => onPoint(by, on ? body : null)}
-              />
-            ))}
-            <Word
-              key="stay-frame"
-              label={t.beyondFrame}
-              name={t.beyondStayFrame}
-              onClick={() => onStay(null)}
-            />
-          </div>
+          <Answers t={t} labelledBy="orbit-said" onStay={onStay} onPoint={onPoint} />
         ) : null}
       </div>
       {/* The room: everything that can come to stand here, laid out unseen in the same

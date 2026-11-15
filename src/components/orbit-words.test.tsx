@@ -1,6 +1,6 @@
-import { cleanup, render, screen } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { createRef } from 'react';
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { messages } from '@/lib/i18n/messages';
 import { OrbitWords, type Offered } from './orbit-words';
 
@@ -15,6 +15,7 @@ const atTheWindow: Offered = {
   onGeneratorView: null,
   onBeyond: nothing,
   onTwin: nothing,
+  byClock: false,
 };
 const running: Offered = {
   act: 'beyond',
@@ -39,7 +40,11 @@ const word = (name: string) => screen.getByRole('button', { name });
 const words = (container: HTMLElement) =>
   [...container.querySelectorAll('button, a')].map((one) => one.textContent);
 
-afterEach(cleanup);
+afterEach(() => {
+  // A test that fakes the clock a press is timed by gives it back, whether or not it passed.
+  vi.useRealTimers();
+  cleanup();
+});
 
 describe('the words beside the line', () => {
   it('keeps a word that stays the same element from one act to the next', () => {
@@ -121,6 +126,65 @@ describe('the words beside the line', () => {
     expect(words(container)).toEqual([]);
     // The row keeps its two groups all the while: the stylesheet gives them their rows.
     expect(row.current?.children).toHaveLength(2);
+  });
+
+  it('does not take a pointer on a word that came by the clock, in its first moments', () => {
+    vi.useFakeTimers({ toFake: ['performance'] });
+    const pressed = { clock: 0, closest: 0, after: 0, twin: 0 };
+    const row = createRef<HTMLDivElement>();
+    // While the film plays the word is Pause, and the two that stay are not offered yet.
+    const playing: Offered = {
+      ...atTheWindow,
+      clockWord: t.pause,
+      onClock: () => pressed.clock++,
+      onClosest: () => pressed.closest++,
+      onBeyond: null,
+      onTwin: null,
+    };
+    const { rerender } = render(<OrbitWords row={row} t={t} offered={playing} />);
+    vi.advanceTimersByTime(5_000);
+    // The film runs out: Pause says Again in the same element, and the two words come.
+    const pause = word(t.pause);
+    rerender(
+      <OrbitWords
+        row={row}
+        t={t}
+        offered={{
+          ...playing,
+          clockWord: t.again,
+          onBeyond: () => pressed.after++,
+          onTwin: () => pressed.twin++,
+          byClock: true,
+        }}
+      />,
+    );
+    expect(word(t.again)).toBe(pause);
+    vi.advanceTimersByTime(100);
+    // A tenth of a second on, a pointer was on its way to what stood there before: no press
+    // went before these words for the guard to measure by, so none is taken yet.
+    fireEvent.click(word(t.again), { detail: 1 });
+    fireEvent.click(word(t.afterTheFrame), { detail: 1 });
+    fireEvent.click(word(t.oneInATrillion), { detail: 1 });
+    expect(pressed).toEqual({ clock: 0, closest: 0, after: 0, twin: 0 });
+    // The word the clock did not change is taken at once, and a key always is: the focus was
+    // moved there on purpose.
+    fireEvent.click(word(t.toClosestApproach), { detail: 1 });
+    fireEvent.click(word(t.again), { detail: 0 });
+    expect(pressed).toEqual({ clock: 1, closest: 1, after: 0, twin: 0 });
+    vi.advanceTimersByTime(400);
+    fireEvent.click(word(t.afterTheFrame), { detail: 1 });
+    fireEvent.click(word(t.oneInATrillion), { detail: 1 });
+    expect(pressed).toEqual({ clock: 1, closest: 1, after: 1, twin: 1 });
+  });
+
+  it('takes a pointer at once on a word that came by a press', () => {
+    vi.useFakeTimers({ toFake: ['performance'] });
+    let pressed = 0;
+    const row = createRef<HTMLDivElement>();
+    render(<OrbitWords row={row} t={t} offered={{ ...atTheWindow, onBeyond: () => pressed++ }} />);
+    vi.advanceTimersByTime(50);
+    fireEvent.click(word(t.afterTheFrame), { detail: 1 });
+    expect(pressed).toBe(1);
   });
 
   it('leaves out a word that is not offered, and dims Further on where it would save nothing', () => {

@@ -240,12 +240,85 @@
   opacity: calc(1 - var(--cover, 0));
   pointer-events: none;
 }
+/*
+  The bodies' numbers at the frame (§8.7) come with the question, over the venue's settling
+  time: an animation that runs once, so that the hand turning the orbit still moves the layer's
+  opacity itself, frame by frame. Where motion is unwelcome they are there at once: the
+  animation is given no time and is let run, so it is over as it begins. (The venue's Pause
+  holds every animation still: held at its first frame this one would leave the numbers unseen,
+  and held at no time it would begin when the Pause was lifted.) It keeps its name there, so
+  that lifting the Pause or the hush while the question stands begins no animation: the numbers
+  do not blink. (Lifted sooner after the question came than the settling time, they finish
+  coming from where that time would have them: a dip, not a blink.)
+*/
+.orbit[data-asked] .stage .layer[data-layer='names'] {
+  animation: numbers-come var(--t-sit) var(--ease-settle) backwards;
+}
+@keyframes numbers-come {
+  from {
+    opacity: 0;
+  }
+}
+:global(.motion-paused) .orbit[data-asked] .stage .layer[data-layer='names'],
+:global([data-theatre='hushed']) .orbit[data-asked] .stage .layer[data-layer='names'] {
+  animation-duration: 0s;
+  animation-play-state: running !important;
+}
 .caption {
   max-width: 40em;
   margin-top: 9px;
   font-size: var(--fs-control);
   line-height: 1.5;
   color: var(--muted);
+}
+/*
+  The caption's cell at the frame (docs/after-the-frame.md §8.7). Where the film runs on into
+  the question, the question stands here, directly under the picture, in place of the caption's
+  account: the label, the question, its four answers. Both are laid out in this one cell from
+  the first, the question unseen (.askRoom) until it is asked, so the cell is as tall as the
+  taller of them, in this language and at this width, and nothing beneath it moves when one
+  gives way to the other. The account takes the question's cell as its own (the first child
+  of the grid is laid over the second). Past the frame the caption is the label alone, as it
+  was.
+*/
+.orbit:not([data-beyond]) .caption {
+  display: grid;
+  align-items: start;
+}
+.orbit:not([data-beyond]) .caption > * {
+  grid-area: 1 / 1;
+  min-width: 0;
+}
+/* Given way to the question, the account leaves sight and keeps its room. It is not hidden
+   from a screen reader: one that is reading it when the film ends goes on reading it. */
+.account[data-given-way] {
+  opacity: 0;
+  pointer-events: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+.put:not([data-put]) {
+  pointer-events: none;
+}
+.askRoom {
+  visibility: hidden;
+  pointer-events: none;
+}
+.askRoom [data-line]::before {
+  content: attr(data-line);
+}
+/* The question, in the voice it is asked in past the frame: the book face, to be read. */
+.ask {
+  margin: 0;
+  padding-top: 9px;
+  font-family: var(--font-book);
+  font-style: italic;
+  line-height: 21px;
+  color: var(--type);
+  text-wrap: balance;
+}
+.askRoom .ask {
+  color: inherit;
 }
 /* How to take the orbit in hand, said once the browser can turn it: by pointer or by touch. */
 .hint {
@@ -255,6 +328,14 @@
 }
 .hintTouch {
   display: none;
+}
+/* The hint's room, kept from the first where the orbit may come to be turned: when the engine
+   is ready the hint stands in it, and nothing beneath the caption moves. */
+.hintRoom {
+  visibility: hidden;
+}
+.hintRoom [data-line]::before {
+  content: attr(data-line);
 }
 @media (pointer: coarse) {
   .hintPointer {

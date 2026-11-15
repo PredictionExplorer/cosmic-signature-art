@@ -51,6 +51,48 @@ async function paused(orbit: Locator) {
   if (await pause.isVisible()) await pause.click();
 }
 
+test('the hint comes into room kept for it: nothing beneath the caption moves', async ({
+  page,
+  isMobile,
+}) => {
+  // How far the score stands beneath the picture, read on every frame from the first: the
+  // caption between them is all that could change it, whatever the page does above.
+  await page.addInitScript(() => {
+    const gaps = new Set<number>();
+    const sample = () => {
+      const picture = document.querySelector('#orbit figure [class*="stage"]');
+      const score = document.querySelector('#orbit [class*="strip"]');
+      // Once the page stands: a section still streamed in unseen has no size to read.
+      if (picture && score && picture.getBoundingClientRect().height > 0) {
+        const gap = score.getBoundingClientRect().top - picture.getBoundingClientRect().bottom;
+        gaps.add(Math.round(gap * 2) / 2);
+      }
+    };
+    Object.assign(window, { __beneath: gaps, __sampleBeneath: sample });
+    const frame = () => {
+      sample();
+      requestAnimationFrame(frame);
+    };
+    requestAnimationFrame(frame);
+  });
+  const orbit = await orbitSection(page);
+  const depth = await inDepth(page, orbit);
+  // The hint is said once the browser can turn the orbit, some time after the film has begun:
+  // the pointer's words on a desk, the finger's on a phone. Where no engine draws the orbit in
+  // depth it never comes, and its room is kept all the same.
+  if (depth)
+    await expect(orbit.getByText(isMobile ? t.orbitTurnHintTouch : t.orbitTurnHint)).toBeVisible();
+  else await page.waitForTimeout(2_000);
+  const gaps = await page.evaluate(() => {
+    const held = window as unknown as { __beneath: Set<number>; __sampleBeneath: () => void };
+    // Once more, as it is read: the hint may have come since the last frame was drawn, and a
+    // busy runner's frames are far apart.
+    held.__sampleBeneath();
+    return [...held.__beneath];
+  });
+  expect(gaps, 'the score stood one distance beneath the picture throughout').toHaveLength(1);
+});
+
 test('a hand turns the orbit in depth, and lets it go back to the generator’s view', async ({
   page,
 }, info) => {

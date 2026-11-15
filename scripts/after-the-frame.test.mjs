@@ -644,6 +644,31 @@ test('every sentence After the frame can say is true of its work, on Light and o
   assert.equal(Math.round((asked[28] + asked[29]) / 2), 51);
 });
 
+test('where the film leaves each body is where the path past it takes it up', () => {
+  // The question the film runs on into (docs/after-the-frame.md §8.7) numbers each body where
+  // the film's last frame drew it, on the picture as the film left it; its answer begins the
+  // path's first sample. A body that stood elsewhere there would leave its number's side as
+  // the answer was given. Each copy of each body, on the 3,456 px plate.
+  const apart = [];
+  let asked = 0;
+  for (let id = 0; id < WORKS; id++) {
+    const { frame, framed, path } = workOf(id);
+    if (frame.projection !== 'position' || path.samples <= 1) continue;
+    asked += 1;
+    assert.equal(framed.copies, path.copies, `№ ${id}: one count of copies`);
+    const last = framed.count * framed.copies * 6;
+    for (let drawn = 0; drawn < framed.copies * 3; drawn++) {
+      const off = Math.hypot(
+        framed.pixels[last + drawn * 2] - path.pixels[drawn * 2],
+        framed.pixels[last + drawn * 2 + 1] - path.pixels[drawn * 2 + 1],
+      );
+      if (!(off <= 1)) apart.push(`№ ${id}, body ${(drawn % 3) + 1}: ${off.toFixed(2)} px apart`);
+    }
+  }
+  assert.equal(asked, 58);
+  assert.equal(apart.length, 0, apart.join('\n'));
+});
+
 test('every sentence of a picture that stays with one body is true of its work, on Light and on Ink', () => {
   const kinds = { alone: [], parted: [], returned: [], adrift: [], away: [], record: [] };
   const lengths = [];

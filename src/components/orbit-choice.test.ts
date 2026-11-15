@@ -1,7 +1,14 @@
 import { describe, expect, it } from 'vitest';
 import type { FramedSamples } from '@/lib/physics/framing';
 import { recordingContext } from '../../tests/canvas-support';
-import { drawChoice, numberPlaces, pressTargets, pressedBody, type Target } from './orbit-choice';
+import {
+  drawChoice,
+  numberBodies,
+  numberPlaces,
+  pressTargets,
+  pressedBody,
+  type Target,
+} from './orbit-choice';
 import { MATERIALS, platePicture, type Material } from './orbit-picture';
 
 const far = ([ax, ay]: readonly number[], [bx, by]: readonly number[]) =>
@@ -255,6 +262,45 @@ describe('the picture a visitor chooses in', () => {
       [200, 300, picture.reach(300) + 8],
     ]);
     expect(names.named('fillText')[0].set.fillStyle).toBe(MATERIALS.ink.mark);
+  });
+
+  it('draws the numbers by themselves, where the question stands at the frame', () => {
+    // The window's drawing is left as the film left it: nothing but the numbers' own layer is
+    // given, and nothing is drawn on it until it is told whom to ring.
+    const names = recordingContext();
+    const picture = platePicture(framed, frame, 'ink', 400, 400, 2);
+    const numbers = numberBodies({
+      picture,
+      names: names.context,
+      width: 400,
+      height: 400,
+      ratio: 2,
+      masses,
+      font: 'Plex Mono',
+      ground: 'rgb(241 235 223)',
+    });
+    expect(names.calls).toEqual([]);
+    numbers.ring([]);
+    expect(names.named('fillText').map((call) => call.args[0])).toEqual(['1', '2', '3']);
+    expect(names.named('fillText')[0].set.fillStyle).toBe(MATERIALS.ink.mark);
+    expect(names.named('arc')).toEqual([]);
+    // They stand where the question's own picture puts them: one way of placing a number.
+    const { names: asked, choice } = chosen('ink');
+    choice.ring([]);
+    expect(names.named('fillText').map((call) => call.args)).toEqual(
+      asked.named('fillText').map((call) => call.args),
+    );
+    // A body pointed at by its answer is ringed, and the layer is left bare when the question goes.
+    names.clear();
+    numbers.ring([1]);
+    expect(names.named('arc')).toHaveLength(1);
+    names.clear();
+    numbers.clear();
+    expect(names.calls).toEqual([
+      expect.objectContaining({ name: 'clearRect', args: [0, 0, 400, 400] }),
+    ]);
+    // What a pointer may press, when it may: on paper the first copy of each body, and its number.
+    expect(numbers.targets).toHaveLength(3 + 3);
   });
 
   it('finds a press on a body’s light, on any copy of it, or on its number', () => {

@@ -293,9 +293,14 @@ export function useBeyond({
     awaitPath: () => setAwaited(true),
     /** The path is known to hold nothing to perform: the wait is over. */
     stopAwaiting: () => setAwaited(false),
-    /** The visitor's answer: stay with one of the three, or (null) with the frame. Time resumes. */
+    /**
+     * The visitor's answer: stay with one of the three, or (null) with the frame. Time resumes.
+     * Given at the frame, where the film ran on into the question (§8.7), it is also what asks
+     * for After the frame: the pictures are read in the material it was given in.
+     */
     stay: (body: number | null) => {
       handOn.current = true;
+      setWanted(material);
       setWorthIt(false);
       setLine(null);
       act({ type: 'stay', body });

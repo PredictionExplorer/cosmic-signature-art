@@ -44,7 +44,7 @@ afterEach(() => vi.unstubAllGlobals());
  */
 function staged(
   at: { picture: [number, number]; beneath: [number, number]; words: [number, number] },
-  reducedMotion = false,
+  still = false,
 ) {
   const section = document.createElement('section');
   section.style.scrollMarginTop = '48px';
@@ -56,7 +56,7 @@ function staged(
     wordsRow: { current: laid(document.createElement('div'), ...at.words) },
   };
   const hook = renderHook(
-    ({ run }: { run: number | null }) => usePictureRoom({ ...refs, run, reducedMotion }),
+    ({ run }: { run: number | null }) => usePictureRoom({ ...refs, run, still }),
     { initialProps: { run: null as number | null } },
   );
   return { ...hook, section, refs, room: () => hook.result.current };

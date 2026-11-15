@@ -3,14 +3,16 @@
 Read this before building anything for cosmicsignature.art. Every change answers to it. When a
 plan, a design or a pull request does not move the venue toward what is written here, it waits.
 
-The owner set these goals in October and November 2026. They are quoted where the words are the
-owner's own.
+The owner set these goals in October and November 2026, and restated them on 14 November. They
+are quoted where the words are the owner's own.
 
 ## The goal
 
 **The best and most amazing website on the internet.** "Not just astonishing… literally the best
 and most amazing website on the internet." "The best web designers in the world need to be
 absolutely blown away by this site… better than whatever the best web designers can create."
+"A world-class art gallery. It has to be absolutely amazing. The website itself must be a true
+work of art. It must be an incredible work of art."
 
 It is three places at once, in this order of importance:
 
@@ -28,6 +30,9 @@ It is three places at once, in this order of importance:
 It must also teach how such a site is built: "so well-made that it could be used as a teaching
 tool to teach students how to make incredible websites", with "the best web design and web
 development principles… best practices everywhere", and a codebase that is world-class too.
+That is kept by looking, not by assuming: "auditing the site… to make sure that everything is
+world-class and that we're following the best practices for everything everywhere" is part of
+the work, done again whenever there is a chance, and never once and for all.
 
 ## What is unique, and must be said well
 

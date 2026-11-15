@@ -29,7 +29,7 @@ import { beyondLine, longestBeyondLine, performBeyond, worthGoingOn } from './or
 import { useBeyond } from './orbit-beyond-state';
 import type { BeyondPath } from '@/lib/physics/beyond';
 import { STRIDE, useOrbitDerivation, type Derivation } from './orbit-derivation';
-import { useOrbitPresence, usePlateWord } from './orbit-presence';
+import { useInSight, useOrbitPresence, usePlateWord } from './orbit-presence';
 import { OrbitProofAct } from './orbit-record';
 import { usePictureRoom } from './orbit-room';
 import type { Sculpture } from './orbit-sculpture';
@@ -38,7 +38,7 @@ import { performTwin, twinLine } from './orbit-twin';
 import { useTwin } from './orbit-twin-state';
 import { performWindow, playingLine, windowLine, windowScore } from './orbit-window';
 import { derivedSummary, progressText } from './orbit-proof';
-import { drawChoice, type Choice } from './orbit-choice';
+import { drawChoice, numberBodies, type Choice, type Numbers } from './orbit-choice';
 import { useWindowClock } from './orbit-clock';
 import { usePicturePresses, useRing } from './orbit-choosing';
 import { OrbitFigure } from './orbit-figure';
@@ -72,6 +72,12 @@ const canTurn = () => typeof WebGL2RenderingContext !== 'undefined';
  * the film left it, or one of the three, which then holds still in the picture. It runs until
  * what that picture shows resolves; then the still alone, a silence, and one line of what
  * happened (orbit-beyond.ts).
+ *
+ * The film runs on into that question (docs/after-the-frame.md §8.7). Where the recorded
+ * window's film has played out, or the visitor's hand has set the slider on its last notch, the
+ * question stands at the frame with no word pressed: under the picture, in the caption's own
+ * cell, with each body's number beside it. Nothing scrolls, changes size, leaves the page or
+ * takes the focus for it. The answer is the press, and brings everything a press may bring.
  *
  * In the hand (docs/first-light.md §14): where the browser can draw it, the orbit can be taken in
  * hand and turned in depth, and given back to the generator's view (orbit-sculpture.tsx). The
@@ -143,6 +149,18 @@ export function OrbitScore({
    */
   const names = useRef<HTMLCanvasElement>(null);
   const choice = useRef<Choice | null>(null);
+  /**
+   * The question at the frame (§8.7): its answers, under the picture, and the bodies' numbers
+   * as the window's drawing last laid them out, drawn only while the question stands.
+   */
+  const answers = useRef<HTMLDivElement>(null);
+  const captionCell = useRef<HTMLElement>(null);
+  const numbers = useRef<Numbers | null>(null);
+  /**
+   * The numbers as they stand drawn on their layer, by the bodies ringed with them; none while
+   * the layer is bare, as one just laid out is.
+   */
+  const numbersDrawn = useRef<string | null>(null);
   const tooSoon = usePresses();
   const events = useRef<HTMLCanvasElement>(null);
   const slider = useRef<HTMLInputElement>(null);
@@ -158,7 +176,28 @@ export function OrbitScore({
   const film = lightFilmDuration(steps);
   /** The film's pace: steps of the window per second of the Light film. */
   const pace = steps / film;
-  const clock = useWindowClock({ film, still });
+  /** Which bodies are pointed at while the visitor chooses: the drawing rings them. */
+  const ring = useRing();
+  const { ringed, point, unpoint } = ring;
+  /**
+   * The question at the frame is about to go: the clock is taken from the film's end, or the
+   * stage is given to something else. Its answers go with it; and where the window will stand
+   * whole no longer (`wordsGo`), so do the two words that are offered only while it does. A
+   * focus that stood on any of them is handed to the line first, while the word is still there
+   * to ask (orbit-words.tsx has the rule), and no body stays ringed for an answer that is gone.
+   */
+  const leaveQuestion = (wordsGo = false) => {
+    const active = document.activeElement;
+    const onAnswer = !!active && !!answers.current?.contains(active);
+    const onWordThatGoes =
+      wordsGo &&
+      !!active &&
+      !!wordsRow.current?.contains(active) &&
+      !!active.closest('[data-staying]');
+    if (onAnswer || onWordThatGoes) telling.current?.focus({ preventScroll: true });
+    unpoint();
+  };
+  const clock = useWindowClock({ film, still, onTake: leaveQuestion });
   const number = useMemo(() => new Intl.NumberFormat(locale), [locale]);
   const oneDecimal = useMemo(
     () => new Intl.NumberFormat(locale, { minimumFractionDigits: 1, maximumFractionDigits: 1 }),
@@ -240,11 +279,26 @@ export function OrbitScore({
     beneath,
     wordsRow,
     run,
-    reducedMotion,
+    still,
   });
-  /** Which bodies are pointed at while the visitor chooses: the drawing rings them. */
-  const ring = useRing();
-  const { ringed, point, unpoint } = ring;
+  /**
+   * The film has run on into the question (§8.7): the window stands at its end because its film
+   * played out or the visitor's hand set it there, the path past it is known, and the work is
+   * one that asks whom to stay with. Not where it stands whole for another reason: drawn at
+   * once where motion is unwelcome, found there by a tab that came back, or brought back from
+   * past the frame. It is no state of After the frame: nothing has been entered, and it stands
+   * for as long as its reasons do.
+   */
+  const asking =
+    state.phase === 'derived' &&
+    !beyond &&
+    !twin &&
+    !awaited &&
+    canGoBeyond &&
+    past.asks &&
+    (clock.end === 'played' || clock.end === 'hand');
+  /** The question's own place is on the screen: only then is it said aloud as it comes. */
+  const captionInSight = useInSight(captionCell);
 
   // The changes of what stands on the stage. Each follows the visitor's own act, and each says
   // what must leave with it: the ring, the twin, the words' place on the page.
@@ -255,9 +309,9 @@ export function OrbitScore({
    * to the question.
    */
   const startBeyond = (waited: boolean, carried: BeyondPath | null, focus: boolean) => {
+    leaveQuestion();
     room.arrive(waited ? 'if-here' : 'bring');
     twinAct.leave();
-    unpoint();
     past.ask(carried, focus);
   };
   /** After the frame, asked for now: by its word here, by the plate's, or again. */
@@ -283,13 +337,29 @@ export function OrbitScore({
     past.stay(body);
   };
   /**
+   * The answer given at the frame, where the film ran on into the question. It is the visitor's
+   * press, so it brings what a press may: After the frame is entered with the answer already
+   * given, the section composes itself about the picture, and the page may come to it. The
+   * answers go with that, and so do the slider, the clock's words and the orbit in the hand: a
+   * focus on any of them is kept in the section first, so that it is never on the page. Then,
+   * wherever it stood (on one of the two words that stay, too), it is handed to the line once
+   * the line says whom the picture stays with: that is how the answer is said to a screen
+   * reader, as it is past the frame (orbit-beyond-state.ts).
+   */
+  const answer = (body: number | null) => {
+    const active = document.activeElement;
+    if (active && section.current?.contains(active) && !active.closest('[data-staying]'))
+      section.current.focus({ preventScroll: true });
+    stay(body);
+  };
+  /**
    * One part in a trillion: After the frame gives way, and the twin is followed if it is new.
    * Asked for by a word that goes as it is pressed, the focus that stood on it (`focus`) goes
    * to the line.
    */
   const goTwin = (focus = false) => {
     if (beyond) room.keepWords();
-    unpoint();
+    leaveQuestion();
     past.giveWay();
     twinAct.go(focus);
   };
@@ -323,6 +393,19 @@ export function OrbitScore({
     }
     setTurned(now);
   };
+
+  /**
+   * The numbers' layer as it should stand at the frame: the three numbers, or bare. It is
+   * drawn only where it does not already stand so, and only a layer that was drawn on is
+   * cleared: a window that asks nothing draws exactly what it did.
+   */
+  const numbered = useEffectEvent(() => {
+    const wanted = asking && numbers.current ? ringed.join(' ') : null;
+    if (wanted === numbersDrawn.current) return;
+    if (wanted === null) numbers.current?.clear();
+    else numbers.current?.ring(ringed);
+    numbersDrawn.current = wanted;
+  });
 
   // The drawing: trails accumulate, the bodies ride on a layer above, and the score beneath
   // carries the three separations with the published events. On the plate the drawing lies over
@@ -366,6 +449,8 @@ export function OrbitScore({
     const easel = { ...sheet, picture, painter };
     clock.forDrawing.laid(null);
     choice.current = null;
+    numbers.current = null;
+    numbersDrawn.current = null;
 
     // The question. The three wait where the film left them, each with its number, until the
     // visitor says whom to stay with. Nothing plays.
@@ -455,6 +540,17 @@ export function OrbitScore({
         onEnd: clock.forDrawing.ended,
       }),
     );
+    // The bodies' numbers, for the question at the frame: laid out with the window, since every
+    // drawing sizes their layer and wipes it, and drawn only while the question stands.
+    if (picture.kind === 'plate') {
+      numbers.current = numberBodies({
+        ...easel,
+        masses: result.masses,
+        font: sheet.face(),
+        ground: on?.still.tone ?? 'transparent',
+      });
+      numbered();
+    }
     return () => cancelAnimationFrame(frame.current);
   });
 
@@ -476,10 +572,12 @@ export function OrbitScore({
       twin,
     ],
   );
-  // The ring moves without the picture being drawn again: the numbers' layer alone is.
+  // The ring moves without the picture being drawn again: the numbers' layer alone is. So do
+  // the numbers at the frame come and go, with the question: no canvas is sized for them.
   useEffect(() => {
     choice.current?.ring(ringed);
-  }, [ringed]);
+    numbered();
+  }, [ringed, asking]);
   // What a press on the picture means while the visitor chooses. After the drawing's effects,
   // on purpose: the picture is one to press from when it stands drawn (orbit-choosing.ts).
   const { hand, renew } = usePicturePresses({
@@ -518,7 +616,7 @@ export function OrbitScore({
     }
     section.current?.scrollIntoView({
       block: 'start',
-      behavior: reducedMotion ? 'instant' : 'smooth',
+      behavior: still ? 'instant' : 'smooth',
     });
     // Neither a path that could not be carried, nor one a failed derivation will never send,
     // is waited for.
@@ -655,6 +753,7 @@ export function OrbitScore({
             onGeneratorView: turned ? () => sculpture.current?.back() : null,
             onBeyond: canGoBeyond && clock.finished ? goBeyond : null,
             onTwin: derivedFate && clock.finished && placed ? () => goTwin() : null,
+            byClock: clock.end === 'played' || clock.end === 'late',
           };
 
   return (
@@ -674,6 +773,8 @@ export function OrbitScore({
         data-fate={fate.phase === 'derived' ? fate.fate.outcome : undefined}
         data-beyond={beyond ? phase : undefined}
         data-kept={keptOn !== null ? keptOn + 1 : undefined}
+        data-ended={clock.end ?? undefined}
+        data-asked={asking || undefined}
         data-twin={
           twin
             ? twin.phase === 'ready'
@@ -724,6 +825,19 @@ export function OrbitScore({
           aimed={ring.aiming}
           onTurned={orbitTurned}
           onPlayPause={clock.playPause}
+          question={
+            past.bodiesDrawn
+              ? {
+                  asking,
+                  said: captionInSight,
+                  byClock: clock.end === 'played',
+                  onStay: answer,
+                  onPoint: (by, body) => point(by === 'focus' ? 'focus' : 'hover', body),
+                }
+              : null
+          }
+          answers={answers}
+          captionCell={captionCell}
         />
         <div ref={beneath} className={styles.score}>
           <div className={styles.strip}>
@@ -732,8 +846,20 @@ export function OrbitScore({
               <OrbitSlider
                 slider={slider}
                 frames={lightFilmFrames(steps)}
+                startsAt={
+                  clock.untouched || clock.atEnd
+                    ? lightFilmFrames(steps) - 1
+                    : Math.min(
+                        lightFilmFrames(steps) - 1,
+                        Math.floor((clock.state.seconds * lightFilmFrames(steps)) / film + 1e-9),
+                      )
+                }
                 label={t.orbitTimeLabel}
-                valueText={standsAt(clockStep, clock.state.seconds)}
+                valueText={
+                  clock.atEnd ? standsAt(steps, film) : standsAt(clockStep, clock.state.seconds)
+                }
+                describedBy={asking ? 'orbit-ask' : undefined}
+                atEnd={clock.standsAtEnd}
                 disabled={awaited}
                 onScrub={clock.scrub}
               />

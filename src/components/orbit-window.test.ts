@@ -161,7 +161,8 @@ describe('the window, performed', () => {
       slider: { current: document.createElement('input') },
       sculpture: { current: { at: (step) => done.push(`depth ${step}`) } },
       say: (clock) => said.push(clock),
-      onEnd: () => done.push('ended'),
+      onEnd: (leapt) =>
+        done.push(`ended, its last frame passing over ${leapt.toFixed(2)} s of film`),
       ...over,
     };
     const scene = performWindow(stage);
@@ -266,10 +267,42 @@ describe('the window, performed', () => {
     since();
     nextFrame(100);
     expect(stage.transport.current).toEqual({ kind: 'resting', seconds: film });
-    expect(since().at(-1)).toBe('ended');
+    // It ends with how much of the film its last frame passed over: a frame's worth is the film
+    // watched, and a second or more is a leap to where it would be (orbit-clock.ts).
+    expect(since().at(-1)).toBe('ended, its last frame passing over 0.05 s of film');
     // Said though a quarter of a second had not passed: the end is not left unsaid.
     expect(said.at(-1)).toEqual({ kind: 'resting', seconds: film });
     expect(frames.size).toBe(0);
+  });
+
+  it('measures the end by the film passed over, not by how long the last frame took', () => {
+    // Watched to its last 0.4 s, then a frame that stalls for three seconds.
+    const watched = staged('plate', { kind: 'playing', seconds: film - 0.4, slowAt: null });
+    nextFrame(3_000);
+    expect(watched.since().at(-1)).toBe('ended, its last frame passing over 0.40 s of film');
+    // A tab that comes back twenty-five seconds on, to a film it left at its tenth second.
+    const left = staged('plate', { kind: 'playing', seconds: 10, slowAt: null });
+    nextFrame(25_000);
+    expect(left.since().at(-1)).toBe(
+      `ended, its last frame passing over ${(film - 10).toFixed(2)} s of film`,
+    );
+  });
+
+  it('counts film drawn while the page was hidden as passed over unseen', () => {
+    // A browser that still sends a hidden page its frames, a second and more apart: the film
+    // goes on in hops that nobody sees, and the hop that ends it is a short one.
+    const hidden = vi.spyOn(document, 'hidden', 'get').mockReturnValue(false);
+    const { since } = staged('plate', { kind: 'playing', seconds: film - 3.5, slowAt: null });
+    nextFrame(16);
+    hidden.mockReturnValue(true);
+    nextFrame(1_000);
+    nextFrame(2_000);
+    nextFrame(1_000);
+    // All but the first sixtieth of those three and a half seconds.
+    expect(since().at(-1)).toBe(
+      `ended, its last frame passing over ${(3.5 - 0.016).toFixed(2)} s of film`,
+    );
+    hidden.mockRestore();
   });
 
   it('keeps time only in view, and only while the clock plays', () => {

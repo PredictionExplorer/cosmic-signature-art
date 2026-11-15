@@ -15,6 +15,10 @@ import { MATERIALS, type Picture } from './orbit-picture';
   that a number reads on any ground. Where they stand and what a pointer may press are worked
   out once, without a canvas (`numberPlaces`, `pressTargets`); the numbers' layer alone is drawn
   again as the visitor points (orbit-choosing.ts).
+
+  The numbers are drawn by themselves too (`numberBodies`): where the film has run out and the
+  question stands at the frame (§8.7), the window's own drawing is left exactly as the film left
+  it, and only the numbers' layer is drawn on.
 */
 
 /** A body's number beside it, in CSS pixels. */
@@ -179,23 +183,52 @@ export interface Choice {
   pressed(x: number, y: number, finger: boolean): ReturnType<typeof pressedBody>;
 }
 
+/** What the bodies' numbers are drawn with: the picture, and their own canvas. */
+export type NumberStage = Omit<ChoiceStage, 'painter' | 'mark'>;
+
+/** The bodies' numbers, on their own layer. */
+export interface Numbers {
+  /** The layer drawn again, alone: the three numbers, with these bodies ringed in every copy. */
+  ring(bodies: readonly number[]): void;
+  /** The layer left bare. */
+  clear(): void;
+  /** What a pointer may press for each body (`pressTargets`). */
+  targets: Target[];
+}
+
+/** Where a body stands when the film has left it, in the picture's device pixels. */
+const left =
+  (picture: Picture) =>
+  (drawn: number): [number, number] => [
+    picture.x(picture.last, drawn),
+    picture.y(picture.last, drawn),
+  ];
+
 /**
  * Draws the picture a visitor chooses in: the recorded window whole over its still, and the
  * three bodies where the film left them. The numbers are drawn when it is first told whom to
  * ring (`ring`), and again, alone, whenever that changes.
  */
 export function drawChoice(stage: ChoiceStage): Choice {
-  const { picture, painter, mark, names, width, height, ratio, masses, font, ground } = stage;
+  const { picture, painter, mark, width, height } = stage;
+  if (picture.last > 0) painter.strokes(0, picture.last);
+  mark.clearRect(0, 0, width, height);
+  painter.lights(left(picture));
+  const { ring, targets } = numberBodies(stage);
+  return { ring, pressed: (x, y, finger) => pressedBody(targets, x, y, finger) };
+}
+
+/**
+ * The three bodies' numbers, each beside its body where the film left it. Nothing is drawn
+ * until it is told whom to ring (`ring`); nothing but the numbers' layer is ever drawn on, and
+ * no canvas is sized.
+ */
+export function numberBodies(stage: NumberStage): Numbers {
+  const { picture, names, width, height, ratio, masses, font, ground } = stage;
   const ink = picture.material === 'ink';
   const tone = ink ? MATERIALS.ink.mark : MATERIALS.light.mark;
   const size = NUMBER_SIZE * ratio;
-  const at = (drawn: number): [number, number] => [
-    picture.x(picture.last, drawn),
-    picture.y(picture.last, drawn),
-  ];
-  if (picture.last > 0) painter.strokes(0, picture.last);
-  mark.clearRect(0, 0, width, height);
-  painter.lights(at);
+  const at = left(picture);
 
   const centres = Array.from({ length: picture.drawn }, (_, drawn) => at(drawn));
   /** How far a body's light reaches, or the radius of its outline on paper… */
@@ -234,5 +267,5 @@ export function drawChoice(stage: ChoiceStage): Choice {
       names.fillText(text, nx, ny);
     });
   };
-  return { ring, pressed: (x, y, finger) => pressedBody(targets, x, y, finger) };
+  return { ring, clear: () => names.clearRect(0, 0, width, height), targets };
 }

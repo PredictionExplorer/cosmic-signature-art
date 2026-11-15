@@ -157,8 +157,12 @@ export interface WindowStage {
   sculpture: { current: { at(step: number): void } | null };
   /** Says where the clock stands: a few times a second while it runs, and at each act. */
   say: (clock: Clock) => void;
-  /** The clock has run to the window's end. */
-  onEnd: () => void;
+  /**
+   * The clock has run to the window's end, having passed over `leapt` seconds of the film since
+   * it was last drawn in sight: a frame's worth where it was watched, and more where a frame
+   * came late or the page was hidden.
+   */
+  onEnd: (leapt: number) => void;
 }
 
 /**
@@ -227,6 +231,12 @@ export function performWindow(stage: WindowStage): WindowScene {
     cancelAnimationFrame(frame.current);
     if (!stage.inView || transport.current.kind !== 'playing') return;
     let last = performance.now();
+    /**
+     * Where the film stood when it was last drawn in sight. A hidden page's frames, where a
+     * browser still sends them (Firefox does, a second and more apart), are drawn for nobody:
+     * the film they pass over is passed over unseen, with the last frame's.
+     */
+    let seen = transport.current.seconds;
     const tick = (now: number) => {
       // The film's own clock: a frame that comes late, or a tab that comes back, finds the
       // drawing where the film would be.
@@ -237,9 +247,10 @@ export function performWindow(stage: WindowStage): WindowScene {
       const ended = transport.current.kind !== 'playing';
       speak(now, ended);
       if (ended) {
-        stage.onEnd();
+        stage.onEnd(transport.current.seconds - seen);
         return;
       }
+      if (!document.hidden) seen = transport.current.seconds;
       frame.current = requestAnimationFrame(tick);
     };
     frame.current = requestAnimationFrame(tick);

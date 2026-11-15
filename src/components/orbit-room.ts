@@ -24,7 +24,7 @@ export function usePictureRoom({
   beneath,
   wordsRow,
   run,
-  reducedMotion,
+  still,
 }: {
   section: RefObject<HTMLElement | null>;
   /** The picture. */
@@ -35,7 +35,11 @@ export function usePictureRoom({
   wordsRow: RefObject<HTMLDivElement | null>;
   /** Which performance past the frame stands, by its count; null at the frame. */
   run: number | null;
-  reducedMotion: boolean;
+  /**
+   * Motion is unwelcome (the system's setting, the venue's Pause, or the hush): the page is
+   * put at the picture at once, and never glided to it.
+   */
+  still: boolean;
 }) {
   const composing = useRef(0);
   /** Where the words stood as the visitor left After the frame, so they stay under the hand. */
@@ -121,10 +125,10 @@ export function usePictureRoom({
       if (!at) return;
       window.scrollTo({
         top: window.scrollY + at.picture.top - at.head - BENEATH_HEAD,
-        behavior: reducedMotion ? 'instant' : 'smooth',
+        behavior: still ? 'instant' : 'smooth',
       });
     };
-    if (reducedMotion) {
+    if (still) {
       bring();
       return;
     }
