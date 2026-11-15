@@ -56,8 +56,9 @@ export function hangOffset(
 /**
  * What a card plays under the lease, always a hash-verified clip. Ink: on a desk the settling
  * clip, the film's own final eight seconds, which ends on the still; on a phone's budget the
- * 8 s excerpt. Light: its settling clip everywhere, since at under 400 KB it is lighter than
- * Ink's excerpt. Light moves as Ink does (third-physics-phase-d.md §2).
+ * 8 s excerpt. Light: its settling clip everywhere, since at most 568 KB (its card rung at most
+ * 200 KB) it is lighter than Ink's excerpt. The card loads the clip's smallest rung as wide as
+ * itself (collection-preview.tsx). Light moves as Ink does (third-physics-phase-d.md §2).
  */
 export function sequenceFilm(
   media: ArtInterpretation | undefined,

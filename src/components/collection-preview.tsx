@@ -4,7 +4,7 @@ import { useEffect, useEffectEvent, useRef, useState, type CSSProperties } from 
 import type { ArtFilm, ArtInterpretation } from '@/lib/art/types';
 import { getPlateGround } from '@/lib/art/plate-records';
 import type { PreviewFailure } from './collection-motion';
-import { stillSourceSet } from '@/lib/art/types';
+import { filmSourceFor, stillSourceSet } from '@/lib/art/types';
 import { clock } from '@/lib/i18n/format';
 
 /** The last frame rests this long before the excerpt fades back to its still (--t-hold). */
@@ -156,6 +156,11 @@ function PreviewVideo({
   const [hasFrame, setHasFrame] = useState(false);
   const reportFailure = useEffectEvent(onFailure);
   const reportEnded = useEffectEvent(() => onEnded?.());
+  // The card's own size picks the encode, measured once as the lease starts: the smallest rung
+  // as wide as the box in device pixels, else the clip. A box resized mid-film keeps its source.
+  const source = useEffectEvent((player: HTMLVideoElement) =>
+    filmSourceFor(film, player.getBoundingClientRect().width * (window.devicePixelRatio || 1)),
+  );
 
   useEffect(() => {
     const player = video.current;
@@ -216,7 +221,7 @@ function PreviewVideo({
     player.addEventListener('seeked', reveal);
     player.addEventListener('error', mediaError);
     player.addEventListener('ended', ended);
-    player.src = film.src;
+    player.src = source(player);
     player.load();
     return () => {
       canceled = true;

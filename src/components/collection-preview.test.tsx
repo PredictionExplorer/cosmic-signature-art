@@ -229,6 +229,67 @@ describe('collection film presentation', () => {
     expect(excerptRange(settling)).toBe('00:22–00:30');
   });
 
+  it('loads the smallest rung as wide as the card in device pixels, measured as the lease starts', () => {
+    const rung = {
+      src: '/art/clips/31-ink-settling-640-bbbbbbbbbbbbbbbb.mp4',
+      width: 640,
+      height: 414,
+      sha256: 'b'.repeat(64),
+      bytes: 2_000_000,
+    };
+    const settling = {
+      ...archivedInk.films[0],
+      id: 'settling',
+      src: '/art/clips/31-ink-settling.mp4',
+      rungs: [rung],
+    };
+    let boxWidth = 0;
+    vi.spyOn(Element.prototype, 'getBoundingClientRect').mockImplementation(
+      () => ({ width: boxWidth, height: boxWidth / 1.547 }) as DOMRect,
+    );
+    const pixelRatio = (ratio: number) =>
+      Object.defineProperty(window, 'devicePixelRatio', { configurable: true, value: ratio });
+    const show = (active: boolean) => (
+      <CollectionPreview
+        media={ink}
+        alt="Signature 31"
+        active={active}
+        film={settling}
+        onFailure={vi.fn()}
+      />
+    );
+    try {
+      // A pair's lead at 1440 CSS px is 634 px: at one device pixel to the CSS pixel, the rung.
+      boxWidth = 634;
+      pixelRatio(1);
+      const { container, rerender } = render(show(true));
+      expect(container.querySelector('video')).toHaveAttribute('src', rung.src);
+      // A card resized during its film keeps the source it began with.
+      boxWidth = 1000;
+      rerender(show(true));
+      expect(container.querySelector('video')).toHaveAttribute('src', rung.src);
+      // The next lease measures again: the same lead at two device pixels needs 1268, the clip.
+      rerender(show(false));
+      boxWidth = 634;
+      pixelRatio(2);
+      rerender(show(true));
+      expect(container.querySelector('video')).toHaveAttribute('src', settling.src);
+      // A pair's card, 288 px, needs 576 at two device pixels: the rung covers it.
+      rerender(show(false));
+      boxWidth = 288;
+      rerender(show(true));
+      expect(container.querySelector('video')).toHaveAttribute('src', rung.src);
+      // The single hang's plate, 1312 px, keeps the clip.
+      rerender(show(false));
+      boxWidth = 1312;
+      pixelRatio(1);
+      rerender(show(true));
+      expect(container.querySelector('video')).toHaveAttribute('src', settling.src);
+    } finally {
+      pixelRatio(1);
+    }
+  });
+
   it('describes an excerpt by its true place in the source film', () => {
     expect(excerptRange({ ...ink.previewFilm!, startSeconds: 6, durationSeconds: 8 })).toBe(
       '00:06–00:14',

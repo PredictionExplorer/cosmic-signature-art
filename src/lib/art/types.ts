@@ -26,10 +26,24 @@ export interface SweepSpan {
   dominantNm?: number;
 }
 
+/**
+ * A smaller encode of a plate clip: the same frames of the same film at a card's width, recorded
+ * with its hash and proved, as its clip is, to end on the published still.
+ */
+export interface FilmRung {
+  src: string;
+  width: number;
+  height: number;
+  sha256: string;
+  bytes: number;
+}
+
 export interface ArtFilm {
   id: string;
   label: string;
   src: string;
+  /** Smaller encodes of this film, ascending by width; a card loads what it needs. */
+  rungs?: FilmRung[];
   /** Original published source when src is a local delivery derivative. */
   sourceUrl?: string;
   durationSeconds?: number;
@@ -202,6 +216,19 @@ export function getInterpretation(
 export function rungFor(rungs: StillRung[] | undefined, width: number): StillRung | undefined {
   if (!rungs?.length) return undefined;
   return rungs.find((rung) => rung.width >= width) ?? rungs[rungs.length - 1];
+}
+
+/**
+ * What a film box `deviceWidth` device pixels wide loads: the smallest rung at least that wide,
+ * else the film itself, so a rung is never stretched past its own width. A box not yet measured
+ * (zero, or not a number) loads the film.
+ */
+export function filmSourceFor(film: ArtFilm, deviceWidth: number): string {
+  if (!(deviceWidth > 0)) return film.src;
+  let chosen: FilmRung | undefined;
+  for (const rung of film.rungs ?? [])
+    if (rung.width >= deviceWidth && (!chosen || rung.width < chosen.width)) chosen = rung;
+  return chosen?.src ?? film.src;
 }
 
 /** The still ladder as a srcset: the rungs, then the published still at its native width. */

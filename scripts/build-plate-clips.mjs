@@ -38,12 +38,31 @@ import { PARAMETERS as ARRIVAL, eachFrame, modeTone } from './build-arrival-maps
  * the beginning starts there, never on the empty sheet. Both are cut from the published source
  * over the same bounded range relay as the catalogue excerpts; nothing is tinted, cropped or
  * re-timed, and every output is content-addressed and recorded with its source hashes.
+ *
+ * A settling clip also has card-sized rungs: the same 480 frames of the same film at a smaller
+ * width, for a card that shows no more, each proved to end on the still as its clip is. A rung
+ * is cut from the verified local copy of the published film (`cachedAsset`, hashed against the
+ * manifest on every use), never from the clip, so it is one encode from the source, not two.
  */
 const USAGE =
   'Usage: node scripts/build-plate-clips.mjs [--settling] [--opening] [--ink] [--light] [tokenId ...]';
 export const CLIP_WIDTH = 1280;
 export const CLIP_HEIGHT = 828;
 export const FRAME_RATE = 60;
+/**
+ * The rungs below each settling clip, ascending: half its width exactly, for a card that needs
+ * no more. At 1440 CSS px a pair's card is 288 px and its lead 634; a phone's half-width card is
+ * 195 px, 585 at three device pixels to the CSS pixel. A rung is shown at up to its own size,
+ * where the clip it replaces was shrunk by half and its codec noise with it, so the Ink rung is
+ * encoded finer than its clip: at CRF 26, 047's held last frame measured SSIM 0.89 against the
+ * still at 640 px, where the clip measures 0.95, and rang around the strokes; at CRF 22 it
+ * measures 0.93, and 0.974 against the clip's 0.982 at 331 px, for about half the clip's bytes.
+ * Light's sparse field loses nothing visible at its clip's own CRF 22.
+ */
+export const SETTLING_RUNGS = {
+  ink: [{ width: 640, height: 414, crf: 22 }],
+  light: [{ width: 640, height: 414, crf: 22 }],
+};
 export const KINDS = {
   settling: { frames: 8 * FRAME_RATE, fromEnd: true },
   opening: { frames: 10 * FRAME_RATE, fromEnd: false },
@@ -122,8 +141,13 @@ export function validateSource(stream, format, expectedBytes) {
   };
 }
 
-/** What the encoded clip must be before it is published. */
-export function validateClip(probe, expectedFrames, bytes) {
+/** What the encoded clip, or one of its rungs, must be before it is published. */
+export function validateClip(
+  probe,
+  expectedFrames,
+  bytes,
+  size = { width: CLIP_WIDTH, height: CLIP_HEIGHT },
+) {
   const stream = probe.streams?.[0];
   const durationSeconds = Number(probe.format?.duration);
   const aspect = stream?.display_aspect_ratio?.split(':').map(Number);
@@ -131,8 +155,8 @@ export function validateClip(probe, expectedFrames, bytes) {
     probe.streams?.length !== 1 ||
     stream.codec_name !== 'h264' ||
     stream.pix_fmt !== 'yuv420p' ||
-    stream.width !== CLIP_WIDTH ||
-    stream.height !== CLIP_HEIGHT ||
+    stream.width !== size.width ||
+    stream.height !== size.height ||
     stream.r_frame_rate !== `${FRAME_RATE}/1` ||
     Number(stream.nb_frames) !== expectedFrames ||
     Math.abs(durationSeconds - expectedFrames / FRAME_RATE) > 1 / FRAME_RATE ||
@@ -184,6 +208,39 @@ export function endsOnStill(match, limits = STILL_MATCH) {
   return match.mean <= limits.mean && match.over <= limits.over;
 }
 
+/** A clip's content-addressed path; a rung names its width before its hash, as the stills do. */
+export function clipSource({ id, expression, kind }, sha256) {
+  return `/art/clips/${id}-${expression}-${kind}-${sha256.slice(0, 16)}.mp4`;
+}
+export function rungSource({ id, expression }, width, sha256) {
+  return `/art/clips/${id}-${expression}-settling-${width}-${sha256.slice(0, 16)}.mp4`;
+}
+
+/**
+ * A rung is its clip's own cut only when it begins on the same frame of a film of the same
+ * length: the clip records the cut in seconds, and a frame is the unit it was made in.
+ */
+export function sameCut(entry, cut, source) {
+  return (
+    cut.frames === entry.frames &&
+    cut.firstFrame === Math.round(entry.startSeconds * FRAME_RATE) &&
+    source.frames === Math.round(entry.sourceDurationSeconds * FRAME_RATE)
+  );
+}
+
+/** Stable key order for a rung of a settling clip. */
+export function rungEntry(fields) {
+  return {
+    src: fields.src,
+    sha256: fields.sha256,
+    bytes: fields.bytes,
+    width: fields.width,
+    height: fields.height,
+    crf: fields.crf,
+    stillMatch: fields.stillMatch,
+  };
+}
+
 /** Stable key order for a registry entry. */
 export function clipEntry(fields) {
   const entry = {
@@ -207,6 +264,8 @@ export function clipEntry(fields) {
   };
   if (fields.stillMatch) entry.stillMatch = fields.stillMatch;
   if (Number.isSafeInteger(fields.firstMarkFrame)) entry.firstMarkFrame = fields.firstMarkFrame;
+  if (fields.kind === 'settling' && fields.rungs?.length)
+    entry.rungs = [...fields.rungs].sort((a, b) => a.width - b.width).map(rungEntry);
   return entry;
 }
 
@@ -218,13 +277,17 @@ export function serializeRegistry(clips) {
   return `${JSON.stringify({ schemaVersion: 1, clips: sorted }, null, 2)}\n`;
 }
 
-/** Files in the output directory that no registry entry names; a full run removes them. */
+/** Files in the output directory that no registry entry or rung names; a full run removes them. */
 export function orphans(files, clips) {
-  const referenced = new Set(clips.map((clip) => clip.src.split('/').pop()));
+  const referenced = new Set(
+    clips
+      .flatMap((clip) => [clip.src, ...(clip.rungs ?? []).map((rung) => rung.src)])
+      .map((src) => src.split('/').pop()),
+  );
   return files.filter((file) => file.endsWith('.mp4') && !referenced.has(file));
 }
 
-async function probe(input, timeout = 30_000) {
+export async function probe(input, timeout = 30_000) {
   return JSON.parse(
     await command(
       'ffprobe',
@@ -250,20 +313,51 @@ async function existingIsSound(existing, expected) {
   if (!existing) return false;
   const same = Object.entries(expected).every(([key, value]) => existing[key] === value);
   if (!same) return false;
-  if (
-    !SHA256.test(existing.sha256) ||
-    existing.src !==
-      `/art/clips/${existing.id}-${existing.expression}-${existing.kind}-${existing.sha256.slice(0, 16)}.mp4`
-  )
+  if (!SHA256.test(existing.sha256) || existing.src !== clipSource(existing, existing.sha256))
     throw new Error('Existing registry path is not a content-addressed clip');
-  const path = fileURLToPath(new URL(`../public${existing.src}`, import.meta.url));
+  return verifiedFile(existing.src, existing.bytes, existing.sha256, 'clip');
+}
+
+/** A recorded file must still be there, byte for byte; anything else stops the run. */
+async function verifiedFile(src, bytes, sha256, what) {
+  const path = fileURLToPath(new URL(`../public${src}`, import.meta.url));
   try {
-    if ((await stat(path)).size === existing.bytes && (await hashFile(path)) === existing.sha256)
-      return true;
+    if ((await stat(path)).size === bytes && (await hashFile(path)) === sha256) return true;
   } catch (failure) {
     if (failure.code !== 'ENOENT') throw failure;
   }
-  throw new Error(`Existing clip integrity check failed for ${existing.src}`);
+  throw new Error(`Existing ${what} integrity check failed for ${src}`);
+}
+
+/**
+ * A recorded rung is kept when it is the size asked for, is content-addressed, ends on the still
+ * and its file is intact. A rung of another size is cut again; a damaged one stops the run.
+ */
+/**
+ * What a recorded rung asks of a run: none recorded, or one of another size or quality, is cut;
+ * one that is not content-addressed or does not end on the still stops the run; any other is
+ * kept once its file is verified.
+ */
+export function recordedRungIsCurrent(rung, entry, size) {
+  if (!rung || rung.width !== size.width || rung.height !== size.height || rung.crf !== size.crf)
+    return false;
+  if (
+    !SHA256.test(rung.sha256) ||
+    rung.src !== rungSource(entry, size.width, rung.sha256) ||
+    !rung.stillMatch ||
+    !endsOnStill(rung.stillMatch)
+  )
+    throw new Error(
+      `Existing rung is not a content-addressed rung that ends on the still: ${rung.src}`,
+    );
+  return true;
+}
+
+async function existingRungIsSound(rung, entry, size) {
+  return (
+    recordedRungIsCurrent(rung, entry, size) &&
+    verifiedFile(rung.src, rung.bytes, rung.sha256, 'rung')
+  );
 }
 
 /** An opening's first mark, logged; an opening that never shows the work records none. */
@@ -275,6 +369,169 @@ async function openingMark(path, id, expression) {
       : `Signature ${id} ${expression} opening: first mark at frame ${frame} (${(frame / FRAME_RATE).toFixed(2)} s)`,
   );
   return frame ?? undefined;
+}
+
+/**
+ * One frame-exact cut of a published film, read over the relay or from the verified local copy,
+ * scaled to `size` and encoded at the constant quality `crf` with the source's colour
+ * tags. A clip and its rungs differ in nothing but size, quality and where the bytes are read from.
+ */
+export function encodeArguments({ input, cut, size, crf, color }, output) {
+  const remote = /^https?:\/\//.test(input);
+  return [
+    '-hide_banner',
+    '-loglevel',
+    'error',
+    '-nostdin',
+    '-y',
+    '-protocol_whitelist',
+    remote ? 'http,tcp' : 'file',
+    ...(remote ? ['-rw_timeout', '15000000'] : []),
+    '-ss',
+    cut.seekSeconds.toFixed(6),
+    '-i',
+    input,
+    '-frames:v',
+    String(cut.frames),
+    '-map',
+    '0:v:0',
+    '-an',
+    '-vf',
+    `scale=${size.width}:${size.height}:flags=lanczos,setdar=ratio=${ART_WIDTH}/${ART_HEIGHT}:max=1000000`,
+    '-c:v',
+    'libx264',
+    '-preset',
+    'slow',
+    '-crf',
+    String(crf),
+    '-g',
+    String(2 * FRAME_RATE),
+    '-pix_fmt',
+    'yuv420p',
+    '-movflags',
+    '+faststart',
+    '-color_primaries',
+    color.primaries,
+    '-color_trc',
+    color.transfer,
+    '-colorspace',
+    color.space,
+    '-color_range',
+    color.range,
+    '-map_metadata',
+    '-1',
+    '-threads',
+    '4',
+    output,
+  ];
+}
+
+export async function encode(job, output) {
+  await command('ffmpeg', encodeArguments(job, output), 600_000);
+}
+
+/** The clip's last frame, which for a settling clip or a rung is the film's last frame. */
+export function lastFrameArguments(clip, frames, output) {
+  return [
+    '-hide_banner',
+    '-loglevel',
+    'error',
+    '-nostdin',
+    '-y',
+    '-i',
+    clip,
+    '-vf',
+    `select=eq(n\\,${frames - 1})`,
+    '-fps_mode',
+    'passthrough',
+    '-frames:v',
+    '1',
+    output,
+  ];
+}
+
+/** How far a clip's last frame departs from a still on disk, at the comparison size. */
+export async function stillMatchOf(clip, frames, stillPath) {
+  const lastFrame = `${clip}.last-${randomUUID()}.png`;
+  try {
+    await command('ffmpeg', lastFrameArguments(clip, frames, lastFrame));
+    const size = { width: COMPARE_WIDTH, height: COMPARE_HEIGHT };
+    return meanAbsoluteDifference(
+      await decodeRaw(lastFrame, size),
+      await decodeRaw(stillPath, size),
+    );
+  } finally {
+    await rm(lastFrame, { force: true });
+  }
+}
+
+function describeMatch(match) {
+  return `still match ${match.mean} mean, ${(match.over * 100).toFixed(2)} % over`;
+}
+
+/** The verified local copy of a clip's film, probed and cut exactly as the clip was. */
+async function localCut(entry, film) {
+  const input = await cachedAsset(entry.seed, film, { log });
+  const sourceProbe = await probe(input);
+  const source = validateSource(sourceProbe.streams?.[0], sourceProbe.format, film.bytes);
+  const cut = cutStart(entry.kind, source.frames);
+  if (!sameCut(entry, cut, source))
+    throw new Error(
+      `The local film does not cut as the clip did: ${JSON.stringify({ cut, frames: source.frames })}`,
+    );
+  return { input, cut, color: source.color };
+}
+
+/** A rung: the clip's own cut of the local film at `size`, proved to end on the still first. */
+async function cutRung(entry, still, local, size) {
+  const temporary = `${outputDirectory}.partial-${randomUUID()}.mp4`;
+  const started = Date.now();
+  try {
+    await encode({ ...local, size, crf: size.crf }, temporary);
+    const bytes = (await stat(temporary)).size;
+    validateClip(await probe(temporary, 15_000), local.cut.frames, bytes, size);
+    const stillMatch = await stillMatchOf(
+      temporary,
+      local.cut.frames,
+      await cachedAsset(entry.seed, still, { log }),
+    );
+    if (!endsOnStill(stillMatch))
+      throw new Error(
+        `The ${size.width} px rung does not end on the published still: ${JSON.stringify(stillMatch)}`,
+      );
+    const sha256 = await hashFile(temporary);
+    const src = rungSource(entry, size.width, sha256);
+    await publishContentAddressed(
+      temporary,
+      fileURLToPath(new URL(`../public${src}`, import.meta.url)),
+      sha256,
+    );
+    log(
+      `Signature ${entry.id} ${entry.expression} settling ${size.width}: ${bytes} bytes, ${Math.round((bytes / entry.bytes) * 100)} % of the clip; ${((Date.now() - started) / 1000).toFixed(1)}s; ${describeMatch(stillMatch)}`,
+    );
+    return rungEntry({ src, sha256, bytes, ...size, stillMatch });
+  } finally {
+    await rm(temporary, { force: true });
+  }
+}
+
+/** A settling clip with its rungs: each recorded rung verified and kept, each missing one cut. */
+async function withRungs(entry, film, still) {
+  const rungs = [];
+  let local;
+  for (const size of SETTLING_RUNGS[entry.expression]) {
+    const recorded = entry.rungs?.find((rung) => rung.width === size.width);
+    if (await existingRungIsSound(recorded, entry, size)) {
+      log(
+        `Signature ${entry.id} ${entry.expression} settling ${size.width}: verified existing ${recorded.bytes} byte rung`,
+      );
+      rungs.push(recorded);
+    } else {
+      local ??= await localCut(entry, film);
+      rungs.push(await cutRung(entry, still, local, size));
+    }
+  }
+  return clipEntry({ ...entry, rungs });
 }
 
 async function generate({ id, seed }, expression, kind, existing) {
@@ -302,97 +559,35 @@ async function generate({ id, seed }, expression, kind, existing) {
   };
   if (await existingIsSound(existing, expected)) {
     log(`Signature ${id} ${expression} ${kind}: verified existing ${existing.bytes} byte clip`);
-    if (kind !== 'opening' || existing.firstMarkFrame !== undefined) return existing;
+    if (kind === 'settling') return withRungs(existing, film, still);
+    if (existing.firstMarkFrame !== undefined) return existing;
     // An opening recorded before its first mark was: read the verified local clip, not the source.
     const local = fileURLToPath(new URL(`../public${existing.src}`, import.meta.url));
     return clipEntry({ ...existing, firstMarkFrame: await openingMark(local, id, expression) });
   }
   await mkdir(outputDirectory, { recursive: true });
   const temporary = `${outputDirectory}.partial-${randomUUID()}.mp4`;
-  const lastFrame = `${outputDirectory}.partial-${randomUUID()}.png`;
   const relay = await rangeRelay(sourceUrl, film.bytes);
   const started = Date.now();
+  let entry;
   try {
     const sourceProbe = await probe(relay.url);
     const source = validateSource(sourceProbe.streams?.[0], sourceProbe.format, film.bytes);
     const cut = cutStart(kind, source.frames);
-    await command(
-      'ffmpeg',
-      [
-        '-hide_banner',
-        '-loglevel',
-        'error',
-        '-nostdin',
-        '-y',
-        '-protocol_whitelist',
-        'http,tcp',
-        '-rw_timeout',
-        '15000000',
-        '-ss',
-        cut.seekSeconds.toFixed(6),
-        '-i',
-        relay.url,
-        '-frames:v',
-        String(cut.frames),
-        '-map',
-        '0:v:0',
-        '-an',
-        '-vf',
-        `scale=${CLIP_WIDTH}:${CLIP_HEIGHT}:flags=lanczos,setdar=ratio=${ART_WIDTH}/${ART_HEIGHT}:max=1000000`,
-        '-c:v',
-        'libx264',
-        '-preset',
-        'slow',
-        '-crf',
-        String(CRF[expression]),
-        '-g',
-        String(2 * FRAME_RATE),
-        '-pix_fmt',
-        'yuv420p',
-        '-movflags',
-        '+faststart',
-        '-color_primaries',
-        source.color.primaries,
-        '-color_trc',
-        source.color.transfer,
-        '-colorspace',
-        source.color.space,
-        '-color_range',
-        source.color.range,
-        '-map_metadata',
-        '-1',
-        '-threads',
-        '4',
-        temporary,
-      ],
-      600_000,
+    const size = { width: CLIP_WIDTH, height: CLIP_HEIGHT };
+    await encode(
+      { input: relay.url, cut, size, crf: CRF[expression], color: source.color },
+      temporary,
     );
     const bytesRead = relay.result();
     const bytes = (await stat(temporary)).size;
     const clip = validateClip(await probe(temporary, 15_000), cut.frames, bytes);
     let stillMatch;
     if (kind === 'settling') {
-      await command('ffmpeg', [
-        '-hide_banner',
-        '-loglevel',
-        'error',
-        '-nostdin',
-        '-y',
-        '-i',
+      stillMatch = await stillMatchOf(
         temporary,
-        '-vf',
-        `select=eq(n\\,${cut.frames - 1})`,
-        '-fps_mode',
-        'passthrough',
-        '-frames:v',
-        '1',
-        lastFrame,
-      ]);
-      const stillPath = await cachedAsset(seed, still, { log });
-      const size = { width: COMPARE_WIDTH, height: COMPARE_HEIGHT };
-      stillMatch = meanAbsoluteDifference(
-        await decodeRaw(lastFrame, size),
-        await decodeRaw(stillPath, size),
+        cut.frames,
+        await cachedAsset(seed, still, { log }),
       );
       if (!endsOnStill(stillMatch))
         throw new Error(
@@ -402,16 +597,16 @@ async function generate({ id, seed }, expression, kind, existing) {
     const firstMarkFrame =
       kind === 'opening' ? await openingMark(temporary, id, expression) : undefined;
     const sha256 = await hashFile(temporary);
-    const src = `/art/clips/${id}-${expression}-${kind}-${sha256.slice(0, 16)}.mp4`;
+    const src = clipSource({ id, expression, kind }, sha256);
     await publishContentAddressed(
       temporary,
       fileURLToPath(new URL(`../public${src}`, import.meta.url)),
       sha256,
     );
     log(
-      `Signature ${id} ${expression} ${kind}: ${bytes} bytes; ${(bytesRead / 1024 / 1024).toFixed(1)} MiB of source; ${((Date.now() - started) / 1000).toFixed(1)}s${stillMatch ? `; still match ${stillMatch.mean} mean, ${(stillMatch.over * 100).toFixed(2)} % over` : ''}`,
+      `Signature ${id} ${expression} ${kind}: ${bytes} bytes; ${(bytesRead / 1024 / 1024).toFixed(1)} MiB of source; ${((Date.now() - started) / 1000).toFixed(1)}s${stillMatch ? `; ${describeMatch(stillMatch)}` : ''}`,
     );
-    return clipEntry({
+    entry = clipEntry({
       ...expected,
       src,
       sha256,
@@ -425,8 +620,9 @@ async function generate({ id, seed }, expression, kind, existing) {
   } finally {
     await relay.close();
     await rm(temporary, { force: true });
-    await rm(lastFrame, { force: true });
   }
+  // A new clip's rungs follow it, cut from the verified local film rather than over the relay.
+  return kind === 'settling' ? withRungs(entry, film, still) : entry;
 }
 
 async function main() {

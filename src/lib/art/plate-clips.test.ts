@@ -5,6 +5,7 @@ import { fileURLToPath } from 'node:url';
 import { dirname, resolve } from 'node:path';
 import { createPlateClipLookup } from './plate-clips';
 import { getCuratedArtwork } from './catalog';
+import { filmSourceFor, type ArtFilm } from './types';
 import publishedRegistry from './plate-clips.json';
 
 const work = getCuratedArtwork(31)!;
@@ -33,6 +34,20 @@ function entry(kind: 'settling' | 'opening' = 'settling') {
   };
 }
 const registry = (clips: unknown[] = [entry()]) => ({ schemaVersion: 1, clips });
+const rungHash = 'b'.repeat(64);
+/** A rung of 031's Ink settling clip as the pipeline records it. */
+function rung(width = 640, hash = rungHash) {
+  return {
+    src: `/art/clips/31-ink-settling-${width}-${hash.slice(0, 16)}.mp4`,
+    sha256: hash,
+    bytes: 2_000_000,
+    width,
+    height: Math.round((width * 828) / 1280),
+    crf: 22,
+    stillMatch: { mean: 3.1, max: 52, over: 0.00002 },
+  };
+}
+const withRungs = (...rungs: unknown[]) => ({ ...entry(), rungs });
 
 describe('plate clip binding', () => {
   it('attaches the settling and opening clips without touching the complete films', () => {
@@ -121,6 +136,55 @@ describe('plate clip binding', () => {
     expect(attached.settlingFilm).toBeDefined();
     expect(lookup({ ...work, seed: '0x123' }, attached).settlingFilm).toBeUndefined();
   });
+  it('binds the proved rungs on the settling film, ascending, with what a card needs', () => {
+    const wider = rung(960, 'c'.repeat(64));
+    const result = createPlateClipLookup(registry([withRungs(wider, rung()), entry('opening')]))(
+      work,
+      ink,
+    );
+    expect(result.settlingFilm?.src).toBe(entry().src);
+    expect(result.settlingFilm?.rungs).toEqual([
+      { src: rung().src, width: 640, height: 414, sha256: rungHash, bytes: 2_000_000 },
+      { src: wider.src, width: 960, height: 621, sha256: 'c'.repeat(64), bytes: 2_000_000 },
+    ]);
+    expect(result.openingFilm?.rungs).toBeUndefined();
+    // A clip recorded without rungs binds as it did.
+    expect(createPlateClipLookup(registry())(work, ink).settlingFilm?.rungs).toBeUndefined();
+  });
+  it.each([
+    ['as wide as its clip', { ...rung(1280) }],
+    ['out of the frame’s proportions', { height: 420 }],
+    ['named for another work', { src: rung().src.replace('/31-', '/32-') }],
+    ['named for the other expression', { src: rung().src.replace('-ink-', '-light-') }],
+    ['named for another width', { src: rung(960).src }],
+    ['named for other bytes', { src: rung(640, 'f'.repeat(64)).src }],
+    ['as heavy as its clip', { bytes: 4_000_000 }],
+    ['ending away from the still', { stillMatch: { mean: 16, max: 240, over: 0.097 } }],
+    ['ending with too many samples off', { stillMatch: { mean: 3, max: 60, over: 0.01 } }],
+  ])('drops a rung %s and keeps its clip', (_, change) => {
+    const result = createPlateClipLookup(registry([withRungs({ ...rung(), ...change })]))(
+      work,
+      ink,
+    );
+    expect(result.settlingFilm?.src).toBe(entry().src);
+    expect(result.settlingFilm?.rungs).toBeUndefined();
+  });
+  it('drops two rungs that claim one width, and refuses a malformed rung with its registry', () => {
+    const twin = rung(640, 'c'.repeat(64));
+    const paired = createPlateClipLookup(registry([withRungs(rung(), twin)]))(work, ink);
+    expect(paired.settlingFilm?.src).toBe(entry().src);
+    expect(paired.settlingFilm?.rungs).toBeUndefined();
+    for (const change of [
+      { width: 640.5 },
+      { crf: undefined },
+      { stillMatch: undefined },
+      { src: '/art/clips/31-ink-settling-640.mp4' },
+    ])
+      expect(
+        createPlateClipLookup(registry([withRungs({ ...rung(), ...change })]))(work, ink)
+          .settlingFilm,
+      ).toBeUndefined();
+  });
   it('ships content-addressed, bounded files matching every registered output hash', () => {
     expect(publishedRegistry.clips.length).toBeGreaterThan(0);
     const keys = publishedRegistry.clips.map(
@@ -142,12 +206,59 @@ describe('plate clip binding', () => {
         expect(clip.stillMatch?.mean).toBeLessThanOrEqual(6);
         expect(clip.stillMatch?.over).toBeLessThanOrEqual(0.005);
         expect(clip.startSeconds + clip.durationSeconds).toBeCloseTo(clip.sourceDurationSeconds, 1);
+        // Every settling clip carries its 640 rung, a file as proved as the clip's own.
+        expect(clip.rungs?.map(({ width, height }) => [width, height])).toEqual([[640, 414]]);
+        for (const each of clip.rungs ?? []) {
+          expect(each.src).toBe(
+            `/art/clips/${clip.id}-${clip.expression}-settling-${each.width}-${each.sha256.slice(0, 16)}.mp4`,
+          );
+          const rungBytes = readFileSync(
+            resolve(dirname(fileURLToPath(import.meta.url)), '../../../public', each.src.slice(1)),
+          );
+          expect(rungBytes.length).toBe(each.bytes);
+          expect(each.bytes).toBeLessThan(clip.bytes);
+          expect(createHash('sha256').update(rungBytes).digest('hex')).toBe(each.sha256);
+          expect(each.stillMatch.mean).toBeLessThanOrEqual(6);
+          expect(each.stillMatch.over).toBeLessThanOrEqual(0.005);
+        }
       } else {
+        expect(clip.rungs).toBeUndefined();
         expect(clip.frames).toBe(600);
         // Every opening records where its work first shows, inside its ten seconds.
         expect(clip.firstMarkFrame).toBeGreaterThanOrEqual(0);
         expect(clip.firstMarkFrame).toBeLessThan(clip.frames);
       }
     }
+  });
+});
+
+describe('the encode a card loads', () => {
+  const film: ArtFilm = createPlateClipLookup(registry([withRungs(rung())]))(
+    work,
+    ink,
+  ).settlingFilm!;
+  it('is the smallest rung at least as wide as the box in device pixels, else the clip', () => {
+    // At 1440 CSS px a pair's card is 288 px and its lead 634: at one device pixel to the CSS
+    // pixel the rung covers both; at two the card needs 576 and keeps the rung, the lead 1268
+    // and takes the clip; the single hang's 1312 px plate always takes the clip.
+    expect(filmSourceFor(film, 288)).toBe(rung().src);
+    expect(filmSourceFor(film, 576)).toBe(rung().src);
+    expect(filmSourceFor(film, 634)).toBe(rung().src);
+    expect(filmSourceFor(film, 640)).toBe(rung().src);
+    expect(filmSourceFor(film, 640.5)).toBe(film.src);
+    expect(filmSourceFor(film, 1268)).toBe(film.src);
+    expect(filmSourceFor(film, 1312)).toBe(film.src);
+  });
+  it('loads the clip for a box not yet measured, or a film without rungs', () => {
+    for (const width of [0, -1, Number.NaN]) expect(filmSourceFor(film, width)).toBe(film.src);
+    expect(filmSourceFor({ ...film, rungs: undefined }, 331)).toBe(film.src);
+    expect(filmSourceFor({ ...film, rungs: [] }, 331)).toBe(film.src);
+  });
+  it('does not trust the rungs’ order: the smallest that is wide enough serves', () => {
+    const wider = { ...rung(960, 'c'.repeat(64)) };
+    const rungs = [wider, rung()];
+    expect(filmSourceFor({ ...film, rungs }, 600)).toBe(rung().src);
+    expect(filmSourceFor({ ...film, rungs }, 700)).toBe(wider.src);
+    expect(filmSourceFor({ ...film, rungs }, 961)).toBe(film.src);
   });
 });
