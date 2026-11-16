@@ -102,6 +102,19 @@ describe('stylesheet floor', () => {
     const small = fontSizes(css).filter(({ px }) => px < FLOOR_PX);
     expect(small).toEqual([]);
   });
+  // The floor is a drawn size. A face asked for a style it does not have is given a fake by the
+  // browser: an ideograph slanted for an italic, or drawn at 70 % for a small capital, which
+  // puts a 12 px label's Han, kana and Hangul at 8.4 px while every rule above still reads 12.
+  // Chinese, Japanese and Korean pages turn both fakes off (tests/e2e/drawn.spec.ts measures
+  // the glyphs themselves, in a browser).
+  it('lets no face on a CJK page fake an italic or a small capital', () => {
+    const globals = stripComments(readFileSync(join(src, 'app/globals.css'), 'utf8'));
+    const page = rules(globals).find(
+      ({ selector }) => selector === 'html:is(:lang(zh), :lang(ja), :lang(ko))',
+    );
+    expect(page?.body).toMatch(/font-synthesis-style:\s*none;/);
+    expect(page?.body).toMatch(/font-synthesis-small-caps:\s*none;/);
+  });
   it.each(files)('%s uses the motion tokens for every duration', (file) => {
     const css = stripComments(readFileSync(file, 'utf8'));
     expect(literalDurations(css)).toEqual([]);

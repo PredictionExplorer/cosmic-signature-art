@@ -183,6 +183,16 @@ html:is(:lang(zh), :lang(ja), :lang(ko)) {
   /* Han, kana and Hangul have no italic: a slanted ideograph is a distortion, not a style. An
      italic line keeps Literata's true italic for its Latin and sets its CJK upright. */
   font-synthesis-style: none;
+  /* Nor have they small capitals. Asked for them, a browser fakes them by drawing the character
+     at 70 %: a 12 px label's ideographs at 8.4 px, under the floor, while its computed size
+     still reads 12 px. No face on a CJK page fakes one. */
+  font-synthesis-small-caps: none;
+}
+/* The venue's name is Latin on every page, and Literata draws its small capitals. Until Literata
+   has loaded, its stand-in fakes them here as it does on a Latin page, so the name is the same
+   width before and after. */
+html:is(:lang(zh), :lang(ja), :lang(ko)) :is(.wordmark, .brand-name) {
+  font-synthesis-small-caps: auto;
 }
 /* The wordmark is Latin in every locale and keeps its own setting. */
 html:is(:lang(zh), :lang(ja), :lang(ko)) :is(h1, h2, h3, .display):not(.wordmark) {
@@ -416,10 +426,14 @@ html {
   font-weight: 400;
 }
 /* The wordmark at display size, typeset not drawn: Literata's small capitals, the same in
-   every locale (the statement page and the home's type screen). */
+   every locale (the statement page and the home's type screen). Its longer word cannot break,
+   and at the entry size's 64 px floor SIGNATURE is 324 px wide: more than a 320 px screen has
+   between its gutters. So on a screen under 365 px the wordmark is set as large as that word
+   fits. Tracked, the word is 5.07 em wide at 64 px and 5.13 em at 56 px, where the optical size
+   draws it wider; 5.2 leaves it a few pixels of air. */
 .wordmark {
   font-family: var(--font-latin);
-  font-size: var(--fs-entry);
+  font-size: min(var(--fs-entry), calc((100vw - 2 * var(--gutter)) / 5.2));
   font-weight: 200;
   font-variant-caps: all-small-caps;
   letter-spacing: 0.05em;
@@ -661,11 +675,15 @@ html[data-turning='overture'] .head-overlay {
   gap: 27px;
   margin-left: auto;
 }
+/* Every word is a 44 px target both ways: a short one (Index, 41 px; 索引, 30 px) stands in the
+   middle of a box that wide. */
 .head-words a,
 .head-words button,
 .head-words .head-word {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
+  min-width: 44px;
   min-height: 44px;
   font-size: var(--fs-control);
   border-bottom: 1px solid transparent;
@@ -696,7 +714,13 @@ html[data-turning='overture'] .head-overlay {
   position: relative;
   font-size: var(--fs-control);
 }
-.language-trigger {
+/* The language's code, in the instrument face at the folio's size, in the middle of its box.
+   The trigger is a button among the head's words and its turning copy is a span: named with
+   the head's words, the rule sets both alike, the hairline beneath a button included. As a
+   bare class it lost to the rule for the head's buttons, which set the real one a size larger
+   and at the start of its box, so the word stood twice in the head wherever the copy showed
+   beside it. */
+.head-words .language-trigger {
   min-width: 44px;
   min-height: 44px;
   display: grid;
@@ -704,6 +728,7 @@ html[data-turning='overture'] .head-overlay {
   font-family: var(--font-mono);
   font-size: var(--fs-folio);
   letter-spacing: 0.06em;
+  border-bottom: 1px solid transparent;
 }
 /* The list is a Popover API sheet where supported (top layer, light dismiss) and the
    same fixed sheet elsewhere; the trigger places it on open and scrolling closes it. */
@@ -758,6 +783,18 @@ html[data-turning='overture'] .head-overlay {
   /* The Index also carries every language on phones. */
   .head-words > .language-menu {
     display: none;
+  }
+}
+/* Under 360 px the head closes up, so the venue's name and the longest Index word (Ukrainian's,
+   79 px) both stand whole on a 320 px screen. The pause carries 16 px of its own air either
+   side of its glyph, so the word before it needs no gap. Where the name and the words are still
+   wider than the row, the pause's box runs into the gutter by that air, and stays on the screen. */
+@media (max-width: 359px) {
+  .head-row {
+    gap: 6px;
+  }
+  .head-words {
+    gap: 0;
   }
 }
 
