@@ -2,6 +2,8 @@
 
 Phase B of [Third Physics](third-physics.md) changes how a work turns between its two expressions. This note records what was built, how the maps are made, how it is proved, what it settled, and what it leaves for later.
 
+*Since 16 November 2026 the crossing is drawn as one sheet ([turn-one-sheet.md](turn-one-sheet.md)): one front over the plate, the head, the strip and the page. The maps, their build and the When lens stand as written here; the soft blob on the plate, the head's and the strip's polygons (`src/lib/crossing/front.ts`) and the clock of `timing.ts` described below are replaced.*
+
 ## What shipped
 
 **The crossing.** Pressing `Light` no longer wipes night across the plate from the right. Night spreads in the order the work's Light film drew it: for № 031 it opens in the orbit's core, the ribbons arrive along their own paths, and the walls darken last. Pressing `Ink` brings the paper back in the order the Ink film's sumi came to rest.

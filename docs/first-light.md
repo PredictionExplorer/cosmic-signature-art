@@ -546,6 +546,8 @@ Gathered on 7 November 2026 by a research pass. Awwwards' own pages refuse autom
 
 _8 November 2026: step 5 of the F2 plan, "the work in your hands" (§5C)._
 
+_Replaced on 16 November 2026 by the Turn as one sheet ([turn-one-sheet.md](turn-one-sheet.md)). The second jury review found that a ground faded as one passes through a grey that is neither ground, and takes the words with it. What a pixel is made of as the material changes (`matterOf`, `materialPixel`) is kept, at the sheet's front; the three stages, the room's one ground and the modes below are gone. This section stands as the record of what was built then._
+
 **What the visitor sees.**
 
 - A Turn by time between the two whole stills no longer swaps pixels. That means the words _Ink_ and _Light_, the `I` and `L` keys, and a held peek. The bodies stay where they are, because the stills are registered to one frame, and the material changes around them.
