@@ -28,7 +28,16 @@ type Sheet = {
   stills: number;
   /** Words of the page's own that must stand in `<main>`. */
   words: (t: Words) => string[];
+  /**
+   * The paragraph under the page's heading must stand in `<main>` too, whatever it says. A page
+   * whose opening is being rewritten is held by where its words stand, not by quoting them:
+   * Process's standfirst is the essay's to word.
+   */
+  standfirst?: boolean;
 };
+
+/** Long enough to be a sentence a reader came for, in any of the venue's languages. */
+const A_SENTENCE = 20;
 
 const sheet = (
   name: string,
@@ -63,7 +72,11 @@ const SHEETS: Sheet[] = [
   // In the index alone, as 57 of the 72 works are: its plate opens from the index.
   sheet('a work the index holds', '/art/50', work(50)),
   sheet('the collection', '/collection', { stills: 18, words: (t) => [t.collection] }),
-  sheet('Process', '/process', { stills: 2, words: (t) => [t.processTitle, t.processIntro] }),
+  sheet('Process', '/process', {
+    stills: 2,
+    words: (t) => [t.processTitle],
+    standfirst: true,
+  }),
 ];
 
 /** An address answers alike in every engine, so one project asks. */
@@ -96,12 +109,13 @@ function readAsSent(html: string) {
       : [],
     text: (read?.textContent ?? '').replace(/\s+/g, ' '),
     headings: standing(sent, 'main h1').length,
+    standfirst: (standing(sent, 'main h1 + p')[0]?.textContent ?? '').replace(/\s+/g, ' ').trim(),
     withoutScript: sent.head.querySelector('noscript')?.textContent ?? '',
   };
 }
 
 test.describe('each page is sent whole', () => {
-  for (const { name, path, locale, still, stills, words } of SHEETS) {
+  for (const { name, path, locale, still, stills, words, standfirst } of SHEETS) {
     test(`${name} has its work and its words in main, in nothing hidden`, async ({
       page,
       request,
@@ -124,6 +138,7 @@ test.describe('each page is sent whole', () => {
 
       // The page's words, in main. What is set aside in a hidden segment is no part of it.
       for (const sentence of words(t)) expect(sent.text).toContain(sentence.replace(/\s+/g, ' '));
+      if (standfirst) expect(sent.standfirst.length).toBeGreaterThanOrEqual(A_SENTENCE);
 
       // One heading names the page, where a reader with no script can read it.
       expect(sent.headings).toBe(1);
@@ -153,7 +168,7 @@ const SCRIPT_OFF = { javaScriptEnabled: false, storageState: { cookies: [], orig
 test.describe('each page with script off', () => {
   test.use(SCRIPT_OFF);
 
-  for (const { name, path, locale, still, words } of SHEETS) {
+  for (const { name, path, locale, still, words, standfirst } of SHEETS) {
     test(`${name} shows its work at full strength, and its words`, async ({ page }) => {
       const t = catalogs[locale];
       await page.goto(path);
@@ -179,6 +194,11 @@ test.describe('each page with script off', () => {
       // The words, where a reader can see them.
       for (const sentence of words(t))
         await expect(main.getByText(sentence, { exact: false }).first()).toBeVisible();
+      if (standfirst) {
+        const under = main.locator('h1 + p').first();
+        await expect(under).toBeVisible();
+        expect((await under.innerText()).trim().length).toBeGreaterThanOrEqual(A_SENTENCE);
+      }
 
       // Nothing on the page still says that it is waiting for something to arrive.
       await expect(page.locator('[aria-busy="true"]').filter({ visible: true })).toHaveCount(0);
