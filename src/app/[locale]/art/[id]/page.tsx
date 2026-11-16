@@ -7,7 +7,7 @@ import { isLocale, localizedPath } from '@/lib/i18n/routing';
 import { messages } from '@/lib/i18n/messages';
 import { words } from '@/lib/i18n/words';
 import { metadata } from '@/lib/site';
-import { getArtwork } from '@/lib/art/server';
+import { getArtwork, getArtworkDetails } from '@/lib/art/server';
 import { getCuratedArtwork } from '@/lib/art/catalog';
 import {
   collectionIndex,
@@ -19,12 +19,15 @@ import { inlineCuratedPreview } from '@/lib/art/inline-preview';
 import { parseArtworkId } from '@/lib/art/validation';
 import { workNumber } from '@/lib/art/number';
 import { getInterpretation, isExpression, type Artwork, type ArtworkResult } from '@/lib/art/types';
+import { heldWork, type HeldWork } from '@/lib/art/held';
 import { artworkSharingImage } from '@/lib/art/sharing';
 import { ArtworkViewer } from '@/components/artwork-viewer';
 import { ARTWORK_VIEWER_WORDS } from '@/components/artwork-viewer.words';
 import type { Neighbour, Neighbours } from '@/components/artwork-neighbours';
 import type { HistoryQuery } from '@/components/artwork-history';
-import { ArtworkEntry } from '@/components/artwork-entry';
+import { ArtworkEntry, HeldEntry } from '@/components/artwork-entry';
+import { WaitingRoom } from '@/components/waiting-room';
+import { STREAMED } from '@/lib/without-script';
 import { OrbitScore } from '@/components/orbit-score';
 import { Overture } from '@/components/overture';
 import { showWorkOf } from '@/lib/art/first-light-work';
@@ -32,7 +35,6 @@ import { workOrbit } from '@/lib/art/orbit-records';
 import { workDescription, workLine } from '@/lib/art/work-description';
 import { filmOrbit } from '@/lib/art/orbit-windows';
 import { orbitPlate } from '@/lib/art/orbit-plate';
-import recordStyles from '@/components/artwork-record.module.css';
 import { artworkViewParams } from '@/lib/art/view';
 import { knownExpressions, openingExpression, openingOn } from '@/lib/art/opening';
 import { expressionOfTheDay } from '@/lib/art/work-of-the-day';
@@ -95,6 +97,22 @@ export function neighboursFor(tokenId: number): Neighbours {
   };
 }
 
+type PageProps = {
+  tokenId: number;
+  locale: Locale;
+  t: Messages;
+  query: HistoryQuery;
+  initialExpression: string | undefined;
+};
+
+/**
+ * A work's page is sent whole wherever the venue holds the work itself: the plate, the orbit
+ * and the entry are set at once from the registry or the build-time index (src/lib/art/held.ts),
+ * outside any Suspense boundary, and the live record streams after them. The work and its words
+ * are then in the first bytes of the page, in their places, with or without script: React sets
+ * the content of a boundary aside in a hidden segment that only script can put in place
+ * (src/lib/without-script.ts), so nothing a reader came for may wait inside one.
+ */
 export default async function ArtworkPage({
   params,
   searchParams,
@@ -108,50 +126,75 @@ export default async function ArtworkPage({
   if (tokenId === null) notFound();
   const t = messages(locale);
   const query = await searchParams;
-  const view = artworkViewParams(query);
-  const initialStill = view.get('view') === 'still';
-  const requestedExpression = view.get('expression') ?? undefined;
-  // A curated work paints at once from the identity-verified registry while its live
-  // record streams, but only when the registry holds the expression the plate opens on:
-  // the request's, else the day's (src/lib/art/opening.ts). A registry without that
-  // expression must not decide otherwise. The record for any other work must arrive before
-  // the page can exist.
+  const requestedExpression = artworkViewParams(query).get('expression') ?? undefined;
   const indexed = indexedWork(tokenId);
   const registry = getCuratedArtwork(tokenId);
   // Only an expression the registry or the index publishes may shape the opening; anything
-  // else is dropped here, so the plate still opens from the registry's own bytes.
+  // else is dropped here, so the plate still opens from the venue's own bytes.
   const published = knownExpressions(registry, indexed);
   const initialExpression =
     requestedExpression && (!indexed && !registry ? true : published(requestedExpression))
       ? requestedExpression
       : undefined;
+  // The plate opens on the request's expression, else the day's (src/lib/art/opening.ts), and
+  // paints at once from the copy the venue holds of it.
   const opening = initialExpression ?? openingExpression(published) ?? expressionOfTheDay();
-  const curated = registry?.media.some((item) => item.id === opening && item.still)
-    ? registry
-    : undefined;
+  const held = heldWork(registry, indexed, opening);
   const live = getArtwork(tokenId);
-  let work: Artwork | null = curated ?? null;
-  let settled: ArtworkResult | null = null;
-  if (!curated) {
-    settled = await live;
-    if (settled.status === 'not-found') notFound();
-    work = settled.artwork;
-  }
-  if (!work)
+  const page: PageProps = { tokenId, locale, t, query, initialExpression };
+  if (held) return <WorkPage {...page} work={held.artwork} held={held} live={live} />;
+  // Nothing is held of a work imprinted since the index was read: its record must arrive
+  // before its page can exist. The page keeps a plate's place for it meanwhile.
+  return (
+    <Suspense fallback={<WaitingRoom />}>
+      <AwaitedWorkPage {...page} live={live} />
+    </Suspense>
+  );
+}
+
+/** The page of a work the venue holds nothing of, once the indexer has answered. */
+async function AwaitedWorkPage({ live, ...page }: PageProps & { live: Promise<ArtworkResult> }) {
+  const settled = await live;
+  if (settled.status === 'not-found') notFound();
+  if (!settled.artwork)
     return (
-      <main id="main" className="section-wrap empty-state">
-        <h1>{t.recordUnavailable}</h1>
-        <Link href={localizedPath(locale, '/collection')} className="text-link">
-          {t.backAtlas}
+      <main id="main" className="section-wrap empty-state" {...STREAMED}>
+        <h1>{page.t.recordUnavailable}</h1>
+        <Link href={localizedPath(page.locale, '/collection')} className="text-link">
+          {page.t.backAtlas}
         </Link>
       </main>
     );
+  return <WorkPage {...page} work={settled.artwork} settled={settled} />;
+}
+
+/**
+ * The page itself. A held work is handed its copy and the promise of the live record; a work
+ * that waited for its record is handed the record, settled.
+ */
+function WorkPage({
+  tokenId,
+  locale,
+  t,
+  query,
+  initialExpression,
+  work,
+  held,
+  live,
+  settled,
+}: PageProps & {
+  work: Artwork;
+  held?: HeldWork;
+  live?: Promise<ArtworkResult>;
+  settled?: ArtworkResult;
+}) {
+  const indexed = indexedWork(tokenId);
   const expression = openingOn(work, initialExpression);
   // Both grounds paint from the HTML: the Turn's twin is decoded before the key is honoured.
-  const inlinePreviews = curated
+  const inlinePreviews = held?.curated
     ? {
-        ink: inlineCuratedPreview(curated.id, 'ink'),
-        light: inlineCuratedPreview(curated.id, 'light'),
+        ink: inlineCuratedPreview(work.id, 'ink'),
+        light: inlineCuratedPreview(work.id, 'light'),
       }
     : undefined;
   // The orbit beneath the work, re-derived in the browser and checked against its record, and
@@ -163,16 +206,23 @@ export default async function ArtworkPage({
   const line = workLine(tokenId, t, locale);
   const both = !!getInterpretation(work, 'ink')?.still && !!getInterpretation(work, 'light')?.still;
   return (
-    <main id="main" className="work-page" data-opening-expression={expression}>
+    // A page that waited for its record arrives by the stream, and is shown where the stream
+    // left it when no script can place it.
+    <main
+      id="main"
+      className="work-page"
+      data-opening-expression={expression}
+      {...(settled ? STREAMED : {})}
+    >
       <ArtworkViewer
         artwork={work}
         t={words(t, ARTWORK_VIEWER_WORDS)}
         locale={locale}
-        initialStill={initialStill}
+        initialStill={artworkViewParams(query).get('view') === 'still'}
         initialExpression={initialExpression}
         openingExpression={expression}
         inlinePreviews={inlinePreviews}
-        live={curated ? live.then((result) => result.artwork) : undefined}
+        live={live?.then((result) => result.artwork)}
         traits={{ structure: indexed?.traits.structure, underlay: indexed?.traits.underlay }}
         lines={line ? { ink: line, light: line } : undefined}
         neighbours={neighboursFor(tokenId)}
@@ -197,22 +247,28 @@ export default async function ArtworkPage({
       <div className="section-wrap">
         {settled ? (
           <ArtworkEntry result={settled} fallback={work} locale={locale} t={t} query={query} />
-        ) : (
-          <Suspense
-            fallback={
-              <p className={recordStyles.loading} aria-busy="true">
-                {t.recordLoading}
-              </p>
-            }
-          >
+        ) : live ? (
+          // The entry stands at once as the venue holds it, and the live record takes its
+          // place when it arrives. With no script the held entry is the page's entry.
+          <Suspense fallback={<HeldEntry work={work} locale={locale} t={t} />}>
             <StreamedRecord live={live} fallback={work} locale={locale} t={t} query={query} />
           </Suspense>
-        )}
+        ) : null}
       </div>
     </main>
   );
 }
 
+/**
+ * The live entry, handed on only once its characteristics have been read too. The entry reads
+ * them itself, behind a boundary of its own, and React's cache makes that the same read; having
+ * it finished here means the live entry arrives whole. Otherwise it could take the held entry's
+ * place while still opening, and a reader would watch the entry's words go and come back.
+ *
+ * A work the indexer says was never imprinted is refused here, whatever the index holds: only
+ * the indexer can say that. The plate has been sent by then, so the refusal comes by the
+ * stream, and the venue's not-found takes the page's place, marked noindex.
+ */
 async function StreamedRecord({
   live,
   ...props
@@ -223,5 +279,9 @@ async function StreamedRecord({
   t: Messages;
   query: HistoryQuery;
 }) {
-  return <ArtworkEntry result={await live} {...props} />;
+  const result = await live;
+  if (result.status === 'not-found') notFound();
+  const work = result.artwork ?? props.fallback;
+  await getArtworkDetails(work.id, work.seed);
+  return <ArtworkEntry result={result} {...props} />;
 }

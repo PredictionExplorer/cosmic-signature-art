@@ -30,6 +30,7 @@ import { CollectionBar } from './collection-bar';
 import { COLLECTION_BAR_WORDS } from './collection-bar.words';
 import { SpectrumWall } from './spectrum-wall';
 import styles from './collection.module.css';
+import { AWAITS_STREAM, STREAMED } from '@/lib/without-script';
 
 /** A page of the collection hangs eighteen works in the sequence's rhythm. */
 const PAGE = 18;
@@ -294,6 +295,7 @@ export default async function Collection({
                   className={`collection-skeleton work-grid ${styles.skeleton}`}
                   aria-busy="true"
                   aria-label={t.collection}
+                  {...AWAITS_STREAM}
                 >
                   <div className="loading-plate" />
                 </div>
@@ -369,7 +371,9 @@ async function SearchResults({
 }) {
   const result = await getCollection({ offset, limit: PAGE, query, includeMedia: true });
   return (
-    <>
+    // One root, so that a reader with no script can be shown what the stream brought
+    // (src/lib/without-script.ts). A plain block in a block: it lays out nothing itself.
+    <div {...STREAMED}>
       {result.notice ? (
         <p className="notice" role="status">
           {result.notice === 'partial-records' ? t.partialRecords : t.unavailable}
@@ -410,6 +414,6 @@ async function SearchResults({
           ) : null}
         </nav>
       ) : null}
-    </>
+    </div>
   );
 }
