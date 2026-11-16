@@ -15,12 +15,20 @@ export default defineConfig({
     testTimeout: process.env.CI ? 15_000 : 5_000,
     coverage: {
       provider: 'v8',
-      // The orbit section's hooks and performers are plain .ts beside their components.
-      include: ['src/lib/**/*.ts', 'src/components/**/*.tsx', 'src/components/orbit-*.ts'],
-      exclude: ['**/*.test.*'],
+      // All of the venue's source, so a file no test loads is reported at nothing and counts.
+      // The list was once the library and the components by name, which left the routes, the
+      // proxy and the plain .ts engines beside the components out of the report altogether.
+      include: ['src/**/*.{ts,tsx}'],
+      exclude: ['**/*.test.*', '**/*.d.ts'],
       thresholds: {
-        lines: 75,
-        branches: 65,
+        // Floors a few points under what the suite reaches, so that losing a test file shows.
+        // Measured on 16 November 2026 over all of src: lines 93.8, statements 92.1, functions
+        // 90.9, branches 84.9. The floors were 75 and 65, over the narrower list. Raise them
+        // as the figures rise; a floor only ever goes down with its reason beside it.
+        lines: 91,
+        statements: 89,
+        functions: 88,
+        branches: 82,
         'src/lib/auction/rules.ts': { 100: true },
         'src/lib/auction/client.ts': { lines: 95, branches: 90, functions: 90 },
         'src/components/live-auction.tsx': { lines: 90, branches: 80 },
