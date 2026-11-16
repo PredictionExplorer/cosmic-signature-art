@@ -330,7 +330,7 @@ export const en = {
   wavelength: 'Dominant wavelength',
   bodyHues: 'Body hues',
   masses: 'Masses',
-  eccentricity: 'Eccentricity',
+  eccentricity: 'Drift eccentricity',
   selection: 'Selection',
   glossary: 'Glossary',
   glossarySignature:
@@ -342,7 +342,7 @@ export const en = {
   glossarySpectralClass:
     'The spectral class follows the stellar scale, from O, the bluest, to M, the reddest, read from the palette’s dominant wavelength.',
   glossaryChaos:
-    'Chaos, from 0 to 100, measures how sensitively the orbit depended on its starting conditions.',
+    'Chaos, from 0 to 100, is the publisher’s measure of how widely the orbit’s motion is spread across frequencies within the recorded window: near 0 it repeats like a metronome, near 100 it keeps no rhythm.',
   glossarySyzygies:
     'A syzygy is a moment when the three bodies fall into one line. Zero means they never did.',
   glossaryBorda:
@@ -350,7 +350,8 @@ export const en = {
   glossaryWavelength:
     'The dominant wavelength is the hue of the palette’s anchor, measured in nanometres of visible light.',
   glossaryMasses: 'The three masses set how strongly each body pulls on the other two.',
-  glossaryEccentricity: 'Eccentricity measures how far the drift ellipse departs from a circle.',
+  glossaryEccentricity:
+    'Drift eccentricity measures how far the ellipse the camera is carried along departs from a circle. It is drawn from the seed and says nothing of the three bodies’ paths.',
   fatePublished: 'Published fate: “{fate}”',
   glossaryFate:
     'Fate is a trait the publisher gives each token, kept here as published: “Ejection” where its record finds one body free of the other two, “Eternal Dance” where it finds none by step {steps}, where it stops looking.',
@@ -516,7 +517,7 @@ export const en = {
   // Fork E · exhibitions, trails, sharing images, Verify a download
   exhibitions: 'Exhibitions',
   exhibitionsIntro:
-    'Hangs and trails through the collection. Each is dated and signed, and each trail states the published measurement it follows.',
+    'Hangs and trails through the collection. Each is dated and signed, and each trail states the measurement it follows.',
   hang: 'Hang',
   trail: 'Trail',
   hungBy: 'Hung by {curator}',
@@ -527,24 +528,29 @@ export const en = {
   theWorks: 'The works',
   trailLongCurve: 'The Long Curve',
   trailLongCurveRule:
-    'Works whose published orbital eccentricity is 0.48 or above: the most elongated orbits in the collection.',
+    'Works whose orbit is at least 1.55 times as long as it is wide: the longest figures in the collection.',
   trailLongCurveNote:
-    'Eccentricity measures how far an orbit’s drift ellipse departs from a circle. When this trail was hung the collection ran from 0.40 to 0.50, so these are its longest curves. In Light the ribbons stretch and thin at the far end of each pass; in Ink the fluid is pulled into long, unhurried strokes. They hang in order, from the most elongated down.',
+    'This measure is not the publisher’s. It is taken here, from the orbit and not from the picture: every hundredth step of the recorded window, for all three bodies, in the plane of the orbit’s greatest extent; its length along that plane’s first axis, divided by its width along the second. It is derived from the seed by the same arithmetic your browser runs on every work’s page. When this trail was hung the collection’s middle was 1.25, and fifty-one, at 2.01, was twice as long as it is wide. They hang in order, from the longest down.',
+  trailLongCurveCorrected:
+    'Re-hung November 2026. As first hung, on 27 October, this trail followed the published drift eccentricity, which describes the camera’s path and not the orbit. Its ten works were 059, 053, 034, 030, 061, 002, 046, 068, 043 and 003.',
   trailAlmostStill: 'Almost Still',
-  trailAlmostStillRule: 'Works whose published chaos is 16 or below, of 100: the calmest orbits.',
+  trailAlmostStillRule:
+    'Works whose published chaos is 16 or below, of 100: the most regular orbits in the collection.',
   trailAlmostStillNote:
-    'Chaos measures how sensitively an orbit depended on where it began. These barely did. Their Light ribbons lie close and repeat; their Ink settles almost where it was laid, and the sheet keeps its grain. The trail begins with the two quietest orbits, at 13, and ends where the collection’s middle begins.',
+    'Chaos is the publisher’s measure of how widely an orbit’s motion is spread across frequencies: near 0 it repeats like a metronome, near 100 it keeps no rhythm. These keep their rhythm most closely. Chaos does not measure how an orbit answers to a change in its start; each work’s page tries that for itself, under One part in a trillion. The trail begins with the two lowest, at 13, and ends where the collection’s middle begins.',
   trailTurbulence: 'Turbulence',
   trailTurbulenceRule:
-    'Works whose published chaos is 24 or above, of 100: the most disturbed orbits.',
+    'Works whose published chaos is 24 or above, of 100: the least regular orbits in the collection.',
   trailTurbulenceNote:
-    'At the other end of the same measure, these orbits were the most sensitive to their beginnings. The ribbons cross and double back; the ink is carried furthest from where the bodies passed. Sixty-nine, at 28, was the most turbulent orbit recorded when this trail was hung.',
+    'At the other end of the same measure, these orbits spread their motion across the most frequencies and keep the least rhythm. Even so, the whole collection sits near the regular end of the scale: sixty-nine, at 28 of 100, was the highest recorded when this trail was hung. The measure does not say how an orbit answers to a change in its start; each work’s page tries that for itself, under One part in a trillion.',
+  trailChaosCorrected:
+    'Corrected November 2026. As first hung, this trail said that chaos measures how sensitively an orbit depended on where it began. It measures how regular the motion is.',
   trailLightBecomingTrace: 'Light Becoming Trace',
   trailLightBecomingTraceRule:
     'Works whose published braid crossings number 50 or more: the orbit ribbons that cross one another most often.',
   trailLightBecomingTraceNote:
     'Each time one ribbon passes over another, the publisher counts a crossing. Where there are many, the Light plate is a weave, and in Ink the same crossings become folds in a single trace. Eleven, with 97, was the densest weave in the collection when this trail was hung; the trail follows the count down to fifty.',
-  measureEccentricity: 'eccentricity {value}',
+  measureElongation: '{value} times as long as wide',
   measureChaos: 'chaos {value} / 100',
   measureCrossings: '{value} crossings',
   cycleNote:

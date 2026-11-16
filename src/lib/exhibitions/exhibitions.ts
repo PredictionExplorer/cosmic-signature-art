@@ -5,16 +5,27 @@ import {
   type CycleSummary,
   type IndexedWork,
 } from '@/lib/art/collection-index';
+import { orbitElongation } from '@/lib/art/orbit-windows';
 import type { Messages } from '@/lib/i18n/en';
 import { fill } from '@/lib/i18n/format';
 import type { Locale } from '@/lib/i18n/routing';
 
 /**
  * The exhibitions: named, dated, signed hangs that persist. A hang is editorial, a list of
- * works chosen by eye. A trail is a rule over one published measurement, stated on its page
- * and applied to the whole index, so its members are the publisher's own numbers and never an
- * affinity score of ours. A cycle is the collection's chapter, hung as it was imprinted.
- * Everything here runs on the server; a page hands its client components the works' media.
+ * works chosen by eye. A trail is a rule over one measurement, stated on its page and applied
+ * to the whole index, so its members are numbers anyone can check and never an affinity score
+ * of ours. Three trails follow a measurement the publisher records. One, the Long Curve,
+ * follows a measurement the venue takes of the orbit itself, and says so on its page. A cycle
+ * is the collection's chapter, hung as it was imprinted. Everything here runs on the server; a
+ * page hands its client components the works' media.
+ *
+ * A trail's words are true of what its number measures, in the terms of whoever measured it.
+ * Two were not, and were corrected in November 2026, each with a dated line on its page:
+ * the Long Curve followed the published "orbit_eccentricity", which is the eccentricity of the
+ * ellipse the camera drifts along (one uniform draw from the seed, 0.40 to 0.50) and says
+ * nothing of the three bodies' paths; and the two chaos trails said the published chaos index
+ * measures sensitivity to the start, where the generator defines it as how widely the motion
+ * is spread across frequencies.
  */
 
 /** The day the hangs and trails were hung; a cycle is dated by its imprint. */
@@ -24,11 +35,15 @@ export const CURATOR = 'Cosmic Signature';
 /** A trail is a short walk: fewer than six works is a pairing, more than twelve a catalogue. */
 export const TRAIL_SIZE = { min: 6, max: 12 };
 
-export type Measure = 'eccentricity' | 'chaos' | 'braidCrossings';
+/**
+ * What a trail may follow. `chaos` and `braidCrossings` are the publisher's, read from the index.
+ * `elongation` is the venue's: the orbit's length against its width (orbitElongation).
+ */
+export type Measure = 'elongation' | 'chaos' | 'braidCrossings';
 export type TrailId = 'the-long-curve' | 'almost-still' | 'turbulence' | 'light-becoming-trace';
 export interface TrailRule {
   id: TrailId;
-  /** The published field the rule reads. */
+  /** The measurement the rule reads. */
   measure: Measure;
   comparison: 'atLeast' | 'atMost';
   threshold: number;
@@ -37,21 +52,27 @@ export interface TrailRule {
   title: keyof Messages;
   rule: keyof Messages;
   note: keyof Messages;
-  /** The measured value beside each work: "eccentricity {value}", "chaos {value} / 100"… */
+  /** The value beside each work: "{value} times as long as wide", "chaos {value} / 100"… */
   measureLine: keyof Messages;
+  /** A dated line under the note, where the trail's words or its works have been corrected. */
+  corrected?: keyof Messages;
 }
 
 export const TRAILS: readonly TrailRule[] = [
   {
+    // Re-hung in November 2026 by the orbit's own length against its width. As first hung it
+    // followed the published drift eccentricity (0.48 or above), the camera's and not the
+    // orbit's. 1.55 falls in the widest gap near it: № 070 at 1.56, then № 068 at 1.51.
     id: 'the-long-curve',
-    measure: 'eccentricity',
+    measure: 'elongation',
     comparison: 'atLeast',
-    threshold: 0.48,
+    threshold: 1.55,
     order: 'descending',
     title: 'trailLongCurve',
     rule: 'trailLongCurveRule',
     note: 'trailLongCurveNote',
-    measureLine: 'measureEccentricity',
+    measureLine: 'measureElongation',
+    corrected: 'trailLongCurveCorrected',
   },
   {
     id: 'almost-still',
@@ -63,6 +84,7 @@ export const TRAILS: readonly TrailRule[] = [
     rule: 'trailAlmostStillRule',
     note: 'trailAlmostStillNote',
     measureLine: 'measureChaos',
+    corrected: 'trailChaosCorrected',
   },
   {
     id: 'turbulence',
@@ -74,6 +96,7 @@ export const TRAILS: readonly TrailRule[] = [
     rule: 'trailTurbulenceRule',
     note: 'trailTurbulenceNote',
     measureLine: 'measureChaos',
+    corrected: 'trailChaosCorrected',
   },
   {
     id: 'light-becoming-trace',
@@ -93,10 +116,20 @@ export interface TrailMember {
   value: number;
 }
 
-/** A work meets a rule when the publisher recorded the measure and it clears the threshold. */
+/**
+ * The number a trail reads of one work: the publisher's own from the index, or the venue's
+ * measure of the orbit. Nothing where it was not recorded, or where the orbit's window no
+ * longer binds to its record.
+ */
+export function measureOf(measure: Measure, work: IndexedWork): number | undefined {
+  const value = measure === 'elongation' ? orbitElongation(work.id) : work[measure];
+  return typeof value === 'number' && Number.isFinite(value) ? value : undefined;
+}
+
+/** A work meets a rule when its measure is known and clears the threshold. */
 export function meetsRule(rule: TrailRule, work: IndexedWork): boolean {
-  const value = work[rule.measure];
-  if (typeof value !== 'number' || !Number.isFinite(value)) return false;
+  const value = measureOf(rule.measure, work);
+  if (value === undefined) return false;
   return rule.comparison === 'atLeast' ? value >= rule.threshold : value <= rule.threshold;
 }
 
@@ -104,7 +137,7 @@ export function meetsRule(rule: TrailRule, work: IndexedWork): boolean {
 export function trailMembers(rule: TrailRule, index: CollectionIndex = collectionIndex) {
   return index.works
     .filter((work) => meetsRule(rule, work))
-    .map((work): TrailMember => ({ work, value: work[rule.measure] as number }))
+    .map((work): TrailMember => ({ work, value: measureOf(rule.measure, work)! }))
     .sort((a, b) =>
       rule.order === 'descending'
         ? b.value - a.value || a.work.id - b.work.id
@@ -112,10 +145,13 @@ export function trailMembers(rule: TrailRule, index: CollectionIndex = collectio
     );
 }
 
-/** The measure as the entry prints it: three decimals of eccentricity, whole chaos and crossings. */
+/**
+ * The measure as it is printed: an orbit's length against its width to two decimals, always
+ * two, so that the words beside it keep one form in every language; whole chaos and crossings.
+ */
 export function formatMeasure(measure: Measure, value: number, locale: Locale): string {
-  return measure === 'eccentricity'
-    ? new Intl.NumberFormat(locale, { minimumFractionDigits: 3, maximumFractionDigits: 3 }).format(
+  return measure === 'elongation'
+    ? new Intl.NumberFormat(locale, { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(
         value,
       )
     : new Intl.NumberFormat(locale, { maximumFractionDigits: 0 }).format(value);

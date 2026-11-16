@@ -317,7 +317,7 @@ export const zhTW: Messages = {
   wavelength: '主波長',
   bodyHues: '天體色相',
   masses: '質量',
-  eccentricity: '偏心率',
+  eccentricity: '漂移偏心率',
   selection: '遴選',
   glossary: '詞彙表',
   glossarySignature:
@@ -325,12 +325,14 @@ export const zhTW: Messages = {
   glossaryExpression: '一種表達是對該軌道的一次創作性渲染。光與墨是其中的兩種，地位相同。',
   glossaryUnderlay: '底層結構是繪於主結構之下的次級結構，以所述的不透明度呈現。',
   glossarySpectralClass: '光譜型沿恆星序列排列，從最藍的 O 到最紅的 M，由調色盤的主波長讀出。',
-  glossaryChaos: '混沌值從 0 到 100，衡量軌道對初始條件的敏感程度。',
+  glossaryChaos:
+    '混沌值從 0 到 100，是發布方的測量：在記錄的時段內，軌道的運動在多寬的頻率範圍上展開。接近 0 時，它像節拍器一樣重複；接近 100 時，它不守任何節奏。',
   glossarySyzygies: '合點是三個天體排成一線的瞬間。零表示它們從未如此。',
   glossaryBorda: '十萬條候選軌道經模擬並以波達計數排序；公布的編號即它選出的那一條。',
   glossaryWavelength: '主波長是調色盤基準色相的波長，以可見光的奈米計。',
   glossaryMasses: '三個質量決定每個天體對另外兩個的引力強弱。',
-  glossaryEccentricity: '偏心率衡量漂移橢圓偏離圓形的程度。',
+  glossaryEccentricity:
+    '漂移偏心率衡量鏡頭漂移所沿的橢圓偏離圓形的程度。它由種子抽取，不反映三個天體的路徑。',
   fatePublished: '已發布的歸宿：「{fate}」',
   glossaryFate:
     '歸宿是發布方賦予每枚代幣的特徵，此處按發布原樣保留：紀錄發現一個天體已不受另外兩個束縛時為「Ejection」；到第 {steps} 步，也就是紀錄停止觀察之處，仍未發現這樣的天體時為「Eternal Dance」。',
@@ -488,7 +490,7 @@ export const zhTW: Messages = {
   // Fork E · exhibitions, trails, sharing images, Verify a download
   exhibitions: '展覽',
   exhibitionsIntro:
-    '穿行於典藏之間的陳列與小徑。每一場都標註日期並署名，每一條小徑都寫明它所依據的已發布測量值。',
+    '穿行於典藏之間的陳列與小徑。每一項都標註日期並署名，每一條小徑都寫明它所依據的測量值。',
   hang: '陳列',
   trail: '小徑',
   hungBy: '由{curator}陳列',
@@ -498,22 +500,26 @@ export const zhTW: Messages = {
   theRule: '規則',
   theWorks: '作品',
   trailLongCurve: '長弧',
-  trailLongCurveRule: '已發布的軌道偏心率不低於 0.48 的作品：典藏中最拉長的軌道。',
+  trailLongCurveRule: '軌道的長度至少是寬度 1.55 倍的作品：典藏中最長的圖形。',
   trailLongCurveNote:
-    '偏心率衡量軌道的漂移橢圓偏離圓形的程度。這條小徑陳列之時，典藏的偏心率介於 0.40 與 0.50 之間，所以這些是它最長的弧線。在光中，絲帶在每一程的盡頭拉伸變細；在墨中，流體被拉成悠長而不急促的筆畫。它們按偏心率從高到低依次陳列。',
+    '這項測量並非來自發布方。它是在這裡從軌道本身、而非從畫面量出的：在記錄的時段內每一百步取一步，三個天體都取，置於軌道展開最廣的平面上；以沿該平面第一軸的長度，除以沿第二軸的寬度。它由種子推導而來，所用的演算法與你的瀏覽器在每件作品頁面上執行的相同。這條小徑陳列之時，典藏的中位數為 1.25，五十一號為 2.01，長為寬的兩倍。它們按從長到短依次陳列。',
+  trailLongCurveCorrected:
+    '2026 年 11 月重新陳列。10 月 27 日初次陳列時，這條小徑依據的是已發布的漂移偏心率，它描述的是鏡頭的路徑，而不是軌道。當時的十件作品為 059、053、034、030、061、002、046、068、043 和 003。',
   trailAlmostStill: '近乎靜止',
-  trailAlmostStillRule: '已發布的混沌值不高於 16（滿分 100）的作品：最平靜的軌道。',
+  trailAlmostStillRule: '已發布的混沌值不高於 16（滿分 100）的作品：典藏中最規則的軌道。',
   trailAlmostStillNote:
-    '混沌值衡量軌道對起點的敏感程度。這些軌道幾乎不受其影響。它們的光絲帶緊貼而重複；它們的墨幾乎就停在落下的地方，紙張保留著自身的紋理。小徑從兩條最安靜的軌道開始，混沌值為 13，並在典藏的中段開始處結束。',
+    '混沌值是發布方的測量：軌道的運動在多寬的頻率範圍上展開。接近 0 時，它像節拍器一樣重複；接近 100 時，它不守任何節奏。這些軌道把自己的節奏守得最緊。混沌值並不衡量軌道對初始條件變化的反應；那是每件作品的頁面在「一兆分之一」中自行嘗試的。小徑從混沌值最低的兩條軌道開始，其值為 13，並在典藏的中段開始處結束。',
   trailTurbulence: '湍流',
-  trailTurbulenceRule: '已發布的混沌值不低於 24（滿分 100）的作品：最受擾動的軌道。',
+  trailTurbulenceRule: '已發布的混沌值不低於 24（滿分 100）的作品：典藏中最不規則的軌道。',
   trailTurbulenceNote:
-    '在同一測量值的另一端，這些軌道對起點最為敏感。絲帶交錯折返；墨被帶到離天體經過之處最遠的地方。六十九號的混沌值為 28，是這條小徑陳列時記錄到的最湍急的軌道。',
+    '在同一項測量的另一端，這些軌道的運動展開在最多的頻率上，節奏守得最鬆。即便如此，整個典藏仍靠近刻度上規則的一端：六十九號為 28（滿分 100），是這條小徑陳列時記錄到的最高值。這項測量並不說明軌道對初始條件變化的反應；那是每件作品的頁面在「一兆分之一」中自行嘗試的。',
+  trailChaosCorrected:
+    '2026 年 11 月更正。初次陳列時，這條小徑稱混沌值衡量軌道對起點的敏感程度。它衡量的是運動有多規則。',
   trailLightBecomingTrace: '光化為跡',
   trailLightBecomingTraceRule: '已發布的辮狀交叉數不少於 50 的作品：軌道絲帶彼此交叉最頻繁者。',
   trailLightBecomingTraceNote:
     '每當一條絲帶越過另一條，發布者便計一次交叉。交叉多處，光的版面便成為一張織物；而在墨中，同樣的交叉化作一道筆跡中的褶痕。十一號有 97 次交叉，是這條小徑陳列時典藏中最密的織物；小徑沿著計數一路下行至五十。',
-  measureEccentricity: '偏心率 {value}',
+  measureElongation: '長為寬的 {value} 倍',
   measureChaos: '混沌 {value} / 100',
   measureCrossings: '{value} 次交叉',
   cycleNote:

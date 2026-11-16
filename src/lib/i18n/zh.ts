@@ -317,7 +317,7 @@ export const zh: Messages = {
   wavelength: '主波长',
   bodyHues: '天体色相',
   masses: '质量',
-  eccentricity: '偏心率',
+  eccentricity: '漂移偏心率',
   selection: '遴选',
   glossary: '词汇表',
   glossarySignature:
@@ -325,12 +325,14 @@ export const zh: Messages = {
   glossaryExpression: '一种表达是对该轨道的一次创作性渲染。光与墨是其中的两种，地位相同。',
   glossaryUnderlay: '底层结构是绘于主结构之下的次级结构，以所述的不透明度呈现。',
   glossarySpectralClass: '光谱型沿恒星序列排列，从最蓝的 O 到最红的 M，由调色板的主波长读出。',
-  glossaryChaos: '混沌值从 0 到 100，衡量轨道对初始条件的敏感程度。',
+  glossaryChaos:
+    '混沌值从 0 到 100，是发布方的测量：在记录的时段内，轨道的运动在多宽的频率范围上展开。接近 0 时，它像节拍器一样重复；接近 100 时，它不守任何节奏。',
   glossarySyzygies: '合点是三个天体排成一线的瞬间。零表示它们从未如此。',
   glossaryBorda: '十万条候选轨道经模拟并以博达计数排序；公布的编号即它选出的那一条。',
   glossaryWavelength: '主波长是调色板基准色相的波长，以可见光的纳米计。',
   glossaryMasses: '三个质量决定每个天体对另外两个的引力强弱。',
-  glossaryEccentricity: '偏心率衡量漂移椭圆偏离圆形的程度。',
+  glossaryEccentricity:
+    '漂移偏心率衡量镜头漂移所沿的椭圆偏离圆形的程度。它由种子抽取，不反映三个天体的路径。',
   fatePublished: '已发布的归宿：“{fate}”',
   glossaryFate:
     '归宿是发布方赋予每枚代币的特征，此处按发布原样保留：记录发现一个天体已不受另外两个束缚时为“Ejection”；到第 {steps} 步，也就是记录停止观察之处，仍未发现这样的天体时为“Eternal Dance”。',
@@ -488,7 +490,7 @@ export const zh: Messages = {
   // Fork E · exhibitions, trails, sharing images, Verify a download
   exhibitions: '展览',
   exhibitionsIntro:
-    '穿行于藏品之间的陈列与小径。每一场都标注日期并署名，每一条小径都写明它所依据的已发布测量值。',
+    '穿行于藏品之间的陈列与小径。每一项都标注日期并署名，每一条小径都写明它所依据的测量值。',
   hang: '陈列',
   trail: '小径',
   hungBy: '由{curator}陈列',
@@ -498,22 +500,26 @@ export const zh: Messages = {
   theRule: '规则',
   theWorks: '作品',
   trailLongCurve: '长弧',
-  trailLongCurveRule: '已发布的轨道偏心率不低于 0.48 的作品：藏品中最拉长的轨道。',
+  trailLongCurveRule: '轨道的长度至少是宽度 1.55 倍的作品：藏品中最长的图形。',
   trailLongCurveNote:
-    '偏心率衡量轨道的漂移椭圆偏离圆形的程度。这条小径陈列之时，藏品的偏心率介于 0.40 与 0.50 之间，所以这些是它最长的弧线。在光中，丝带在每一程的尽头拉伸变细；在墨中，流体被拉成悠长而不急促的笔画。它们按偏心率从高到低依次陈列。',
+    '这项测量并非来自发布方。它是在这里从轨道本身、而非从画面量出的：在记录的时段内每一百步取一步，三个天体都取，置于轨道展开最广的平面上；以沿该平面第一轴的长度，除以沿第二轴的宽度。它由种子推导而来，所用的算法与你的浏览器在每件作品页面上运行的相同。这条小径陈列之时，藏品的中位数为 1.25，五十一号为 2.01，长为宽的两倍。它们按从长到短依次陈列。',
+  trailLongCurveCorrected:
+    '2026 年 11 月重新陈列。10 月 27 日初次陈列时，这条小径依据的是已发布的漂移偏心率，它描述的是镜头的路径，而不是轨道。当时的十件作品为 059、053、034、030、061、002、046、068、043 和 003。',
   trailAlmostStill: '近乎静止',
-  trailAlmostStillRule: '已发布的混沌值不高于 16（满分 100）的作品：最平静的轨道。',
+  trailAlmostStillRule: '已发布的混沌值不高于 16（满分 100）的作品：藏品中最规则的轨道。',
   trailAlmostStillNote:
-    '混沌值衡量轨道对起点的敏感程度。这些轨道几乎不受其影响。它们的光丝带紧贴而重复；它们的墨几乎就停在落下的地方，纸张保留着自身的纹理。小径从两条最安静的轨道开始，混沌值为 13，并在藏品的中段开始处结束。',
+    '混沌值是发布方的测量：轨道的运动在多宽的频率范围上展开。接近 0 时，它像节拍器一样重复；接近 100 时，它不守任何节奏。这些轨道把自己的节奏守得最紧。混沌值并不衡量轨道对初始条件变化的反应；那是每件作品的页面在“万亿分之一”中自行尝试的。小径从混沌值最低的两条轨道开始，其值为 13，并在藏品的中段开始处结束。',
   trailTurbulence: '湍流',
-  trailTurbulenceRule: '已发布的混沌值不低于 24（满分 100）的作品：最受扰动的轨道。',
+  trailTurbulenceRule: '已发布的混沌值不低于 24（满分 100）的作品：藏品中最不规则的轨道。',
   trailTurbulenceNote:
-    '在同一测量值的另一端，这些轨道对起点最为敏感。丝带交错折返；墨被带到离天体经过之处最远的地方。六十九号的混沌值为 28，是这条小径陈列时记录到的最湍急的轨道。',
+    '在同一项测量的另一端，这些轨道的运动展开在最多的频率上，节奏守得最松。即便如此，整个藏品仍靠近刻度上规则的一端：六十九号为 28（满分 100），是这条小径陈列时记录到的最高值。这项测量并不说明轨道对初始条件变化的反应；那是每件作品的页面在“万亿分之一”中自行尝试的。',
+  trailChaosCorrected:
+    '2026 年 11 月更正。初次陈列时，这条小径称混沌值衡量轨道对起点的敏感程度。它衡量的是运动有多规则。',
   trailLightBecomingTrace: '光化为迹',
   trailLightBecomingTraceRule: '已发布的辫状交叉数不少于 50 的作品：轨道丝带彼此交叉最频繁者。',
   trailLightBecomingTraceNote:
     '每当一条丝带越过另一条，发布者便计一次交叉。交叉多处，光的版面便成为一张织物；而在墨中，同样的交叉化作一道笔迹中的褶痕。十一号有 97 次交叉，是这条小径陈列时藏品中最密的织物；小径沿着计数一路下行至五十。',
-  measureEccentricity: '偏心率 {value}',
+  measureElongation: '长为宽的 {value} 倍',
   measureChaos: '混沌 {value} / 100',
   measureCrossings: '{value} 次交叉',
   cycleNote:

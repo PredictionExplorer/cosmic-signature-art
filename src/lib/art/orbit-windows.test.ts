@@ -1,9 +1,16 @@
 import { describe, expect, it } from 'vitest';
 import raw from './orbit-windows.json' with { type: 'json' };
-import { bindWindow, filmOrbit, loadOrbitWindows, performedOrbits } from './orbit-windows';
+import {
+  bindWindow,
+  filmOrbit,
+  loadOrbitWindows,
+  orbitElongation,
+  performedOrbits,
+} from './orbit-windows';
 import { workOrbit } from './orbit-records';
 import { inkClock } from './ink-clocks';
-import { closestApproachOf } from '@/lib/physics/orbit';
+import { closestApproachOf, WindowPerformance } from '@/lib/physics/orbit';
+import { principalPlane } from '@/lib/physics/plane';
 
 const windows = loadOrbitWindows(raw);
 const ids = [...windows.keys()];
@@ -46,6 +53,34 @@ describe('the orbit windows', () => {
     const [orbit] = performedOrbits([31]);
     expect(closestApproachOf(orbit.window)).toEqual(workOrbit(31)!.published.closestApproach);
   });
+
+  it('measure how long an orbit’s figure is against how wide, from its committed bounds', () => {
+    // № 051 is the longest in the collection: twice as long as it is wide.
+    expect(orbitElongation(51)).toBeCloseTo(2.015, 3);
+    const [u0, u1, v0, v1] = windows.get(51)!.plane.bounds;
+    expect(orbitElongation(51)).toBe((u1 - u0) / (v1 - v0));
+    // Every work has one, and none without a window bound to its record.
+    for (const id of ids) expect(orbitElongation(id), `№ ${id}`).toBeGreaterThan(0.5);
+    expect(orbitElongation(9999)).toBeUndefined();
+  });
+
+  it('reach № 051’s committed bounds again by replaying its window, as a browser would', () => {
+    // The measure is the venue's own, so it must be one anyone can take again: the recorded
+    // window replayed from its first step, every hundredth step kept as the work page keeps
+    // them, and the plane of greatest extent found over those samples.
+    const [orbit] = performedOrbits([51]);
+    const stride = 100;
+    const replay = new WindowPerformance(orbit.window);
+    const samples = new Float32Array(Math.ceil(orbit.window.steps / stride) * 9);
+    let count = 0;
+    replay.run(orbit.window.steps, stride, () => {
+      samples.set(replay.positions, count * 9);
+      count += 1;
+    });
+    const { bounds } = principalPlane(samples, count);
+    expect([bounds.u0, bounds.u1, bounds.v0, bounds.v1]).toEqual([...orbit.window.plane.bounds]);
+    expect((bounds.u1 - bounds.u0) / (bounds.v1 - bounds.v0)).toBe(orbitElongation(51));
+  }, 60_000);
 
   it('hand a work’s viewer its films’ score: the window, the hues, the record’s closest approach and the Ink film’s clock', () => {
     const [performed] = performedOrbits([31]);

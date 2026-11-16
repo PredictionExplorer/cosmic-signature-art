@@ -333,7 +333,7 @@ export const vi: Messages = {
   wavelength: 'Bước sóng chủ đạo',
   bodyHues: 'Sắc độ các vật thể',
   masses: 'Khối lượng',
-  eccentricity: 'Độ lệch tâm',
+  eccentricity: 'Độ lệch tâm trôi dạt',
   selection: 'Tuyển chọn',
   glossary: 'Bảng thuật ngữ',
   glossarySignature:
@@ -343,7 +343,8 @@ export const vi: Messages = {
   glossaryUnderlay: 'Lớp nền là cấu trúc phụ được vẽ bên dưới cấu trúc chính, với độ mờ đã nêu.',
   glossarySpectralClass:
     'Lớp quang phổ theo thang sao, từ O xanh nhất đến M đỏ nhất, đọc từ bước sóng chủ đạo của bảng màu.',
-  glossaryChaos: 'Hỗn độn, từ 0 đến 100, đo mức độ nhạy của quỹ đạo với điều kiện ban đầu.',
+  glossaryChaos:
+    'Hỗn độn, từ 0 đến 100, là phép đo của nhà phát hành: chuyển động của quỹ đạo trải rộng đến đâu trên các tần số, trong cửa sổ đã ghi. Gần 0, chuyển động ấy lặp lại như một máy đếm nhịp; gần 100, nó không giữ nhịp nào.',
   glossarySyzygies:
     'Một syzygy là khoảnh khắc ba vật thể thẳng hàng. Số không nghĩa là điều đó chưa từng xảy ra.',
   glossaryBorda:
@@ -351,7 +352,8 @@ export const vi: Messages = {
   glossaryWavelength:
     'Bước sóng chủ đạo là sắc độ của màu neo trong bảng màu, đo bằng nanomét ánh sáng khả kiến.',
   glossaryMasses: 'Ba khối lượng định mức mỗi vật thể hút hai vật thể còn lại mạnh đến đâu.',
-  glossaryEccentricity: 'Độ lệch tâm đo mức hình elip trôi dạt lệch khỏi hình tròn.',
+  glossaryEccentricity:
+    'Độ lệch tâm trôi dạt đo mức lệch khỏi hình tròn của hình elip mà máy quay đi theo. Nó được rút ra từ hạt giống và không nói gì về đường đi của ba vật thể.',
   fatePublished: 'Kết cục đã công bố: “{fate}”',
   glossaryFate:
     'Kết cục là một đặc tính nhà phát hành gán cho mỗi token, được giữ ở đây đúng như đã công bố: “Ejection” khi hồ sơ ghi nhận một vật thể không còn gắn kết với hai vật còn lại, “Eternal Dance” khi hồ sơ không ghi nhận vật thể nào như thế cho đến bước {steps}, nơi nó ngừng dõi theo.',
@@ -515,7 +517,7 @@ export const vi: Messages = {
   // Fork E · exhibitions, trails, sharing images, Verify a download
   exhibitions: 'Triển lãm',
   exhibitionsIntro:
-    'Những phòng treo và lối đi xuyên qua bộ sưu tập. Mỗi triển lãm đều ghi ngày và ký tên, và mỗi lối đi nêu rõ phép đo đã công bố mà nó đi theo.',
+    'Những phòng treo và lối đi xuyên qua bộ sưu tập. Mỗi triển lãm đều ghi ngày và ký tên, và mỗi lối đi nêu rõ phép đo mà nó đi theo.',
   hang: 'Phòng treo',
   trail: 'Lối đi',
   hungBy: 'Người treo: {curator}',
@@ -526,25 +528,29 @@ export const vi: Messages = {
   theWorks: 'Các tác phẩm',
   trailLongCurve: 'Đường cong dài',
   trailLongCurveRule:
-    'Những tác phẩm có độ lệch tâm quỹ đạo đã công bố từ 0,48 trở lên: những quỹ đạo kéo dài nhất của bộ sưu tập.',
+    'Những tác phẩm có quỹ đạo dài ít nhất gấp 1,55 lần chiều rộng: những hình dài nhất của bộ sưu tập.',
   trailLongCurveNote:
-    'Độ lệch tâm đo mức hình elip trôi của quỹ đạo rời xa hình tròn. Khi lối đi này được treo, bộ sưu tập trải từ 0,40 đến 0,50, nên đây là những đường cong dài nhất của nó. Trong Ánh sáng, các dải kéo giãn và mỏng dần ở đầu xa của mỗi vòng; trong Mực, chất lưu bị kéo thành những nét dài, không vội. Chúng được treo theo thứ tự, từ kéo dài nhất trở xuống.',
+    'Phép đo này không phải của nhà phát hành. Nó được thực hiện tại đây, trên chính quỹ đạo chứ không phải trên bức ảnh: cứ mỗi một trăm bước của cửa sổ đã ghi, với cả ba vật thể, trên mặt phẳng nơi quỹ đạo trải rộng nhất; chiều dài theo trục thứ nhất của mặt phẳng ấy, chia cho chiều rộng theo trục thứ hai. Nó được suy ra từ hạt giống bằng chính phép tính mà trình duyệt của bạn chạy trên trang của mỗi tác phẩm. Khi lối đi này được treo, giá trị giữa của bộ sưu tập là 1,25, và tác phẩm năm mươi mốt, ở mức 2,01, dài gấp đôi chiều rộng. Chúng được treo theo thứ tự, từ dài nhất trở xuống.',
+  trailLongCurveCorrected:
+    'Treo lại tháng 11 năm 2026. Khi được treo lần đầu, ngày 27 tháng 10, lối đi này đi theo độ lệch tâm trôi dạt đã công bố, vốn mô tả đường đi của máy quay chứ không phải quỹ đạo. Mười tác phẩm khi ấy là 059, 053, 034, 030, 061, 002, 046, 068, 043 và 003.',
   trailAlmostStill: 'Gần như tĩnh lặng',
   trailAlmostStillRule:
-    'Những tác phẩm có độ hỗn độn đã công bố từ 16 trở xuống, trên thang 100: những quỹ đạo êm ả nhất.',
+    'Những tác phẩm có độ hỗn độn đã công bố từ 16 trở xuống, trên thang 100: những quỹ đạo đều đặn nhất của bộ sưu tập.',
   trailAlmostStillNote:
-    'Độ hỗn độn đo mức quỹ đạo phụ thuộc nhạy cảm vào nơi nó bắt đầu. Những quỹ đạo này gần như không phụ thuộc. Dải Ánh sáng của chúng nằm sát và lặp lại; Mực của chúng lắng gần như đúng nơi được đặt, và tờ giấy giữ lấy vân của mình. Lối đi bắt đầu với hai quỹ đạo lặng nhất, ở mức 13, và kết thúc nơi phần giữa của bộ sưu tập bắt đầu.',
+    'Độ hỗn độn là phép đo của nhà phát hành: chuyển động của quỹ đạo trải rộng đến đâu trên các tần số. Gần 0, chuyển động ấy lặp lại như một máy đếm nhịp; gần 100, nó không giữ nhịp nào. Những quỹ đạo này giữ nhịp của mình chặt chẽ nhất. Độ hỗn độn không đo việc quỹ đạo đáp lại thế nào trước một thay đổi ở trạng thái ban đầu của nó; trang của mỗi tác phẩm tự thử điều đó, trong mục “Một phần nghìn tỷ”. Lối đi bắt đầu với hai quỹ đạo có độ hỗn độn thấp nhất, ở mức 13, và kết thúc nơi phần giữa của bộ sưu tập bắt đầu.',
   trailTurbulence: 'Nhiễu động',
   trailTurbulenceRule:
-    'Những tác phẩm có độ hỗn độn đã công bố từ 24 trở lên, trên thang 100: những quỹ đạo bị xáo trộn nhất.',
+    'Những tác phẩm có độ hỗn độn đã công bố từ 24 trở lên, trên thang 100: những quỹ đạo kém đều đặn nhất của bộ sưu tập.',
   trailTurbulenceNote:
-    'Ở đầu kia của cùng một phép đo, những quỹ đạo này nhạy cảm nhất với điểm khởi đầu. Các dải cắt nhau và quay ngược; mực bị cuốn xa nhất khỏi nơi các vật thể đi qua. Sáu mươi chín, ở mức 28, là quỹ đạo nhiễu động nhất được ghi nhận khi lối đi này được treo.',
+    'Ở đầu kia của cùng một phép đo, những quỹ đạo này trải chuyển động của mình trên nhiều tần số nhất và ít giữ nhịp nhất. Dù vậy, cả bộ sưu tập vẫn nằm gần đầu đều đặn của thang đo: tác phẩm sáu mươi chín, ở mức 28 trên 100, có độ hỗn độn cao nhất được ghi nhận khi lối đi này được treo. Phép đo này không nói quỹ đạo đáp lại thế nào trước một thay đổi ở trạng thái ban đầu của nó; trang của mỗi tác phẩm tự thử điều đó, trong mục “Một phần nghìn tỷ”.',
+  trailChaosCorrected:
+    'Đính chính tháng 11 năm 2026. Khi được treo lần đầu, lối đi này nói rằng độ hỗn độn đo mức quỹ đạo phụ thuộc nhạy cảm vào nơi nó bắt đầu. Độ hỗn độn đo mức độ đều đặn của chuyển động.',
   trailLightBecomingTrace: 'Ánh sáng thành dấu vết',
   trailLightBecomingTraceRule:
     'Những tác phẩm có số giao cắt bím đã công bố từ 50 trở lên: những dải quỹ đạo cắt nhau thường xuyên nhất.',
   trailLightBecomingTraceNote:
     'Mỗi lần một dải vượt qua dải khác, nhà phát hành tính một giao cắt. Nơi có nhiều giao cắt, bản in Ánh sáng là một tấm dệt, và trong Mực những giao cắt ấy trở thành nếp gấp trong một dấu vết duy nhất. Mười một, với 97, là tấm dệt dày nhất của bộ sưu tập khi lối đi này được treo; lối đi theo số đếm đi xuống tới năm mươi.',
-  measureEccentricity: 'độ lệch tâm {value}',
+  measureElongation: 'dài gấp {value} lần chiều rộng',
   measureChaos: 'hỗn độn {value} / 100',
   measureCrossings: '{value} giao cắt',
   cycleNote:
