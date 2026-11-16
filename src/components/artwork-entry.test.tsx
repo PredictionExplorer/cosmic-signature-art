@@ -2,6 +2,7 @@ import { render, screen, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { getArtworkDetails } from '@/lib/art/server';
 import { getCuratedArtwork } from '@/lib/art/catalog';
+import { artworkFromIndex } from '@/lib/art/collection-cards';
 import { indexedWork } from '@/lib/art/collection-index';
 import { detailsFromIndexedWork } from '@/lib/art/details-validation';
 import { en } from '@/lib/i18n/en';
@@ -157,6 +158,45 @@ describe('the entry', () => {
     expect(container.querySelector('b')).toBeNull();
     expect(screen.getByText(/Arbitrum record as of/)).toHaveTextContent('October 22, 2026');
     expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent(/^Signature 031$/);
+  });
+
+  it('dates a record from the index by the index’s own day, whatever the clock says now', async () => {
+    vi.mocked(getArtworkDetails).mockResolvedValue({ status: 'unavailable', details: null });
+    const snapshot: Artwork = {
+      ...artworkFromIndex(indexedWork(17)!),
+      provenance: {
+        ...artworkFromIndex(indexedWork(17)!).provenance,
+        source: 'index-snapshot',
+        checkedOn: '2026-10-26',
+      },
+    };
+    vi.useFakeTimers({ now: new Date('2026-11-13T23:15:00Z') });
+    try {
+      render(await EntryBody({ work: snapshot, locale: 'en', t: en }));
+    } finally {
+      vi.useRealTimers();
+    }
+    expect(screen.getByText(en.preservedRecord)).toBeVisible();
+    const custody = screen.getByText(/Arbitrum record as of/);
+    expect(custody).toHaveTextContent(/^Arbitrum record as of October 26, 2026$/);
+    expect(within(custody).getByText('October 26, 2026')).toHaveAttribute('datetime', '2026-10-26');
+    // The index's own characteristics stand in for the identical seed.
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent(/^Signature 017 — /);
+    expect(screen.queryByText(en.detailsUnavailable)).not.toBeInTheDocument();
+  });
+
+  it('stamps the moment of reading on a live record only', async () => {
+    vi.mocked(getArtworkDetails).mockResolvedValue({ status: 'unavailable', details: null });
+    vi.useFakeTimers({ now: new Date('2026-11-13T23:15:00Z') });
+    try {
+      render(await EntryBody({ work: artwork(), locale: 'en', t: en }));
+    } finally {
+      vi.useRealTimers();
+    }
+    expect(screen.getByText(/Arbitrum record as of/)).toHaveTextContent(
+      /Nov 13, 2026, 11:15\sPM\sUTC/,
+    );
+    expect(screen.queryByText(en.preservedRecord)).not.toBeInTheDocument();
   });
 });
 

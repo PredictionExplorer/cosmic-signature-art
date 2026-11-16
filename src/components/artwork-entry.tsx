@@ -359,9 +359,7 @@ export function EntryView({
         </>
       ) : null}
       <div className={styles.lines}>
-        {work.provenance.source === 'curated-fallback' ? (
-          <p className="notice">{t.preservedRecord}</p>
-        ) : null}
+        {work.provenance.source !== 'live' ? <p className="notice">{t.preservedRecord}</p> : null}
         {unavailable ? <p className="notice">{t.detailsUnavailable}</p> : null}
         <h1 id="entry-title" className={styles.title}>
           {t.signature} {folio}
