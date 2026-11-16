@@ -4,10 +4,12 @@ import { collectionIndex } from '@/lib/art/collection-index';
 import { orbitIds } from '@/lib/art/orbit-records';
 import { ART_API_ORIGIN } from '@/lib/art/constants';
 import { parseArtworkId } from '@/lib/art/validation';
+import { DAY_WORK_POOL } from '@/lib/art/work-of-the-day';
 import { exhibitions } from '@/lib/exhibitions/exhibitions';
 import { locales } from '@/lib/i18n/routing';
 import {
   ASK_TIMEOUT_MS,
+  DAY_POOL_SIZE,
   EXHIBITIONS,
   INDEXED_WORKS,
   NOT_HERE,
@@ -17,6 +19,7 @@ import {
   nearestWork,
   notHere,
   readAddress,
+  renderedOnRequest,
   unrecorded,
   visitorAddress,
 } from './addresses';
@@ -28,6 +31,12 @@ describe('what the proxy holds', () => {
   // rebuild the registry, then bring the list in step (src/lib/addresses.ts).
   it('holds every work in the collection index, and no other', () => {
     expect(ascending(INDEXED_WORKS)).toEqual(ascending(collectionIndex.works.map(({ id }) => id)));
+  });
+
+  it('counts the works that take turns as the day’s work', () => {
+    // The pool widens by itself when an opening clip is cut for another work; the document's
+    // first script is written with its size, and the proxy names that script by its hash.
+    expect(DAY_POOL_SIZE).toBe(DAY_WORK_POOL.length);
   });
 
   it('holds every orbit record, and no other', () => {
@@ -269,5 +278,41 @@ describe('asking the indexer', () => {
     );
     await vi.advanceTimersByTimeAsync(ASK_TIMEOUT_MS);
     expect(await asked).toBe(false);
+  });
+});
+
+describe('the pages rendered for each request', () => {
+  it('are the collection, and a work, an orbit, a proof, an exhibition and a lot by name', () => {
+    for (const path of [
+      '/collection',
+      '/art/31',
+      '/art/9999',
+      '/verify/orbit/31',
+      '/first-light/31',
+      '/exhibitions/cycle-2',
+      '/auctions/31',
+    ])
+      expect(renderedOnRequest(path), path).toBe(true);
+  });
+
+  it('are not the prerendered pages, nor anything beneath a rendered one', () => {
+    for (const path of [
+      '/',
+      '/process',
+      '/statement',
+      '/privacy',
+      '/terms',
+      '/exhibitions',
+      '/auctions',
+      '/verify',
+      '/verify/orbit',
+      '/collection/orrery',
+      '/collection/all-the-light',
+      // A work's sharing card is a picture, and a trailing slash is Next's to redirect.
+      '/art/31/opengraph-image',
+      '/art/31/',
+      '/art',
+    ])
+      expect(renderedOnRequest(path), path).toBe(false);
   });
 });

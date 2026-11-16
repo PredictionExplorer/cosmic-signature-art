@@ -11,8 +11,13 @@ import {
   isRewrite,
   unstable_doesMiddlewareMatch,
 } from 'next/experimental/testing/server';
+import { createHash } from 'node:crypto';
 import { ART_API_ORIGIN } from './lib/art/constants';
+import { DAY_WORK_POOL } from './lib/art/work-of-the-day';
 import { ADDRESS_HEADER, visitorAddress } from './lib/addresses';
+import { revealScript } from './lib/reveal';
+import { roomScript } from './lib/room';
+import { settleScript } from './lib/settle';
 import { config, proxy } from './proxy';
 
 const ORIGIN = 'https://cosmic.art';
@@ -232,5 +237,99 @@ describe('the files the proxy leaves alone', () => {
       '/sitemap.xml',
     ]);
     expect(served.filter(runsFor)).toEqual([]);
+  });
+});
+
+/**
+ * The script policy a page rendered on request is given beside the enforced one
+ * (src/lib/security-headers.ts): report-only, with a nonce for this response and the hashes of
+ * the document's own inline scripts.
+ */
+describe('the script policy of a page rendered on request', () => {
+  const SCRIPT_POLICY = 'content-security-policy-report-only';
+  /** The policy as the page's render is handed it: Next reads the nonce from the request. */
+  const handed = (response: NextResponse) =>
+    response.headers.get(`x-middleware-request-${SCRIPT_POLICY}`);
+  /** The policy as the browser is sent it. */
+  const sent = (response: NextResponse) => response.headers.get(SCRIPT_POLICY);
+  const nonceOf = (policy: string | null) => /'nonce-([^']+)'/.exec(policy ?? '')?.[1];
+  const hashOf = (script: string) =>
+    `sha256-${createHash('sha256').update(script, 'utf8').digest('base64')}`;
+
+  it.each(['/art/31', '/uk/art/31', '/collection', '/verify/orbit/31', '/ja/auctions/31'])(
+    'gives %s a nonce, to the render and to the browser alike',
+    async (path) => {
+      const response = await visit(path);
+      expect(nonceOf(sent(response))).toMatch(/^[A-Za-z0-9+/]{22}==$/);
+      expect(handed(response)).toBe(sent(response));
+      expect(sent(response)).toContain("'strict-dynamic'");
+    },
+  );
+
+  it('never gives two responses the same nonce', async () => {
+    const nonces = await Promise.all(
+      Array.from({ length: 50 }, async () => nonceOf(sent(await visit('/art/31')))),
+    );
+    expect(new Set(nonces).size).toBe(50);
+  });
+
+  it('names the document’s own scripts by the hash of the very text the document writes', async () => {
+    const policy = sent(await visit('/art/31'))!;
+    // src/app/venue-document.tsx writes these three, in this order, and no other of its own.
+    const written = [
+      roomScript({ poolSize: DAY_WORK_POOL.length, pinned: process.env.COSMIC_VENUE_DATE }),
+      revealScript,
+      settleScript,
+    ];
+    expect([...policy.matchAll(/'(sha256-[^']+)'/g)].map((match) => match[1])).toEqual(
+      written.map(hashOf),
+    );
+  });
+
+  it('gives the venue’s 404 one too: it is rendered for each request', async () => {
+    const response = await visit('/uk/art/abc');
+    expect(getRewrittenUrl(response)).toBe(`${ORIGIN}/uk/_venue/not-here`);
+    expect(nonceOf(sent(response))).toBeTruthy();
+    expect(handed(response)).toBe(sent(response));
+  });
+
+  it.each(['/', '/uk', '/process', '/ja/statement', '/collection/orrery', '/verify/orbit'])(
+    'sends none with %s, a file written before any request',
+    async (path) => {
+      const response = await visit(path);
+      expect(sent(response)).toBeNull();
+      expect(handed(response)).toBeNull();
+    },
+  );
+
+  const routerRequests: Record<string, string>[] = [
+    { rsc: '1' },
+    { 'next-router-prefetch': '1' },
+    { purpose: 'prefetch' },
+  ];
+  it.each(routerRequests)(
+    'sends none with the router’s own request (%o): it is no document',
+    async (headers) => {
+      const response = await visit('/art/31', headers);
+      expect(sent(response)).toBeNull();
+      expect(handed(response)).toBeNull();
+    },
+  );
+
+  it('keeps the nonce an earlier pass wrote, so one page is never named by two', async () => {
+    // Next routes a 404 through the proxy a second time, and on a loopback host it fetches
+    // every rewritten address from itself: the page is rendered once, with the first nonce.
+    const first = await visit('/art/31');
+    const second = await visit('/en/art/31', { [SCRIPT_POLICY]: sent(first)! });
+    expect(nonceOf(sent(second))).toBe(nonceOf(sent(first)));
+    expect(sent(second)).toBe(sent(first));
+  });
+
+  it('hands a prerendered page no policy a request brought with it', async () => {
+    const response = await visit('/process', { [SCRIPT_POLICY]: "script-src 'nonce-chosen'" });
+    expect(handed(response)).toBeNull();
+    // The request's headers as the route sees them no longer hold it.
+    expect(response.headers.get('x-middleware-override-headers')).not.toContain(SCRIPT_POLICY);
+    expect(sent(response)).toBeNull();
   });
 });

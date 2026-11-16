@@ -1,6 +1,59 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import { isLocale, locales } from './lib/i18n/routing';
-import { ADDRESS_HEADER, NOT_HERE, notHere, readAddress, unrecorded } from './lib/addresses';
+import {
+  ADDRESS_HEADER,
+  DAY_POOL_SIZE,
+  NOT_HERE,
+  notHere,
+  readAddress,
+  renderedOnRequest,
+  unrecorded,
+} from './lib/addresses';
+import { documentScripts, scriptHash } from './lib/document-scripts';
+import { strictScriptPolicy } from './lib/security-headers';
+
+/**
+ * The policy header a page rendered on request carries beside the enforced one. Report-only:
+ * the browser runs what the enforced policy allows and says where this one would have refused.
+ * Next reads the nonce from the request's copy of the header and writes it on every script it
+ * sends (node_modules/next/dist/docs/01-app/02-guides/content-security-policy.md).
+ */
+const SCRIPT_POLICY = 'content-security-policy-report-only';
+
+/** The document's own inline scripts, by hash: the same for every request this server answers. */
+let ownScripts: Promise<string[]> | undefined;
+function ownScriptHashes(): Promise<string[]> {
+  ownScripts ??= Promise.all(
+    documentScripts({ poolSize: DAY_POOL_SIZE, pinned: process.env.COSMIC_VENUE_DATE }).map(
+      scriptHash,
+    ),
+  );
+  return ownScripts;
+}
+
+/** A nonce: sixteen random bytes, unguessable and never used twice. */
+function freshNonce(): string {
+  return btoa(String.fromCharCode(...crypto.getRandomValues(new Uint8Array(16))));
+}
+
+/**
+ * The nonce of a policy this proxy wrote on an earlier pass. Next routes a 404 through here a
+ * second time, and on a loopback host it fetches every rewritten address from itself: the page
+ * is rendered once, with the first pass's nonce, and a second nonce would name no script on it.
+ */
+function carriedNonce(request: NextRequest): string | undefined {
+  return /'nonce-([A-Za-z0-9+/_-]+={0,2})'/.exec(request.headers.get(SCRIPT_POLICY) ?? '')?.[1];
+}
+
+/** A document a browser navigates to: not the router's fetch of a page's data, nor its guess. */
+function isDocument(request: NextRequest): boolean {
+  const { headers } = request;
+  return (
+    !headers.has('rsc') &&
+    !headers.has('next-router-prefetch') &&
+    headers.get('purpose') !== 'prefetch'
+  );
+}
 
 /**
  * Every page address passes here first. An address without a locale is the first locale's:
@@ -9,6 +62,10 @@ import { ADDRESS_HEADER, NOT_HERE, notHere, readAddress, unrecorded } from './li
  * (src/lib/addresses.ts). The visitor's own address rides along as a request header, so the
  * venue's 404 speaks their language and its running head points at their address
  * (src/app/global-not-found.tsx).
+ *
+ * A page rendered for each request is also given a nonce here, and the script policy that
+ * rests on it (src/lib/security-headers.ts). A prerendered page is a file, written before any
+ * request: it can carry no nonce, and is sent the enforced policy alone.
  */
 export async function proxy(request: NextRequest) {
   const url = request.nextUrl.clone();
@@ -25,13 +82,28 @@ export async function proxy(request: NextRequest) {
     url.pathname = `${prefix}${reading.path}`;
     return NextResponse.redirect(url, 308);
   }
-  if (reading.kind === 'not-here' || (reading.kind === 'ask' && (await unrecorded(reading.work)))) {
+  const refused =
+    reading.kind === 'not-here' || (reading.kind === 'ask' && (await unrecorded(reading.work)));
+  // The venue's 404 is rendered for each request too (it reads the visitor's address).
+  const policy =
+    isDocument(request) && (refused || path === NOT_HERE || renderedOnRequest(path))
+      ? strictScriptPolicy(carriedNonce(request) ?? freshNonce(), await ownScriptHashes(), {
+          development: process.env.NODE_ENV === 'development',
+        })
+      : undefined;
+  if (policy) headers.set(SCRIPT_POLICY, policy);
+  else headers.delete(SCRIPT_POLICY);
+  const answered = (response: NextResponse) => {
+    if (policy) response.headers.set(SCRIPT_POLICY, policy);
+    return response;
+  };
+  if (refused) {
     url.pathname = notHere(locale);
-    return NextResponse.rewrite(url, { request: { headers } });
+    return answered(NextResponse.rewrite(url, { request: { headers } }));
   }
-  if (prefix) return NextResponse.next({ request: { headers } });
+  if (prefix) return answered(NextResponse.next({ request: { headers } }));
   url.pathname = `/${locales[0]}${path === '/' ? '' : path}`;
-  return NextResponse.rewrite(url, { request: { headers } });
+  return answered(NextResponse.rewrite(url, { request: { headers } }));
 }
 /*
   Every address runs through the proxy except the venue's files, named here by folder or by name:

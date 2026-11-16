@@ -70,6 +70,33 @@ export const EXHIBITIONS: ReadonlySet<string> = new Set([
   'cycle-2',
 ]);
 
+/**
+ * How many works take turns as the day's work (DAY_WORK_POOL, src/lib/art/work-of-the-day.ts).
+ * The document's first script is written with it (src/lib/room.ts), and the proxy must name
+ * that script by its hash without carrying the registry the pool is counted from.
+ */
+export const DAY_POOL_SIZE = 3;
+
+/**
+ * The pages rendered for each request, by the shape of their address, its locale set aside
+ * (ARCHITECTURE.md §2): the collection, and a work, an orbit's verification, a First Light
+ * proof, an exhibition and a lot by its number or name. Every other page is prerendered: a
+ * file, written before any request. Only a page rendered on request can carry a nonce, so only
+ * these are sent the script policy that rests on one (src/proxy.ts); the browser suite holds
+ * the list to what the build did (tests/e2e/security-headers.spec.ts).
+ */
+export function renderedOnRequest(path: string): boolean {
+  const segments = path.split('/').slice(1);
+  if (segments.some((segment) => !segment)) return false;
+  const [room, name] = segments;
+  if (room === 'collection') return segments.length === 1;
+  if (room === 'verify') return name === 'orbit' && segments.length === 3;
+  return (
+    segments.length === 2 &&
+    (room === 'art' || room === 'first-light' || room === 'exhibitions' || room === 'auctions')
+  );
+}
+
 /** What the proxy reads in an address, its locale set aside: "/art/31", never "/uk/art/31". */
 export type Reading =
   /** An address the proxy does not judge, or a thing it knows: the route answers. */
