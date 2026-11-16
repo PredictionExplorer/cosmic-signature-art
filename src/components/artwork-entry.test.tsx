@@ -238,7 +238,8 @@ describe('the entry', () => {
     expect(custody).toHaveTextContent(/^Arbitrum record as of October 26, 2026$/);
     expect(within(custody).getByText('October 26, 2026')).toHaveAttribute('datetime', '2026-10-26');
     // The index's own characteristics stand in for the identical seed.
-    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent(/^Signature 017 — /);
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent(/^Signature 017$/);
+    expect(screen.getByText(/^Published fate: “/)).toBeVisible();
     expect(screen.queryByText(en.detailsUnavailable)).not.toBeInTheDocument();
   });
 
