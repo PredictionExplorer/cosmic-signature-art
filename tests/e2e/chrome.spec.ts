@@ -1,19 +1,8 @@
 import { expect, test, type Page } from './fixtures';
 import { catalogs } from '../../src/lib/i18n/messages';
-import { noHorizontalOverflow } from './helpers';
+import { noHorizontalOverflow, stands } from './helpers';
 
 const t = catalogs.en;
-
-/**
- * The page as a visitor has it, before anything is read of its faces. A streamed page first
- * shows its loading plate; its own content is revealed on a frame after it arrives, and on a
- * busy machine that frame can come after `load`. A face is asked for only once words set in it
- * are laid out, so a reading taken at `load` can find the frame's faces alone.
- */
-async function stands(page: Page) {
-  await expect(page.locator('main.loading-room, div[hidden][id^="S:"]')).toHaveCount(0);
-  await page.evaluate(() => document.fonts.ready);
-}
 
 /** The families the page has loaded so far, each named once. */
 const loadedFaces = (page: Page) =>
@@ -72,6 +61,58 @@ test('the running head keeps two viewing rooms, Index, motion and language', asy
   );
   await expect(head.getByRole('img', { name: t.markLabel })).toBeVisible();
   await noHorizontalOverflow(page);
+});
+
+test('each word of the head stands where its copy in the other ground stands', async ({ page }) => {
+  await page.goto('/statement');
+  await stands(page);
+  // The copy shows wherever the head is on two grounds at once: while a Turn's seam crosses it,
+  // and over a wall hung across the seam. A word of the copy that differs from the word beneath
+  // it is then seen twice: the language's code was, a size larger and 14 px to the left of its
+  // copy. The split head is asked for as a split wall asks for it.
+  const words = await page.evaluate(() => {
+    document.documentElement.setAttribute('data-split', '');
+    /** What is drawn of a word: its letters, or the glyph of a control that has none. */
+    const drawn = (element: Element) => {
+      const glyph = element.querySelector('svg');
+      const range = document.createRange();
+      range.selectNodeContents(element);
+      const box = glyph ? glyph.getBoundingClientRect() : range.getBoundingClientRect();
+      return {
+        word: element.textContent?.trim() || 'a glyph',
+        size: getComputedStyle(element).fontSize,
+        left: Math.round(box.left * 2) / 2,
+        top: Math.round(box.top * 2) / 2,
+        width: Math.round(box.width * 2) / 2,
+        height: Math.round(box.height * 2) / 2,
+      };
+    };
+    const shown = (selector: string) =>
+      [...document.querySelectorAll(selector)]
+        .filter((element) => element.getClientRects().length > 0)
+        .map(drawn);
+    const read = {
+      head: shown(
+        '.site-header > .head-row :is(.brand-name, .head-words > nav a, .head-words > button, .language-trigger)',
+      ),
+      copy: shown('.head-overlay :is(.brand-name, .head-word, .motion-word, .language-trigger)'),
+    };
+    document.documentElement.removeAttribute('data-split');
+    return read;
+  });
+  // The wordmark, Index and the pause at least; a desk has the rooms and the language as well.
+  expect(words.head.length).toBeGreaterThanOrEqual(3);
+  // From side to side every word and the pause's glyph is its copy's own size, at its place.
+  type Drawn = (typeof words.head)[number];
+  const across = ({ word, size, left, width }: Drawn) => ({ word, size, left, width });
+  expect(words.copy.map(across)).toEqual(words.head.map(across));
+  // From top to bottom every word set in letters is too. The glyph is let half a pixel: its
+  // copy is a span, without the hairline a head's button keeps beneath it.
+  const lettered = (all: Drawn[]) => all.filter(({ word }) => word !== 'a glyph');
+  expect(lettered(words.copy)).toEqual(lettered(words.head));
+  words.head.forEach((drawn, at) =>
+    expect(Math.abs(words.copy[at].top - drawn.top)).toBeLessThanOrEqual(0.5),
+  );
 });
 
 test('the ? key opens the key sheet, Escape closes it, and keys stay silent inside a field', async ({

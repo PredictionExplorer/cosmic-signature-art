@@ -4,7 +4,7 @@ import AxeBuilder from '@axe-core/playwright';
 import { catalogs } from '../../src/lib/i18n/messages';
 import { fill } from '../../src/lib/i18n/format';
 import { workNumber } from '../../src/lib/art/number';
-import { noHorizontalOverflow } from './helpers';
+import { noHorizontalOverflow, stands } from './helpers';
 
 const t = catalogs.en;
 const { records } = JSON.parse(
@@ -125,6 +125,65 @@ test('№ 031 is derived here, line by line, and is its published record', async
       targets: nodes.map((node) => node.target),
     })),
   ).toEqual([]);
+});
+
+test('nothing on the screen moves while the derivation prints itself', async ({ page }) => {
+  test.setTimeout(DERIVED_MS + 30_000);
+  // The worker is asked only when the test says so: until then the page stands as it does
+  // before a line is reported, and can be read.
+  await page.addInitScript(() => {
+    const Native = window.Worker;
+    let begin!: () => void;
+    const begun = new Promise<void>((resolve) => (begin = resolve));
+    Object.defineProperty(window, '__beginDeriving', { value: begin });
+    window.Worker = class extends Native {
+      override postMessage(
+        message: unknown,
+        transfer?: Transferable[] | StructuredSerializeOptions,
+      ) {
+        void begun.then(() => super.postMessage(message, transfer as Transferable[]));
+      }
+    };
+  });
+  // № 054 ejects soonest after its window, so its fate is reached soonest.
+  await page.goto('/verify/orbit/54');
+  await stands(page);
+  const derivation = page.getByRole('region', { name: t.verifyOrbitLineByLine });
+  await expect(derivation).toHaveAttribute('data-phase', 'deriving');
+  await expect(derivation.getByRole('listitem')).toHaveCount(1);
+
+  // Everything on the screen now that is not the derivation itself, or a box that holds it.
+  const read = () =>
+    page.evaluate(() => {
+      type Watched = { __watched?: Element[] };
+      const held = window as unknown as Watched;
+      const printing = document.querySelector('[aria-labelledby="derivation-title"]')!;
+      held.__watched ??= [...document.body.querySelectorAll('*')].filter((element) => {
+        if (printing.contains(element) || element.contains(printing)) return false;
+        const box = element.getBoundingClientRect();
+        return box.width > 0 && box.height > 0 && box.bottom > 0 && box.top < innerHeight;
+      });
+      return held.__watched.map((element) => {
+        const box = element.getBoundingClientRect();
+        const at = [box.left, box.top, box.width, box.height].map(
+          (value) => Math.round(value * 2) / 2,
+        );
+        return `${element.localName}.${[...element.classList].join('.')} at ${at.join(', ')}`;
+      });
+    });
+  const before = await read();
+  // The running head and the work's identity at the least.
+  expect(before.length).toBeGreaterThan(10);
+
+  await page.evaluate(() =>
+    (window as unknown as { __beginDeriving: () => void }).__beginDeriving(),
+  );
+  await expect(derivation).toHaveAttribute('data-exact', 'true', { timeout: DERIVED_MS });
+  // Six lines, eleven rows and the verdict later, each of them is where it was: the note and
+  // the colophon, which the derivation pushes down, began beneath the fold.
+  await expect(derivation.locator('[data-key]')).toHaveCount(11);
+  expect(await read()).toEqual(before);
+  expect(await page.evaluate(() => scrollY)).toBe(0);
 });
 
 test('a phone holds the whole transcript within its width, in a long language too', async ({

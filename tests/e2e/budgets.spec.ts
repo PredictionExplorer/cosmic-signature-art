@@ -35,7 +35,14 @@ const QUIET_MS = 3_000;
 /** Every script the route loads before it can hydrate. */
 const ROUTE_SCRIPT = /\/_next\/static\/chunks\/.+\.js(\?|$)/;
 
-type Visit = { title: string; path: string; firstVisit: boolean; scriptDelayMs?: number };
+type Visit = {
+  title: string;
+  path: string;
+  firstVisit: boolean;
+  scriptDelayMs?: number;
+  /** A page with no work on its first screen: its largest paint is type, and is not asked to be art. */
+  noArt?: true;
+};
 const VISITS: Visit[] = [
   // The gate holds the head back while First Light performs; the day's plate must still be the
   // first paint, and the measurement lasts until the performance has given the page back.
@@ -53,6 +60,15 @@ const VISITS: Visit[] = [
     path: '/art/31?view=still',
     firstVisit: false,
     scriptDelayMs: 3_000,
+  },
+  // The one page that grows by a screen while the visitor reads it: the derivation prints six
+  // lines and eleven rows as the worker reports them. What it pushed down was on the screen (a
+  // shift of 0.12 on a phone, measured before the first screen was given to the derivation whole).
+  {
+    title: 'a work’s proof, № 031, as it derives',
+    path: '/verify/orbit/31',
+    firstVisit: false,
+    noArt: true,
   },
 ];
 
@@ -248,7 +264,7 @@ test.describe('paint and layout budgets', { tag: '@budget' }, () => {
   });
 
   for (const visit of VISITS)
-    test(`${visit.title}: the art is the LCP, within budget, and nothing jumps`, async ({
+    test(`${visit.title}: ${visit.noArt ? 'it paints' : 'the art is the LCP,'} within budget, and nothing jumps`, async ({
       browser,
       browserName,
       request,
@@ -277,11 +293,12 @@ test.describe('paint and layout budgets', { tag: '@budget' }, () => {
 
       for (const { lcp: paint, shifts } of loads) {
         expect(paint, 'The page painted no LCP candidate.').toBeDefined();
-        expect(
-          paint!.art,
-          `The LCP was ${paint!.element}, not the art. The first screen's largest paint must be ` +
-            'the work: its inline preview, its still or its film.',
-        ).toBe(true);
+        if (!visit.noArt)
+          expect(
+            paint!.art,
+            `The LCP was ${paint!.element}, not the art. The first screen's largest paint must be ` +
+              'the work: its inline preview, its still or its film.',
+          ).toBe(true);
         if (shifts.length)
           info.annotations.push({
             type: 'layout shifts',
