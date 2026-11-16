@@ -9,6 +9,7 @@ import { locales, localizedPath } from '../../src/lib/i18n/routing';
 import { ESSAY, TERMS } from '../../src/lib/essay/structure';
 import { deriveBeginnings, QUICK_GATE } from '../../src/lib/physics/beginnings';
 import { artworkImageSource, imageLoaded, noHorizontalOverflow } from './helpers';
+import { wholePagePictures } from './whole-page';
 
 const t = catalogs.en;
 const folio = (id: number) => String(id).padStart(3, '0');
@@ -181,14 +182,11 @@ test('the essay opens on night, pins the day’s Light film, crosses one hard ed
   await page.evaluate(() => window.scrollTo({ top: 0, behavior: 'instant' }));
   await expect(header).toBeInViewport();
   await expect(header).toHaveCSS('background-color', 'rgb(0, 0, 0)');
-  const screenshot = testInfo.outputPath('process-redesign.png');
-  await page.screenshot({
-    path: screenshot,
-    fullPage: true,
-    animations: 'disabled',
+  // The whole page as evidence: in strips on a phone, where the essay is longer than one
+  // picture may be in WebKit on Linux (tests/e2e/whole-page.ts).
+  await wholePagePictures(page, testInfo, 'process-redesign', {
     style: 'nextjs-portal { visibility: hidden; }',
   });
-  await testInfo.attach('process-redesign', { path: screenshot, contentType: 'image/png' });
   const results = await new AxeBuilder({ page })
     .withTags(['wcag2a', 'wcag2aa', 'wcag21aa'])
     .analyze();

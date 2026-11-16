@@ -1,6 +1,7 @@
 import { expect, test } from './fixtures';
 import { locales, localizedPath } from '../../src/lib/i18n/routing';
 import { collectionLoaded, noHorizontalOverflow, pauseAmbientMotion } from './helpers';
+import { wholePagePictures } from './whole-page';
 
 import AxeBuilder from '@axe-core/playwright';
 
@@ -42,9 +43,9 @@ for (const locale of locales) {
       ).toEqual([]);
       if (locale === 'en') {
         const name = route === '/' ? 'home' : route.replaceAll('/', '-').slice(1);
-        const screenshot = testInfo.outputPath(`${name}.png`);
-        await page.screenshot({ path: screenshot, fullPage: true, animations: 'disabled' });
-        await testInfo.attach(name, { path: screenshot, contentType: 'image/png' });
+        // In strips where a page is longer than one picture may be (the Process essay on a
+        // phone, in WebKit on Linux): tests/e2e/whole-page.ts.
+        await wholePagePictures(page, testInfo, name);
       }
     });
   }
