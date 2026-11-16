@@ -757,6 +757,38 @@ describe('the room’s crossing, mounted', () => {
     expect(images.map((image) => image.src)).toEqual([ink.arrival!.src, light.arrival!.src]);
   });
 
+  it('says on its canvas when its sheet is prepared, and takes the word back with the context or the room', async () => {
+    const { drop } = withRoom();
+    const turnRef = { current: null as RoomTurn | null };
+    const { container, rerender } = render(<Room turnRef={turnRef} />);
+    const canvas = container.querySelector('canvas')!;
+    // Not before: until it is prepared, a Turn asked for is the stage's own to show.
+    expect(canvas).not.toHaveAttribute('data-ready');
+    await act(async () => vi.advanceTimersByTime(500));
+    await settle();
+    expect(canvas).toHaveAttribute('data-ready');
+    // The browser takes the context back: the sheet can draw nothing until it is readied again.
+    drop();
+    act(() => {
+      canvas.dispatchEvent(new Event('webglcontextlost', { cancelable: true }));
+    });
+    expect(canvas).not.toHaveAttribute('data-ready');
+    // Motion stilled: the Turn is instant, and the canvas has nothing to say.
+    rerender(<Room turnRef={turnRef} enabled={false} />);
+    await act(async () => vi.advanceTimersByTime(500));
+    await settle();
+    expect(canvas).not.toHaveAttribute('data-ready');
+  });
+
+  it('says nothing where the sheet cannot be prepared', async () => {
+    withRoom({ webgl: false });
+    const turnRef = { current: null as RoomTurn | null };
+    const { container } = render(<Room turnRef={turnRef} />);
+    await act(async () => vi.advanceTimersByTime(500));
+    await settle();
+    expect(container.querySelector('canvas')).not.toHaveAttribute('data-ready');
+  });
+
   it('draws a Turn, gives the words back as the change is made, and goes when the work is painted', async () => {
     withRoom();
     const turnRef = { current: null as RoomTurn | null };

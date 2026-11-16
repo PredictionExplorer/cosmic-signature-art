@@ -411,6 +411,16 @@ describe('the Turn', () => {
     }
   });
 
+  it('says on the document when the plate’s own keys answer, and takes the word back with the plate', () => {
+    // The venue's keys say theirs when their listener is attached (keys.tsx), and that is before
+    // the plate's: a key pressed on that word alone can be heard by no one.
+    expect(document.documentElement).not.toHaveAttribute('data-plate-keys');
+    const { unmount } = renderViewer();
+    expect(document.documentElement).toHaveAttribute('data-plate-keys', 'ready');
+    unmount();
+    expect(document.documentElement).not.toHaveAttribute('data-plate-keys');
+  });
+
   it('peeks while L is held and returns on release; a tap commits', async () => {
     renderViewer();
     fireEvent.keyDown(window, { key: 'L' });

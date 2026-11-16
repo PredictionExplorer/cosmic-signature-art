@@ -65,6 +65,9 @@ async function artworkReady(page: Page, path = '/art/31?view=still') {
   // Under a still preference the server and the client agree on the toggle, so it cannot
   // prove hydration; the keys' marker is set only once the client's listeners are attached.
   await expect(page.locator('html')).toHaveAttribute('data-keys', 'ready');
+  // The plate's own keys (I and L, Z) are heard by the plate, which is hydrated after the page's
+  // head: a key pressed on the venue's mark alone can come before anyone listens for it.
+  await expect(page.locator('html')).toHaveAttribute('data-plate-keys', 'ready');
   return page.getByRole('region', { name: t.ways, exact: true });
 }
 
@@ -1035,20 +1038,33 @@ test('expression changes in the room stay contained, commit to the plate, and ke
   await open.click();
   const dialog = page.getByRole('dialog');
   const controls = dialog.getByRole('group', { name: t.ways, exact: true });
+  // Which way the room's Turn goes is seen in the page: where its sheet draws it, the sheet's
+  // canvas is shown.
+  await dialog.evaluate((room) => {
+    const seen = { drew: false };
+    Object.assign(window, { __roomSheet: seen });
+    new MutationObserver(() => {
+      if (room.querySelector('canvas[class*="sheet"][data-active]')) seen.drew = true;
+    }).observe(room, { attributes: true, subtree: true, attributeFilter: ['data-active'] });
+  });
   await controls.getByRole('button', { name: /^Light$/ }).click();
   await expect(dialog.locator('[data-artwork-stage="room"]')).toHaveAttribute(
     'data-expression',
     'light',
   );
-  // The room's Turn is the room's own sheet wherever the browser can paint it, and no snapshot
-  // is taken of what the sheet has shown. Only where it cannot is the Turn the browser's own
-  // snapshot: one of them, where the browser takes snapshots and motion is welcome. Firefox runs
-  // on CI alone, so it is not counted here.
+  // The room's Turn is the room's own sheet where the sheet was prepared when the word was
+  // pressed, and no snapshot is taken of what the sheet has shown. Where it was not (a browser
+  // that cannot paint it, or a machine still readying it a moment after the room opened: the
+  // Turn waits for neither) the Turn is the browser's own snapshot: one of them, where the
+  // browser takes snapshots and motion is welcome. One way or the other, and never both.
+  // Firefox runs on CI alone, so it is not counted here.
   if (browserName !== 'firefox') {
     const snapshots = await page.evaluate(() => typeof document.startViewTransition === 'function');
-    const sheet = await page.evaluate(() => !!document.createElement('canvas').getContext('webgl'));
+    const drew = await page.evaluate(
+      () => (window as unknown as { __roomSheet: { drew: boolean } }).__roomSheet.drew,
+    );
     const still = testInfo.project.name.endsWith('reduced-motion');
-    expect(await transitionCount(page)).toBe(snapshots && !still && !sheet ? 1 : 0);
+    expect(await transitionCount(page)).toBe(snapshots && !still && !drew ? 1 : 0);
   }
   await expect(dialog.locator('img')).toHaveAttribute('alt', '№\u00a0031 · Light');
   await imageReady(dialog.locator('img'));

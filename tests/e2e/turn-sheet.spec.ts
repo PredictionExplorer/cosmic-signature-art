@@ -50,6 +50,9 @@ async function workReady(page: Page, id: number, locale = '') {
     )
     .toBe(true);
   await expect(page.locator('html')).toHaveAttribute('data-keys', 'ready');
+  // The plate's own keys (I and L, Z) are heard by the plate, which is hydrated after the page's
+  // head: on a slow machine a key pressed on the venue's mark alone comes before anyone listens.
+  await expect(page.locator('html')).toHaveAttribute('data-plate-keys', 'ready');
   // At rest: every face the page asks for has come. A word still set in a fallback face moves
   // the lines it stands in, by a fraction of a pixel, when its own face arrives, and these tests
   // hold the page still to a thousandth of one.
@@ -349,6 +352,15 @@ async function roomOpen(page: Page) {
   await page.evaluate(() => document.fonts.ready.then(() => undefined));
   await expect.poll(() => page.evaluate(() => document.fonts.status)).toBe('loaded');
 }
+/**
+ * The room's sheet is prepared, and its canvas says so: a Turn asked for from here is the sheet's
+ * to draw. Before that it is the stage's own, by its snapshot. The room readies its sheet once
+ * the page is idle, and a machine without a GPU takes a second or two over it; a Turn waits for
+ * neither.
+ */
+async function roomSheetReady(page: Page) {
+  await expect(room(page).locator('canvas[data-ready]')).toHaveCount(1, { timeout: 30_000 });
+}
 /** Where the room hangs the work, and how tall its strip stands. */
 const hung = (page: Page) =>
   page.evaluate(() => {
@@ -423,6 +435,7 @@ test('in the room the Turn is the same sheet: one front over the ground, the wor
   await workReady(page, 31);
   await sheetOffered(page);
   await roomOpen(page);
+  await roomSheetReady(page);
   const before = await hung(page);
   const cross = 5000;
   await page.addStyleTag({ content: `:root { --t-cross: ${cross}ms; }` });
@@ -461,6 +474,7 @@ test('a Turn taken back in the room returns the way it came, and changes nothing
   await workReady(page, 31);
   await sheetOffered(page);
   await roomOpen(page);
+  await roomSheetReady(page);
   await page.keyboard.press('l');
   await expect(room(page).locator('canvas[data-active]')).toHaveCount(1);
   await page.waitForTimeout(500);

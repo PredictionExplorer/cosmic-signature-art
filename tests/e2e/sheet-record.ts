@@ -567,6 +567,9 @@ export function sheetRecorded(page: Page): Promise<SheetRecord> {
         const front = (y: number) => xa + ((xb - xa) * (y - a.y)) / (b.y - a.y);
         return pairs([front(c.y)], c.xs, 0.35).length ? [front] : [];
       });
+    /** A front that stands alone on each of its three rows: no second crossing within a dozen pixels of its line. */
+    const alone3 = (front: (y: number) => number, rows: Read[]) =>
+      rows.every((row) => row.xs.filter((x) => Math.abs(x - front(row.y)) <= 12).length === 1);
     /** How far apart two canvases put each front, at one height, over every frame but the ends. */
     const apart = (
       one: (record: Kept) => Line[],
@@ -587,12 +590,24 @@ export function sheetRecorded(page: Page): Promise<SheetRecord> {
               y: lines(record)[i].y,
               xs: crossings(lines(record)[i], lines(first)[i], lines(last)[i]),
             }));
-          const [a0, a1, a2] = read(one);
-          const [b0, b1, b2] = read(other);
+          const ours = read(one);
+          const theirs = read(other);
           const height = at(record, one(record).slice(index, index + 3));
-          const there = frontsOf(b0, b1, b2).map((front) => front(height));
-          for (const front of frontsOf(a0, a1, a2))
-            for (const [x, y] of pairs([front(height)], there, 8)) found.push(Math.abs(x - y));
+          const here = frontsOf(ours[0], ours[1], ours[2])
+            .filter((front) => alone3(front, ours))
+            .map((front) => front(height));
+          const there = frontsOf(theirs[0], theirs[1], theirs[2])
+            .filter((front) => alone3(front, theirs))
+            .map((front) => front(height));
+          // One front on each canvas, each the other's only neighbour. Where two of the work's
+          // spreading marks are about to meet, two fronts stand a few pixels apart; a canvas
+          // that could read only one of them as a line would have it paired with the other's
+          // other front, and the pair would say the canvases disagree by the gap between them.
+          for (const x of here) {
+            const fellows = there.filter((y) => Math.abs(y - x) <= 8);
+            const beside = here.filter((other) => Math.abs(other - x) <= 8);
+            if (fellows.length === 1 && beside.length === 1) found.push(Math.abs(fellows[0] - x));
+          }
         }
       }
       return found;

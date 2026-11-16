@@ -805,11 +805,17 @@ function ArtworkViewerSession({
     window.addEventListener('keyup', up);
     window.addEventListener('blur', lost);
     document.addEventListener('visibilitychange', hidden);
+    // The plate's own keys (I and L, Z, the film's) answer from here, and say so as the venue's
+    // keys say theirs (keys.tsx). That mark cannot speak for these: the page's head is hydrated
+    // before its sections, so its listener is attached first, by 20 ms on a desk and by far
+    // more on a slow machine, and a key pressed between the two is heard by no one.
+    document.documentElement.setAttribute('data-plate-keys', 'ready');
     return () => {
       window.removeEventListener('keydown', down);
       window.removeEventListener('keyup', up);
       window.removeEventListener('blur', lost);
       document.removeEventListener('visibilitychange', hidden);
+      document.documentElement.removeAttribute('data-plate-keys');
     };
   }, []);
 

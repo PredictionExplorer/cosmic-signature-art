@@ -58,6 +58,8 @@ async function workReady(page: Page, id: number) {
     )
     .toBe(true);
   await expect(page.locator('html')).toHaveAttribute('data-keys', 'ready');
+  // The plate's own keys are heard by the plate, which is hydrated after the page's head.
+  await expect(page.locator('html')).toHaveAttribute('data-plate-keys', 'ready');
 }
 
 /**

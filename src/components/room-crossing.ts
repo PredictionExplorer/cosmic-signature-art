@@ -770,9 +770,11 @@ export function useRoomCrossing({
       node,
       () => frame.current,
       rgb(paper),
-      () =>
+      () => {
+        node.removeAttribute('data-ready');
         // A Turn on its way when the context was lost is the stage's to show.
-        travel.current?.stop(true),
+        travel.current?.stop(true);
+      },
     );
     crossing.current = instance;
     const media = () => {
@@ -805,7 +807,12 @@ export function useRoomCrossing({
     travel.current = controller;
     if (turnRef) turnRef.current = controller;
     const start = () => {
-      if (!cancelled) void instance.prepare(ink, light);
+      if (cancelled) return;
+      // Prepared, the room's sheet says so on its canvas, as the page's says so on the document
+      // (data-crossing): until then a Turn asked for is the stage's own to show.
+      void instance.prepare(ink, light).then((ok) => {
+        if (ok && !cancelled && crossing.current === instance) node.setAttribute('data-ready', '');
+      });
     };
     // Whichever scheduler took the idle start is the one that may cancel it. Each is called
     // bare: a browser refuses either with any other receiver than the window.
@@ -822,6 +829,7 @@ export function useRoomCrossing({
       cancelled = true;
       cancelIdle();
       node.removeEventListener('webglcontextrestored', start);
+      node.removeAttribute('data-ready');
       // Motion stilled while the room stays open lands a Turn in flight at once; a room that is
       // going takes it back.
       controller.stop(!!room?.isConnected);
