@@ -386,10 +386,9 @@ test('filter chips narrow the collection through the published traits and can be
     'href',
     '/collection?fate=Ejection',
   );
-  await expect(filters.getByRole('link', { name: `${t.fate} · Ejection` })).toHaveAttribute(
-    'href',
-    '/collection?cycle=2',
-  );
+  await expect(
+    filters.getByRole('link', { name: `${t.fateAsPublished} · Ejection` }),
+  ).toHaveAttribute('href', '/collection?cycle=2');
   await filters.getByRole('link', { name: t.clearFilters }).click();
   await expect(page).toHaveURL(/\/collection$/);
   await collectionLoaded(page);

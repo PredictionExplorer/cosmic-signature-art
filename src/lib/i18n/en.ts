@@ -67,7 +67,6 @@ export const en = {
   palette: 'Palette',
   spectralClass: 'Spectral class',
   massBalance: 'Mass balance',
-  fate: 'Fate',
   chaos: 'Chaos',
   syzygies: 'Syzygies',
   simulation: 'The simulation',
@@ -285,6 +284,7 @@ export const en = {
   collectionViews: 'The whole collection at once',
   filters: 'Filters',
   clearFilters: 'Clear filters',
+  fateAsPublished: 'Fate, as published',
   unmeasured: 'Unmeasured',
   spectrumWall: 'The collection along the spectrum',
   spectrumNote:
@@ -351,6 +351,9 @@ export const en = {
     'The dominant wavelength is the hue of the palette’s anchor, measured in nanometres of visible light.',
   glossaryMasses: 'The three masses set how strongly each body pulls on the other two.',
   glossaryEccentricity: 'Eccentricity measures how far the drift ellipse departs from a circle.',
+  fatePublished: 'Published fate: “{fate}”',
+  glossaryFate:
+    'Fate is a trait the publisher gives each token, kept here as published: “Ejection” where its record finds one body free of the other two, “Eternal Dance” where it finds none by step {steps}, where it stops looking.',
   verifyOnChain: 'Verify on chain',
   honestyRecord:
     'The record is read from the Arbitrum indexer and may lag the chain by a few blocks.',

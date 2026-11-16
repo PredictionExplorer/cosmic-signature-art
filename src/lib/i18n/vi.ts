@@ -70,7 +70,6 @@ export const vi: Messages = {
   palette: 'Bảng màu',
   spectralClass: 'Lớp phổ',
   massBalance: 'Cân bằng khối lượng',
-  fate: 'Kết cục',
   chaos: 'Hỗn loạn',
   syzygies: 'Các lần ba vật thể thẳng hàng',
   simulation: 'Mô phỏng',
@@ -289,6 +288,7 @@ export const vi: Messages = {
   collectionViews: 'Cả bộ sưu tập cùng lúc',
   filters: 'Bộ lọc',
   clearFilters: 'Xóa bộ lọc',
+  fateAsPublished: 'Kết cục, như đã công bố',
   unmeasured: 'Chưa đo',
   spectrumWall: 'Bộ sưu tập dọc theo quang phổ',
   spectrumNote:
@@ -352,6 +352,9 @@ export const vi: Messages = {
     'Bước sóng chủ đạo là sắc độ của màu neo trong bảng màu, đo bằng nanomét ánh sáng khả kiến.',
   glossaryMasses: 'Ba khối lượng định mức mỗi vật thể hút hai vật thể còn lại mạnh đến đâu.',
   glossaryEccentricity: 'Độ lệch tâm đo mức hình elip trôi dạt lệch khỏi hình tròn.',
+  fatePublished: 'Kết cục đã công bố: “{fate}”',
+  glossaryFate:
+    'Kết cục là một đặc tính nhà phát hành gán cho mỗi token, được giữ ở đây đúng như đã công bố: “Ejection” khi hồ sơ ghi nhận một vật thể không còn gắn kết với hai vật còn lại, “Eternal Dance” khi hồ sơ không ghi nhận vật thể nào như thế cho đến bước {steps}, nơi nó ngừng dõi theo.',
   verifyOnChain: 'Xác minh trên chuỗi',
   honestyRecord: 'Bản ghi được đọc từ bộ chỉ mục Arbitrum và có thể chậm hơn chuỗi vài khối.',
   honestyMedia:

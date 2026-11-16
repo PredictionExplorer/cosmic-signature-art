@@ -51,9 +51,9 @@ describe('the entry', () => {
         t={en}
       />,
     );
-    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent(
-      'Signature 031 — Eternal Dance',
-    );
+    // The title is the work's number. The published fate is not a title: it stands last among
+    // the publisher's names, labelled as published and quoted, with a note of its own.
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent(/^Signature 031$/);
     expect(
       screen.getByText('One of 100,000 candidate orbits. Number 77,741 was chosen.'),
     ).toBeVisible();
@@ -70,6 +70,7 @@ describe('the entry', () => {
     expect(traits).toHaveTextContent('632 nm');
     expect(traits).toHaveTextContent('Chaos 13 / 100');
     expect(traits).toHaveTextContent('Syzygies 0');
+    expect(traits).toHaveTextContent(/Stellar Selection\s· Published fate: “Eternal Dance”9$/);
     // The custody line keeps the full addresses in the accessible names and states when it was read.
     const custody = paragraph(/^Minted to/);
     expect(within(custody).getByRole('link', { name: new RegExp(recipient) })).toHaveTextContent(
@@ -87,16 +88,21 @@ describe('the entry', () => {
     const glossary = screen.getByRole('complementary', { name: en.glossary });
     const notes = within(glossary).getAllByRole('listitem');
     expect(notes.map((note) => note.id)).toEqual(
-      Array.from({ length: 10 }, (_, index) => `note-${index + 1}`),
+      Array.from({ length: 11 }, (_, index) => `note-${index + 1}`),
     );
     expect(notes[0]).toHaveTextContent(en.glossarySignature);
     expect(notes[1]).toHaveTextContent(en.glossaryExpression);
     // The selection line reads first, so its Borda note precedes the traits' notes.
     expect(notes[2]).toHaveTextContent(en.glossaryBorda);
     expect(notes[3]).toHaveTextContent(en.glossaryUnderlay);
+    // The fate's note says what the publisher's two names mean, and how far the record looked.
+    expect(notes[8]).toHaveTextContent(
+      'Fate is a trait the publisher gives each token, kept here as published: “Ejection” where its record finds one body free of the other two, “Eternal Dance” where it finds none by step 8,000,000, where it stops looking.',
+    );
     expect(notes.at(-1)).toHaveTextContent(en.glossaryEccentricity);
     expect(screen.getByRole('link', { name: 'Note 1' })).toHaveAttribute('href', '#note-1');
-    expect(screen.getByRole('link', { name: 'Note 10' })).toHaveAttribute('href', '#note-10');
+    expect(screen.getByRole('link', { name: 'Note 9' })).toHaveAttribute('href', '#note-9');
+    expect(screen.getByRole('link', { name: 'Note 11' })).toHaveAttribute('href', '#note-11');
     // Measured facts the entry does not sentence are quiet mono lines.
     expect(screen.getByText(en.masses).nextElementSibling).toHaveTextContent('130.7 : 251 : 125');
     expect(screen.getByText(en.eccentricity).nextElementSibling).toHaveTextContent('0.401');
@@ -157,6 +163,25 @@ describe('the entry', () => {
     ).toBe(ja.lightMedium);
   });
 
+  it('keeps a published fate, labelled, without a note where it holds no orbit record', () => {
+    // The note states how far the record looked, which is the orbit record's to say.
+    render(
+      <EntryView
+        work={{ ...artwork(), id: 9999 }}
+        details={details}
+        recordAt={null}
+        locale="en"
+        t={en}
+      />,
+    );
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent(/^Signature 9999$/);
+    const traits = screen.getByText(/Orbit Ribbons/).closest('p')!;
+    expect(traits).toHaveTextContent(/Published fate: “Eternal Dance”$/);
+    const notes = within(screen.getByRole('complementary', { name: en.glossary }));
+    expect(notes.getAllByRole('listitem')).toHaveLength(10);
+    expect(notes.queryByText(/Fate is a trait/)).not.toBeInTheDocument();
+  });
+
   it('stays bare and honest when the publisher’s record is unavailable', () => {
     const work = { ...artwork(), owner: undefined, originalRecipient: undefined };
     render(<EntryView work={work} details={null} unavailable recordAt={null} locale="en" t={en} />);
@@ -200,13 +225,18 @@ describe('the entry’s source of record', () => {
     });
     render(await EntryBody({ work: artwork(), locale: 'en', t: en }));
     expect(getArtworkDetails).toHaveBeenCalledWith(31, artwork().seed);
-    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Live Fate');
+    expect(screen.getByText(/Orbit Ribbons/).closest('p')).toHaveTextContent(
+      'Published fate: “Live Fate”',
+    );
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent(/^Signature 031$/);
   });
 
   it('lets the build-time index stand in only when the live read fails and the seed is identical', async () => {
     vi.mocked(getArtworkDetails).mockResolvedValue({ status: 'unavailable', details: null });
     render(await EntryBody({ work: artwork(), locale: 'en', t: en }));
-    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Eternal Dance');
+    expect(screen.getByText(/Orbit Ribbons/).closest('p')).toHaveTextContent(
+      'Published fate: “Eternal Dance”',
+    );
     expect(screen.queryByText(en.detailsUnavailable)).not.toBeInTheDocument();
   });
 

@@ -515,7 +515,6 @@ const Lots = memo(function Lots({
                 </Link>
                 {traits?.[id]?.cycle !== undefined ? ` · ${t.cycle} ${traits[id].cycle}` : ''}
                 {entry ? ` · ${entry}` : ''}
-                {traits?.[id]?.fate ? ` · ${traits[id].fate}` : ''}
               </p>
               <div className={styles.lines}>
                 {state ? (

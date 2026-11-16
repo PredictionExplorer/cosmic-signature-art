@@ -70,7 +70,6 @@ export const ja: Messages = {
   palette: '配色',
   spectralClass: 'スペクトル型',
   massBalance: '質量のバランス',
-  fate: '行く末',
   chaos: 'カオス',
   syzygies: '天体の直列',
   simulation: 'シミュレーション',
@@ -287,6 +286,7 @@ export const ja: Messages = {
   collectionViews: 'コレクション全体を一度に',
   filters: '絞り込み',
   clearFilters: '絞り込みを解除',
+  fateAsPublished: '行く末（公開されたまま）',
   unmeasured: '未計測',
   spectrumWall: 'スペクトルに沿って並ぶコレクション',
   spectrumNote:
@@ -349,6 +349,9 @@ export const ja: Messages = {
   glossaryWavelength: '主波長は、パレットの基準色の色相を可視光のナノメートルで測ったものです。',
   glossaryMasses: '三つの質量は、各天体が他の二つを引く強さを決めます。',
   glossaryEccentricity: '離心率は、ドリフトの楕円が円からどれだけ離れているかを表します。',
+  fatePublished: '公開された行く末：「{fate}」',
+  glossaryFate:
+    '行く末は、発行者が各トークンに与える特性で、ここでは公開されたまま載せています。記録がひとつの天体を他の二つから自由だと判定した場合は「Ejection」、記録が見届ける最後の第 {steps} ステップまでにそうした天体を見いださなかった場合は「Eternal Dance」です。',
   verifyOnChain: 'オンチェーンで検証',
   honestyRecord:
     '記録は Arbitrum のインデクサーから読み取っており、チェーンより数ブロック遅れることがあります。',

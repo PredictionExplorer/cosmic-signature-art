@@ -129,6 +129,31 @@ describe('production translations', () => {
       expect(catalogs[locale].shapeOfMotion, locale).not.toMatch(/\s/);
   });
 
+  it('never says eternal, for ever or always in its own voice, in any string of any language', () => {
+    // The venue has measured that it cannot know (docs/after-the-frame.md § 1.3), so the words
+    // are kept out of every catalogue, not only out of the lines about an orbit. Two things are
+    // not the venue speaking of an orbit: the publisher's own name for a fate, quoted as
+    // published, and the sale's rule that a larger bid is always welcome.
+    const QUOTED = 'Eternal Dance';
+    const NOT_OF_AN_ORBIT = new Set(['ruleRaiseCopy']);
+    for (const locale of locales) {
+      const catalog = catalogs[locale];
+      for (const [key, value] of Object.entries(catalog)) {
+        if (NOT_OF_AN_ORBIT.has(key)) continue;
+        const own = value.replaceAll(QUOTED, '');
+        expect(own, `${locale}.${key}`).not.toMatch(NEVER_OF_AN_ORBIT[locale]);
+        // Nor the English word under another language, as the token's own text once stood.
+        expect(own, `${locale}.${key}`).not.toMatch(/eternal/i);
+      }
+      // The publisher's two names are quoted exactly as published, in every language.
+      expect(catalog.glossaryFate, locale).toContain(QUOTED);
+      expect(catalog.glossaryFate, locale).toContain('Ejection');
+      expect(catalog.fatePublished, locale).toContain('{fate}');
+      // The published name is always set off as a quotation, never left bare.
+      expect(catalog.fatePublished.replace('{fate}', ''), locale).toMatch(/[“«「‘]/);
+    }
+  });
+
   it('keeps the Statement to what the venue does and says: no for ever, and its own names', () => {
     // § 3 once said two bodies circle "forever" (вічно, 永遠に, 영원히, 永远) and § 6 that nothing
     // here is computed live. Corrected in November 2026 (the 14 November review, content-4, -5).

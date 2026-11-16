@@ -11,11 +11,13 @@ import { auctionPhase, MINIMUM_BID, type AuctionRecord } from './rules';
  */
 export type Phase = ReturnType<typeof auctionPhase>;
 export type Expression = 'ink' | 'light';
-/** The words the collection index lends a lot's entry line. */
+/**
+ * The words the collection index lends a lot's entry line. The published fate is not among
+ * them: it is the one published name that makes a claim about the orbit's future.
+ */
 export interface LotTraits {
   structure?: string;
   underlay?: string;
-  fate?: string;
   cycle?: number;
 }
 export type LotTraitsById = Record<number, LotTraits>;

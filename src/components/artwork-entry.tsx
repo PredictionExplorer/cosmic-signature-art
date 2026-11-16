@@ -2,13 +2,14 @@ import { Suspense, type ReactNode } from 'react';
 import type { Locale } from '@/lib/i18n/routing';
 import type { Messages } from '@/lib/i18n/en';
 import { localizedPath } from '@/lib/i18n/routing';
-import { expressionWord, fill, filmLabel } from '@/lib/i18n/format';
+import { expressionWord, fill, fillParts, filmLabel } from '@/lib/i18n/format';
 import { NFT_ADDRESS } from '@/lib/contracts';
 import { jsonLd, SITE_URL, DEPLOYMENT_URL } from '@/lib/site';
 import { getArtworkDetails } from '@/lib/art/server';
 import { indexedWork } from '@/lib/art/collection-index';
 import { detailsFromIndexedWork, type ArtworkDetails } from '@/lib/art/details-validation';
 import { workFolio, workNumber } from '@/lib/art/number';
+import { workOrbit } from '@/lib/art/orbit-records';
 import { workDescription } from '@/lib/art/work-description';
 import { getInterpretation, type Artwork, type ArtworkResult } from '@/lib/art/types';
 import { ArtworkSources, ChainAddress, RecordDate, recordTime } from './artwork-record';
@@ -167,6 +168,12 @@ export function EntryView({
     details?.wavelengthNm !== undefined ? note('wavelength', t.glossaryWavelength) : 0;
   const chaosNote = details?.chaos !== undefined ? note('chaos', t.glossaryChaos) : 0;
   const syzygyNote = details?.syzygies !== undefined ? note('syzygies', t.glossarySyzygies) : 0;
+  // The published fate closes the line of traits, so its note is numbered here. The note says
+  // what the record's two outcomes are and how far the record looked: the work's own horizon,
+  // from its orbit record. A work with no orbit record keeps the trait, labelled, without a note.
+  const horizon = details?.fate ? workOrbit(work.id)?.fate.horizonSteps : undefined;
+  const fateNote =
+    horizon !== undefined ? note('fate', fill(t.glossaryFate, { steps: nf.format(horizon) })) : 0;
   const massesNote = details?.masses ? note('masses', t.glossaryMasses) : 0;
   const eccentricityNote =
     details?.eccentricity !== undefined ? note('eccentricity', t.glossaryEccentricity) : 0;
@@ -226,6 +233,17 @@ export function EntryView({
     );
   if (details?.wildcard) traits.push(<span key="wildcard">{t.wildcard}</span>);
   if (details?.allocation) traits.push(<bdi key="allocation">{details.allocation}</bdi>);
+  // The fate is the one published name that makes a claim about the orbit ("Eternal Dance"), so
+  // it is not the entry's title. It stands last among the publisher's names, labelled as
+  // published and quoted, and the venue's own finding is the line under the still
+  // (docs/after-the-frame.md § 5: a published trait stays as published).
+  if (details?.fate)
+    traits.push(
+      <span key="fate">
+        {fillParts(t.fatePublished, { fate: <bdi key="fate">{details.fate}</bdi> })}
+        {fateNote ? <Mark n={fateNote} t={t} /> : null}
+      </span>,
+    );
 
   const measures: [string, ReactNode][] = [];
   if (details?.masses)
@@ -374,12 +392,6 @@ export function EntryView({
         {unavailable ? <p className="notice">{t.detailsUnavailable}</p> : null}
         <h1 id="entry-title" className={styles.title}>
           {t.signature} {folio}
-          {details?.fate ? (
-            <>
-              {' — '}
-              <bdi>{details.fate}</bdi>
-            </>
-          ) : null}
         </h1>
         {named ? (
           <p className={styles.name}>

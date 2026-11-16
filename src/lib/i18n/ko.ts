@@ -69,7 +69,6 @@ export const ko: Messages = {
   palette: '색상',
   spectralClass: '분광형',
   massBalance: '질량 균형',
-  fate: '최종 상태',
   chaos: '혼돈',
   syzygies: '천체 정렬',
   simulation: '시뮬레이션',
@@ -284,6 +283,7 @@ export const ko: Messages = {
   collectionViews: '컬렉션 전체를 한눈에',
   filters: '필터',
   clearFilters: '필터 지우기',
+  fateAsPublished: '최종 상태(공개된 그대로)',
   unmeasured: '측정되지 않음',
   spectrumWall: '스펙트럼을 따라 늘어선 컬렉션',
   spectrumNote: '모든 빛의 플레이트가 공개된 주파장에 따라 검은 바탕 위에 걸립니다, 380~700 nm.',
@@ -346,6 +346,9 @@ export const ko: Messages = {
   glossaryWavelength: '주파장은 팔레트 기준 색의 색조를 가시광선의 나노미터로 측정한 값입니다.',
   glossaryMasses: '세 질량은 각 천체가 다른 두 천체를 끌어당기는 세기를 정합니다.',
   glossaryEccentricity: '이심률은 드리프트 타원이 원에서 얼마나 벗어났는지를 나타냅니다.',
+  fatePublished: '공개된 최종 상태: ‘{fate}’',
+  glossaryFate:
+    '최종 상태는 발행자가 각 토큰에 부여하는 특성이며, 여기서는 공개된 그대로 둡니다. 기록이 한 천체가 나머지 둘에서 풀려났다고 보는 경우는 ‘Ejection’, 기록이 지켜본 마지막인 {steps}번째 단계까지 그런 천체를 찾지 못한 경우는 ‘Eternal Dance’입니다.',
   verifyOnChain: '온체인 검증',
   honestyRecord: '기록은 Arbitrum 인덱서에서 읽어 오며, 체인보다 몇 블록 늦을 수 있습니다.',
   honestyMedia:
