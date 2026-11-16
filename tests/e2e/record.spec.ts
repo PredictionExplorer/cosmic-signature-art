@@ -1,5 +1,6 @@
 import { expect, test, type Page } from './fixtures';
 import { catalogs } from '../../src/lib/i18n/messages';
+import { localizedPath } from '../../src/lib/i18n/routing';
 import { readFileSync } from 'node:fs';
 import { noHorizontalOverflow } from './helpers';
 
@@ -22,8 +23,14 @@ test('an artwork is typed as a catalogue entry from the publisher’s record, wi
   const main = page.getByRole('main');
   await expect(main).toHaveCount(1);
   const entry = main.locator('#record');
-  // The one h1 is the entry's first line; the numeral grammar is "Signature 031".
-  await expect(entry.getByRole('heading', { level: 1 })).toHaveText(/^Signature 031/);
+  // The one h1 is the entry's first line; the numeral grammar is "Signature 031". The published
+  // fate is not the title: it stands among the publisher's names, labelled and quoted, with a
+  // note of what the record found and how far it looked.
+  await expect(entry.getByRole('heading', { level: 1 })).toHaveText('Signature 031');
+  await expect(entry).toContainText('Published fate: “Eternal Dance”');
+  await expect(
+    entry.getByRole('complementary', { name: t.glossary }).getByRole('listitem'),
+  ).toContainText([t.glossaryFate.replace('{steps}', '8,000,000')]);
   await expect(entry.getByText(/candidate orbits\. Number [\d,]+ was chosen\./)).toBeVisible();
   // A label keeps its figure, a figure its unit, a separator the phrase before it: no-break spaces.
   await expect(entry.getByText(/^Cycle\s1\s· /)).toBeVisible();
@@ -110,6 +117,41 @@ test('the entry is set in every locale without running past its measure', async 
     );
     await expect(entry.getByText(catalogs[locale].glossarySignature)).toBeVisible();
     await noHorizontalOverflow(page);
+  }
+});
+
+test('a work is described to a search engine and a shared link in the venue’s own words, in the page’s language', async ({
+  page,
+}) => {
+  await pauseMotion(page);
+  // № 031's line (src/lib/art/fate-line.ts): its record dates no ejection, and its energy held.
+  // The unit tests hold the same of all 72 works in eight languages
+  // (src/lib/art/work-description.test.ts); this reads it where a crawler does.
+  for (const locale of ['en', 'uk', 'ja'] as const) {
+    const words = catalogs[locale];
+    const number = new Intl.NumberFormat(locale);
+    const said = words.sentences
+      .replace('{first}', words.fateTogether.replace('{steps}', number.format(1_000_000)))
+      .replace('{second}', words.fateStill.replace('{steps}', number.format(8_000_000)));
+    await page.goto(`${localizedPath(locale, '/art/31')}?view=still`);
+    await expect(page.locator('html')).toHaveAttribute('lang', locale);
+    for (const name of ['description', 'og:description', 'twitter:description'])
+      await expect(
+        page.locator(`meta[name="${name}"], meta[property="${name}"]`),
+        `${locale} ${name}`,
+      ).toHaveAttribute('content', said);
+    // The structured data arrives with the record, and says the same.
+    const structured = page.locator('#record script[type="application/ld+json"]');
+    await expect(structured).toBeAttached();
+    const data = JSON.parse((await structured.textContent())!) as Record<string, unknown>;
+    expect(data.description, locale).toBe(said);
+    expect(data.artMedium, locale).toBe(
+      words.sentences.replace('{first}', words.inkMedium).replace('{second}', words.lightMedium),
+    );
+    // Never the token's English sentence ("… fate: eternal dance. Imprinted in Round 1 …"), and
+    // no paper claimed of a simulated ground.
+    expect(JSON.stringify(data), locale).not.toMatch(/eternal|\bRound\b|syzyg/i);
+    expect(data, locale).not.toHaveProperty('artworkSurface');
   }
 });
 

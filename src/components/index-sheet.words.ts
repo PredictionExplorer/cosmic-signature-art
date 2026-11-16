@@ -40,7 +40,7 @@ export const INDEX_SHEET_WORDS = [
   'palette',
   'spectralClass',
   'massBalance',
-  'fate',
+  'fateAsPublished',
   'language',
 ] as const satisfies WordList;
 export type IndexSheetWords = Words<typeof INDEX_SHEET_WORDS>;

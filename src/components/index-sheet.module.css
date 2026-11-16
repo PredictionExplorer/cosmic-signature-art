@@ -207,13 +207,32 @@
   flex-wrap: wrap;
   gap: 0 24px;
 }
+/* A row of chips under its name: beside it on a desk, above it on a phone, where a column for
+   the names would leave the chips one to a line. The names keep one column, so every row's
+   chips begin on one line down the sheet; a long name (a long language) wraps inside it. */
+.filterRow {
+  display: grid;
+  grid-template-columns: var(--filter-label) minmax(0, 1fr);
+  column-gap: 18px;
+  align-items: start;
+}
+.filters {
+  --filter-label: 12em;
+}
+.filterLabel,
 .palette summary {
   min-height: 44px;
   display: flex;
   align-items: center;
   font-size: var(--fs-control);
-  cursor: pointer;
   color: var(--muted);
+}
+.palette summary {
+  cursor: pointer;
+}
+/* The palettes open under their own name, in the chips' column. */
+.palette .chips {
+  padding-left: calc(var(--filter-label) + 18px);
 }
 .pocket {
   display: flex;
@@ -230,6 +249,17 @@
 @media (max-width: 767px) {
   .sheet {
     grid-template-rows: auto minmax(30dvh, 1fr) auto;
+  }
+  .filterRow {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  /* Not a target: the name sits close above its chips, and the row's height is the chips'. */
+  .filterLabel {
+    min-height: 0;
+    padding-top: 9px;
+  }
+  .palette .chips {
+    padding-left: 0;
   }
   .top {
     gap: 0 12px;

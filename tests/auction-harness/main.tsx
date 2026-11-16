@@ -49,7 +49,6 @@ const traits: LotTraitsById = Object.fromEntries(
     {
       structure: work.traits.structure,
       underlay: work.traits.underlay,
-      fate: work.traits.fate,
       cycle: work.cycle,
     },
   ]),

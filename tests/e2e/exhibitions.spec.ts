@@ -43,17 +43,20 @@ test('a trail states its rule, hangs its works in the plate sequence and prints 
   await expect(spread.getByText('Hung by Cosmic Signature')).toBeVisible();
   await expect(spread.getByText(t.trailLongCurveRule)).toBeVisible();
   await expect(spread.getByText(t.trailLongCurveNote)).toBeVisible();
+  // The trail was re-hung in November 2026 by the orbit's own length against its width; the
+  // page keeps what it hung, and says when and what it followed before.
+  await expect(spread.getByText(t.trailLongCurveCorrected)).toBeVisible();
   const measures = main.getByRole('list').last().getByRole('listitem');
   const count = await main.locator('ol').nth(0).getByRole('listitem').count();
   expect(count).toBeGreaterThanOrEqual(6);
   expect(count).toBeLessThanOrEqual(12);
-  await expect(measures.first().getByRole('link')).toContainText('№ 059');
-  await expect(measures.first().getByRole('link')).toContainText('eccentricity 0.499');
-  await expect(measures.first().getByRole('link')).toHaveAttribute('href', '/art/59');
+  await expect(measures.first().getByRole('link')).toContainText('№ 051');
+  await expect(measures.first().getByRole('link')).toContainText('2.01 times as long as wide');
+  await expect(measures.first().getByRole('link')).toHaveAttribute('href', '/art/51');
   // The plates above are the works' own stills, numeral captions only, each work as its pair.
   const plates = main.locator('.work-grid .work-card');
   await expect(plates).toHaveCount(count * 2);
-  await expect(plates.first()).toHaveAttribute('href', '/art/59?expression=ink');
+  await expect(plates.first()).toHaveAttribute('href', '/art/51?expression=ink');
   await expect(plates.first().locator('img').first()).toHaveAttribute(
     'src',
     /full|ember_full|\.webp/,

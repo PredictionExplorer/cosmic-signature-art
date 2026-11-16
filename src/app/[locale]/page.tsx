@@ -39,7 +39,7 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
   if (!isLocale(locale)) return {};
   const t = messages(locale);
   // The day's work's card is drawn beside this route (opengraph-image.tsx), not configured here.
-  return metadata(locale, '/', `${t.shape} ${t.ofMotion}`, t.statementLine, null);
+  return metadata(locale, '/', t.shapeOfMotion, t.statementLine, null);
 }
 
 /**

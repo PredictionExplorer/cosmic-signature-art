@@ -24,7 +24,11 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
   return metadata(locale, '/auctions', t.auctions, t.auctionIntro);
 }
 
-/** The words the index lends each lot's entry line: structure, underlay, fate and cycle. */
+/**
+ * The words the index lends each lot's entry line: structure, underlay and cycle. Not the
+ * published fate: it is the one published name that makes a claim about the orbit's future
+ * ("Eternal Dance"), and a lot's line is a sale surface.
+ */
 function lotTraits(): LotTraitsById {
   return Object.fromEntries(
     collectionIndex.works.map((work) => [
@@ -32,7 +36,6 @@ function lotTraits(): LotTraitsById {
       {
         structure: work.traits.structure,
         underlay: work.traits.underlay,
-        fate: work.traits.fate,
         cycle: work.cycle,
       },
     ]),

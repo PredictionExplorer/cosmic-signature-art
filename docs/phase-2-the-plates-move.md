@@ -46,6 +46,15 @@ Trace by braid crossings); and the three cycles as chapters with counts and date
 settled results read from the contract when one is configured. Every hang is dated and signed
 "Hung by Cosmic Signature" until the owner names a curator.
 
+_Corrected 16 November 2026._ Two of those rules said more than their numbers do. The published
+"eccentricity" is the eccentricity of the ellipse the camera drifts along, one uniform draw from
+the seed, and says nothing of the three bodies' paths; the Long Curve is re-hung by each
+orbit's own length against its width, a measure the venue takes from the orbit
+(`orbitElongation` in `src/lib/art/orbit-windows.ts`). The published chaos score is how widely
+the motion is spread across frequencies, not how sensitive the orbit is to its start; Almost
+Still and Turbulence keep their works and say so. Each of the three pages carries a dated line
+(`src/lib/exhibitions/exhibitions.ts`).
+
 **Sharing images.** Each work, the home and the collection draw their own card: the real 1280
 rung on its measured ground, the one label line, the wordmark and the seed as a monogram, set
 in static Literata and Plex Mono. No tint touches the art.

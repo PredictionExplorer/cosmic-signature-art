@@ -191,6 +191,8 @@ Timings are for a warm connection at 1440×900 unless stated; every plate uses t
 > Minted to 0x7406…6c6c · held by 0x6308…1F7C · Arbitrum record as of 26 Oct 2026, 08:04 UTC
 > Seed 0x4a0d…f5b5
 
+*Revised on 16 November 2026: the title is the number alone, "Signature 031". The fate is the publisher's name for the work and not the venue's, and the venue has measured that it cannot call an orbit eternal. It stands in the line of published traits, labelled and quoted (Published fate: “Eternal Dance”), with a footnote of what the publisher's two names mean and how far its record looked.*
+
 Footnotes are the glossary as marginalia at 15 px, and the first two define the words the site has never defined: "¹ A Signature is one token: one seed, one recorded orbit, every published rendering of it"; "² An expression is one authored rendering of that orbit — Light and Ink are two, of equal standing"; then "⁵ Syzygies 0: the three bodies never fell into a line". `details-validation.ts` gains Underlay, the record's cycle and mint date, wavelength, hues, eccentricity, masses and Borda. `t.workCopy` is deleted. Full hashes, Arbiscan links and the two honesty notes live in a `Verify on chain` drawer. The beige `#e9e2d5` panel is gone.
 
 **Beat 5 — detail plates (paper).** Two or three labelled windows, "Detail of Plate 031 (1:1) · x 1,420–2,340 / y 580–1,175", chosen offline by ink density and stored as `detailRects` in the plate record; the pointer pans, pinch on phones; `Whole plate` always one press away; a scale readout. Day one: a 320 px loupe drawing the existing 3456 WebP at scale 1 (zero new pixels); later, tiles.

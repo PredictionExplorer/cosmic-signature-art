@@ -68,6 +68,9 @@ export default async function Statement({ params }: { params: Promise<{ locale: 
         ))}
       </div>
       <p className={styles.byline}>{t.statementSigned}</p>
+      {/* A signed text that changes says so, here where it is signed. The byline itself is left
+          as it was: the home, the essay and the sale catalogue print it too. */}
+      <p className={styles.corrected}>{t.statementCorrected}</p>
       <Link className={`text-link ${styles.onward}`} href={localizedPath(locale, '/collection')}>
         {t.collection} →
       </Link>

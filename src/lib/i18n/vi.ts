@@ -70,8 +70,7 @@ export const vi: Messages = {
   palette: 'Bảng màu',
   spectralClass: 'Lớp phổ',
   massBalance: 'Cân bằng khối lượng',
-  fate: 'Kết cục',
-  chaos: 'Hỗn loạn',
+  chaos: 'Hỗn độn',
   syzygies: 'Các lần ba vật thể thẳng hàng',
   simulation: 'Mô phỏng',
   integrator: 'Bộ tích phân',
@@ -87,8 +86,6 @@ export const vi: Messages = {
   language: 'Ngôn ngữ',
   siteNavigation: 'Điều hướng chính',
   skip: 'Chuyển đến tác phẩm',
-  shape: 'Hình hài',
-  ofMotion: 'của chuyển động.',
   ink: 'Mực',
   light: 'Ánh sáng',
   film: 'Phim',
@@ -276,7 +273,7 @@ export const vi: Messages = {
   keyNeighbours: 'Tác phẩm trước và sau',
   keyExpressions: 'Mực và Ánh sáng; giữ để xem thoáng',
   keyFilm: 'Mở phim trong phòng xem',
-  keySit: 'Ngồi: để giao diện mờ đi',
+  keySit: 'Ngắm: để giao diện mờ đi',
   keyStudy: 'Xem kỹ bản in ở kích cỡ đầy đủ',
   keyIndex: 'Mở mục lục',
   keyJump: 'Gõ một số rồi nhấn Enter để đến tác phẩm đó',
@@ -291,6 +288,7 @@ export const vi: Messages = {
   collectionViews: 'Cả bộ sưu tập cùng lúc',
   filters: 'Bộ lọc',
   clearFilters: 'Xóa bộ lọc',
+  fateAsPublished: 'Kết cục, như đã công bố',
   unmeasured: 'Chưa đo',
   spectrumWall: 'Bộ sưu tập dọc theo quang phổ',
   spectrumNote:
@@ -330,12 +328,12 @@ export const vi: Messages = {
   sweepFilm: 'Quét quang phổ',
   mintedTo: 'Đúc cho',
   heldBy: 'đang giữ bởi',
-  recordAsOf: 'Bản ghi Arbitrum tính đến {date}',
+  recordAsOf: 'Hồ sơ Arbitrum tính đến {date}',
   seedShort: 'Hạt giống',
   wavelength: 'Bước sóng chủ đạo',
   bodyHues: 'Sắc độ các vật thể',
   masses: 'Khối lượng',
-  eccentricity: 'Độ lệch tâm',
+  eccentricity: 'Độ lệch tâm trôi dạt',
   selection: 'Tuyển chọn',
   glossary: 'Bảng thuật ngữ',
   glossarySignature:
@@ -345,7 +343,8 @@ export const vi: Messages = {
   glossaryUnderlay: 'Lớp nền là cấu trúc phụ được vẽ bên dưới cấu trúc chính, với độ mờ đã nêu.',
   glossarySpectralClass:
     'Lớp quang phổ theo thang sao, từ O xanh nhất đến M đỏ nhất, đọc từ bước sóng chủ đạo của bảng màu.',
-  glossaryChaos: 'Hỗn độn, từ 0 đến 100, đo mức độ nhạy của quỹ đạo với điều kiện ban đầu.',
+  glossaryChaos:
+    'Hỗn độn, từ 0 đến 100, là phép đo của nhà phát hành: chuyển động của quỹ đạo trải rộng đến đâu trên các tần số, trong cửa sổ đã ghi. Gần 0, chuyển động ấy lặp lại như một máy đếm nhịp; gần 100, nó không giữ nhịp nào.',
   glossarySyzygies:
     'Một syzygy là khoảnh khắc ba vật thể thẳng hàng. Số không nghĩa là điều đó chưa từng xảy ra.',
   glossaryBorda:
@@ -353,9 +352,13 @@ export const vi: Messages = {
   glossaryWavelength:
     'Bước sóng chủ đạo là sắc độ của màu neo trong bảng màu, đo bằng nanomét ánh sáng khả kiến.',
   glossaryMasses: 'Ba khối lượng định mức mỗi vật thể hút hai vật thể còn lại mạnh đến đâu.',
-  glossaryEccentricity: 'Độ lệch tâm đo mức hình elip trôi dạt lệch khỏi hình tròn.',
+  glossaryEccentricity:
+    'Độ lệch tâm trôi dạt đo mức lệch khỏi hình tròn của hình elip mà máy quay đi theo. Nó được rút ra từ hạt giống và không nói gì về đường đi của ba vật thể.',
+  fatePublished: 'Kết cục đã công bố: “{fate}”',
+  glossaryFate:
+    'Kết cục là một đặc tính nhà phát hành gán cho mỗi token, được giữ ở đây đúng như đã công bố: “Ejection” khi hồ sơ ghi nhận một vật thể không còn gắn kết với hai vật còn lại, “Eternal Dance” khi hồ sơ không ghi nhận vật thể nào như thế cho đến bước {steps}, nơi nó ngừng dõi theo.',
   verifyOnChain: 'Xác minh trên chuỗi',
-  honestyRecord: 'Bản ghi được đọc từ bộ chỉ mục Arbitrum và có thể chậm hơn chuỗi vài khối.',
+  honestyRecord: 'Hồ sơ được đọc từ bộ chỉ mục Arbitrum và có thể chậm hơn chuỗi vài khối.',
   honestyMedia:
     'Tệp phương tiện thuộc về nhà phát hành; mã băm được ghi ở đây và được đối chiếu ở mọi nơi có bản sao cục bộ.',
 
@@ -364,6 +367,7 @@ export const vi: Messages = {
   statementLine:
     'Mỗi tác phẩm là một quỹ đạo ba vật thể được ghi lại, kết xuất hai lần, thành ánh sáng và thành mực. Cả hai là cùng một token.',
   statementSigned: 'Cosmic Signature · Tháng 10 năm 2026',
+  statementCorrected: 'Đính chính tháng 11 năm 2026: § 3 và § 6.',
   homeLine: 'Ba vật thể, mỗi vật hút hai vật còn lại.',
   homeLineLight: 'Đây là một lần phơi sáng lâu ghi lại chuyển động của chúng.',
   homeLineInk: 'Đây là mực mà chuyển động của chúng đã khuấy lên.',
@@ -382,13 +386,13 @@ export const vi: Messages = {
   statement2:
     'Mỗi quỹ đạo được kết xuất hai lần, thành Ánh sáng và thành Mực. Trong Ánh sáng, ba vật thể để lại những dải sáng trên nền đen. Trong Mực, cùng chuyển động ấy đưa mực tàu qua một chất lưu mô phỏng lên nền giấy kozo. Đó là hai biểu đạt của một tác phẩm, ngang hàng nhau; không bên nào là bản gốc của bên kia.',
   statement3:
-    'Chúng tôi chọn ba vật thể vì ba là con số nhỏ nhất mà lực hấp dẫn không thể tiên đoán trọn vẹn. Hai vật thể xoay mãi trong một hình khép kín. Ba vật thể thì ứng tác. Đường đi của chúng được định đến chữ số cuối cùng mà vẫn bất ngờ, và đó là phẩm chất chúng tôi muốn mỗi tác phẩm mang theo.',
+    'Chúng tôi chọn ba vật thể vì ba là con số nhỏ nhất mà lực hấp dẫn không cho một công thức nào dùng được. Hai vật thể gắn kết với nhau lặp lại một hình elip, được biết trước trọn vẹn. Ba vật thể thì phải tính, từng bước một. Đường đi của chúng được định bởi trạng thái ban đầu đến chữ số cuối cùng, và một thay đổi ở chữ số thập phân thứ mười hai của trạng thái ấy có thể làm thay đổi những gì theo sau: trang của mỗi tác phẩm thử điều đó, trong mục “Một phần nghìn tỷ”. Đó là phẩm chất chúng tôi muốn mỗi tác phẩm mang theo.',
   statement4:
-    'Với mỗi tác phẩm, một trăm nghìn quỹ đạo ứng viên được mô phỏng và chấm điểm theo hỗn độn, cân bằng và hình thể. Một kiểm Borda xếp hạng chúng, và một quỹ đạo được chọn. Số của ứng viên được chọn được công bố trong bản ghi của tác phẩm, bên cạnh những trọng số đã chọn nó.',
+    'Với mỗi tác phẩm, một trăm nghìn quỹ đạo ứng viên được mô phỏng và chấm điểm theo hỗn độn, cân bằng và hình thể. Một kiểm Borda xếp hạng chúng, và một quỹ đạo được chọn. Số của ứng viên được chọn được công bố trong hồ sơ của tác phẩm, bên cạnh những trọng số đã chọn nó.',
   statement5:
     'Các tác phẩm được khắc dấu theo chu kỳ. Mỗi vòng thành công của trò chơi Cosmic Signature kết thúc bằng việc đúc token mới trên Arbitrum, và hạt giống của chúng được cố định trong chính giao dịch ấy. Chu kỳ 0 đã mở bộ sưu tập vào tháng 6 năm 2026. Bộ sưu tập lớn dần theo mỗi chu kỳ và không bao giờ sửa lại những gì đã công bố.',
   statement6:
-    'Mọi thứ hiển thị ở đây là bản kết xuất được ghi lại, không phải mô phỏng trực tiếp. Mỗi bản in được tái hiện từ các tệp đã công bố, khớp từng mã băm, và mỗi phép đo trên những trang này, một bước sóng, một chỉ số hỗn độn, một số lần syzygy, đều là của nhà phát hành.',
+    'Ảnh tĩnh và phim ở đây là những bản kết xuất được ghi lại, tái hiện từ các tệp đã công bố, kèm mã băm để có thể đối chiếu một bản sao. Quỹ đạo bên dưới chúng thì không được ghi lại: trình duyệt của bạn suy ra lại quỹ đạo ấy từ hạt giống và đối chiếu với hồ sơ đã công bố, đến từng bit cuối cùng. Bước sóng, chỉ số hỗn độn, số lần syzygy là các phép đo của nhà phát hành; những gì các trang này tự đo thì được ghi rõ là phân tích, không phải tác phẩm.',
 
   // Lời cuối sách
   colophon: 'Lời cuối sách',
@@ -513,7 +517,7 @@ export const vi: Messages = {
   // Fork E · exhibitions, trails, sharing images, Verify a download
   exhibitions: 'Triển lãm',
   exhibitionsIntro:
-    'Những phòng treo và lối đi xuyên qua bộ sưu tập. Mỗi triển lãm đều ghi ngày và ký tên, và mỗi lối đi nêu rõ phép đo đã công bố mà nó đi theo.',
+    'Những phòng treo và lối đi xuyên qua bộ sưu tập. Mỗi triển lãm đều ghi ngày và ký tên, và mỗi lối đi nêu rõ phép đo mà nó đi theo.',
   hang: 'Phòng treo',
   trail: 'Lối đi',
   hungBy: 'Người treo: {curator}',
@@ -524,25 +528,29 @@ export const vi: Messages = {
   theWorks: 'Các tác phẩm',
   trailLongCurve: 'Đường cong dài',
   trailLongCurveRule:
-    'Những tác phẩm có độ lệch tâm quỹ đạo đã công bố từ 0,48 trở lên: những quỹ đạo kéo dài nhất của bộ sưu tập.',
+    'Những tác phẩm có quỹ đạo dài ít nhất gấp 1,55 lần chiều rộng: những hình dài nhất của bộ sưu tập.',
   trailLongCurveNote:
-    'Độ lệch tâm đo mức hình elip trôi của quỹ đạo rời xa hình tròn. Khi lối đi này được treo, bộ sưu tập trải từ 0,40 đến 0,50, nên đây là những đường cong dài nhất của nó. Trong Ánh sáng, các dải kéo giãn và mỏng dần ở đầu xa của mỗi vòng; trong Mực, chất lưu bị kéo thành những nét dài, không vội. Chúng được treo theo thứ tự, từ kéo dài nhất trở xuống.',
+    'Phép đo này không phải của nhà phát hành. Nó được thực hiện tại đây, trên chính quỹ đạo chứ không phải trên bức ảnh: cứ mỗi một trăm bước của cửa sổ đã ghi, với cả ba vật thể, trên mặt phẳng nơi quỹ đạo trải rộng nhất; chiều dài theo trục thứ nhất của mặt phẳng ấy, chia cho chiều rộng theo trục thứ hai. Nó được suy ra từ hạt giống bằng chính phép tính mà trình duyệt của bạn chạy trên trang của mỗi tác phẩm. Khi lối đi này được treo, giá trị giữa của bộ sưu tập là 1,25, và tác phẩm năm mươi mốt, ở mức 2,01, dài gấp đôi chiều rộng. Chúng được treo theo thứ tự, từ dài nhất trở xuống.',
+  trailLongCurveCorrected:
+    'Treo lại tháng 11 năm 2026. Khi được treo lần đầu, ngày 27 tháng 10, lối đi này đi theo độ lệch tâm trôi dạt đã công bố, vốn mô tả đường đi của máy quay chứ không phải quỹ đạo. Mười tác phẩm khi ấy là 059, 053, 034, 030, 061, 002, 046, 068, 043 và 003.',
   trailAlmostStill: 'Gần như tĩnh lặng',
   trailAlmostStillRule:
-    'Những tác phẩm có độ hỗn độn đã công bố từ 16 trở xuống, trên thang 100: những quỹ đạo êm ả nhất.',
+    'Những tác phẩm có độ hỗn độn đã công bố từ 16 trở xuống, trên thang 100: những quỹ đạo đều đặn nhất của bộ sưu tập.',
   trailAlmostStillNote:
-    'Độ hỗn độn đo mức quỹ đạo phụ thuộc nhạy cảm vào nơi nó bắt đầu. Những quỹ đạo này gần như không phụ thuộc. Dải Ánh sáng của chúng nằm sát và lặp lại; Mực của chúng lắng gần như đúng nơi được đặt, và tờ giấy giữ lấy vân của mình. Lối đi bắt đầu với hai quỹ đạo lặng nhất, ở mức 13, và kết thúc nơi phần giữa của bộ sưu tập bắt đầu.',
+    'Độ hỗn độn là phép đo của nhà phát hành: chuyển động của quỹ đạo trải rộng đến đâu trên các tần số. Gần 0, chuyển động ấy lặp lại như một máy đếm nhịp; gần 100, nó không giữ nhịp nào. Những quỹ đạo này giữ nhịp của mình chặt chẽ nhất. Độ hỗn độn không đo việc quỹ đạo đáp lại thế nào trước một thay đổi ở trạng thái ban đầu của nó; trang của mỗi tác phẩm tự thử điều đó, trong mục “Một phần nghìn tỷ”. Lối đi bắt đầu với hai quỹ đạo có độ hỗn độn thấp nhất, ở mức 13, và kết thúc nơi phần giữa của bộ sưu tập bắt đầu.',
   trailTurbulence: 'Nhiễu động',
   trailTurbulenceRule:
-    'Những tác phẩm có độ hỗn độn đã công bố từ 24 trở lên, trên thang 100: những quỹ đạo bị xáo trộn nhất.',
+    'Những tác phẩm có độ hỗn độn đã công bố từ 24 trở lên, trên thang 100: những quỹ đạo kém đều đặn nhất của bộ sưu tập.',
   trailTurbulenceNote:
-    'Ở đầu kia của cùng một phép đo, những quỹ đạo này nhạy cảm nhất với điểm khởi đầu. Các dải cắt nhau và quay ngược; mực bị cuốn xa nhất khỏi nơi các vật thể đi qua. Sáu mươi chín, ở mức 28, là quỹ đạo nhiễu động nhất được ghi nhận khi lối đi này được treo.',
+    'Ở đầu kia của cùng một phép đo, những quỹ đạo này trải chuyển động của mình trên nhiều tần số nhất và ít giữ nhịp nhất. Dù vậy, cả bộ sưu tập vẫn nằm gần đầu đều đặn của thang đo: tác phẩm sáu mươi chín, ở mức 28 trên 100, có độ hỗn độn cao nhất được ghi nhận khi lối đi này được treo. Phép đo này không nói quỹ đạo đáp lại thế nào trước một thay đổi ở trạng thái ban đầu của nó; trang của mỗi tác phẩm tự thử điều đó, trong mục “Một phần nghìn tỷ”.',
+  trailChaosCorrected:
+    'Đính chính tháng 11 năm 2026. Khi được treo lần đầu, lối đi này nói rằng độ hỗn độn đo mức quỹ đạo phụ thuộc nhạy cảm vào nơi nó bắt đầu. Độ hỗn độn đo mức độ đều đặn của chuyển động.',
   trailLightBecomingTrace: 'Ánh sáng thành dấu vết',
   trailLightBecomingTraceRule:
     'Những tác phẩm có số giao cắt bím đã công bố từ 50 trở lên: những dải quỹ đạo cắt nhau thường xuyên nhất.',
   trailLightBecomingTraceNote:
     'Mỗi lần một dải vượt qua dải khác, nhà phát hành tính một giao cắt. Nơi có nhiều giao cắt, bản in Ánh sáng là một tấm dệt, và trong Mực những giao cắt ấy trở thành nếp gấp trong một dấu vết duy nhất. Mười một, với 97, là tấm dệt dày nhất của bộ sưu tập khi lối đi này được treo; lối đi theo số đếm đi xuống tới năm mươi.',
-  measureEccentricity: 'độ lệch tâm {value}',
+  measureElongation: 'dài gấp {value} lần chiều rộng',
   measureChaos: 'hỗn độn {value} / 100',
   measureCrossings: '{value} giao cắt',
   cycleNote:
@@ -575,7 +583,7 @@ export const vi: Messages = {
   verifyOrbitLineByLine: 'Quá trình suy ra, từng dòng một',
   verifyOrbitWaiting: 'Quá trình suy ra sẽ bắt đầu tại đây khi trang đã sẵn sàng.',
   verifyOrbitSeedLine: 'Hạt giống {seed}',
-  verifyOrbitFateRun: 'Quá khoảng được ghi lại, để biết số phận · đến bước {steps}',
+  verifyOrbitFateRun: 'Quá khoảng được ghi lại, để biết kết cục · đến bước {steps}',
   verifyOrbitAt: '{seconds} giây',
   verifyOrbitTook: 'Đã đối chiếu tại đây trong {seconds} giây.',
   verifyOrbitUnchecked: 'chưa đối chiếu',
@@ -583,7 +591,7 @@ export const vi: Messages = {
     '{count} trong số {total} phép đo không thể đối chiếu trong trình duyệt này.',
   verifyOrbitAnother: 'Xác minh quỹ đạo khác',
   verifyOrbitNote:
-    'Phép tính là của chính bộ tạo: dòng ngẫu nhiên của nó, đọc đến ứng viên {index}; {steps} bước của bộ tích phân Yoshida bậc bốn; rồi tiếp tục quá khoảng được ghi lại để biết số phận. Chỉ dùng phép cộng, trừ, nhân, chia và căn bậc hai, mỗi phép đều được tiêu chuẩn định nghĩa chính xác, nên trình duyệt nào cũng đi đến cùng những bit ấy. Không có gì được gửi đi.',
+    'Phép tính là của chính bộ tạo: dòng ngẫu nhiên của nó, đọc đến ứng viên {index}; {steps} bước của bộ tích phân Yoshida bậc bốn; rồi tiếp tục quá khoảng được ghi lại để biết kết cục. Chỉ dùng phép cộng, trừ, nhân, chia và căn bậc hai, mỗi phép đều được tiêu chuẩn định nghĩa chính xác, nên trình duyệt nào cũng đi đến cùng những bit ấy. Không có gì được gửi đi.',
   publishedHashes: 'Mã băm đã công bố',
   sharingCollection: 'Bộ sưu tập · {count} tác phẩm',
   // The orbit, re-performed (src/components/orbit-score.tsx)
@@ -633,7 +641,7 @@ export const vi: Messages = {
     'Quá cửa sổ đã ghi, cùng một vật lý ấy vẫn tiếp diễn, theo nhịp của phim, và máy quay đứng yên ở nơi phim để lại. Đây không phải tác phẩm: đây là điều quỹ đạo của tác phẩm làm tiếp theo.',
   afterTheFrameNoteAsk:
     'Quá cửa sổ đã ghi, cùng một vật lý ấy vẫn tiếp diễn, theo nhịp của phim. Khung hình đứng yên ở nơi phim để lại, hoặc ở lại với một trong ba vật thể, khi đó vật thể ấy đứng yên trong khung hình. Đây không phải tác phẩm: đây là điều quỹ đạo của tác phẩm làm tiếp theo.',
-  orbitFate: 'Số phận',
+  orbitFate: 'Kết cục',
   orbitFateEjection: 'vật thể {body} không còn gắn kết ở bước {step}',
   orbitFateDance: 'còn gắn kết qua {steps} bước',
   orbitBeyond: '{clock} sau phim · bước {step}',

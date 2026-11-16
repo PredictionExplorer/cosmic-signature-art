@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { catalogs, messages } from './messages';
-import { locales } from './routing';
+import { locales, type Locale } from './routing';
+import { NEVER_OF_AN_ORBIT } from '../../../tests/word-rules';
 
 describe('production translations', () => {
   for (const locale of locales) {
@@ -58,6 +59,200 @@ describe('production translations', () => {
       expect(String(value).toLowerCase(), key).not.toContain('thiên thể');
   });
 
+  it('has one name for Ink in each language, wherever the expression or its material is named', () => {
+    // Sumi is what the expression simulates, and each language has its word for it. The control
+    // once said «Чорнило», インク and 잉크, the words for the ink of a pen, while the entry, the
+    // Statement and the exhibitions said «Туш», 墨 and 먹 (the 14 November 2026 review, content-6).
+    const name: Record<Locale, RegExp> = {
+      en: /\bink\b/i,
+      uk: /туш/i,
+      ja: /墨/,
+      ko: /먹/,
+      zh: /墨/,
+      'zh-TW': /墨/,
+      'zh-HK': /墨/,
+      vi: /mực/i,
+    };
+    const second: Partial<Record<Locale, RegExp>> = { uk: /чорнил/i, ja: /インク/, ko: /잉크/ };
+    const named = Object.entries(catalogs.en).filter(([, value]) => name.en.test(value));
+    expect(named.length).toBeGreaterThan(15);
+    for (const locale of locales) {
+      const catalog = catalogs[locale];
+      // The word on the control is the name itself, and every sentence that names Ink in
+      // English names it by that word.
+      expect(catalog.ink, locale).toMatch(name[locale]);
+      for (const [key] of named)
+        expect(catalog[key as keyof typeof catalog], `${locale}.${key}`).toMatch(name[locale]);
+      const other = second[locale];
+      if (other)
+        for (const [key, value] of Object.entries(catalog))
+          expect(value, `${locale}.${key}`).not.toMatch(other);
+    }
+    expect([catalogs.uk.ink, catalogs.ja.ink, catalogs.ko.ink]).toEqual(['Туш', '墨', '먹']);
+  });
+
+  it('sets Light apart from what it says of Ink, on a work whose Ink is not indexed', () => {
+    // The card shows the Light and says the Ink is not indexed yet. Japanese once joined the two
+    // with a nakaguro (光・墨は…), which reads "Light and Ink are not yet indexed".
+    for (const locale of locales) expect(catalogs[locale].lightOnly, locale).toContain(' · ');
+    expect(catalogs.ja.lightOnly).not.toContain('・');
+  });
+
+  it('calls a plate by one word in a language, wherever English says plate', () => {
+    // The Ukrainian colophon, at the foot of every page, once began «Плати відтворено…»:
+    // payments, or circuit boards. Japanese and Korean had the loan word (プレート, 플레이트) in
+    // three strings beside the book's word in seven, and Korean a bare 판 in two more.
+    const said = (value: string) => /\bplates?\b/i.test(value.replace(/\{\w+\}/g, ''));
+    const plates = Object.entries(catalogs.en).filter(([, value]) => said(value));
+    expect(plates.map(([key]) => key)).toContain('colophonPlates');
+    const word = { uk: 'аркуш', ja: '図版', ko: '도판', vi: 'bản in' } as const;
+    for (const locale of ['uk', 'ja', 'ko', 'vi'] as const)
+      for (const [key] of plates)
+        expect(
+          catalogs[locale][key as keyof typeof catalogs.en].toLowerCase(),
+          `${locale}.${key}`,
+        ).toContain(word[locale]);
+    expect(catalogs.uk.colophonPlates).toMatch(/^Аркуші відтворено/);
+    expect(Object.values(catalogs.ja).join(' ')).not.toContain('プレート');
+    expect(Object.values(catalogs.ko).join(' ')).not.toContain('플레이트');
+  });
+
+  it('has one name for the publisher in each language', () => {
+    // Japanese had 公開者 once beside 発行者, and each Chinese catalogue 发布者 once beside 发布方.
+    const name: Record<Locale, RegExp> = {
+      en: /publisher/i,
+      uk: /видав/i,
+      ja: /発行者/,
+      ko: /발행자/,
+      zh: /发布方/,
+      'zh-TW': /發布方/,
+      'zh-HK': /發佈方/,
+      vi: /nhà phát hành/i,
+    };
+    const named = Object.entries(catalogs.en).filter(([, value]) => name.en.test(value));
+    expect(named.length).toBeGreaterThan(5);
+    for (const locale of locales) {
+      for (const [key] of named)
+        expect(catalogs[locale][key as keyof typeof catalogs.en], `${locale}.${key}`).toMatch(
+          name[locale],
+        );
+      expect(Object.values(catalogs[locale]).join(' '), locale).not.toMatch(
+        /公開者|发布者|發布者|發佈者/,
+      );
+    }
+  });
+
+  it('names chaos by its label, wherever it says what chaos is', () => {
+    // An entry sets the label beside the mark that leads to its note, and a chaos trail prints
+    // the measure beside the same work. Korean labelled it 혼돈 over a note that began 카오스는,
+    // and Vietnamese «Hỗn loạn» over «Hỗn độn».
+    for (const locale of locales) {
+      const catalog = catalogs[locale];
+      const label = catalog.chaos.toLowerCase();
+      for (const key of [
+        'glossaryChaos',
+        'measureChaos',
+        'trailAlmostStillNote',
+        'trailChaosCorrected',
+      ] as const)
+        expect(catalog[key].toLowerCase(), `${locale}.${key}`).toContain(label);
+    }
+  });
+
+  it('keeps pace and rhythm apart in Chinese', () => {
+    // 节奏 stood for the film's pace in four strings where four others said 速度. The chaos notes
+    // say that an orbit near 100 keeps no 节奏, and a work's page prints both.
+    const paced = Object.entries(catalogs.en).filter(([, value]) =>
+      /\bpace\b/i.test(value.replace(/\{\w+\}/g, '')),
+    );
+    expect(paced.length).toBeGreaterThan(5);
+    for (const locale of ['zh', 'zh-TW', 'zh-HK'] as const)
+      for (const [key] of paced) {
+        const value = catalogs[locale][key as keyof typeof catalogs.en];
+        expect(value, `${locale}.${key}`).toContain('速度');
+        expect(value, `${locale}.${key}`).not.toMatch(/节奏|節奏/);
+      }
+  });
+
+  it('keeps one name where a second had crept in', () => {
+    // Each of these named, in one or two strings, a thing the rest of its catalogue names
+    // otherwise: a still, the long film, a record, a fate (the reviews of November 2026).
+    const second: Partial<Record<Locale, RegExp>> = {
+      ko: /정지 화면|정지 화상|긴 연구/,
+      zh: /静帧/,
+      'zh-TW': /靜幀/,
+      'zh-HK': /靜幀/,
+      vi: /bản ghi|số phận|hỗn loạn/i,
+    };
+    for (const [locale, other] of Object.entries(second) as [Locale, RegExp][])
+      for (const [key, value] of Object.entries(catalogs[locale]))
+        expect(value, `${locale}.${key}`).not.toMatch(other);
+  });
+
+  it('names Sit in its key line by the word on the control', () => {
+    // The control's hint and the key sheet read the one line (keySit); in seven languages it
+    // once began with another word than the control beside it (Сісти beside Споглядати).
+    for (const locale of locales) {
+      const catalog = catalogs[locale];
+      expect(catalog.keySit.startsWith(catalog.sit), `${locale}: ${catalog.keySit}`).toBe(true);
+    }
+  });
+
+  it('has one tagline, said one way', () => {
+    // The home's title was once put together from two keys, which Japanese, Korean and
+    // Vietnamese had translated apart from the line the page prints, and which set a Latin
+    // space inside a Chinese or Japanese title.
+    expect(catalogs.en).not.toHaveProperty('shape');
+    expect(catalogs.en).not.toHaveProperty('ofMotion');
+    expect(catalogs.en.shapeOfMotion).toBe('The shape of motion.');
+    for (const locale of ['ja', 'zh', 'zh-TW', 'zh-HK'] as const)
+      expect(catalogs[locale].shapeOfMotion, locale).not.toMatch(/\s/);
+  });
+
+  it('never says eternal, for ever or always in its own voice, in any string of any language', () => {
+    // The venue has measured that it cannot know (docs/after-the-frame.md § 1.3), so the words
+    // are kept out of every catalogue, not only out of the lines about an orbit. Two things are
+    // not the venue speaking of an orbit: the publisher's own name for a fate, quoted as
+    // published, and the sale's rule that a larger bid is always welcome.
+    const QUOTED = 'Eternal Dance';
+    const NOT_OF_AN_ORBIT = new Set(['ruleRaiseCopy']);
+    for (const locale of locales) {
+      const catalog = catalogs[locale];
+      for (const [key, value] of Object.entries(catalog)) {
+        if (NOT_OF_AN_ORBIT.has(key)) continue;
+        const own = value.replaceAll(QUOTED, '');
+        expect(own, `${locale}.${key}`).not.toMatch(NEVER_OF_AN_ORBIT[locale]);
+        // Nor the English word under another language, as the token's own text once stood.
+        expect(own, `${locale}.${key}`).not.toMatch(/eternal/i);
+      }
+      // The publisher's two names are quoted exactly as published, in every language.
+      expect(catalog.glossaryFate, locale).toContain(QUOTED);
+      expect(catalog.glossaryFate, locale).toContain('Ejection');
+      expect(catalog.fatePublished, locale).toContain('{fate}');
+      // The published name is always set off as a quotation, never left bare.
+      expect(catalog.fatePublished.replace('{fate}', ''), locale).toMatch(/[“«「‘]/);
+    }
+  });
+
+  it('keeps the Statement to what the venue does and says: no for ever, and its own names', () => {
+    // § 3 once said two bodies circle "forever" (вічно, 永遠に, 영원히, 永远) and § 6 that nothing
+    // here is computed live. Corrected in November 2026 (the 14 November review, content-4, -5).
+    for (const locale of locales) {
+      const catalog = catalogs[locale];
+      for (const n of [1, 2, 3, 4, 5, 6] as const)
+        expect(catalog[`statement${n}`], `${locale} § ${n}`).not.toMatch(NEVER_OF_AN_ORBIT[locale]);
+      // § 3 sends the reader to the twin by the name its control carries on every work's page.
+      expect(catalog.statement3, locale).toContain(catalog.oneInATrillion);
+      // § 6 says what the venue's own measurements are marked as, in the mark's own words.
+      expect(catalog.statement6.toLowerCase(), locale).toContain(
+        catalog.analysisNotWork.toLowerCase(),
+      );
+      // The line under the byline names the paragraphs that changed.
+      expect(catalog.statementCorrected, locale).toMatch(/§ 3.*§ 6/);
+    }
+    expect(catalogs.en.statement6).not.toMatch(/not a live simulation|publisher’s own/);
+  });
+
   it('runs two sentences together as each language does: no space in Japanese or Chinese', () => {
     for (const locale of locales)
       expect(catalogs[locale].sentences, locale).toBe(
@@ -80,6 +275,14 @@ describe('production translations', () => {
     expect(catalogs['zh-TW'].privacyCopy).toContain('網路');
     expect(catalogs['zh-HK'].privacyCopy).toContain('網絡');
     expect(catalogs['zh-TW'].privacy).not.toBe(catalogs['zh-HK'].privacy);
+    // Each spells "publish" one way: 發佈 in Hong Kong, where eight strings once said 發布 beside
+    // twenty-eight, and 發布 in Taiwan. "Here" is 這裏 in Hong Kong and 這裡 in Taiwan.
+    const hongKong = Object.values(catalogs['zh-HK']).join(' ');
+    const taiwan = Object.values(catalogs['zh-TW']).join(' ');
+    expect(hongKong).not.toMatch(/發布|這裡/);
+    expect(hongKong).toContain('發佈方');
+    expect(taiwan).not.toMatch(/發佈|這裏/);
+    expect(taiwan).toContain('發布方');
   });
 
   it('keeps locale-specific reader conventions', () => {

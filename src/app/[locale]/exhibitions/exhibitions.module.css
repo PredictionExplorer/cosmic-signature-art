@@ -111,6 +111,14 @@
 .note {
   text-wrap: pretty;
 }
+/* A dated correction beneath the note: quieter than the note, at the curator line's size. */
+.corrected {
+  max-width: var(--measure);
+  font-size: var(--fs-control);
+  line-height: 1.5;
+  color: var(--muted);
+  text-wrap: pretty;
+}
 .sectionTitle {
   padding: 54px var(--gutter) 27px;
 }
