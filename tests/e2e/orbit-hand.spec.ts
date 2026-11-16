@@ -62,8 +62,12 @@ test('the hint comes into room kept for it: nothing beneath the caption moves', 
     const sample = () => {
       const picture = document.querySelector('#orbit figure [class*="stage"]');
       const score = document.querySelector('#orbit [class*="strip"]');
-      // Once the page stands: a section still streamed in unseen has no size to read.
-      if (picture && score && picture.getBoundingClientRect().height > 0) {
+      // Once the page stands, in its own faces. A section not yet laid out has no size to read;
+      // and Firefox draws its first frame in the fallback faces, where the caption's account
+      // wraps a line shorter. That frame is the faces arriving, not the hint: a page sent whole
+      // shows it, where a page that waited for script behind a plate never did.
+      const stands = picture && score && picture.getBoundingClientRect().height > 0;
+      if (stands && document.fonts.status === 'loaded') {
         const gap = score.getBoundingClientRect().top - picture.getBoundingClientRect().bottom;
         gaps.add(Math.round(gap * 2) / 2);
       }
