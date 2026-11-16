@@ -183,18 +183,30 @@ test.describe('the policy refuses what it is there to refuse', () => {
         .toContainEqual(expect.stringMatching(new RegExp(`^policy: enforce ${directive} `)));
   });
 
-  test('a frame around the venue', async ({ page, baseURL, faults }) => {
+  test('a frame around the venue', async ({ page, baseURL, browserName, faults }) => {
     // The browser's line for the frame it refused, in each engine's words.
     faults.allow(/frame|Content Security Policy|X-Frame-Options|Refused to/i);
+    // Each engine says so on the console, and names the directive that refused it.
+    const refused = page.waitForEvent('console', (message) =>
+      /frame-ancestors/.test(message.text()),
+    );
     await page.setContent(`<iframe src="${baseURL}/statement" width="600" height="400"></iframe>`);
-    // Nothing of the venue is drawn inside another page.
-    await expect(page.frameLocator('iframe').locator('main')).toHaveCount(0);
+    await refused;
+    // Nothing of the venue is drawn inside another page. Chromium and WebKit give the refused
+    // frame an empty document, which can be read. Firefox gives it none at all: a question put
+    // inside that frame waits for a document for ever, so there the frame is asked only whether
+    // it ever came to hold a page.
+    if (browserName === 'firefox') {
+      const [frame] = page.frames().filter((candidate) => candidate !== page.mainFrame());
+      expect(frame?.url() ?? '').not.toMatch(/^https?:/);
+    } else {
+      await expect(page.frameLocator('iframe').locator('main')).toHaveCount(0);
+    }
   });
 
   test('a handler written into a page rendered on request is reported, and nothing is sent', async ({
     page,
     faults,
-    browserName,
   }) => {
     faults.allow(policyReports, /Failed to load resource/);
     // Anything the browser sends that is not a plain read: a report would be one.
@@ -213,11 +225,8 @@ test.describe('the policy refuses what it is there to refuse', () => {
     // Today it runs: the enforced policy allows inline script. The second policy says so to the
     // page, and is the one that will refuse it once it is enforced.
     await expect.poll(() => page.evaluate(() => '__injected' in window)).toBe(true);
-    // Chromium and WebKit were watched making this report. Firefox was not: the machine this
-    // was written on cannot launch it, and it is not known to honour a report-only policy
-    // whose reports have no address. What it must not do, here as everywhere, is send one.
-    if (browserName !== 'firefox')
-      await expect.poll(() => faults.seen()).toContain('policy: report script-src-attr inline');
+    // Chromium, WebKit and Firefox were each watched making this report to the page.
+    await expect.poll(() => faults.seen()).toContain('policy: report script-src-attr inline');
     // The report stays in the browser: its group has no address (REPORT_GROUP).
     expect(sent).toEqual([]);
   });
