@@ -103,13 +103,18 @@ English, Simplified Chinese, Traditional Chinese for Taiwan and for Hong Kong, U
   - `npm run test:fonts`: every character in every locale is drawn by a shipped face;
   - `tests/e2e/accessibility.spec.ts`: axe runs on every route in every locale.
 
-### A 12 px floor and 44 px targets
+### A 12 px floor, 44 px targets, and nothing cut off at 320 px
 
-Small type and small targets shut people out.
+Small type and small targets shut people out, and so does a word that runs off a small screen.
 
-- **Kept by:** `src/app/globals.css`, whose type scale stops at 12 px in every locale, and controls sized to at least 44 px.
+- **Kept by:**
+  - `src/app/globals.css`, whose type scale stops at 12 px in every locale, and controls sized to at least 44 px.
+  - On a Chinese, Japanese or Korean page, `font-synthesis-small-caps: none` beside `font-synthesis-style: none`: no face fakes a style it lacks, so no ideograph is drawn at 70 % of its size.
+  - Columns that are never wider than the screen between its gutters (`grid-template-columns: minmax(0, 1fr)`), and a wordmark sized to its longer word.
 - **Checked by:**
-  - `src/app/stylesheet-floor.test.ts`: no stylesheet sets type below 12 px;
+  - `src/app/stylesheet-floor.test.ts`: no stylesheet sets type below 12 px.
+  - `tests/e2e/drawn.spec.ts`, which measures what is drawn, because each of these rules can be kept in the stylesheet and broken on the screen. On a 320 px screen, in English, Ukrainian and Japanese, every line of text and every control lies between the screen's sides and inside any box that clips it. In Chinese, Japanese and Korean every ideograph is as wide as the same character set plainly at 12 px or more. On a work's page every control is at least 44 × 44 px, a link set in a line of words excepted.
+  - `noHorizontalOverflow` in `tests/e2e/helpers.ts`, called by the accessibility run on every route in every locale. It reads the same boxes, and not the page's width alone: the venue's frame clips its overflow, so a line too wide for the screen leaves the page 320 px wide and the line cut.
   - `tests/e2e/polish-responsive.spec.ts`: the viewing controls are at least 44 × 44 px, from a 320 px phone to a laptop.
 
 ### Say what is known, and how
@@ -164,7 +169,7 @@ npm run test:budgets:js       # first-load JavaScript per route, read from the b
 npm run test:budgets:paint    # LCP and CLS in Chromium, on a desk and a phone
 ```
 
-The budgets are set in [`scripts/budgets.json`](scripts/budgets.json): first-load JavaScript per route, and LCP within 2.5 s and CLS within 0.1 for the home and a work page. ARCHITECTURE.md, §12, records the baseline they were set from and how to change one. The paint budget is measured only on a production server. Against `npm run dev` it skips, because a development server's timings mean nothing.
+The budgets are set in [`scripts/budgets.json`](scripts/budgets.json): first-load JavaScript per route, and LCP within 2.5 s and CLS within 0.1 for the home, a work page and a work's proof. ARCHITECTURE.md, §12, records the baseline they were set from and how to change one. The paint budget is measured only on a production server. Against `npm run dev` it skips, because a development server's timings mean nothing.
 
 ## Hosting
 
