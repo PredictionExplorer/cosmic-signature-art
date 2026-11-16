@@ -395,6 +395,50 @@ test('filter chips narrow the collection through the published traits and can be
   await expect(page.locator('#works .work-card')).toHaveCount(36);
 });
 
+test('the Index sheet names every row of its filters, and says whose the fates are', async ({
+  page,
+  isMobile,
+}) => {
+  await page.goto('/collection', { waitUntil: 'domcontentloaded' });
+  await pauseAmbientMotion(page);
+  const indexWord = (
+    isMobile
+      ? page.getByRole('navigation', { name: t.collectionControls })
+      : page.locator('.site-header')
+  ).getByRole('button', { name: t.index, exact: true });
+  const sheet = page.getByRole('dialog', { name: t.indexSheet });
+  // The words can stand before the page answers a press: press until the sheet opens.
+  await expect(async () => {
+    await indexWord.click();
+    await expect(sheet).toBeVisible({ timeout: 1500 });
+  }).toPass();
+  // Two rows offer nearly the same names (Structure and Underlay), and one holds the publisher's
+  // names for a fate ("Eternal Dance"): each row stands under a name a sighted reader sees, and
+  // the list is named by it.
+  for (const key of [
+    'cycle',
+    'structure',
+    'underlay',
+    'spectralClass',
+    'massBalance',
+    'fateAsPublished',
+  ] as const) {
+    const row = sheet.getByRole('list', { name: t[key], exact: true });
+    await expect(row, key).toHaveCount(1);
+    const label = sheet.locator(`[id="${await row.getAttribute('aria-labelledby')}"]`);
+    await expect(label, key).toHaveText(t[key]);
+    await expect(label, key).toBeVisible();
+    const name = (await label.boundingBox())!;
+    const chips = (await row.boundingBox())!;
+    // Beside its chips on a desk, above them on a phone, and never over them.
+    if (isMobile) expect(name.y + name.height, key).toBeLessThanOrEqual(chips.y + 1);
+    else expect(name.x + name.width, key).toBeLessThanOrEqual(chips.x + 1);
+  }
+  const fates = sheet.getByRole('list', { name: t.fateAsPublished, exact: true });
+  await expect(fates.getByRole('link')).toHaveText(['Ejection', 'Eternal Dance']);
+  await noHorizontalOverflow(page);
+});
+
 test('the Index of numbers opens from the head and the slash key, hangs the work under the hand, and enters it', async ({
   page,
   isMobile,

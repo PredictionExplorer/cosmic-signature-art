@@ -23,8 +23,14 @@ test('an artwork is typed as a catalogue entry from the publisher’s record, wi
   const main = page.getByRole('main');
   await expect(main).toHaveCount(1);
   const entry = main.locator('#record');
-  // The one h1 is the entry's first line; the numeral grammar is "Signature 031".
-  await expect(entry.getByRole('heading', { level: 1 })).toHaveText(/^Signature 031/);
+  // The one h1 is the entry's first line; the numeral grammar is "Signature 031". The published
+  // fate is not the title: it stands among the publisher's names, labelled and quoted, with a
+  // note of what the record found and how far it looked.
+  await expect(entry.getByRole('heading', { level: 1 })).toHaveText('Signature 031');
+  await expect(entry).toContainText('Published fate: “Eternal Dance”');
+  await expect(
+    entry.getByRole('complementary', { name: t.glossary }).getByRole('listitem'),
+  ).toContainText([t.glossaryFate.replace('{steps}', '8,000,000')]);
   await expect(entry.getByText(/candidate orbits\. Number [\d,]+ was chosen\./)).toBeVisible();
   // A label keeps its figure, a figure its unit, a separator the phrase before it: no-break spaces.
   await expect(entry.getByText(/^Cycle\s1\s· /)).toBeVisible();
