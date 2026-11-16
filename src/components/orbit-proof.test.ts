@@ -135,7 +135,7 @@ describe('the energy the computation kept, in words', () => {
       'As computed here, the energy holds to 12 digits through the recorded window.',
     );
     expect(energyText(held, steps, ja, new Intl.NumberFormat('ja'))).toBe(
-      'ここでの計算では、記録された時間を通じてエネルギーは 12 桁まで保たれています。',
+      'ここでの計算では、記録区間を通じてエネルギーは 12 桁まで保たれています。',
     );
   });
 
