@@ -43,3 +43,12 @@ export function bindNumbers(text: string): string {
     .replace(/(\d) × (?=\d)/g, `$1${NBSP}×${NBSP}`)
     .replace(new RegExp(String.raw`(\d) (?=${UNIT}\b)`, 'g'), `$1${NBSP}`);
 }
+
+/**
+ * What stands between a sentence and the one set after it in the same paragraph, when the two
+ * are joined in code. Chinese and Japanese end a sentence on a full stop that carries its own
+ * space, and nothing follows it; every other script the venue sets takes a word space.
+ */
+export function sentenceGap(sentence: string): string {
+  return /[。！？]$/.test(sentence) ? '' : ' ';
+}

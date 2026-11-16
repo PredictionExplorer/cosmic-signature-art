@@ -62,6 +62,8 @@ function Page() {
       title="The Orrery"
       line="Every orbit, at once."
       note="Computed as you watch."
+      point="Point at a work to see its still."
+      touch="Tap a work to enter it."
       still="Drawn whole."
       fallback="Stills instead."
     />
@@ -129,6 +131,23 @@ describe('the Orrery', () => {
     ]);
     expect(links[1]).toHaveAttribute('href', '/art/31');
     expect(screen.getByRole('region', { name: 'Cycle 1 · July 2026' })).toBeInTheDocument();
+  });
+
+  it('ends its note with one sentence for a pointer and one for a finger', () => {
+    render(<Page />);
+    // Each is its own span, so the stylesheet can show the one the screen is used with.
+    const pointing = screen.getByText('Point at a work to see its still.');
+    const touching = screen.getByText('Tap a work to enter it.');
+    expect(pointing.tagName).toBe('SPAN');
+    expect(touching.tagName).toBe('SPAN');
+    expect(pointing.className).not.toBe(touching.className);
+    const note = pointing.parentElement!;
+    expect(touching.parentElement).toBe(note);
+    // The note's own words come first, a word space after their full stop.
+    expect(note.firstChild?.textContent).toBe('Computed as you watch.');
+    expect(note.textContent).toBe(
+      'Computed as you watch. Point at a work to see its still.Tap a work to enter it.',
+    );
   });
 
   it('shows every work’s Light still where a browser cannot hand canvases to a worker', () => {
