@@ -1,4 +1,6 @@
 import { curatedArtworks, getCuratedArtwork, withCuratedMedia } from './catalog';
+import { artworkFromIndex } from './collection-cards';
+import { indexedWork } from './collection-index';
 import { MAX_COLLECTION_LIMIT, MEDIA_REVALIDATE_SECONDS } from './constants';
 import { parseMediaManifest, preferVerifiedLocalDelivery } from './media';
 import { parseArtworkId, parseTokenRecord, successEnvelopeSchema } from './validation';
@@ -26,6 +28,31 @@ function options(input: CollectionOptions) {
   if (query.length > 100 || Array.from(query).some((character) => character.charCodeAt(0) < 32))
     throw new RangeError('Invalid collection search');
   return { offset, limit: Math.min(rawLimit, MAX_COLLECTION_LIMIT), query };
+}
+
+/**
+ * What the venue itself holds of a work, for when the indexer cannot be read. The
+ * identity-verified registry's copy comes first; for every other work the build-time index
+ * keeps its record and its stills' local rungs. The index's copy is marked as the snapshot it
+ * is, so the entry dates it by the day the index was read (`provenance.checkedOn`), never by
+ * the moment of the visit. A number neither holds is unavailable, not absent: only the indexer
+ * can say that a work does not exist.
+ */
+function heldRecord(id: number): ArtworkResult {
+  const notice = 'indexer-unavailable';
+  const curated = getCuratedArtwork(id);
+  if (curated)
+    return {
+      artwork: structuredClone(curated),
+      status: 'found',
+      source: 'curated-fallback',
+      notice,
+    };
+  const indexed = indexedWork(id);
+  if (!indexed) return { artwork: null, status: 'unavailable', source: 'curated-fallback', notice };
+  const artwork = structuredClone(artworkFromIndex(indexed));
+  artwork.provenance.source = 'index-snapshot';
+  return { artwork, status: 'found', source: 'index-snapshot', notice };
 }
 
 export function createArtRepository(config: { fetch?: ArtFetchLike; timeoutMs?: number } = {}) {
@@ -85,13 +112,7 @@ export function createArtRepository(config: { fetch?: ArtFetchLike; timeoutMs?: 
     } catch (error) {
       if (error instanceof ReadError && error.notFound)
         return { artwork: null, status: 'not-found', source: 'live' };
-      const local = getCuratedArtwork(id);
-      return {
-        artwork: local ? structuredClone(local) : null,
-        status: local ? 'found' : 'unavailable',
-        source: 'curated-fallback',
-        notice: 'indexer-unavailable',
-      };
+      return heldRecord(id);
     }
   }
 
@@ -108,7 +129,7 @@ export function createArtRepository(config: { fetch?: ArtFetchLike; timeoutMs?: 
         nextOffset: null,
         total: result.status === 'unavailable' ? null : result.artwork ? 1 : 0,
         notice: result.notice === 'indexer-unavailable' ? 'search-unavailable' : undefined,
-        scope: result.source === 'curated-fallback' ? 'curated-selection' : 'search',
+        scope: result.source === 'live' ? 'search' : 'curated-selection',
       };
     }
     try {
