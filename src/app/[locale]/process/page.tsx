@@ -10,17 +10,15 @@ import { getCuratedArtwork } from '@/lib/art/catalog';
 import { indexedWork } from '@/lib/art/collection-index';
 import { workOfTheDay } from '@/lib/art/work-of-the-day';
 import { workNumber } from '@/lib/art/number';
-import { workOrbit } from '@/lib/art/orbit-records';
-import { QUICK_GATE } from '@/lib/physics/beginnings';
 import { getArtwork } from '@/lib/art/server';
 import { getInterpretation, type Artwork } from '@/lib/art/types';
-import { ChoiceField } from '@/components/choice-field';
-import { CHOICE_FIELD_WORDS } from '@/components/choice-field.words';
+import { ESSAY_EXEMPLAR, essayFacts } from '@/lib/essay/facts';
 import { ChapterPlate } from './chapter-plate';
 import { CHAPTER_PLATE_WORDS, type ChapterPlateWords } from './chapter-plate.words';
 import { SweepPlayer } from './sweep-player';
 import { SWEEP_PLAYER_WORDS, type SweepPlayerWords } from './sweep-player.words';
 import { RoomSeams } from './room-seams';
+import { ChapterIndex, EssayChapters, EssayContents, EssaySources, EssayTerms } from './essay';
 import styles from './process.module.css';
 import { nightViewport } from '@/app/viewport';
 
@@ -72,13 +70,12 @@ async function LiveSweep({ work, t }: { work: Artwork; t: SweepPlayerWords }) {
   );
 }
 
-const CHAPTERS = [
-  ['00', 'choice', 'chapterChoice'],
-  ['01', 'light', 'light'],
-  ['02', 'ink', 'ink'],
-  ['03', 'spectrum', 'chapterSpectrum'],
-] as const;
-
+/**
+ * The essay (docs/process-essay.md). Night holds gravity: the cover, the day's work in Light,
+ * six chapters on what three bodies do and how the venue computes it, and the spectrum. Paper
+ * holds the water: the same work in Ink, two chapters on what the water does, what is not
+ * known, the venue's terms, the sources, and the thesis. One hard seam lies between them.
+ */
 export default async function Process({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
   if (!isLocale(locale)) notFound();
@@ -88,10 +85,11 @@ export default async function Process({ params }: { params: Promise<{ locale: st
   const sweepWords = words(t, SWEEP_PLAYER_WORDS);
   const work = getCuratedArtwork(workOfTheDay())!;
   const indexed = indexedWork(work.id);
-  const number = new Intl.NumberFormat(locale);
-  const decimals = new Intl.NumberFormat(locale, { maximumFractionDigits: 3 });
-  const borda = indexed?.borda;
-  const orbit = workOrbit(work.id);
+  // The essay takes its examples from the day's work. The work its registry was ranged on
+  // stands in for one the registries have not measured; every sentence names the work it is of.
+  const facts = essayFacts(work.id, locale, t) ?? essayFacts(ESSAY_EXEMPLAR, locale, t);
+  if (!facts) throw new Error('The essay has no figures; run `npm run art:essay`');
+  const reading = { t, locale, facts };
   return (
     <main id="main" className={`process-page ${styles.page}`}>
       <RoomSeams />
@@ -102,69 +100,15 @@ export default async function Process({ params }: { params: Promise<{ locale: st
       >
         <div className={styles.eyeline}>
           <p className="eyebrow">{t.process}</p>
-          <nav aria-label={t.ways} className={styles.chapterNav}>
-            {CHAPTERS.map(([numeral, id, label]) => (
-              <a key={id} href={`#${id}`}>
-                <span className="numeral">{numeral}</span>
-                <span>{t[label]}</span>
-              </a>
-            ))}
-          </nav>
         </div>
         <div className={styles.title}>
           <h1 id="process-title" className={styles.cover}>
             {t.processTitle}
           </h1>
-          <p className={`reading ${styles.intro}`}>{t.processIntro}</p>
+          <p className={`reading ${styles.intro}`}>{t.essayStandfirst}</p>
           <p className={styles.byline}>{t.statementSigned}</p>
         </div>
-      </section>
-
-      <section
-        id="choice"
-        className={`${styles.night} ${styles.chapterType}`}
-        data-ground="night"
-        aria-labelledby="choice-title"
-      >
-        <ChapterIndex numeral="00" word={t.chapterChoice} />
-        <div>
-          <h2 id="choice-title" className="chapter">
-            {t.chapterChoiceCopy}
-          </h2>
-          {borda ? (
-            <>
-              <p className={styles.selection}>
-                {fill(t.selectionLine, {
-                  total: number.format(borda.totalCandidates),
-                  index: number.format(borda.selectedIndex),
-                })}
-              </p>
-              <p className={styles.borda}>
-                {workNumber(work.id)} ·{' '}
-                {fill(t.bordaNote, {
-                  chaos: decimals.format(borda.chaosWeight ?? 0),
-                  equilibrium: decimals.format(borda.equilibriumWeight ?? 0),
-                  aesthetic: decimals.format(borda.aestheticScore ?? 0),
-                  score: decimals.format(borda.selectionScore ?? 0),
-                })}
-              </p>
-            </>
-          ) : null}
-          {orbit ? (
-            // A boundary of its own: React holds a large boundary back behind its fallback (the
-            // route's loading plate), and the essay with the field inside outgrew that size.
-            // Now only the field, which needs the browser anyway, can follow the essay's words.
-            <Suspense fallback={null}>
-              <ChoiceField
-                generation={orbit.generation}
-                gate={QUICK_GATE}
-                t={words(t, CHOICE_FIELD_WORDS)}
-                locale={locale}
-              />
-            </Suspense>
-          ) : null}
-        </div>
-        <p className={`reading ${styles.chapterCopy}`}>{t.glossaryBorda}</p>
+        <EssayContents t={t} />
       </section>
 
       <section
@@ -174,10 +118,10 @@ export default async function Process({ params }: { params: Promise<{ locale: st
         aria-labelledby="light-title"
       >
         <header className={styles.chapterHead}>
-          <ChapterIndex numeral="01" word={t.light} />
+          <ChapterIndex numeral="·" word={t.light} />
           <div>
             <h2 id="light-title">{t.gravityTitle}</h2>
-            <p>{t.gravityCopy}</p>
+            <p>{fill(t.essayLightCopy, { work: workNumber(work.id) })}</p>
           </div>
         </header>
         <Suspense
@@ -193,21 +137,7 @@ export default async function Process({ params }: { params: Promise<{ locale: st
         </Suspense>
       </section>
 
-      <section
-        id="ink"
-        className={`${styles.paper} ${styles.chapterPlate}`}
-        data-ground="paper"
-        aria-labelledby="ink-title"
-      >
-        <header className={styles.chapterHead}>
-          <ChapterIndex numeral="02" word={t.ink} />
-          <div>
-            <h2 id="ink-title">{t.fluidTitle}</h2>
-            <p>{t.fluidCopy}</p>
-          </div>
-        </header>
-        <ChapterPlate media={getInterpretation(work, 'ink')} artworkId={work.id} t={plateWords} />
-      </section>
+      <EssayChapters ground="night" {...reading} />
 
       <section
         id="spectrum"
@@ -216,7 +146,7 @@ export default async function Process({ params }: { params: Promise<{ locale: st
         aria-labelledby="spectrum-title"
       >
         <header className={styles.chapterHead}>
-          <ChapterIndex numeral="03" word={t.chapterSpectrum} />
+          <ChapterIndex numeral="·" word={t.chapterSpectrum} />
           <div>
             <h2 id="spectrum-title">{t.throughSpectrum}</h2>
             <p>{t.sweepCopy}</p>
@@ -237,6 +167,26 @@ export default async function Process({ params }: { params: Promise<{ locale: st
       </section>
 
       <section
+        id="ink"
+        className={`${styles.paper} ${styles.chapterPlate}`}
+        data-ground="paper"
+        aria-labelledby="ink-title"
+      >
+        <header className={styles.chapterHead}>
+          <ChapterIndex numeral="·" word={t.ink} />
+          <div>
+            <h2 id="ink-title">{t.fluidTitle}</h2>
+            <p>{t.essayInkCopy}</p>
+          </div>
+        </header>
+        <ChapterPlate media={getInterpretation(work, 'ink')} artworkId={work.id} t={plateWords} />
+      </section>
+
+      <EssayChapters ground="paper" {...reading} />
+      <EssayTerms t={t} facts={facts} />
+      <EssaySources t={t} />
+
+      <section
         className={`${styles.paper} ${styles.coda}`}
         data-ground="paper"
         aria-labelledby="expression-title"
@@ -253,14 +203,5 @@ export default async function Process({ params }: { params: Promise<{ locale: st
         </div>
       </section>
     </main>
-  );
-}
-
-function ChapterIndex({ numeral, word }: { numeral: string; word: string }) {
-  return (
-    <p className={styles.chapterIndex}>
-      <span className="numeral">{numeral}</span>
-      <span className="small-caps">{word}</span>
-    </p>
   );
 }
