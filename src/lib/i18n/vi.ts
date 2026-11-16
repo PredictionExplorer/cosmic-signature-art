@@ -362,6 +362,7 @@ export const vi: Messages = {
   statementLine:
     'Mỗi tác phẩm là một quỹ đạo ba vật thể được ghi lại, kết xuất hai lần, thành ánh sáng và thành mực. Cả hai là cùng một token.',
   statementSigned: 'Cosmic Signature · Tháng 10 năm 2026',
+  statementCorrected: 'Đính chính tháng 11 năm 2026: § 3 và § 6.',
   homeLine: 'Ba vật thể, mỗi vật hút hai vật còn lại.',
   homeLineLight: 'Đây là một lần phơi sáng lâu ghi lại chuyển động của chúng.',
   homeLineInk: 'Đây là mực mà chuyển động của chúng đã khuấy lên.',
@@ -380,13 +381,13 @@ export const vi: Messages = {
   statement2:
     'Mỗi quỹ đạo được kết xuất hai lần, thành Ánh sáng và thành Mực. Trong Ánh sáng, ba vật thể để lại những dải sáng trên nền đen. Trong Mực, cùng chuyển động ấy đưa mực tàu qua một chất lưu mô phỏng lên nền giấy kozo. Đó là hai biểu đạt của một tác phẩm, ngang hàng nhau; không bên nào là bản gốc của bên kia.',
   statement3:
-    'Chúng tôi chọn ba vật thể vì ba là con số nhỏ nhất mà lực hấp dẫn không thể tiên đoán trọn vẹn. Hai vật thể xoay mãi trong một hình khép kín. Ba vật thể thì ứng tác. Đường đi của chúng được định đến chữ số cuối cùng mà vẫn bất ngờ, và đó là phẩm chất chúng tôi muốn mỗi tác phẩm mang theo.',
+    'Chúng tôi chọn ba vật thể vì ba là con số nhỏ nhất mà lực hấp dẫn không cho một công thức nào dùng được. Hai vật thể gắn kết với nhau lặp lại một hình elip, được biết trước trọn vẹn. Ba vật thể thì phải tính, từng bước một. Đường đi của chúng được định bởi trạng thái ban đầu đến chữ số cuối cùng, và một thay đổi ở chữ số thập phân thứ mười hai của trạng thái ấy có thể làm thay đổi những gì theo sau: trang của mỗi tác phẩm thử điều đó, trong mục “Một phần nghìn tỷ”. Đó là phẩm chất chúng tôi muốn mỗi tác phẩm mang theo.',
   statement4:
     'Với mỗi tác phẩm, một trăm nghìn quỹ đạo ứng viên được mô phỏng và chấm điểm theo hỗn độn, cân bằng và hình thể. Một kiểm Borda xếp hạng chúng, và một quỹ đạo được chọn. Số của ứng viên được chọn được công bố trong bản ghi của tác phẩm, bên cạnh những trọng số đã chọn nó.',
   statement5:
     'Các tác phẩm được khắc dấu theo chu kỳ. Mỗi vòng thành công của trò chơi Cosmic Signature kết thúc bằng việc đúc token mới trên Arbitrum, và hạt giống của chúng được cố định trong chính giao dịch ấy. Chu kỳ 0 đã mở bộ sưu tập vào tháng 6 năm 2026. Bộ sưu tập lớn dần theo mỗi chu kỳ và không bao giờ sửa lại những gì đã công bố.',
   statement6:
-    'Mọi thứ hiển thị ở đây là bản kết xuất được ghi lại, không phải mô phỏng trực tiếp. Mỗi bản in được tái hiện từ các tệp đã công bố, khớp từng mã băm, và mỗi phép đo trên những trang này, một bước sóng, một chỉ số hỗn độn, một số lần syzygy, đều là của nhà phát hành.',
+    'Ảnh tĩnh và phim ở đây là những bản kết xuất được ghi lại, tái hiện từ các tệp đã công bố, kèm mã băm để có thể đối chiếu một bản sao. Quỹ đạo bên dưới chúng thì không được ghi lại: trình duyệt của bạn suy ra lại quỹ đạo ấy từ hạt giống và đối chiếu với hồ sơ đã công bố, đến từng bit cuối cùng. Bước sóng, chỉ số hỗn độn, số lần syzygy là các phép đo của nhà phát hành; những gì các trang này tự đo thì được ghi rõ là phân tích, không phải tác phẩm.',
 
   // Lời cuối sách
   colophon: 'Lời cuối sách',

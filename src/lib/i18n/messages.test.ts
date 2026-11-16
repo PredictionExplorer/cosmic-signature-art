@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { catalogs, messages } from './messages';
 import { locales, type Locale } from './routing';
+import { NEVER_OF_AN_ORBIT } from '../../../tests/word-rules';
 
 describe('production translations', () => {
   for (const locale of locales) {
@@ -126,6 +127,25 @@ describe('production translations', () => {
     expect(catalogs.en.shapeOfMotion).toBe('The shape of motion.');
     for (const locale of ['ja', 'zh', 'zh-TW', 'zh-HK'] as const)
       expect(catalogs[locale].shapeOfMotion, locale).not.toMatch(/\s/);
+  });
+
+  it('keeps the Statement to what the venue does and says: no for ever, and its own names', () => {
+    // § 3 once said two bodies circle "forever" (вічно, 永遠に, 영원히, 永远) and § 6 that nothing
+    // here is computed live. Corrected in November 2026 (the 14 November review, content-4, -5).
+    for (const locale of locales) {
+      const catalog = catalogs[locale];
+      for (const n of [1, 2, 3, 4, 5, 6] as const)
+        expect(catalog[`statement${n}`], `${locale} § ${n}`).not.toMatch(NEVER_OF_AN_ORBIT[locale]);
+      // § 3 sends the reader to the twin by the name its control carries on every work's page.
+      expect(catalog.statement3, locale).toContain(catalog.oneInATrillion);
+      // § 6 says what the venue's own measurements are marked as, in the mark's own words.
+      expect(catalog.statement6.toLowerCase(), locale).toContain(
+        catalog.analysisNotWork.toLowerCase(),
+      );
+      // The line under the byline names the paragraphs that changed.
+      expect(catalog.statementCorrected, locale).toMatch(/§ 3.*§ 6/);
+    }
+    expect(catalogs.en.statement6).not.toMatch(/not a live simulation|publisher’s own/);
   });
 
   it('runs two sentences together as each language does: no space in Japanese or Chinese', () => {

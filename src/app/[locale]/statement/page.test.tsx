@@ -26,6 +26,9 @@ describe('the statement', () => {
       expect(section).toHaveTextContent(en[`statement${n}`]);
     }
     expect(screen.getByText(en.statementSigned)).toBeVisible();
+    // A signed text that has changed says so, under its byline.
+    expect(screen.getByText(en.statementCorrected)).toBeVisible();
+    expect(en.statementCorrected).toBe('Corrected November 2026: § 3 and § 6.');
     expect(screen.getByRole('link', { name: `${en.collection} →` })).toHaveAttribute(
       'href',
       '/collection',

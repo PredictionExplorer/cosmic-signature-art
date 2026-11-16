@@ -21,6 +21,8 @@ for (const locale of locales) {
       );
     }
     await expect(page.getByText(t.statementSigned, { exact: true })).toBeVisible();
+    // The Statement was corrected in November 2026, and says so under its byline.
+    await expect(page.getByText(t.statementCorrected, { exact: true })).toBeVisible();
     await expect(page.getByText(t.livingCollection, { exact: false })).toContainText(/\d/);
     await expect(
       page.getByRole('main').getByRole('link', { name: `${t.collection} →` }),

@@ -362,6 +362,7 @@ export const en = {
   statementLine:
     'Each work is one recorded three-body orbit, rendered twice, as light and as ink. Both are the same token.',
   statementSigned: 'Cosmic Signature · October 2026',
+  statementCorrected: 'Corrected November 2026: § 3 and § 6.',
   // The line under a still, sentence by sentence: the home's, with its second sentence for each
   // material, and a work's (src/lib/art/fate-line.ts)
   homeLine: 'Three bodies, each pulling on the other two.',
@@ -382,13 +383,13 @@ export const en = {
   statement2:
     'Each orbit is rendered twice, as Light and as Ink. In Light the three bodies leave luminous ribbons on black. In Ink the same motion carries sumi through a simulated fluid onto a kozo ground. They are two expressions of one work, of equal standing; neither is the original of the other.',
   statement3:
-    'We chose three bodies because three is the smallest number gravity cannot fully predict. Two bodies circle forever in a closed figure. Three improvise. Their paths are determined to the last decimal and still surprising, and that is the quality we wanted every work to carry.',
+    'We chose three bodies because three is the smallest number for which gravity gives no formula one can use. Two bound bodies repeat one ellipse, known whole in advance. Three must be computed, step by step. Their paths are fixed by their start to the last decimal, and a change in the twelfth decimal of that start can change what follows: each work’s page tries it, under One part in a trillion. That is the quality we wanted every work to carry.',
   statement4:
     'For every work, one hundred thousand candidate orbits are simulated and scored for chaos, balance and form. A Borda count ranks them, and one is chosen. The number of the chosen candidate is published in the work’s record beside the weights that chose it.',
   statement5:
     'Works are imprinted in cycles. Each successful round of the Cosmic Signature game ends by minting new tokens on Arbitrum, and their seeds are fixed in that one transaction. Cycle 0 opened the collection in June 2026. The collection grows with every cycle and never revises what it has published.',
   statement6:
-    'Everything shown here is a recorded rendering, not a live simulation. Every plate is reproduced from the published files, hash for hash, and every measurement on these pages, a wavelength, a chaos index, a count of syzygies, is the publisher’s own.',
+    'The stills and films here are recorded renderings, reproduced from the published files, whose hashes are given so that a copy can be checked. The orbit beneath them is not recorded: your browser derives it again from the seed and checks it against the published record, to the last bit. A wavelength, a chaos index, a count of syzygies are the publisher’s measurements; what these pages measure for themselves is marked as analysis, not the work.',
 
   // The colophon
   colophon: 'Colophon',

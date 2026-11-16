@@ -9,7 +9,8 @@ import type { Locale } from '@/lib/i18n/routing';
  * here: the count beside them bounds them.
  */
 export const NEVER_OF_AN_ORBIT: Record<Locale, RegExp> = {
-  en: /eternal|for ever|forever|always/i,
+  // Whole words: "for every" is not "for ever".
+  en: /eternal|\bfor ever\b|\bforever\b|\balways\b/i,
   uk: /вічн|назавжди|завжди/i,
   ja: /永遠|永久|いつまでも|いつも/,
   ko: /영원|언제나|항상/,
