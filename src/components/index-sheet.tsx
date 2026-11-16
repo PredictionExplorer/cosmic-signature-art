@@ -3,12 +3,14 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
   useEffect,
+  useId,
   useMemo,
   useRef,
   useState,
   useSyncExternalStore,
   type FocusEvent,
   type MouseEvent,
+  type ReactNode,
 } from 'react';
 import {
   compactPreviewUrl,
@@ -45,7 +47,8 @@ const TRAIT_LABEL = {
   palette: 'palette',
   spectralClass: 'spectralClass',
   massBalance: 'massBalance',
-  fate: 'fate',
+  // The fates are the publisher's names ("Eternal Dance"), kept as published and said to be.
+  fate: 'fateAsPublished',
 } as const satisfies Record<TraitKey, keyof IndexSheetWords>;
 const ORDERS = ['number', 'cycle', 'spectrum'] as const;
 /**
@@ -164,6 +167,26 @@ function rememberedExpression(): string | null {
  * contain-fitted on its own ground behind the type, orderings, filter chips and the search.
  * Opened by the running head's Index word and the `/` key; on phones it is also the menu.
  */
+/**
+ * One row of filter chips under its own name, which a sighted reader sees and a screen reader
+ * is told: the list is named by the label it shows. Two rows offer nearly the same names
+ * (Structure and Underlay), and one row holds the publisher's names for a fate, so a row with
+ * no name left the reader to guess which was which.
+ */
+function FilterRow({ label, children }: { label: string; children: ReactNode }) {
+  const id = useId();
+  return (
+    <div className={styles.filterRow}>
+      <span id={id} className={styles.filterLabel}>
+        {label}
+      </span>
+      <ul className={styles.chips} aria-labelledby={id}>
+        {children}
+      </ul>
+    </div>
+  );
+}
+
 export function IndexSheet({
   works,
   locale,
@@ -518,7 +541,7 @@ function SheetBody({
               </Link>
             ) : null}
           </p>
-          <ul className={styles.chips} aria-label={t.cycle}>
+          <FilterRow label={t.cycle}>
             {cycles.map((cycle) => (
               <li key={cycle.cycle}>
                 <Link
@@ -530,9 +553,9 @@ function SheetBody({
                 </Link>
               </li>
             ))}
-          </ul>
+          </FilterRow>
           {TRAIT_KEYS.filter((key) => facets[key].length && key !== 'palette').map((key) => (
-            <ul key={key} className={styles.chips} aria-label={t[TRAIT_LABEL[key]]}>
+            <FilterRow key={key} label={t[TRAIT_LABEL[key]]}>
               {facets[key].map((value) => (
                 <li key={value}>
                   <Link
@@ -544,7 +567,7 @@ function SheetBody({
                   </Link>
                 </li>
               ))}
-            </ul>
+            </FilterRow>
           ))}
           {facets.palette.length ? (
             <details className={styles.palette} open={!!params.get('palette')}>

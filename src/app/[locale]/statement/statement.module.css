@@ -50,6 +50,12 @@
   font-size: var(--fs-control);
   color: var(--muted);
 }
+/* What has changed since it was signed, set as the byline is and close beneath it. */
+.corrected {
+  margin-top: 6px;
+  font-size: var(--fs-control);
+  color: var(--muted);
+}
 .onward {
   margin-top: 45px;
 }

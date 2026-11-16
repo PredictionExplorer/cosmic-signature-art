@@ -262,7 +262,24 @@ describe('the Index of numbers', () => {
     window.history.replaceState(null, '', '/collection?fate=Ejection&cycle=2');
     renderSheet();
     act(() => openSheet('index'));
-    const fate = screen.getByRole('list', { name: en.fate });
+    // Every row of chips stands under a name a sighted reader sees, and is named by it: two
+    // rows offer nearly the same names, and the fates are the publisher's, said to be.
+    for (const key of [
+      'cycle',
+      'structure',
+      'underlay',
+      'spectralClass',
+      'massBalance',
+      'fateAsPublished',
+    ] as const) {
+      const row = screen.getByRole('list', { name: en[key] });
+      const label = document.getElementById(row.getAttribute('aria-labelledby')!)!;
+      expect(label, key).toHaveTextContent(en[key]);
+      expect(label, key).toBeVisible();
+      expect(label.nextElementSibling, key).toBe(row);
+    }
+    expect(en.fateAsPublished).toBe('Fate, as published');
+    const fate = screen.getByRole('list', { name: en.fateAsPublished });
     const ejection = within(fate).getByRole('link', { name: 'Ejection' });
     expect(ejection).toHaveAttribute('aria-current', 'true');
     // An active chip links to the same view without itself.

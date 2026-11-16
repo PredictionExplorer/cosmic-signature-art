@@ -2,11 +2,11 @@
 
 `src/lib/art/collection-index.json` is one build-time read of every published record:
 identity (token, seed, cycle, mint date and transaction), the publisher's measurements
-(dominant wavelength, chaos, syzygies, masses, eccentricity, body hues, the Borda selection,
-the text traits) and the manifest facts for each expression (still, preview and film paths
-with their published sizes and hashes). It lets the venue order the collection by real
-measurements, hang the Index of numbers, open chapters by cycle with true counts and dates,
-and render a first row of cards without 18 request-time manifest reads.
+(dominant wavelength, chaos, syzygies, masses, the camera's drift eccentricity, body hues, the
+Borda selection, the text traits) and the manifest facts for each expression (still, preview
+and film paths with their published sizes and hashes). It lets the venue order the collection
+by real measurements, hang the Index of numbers, open chapters by cycle with true counts and
+dates, and render a first row of cards without 18 request-time manifest reads.
 
 Everything in it is the publisher's own data, copied verbatim after validation. Nothing is
 inferred or scored here; a work whose metadata lacks a field simply lacks it in the index,

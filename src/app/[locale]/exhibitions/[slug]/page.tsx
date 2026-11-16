@@ -88,6 +88,11 @@ export default async function ExhibitionPage({ params }: { params: Params }) {
           </p>
         ) : null}
         <p className={`reading ${styles.note}`}>{note}</p>
+        {/* The venue keeps what it hung: where a trail's words or works were corrected, the page
+            says when, and what it said before. */}
+        {item.kind === 'trail' && item.rule.corrected ? (
+          <p className={styles.corrected}>{t[item.rule.corrected]}</p>
+        ) : null}
       </header>
       {item.kind === 'hang' ? (
         <Hang

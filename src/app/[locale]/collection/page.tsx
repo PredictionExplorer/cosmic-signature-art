@@ -46,7 +46,8 @@ const TRAIT_LABEL: Record<TraitKey, keyof Messages> = {
   palette: 'palette',
   spectralClass: 'spectralClass',
   massBalance: 'massBalance',
-  fate: 'fate',
+  // The publisher's names for a fate, said to be the publisher's (index-sheet.tsx).
+  fate: 'fateAsPublished',
 };
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }) {

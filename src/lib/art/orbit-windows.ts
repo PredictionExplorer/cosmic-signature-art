@@ -91,6 +91,22 @@ export function performedOrbits(ids: readonly number[]): PerformedOrbit[] {
 }
 
 /**
+ * How long an orbit's figure is against how wide: the extent of all three paths over the
+ * recorded window along the first axis of the plane of their greatest extent, divided by their
+ * extent along the second (the bounds scripts/build-orbit-windows.mjs commits, taken at every
+ * hundredth step). It is the venue's own measure, not the publisher's, and it is of the orbit,
+ * not of the picture: a picture is the generator's chosen view, moved by its camera's drift.
+ * A browser reaches the same number by replaying the window (orbit-windows.test.ts does).
+ * Nothing for a work whose window no longer binds to its record.
+ */
+export function orbitElongation(id: number): number | undefined {
+  const bound = bindWindow(windows.get(id), id);
+  if (!bound) return undefined;
+  const [u0, u1, v0, v1] = bound.window.plane.bounds;
+  return (u1 - u0) / (v1 - v0);
+}
+
+/**
  * A work's films' score, as its viewer needs it (film-score.ts), with the Ink film's clock where
  * the venue checked it (ink-clocks.ts); nothing without a window.
  */

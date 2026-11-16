@@ -462,7 +462,7 @@ const curated: Record<number, Artwork> = Object.fromEntries(
   [31, 23, 35].map((id) => [id, getCuratedArtwork(id)!]),
 );
 const traits = {
-  31: { structure: 'Orbit Ribbons', underlay: 'Harmonic Weave', fate: 'Eternal Dance', cycle: 1 },
+  31: { structure: 'Orbit Ribbons', underlay: 'Harmonic Weave', cycle: 1 },
 };
 
 function showPlates() {
@@ -520,9 +520,9 @@ describe('the lots as plates', () => {
       'ink',
     );
     expect(within(first).getByRole('img')).toHaveAttribute('alt', '№\u00a0031 · Ink');
-    expect(first).toHaveTextContent(
-      '№ 031 · Cycle 1 · Orbit Ribbons · Harmonic Weave · Eternal Dance',
-    );
+    expect(first).toHaveTextContent('№ 031 · Cycle 1 · Orbit Ribbons · Harmonic Weave');
+    // A lot's line never carries the published fate: no claim about the orbit beside a price.
+    expect(first).not.toHaveTextContent(/Eternal Dance|Ejection/);
     expect(first).toHaveAttribute('data-preview-available', 'true');
     // The curated archive records each expression's published film from the index, so the
     // Light lot's verified settling clip binds as the Ink lots' do: Light moves as Ink does.

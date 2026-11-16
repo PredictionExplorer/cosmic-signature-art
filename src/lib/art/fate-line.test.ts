@@ -6,6 +6,7 @@ import { fateLine, homeLine } from './fate-line';
 import { workEnergy } from './orbit-energy';
 import { orbitIds, workOrbit } from './orbit-records';
 import { DAY_WORK_POOL } from './work-of-the-day';
+import { NEVER_OF_AN_ORBIT } from '../../../tests/word-rules';
 
 const en = messages('en');
 const line = (id: number, locale: Locale = 'en') =>
@@ -47,21 +48,12 @@ describe('the line under a still, sentence by sentence', () => {
   });
 
   it('never says for ever, in any of the eight languages', () => {
-    // Each language's own words for eternal, for ever and always. The words that only span the
-    // recorded steps (ずっと, 始终, 내내, suốt, упродовж усіх) are bounded by the count beside them.
-    const forbidden: Record<Locale, RegExp> = {
-      en: /eternal|for ever|forever|always/i,
-      uk: /вічн|назавжди|завжди/i,
-      ja: /永遠|永久|いつまでも|いつも/,
-      ko: /영원|언제나|항상/,
-      zh: /永远|永恒|总是/,
-      'zh-TW': /永遠|永恆|總是/,
-      'zh-HK': /永遠|永恆|總是/,
-      vi: /vĩnh|mãi mãi|luôn luôn/i,
-    };
+    // Each language's own words for eternal, for ever and always (tests/word-rules.ts).
     for (const locale of locales)
       for (const id of orbitIds())
-        expect(line(id, locale)!.join(' '), `${locale} № ${id}`).not.toMatch(forbidden[locale]);
+        expect(line(id, locale)!.join(' '), `${locale} № ${id}`).not.toMatch(
+          NEVER_OF_AN_ORBIT[locale],
+        );
   });
 
   it('says only what the window shows of a work whose computation lost its energy', () => {
