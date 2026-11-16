@@ -86,9 +86,7 @@ export const ko: Messages = {
   language: '언어',
   siteNavigation: '주 메뉴',
   skip: '작품으로 건너뛰기',
-  shape: '움직임의',
-  ofMotion: '형태.',
-  ink: '잉크',
+  ink: '먹',
   light: '빛',
   film: '영상',
   still: '정지 이미지',
@@ -98,7 +96,7 @@ export const ko: Messages = {
   choreography: '안무는 계속됩니다',
   follow: '마음을 움직이는 것을',
   intro:
-    '궤도가 흐름이 됩니다. 흐름은 흔적을 남깁니다. 모든 Cosmic Signature는 세 천체의 움직임으로 시작해 잉크 속에서 또 다른 삶을 찾습니다.',
+    '궤도가 흐름이 됩니다. 흐름은 흔적을 남깁니다. 모든 Cosmic Signature는 세 천체의 움직임으로 시작해 먹 속에서 또 다른 삶을 찾습니다.',
   selectedWorks: '선정 작품',
   auctionIntro:
     '각 퍼포먼스 사이클마다 새로운 작품 8개가 기존 Cosmic Signature 컬렉션에 합류합니다. 최종 낙찰 대금은 프로토콜의 기존 준비금으로 돌아갑니다.',
@@ -113,7 +111,7 @@ export const ko: Messages = {
   newer: '이후 작품',
   unavailable: '실시간 컬렉션을 일시적으로 불러올 수 없습니다. 보존된 작품 모음을 표시합니다.',
   noWorks: '작품을 찾지 못했습니다.',
-  lightOnly: '빛 · 잉크는 아직 색인되지 않음',
+  lightOnly: '빛 · 먹은 아직 색인되지 않음',
   backAtlas: '컬렉션으로 돌아가기',
   ways: '바라보는 방식',
   completeFilm: '전체 영상',
@@ -140,10 +138,10 @@ export const ko: Messages = {
     '세 천체가 중력을 통해 서로 반응합니다. 변화하는 궤적이 구도를 그려 내는 경로가 됩니다.',
   fluidTitle: '그다음, 흐름.',
   fluidCopy:
-    '그 궤적이 나비에-스토크스 방정식을 따르는 유체 시뮬레이션에 안료를 전달합니다. 흐름은 따뜻한 색조의 종이 바탕 위에서 잉크를 늘이고 접고 퍼뜨립니다.',
+    '그 궤적이 나비에-스토크스 방정식을 따르는 유체 시뮬레이션에 안료를 전달합니다. 흐름은 따뜻한 색조의 종이 바탕 위에서 먹을 늘이고 접고 퍼뜨립니다.',
   expressionTitle: '하나의 정체성. 여러 표현.',
   expressionCopy:
-    '빛과 잉크는 같은 생성 작품을 서로 다르게 렌더링한 표현입니다. 영상은 과정을 드러내고 정지 이미지는 마지막 흔적을 보존합니다. 다른 토큰을 만들지 않고도 새로운 표현이 이 계열에 합류할 수 있습니다.',
+    '빛과 먹은 같은 생성 작품을 서로 다르게 렌더링한 표현입니다. 영상은 과정을 드러내고 정지 이미지는 마지막 흔적을 보존합니다. 다른 토큰을 만들지 않고도 새로운 표현이 이 계열에 합류할 수 있습니다.',
   processNote:
     '표시되는 영상은 작품을 렌더링해 기록한 결과이며, 이 브라우저에서 실시간으로 실행되는 시뮬레이션이 아닙니다.',
   auctionTitle: '다음 움직임.',
@@ -271,7 +269,7 @@ export const ko: Messages = {
   keyNeighbours: '이전 작품과 다음 작품',
   keyExpressions: '먹과 빛; 길게 눌러 미리 보기',
   keyFilm: '관람실에서 필름 열기',
-  keySit: '앉기: 인터페이스가 사라집니다',
+  keySit: '감상: 인터페이스가 사라집니다',
   keyStudy: '플레이트를 실제 크기로 살펴보기',
   keyIndex: '색인 열기',
   keyJump: '번호를 입력한 뒤 Enter를 누르면 해당 작품으로 이동합니다',
@@ -302,7 +300,7 @@ export const ko: Messages = {
   showLight: '빛 표현 보기',
   showInk: '먹 표현 보기',
   hangAlone: '{expression}만',
-  hangTogether: '잉크와 빛을 함께',
+  hangTogether: '먹과 빛을 함께',
   noInkPublished: '먹 표현이 공개되지 않음',
   previousWork: '이전 작품',
   nextWork: '다음 작품',
@@ -360,7 +358,7 @@ export const ko: Messages = {
   statementSigned: 'Cosmic Signature · 2026년 10월',
   homeLine: '세 천체가 서로를 끌어당깁니다.',
   homeLineLight: '이것은 그 움직임의 장노출입니다.',
-  homeLineInk: '이것은 그 움직임이 휘저은 잉크입니다.',
+  homeLineInk: '이것은 그 움직임이 휘저은 먹입니다.',
   fateTogether: '세 천체는 이 작품이 기록한 {steps}단계 내내 함께합니다.',
   fateLeaves: '영상이 끝나고 {time} 뒤, 그중 하나는 더 이상 나머지 둘에 묶여 있지 않습니다.',
   fateStill: '기록이 지켜본 마지막인 {steps}번째 단계에서도 셋은 여전히 서로 묶여 있습니다.',
@@ -583,7 +581,7 @@ export const ko: Messages = {
   orbitCaptionLight:
     '질량이 각각 {m1}, {m2}, {m3}인 세 천체를 빛 정지 이미지 위, 영상이 그린 바로 그 자리에 영상의 속도로 그렸습니다. 각 천체는 자기 획이 끝나는 곳에서 멈춥니다. {step}번째 단계에서 천체 {pair} 사이의 거리가 {distance}로 가장 짧아지며, 이는 영상의 {seconds}초 지점입니다. 작품이 아닌 분석입니다.',
   orbitCaptionInk:
-    '질량이 각각 {m1}, {m2}, {m3}인 세 천체를 잉크 정지 이미지 위, 잉크를 휘저은 바로 그 자리에 빛 영상의 속도로 그렸습니다. 각 천체는 자신이 남긴 빈자리에 머뭅니다. {step}번째 단계에서 천체 {pair} 사이의 거리가 {distance}로 가장 짧아지며, 이는 빛 영상의 {seconds}초 지점입니다. 작품이 아닌 분석입니다.',
+    '질량이 각각 {m1}, {m2}, {m3}인 세 천체를 먹 정지 이미지 위, 먹을 휘저은 바로 그 자리에 빛 영상의 속도로 그렸습니다. 각 천체는 자신이 남긴 빈자리에 머뭅니다. {step}번째 단계에서 천체 {pair} 사이의 거리가 {distance}로 가장 짧아지며, 이는 빛 영상의 {seconds}초 지점입니다. 작품이 아닌 분석입니다.',
   orbitWaiting: '이곳에 이르면 궤도를 이 자리에서 도출합니다.',
   orbitUnavailable:
     '이 브라우저에서는 궤도를 도출할 수 없었습니다. 기록은 공개된 그대로, 대조하지 않은 채 보여 줍니다.',

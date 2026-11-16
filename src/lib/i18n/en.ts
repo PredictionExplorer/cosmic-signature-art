@@ -84,8 +84,6 @@ export const en = {
   language: 'Language',
   siteNavigation: 'Main',
   skip: 'Skip to artwork',
-  shape: 'The shape',
-  ofMotion: 'of motion.',
   ink: 'Ink',
   light: 'Light',
   film: 'Film',

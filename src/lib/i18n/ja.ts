@@ -87,9 +87,7 @@ export const ja: Messages = {
   language: '言語',
   siteNavigation: 'メインナビゲーション',
   skip: '作品へ移動',
-  shape: '動きの',
-  ofMotion: 'かたち。',
-  ink: 'インク',
+  ink: '墨',
   light: '光',
   film: '映像',
   still: '静止画',
@@ -99,7 +97,7 @@ export const ja: Messages = {
   choreography: '振付は続きます',
   follow: '心が動くものを',
   intro:
-    '軌道は流れになり、流れは痕跡を残します。すべてのCosmic Signatureは三つの天体の動きから始まり、インクの中でもうひとつの生命を見いだします。',
+    '軌道は流れになり、流れは痕跡を残します。すべてのCosmic Signatureは三つの天体の動きから始まり、墨の中で、もうひとつの生命を見いだします。',
   selectedWorks: '選ばれた作品',
   auctionIntro:
     '各パフォーマンス・サイクルで、新たな8作品が同じCosmic Signatureコレクションに加わります。最終落札代金は、プロトコルの既存の準備金に戻ります。',
@@ -114,7 +112,7 @@ export const ja: Messages = {
   newer: '以降の作品',
   unavailable: '最新のコレクションを一時的に取得できません。保存された作品群を表示しています。',
   noWorks: '作品が見つかりません。',
-  lightOnly: '光・インクはまだ索引に未登録',
+  lightOnly: '光 · 墨は索引に未登録',
   backAtlas: 'コレクションへ戻る',
   ways: '見るための方法',
   completeFilm: '全編の映像',
@@ -141,10 +139,10 @@ export const ja: Messages = {
     '三つの天体が重力を通じて互いに応答します。変化する軌跡が、構図を描く経路になります。',
   fluidTitle: 'そして、流れ。',
   fluidCopy:
-    'その軌跡が、ナビエ・ストークス方程式に従う流体シミュレーションへ顔料を運びます。流れは暖かな色の紙面でインクを伸ばし、折り重ね、拡散させます。',
+    'その軌跡が、ナビエ・ストークス方程式に従う流体シミュレーションへ顔料を運びます。流れは暖かな色の紙面で墨を伸ばし、折り重ね、拡散させます。',
   expressionTitle: 'ひとつの存在。幾つもの表現。',
   expressionCopy:
-    '光とインクは、同じ生成作品を異なる方法で描画したものです。映像は過程を示し、静止画は最後の痕跡を保存します。別のトークンを作らずに、新たな表現をこの系譜に加えることができます。',
+    '光と墨は、同じ生成作品を異なる方法で描画したものです。映像は過程を示し、静止画は最後の痕跡を保存します。別のトークンを作らずに、新たな表現をこの系譜に加えることができます。',
   processNote:
     '表示される映像は、作品を描画して記録したものです。このブラウザー内で動くリアルタイムのシミュレーションではありません。',
   auctionTitle: '次の動きへ。',
@@ -274,7 +272,7 @@ export const ja: Messages = {
   keyNeighbours: '前の作品と次の作品',
   keyExpressions: '墨と光。長押しで覗き見る',
   keyFilm: '鑑賞室でフィルムを開く',
-  keySit: '座る：インターフェースを消す',
+  keySit: '鑑賞：インターフェースを消す',
   keyStudy: 'プレートを実寸で見る',
   keyIndex: '索引を開く',
   keyJump: '番号を入力して Enter を押すと、その作品へ移動します',
@@ -306,7 +304,7 @@ export const ja: Messages = {
   showLight: '光の表現を見る',
   showInk: '墨の表現を見る',
   hangAlone: '{expression}のみ',
-  hangTogether: 'インクと光を並べて',
+  hangTogether: '墨と光を並べて',
   noInkPublished: '墨の表現は未公開',
   previousWork: '前の作品',
   nextWork: '次の作品',
@@ -364,7 +362,7 @@ export const ja: Messages = {
   statementSigned: 'Cosmic Signature · 2026 年 10 月',
   homeLine: '三つの天体が、互いに引き合っています。',
   homeLineLight: 'これは、その運動の長時間露光です。',
-  homeLineInk: 'これは、その運動がかき混ぜたインクです。',
+  homeLineInk: 'これは、その運動がかき混ぜた墨です。',
   fateTogether: '三つの天体は、この作品が記録する {steps} ステップのあいだ、ずっと共にあります。',
   fateLeaves: '映像が終わって {time}後、そのうちのひとつは、もう他の二つに束縛されていません。',
   fateStill: '記録が見届けた最後の第 {steps} ステップでも、三つはまだ互いに束縛されています。',
@@ -590,7 +588,7 @@ export const ja: Messages = {
   orbitCaptionLight:
     '質量 {m1}、{m2}、{m3} の三つの天体を、光の静止画の上、映像が描いたその位置に、映像と同じ速さで描きます。どの天体も、自らの筆致の終わるところで止まります。天体 {pair} は第 {step} ステップで最も接近し、距離は {distance}。映像の {seconds} 秒目です。作品ではなく分析です。',
   orbitCaptionInk:
-    '質量 {m1}、{m2}、{m3} の三つの天体を、インクの静止画の上、インクをかき混ぜたその位置に、光の映像と同じ速さで描きます。どの天体も、自らが残した余白に収まります。天体 {pair} は第 {step} ステップで最も接近し、距離は {distance}。光の映像の {seconds} 秒目です。作品ではなく分析です。',
+    '質量 {m1}、{m2}、{m3} の三つの天体を、墨の静止画の上、墨をかき混ぜたその位置に、光の映像と同じ速さで描きます。どの天体も、自らが残した余白に収まります。天体 {pair} は第 {step} ステップで最も接近し、距離は {distance}。光の映像の {seconds} 秒目です。作品ではなく分析です。',
   orbitWaiting: 'ここまで来ると、軌道をこの場で導き出します。',
   orbitUnavailable:
     'このブラウザでは軌道を導き出せませんでした。記録は照合せず、公開されたままに示します。',

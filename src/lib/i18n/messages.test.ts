@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { catalogs, messages } from './messages';
-import { locales } from './routing';
+import { locales, type Locale } from './routing';
 
 describe('production translations', () => {
   for (const locale of locales) {
@@ -56,6 +56,76 @@ describe('production translations', () => {
     // record's table beside «Khối lượng vật thể 1».
     for (const [key, value] of Object.entries(catalogs.vi))
       expect(String(value).toLowerCase(), key).not.toContain('thiên thể');
+  });
+
+  it('has one name for Ink in each language, wherever the expression or its material is named', () => {
+    // Sumi is what the expression simulates, and each language has its word for it. The control
+    // once said «Чорнило», インク and 잉크, the words for the ink of a pen, while the entry, the
+    // Statement and the exhibitions said «Туш», 墨 and 먹 (the 14 November 2026 review, content-6).
+    const name: Record<Locale, RegExp> = {
+      en: /\bink\b/i,
+      uk: /туш/i,
+      ja: /墨/,
+      ko: /먹/,
+      zh: /墨/,
+      'zh-TW': /墨/,
+      'zh-HK': /墨/,
+      vi: /mực/i,
+    };
+    const second: Partial<Record<Locale, RegExp>> = { uk: /чорнил/i, ja: /インク/, ko: /잉크/ };
+    const named = Object.entries(catalogs.en).filter(([, value]) => name.en.test(value));
+    expect(named.length).toBeGreaterThan(15);
+    for (const locale of locales) {
+      const catalog = catalogs[locale];
+      // The word on the control is the name itself, and every sentence that names Ink in
+      // English names it by that word.
+      expect(catalog.ink, locale).toMatch(name[locale]);
+      for (const [key] of named)
+        expect(catalog[key as keyof typeof catalog], `${locale}.${key}`).toMatch(name[locale]);
+      const other = second[locale];
+      if (other)
+        for (const [key, value] of Object.entries(catalog))
+          expect(value, `${locale}.${key}`).not.toMatch(other);
+    }
+    expect([catalogs.uk.ink, catalogs.ja.ink, catalogs.ko.ink]).toEqual(['Туш', '墨', '먹']);
+  });
+
+  it('sets Light apart from what it says of Ink, on a work whose Ink is not indexed', () => {
+    // The card shows the Light and says the Ink is not indexed yet. Japanese once joined the two
+    // with a nakaguro (光・墨は…), which reads "Light and Ink are not yet indexed".
+    for (const locale of locales) expect(catalogs[locale].lightOnly, locale).toContain(' · ');
+    expect(catalogs.ja.lightOnly).not.toContain('・');
+  });
+
+  it('calls a plate «аркуш» in Ukrainian, wherever English says plate', () => {
+    // The colophon, at the foot of every page, once began «Плати відтворено…»: payments, or
+    // circuit boards.
+    const said = (value: string) => /\bplates?\b/i.test(value.replace(/\{\w+\}/g, ''));
+    const plates = Object.entries(catalogs.en).filter(([, value]) => said(value));
+    expect(plates.map(([key]) => key)).toContain('colophonPlates');
+    for (const [key] of plates)
+      expect(catalogs.uk[key as keyof typeof catalogs.uk].toLowerCase(), key).toContain('аркуш');
+    expect(catalogs.uk.colophonPlates).toMatch(/^Аркуші відтворено/);
+  });
+
+  it('names Sit in its key line by the word on the control', () => {
+    // The control's hint and the key sheet read the one line (keySit); in seven languages it
+    // once began with another word than the control beside it (Сісти beside Споглядати).
+    for (const locale of locales) {
+      const catalog = catalogs[locale];
+      expect(catalog.keySit.startsWith(catalog.sit), `${locale}: ${catalog.keySit}`).toBe(true);
+    }
+  });
+
+  it('has one tagline, said one way', () => {
+    // The home's title was once put together from two keys, which Japanese, Korean and
+    // Vietnamese had translated apart from the line the page prints, and which set a Latin
+    // space inside a Chinese or Japanese title.
+    expect(catalogs.en).not.toHaveProperty('shape');
+    expect(catalogs.en).not.toHaveProperty('ofMotion');
+    expect(catalogs.en.shapeOfMotion).toBe('The shape of motion.');
+    for (const locale of ['ja', 'zh', 'zh-TW', 'zh-HK'] as const)
+      expect(catalogs[locale].shapeOfMotion, locale).not.toMatch(/\s/);
   });
 
   it('runs two sentences together as each language does: no space in Japanese or Chinese', () => {
