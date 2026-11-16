@@ -1,4 +1,4 @@
-import { Suspense, type ReactNode } from 'react';
+import { Suspense, type CSSProperties, type ReactNode } from 'react';
 import { ChoiceField } from '@/components/choice-field';
 import { CHOICE_FIELD_WORDS } from '@/components/choice-field.words';
 import { indexedWork } from '@/lib/art/collection-index';
@@ -8,6 +8,7 @@ import { SOURCE_ORDER, sourceNumber } from '@/lib/essay/numerals';
 import { rich } from '@/lib/essay/rich';
 import { SOURCES, type SourceKey } from '@/lib/essay/sources';
 import { ESSAY, TERMS, type Block, type Chapter } from '@/lib/essay/structure';
+import { longestRun } from '@/lib/essay/titles';
 import type { Messages } from '@/lib/i18n/en';
 import { fill } from '@/lib/i18n/format';
 import type { Locale } from '@/lib/i18n/routing';
@@ -160,6 +161,22 @@ export function ChapterIndex({ numeral, word }: { numeral: string; word: string 
   );
 }
 
+/**
+ * A chapter's statement. Its longest word is reckoned here, so that a narrow screen can set the
+ * title as large as that word allows and never cut it (src/lib/essay/titles.ts).
+ */
+function Title({ id, text, locale }: { id: string; text: string; locale: Locale }) {
+  return (
+    <h2
+      id={id}
+      className={`chapter ${styles.title}`}
+      style={{ '--longest': longestRun(text, locale) } as CSSProperties}
+    >
+      {text}
+    </h2>
+  );
+}
+
 /** The essay's chapters on one ground, in order. */
 export function EssayChapters({ ground, ...reading }: Reading & { ground: Chapter['ground'] }) {
   const { t } = reading;
@@ -175,9 +192,7 @@ export function EssayChapters({ ground, ...reading }: Reading & { ground: Chapte
         <ChapterIndex numeral={chapter.numeral} word={t[chapter.word]} />
       </div>
       <div className={styles.body}>
-        <h2 id={`${chapter.id}-title`} className={`chapter ${styles.title}`}>
-          {t[chapter.title]}
-        </h2>
+        <Title id={`${chapter.id}-title`} text={t[chapter.title]} locale={reading.locale} />
         <div className={styles.text}>
           {chapter.blocks.map((block, index) => (
             <ChapterBlock key={index} block={block} chapter={chapter} {...reading} />
@@ -212,7 +227,7 @@ export function EssayContents({ t }: { t: Messages }) {
 }
 
 /** The venue's terms, each with what it means. */
-export function EssayTerms({ t, facts }: Pick<Reading, 't' | 'facts'>) {
+export function EssayTerms({ t, locale, facts }: Reading) {
   return (
     <section
       id="terms"
@@ -224,9 +239,7 @@ export function EssayTerms({ t, facts }: Pick<Reading, 't' | 'facts'>) {
         <ChapterIndex numeral="·" word={t.essayTermsWord} />
       </div>
       <div className={styles.body}>
-        <h2 id="terms-title" className={`chapter ${styles.title}`}>
-          {t.essayTermsTitle}
-        </h2>
+        <Title id="terms-title" text={t.essayTermsTitle} locale={locale} />
         <dl className={styles.terms}>
           {TERMS.map(([term, meaning]) => (
             <div key={term}>
@@ -243,7 +256,7 @@ export function EssayTerms({ t, facts }: Pick<Reading, 't' | 'facts'>) {
 }
 
 /** The sources, numbered as the text cites them; a reference with an address leaves the venue. */
-export function EssaySources({ t }: { t: Messages }) {
+export function EssaySources({ t, locale }: Pick<Reading, 't' | 'locale'>) {
   return (
     <section
       id="sources"
@@ -255,9 +268,7 @@ export function EssaySources({ t }: { t: Messages }) {
         <ChapterIndex numeral="·" word={t.essaySourcesWord} />
       </div>
       <div className={styles.body}>
-        <h2 id="sources-title" className={`chapter ${styles.title}`}>
-          {t.essaySourcesTitle}
-        </h2>
+        <Title id="sources-title" text={t.essaySourcesTitle} locale={locale} />
         <p className={`reading ${styles.sourcesNote}`}>{t.essaySourcesNote}</p>
         <ol className={styles.sources}>
           {SOURCE_ORDER.map((key, index) => (

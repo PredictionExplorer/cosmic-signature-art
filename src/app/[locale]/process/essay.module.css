@@ -501,6 +501,18 @@
   }
 }
 @media (max-width: 767px) {
+  /* One column, from gutter to gutter. A title's longest word stays whole: where the chapter
+     size would run it past the gutters, the whole title is set as large as that word allows
+     (--longest is its width in ems, reckoned by the page: src/lib/essay/titles.ts). */
+  .body .title {
+    font-size: min(var(--fs-chapter), calc((100vw - 2 * var(--gutter)) / var(--longest, 1)));
+  }
+  /* WebKit hangs a paragraph's opening mark outside its first line (globals.css). A Chinese or
+     Japanese mark is an em wide and the gutter here is 16 px: hung, the mark is cut by the
+     screen's edge. So it stays in its line where the text runs from gutter to gutter. */
+  :global(html:is(:lang(zh), :lang(ja))) .chapter :is(h2, h3, p, li, dd, figcaption) {
+    hanging-punctuation: none;
+  }
   .contents > ol {
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 0 18px;

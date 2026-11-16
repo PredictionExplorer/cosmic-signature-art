@@ -5,6 +5,7 @@ import { catalogs } from '../../src/lib/i18n/messages';
 import { fill } from '../../src/lib/i18n/format';
 import { workOfTheDay } from '../../src/lib/art/work-of-the-day';
 import { SOURCES } from '../../src/lib/essay/sources';
+import { locales, localizedPath } from '../../src/lib/i18n/routing';
 import { ESSAY, TERMS } from '../../src/lib/essay/structure';
 import { deriveBeginnings, QUICK_GATE } from '../../src/lib/physics/beginnings';
 import { artworkImageSource, imageLoaded, noHorizontalOverflow } from './helpers';
@@ -393,12 +394,20 @@ test.describe('the essay', () => {
     await expect(outward).toHaveAttribute('href', /^https:\/\/en\.wikisource\.org\//);
   });
 
-  for (const [name, address, width] of [
-    ['English on the narrowest phone', '/process', 320],
-    ['Japanese on the narrowest phone', '/ja/process', 320],
-    ['Ukrainian on a tablet', '/uk/process', 768],
-  ] as const)
-    test(`holds its type to the floor and its figures to the page: ${name}`, async ({ page }) => {
+  // Every language on the narrowest phone: a long word in a title, or a mark hung outside a
+  // paragraph, is cut there first (the Ukrainian «розташуваннях.» ran 34 px past the screen).
+  const pages: [name: string, address: string, width: number][] = [
+    ...locales.map((locale): [string, string, number] => [
+      `${locale} at 320 px`,
+      localizedPath(locale, '/process'),
+      320,
+    ]),
+    ['uk on a tablet', '/uk/process', 768],
+  ];
+  for (const [name, address, width] of pages)
+    test(`holds its type to the floor, its words and its figures to the page: ${name}`, async ({
+      page,
+    }) => {
       await page.setViewportSize({ width, height: 720 });
       await essay(page, address);
       await noHorizontalOverflow(page);
@@ -417,6 +426,26 @@ test.describe('the essay', () => {
               ? parseFloat(getComputedStyle(element).fontSize) * (element.getScreenCTM()?.a ?? 1)
               : parseFloat(getComputedStyle(element).fontSize);
           if (drawn < 11.99) small.push(`${node.textContent.trim().slice(0, 24)}: ${drawn}`);
+        }
+        // Every word of the essay whole from side to side: none runs past the screen, where
+        // the page would clip it. (The plates' own strips are the plates' tests'.)
+        const cut: string[] = [];
+        const own =
+          'section[id]:not(#light, #ink, #spectrum), :is(#light, #ink, #spectrum) > header';
+        for (const part of main.querySelectorAll(own)) {
+          const texts = document.createTreeWalker(part, NodeFilter.SHOW_TEXT);
+          for (let node = texts.nextNode(); node; node = texts.nextNode()) {
+            const words = node.textContent?.trim();
+            if (!words || getComputedStyle(node.parentElement!).visibility !== 'visible') continue;
+            const range = document.createRange();
+            range.selectNodeContents(node);
+            for (const box of range.getClientRects())
+              if (box.width >= 0.5 && box.height >= 0.5)
+                if (box.left < -0.5 || box.right > edge + 0.5)
+                  cut.push(
+                    `${words.slice(0, 32)}: ${Math.round(box.left)}–${Math.round(box.right)}`,
+                  );
+          }
         }
         // Every figure, and every mark set over one, inside the page's own width.
         const outside: string[] = [];
@@ -446,11 +475,12 @@ test.describe('the essay', () => {
         }
         return {
           small,
+          cut,
           outside,
           meeting,
           figures: main.querySelectorAll('figure[data-figure]').length,
         };
       });
-      expect(found).toEqual({ small: [], outside: [], meeting: [], figures: 8 });
+      expect(found).toEqual({ small: [], cut: [], outside: [], meeting: [], figures: 8 });
     });
 });

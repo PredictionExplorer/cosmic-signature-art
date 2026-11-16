@@ -152,6 +152,13 @@ never falls below the floor. A term being defined is italic in Latin and Cyrilli
 and Hangul are never slanted here, so in those languages the translation sets the term off with
 the language's own marks. A chapter's number and word stay in sight in its margin on a desk.
 
+On a single column (a phone) two things give way so that nothing is cut at a side. A word in a
+title is never broken, so the page reckons how wide each title's longest word is
+(`src/lib/essay/titles.ts`) and sets the whole title as large as that word allows: at 320 px the
+Ukrainian «розташуваннях.» sets its title at 34 px where the others stand at 44. And a Chinese
+or Japanese opening mark, an em wide, is not hung outside its paragraph there (WebKit alone
+hangs punctuation), because a 16 px gutter has no room for it.
+
 ## 6. The languages
 
 The English was written first and read by the owner. Each of the seven other languages was

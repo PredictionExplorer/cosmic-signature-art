@@ -183,8 +183,8 @@ export default async function Process({ params }: { params: Promise<{ locale: st
       </section>
 
       <EssayChapters ground="paper" {...reading} />
-      <EssayTerms t={t} facts={facts} />
-      <EssaySources t={t} />
+      <EssayTerms {...reading} />
+      <EssaySources t={t} locale={locale} />
 
       <section
         className={`${styles.paper} ${styles.coda}`}
