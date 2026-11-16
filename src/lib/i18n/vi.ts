@@ -70,7 +70,7 @@ export const vi: Messages = {
   palette: 'Bảng màu',
   spectralClass: 'Lớp phổ',
   massBalance: 'Cân bằng khối lượng',
-  chaos: 'Hỗn loạn',
+  chaos: 'Hỗn độn',
   syzygies: 'Các lần ba vật thể thẳng hàng',
   simulation: 'Mô phỏng',
   integrator: 'Bộ tích phân',
@@ -328,7 +328,7 @@ export const vi: Messages = {
   sweepFilm: 'Quét quang phổ',
   mintedTo: 'Đúc cho',
   heldBy: 'đang giữ bởi',
-  recordAsOf: 'Bản ghi Arbitrum tính đến {date}',
+  recordAsOf: 'Hồ sơ Arbitrum tính đến {date}',
   seedShort: 'Hạt giống',
   wavelength: 'Bước sóng chủ đạo',
   bodyHues: 'Sắc độ các vật thể',
@@ -358,7 +358,7 @@ export const vi: Messages = {
   glossaryFate:
     'Kết cục là một đặc tính nhà phát hành gán cho mỗi token, được giữ ở đây đúng như đã công bố: “Ejection” khi hồ sơ ghi nhận một vật thể không còn gắn kết với hai vật còn lại, “Eternal Dance” khi hồ sơ không ghi nhận vật thể nào như thế cho đến bước {steps}, nơi nó ngừng dõi theo.',
   verifyOnChain: 'Xác minh trên chuỗi',
-  honestyRecord: 'Bản ghi được đọc từ bộ chỉ mục Arbitrum và có thể chậm hơn chuỗi vài khối.',
+  honestyRecord: 'Hồ sơ được đọc từ bộ chỉ mục Arbitrum và có thể chậm hơn chuỗi vài khối.',
   honestyMedia:
     'Tệp phương tiện thuộc về nhà phát hành; mã băm được ghi ở đây và được đối chiếu ở mọi nơi có bản sao cục bộ.',
 
@@ -388,7 +388,7 @@ export const vi: Messages = {
   statement3:
     'Chúng tôi chọn ba vật thể vì ba là con số nhỏ nhất mà lực hấp dẫn không cho một công thức nào dùng được. Hai vật thể gắn kết với nhau lặp lại một hình elip, được biết trước trọn vẹn. Ba vật thể thì phải tính, từng bước một. Đường đi của chúng được định bởi trạng thái ban đầu đến chữ số cuối cùng, và một thay đổi ở chữ số thập phân thứ mười hai của trạng thái ấy có thể làm thay đổi những gì theo sau: trang của mỗi tác phẩm thử điều đó, trong mục “Một phần nghìn tỷ”. Đó là phẩm chất chúng tôi muốn mỗi tác phẩm mang theo.',
   statement4:
-    'Với mỗi tác phẩm, một trăm nghìn quỹ đạo ứng viên được mô phỏng và chấm điểm theo hỗn độn, cân bằng và hình thể. Một kiểm Borda xếp hạng chúng, và một quỹ đạo được chọn. Số của ứng viên được chọn được công bố trong bản ghi của tác phẩm, bên cạnh những trọng số đã chọn nó.',
+    'Với mỗi tác phẩm, một trăm nghìn quỹ đạo ứng viên được mô phỏng và chấm điểm theo hỗn độn, cân bằng và hình thể. Một kiểm Borda xếp hạng chúng, và một quỹ đạo được chọn. Số của ứng viên được chọn được công bố trong hồ sơ của tác phẩm, bên cạnh những trọng số đã chọn nó.',
   statement5:
     'Các tác phẩm được khắc dấu theo chu kỳ. Mỗi vòng thành công của trò chơi Cosmic Signature kết thúc bằng việc đúc token mới trên Arbitrum, và hạt giống của chúng được cố định trong chính giao dịch ấy. Chu kỳ 0 đã mở bộ sưu tập vào tháng 6 năm 2026. Bộ sưu tập lớn dần theo mỗi chu kỳ và không bao giờ sửa lại những gì đã công bố.',
   statement6:
@@ -583,7 +583,7 @@ export const vi: Messages = {
   verifyOrbitLineByLine: 'Quá trình suy ra, từng dòng một',
   verifyOrbitWaiting: 'Quá trình suy ra sẽ bắt đầu tại đây khi trang đã sẵn sàng.',
   verifyOrbitSeedLine: 'Hạt giống {seed}',
-  verifyOrbitFateRun: 'Quá khoảng được ghi lại, để biết số phận · đến bước {steps}',
+  verifyOrbitFateRun: 'Quá khoảng được ghi lại, để biết kết cục · đến bước {steps}',
   verifyOrbitAt: '{seconds} giây',
   verifyOrbitTook: 'Đã đối chiếu tại đây trong {seconds} giây.',
   verifyOrbitUnchecked: 'chưa đối chiếu',
@@ -591,7 +591,7 @@ export const vi: Messages = {
     '{count} trong số {total} phép đo không thể đối chiếu trong trình duyệt này.',
   verifyOrbitAnother: 'Xác minh quỹ đạo khác',
   verifyOrbitNote:
-    'Phép tính là của chính bộ tạo: dòng ngẫu nhiên của nó, đọc đến ứng viên {index}; {steps} bước của bộ tích phân Yoshida bậc bốn; rồi tiếp tục quá khoảng được ghi lại để biết số phận. Chỉ dùng phép cộng, trừ, nhân, chia và căn bậc hai, mỗi phép đều được tiêu chuẩn định nghĩa chính xác, nên trình duyệt nào cũng đi đến cùng những bit ấy. Không có gì được gửi đi.',
+    'Phép tính là của chính bộ tạo: dòng ngẫu nhiên của nó, đọc đến ứng viên {index}; {steps} bước của bộ tích phân Yoshida bậc bốn; rồi tiếp tục quá khoảng được ghi lại để biết kết cục. Chỉ dùng phép cộng, trừ, nhân, chia và căn bậc hai, mỗi phép đều được tiêu chuẩn định nghĩa chính xác, nên trình duyệt nào cũng đi đến cùng những bit ấy. Không có gì được gửi đi.',
   publishedHashes: 'Mã băm đã công bố',
   sharingCollection: 'Bộ sưu tập · {count} tác phẩm',
   // The orbit, re-performed (src/components/orbit-score.tsx)
@@ -641,7 +641,7 @@ export const vi: Messages = {
     'Quá cửa sổ đã ghi, cùng một vật lý ấy vẫn tiếp diễn, theo nhịp của phim, và máy quay đứng yên ở nơi phim để lại. Đây không phải tác phẩm: đây là điều quỹ đạo của tác phẩm làm tiếp theo.',
   afterTheFrameNoteAsk:
     'Quá cửa sổ đã ghi, cùng một vật lý ấy vẫn tiếp diễn, theo nhịp của phim. Khung hình đứng yên ở nơi phim để lại, hoặc ở lại với một trong ba vật thể, khi đó vật thể ấy đứng yên trong khung hình. Đây không phải tác phẩm: đây là điều quỹ đạo của tác phẩm làm tiếp theo.',
-  orbitFate: 'Số phận',
+  orbitFate: 'Kết cục',
   orbitFateEjection: 'vật thể {body} không còn gắn kết ở bước {step}',
   orbitFateDance: 'còn gắn kết qua {steps} bước',
   orbitBeyond: '{clock} sau phim · bước {step}',

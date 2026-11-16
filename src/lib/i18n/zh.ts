@@ -428,7 +428,7 @@ export const zh: Messages = {
   timeOf: '{current} / {total}',
   elapsed: '已播放 {time}',
   slowRoom: '慢室',
-  studyWaits: '当前网络下，长时研究等待更轻的编码；先以静帧代之。',
+  studyWaits: '当前网络下，长时研究等待更轻的编码；先以静态图像代之。',
   playAnyway: '仍然播放',
   durationSeconds: '{n} 秒',
   roomKeys: '展室中的按键',
@@ -496,7 +496,7 @@ export const zh: Messages = {
   hungBy: '由{curator}陈列',
   hangTitle: '一场陈列：023、031、035',
   hangNote:
-    '三件作品，陈列为一间展室。二十三号轻盈：光中是红、蓝、绿的丝带，墨中是带有浅色漩涡的致密墨团。三十一号铺满整张纸，紫、橄榄与玫瑰色让位于直抵纸边的墨色场域。三十五号倚向右上，青柠与紫色沿对角线展开。选择其一，它便就地生长；另外两件随之重新排布。没有裁切，没有调色：每一幅版面都是已发布的静帧，置于自身测得的底色之上。',
+    '三件作品，陈列为一间展室。二十三号轻盈：光中是红、蓝、绿的丝带，墨中是带有浅色漩涡的致密墨团。三十一号铺满整张纸，紫、橄榄与玫瑰色让位于直抵纸边的墨色场域。三十五号倚向右上，青柠与紫色沿对角线展开。选择其一，它便就地生长；另外两件随之重新排布。没有裁切，没有调色：每一幅版面都是已发布的静态图像，置于自身测得的底色之上。',
   theRule: '规则',
   theWorks: '作品',
   trailLongCurve: '长弧',
@@ -518,7 +518,7 @@ export const zh: Messages = {
   trailLightBecomingTrace: '光化为迹',
   trailLightBecomingTraceRule: '已发布的辫状交叉数不少于 50 的作品：轨道丝带彼此交叉最频繁者。',
   trailLightBecomingTraceNote:
-    '每当一条丝带越过另一条，发布者便计一次交叉。交叉多处，光的版面便成为一张织物；而在墨中，同样的交叉化作一道笔迹中的褶痕。十一号有 97 次交叉，是这条小径陈列时藏品中最密的织物；小径沿着计数一路下行至五十。',
+    '每当一条丝带越过另一条，发布方就计一次交叉。交叉多处，光的版面便成为一张织物；而在墨中，同样的交叉化作一道笔迹中的褶痕。十一号有 97 次交叉，是这条小径陈列时藏品中最密的织物；小径沿着计数一路下行至五十。',
   measureElongation: '长为宽的 {value} 倍',
   measureChaos: '混沌 {value} / 100',
   measureCrossings: '{value} 次交叉',
@@ -566,11 +566,11 @@ export const zh: Messages = {
   orbitTitle: '轨道，重新演算',
   orbitLine: '在这个浏览器中由它的种子推导，再与已发布的记录核对。',
   orbitCaption:
-    '三个天体，质量分别为 {m1}、{m2} 和 {m3}，在它们展开最广的平面上，以光的影片的节奏绘出。天体 {pair} 在第 {step} 步最为接近，相距 {distance}，即影片第 {seconds} 秒。',
+    '三个天体，质量分别为 {m1}、{m2} 和 {m3}，在它们展开最广的平面上，以光的影片的速度绘出。天体 {pair} 在第 {step} 步最为接近，相距 {distance}，即影片第 {seconds} 秒。',
   orbitCaptionLight:
-    '三个天体，质量分别为 {m1}、{m2} 和 {m3}，以影片的节奏绘在光的静态图像之上、影片描绘它们的位置；每个天体都停在自己笔触的尽头。天体 {pair} 在第 {step} 步最为接近，相距 {distance}，即影片第 {seconds} 秒。分析，而非作品。',
+    '三个天体，质量分别为 {m1}、{m2} 和 {m3}，以影片的速度绘在光的静态图像之上、影片描绘它们的位置；每个天体都停在自己笔触的尽头。天体 {pair} 在第 {step} 步最为接近，相距 {distance}，即影片第 {seconds} 秒。分析，而非作品。',
   orbitCaptionInk:
-    '三个天体，质量分别为 {m1}、{m2} 和 {m3}，以光的影片的节奏绘在墨的静态图像之上、它们搅动墨的位置；每个天体都停在自己留下的空白之中。天体 {pair} 在第 {step} 步最为接近，相距 {distance}，即光的影片第 {seconds} 秒。分析，而非作品。',
+    '三个天体，质量分别为 {m1}、{m2} 和 {m3}，以光的影片的速度绘在墨的静态图像之上、它们搅动墨的位置；每个天体都停在自己留下的空白之中。天体 {pair} 在第 {step} 步最为接近，相距 {distance}，即光的影片第 {seconds} 秒。分析，而非作品。',
   orbitWaiting: '当你来到这里，轨道便在此推导。',
   orbitUnavailable: '这个浏览器无法推导轨道。记录按已发布的原样显示，未经核对。',
   orbitProgressBeginnings: '读取种子 · 候选 {done} / {total}',
@@ -682,7 +682,7 @@ export const zh: Messages = {
   // The indexes: the Orrery and All the light (src/components/orrery.tsx, all-the-light.tsx)
   orrery: '轨道仪',
   orreryTitle: '轨道仪',
-  orreryLine: '收藏中的每一条轨道，都由各自的种子同时演出，按光的影片的节奏。',
+  orreryLine: '收藏中的每一条轨道，都由各自的种子同时演出，按光的影片的速度。',
   orreryNote:
     '每条轨道都从其记录区间的第一步开始；这一状态由种子重新推导，并在与记录核对后才保留。运动着的并非回放，而是这个浏览器在观看时即时计算的结果。指向或聚焦一件作品，即可看到它自己的光的静态图像。',
   orreryStill: '运动已暂停，因此每条轨道都完整地描绘一次。',

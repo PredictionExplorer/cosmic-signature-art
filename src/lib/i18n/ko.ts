@@ -69,7 +69,7 @@ export const ko: Messages = {
   palette: '색상',
   spectralClass: '분광형',
   massBalance: '질량 균형',
-  chaos: '혼돈',
+  chaos: '카오스',
   syzygies: '천체 정렬',
   simulation: '시뮬레이션',
   integrator: '적분기',
@@ -269,7 +269,7 @@ export const ko: Messages = {
   keyExpressions: '먹과 빛; 길게 눌러 미리 보기',
   keyFilm: '관람실에서 필름 열기',
   keySit: '감상: 인터페이스가 사라집니다',
-  keyStudy: '플레이트를 실제 크기로 살펴보기',
+  keyStudy: '도판을 실제 크기로 살펴보기',
   keyIndex: '색인 열기',
   keyJump: '번호를 입력한 뒤 Enter를 누르면 해당 작품으로 이동합니다',
   keyHelp: '이 단축키 보기',
@@ -286,7 +286,7 @@ export const ko: Messages = {
   fateAsPublished: '최종 상태(공개된 그대로)',
   unmeasured: '측정되지 않음',
   spectrumWall: '스펙트럼을 따라 늘어선 컬렉션',
-  spectrumNote: '모든 빛의 플레이트가 공개된 주파장에 따라 검은 바탕 위에 걸립니다, 380~700 nm.',
+  spectrumNote: '모든 빛의 도판이 공개된 주파장에 따라 검은 바탕 위에 걸립니다. 380~700 nm.',
   worksCount: '작품 {count}점',
   oneWork: '작품 1점',
   imprintedOn: '{date} 각인',
@@ -296,7 +296,7 @@ export const ko: Messages = {
   theCollection: '컬렉션',
   collectionControls: '컬렉션 조작',
 
-  // 플레이트와 전환
+  // 도판과 전환
   showLight: '빛 표현 보기',
   showInk: '먹 표현 보기',
   hangAlone: '{expression}만',
@@ -389,7 +389,7 @@ export const ko: Messages = {
   // 콜로폰
   colophon: '콜로폰',
   colophonPlates:
-    '플레이트는 16비트 마스터의 공개된 WebP 파생 파일에서 재현되었습니다, 3,456 × 2,234 px.',
+    '도판은 16비트 마스터의 공개된 WebP 파생 파일에서 재현되었습니다. 3,456 × 2,234 px.',
   colophonFilms: '필름은 60 fps ember-v4 렌더의 H.264 파생 파일입니다.',
   colophonType: 'Literata와 IBM Plex Mono로 조판했습니다.',
 
@@ -447,7 +447,7 @@ export const ko: Messages = {
   elapsed: '{time} 경과',
   slowRoom: '느린 방',
   studyWaits:
-    '이 연결에서는 긴 연구가 더 가벼운 인코딩을 기다립니다. 그동안 정지 화면이 대신합니다.',
+    '이 연결에서는 긴 관찰이 더 가벼운 인코딩을 기다립니다. 그동안 정지 이미지가 대신합니다.',
   playAnyway: '그래도 재생',
   durationSeconds: '{n}초',
   roomKeys: '관람실의 키',
@@ -515,7 +515,7 @@ export const ko: Messages = {
   hungBy: '{curator} 진열',
   hangTitle: '하나의 진열: 023, 031, 035',
   hangNote:
-    '세 작품을 하나의 방으로 걸었습니다. 23번은 가볍습니다. 빛에서는 붉고 푸르고 초록인 리본, 먹에서는 옅은 소용돌이를 품은 짙은 덩이입니다. 31번은 종이 전체로 퍼져, 보라와 올리브와 장미색이 가장자리까지 닿는 먹의 장으로 이어집니다. 35번은 오른쪽 위로 기울어, 라임과 보라가 대각선으로 놓입니다. 하나를 고르면 그 자리에서 커지고, 다른 둘은 그 주위로 다시 자리를 잡습니다. 자르거나 색을 입힌 것은 없습니다. 각 판은 공개된 정지 화상이며, 스스로 측정된 바탕 위에 놓입니다.',
+    '세 작품을 하나의 방으로 걸었습니다. 23번은 가볍습니다. 빛에서는 붉고 푸르고 초록인 리본, 먹에서는 옅은 소용돌이를 품은 짙은 덩이입니다. 31번은 종이 전체로 퍼져, 보라와 올리브와 장미색이 가장자리까지 닿는 먹의 장으로 이어집니다. 35번은 오른쪽 위로 기울어, 라임과 보라가 대각선으로 놓입니다. 하나를 고르면 그 자리에서 커지고, 다른 둘은 그 주위로 다시 자리를 잡습니다. 자르거나 색을 입힌 것은 없습니다. 각 도판은 공개된 정지 이미지이며, 스스로 측정된 바탕 위에 놓입니다.',
   theRule: '규칙',
   theWorks: '작품',
   trailLongCurve: '긴 곡선',
@@ -539,7 +539,7 @@ export const ko: Messages = {
   trailLightBecomingTraceRule:
     '공개된 브레이드 교차 수가 50 이상인 작품: 궤도 리본이 서로 가장 자주 교차하는 작품.',
   trailLightBecomingTraceNote:
-    '한 리본이 다른 리본 위를 지날 때마다 발행자는 교차 하나를 셉니다. 교차가 많은 곳에서 빛의 판은 하나의 직물이 되고, 먹에서는 같은 교차들이 한 줄기 자취의 접힘이 됩니다. 11번은 97회로, 이 산책길을 걸었을 때 컬렉션에서 가장 촘촘한 직물이었습니다. 산책길은 그 수를 따라 50까지 내려갑니다.',
+    '한 리본이 다른 리본 위를 지날 때마다 발행자는 교차 하나를 셉니다. 교차가 많은 곳에서 빛의 도판은 하나의 직물이 되고, 먹에서는 같은 교차들이 한 줄기 자취의 접힘이 됩니다. 11번은 97회로, 이 산책길의 작품을 걸었을 때 컬렉션에서 가장 촘촘한 직물이었습니다. 산책길은 그 수를 따라 50까지 내려갑니다.',
   measureElongation: '길이가 너비의 {value}배',
   measureChaos: '카오스 {value} / 100',
   measureCrossings: '교차 {value}회',

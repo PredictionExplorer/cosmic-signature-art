@@ -428,7 +428,7 @@ export const zhTW: Messages = {
   timeOf: '{current} / {total}',
   elapsed: '已播放 {time}',
   slowRoom: '慢室',
-  studyWaits: '目前網路下，長時研究等待更輕的編碼；先以靜幀代之。',
+  studyWaits: '目前網路下，長時研究等待更輕的編碼；先以靜態影像代之。',
   playAnyway: '仍然播放',
   durationSeconds: '{n} 秒',
   roomKeys: '展室中的按鍵',
@@ -496,7 +496,7 @@ export const zhTW: Messages = {
   hungBy: '由{curator}陳列',
   hangTitle: '一場陳列：023、031、035',
   hangNote:
-    '三件作品，陳列為一間展室。二十三號輕盈：光中是紅、藍、綠的絲帶，墨中是帶有淺色漩渦的緻密墨團。三十一號鋪滿整張紙，紫、橄欖與玫瑰色讓位於直抵紙邊的墨色場域。三十五號倚向右上，青檸與紫色沿對角線展開。選擇其一，它便就地生長；另外兩件隨之重新排布。沒有裁切，沒有調色：每一幅版面都是已發布的靜幀，置於自身測得的底色之上。',
+    '三件作品，陳列為一間展室。二十三號輕盈：光中是紅、藍、綠的絲帶，墨中是帶有淺色漩渦的緻密墨團。三十一號鋪滿整張紙，紫、橄欖與玫瑰色讓位於直抵紙邊的墨色場域。三十五號倚向右上，青檸與紫色沿對角線展開。選擇其一，它便就地生長；另外兩件隨之重新排布。沒有裁切，沒有調色：每一幅版面都是已發布的靜態影像，置於自身測得的底色之上。',
   theRule: '規則',
   theWorks: '作品',
   trailLongCurve: '長弧',
@@ -518,7 +518,7 @@ export const zhTW: Messages = {
   trailLightBecomingTrace: '光化為跡',
   trailLightBecomingTraceRule: '已發布的辮狀交叉數不少於 50 的作品：軌道絲帶彼此交叉最頻繁者。',
   trailLightBecomingTraceNote:
-    '每當一條絲帶越過另一條，發布者便計一次交叉。交叉多處，光的版面便成為一張織物；而在墨中，同樣的交叉化作一道筆跡中的褶痕。十一號有 97 次交叉，是這條小徑陳列時典藏中最密的織物；小徑沿著計數一路下行至五十。',
+    '每當一條絲帶越過另一條，發布方就計一次交叉。交叉多處，光的版面便成為一張織物；而在墨中，同樣的交叉化作一道筆跡中的褶痕。十一號有 97 次交叉，是這條小徑陳列時典藏中最密的織物；小徑沿著計數一路下行至五十。',
   measureElongation: '長為寬的 {value} 倍',
   measureChaos: '混沌 {value} / 100',
   measureCrossings: '{value} 次交叉',
@@ -566,11 +566,11 @@ export const zhTW: Messages = {
   orbitTitle: '軌道，重新演算',
   orbitLine: '在這個瀏覽器中由它的種子推導，再與已發布的紀錄核對。',
   orbitCaption:
-    '三個天體，質量分別為 {m1}、{m2} 和 {m3}，在它們展開最廣的平面上，以光的影片的節奏繪出。天體 {pair} 在第 {step} 步最為接近，相距 {distance}，即影片第 {seconds} 秒。',
+    '三個天體，質量分別為 {m1}、{m2} 和 {m3}，在它們展開最廣的平面上，以光的影片的速度繪出。天體 {pair} 在第 {step} 步最為接近，相距 {distance}，即影片第 {seconds} 秒。',
   orbitCaptionLight:
-    '三個天體，質量分別為 {m1}、{m2} 和 {m3}，以影片的節奏繪在光的靜態影像之上、影片描繪它們的位置；每個天體都停在自己筆觸的盡頭。天體 {pair} 在第 {step} 步最為接近，相距 {distance}，即影片第 {seconds} 秒。分析，而非作品。',
+    '三個天體，質量分別為 {m1}、{m2} 和 {m3}，以影片的速度繪在光的靜態影像之上、影片描繪它們的位置；每個天體都停在自己筆觸的盡頭。天體 {pair} 在第 {step} 步最為接近，相距 {distance}，即影片第 {seconds} 秒。分析，而非作品。',
   orbitCaptionInk:
-    '三個天體，質量分別為 {m1}、{m2} 和 {m3}，以光的影片的節奏繪在墨的靜態影像之上、它們攪動墨的位置；每個天體都停在自己留下的空白之中。天體 {pair} 在第 {step} 步最為接近，相距 {distance}，即光的影片第 {seconds} 秒。分析，而非作品。',
+    '三個天體，質量分別為 {m1}、{m2} 和 {m3}，以光的影片的速度繪在墨的靜態影像之上、它們攪動墨的位置；每個天體都停在自己留下的空白之中。天體 {pair} 在第 {step} 步最為接近，相距 {distance}，即光的影片第 {seconds} 秒。分析，而非作品。',
   orbitWaiting: '當你來到這裡，軌道便在此推導。',
   orbitUnavailable: '這個瀏覽器無法推導軌道。紀錄按已發布的原樣顯示，未經核對。',
   orbitProgressBeginnings: '讀取種子 · 候選 {done} / {total}',
@@ -682,7 +682,7 @@ export const zhTW: Messages = {
   // The indexes: the Orrery and All the light (src/components/orrery.tsx, all-the-light.tsx)
   orrery: '軌道儀',
   orreryTitle: '軌道儀',
-  orreryLine: '收藏中的每一條軌道，都由各自的種子同時演出，按光的影片的節奏。',
+  orreryLine: '收藏中的每一條軌道，都由各自的種子同時演出，按光的影片的速度。',
   orreryNote:
     '每條軌道都從其紀錄區間的第一步開始；這一狀態由種子重新推導，並在與紀錄核對後才保留。運動著的並非回放，而是這個瀏覽器在觀看時即時計算的結果。指向或聚焦一件作品，即可看到它自己的光的靜態影像。',
   orreryStill: '運動已暫停，因此每條軌道都完整地描繪一次。',

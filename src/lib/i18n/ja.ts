@@ -272,7 +272,7 @@ export const ja: Messages = {
   keyExpressions: '墨と光。長押しで覗き見る',
   keyFilm: '鑑賞室でフィルムを開く',
   keySit: '鑑賞：インターフェースを消す',
-  keyStudy: 'プレートを実寸で見る',
+  keyStudy: '図版を実寸で見る',
   keyIndex: '索引を開く',
   keyJump: '番号を入力して Enter を押すと、その作品へ移動します',
   keyHelp: 'このキー一覧を表示',
@@ -290,7 +290,7 @@ export const ja: Messages = {
   unmeasured: '未計測',
   spectrumWall: 'スペクトルに沿って並ぶコレクション',
   spectrumNote:
-    'すべての光のプレートを、公開された主波長にしたがって黒の上に掛けています。380 から 700 nm。',
+    'すべての光の図版を、公開された主波長にしたがって黒の上に掛けています。380 から 700 nm。',
   worksCount: '{count} 点',
   oneWork: '1 点',
   imprintedOn: '{date} 刻印',
@@ -300,7 +300,7 @@ export const ja: Messages = {
   theCollection: 'コレクション',
   collectionControls: 'コレクションの操作',
 
-  // プレートと転回
+  // 図版と転回
   showLight: '光の表現を見る',
   showInk: '墨の表現を見る',
   hangAlone: '{expression}のみ',
@@ -394,7 +394,7 @@ export const ja: Messages = {
   // 奥付
   colophon: '奥付',
   colophonPlates:
-    'プレートは 16 ビットのマスターから公開された WebP 派生ファイルより再現。3,456 × 2,234 px。',
+    '図版は 16 ビットのマスターから公開された WebP 派生ファイルより再現。3,456 × 2,234 px。',
   colophonFilms: 'フィルムは 60 fps の ember-v4 レンダーから派生した H.264 です。',
   colophonType: '組版は Literata と IBM Plex Mono。',
 
@@ -546,7 +546,7 @@ export const ja: Messages = {
   trailLightBecomingTraceRule:
     '公開された組紐交差数が 50 以上の作品：軌道のリボンが互いに最も頻繁に交差するもの。',
   trailLightBecomingTraceNote:
-    'リボンがもう一本の上を通るたびに、公開者は交差をひとつ数えます。交差の多いところでは光の図版は織物となり、墨では同じ交差が一本の痕跡の折り目になります。十一番は 97 回で、この小径を掛けた時点でコレクションの最も密な織物でした。小径はその数を五十まで辿ります。',
+    'リボンがもう一本の上を通るたびに、発行者は交差をひとつ数えます。交差の多いところでは光の図版は織物となり、墨では同じ交差が一本の痕跡の折り目になります。十一番は 97 回で、この小径を掛けた時点でコレクションの最も密な織物でした。小径はその数を五十まで辿ります。',
   measureElongation: '長さは幅の {value} 倍',
   measureChaos: 'カオス {value} / 100',
   measureCrossings: '交差 {value} 回',
