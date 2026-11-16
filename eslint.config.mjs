@@ -55,6 +55,12 @@ const ownStandardMessage =
  * tests are left to the rules above: under these they report 837 lines, nearly all of them the
  * ordinary idioms of a mock (an async callback with nothing to await, a spied method read
  * unbound), and mending those would teach nothing about the venue.
+ *
+ * Some of the types these rules read are written by Next, not by the venue: what
+ * `next/root-params` returns, and the routes. `npm run lint` generates them first, as
+ * `npm run type-check` does. Without them a call into `next/root-params` is `any`, and the
+ * rules refuse the lines that use it: so they did on CI's first run, which lints a fresh
+ * checkout before anything has been built.
  */
 const typedSource = { files: ['src/**/*.{ts,tsx}'], ignores: ['src/**/*.test.{ts,tsx}'] };
 
