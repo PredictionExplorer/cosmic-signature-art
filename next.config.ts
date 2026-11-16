@@ -1,4 +1,9 @@
 import type { NextConfig } from 'next';
+// With its extension: Node's own resolver loads this file, before any bundler runs. Next 16.4
+// looks for it from the working directory, not from this file (its loader gives the compiled
+// configuration no filename), so `next` is started in the checkout it serves, as every script
+// here does. `next start <another directory>` would read this import from where it stands.
+import { securityHeaders } from './src/lib/security-headers.ts';
 const nextConfig: NextConfig = {
   // A second server in the same checkout (the configured-sale e2e) builds into its own directory.
   distDir: process.env.NEXT_DIST_DIR || '.next',
@@ -47,13 +52,12 @@ const nextConfig: NextConfig = {
         ],
       },
       {
+        // Every response: the Content-Security-Policy and its fellows (src/lib/security-headers.ts).
         source: '/:path*',
-        headers: [
-          { key: 'X-Content-Type-Options', value: 'nosniff' },
-          { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
-          { key: 'X-Frame-Options', value: 'DENY' },
-          { key: 'Permissions-Policy', value: 'camera=(), microphone=(), geolocation=()' },
-        ],
+        headers: securityHeaders({
+          rpcUrl: process.env.NEXT_PUBLIC_RPC_URL,
+          development: process.env.NODE_ENV === 'development',
+        }),
       },
     ];
   },
