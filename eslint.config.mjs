@@ -38,6 +38,16 @@ const abortSignalAnyMessage =
  */
 const suiteTestMessage =
   "Import `test` from './fixtures' (tests/e2e/fixtures.ts), not from Playwright: the suite's own fails a test whose page threw, logged an error or was answered a 5xx.";
+/**
+ * The suite reads every page against one accessibility standard, named once
+ * (tests/e2e/standard.ts). A scan that wrote a list of its own could hold its page to less and
+ * nobody would see it: every scan once left out two of the five tags, and with them the rules
+ * that found a page whose links lay under a picture.
+ */
+const ownStandard =
+  "CallExpression[callee.property.name='withTags']:not([arguments.0.name='WCAG_22_AA'])";
+const ownStandardMessage =
+  "Pass WCAG_22_AA from './standard' (tests/e2e/standard.ts): the suite's standard is named once, so that no scan holds its page to less.";
 
 /**
  * The rules that read the types as well as the text (a promise nobody awaits, a value of type
@@ -117,7 +127,8 @@ export default tseslint.config(
     },
   },
   {
-    // A later setting of a rule replaces an earlier one, so the countdown's pattern is said again.
+    // A later setting of a rule replaces an earlier one, so the countdown's pattern and the two
+    // clocks are said again.
     files: ['tests/e2e/**/*.spec.ts'],
     rules: {
       'no-restricted-imports': [
@@ -126,6 +137,12 @@ export default tseslint.config(
           paths: [{ name: '@playwright/test', importNames: ['test'], message: suiteTestMessage }],
           patterns: [{ regex: countdownImportPattern, message: countdownMessage }],
         },
+      ],
+      'no-restricted-syntax': [
+        'error',
+        { selector: oneSecondInterval, message: intervalMessage },
+        { selector: countdownDynamicImport, message: countdownMessage },
+        { selector: ownStandard, message: ownStandardMessage },
       ],
     },
   },

@@ -1,5 +1,6 @@
 import { expect, failedToLoad, syntheticFinger, test, type Locator, type Page } from './fixtures';
 import AxeBuilder from '@axe-core/playwright';
+import { WCAG_22_AA } from './standard';
 import { readFileSync } from 'node:fs';
 import { catalogs } from '../../src/lib/i18n/messages';
 import { locales, localizedPath } from '../../src/lib/i18n/routing';
@@ -1060,9 +1061,7 @@ test('the viewing room remains accessible and translated in every gallery langua
             ),
           ),
     );
-    const results = await new AxeBuilder({ page })
-      .withTags(['wcag2a', 'wcag2aa', 'wcag21aa'])
-      .analyze();
+    const results = await new AxeBuilder({ page }).withTags(WCAG_22_AA).analyze();
     expect(
       results.violations.map(({ id, impact, nodes }) => ({
         id,

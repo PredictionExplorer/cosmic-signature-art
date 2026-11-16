@@ -1,4 +1,5 @@
 import AxeBuilder from '@axe-core/playwright';
+import { WCAG_22_AA } from './standard';
 import sharp from 'sharp';
 import { expect, test, type Page } from './fixtures';
 import { fill } from '../../src/lib/i18n/format';
@@ -296,9 +297,7 @@ test.describe('All the light', () => {
       'data-outside',
     );
     // The dimmed numerals are still read: the first cycle's sky passes the same scan.
-    const results = await new AxeBuilder({ page })
-      .withTags(['wcag2a', 'wcag2aa', 'wcag21aa'])
-      .analyze();
+    const results = await new AxeBuilder({ page }).withTags(WCAG_22_AA).analyze();
     expect(results.violations.map(({ id, nodes }) => ({ id, count: nodes.length }))).toEqual([]);
   });
 
