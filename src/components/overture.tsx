@@ -36,14 +36,14 @@ function standAside() {
 
 /** A performance that cannot load or run never keeps the head waiting. */
 class Fallible extends Component<{ children: ReactNode }, { failed: boolean }> {
-  state = { failed: false };
+  override state = { failed: false };
   static getDerivedStateFromError() {
     return { failed: true };
   }
-  componentDidCatch() {
+  override componentDidCatch() {
     standAside();
   }
-  render() {
+  override render() {
     return this.state.failed ? null : this.props.children;
   }
 }

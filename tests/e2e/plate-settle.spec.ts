@@ -28,9 +28,9 @@ const WATCH_MS = 700;
 async function holdScripts(page: Page) {
   const held: Route[] = [];
   let through = false;
-  await page.route(ROUTE_SCRIPT, (route) => {
-    if (through) return route.continue();
-    held.push(route);
+  await page.route(ROUTE_SCRIPT, async (route) => {
+    if (through) await route.continue();
+    else held.push(route);
   });
   return {
     held: () => held.length,

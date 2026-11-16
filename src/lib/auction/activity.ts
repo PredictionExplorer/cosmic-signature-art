@@ -93,7 +93,7 @@ export async function readActivity(
     if (lot.settled) won.push({ tokenId, amount: lot.highestBid, delivered: lot.delivered });
     else leading.push({ tokenId, amount: lot.highestBid });
   }
-  const held = result.ids.filter((tokenId, index) => {
+  const held = result.ids.filter((_tokenId, index) => {
     const owner = owners[index];
     return typeof owner === 'string' && isAddress(owner) && isAddressEqual(owner, account);
   });
