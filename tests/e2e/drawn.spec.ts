@@ -61,6 +61,31 @@ test.describe('on a 320 px screen', () => {
         await visit(page, locale, route);
         expect(await cutOnScreen(page)).toEqual([]);
       });
+
+  // A display word that cannot part may run past its column and still stop short of the glass,
+  // where nothing cuts it. The Ukrainian sale's title did, by 13 px; and where an engine draws
+  // the face without its optical size (WebKit on Linux) the same word is wider and was cut.
+  for (const locale of Object.keys(catalogs) as Locale[])
+    test(`the sale’s title ends inside its column: ${locale}`, async ({ page }, info) => {
+      test.skip(
+        /^(chromium|webkit)-desktop$/.test(info.project.name),
+        'At 320 px these two engines are met as phones; Firefox has the one project.',
+      );
+      await visit(page, locale, '/auctions');
+      const { ends, column } = await page.getByRole('heading', { level: 1 }).evaluate((title) => {
+        const lines = document.createRange();
+        lines.selectNodeContents(title);
+        const spread = title.closest('section')!;
+        return {
+          ends: [...lines.getClientRects()].map((line) => Math.round(line.right * 10) / 10),
+          column:
+            spread.getBoundingClientRect().right -
+            parseFloat(getComputedStyle(spread).paddingInlineEnd),
+        };
+      });
+      expect(ends.length).toBeGreaterThan(0);
+      for (const end of ends) expect(end).toBeLessThanOrEqual(column + 0.5);
+    });
 });
 
 test.describe('in Chinese, Japanese and Korean', () => {

@@ -51,6 +51,14 @@
 .title h1 {
   margin-top: 9px;
 }
+/* The Ukrainian title opens on six letters that cannot part. They are 3.59 em wide in Literata's
+   display cut and 3.76 em where an engine leaves the optical size off (WebKit on Linux), which
+   is more than a screen under 352 px holds at the cover's 84 px floor: the word ran 13 px past
+   its column, and off the glass in that engine. There the cover is set as large as the word
+   fits in either. */
+:global(html:lang(uk)) .title h1 {
+  font-size: min(var(--fs-cover), calc((100vw - 2 * var(--gutter)) / 3.8));
+}
 .state {
   font-family: var(--font-mono);
   font-size: var(--fs-folio);
