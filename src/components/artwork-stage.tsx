@@ -57,8 +57,10 @@ export function useArtworkExpression({
   /**
    * How the surface that will show an expression asks for its still: its `<img>`'s own src,
    * srcset and sizes (stillRequest in artwork-media.tsx). Without it, the published file alone.
+   * Called again with the candidate that could not be loaded, it answers what that surface
+   * would ask for next (localStillRequest), or nothing: the still is readied as it will be shown.
    */
-  still?: (target: ArtInterpretation) => StillRequest | undefined;
+  still?: (target: ArtInterpretation, failed?: string) => StillRequest | undefined;
   /**
    * A stage that shows the change as the browser's own snapshot is on view (an ArtworkStage
    * that is not disabled: the room's). The commit is then a transition, which the snapshot
@@ -146,11 +148,10 @@ export function useArtworkExpression({
     }
 
     const identity = request.current;
-    const asked: StillRequest = stillFor?.(target) ?? { src: target.still };
-    const image = new window.Image();
+    let image: HTMLImageElement | undefined;
     let settled = false;
-    const release = () => {
-      clearTimeout(timer);
+    const letGo = () => {
+      if (!image) return;
       image.onload = null;
       image.onerror = null;
       // Removing every source also abandons unnecessary bytes on cancellation. They go in the
@@ -159,6 +160,10 @@ export function useArtworkExpression({
       image.removeAttribute('src');
       image.removeAttribute('srcset');
       image.removeAttribute('sizes');
+    };
+    const release = () => {
+      clearTimeout(timer);
+      letGo();
     };
     preparation.current = () => {
       settled = true;
@@ -213,25 +218,41 @@ export function useArtworkExpression({
 
     setPendingExpression(target.id);
     const timer = setTimeout(() => finish(false), preparationDeadline);
-    image.decoding = 'async';
-    image.onload = () => {
-      // Older browsers do not expose decode(); load still establishes readiness.
-      if (typeof image.decode !== 'function') finish(true);
+    const ask = (asked: StillRequest, first: boolean) => {
+      // Each request has an image of its own, so nothing said of a candidate that was let go
+      // can be taken for the one asked for after it.
+      letGo();
+      const mine = new window.Image();
+      image = mine;
+      mine.decoding = 'async';
+      // A candidate that cannot be loaded says so twice, as an error and as a refused decode.
+      // The first of the two asks once more, for what the surface itself would ask for next
+      // (the venue's own rungs); with nothing more to ask for, the still has failed.
+      const broke = () => {
+        if (mine !== image) return;
+        const next = first ? stillFor?.(target, mine.currentSrc ?? '') : undefined;
+        if (next) ask(next, false);
+        else finish(false);
+      };
+      mine.onload = () => {
+        // Older browsers do not expose decode(); load still establishes readiness.
+        if (typeof mine.decode !== 'function') finish(true);
+      };
+      mine.onerror = broke;
+      // The layout width, then the candidates, then the source: an engine that acts on each
+      // attribute as it is set (WebKit) then chooses one rung, once, and never the source alone.
+      if (asked.srcSet) {
+        if (asked.sizes) mine.sizes = asked.sizes;
+        mine.srcset = asked.srcSet;
+      }
+      mine.src = asked.src;
+      if (typeof mine.decode === 'function') {
+        void mine.decode().then(() => {
+          if (mine === image) finish(true);
+        }, broke);
+      }
     };
-    image.onerror = () => finish(false);
-    // The layout width, then the candidates, then the source: an engine that acts on each
-    // attribute as it is set (WebKit) then chooses one rung, once, and never the source alone.
-    if (asked.srcSet) {
-      if (asked.sizes) image.sizes = asked.sizes;
-      image.srcset = asked.srcSet;
-    }
-    image.src = asked.src;
-    if (typeof image.decode === 'function') {
-      void image.decode().then(
-        () => finish(true),
-        () => finish(false),
-      );
-    }
+    ask(stillFor?.(target) ?? { src: target.still }, true);
   }
 
   return { expression, pendingExpression, failedExpression, selectExpression, cancelPending };
