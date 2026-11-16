@@ -485,7 +485,7 @@ export function AllTheLight({
             // A long press opens no menu while a finger is on the sky: a menu would take it away.
             if (finger.current) event.preventDefault();
           }}
-          onClick={onClick}
+          onClick={(event) => void onClick(event)}
         >
           {skies.map((sky, index) =>
             wanted.has(index) ? (

@@ -39,6 +39,15 @@ const abortSignalAnyMessage =
 const suiteTestMessage =
   "Import `test` from './fixtures' (tests/e2e/fixtures.ts), not from Playwright: the suite's own fails a test whose page threw, logged an error or was answered a 5xx.";
 
+/**
+ * The rules that read the types as well as the text (a promise nobody awaits, a value of type
+ * `any` flowing on, a method torn from its object) are held on the venue's own source. The
+ * tests are left to the rules above: under these they report 837 lines, nearly all of them the
+ * ordinary idioms of a mock (an async callback with nothing to await, a spied method read
+ * unbound), and mending those would teach nothing about the venue.
+ */
+const typedSource = { files: ['src/**/*.{ts,tsx}'], ignores: ['src/**/*.test.{ts,tsx}'] };
+
 export default tseslint.config(
   {
     ignores: [
@@ -57,6 +66,31 @@ export default tseslint.config(
     files: ['src/**/*.{ts,tsx}'],
     plugins: { 'react-hooks': reactHooks },
     rules: reactHooks.configs.recommended.rules,
+  },
+  ...tseslint.configs.recommendedTypeCheckedOnly.map((config) => ({ ...config, ...typedSource })),
+  {
+    ...typedSource,
+    languageOptions: {
+      parserOptions: { projectService: true, tsconfigRootDir: import.meta.dirname },
+    },
+  },
+  {
+    // Held over, six lines in three files that work in progress is rebuilding (the Turn's one
+    // seam, the page sent whole): mending them here would only collide with that work. Each
+    // entry comes off this list when its file next changes hands.
+    files: ['src/components/artwork-room.tsx'],
+    rules: { '@typescript-eslint/unbound-method': 'off' },
+  },
+  {
+    files: ['src/components/arrival-crossing.ts'],
+    rules: {
+      '@typescript-eslint/no-unsafe-assignment': 'off',
+      '@typescript-eslint/no-unnecessary-type-assertion': 'off',
+    },
+  },
+  {
+    files: ['src/components/artwork-entry.tsx'],
+    rules: { '@typescript-eslint/restrict-template-expressions': 'off' },
   },
   { files: ['**/*.mjs'], languageOptions: { globals: { process: 'readonly', URL: 'readonly' } } },
   {

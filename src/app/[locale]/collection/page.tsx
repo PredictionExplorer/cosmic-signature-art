@@ -303,7 +303,7 @@ export default async function Collection({
                 locale={locale}
                 t={t}
                 offset={offset}
-                query={query!}
+                query={query}
                 expression={expression}
                 view={view}
               />

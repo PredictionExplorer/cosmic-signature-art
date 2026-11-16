@@ -138,7 +138,8 @@ export default function AuctionGallery({ locale, t, traits, curated }: AuctionGa
                 note(id, 'unavailable');
                 return;
               }
-              const data: ArtworkResult = await response.json();
+              // The venue's own route, which answers in this shape (src/app/api/art/[id]).
+              const data = (await response.json()) as ArtworkResult;
               if (!live) return;
               const record =
                 data.status === 'found' &&

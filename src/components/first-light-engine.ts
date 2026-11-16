@@ -381,7 +381,7 @@ export class LightEngine implements Engine {
         throw new Error(gl.getShaderInfoLog(shader) ?? 'A shader did not compile');
       return shader;
     };
-    const program = gl.createProgram()!;
+    const program = gl.createProgram();
     gl.attachShader(program, compile(gl.VERTEX_SHADER, vertex));
     gl.attachShader(program, compile(gl.FRAGMENT_SHADER, fragment));
     gl.linkProgram(program);
@@ -406,7 +406,7 @@ export class LightEngine implements Engine {
       data[i * 4 + 1] = values[i * 3 + 1];
       data[i * 4 + 2] = values[i * 3 + 2];
     }
-    const texture = gl.createTexture()!;
+    const texture = gl.createTexture();
     gl.bindTexture(gl.TEXTURE_2D, texture);
     gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA32F, POINTS_WIDTH, height, 0, gl.RGBA, gl.FLOAT, data);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
@@ -423,7 +423,7 @@ export class LightEngine implements Engine {
     this.points = this.floatTexture(space.points, space.count * 3);
     this.drift = this.floatTexture(space.drift, space.count);
     this.headSpan = Math.max(8, space.count / 40);
-    const texture = gl.createTexture()!;
+    const texture = gl.createTexture();
     gl.bindTexture(gl.TEXTURE_2D, texture);
     gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, false);
     if (!still) {
@@ -465,7 +465,7 @@ export class LightEngine implements Engine {
       gl.deleteFramebuffer(previous.framebuffer);
       gl.deleteTexture(previous.texture);
     }
-    const texture = gl.createTexture()!;
+    const texture = gl.createTexture();
     gl.bindTexture(gl.TEXTURE_2D, texture);
     if (this.floatTargets)
       gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA16F, width, height, 0, gl.RGBA, gl.HALF_FLOAT, null);
@@ -481,7 +481,7 @@ export class LightEngine implements Engine {
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-    const framebuffer = gl.createFramebuffer()!;
+    const framebuffer = gl.createFramebuffer();
     gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffer);
     gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texture, 0);
     return { framebuffer, texture, width, height };
