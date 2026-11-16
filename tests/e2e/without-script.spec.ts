@@ -141,8 +141,17 @@ const paintedOpacity = (element: Element) => {
   return opacity;
 };
 
+/**
+ * A browser that runs no script. It is given no stored state either: nothing on such a page
+ * reads the browser's storage, and Playwright restores stored state by running a script in the
+ * page, which its Firefox waits on for ever when the page may run none and the venue answers at
+ * a loopback address, as it does on CI. (The suite's stored state only says that First Light
+ * has been seen.)
+ */
+const SCRIPT_OFF = { javaScriptEnabled: false, storageState: { cookies: [], origins: [] } };
+
 test.describe('each page with script off', () => {
-  test.use({ javaScriptEnabled: false });
+  test.use(SCRIPT_OFF);
 
   for (const { name, path, locale, still, words } of SHEETS) {
     test(`${name} shows its work at full strength, and its words`, async ({ page }) => {
@@ -198,7 +207,7 @@ async function streamedPage(page: Page) {
 }
 
 test.describe('a streamed part with script off', () => {
-  test.use({ javaScriptEnabled: false });
+  test.use(SCRIPT_OFF);
 
   test('is shown between the page and the colophon, and what waited for it is taken away', async ({
     page,
