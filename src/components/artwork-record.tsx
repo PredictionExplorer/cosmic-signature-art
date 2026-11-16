@@ -38,7 +38,7 @@ export function ChainAddress({
   copy?: { label: string; copied: string };
 }) {
   return (
-    <span className={styles.address}>
+    <span className={compact ? `${styles.address} ${styles.compact}` : styles.address}>
       <a
         href={`https://arbiscan.io/address/${address}`}
         target="_blank"

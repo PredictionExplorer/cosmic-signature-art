@@ -235,12 +235,16 @@
   overflow-wrap: anywhere;
   min-width: 0;
 }
+/* A link here is a block of running text 44 px tall or more: a hash wraps wherever it must, and
+   what follows it stays in its line. As a wrapping row of items, the hash took its two lines
+   and the arrow after it a third, alone. */
 .proofs dd a {
-  display: inline-flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  gap: 6px;
+  display: inline-block;
   min-height: 44px;
+}
+/* The end of a hash and the arrow after it never part. */
+.tail {
+  white-space: nowrap;
 }
 .proofs code {
   font-size: var(--fs-folio);

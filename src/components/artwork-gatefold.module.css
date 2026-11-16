@@ -25,9 +25,13 @@
   gap: 18px;
   flex: none;
 }
+/* Each word is a target 44 px each way (Seam is 39 px wide, Шов 35): its box reaches 8 px past
+   the word on either side, and the margins take that back, so neither word moves. */
 .views button {
+  min-width: 44px;
   min-height: 44px;
-  padding: 0;
+  padding: 0 8px;
+  margin-inline: -8px;
   border: 0;
   background: transparent;
   color: var(--muted);
