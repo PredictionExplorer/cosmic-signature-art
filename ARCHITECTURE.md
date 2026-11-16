@@ -51,6 +51,13 @@ The sharing cards (`opengraph-image.tsx`, `twitter-image.tsx`, drawn by `src/com
 
 The document also holds the motion provider, the running head, the index and key sheets, and the colophon. Around every page it provides the error page's two strings (`[locale]/error-context.tsx`). Next renders `error.tsx` itself and gives it the error and nothing else, so no parent can hand it props; a context whose value never changes is how the document tells it the visitor's language. Next's `catchError` makes a boundary that takes props, but importing it brings the Pages Router's error page along: every route measured 14.6 KiB of script heavier with it, 4.5 KiB as sent.
 
+**When a page fails.** Two pages stand for a fault, and both say the same line and the same word, in the visitor's language.
+
+- `[locale]/error.tsx` stands for a fault inside a route: a render that threw, on the server or in the browser. It stands inside the document, which gives it its words.
+- `src/app/global-error.tsx` stands for a fault in the document itself, which no route's page can catch because it lives inside the document. Next renders it in place of every layout, so it brings its own `<html>` and styles, reads the language from the address, and carries its words written out (`global-error.words.ts`, held to the catalogs by its test).
+
+Both do two things with the error they are handed (`src/lib/fault.ts`). **Try again** calls Next's `retry`, which asks the server for the route's data again and renders it again; `reset`, which only renders the same data again, could not mend a record that failed to arrive. For one fault it loads the page afresh instead: a file of script the page asks for that a newer deployment no longer has, which rendering again would only ask for again. And when the fault was the server's, the page shows the **reference** Next sends in place of the server's message (its digest): the same reference stands beside the real error in the host's log, so a visitor's report can be matched to it. Nothing about a fault leaves the browser.
+
 ## 3. Components and library
 
 `src/components/` holds what pages are made of. Most of a work's page is three components:
