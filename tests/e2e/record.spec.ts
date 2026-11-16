@@ -1,5 +1,6 @@
 import { expect, test, type Page } from './fixtures';
 import { catalogs } from '../../src/lib/i18n/messages';
+import { localizedPath } from '../../src/lib/i18n/routing';
 import { readFileSync } from 'node:fs';
 import { noHorizontalOverflow } from './helpers';
 
@@ -110,6 +111,41 @@ test('the entry is set in every locale without running past its measure', async 
     );
     await expect(entry.getByText(catalogs[locale].glossarySignature)).toBeVisible();
     await noHorizontalOverflow(page);
+  }
+});
+
+test('a work is described to a search engine and a shared link in the venue’s own words, in the page’s language', async ({
+  page,
+}) => {
+  await pauseMotion(page);
+  // № 031's line (src/lib/art/fate-line.ts): its record dates no ejection, and its energy held.
+  // The unit tests hold the same of all 72 works in eight languages
+  // (src/lib/art/work-description.test.ts); this reads it where a crawler does.
+  for (const locale of ['en', 'uk', 'ja'] as const) {
+    const words = catalogs[locale];
+    const number = new Intl.NumberFormat(locale);
+    const said = words.sentences
+      .replace('{first}', words.fateTogether.replace('{steps}', number.format(1_000_000)))
+      .replace('{second}', words.fateStill.replace('{steps}', number.format(8_000_000)));
+    await page.goto(`${localizedPath(locale, '/art/31')}?view=still`);
+    await expect(page.locator('html')).toHaveAttribute('lang', locale);
+    for (const name of ['description', 'og:description', 'twitter:description'])
+      await expect(
+        page.locator(`meta[name="${name}"], meta[property="${name}"]`),
+        `${locale} ${name}`,
+      ).toHaveAttribute('content', said);
+    // The structured data arrives with the record, and says the same.
+    const structured = page.locator('#record script[type="application/ld+json"]');
+    await expect(structured).toBeAttached();
+    const data = JSON.parse((await structured.textContent())!) as Record<string, unknown>;
+    expect(data.description, locale).toBe(said);
+    expect(data.artMedium, locale).toBe(
+      words.sentences.replace('{first}', words.inkMedium).replace('{second}', words.lightMedium),
+    );
+    // Never the token's English sentence ("… fate: eternal dance. Imprinted in Round 1 …"), and
+    // no paper claimed of a simulated ground.
+    expect(JSON.stringify(data), locale).not.toMatch(/eternal|\bRound\b|syzyg/i);
+    expect(data, locale).not.toHaveProperty('artworkSurface');
   }
 });
 

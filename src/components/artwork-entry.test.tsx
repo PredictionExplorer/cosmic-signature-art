@@ -5,6 +5,7 @@ import { getCuratedArtwork } from '@/lib/art/catalog';
 import { indexedWork } from '@/lib/art/collection-index';
 import { detailsFromIndexedWork } from '@/lib/art/details-validation';
 import { en } from '@/lib/i18n/en';
+import { ja } from '@/lib/i18n/ja';
 import type { Artwork } from '@/lib/art/types';
 import { EntryBody, EntryView } from './artwork-entry';
 
@@ -119,10 +120,41 @@ describe('the entry', () => {
       alternateName: 'Cosmic Signature 031',
       creator: { name: 'Cosmic Signature' },
       dateCreated: '2026-08-11',
-      artworkSurface: 'kozo paper ground',
+      // The medium as the entry words it, and the line under the still: the venue's own words.
+      artMedium: `${en.inkMedium} ${en.lightMedium}`,
+      description:
+        'Three bodies, together for all 1,000,000 steps this work records. They are still bound to one another at step 8,000,000, where the record stops looking.',
       isPartOf: { url: 'https://cosmic.art/collection' },
     });
-    expect(structured.description).toContain('orbit ribbons');
+    // The work is digital and its ground simulated: no surface is claimed for it.
+    expect(structured).not.toHaveProperty('artworkSurface');
+    // The token's own sentence ("… fate: eternal dance. Imprinted in Round 1 …") is not the
+    // venue's to repeat to a machine.
+    expect(details.description).toContain('fate: eternal dance');
+    expect(JSON.stringify(structured)).not.toMatch(/eternal|\bRound\b|kozo paper/i);
+  });
+
+  it('tells a machine of the work in the page’s language, never in the token’s English', () => {
+    const { container } = render(
+      <EntryView work={artwork()} details={details} recordAt={null} locale="ja" t={ja} />,
+    );
+    const structured = JSON.parse(
+      container.querySelector('script[type="application/ld+json"]')!.textContent!,
+    );
+    // Japanese runs two sentences together with nothing between them.
+    expect(structured.artMedium).toBe(`${ja.inkMedium}${ja.lightMedium}`);
+    expect(structured.description).toBe(
+      '三つの天体は、この作品が記録する 1,000,000 ステップのあいだ、ずっと共にあります。記録が見届けた最後の第 8,000,000 ステップでも、三つはまだ互いに束縛されています。',
+    );
+    expect(structured.url).toBe('https://cosmic.art/ja/art/31');
+    // A work with no Ink published names the one medium it has.
+    const lightOnly = { ...artwork(), media: artwork().media.filter((m) => m.id === 'light') };
+    const { container: alone } = render(
+      <EntryView work={lightOnly} details={details} recordAt={null} locale="ja" t={ja} />,
+    );
+    expect(
+      JSON.parse(alone.querySelector('script[type="application/ld+json"]')!.textContent!).artMedium,
+    ).toBe(ja.lightMedium);
   });
 
   it('stays bare and honest when the publisher’s record is unavailable', () => {

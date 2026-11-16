@@ -29,8 +29,7 @@ import { OrbitScore } from '@/components/orbit-score';
 import { Overture } from '@/components/overture';
 import { showWorkOf } from '@/lib/art/first-light-work';
 import { workOrbit } from '@/lib/art/orbit-records';
-import { workEnergy } from '@/lib/art/orbit-energy';
-import { fateLine } from '@/lib/art/fate-line';
+import { workDescription, workLine } from '@/lib/art/work-description';
 import { filmOrbit } from '@/lib/art/orbit-windows';
 import { orbitPlate } from '@/lib/art/orbit-plate';
 import recordStyles from '@/components/artwork-record.module.css';
@@ -55,7 +54,9 @@ export async function generateMetadata({
     locale,
     `/art/${tokenId}`,
     workNumber(tokenId),
-    indexedWork(tokenId)?.description ?? t.statementLine,
+    // The venue's own line for this work, in this language: never the token's English text
+    // (src/lib/art/work-description.ts).
+    workDescription(tokenId, t, locale),
     indexedWork(tokenId) ? null : artworkSharingImage(artwork, `${workNumber(tokenId)} · ${t.ink}`),
   );
 }
@@ -157,8 +158,9 @@ export default async function ArtworkPage({
   // drawn on the plate where its frame binds: over the still the page's plate shows.
   const orbit = workOrbit(tokenId);
   // The line under the still: what the record says of the three, each sentence said only where
-  // it is true of this work (src/lib/art/fate-line.ts). The same under either expression.
-  const line = orbit ? fateLine(orbit, workEnergy(tokenId), t, locale) : null;
+  // it is true of this work (src/lib/art/fate-line.ts). The same under either expression, and
+  // the same words the page's description is made of (src/lib/art/work-description.ts).
+  const line = workLine(tokenId, t, locale);
   const both = !!getInterpretation(work, 'ink')?.still && !!getInterpretation(work, 'light')?.still;
   return (
     <main id="main" className="work-page" data-opening-expression={expression}>

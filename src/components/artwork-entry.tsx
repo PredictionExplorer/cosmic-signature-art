@@ -9,6 +9,7 @@ import { getArtworkDetails } from '@/lib/art/server';
 import { indexedWork } from '@/lib/art/collection-index';
 import { detailsFromIndexedWork, type ArtworkDetails } from '@/lib/art/details-validation';
 import { workFolio, workNumber } from '@/lib/art/number';
+import { workDescription } from '@/lib/art/work-description';
 import { getInterpretation, type Artwork, type ArtworkResult } from '@/lib/art/types';
 import { ArtworkSources, ChainAddress, RecordDate, recordTime } from './artwork-record';
 import { ArtworkHistorySection, type HistoryQuery } from './artwork-history';
@@ -318,6 +319,13 @@ export function EntryView({
       </>,
     );
   }
+  // What a machine is told is what the page says, in the page's language: the medium as the
+  // entry words it, and the line under the still as the description, never the token's English
+  // text (src/lib/art/work-description.ts). No surface is named: the work is digital, and its
+  // kozo ground is simulated with the fluid that crosses it.
+  const media = [ink ? t.inkMedium : null, light ? t.lightMedium : null].filter(
+    (medium) => medium !== null,
+  );
   const structured = {
     '@context': 'https://schema.org',
     '@type': 'VisualArtwork',
@@ -326,12 +334,13 @@ export function EntryView({
     url: `${SITE_URL}${localizedPath(locale, `/art/${work.id}`)}`,
     image: frame?.still ? new URL(frame.still, DEPLOYMENT_URL).href : undefined,
     artform: 'Generative digital art',
-    artMedium: 'Generative three-body simulation rendered as light and as ink',
-    artworkSurface: ink ? 'kozo paper ground' : undefined,
+    artMedium: media.length
+      ? media.reduce((said, medium) => fill(t.sentences, { first: said, second: medium }))
+      : undefined,
     identifier: String(work.id),
     creator: { '@type': 'Organization', name: 'Cosmic Signature' },
     dateCreated: imprinted?.slice(0, 10),
-    description: details?.description,
+    description: workDescription(work.id, t, locale),
     isPartOf: {
       '@type': 'Collection',
       name: 'Cosmic Signature',

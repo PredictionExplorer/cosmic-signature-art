@@ -1,6 +1,9 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { getCuratedArtwork } from '@/lib/art/catalog';
 import { getArtwork } from '@/lib/art/server';
+import { workDescription } from '@/lib/art/work-description';
+import { messages } from '@/lib/i18n/messages';
+import { locales } from '@/lib/i18n/routing';
 import { generateMetadata as artMetadata } from './page';
 import { generateMetadata as auctionMetadata } from '../../auctions/[id]/page';
 
@@ -75,5 +78,40 @@ describe.each([
       await generateMetadata({ params: Promise.resolve({ locale: 'invalid', id: '31' }) }),
     ).toEqual({});
     expect(getArtwork).not.toHaveBeenCalled();
+  });
+});
+
+describe('a work page’s description', () => {
+  it('is the venue’s own line for that work, in the page’s language, wherever it is read', async () => {
+    for (const locale of locales) {
+      const result = await artMetadata({ params: Promise.resolve({ locale, id: '31' }) });
+      const said = workDescription(31, messages(locale), locale);
+      // A search result, a shared link and a card all say the one thing.
+      expect(result.description, locale).toBe(said);
+      expect(result.openGraph?.description, locale).toBe(said);
+      expect(result.twitter?.description, locale).toBe(said);
+    }
+    const english = await artMetadata({ params: Promise.resolve({ locale: 'en', id: '31' }) });
+    expect(english.description).toBe(
+      'Three bodies, together for all 1,000,000 steps this work records. They are still bound to one another at step 8,000,000, where the record stops looking.',
+    );
+    // The token's own text said "fate: eternal dance" here, in English under every language.
+    const ukrainian = await artMetadata({ params: Promise.resolve({ locale: 'uk', id: '31' }) });
+    expect(ukrainian.description).toMatch(/^Три тіла, разом упродовж усіх/);
+    expect(ukrainian.description).not.toMatch(/eternal|Round|[A-Za-z]/);
+    expect(getArtwork).not.toHaveBeenCalled();
+  });
+
+  it('describes a work the venue holds no record for as every work is', async () => {
+    vi.mocked(getArtwork).mockResolvedValue({
+      artwork: null,
+      status: 'unavailable',
+      source: 'curated-fallback',
+    });
+    for (const locale of ['en', 'ko'] as const) {
+      const result = await artMetadata({ params: Promise.resolve({ locale, id: '999' }) });
+      expect(result.description).toBe(messages(locale).statementLine);
+      expect(result.openGraph?.description).toBe(messages(locale).statementLine);
+    }
   });
 });
