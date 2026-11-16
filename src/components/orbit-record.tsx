@@ -71,29 +71,46 @@ export function OrbitRecord({
   const number = useMemo(() => new Intl.NumberFormat(locale), [locale]);
   const labels = measurementLabels(t);
   const record = recordValues(orbit, t, number);
+  // The check's two words, a line each: the cell keeps room for the wider (orbit-score.module.css).
+  const room = `${t.orbitPending}\n${t.orbitExact}`;
   return (
     <div className={styles.record}>
-      <table className={styles.proof} aria-labelledby={labelledBy}>
-        <thead className={styles.visuallyHidden}>
-          <tr>
-            <th scope="col">{t.orbitMeasurement}</th>
-            <th scope="col">{t.orbitValue}</th>
-            <th scope="col">{t.orbitCheck}</th>
+      {/* On a phone the rows are set as a list's, name over value (orbit-score.module.css), and
+          a browser may then stop reading a table in them. Each part says what it is by name. */}
+      <table className={styles.proof} role="table" aria-labelledby={labelledBy}>
+        <thead className={styles.visuallyHidden} role="rowgroup">
+          <tr role="row">
+            <th scope="col" role="columnheader">
+              {t.orbitMeasurement}
+            </th>
+            <th scope="col" role="columnheader">
+              {t.orbitValue}
+            </th>
+            <th scope="col" role="columnheader">
+              {t.orbitCheck}
+            </th>
           </tr>
         </thead>
-        <tbody>
+        <tbody role="rowgroup">
           {(Object.keys(labels) as MeasurementKey[]).map((key) => {
             const row = comparisons?.find((comparison) => comparison.key === key);
             return (
-              <tr key={key} data-key={key} data-exact={row ? String(row.exact) : undefined}>
-                <th scope="row">{labels[key]}</th>
-                <td className={key === 'braidWord' ? styles.word : undefined}>
+              <tr
+                key={key}
+                role="row"
+                data-key={key}
+                data-exact={row ? String(row.exact) : undefined}
+              >
+                <th scope="row" role="rowheader">
+                  {labels[key]}
+                </th>
+                <td role="cell" className={key === 'braidWord' ? styles.word : undefined}>
                   <span>{record[key]}</span>
                   {row && !row.exact ? (
                     <span className={styles.derivedValue}>{derivedValue(row, t)}</span>
                   ) : null}
                 </td>
-                <td className={styles.check}>
+                <td role="cell" className={styles.check} data-room={room}>
                   {row ? (row.exact ? t.orbitExact : t.orbitDiffers) : t.orbitPending}
                 </td>
               </tr>
