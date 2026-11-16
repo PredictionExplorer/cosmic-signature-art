@@ -138,7 +138,7 @@ A page that can be made to load a script from elsewhere, or to send what it read
 
 ## Run it
 
-Use Node 22.12 or later and npm; the lockfile is authoritative.
+Use Node 22.18 or later and npm; the lockfile is authoritative.
 
 ```sh
 npm ci

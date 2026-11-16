@@ -1,9 +1,20 @@
+import { createRequire } from 'node:module';
 import type { NextConfig } from 'next';
-// With its extension: Node's own resolver loads this file, before any bundler runs. Next 16.4
-// looks for it from the working directory, not from this file (its loader gives the compiled
-// configuration no filename), so `next` is started in the checkout it serves, as every script
-// here does. `next start <another directory>` would read this import from where it stands.
-import { securityHeaders } from './src/lib/security-headers.ts';
+
+/**
+ * The headers are written in src/lib/security-headers.ts, which the proxy and the tests read
+ * too. They are required from this file's own address, not imported. Next 16.4 runs this file
+ * compiled and gives it no filename (next/dist/build/next-config-ts/require-hook.js), so Node
+ * looks for a plain `import` of a neighbour from the working directory: `next start` pointed at
+ * a build in another directory could not find the file, or found another checkout's copy. A
+ * require made from this file's address finds the one beside it, wherever `next` was started.
+ * Outside Next (the unit tests) the same line has Node read TypeScript itself, which it does
+ * from 22.18.
+ */
+const { securityHeaders } = createRequire(import.meta.url)(
+  './src/lib/security-headers.ts',
+) as typeof import('./src/lib/security-headers.ts');
+
 const nextConfig: NextConfig = {
   // A second server in the same checkout (the configured-sale e2e) builds into its own directory.
   distDir: process.env.NEXT_DIST_DIR || '.next',

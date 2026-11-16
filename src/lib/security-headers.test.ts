@@ -1,4 +1,6 @@
 // @vitest-environment node
+import { execFileSync } from 'node:child_process';
+import { tmpdir } from 'node:os';
 import { describe, expect, it } from 'vitest';
 import nextConfig from '../../next.config';
 import { ART_API_ORIGIN, ART_MEDIA_ORIGINS } from './art/constants';
@@ -139,4 +141,24 @@ describe('the headers of every response', () => {
       .filter((entry) => /^content-security-policy/i.test(entry.key));
     expect(policies).toHaveLength(1);
   });
+
+  it('is found by Next wherever the server was started', () => {
+    // Next runs the compiled configuration with no filename, so a neighbour it imported was
+    // looked for from the working directory, and a server started beside a build, not inside
+    // it, stopped at "Cannot find module './src/lib/security-headers.ts'". Here Next's own
+    // loader reads the configuration from a directory that holds nothing of the venue.
+    const load = `
+      const config = require(process.argv[1] + '/node_modules/next/dist/server/config').default;
+      config('phase-production-server', process.argv[1], { silent: true })
+        .then((loaded) => loaded.headers())
+        .then((rules) => process.stdout.write(JSON.stringify(rules)));
+    `;
+    const rules = JSON.parse(
+      execFileSync(process.execPath, ['-e', load, process.cwd()], {
+        cwd: tmpdir(),
+        encoding: 'utf8',
+      }),
+    ) as { source: string; headers: { key: string; value: string }[] }[];
+    expect(rules.find((rule) => rule.source === '/:path*')?.headers).toEqual(securityHeaders());
+  }, 60_000);
 });

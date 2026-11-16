@@ -11,7 +11,9 @@ import { ART_MEDIA_ORIGINS } from './art/constants.ts';
  * itself uses, so the list cannot drift from what the pages ask for.
  *
  * This file imports with its extension, and nothing of the venue's but constants: next.config.ts
- * loads it through Node's own resolver, before any bundler runs.
+ * loads it through Node's own resolver, before any bundler runs, and in the unit tests Node
+ * reads it as it stands. So it, and the constants it imports, keep to TypeScript that needs
+ * only its types taken away: no enum, no namespace, no parameter property.
  *
  * **What the enforced policy does not do.** `script-src` allows inline scripts. Next writes each
  * page's data into the document as inline scripts whose text differs on every page, so no list
