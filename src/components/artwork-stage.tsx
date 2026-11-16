@@ -74,9 +74,11 @@ export function useArtworkExpression({
   onCommit?: (expression: string) => void;
   /**
    * The requested still has decoded. When given, the caller decides the moment of the
-   * commit (the Turn travels first); `commit` is a no-op once superseded.
+   * commit (the Turn travels first); `commit` is a no-op once superseded. A caller that has
+   * shown the change itself by then (the room's own crossing, room-crossing.ts) asks for the
+   * commit `plain`: at once, by an ordinary update, with no snapshot taken.
    */
-  onReady?: (expression: string, commit: () => void) => void;
+  onReady?: (expression: string, commit: (plain?: boolean) => void) => void;
 }) {
   const [expression, setExpression] = useState(() => {
     const published = (id?: string) => media.find((item) => item.id === id)?.id;
@@ -180,8 +182,9 @@ export function useArtworkExpression({
       };
       // A hushed theatre (a collector reviewing a bid) crosses instantly, like reduced motion,
       // and so does a stage with no snapshot to take: its change has been shown already.
-      const run = () => {
+      const run = (plain = false) => {
         if (
+          !plain &&
           motion.current.snapshot &&
           !motion.current.paused &&
           !motion.current.reducedMotion &&

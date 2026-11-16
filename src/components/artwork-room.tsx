@@ -38,6 +38,7 @@ import { WavelengthSlider, wavelengthForKey } from './spectrum-rule';
 import { WavelengthLens } from './wavelength-lens';
 import { WhenLens } from './when-lens';
 import { FilmScoreBand } from './film-score-band';
+import { useRoomCrossing, type RoomTurn } from './room-crossing';
 import styles from './artwork-room.module.css';
 import {
   markedAt,
@@ -59,7 +60,9 @@ import { tokenMs } from './turn';
   the keyboard always finds it. A 1 px transport at the viewport's edge replaces the native
   controls; status text lives in the strip, never over pixels. The inline film's time
   continues into the room. The Slow room is the named state of the long studies. Opening and
-  closing are the Expansion: the work grows from its plate while the ground fades in.
+  closing are the Expansion: the work grows from its plate while the ground fades in. A Turn
+  made here is drawn by the room's own sheet (room-crossing.ts): one front over the ground, the
+  work and the strip, whose height is one in both expressions so that the work never moves.
 */
 /** Controls fade after this quiet spell (--t-idle) and return on any pointer, touch or key. */
 const IDLE_MS = 2000;
@@ -102,6 +105,11 @@ type ArtworkRoomProps = {
    * its clock; an Ink film does where `ink` names it (third-physics-phase-e.md §6).
    */
   filmScore?: { score: FilmScore; hues: readonly number[]; ink?: InkClock } | null;
+  /**
+   * Where the viewer finds the room's own Turn while the room can draw one (room-crossing.ts):
+   * the front crosses the room before the expression changes.
+   */
+  turnRef?: RefObject<RoomTurn | null>;
   onClose: () => void;
 };
 
@@ -116,6 +124,9 @@ export function isStudy(film: ArtFilm) {
 /** The room's still is as wide as the room: its layout width for the still ladder. */
 export const ROOM_SIZES = '100vw';
 
+/** The still as the room asks for it: the whole ladder, whatever the connection. */
+const roomStill = (media: ArtInterpretation) => stillRequest(media, { sizes: ROOM_SIZES });
+
 /** The rungs and the published still as one srcset: a phone rests on the 1280 rung. */
 function RoomStill({
   media,
@@ -129,7 +140,7 @@ function RoomStill({
   onFailure: () => void;
 }) {
   // The whole ladder, whatever the connection: the room is where the original is asked for.
-  const still = stillRequest(media, { sizes: ROOM_SIZES });
+  const still = roomStill(media);
   if (!still) return null;
   return (
     <div className={styles.still}>
@@ -320,6 +331,159 @@ function DetailReadout({
   });
 }
 
+/** One word of the strip: what it says, the muted figures that follow a study's name, and whether it is the one chosen. */
+export interface StripWord {
+  word: string;
+  meta?: string;
+  pressed?: boolean;
+}
+
+/**
+ * Every word the strip says for one expression, in the order it says them, in the room as it
+ * stands: the films it lists (or, in the loupe, its detail windows) and the views it offers.
+ * The room held for the other expression's strip is set from this list, and a test holds the
+ * strip itself to it, so the room held is the room that expression will take.
+ */
+export function stripWords({
+  media,
+  t,
+  locale,
+  loupe,
+  showFilm,
+  selectedFilm,
+  derivedViews,
+  fullscreenAvailable,
+  fullscreen,
+}: {
+  media: ArtInterpretation;
+  t: ArtworkRoomWords;
+  locale: Locale;
+  /** The loupe is on, and on which of the work's detail windows. */
+  loupe: { window: number } | null;
+  /** A film is chosen in the room, and which of this expression's (its first, if none). */
+  showFilm: boolean;
+  selectedFilm?: string;
+  derivedViews: boolean;
+  fullscreenAvailable: boolean;
+  fullscreen: boolean;
+}): { sources: StripWord[]; actions: StripWord[] } {
+  const films = sortedFilms(media);
+  const film = films.find((item) => item.id === selectedFilm) ?? films[0];
+  const sources: StripWord[] = loupe
+    ? [
+        { word: t.wholePlate },
+        ...(media.detail ?? []).map((_, index) => ({
+          word: String(index + 1),
+          pressed: loupe.window === index,
+        })),
+      ]
+    : [
+        { word: t.still, pressed: !showFilm || !film },
+        ...films.map((item) => ({
+          word: filmLabel(item, t),
+          meta: studyMeta(item, t, locale),
+          pressed: showFilm && film?.id === item.id,
+        })),
+      ];
+  const actions = [
+    whenOfferedFor(media, derivedViews) ? t.whenLens : null,
+    wavelengthOfferedFor(media, derivedViews) ? t.wavelengthLens : null,
+    t.detail,
+    fullscreenAvailable ? (fullscreen ? t.exitFullScreen : t.fullScreen) : null,
+    t.close,
+  ];
+  return {
+    sources,
+    actions: actions.filter((word): word is string => word !== null).map((word) => ({ word })),
+  };
+}
+
+/** A work's films in the order the strip lists them. */
+function sortedFilms(media: ArtInterpretation | undefined) {
+  return media
+    ? [...media.films].sort((a, b) => FILM_ORDER.indexOf(a.id) - FILM_ORDER.indexOf(b.id))
+    : [];
+}
+
+/** A study's length and size, the muted figures after its name; none for the film itself. */
+function studyMeta(film: ArtFilm, t: ArtworkRoomWords, locale: Locale) {
+  if (film.id === 'normal' || !film.durationSeconds) return undefined;
+  return `${fill(t.durationSeconds, { n: Math.round(film.durationSeconds) })}${
+    film.bytes ? ` · ${formatBytes(film.bytes, locale)}` : ''
+  }`;
+}
+
+/** The When lens needs the still's rung and the arrival map bound to it. */
+function whenOfferedFor(media: ArtInterpretation | undefined, derivedViews: boolean) {
+  return derivedViews && !!media?.arrival && !!media.rungs?.length;
+}
+
+/** The Wavelength lens holds the published spectral sweep, a film of Light. */
+function wavelengthOfferedFor(media: ArtInterpretation | undefined, derivedViews: boolean) {
+  return derivedViews && media?.id === 'light' && media.films.some((film) => film.id === 'sweep');
+}
+
+/**
+ * The room held for another expression's strip. A work's two expressions list different films
+ * and offer different views, so their strips wrap to different heights on most screens: 44 px
+ * apart on a phone, and more on a tablet. A strip that grew as the Turn landed would move the
+ * work above it. So beneath the strip lies, unseen, the strip the other expression will set,
+ * in the same cell: the strip is as tall as the taller of the two, always, and the work stands
+ * in one place in both. Its words are drawn from attributes (as the notice's are, room-notice.tsx),
+ * so the page holds each word once: nothing here is read out, found by a search, or pressed.
+ */
+function HeldStrip({
+  artwork,
+  media,
+  words,
+  t,
+}: {
+  artwork: Artwork;
+  media: ArtInterpretation;
+  words: ReturnType<typeof stripWords>;
+  t: ArtworkRoomWords;
+}) {
+  // The word chosen is underlined, as the strip underlines it: the strip a Turn brings says what
+  // it will say, its own expression chosen.
+  const held = ({ word, meta, pressed }: StripWord, index: number) => (
+    <span
+      key={`${index}:${word}`}
+      className={styles.word}
+      data-line={meta ? `${word} · ` : word}
+      data-pressed={pressed ? '' : undefined}
+    >
+      {meta ? <span className={styles.meta} data-line={meta} /> : null}
+    </span>
+  );
+  return (
+    <div
+      className={`${styles.strip} ${styles.heldStrip}`}
+      aria-hidden="true"
+      data-strip-room={media.id}
+    >
+      <div className={styles.identity} data-sheet-group="identity">
+        <span className={styles.number} data-line={workNumber(artwork.id)} />
+        <div className={styles.expressions}>
+          {inkFirst(artwork.media).map((item, index) =>
+            held({ word: expressionWord(item, t) ?? '', pressed: item.id === media.id }, index),
+          )}
+        </div>
+      </div>
+      <div className={styles.sources} data-sheet-group="sources">
+        {words.sources.map(held)}
+      </div>
+      <div className={styles.actions} data-sheet-group="actions">
+        {words.actions.map(held)}
+      </div>
+    </div>
+  );
+}
+
+/** The strip names a work's expressions Ink first. */
+function inkFirst(media: readonly ArtInterpretation[]) {
+  return [...media].sort((a, b) => Number(b.id === 'ink') - Number(a.id === 'ink'));
+}
+
 /** The painted rectangle of a media element; its box is sized to its own proportion. */
 function paintedRect(element: Element) {
   const bounds = element.getBoundingClientRect();
@@ -339,6 +503,7 @@ export function ArtworkRoom({
   returnFocusRef,
   derivedViews = true,
   filmScore = null,
+  turnRef,
   onClose,
 }: ArtworkRoomProps) {
   const dialog = useRef<HTMLDialogElement>(null);
@@ -351,6 +516,8 @@ export function ArtworkRoom({
   const fullscreenRequest = useRef(false);
   const backdropStart = useRef(false);
   const closing = useRef(false);
+  /** The Expansion is carrying the work to or from its plate: the room cannot be measured. */
+  const expanding = useRef(false);
   const { paused, reducedMotion, theatre } = useMotion();
   const { constrained } = useMediaPolicy();
   const instant = paused || reducedMotion || theatre === 'hushed';
@@ -391,9 +558,7 @@ export function ArtworkRoom({
   }, []);
 
   const media = getInterpretation(artwork, expression) ?? artwork.media[0];
-  const films = media
-    ? [...media.films].sort((a, b) => FILM_ORDER.indexOf(a.id) - FILM_ORDER.indexOf(b.id))
-    : [];
+  const films = sortedFilms(media);
   const film = films.find((item) => item.id === selectedFilms[media?.id ?? '']) ?? films[0];
   const filmIdentity = film ? `${film.variantKey}:${film.src}` : '';
   const time = filmClock.film === filmIdentity ? filmClock : NO_TIME;
@@ -410,7 +575,7 @@ export function ArtworkRoom({
   const filmShown = showFilm && !!film && !loupe && !studyHeld && filmStatus !== 'failed';
   const slow = filmShown && isStudy(film);
   // The When lens needs the still, its rung and the arrival map bound to them.
-  const whenOffered = derivedViews && !!media?.arrival && !!media.rungs?.length;
+  const whenOffered = whenOfferedFor(media, derivedViews);
   const whenShown =
     when && whenOffered && stillShown && !loupe && !filmShown && whenFailed !== media?.arrival?.src;
   const whenCaption = media?.id === 'light' ? t.whenLight : t.whenInk;
@@ -425,7 +590,7 @@ export function ArtworkRoom({
   const span = sweep?.span;
   // Offered where the work has a sweep: the home's curated media carry none, and a work's page
   // has one once its live record arrives.
-  const wavelengthOffered = derivedViews && media?.id === 'light' && !!sweep;
+  const wavelengthOffered = wavelengthOfferedFor(media, derivedViews);
   const sweepKey = sweep && span ? sweep.src : `${artwork.id}:unmeasured`;
   const wavelengthBlocked = sweepFailed === sweepKey;
   const held = span ? heldNm(chosenNm ?? startingNm(span), span) : null;
@@ -440,6 +605,44 @@ export function ArtworkRoom({
   const wavelengthLoading = wavelengthShown && !sweepHeld;
   const wavelengthUnavailable =
     wavelengthOffered && wavelengthBlocked && stillShown && !filmShown && !loupe && !whenShown;
+  // The room's own Turn (room-crossing.ts): the front crosses the room, its ground, the work and
+  // the strip's words, before the expression changes. The loupe and the lenses show something
+  // the sheet does not bring (a detail, an analysis, a picture hung in less room to make room
+  // for its rule): their change is made at once.
+  const inkMedia = getInterpretation(artwork, 'ink');
+  const lightMedia = getInterpretation(artwork, 'light');
+  const steady = useCallback(() => !expanding.current, []);
+  const leaving = useCallback(() => closing.current, []);
+  const { canvas: sheet, settled } = useRoomCrossing({
+    frame,
+    ink: inkMedia,
+    light: lightMedia,
+    expression,
+    enabled:
+      !instant &&
+      !!inkMedia?.still &&
+      !!lightMedia?.still &&
+      !!inkMedia.arrival &&
+      !!lightMedia.arrival,
+    plain: !!loupe || whenShown || wavelengthShown,
+    paper: getPlateGround(artwork.id, 'ink', inkMedia?.stillSha256)?.tone ?? '#f1ebdf',
+    still: roomStill,
+    steady,
+    leaving,
+    // While a film is chosen and the other expression has one to play, a Turn brings that
+    // expression's bare ground, and its film begins there; otherwise it brings its still.
+    brings: (to) => {
+      const target = to === 'ink' ? inkMedia : lightMedia;
+      if (!target || !showFilm || filmStatus === 'failed') return 'still';
+      const targetFilms = sortedFilms(target);
+      const next =
+        targetFilms.find((item) => item.id === selectedFilms[target.id]) ?? targetFilms[0];
+      if (!next || (isStudy(next) && constrained && !allowedStudies.includes(next.id)))
+        return 'still';
+      return 'ground';
+    },
+    turnRef,
+  });
   const numbers = useMemo(() => new Intl.NumberFormat(locale), [locale]);
   const oneDecimal = useMemo(
     () => new Intl.NumberFormat(locale, { minimumFractionDigits: 1, maximumFractionDigits: 1 }),
@@ -528,6 +731,8 @@ export function ArtworkRoom({
   const requestClose = useCallback(() => {
     if (closing.current) return;
     closing.current = true;
+    // A Turn still crossing the room is taken back: the room leaves as it stands.
+    turnRef?.current?.callOff();
     // Without the Web Animations API, or under a still preference, the swap is instant.
     if (instant || typeof frame.current?.animate !== 'function') {
       onClose();
@@ -537,7 +742,7 @@ export function ArtworkRoom({
     void expand('close').then(() => {
       if (alive.current) onClose();
     });
-  }, [expand, instant, onClose]);
+  }, [expand, instant, onClose, turnRef]);
 
   useEffect(() => {
     const modal = dialog.current;
@@ -566,7 +771,13 @@ export function ArtworkRoom({
     for (const { element } of locked) element.style.setProperty('overflow', 'hidden');
     modal.showModal();
     closeButton.current?.focus({ preventScroll: true });
-    if (!instant) void expand('open');
+    if (!instant) {
+      expanding.current = true;
+      void expand('open').then(() => {
+        expanding.current = false;
+        settled();
+      });
+    }
     const changed = () => setFullscreen(document.fullscreenElement === room);
     document.addEventListener('fullscreenchange', changed);
     return () => {
@@ -933,15 +1144,15 @@ export function ArtworkRoom({
             ) : null}
           </ArtworkStage>
         </div>
+        <canvas ref={sheet} className={styles.sheet} aria-hidden="true" />
 
         <footer ref={edge} className={styles.edge}>
-          <div className={styles.strip}>
-            <div className={styles.identity}>
-              <span className={styles.number}>{workNumber(artwork.id)}</span>
-              <div className={styles.expressions} role="group" aria-label={t.ways}>
-                {[...artwork.media]
-                  .sort((a, b) => Number(b.id === 'ink') - Number(a.id === 'ink'))
-                  .map((item) => (
+          <div className={styles.strips}>
+            <div className={styles.strip} data-strip={media?.id}>
+              <div className={styles.identity} data-sheet-group="identity">
+                <span className={styles.number}>{workNumber(artwork.id)}</span>
+                <div className={styles.expressions} role="group" aria-label={t.ways}>
+                  {inkFirst(artwork.media).map((item) => (
                     <button
                       key={item.id}
                       type="button"
@@ -952,104 +1163,136 @@ export function ArtworkRoom({
                       {expressionWord(item, t)}
                     </button>
                   ))}
+                </div>
+              </div>
+              {loupe ? (
+                <div
+                  className={styles.sources}
+                  role="group"
+                  aria-label={t.detail}
+                  data-sheet-group="sources"
+                >
+                  <button type="button" onClick={closeLoupe}>
+                    {t.wholePlate}
+                  </button>
+                  {windows.map((window, index) => (
+                    <button
+                      key={`${window.x}:${window.y}`}
+                      type="button"
+                      aria-label={fill(t.detailWindow, { n: index + 1 })}
+                      aria-pressed={loupe.window === index}
+                      onClick={() => setLoupe({ window: index })}
+                    >
+                      {index + 1}
+                    </button>
+                  ))}
+                </div>
+              ) : (
+                <div
+                  className={styles.sources}
+                  role="group"
+                  aria-label={t.sources}
+                  data-sheet-group="sources"
+                >
+                  <button
+                    type="button"
+                    onClick={showStill}
+                    aria-pressed={!showFilm || !film}
+                    disabled={!media?.still}
+                  >
+                    {t.still}
+                  </button>
+                  {films.map((item) => {
+                    const meta = studyMeta(item, t, locale);
+                    return (
+                      <button
+                        key={item.id}
+                        type="button"
+                        onClick={() => pickFilm(item.id)}
+                        aria-pressed={showFilm && film?.id === item.id}
+                      >
+                        {filmLabel(item, t)}
+                        {meta ? (
+                          <>
+                            {' · '}
+                            <span className={styles.meta}>{meta}</span>
+                          </>
+                        ) : null}
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+              <div className={styles.actions} data-sheet-group="actions">
+                {whenOffered ? (
+                  <button
+                    type="button"
+                    onClick={toggleWhen}
+                    aria-pressed={whenShown}
+                    aria-disabled={whenBlocked || undefined}
+                  >
+                    {t.whenLens}
+                  </button>
+                ) : null}
+                {wavelengthOffered ? (
+                  <button
+                    ref={wavelengthWord}
+                    type="button"
+                    onClick={toggleWavelength}
+                    aria-pressed={wavelengthShown}
+                    aria-disabled={wavelengthBlocked || undefined}
+                    aria-busy={wavelengthLoading || undefined}
+                  >
+                    {t.wavelengthLens}
+                  </button>
+                ) : null}
+                <button
+                  type="button"
+                  onClick={() => (loupe ? closeLoupe() : openLoupe(0))}
+                  aria-pressed={!!loupe}
+                  disabled={!stillShown}
+                >
+                  {t.detail}
+                </button>
+                {fullscreenAvailable ? (
+                  <button
+                    type="button"
+                    onClick={() => void toggleFullscreen()}
+                    disabled={fullscreenPending}
+                    aria-busy={fullscreenPending}
+                  >
+                    {fullscreen ? t.exitFullScreen : t.fullScreen}
+                  </button>
+                ) : null}
+                <button ref={closeButton} type="button" onClick={requestClose}>
+                  {t.close}
+                </button>
               </div>
             </div>
-            {loupe ? (
-              <div className={styles.sources} role="group" aria-label={t.detail}>
-                <button type="button" onClick={closeLoupe}>
-                  {t.wholePlate}
-                </button>
-                {windows.map((window, index) => (
-                  <button
-                    key={`${window.x}:${window.y}`}
-                    type="button"
-                    aria-label={fill(t.detailWindow, { n: index + 1 })}
-                    aria-pressed={loupe.window === index}
-                    onClick={() => setLoupe({ window: index })}
-                  >
-                    {index + 1}
-                  </button>
-                ))}
-              </div>
-            ) : (
-              <div className={styles.sources} role="group" aria-label={t.sources}>
-                <button
-                  type="button"
-                  onClick={showStill}
-                  aria-pressed={!showFilm || !film}
-                  disabled={!media?.still}
-                >
-                  {t.still}
-                </button>
-                {films.map((item) => (
-                  <button
-                    key={item.id}
-                    type="button"
-                    onClick={() => pickFilm(item.id)}
-                    aria-pressed={showFilm && film?.id === item.id}
-                  >
-                    {filmLabel(item, t)}
-                    {item.id !== 'normal' && item.durationSeconds ? (
-                      <>
-                        {' · '}
-                        <span className={styles.meta}>
-                          {fill(t.durationSeconds, { n: Math.round(item.durationSeconds) })}
-                          {item.bytes ? ` · ${formatBytes(item.bytes, locale)}` : ''}
-                        </span>
-                      </>
-                    ) : null}
-                  </button>
-                ))}
-              </div>
-            )}
-            <div className={styles.actions}>
-              {whenOffered ? (
-                <button
-                  type="button"
-                  onClick={toggleWhen}
-                  aria-pressed={whenShown}
-                  aria-disabled={whenBlocked || undefined}
-                >
-                  {t.whenLens}
-                </button>
-              ) : null}
-              {wavelengthOffered ? (
-                <button
-                  ref={wavelengthWord}
-                  type="button"
-                  onClick={toggleWavelength}
-                  aria-pressed={wavelengthShown}
-                  aria-disabled={wavelengthBlocked || undefined}
-                  aria-busy={wavelengthLoading || undefined}
-                >
-                  {t.wavelengthLens}
-                </button>
-              ) : null}
-              <button
-                type="button"
-                onClick={() => (loupe ? closeLoupe() : openLoupe(0))}
-                aria-pressed={!!loupe}
-                disabled={!stillShown}
-              >
-                {t.detail}
-              </button>
-              {fullscreenAvailable ? (
-                <button
-                  type="button"
-                  onClick={() => void toggleFullscreen()}
-                  disabled={fullscreenPending}
-                  aria-busy={fullscreenPending}
-                >
-                  {fullscreen ? t.exitFullScreen : t.fullScreen}
-                </button>
-              ) : null}
-              <button ref={closeButton} type="button" onClick={requestClose}>
-                {t.close}
-              </button>
-            </div>
+            {artwork.media
+              .filter((item) => item.id !== media?.id)
+              .map((item) => (
+                <HeldStrip
+                  key={item.id}
+                  artwork={artwork}
+                  media={item}
+                  words={stripWords({
+                    media: item,
+                    t,
+                    locale,
+                    loupe,
+                    showFilm,
+                    selectedFilm: selectedFilms[item.id],
+                    derivedViews,
+                    fullscreenAvailable,
+                    fullscreen,
+                  })}
+                  t={t}
+                />
+              ))}
           </div>
           <div className={styles.notice}>
-            <div className={styles.said}>
+            <div className={styles.said} data-room-said="">
               <span
                 role={said || loupe ? 'status' : undefined}
                 aria-live={loupe ? 'off' : 'polite'}

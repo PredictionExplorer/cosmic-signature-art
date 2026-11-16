@@ -52,6 +52,8 @@
      own beats are the timeline's (src/lib/first-light/timeline.ts). */
   --t-overture-cross: 4000ms;
   --t-overture-wait: 4000ms;
+  /* How long the landed Light still is held, whole, before it crosses to the day's Ink. */
+  --t-overture-hold: 1800ms;
   --t-idle: 2000ms;
   --t-breath: 3500ms;
 }
@@ -596,6 +598,82 @@ html[data-split]:not([data-turning]) .head-overlay {
 }
 html[data-split]:not([data-turning]) .site-header:has(:focus-visible) .head-overlay {
   display: none;
+}
+/* The sheet (src/components/arrival-crossing.ts): while a crossing in the work's own order is
+   painted, the head's ground is painted on its own canvas from the same field as the plate, and
+   the head needs no second copy. Each word then wears the type of the ground beneath it
+   (src/components/sheet-words.ts): a word the front has passed, and glyph by glyph where the
+   front stands in a word. */
+/* The canvas lies behind the head's own row and over the head's own ground: the head is a
+   stacking context, so no rule of the row's needs to know of it. */
+.head-sheet {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  width: 100%;
+  height: 100%;
+  display: none;
+  pointer-events: none;
+}
+.site-header[data-sheet-active] .head-sheet {
+  display: block;
+}
+/* The page beyond the stage, where the screen shows it: its ground is painted behind everything,
+   from the same field, so the room does not change in one cut when the Turn commits. */
+.page-sheet {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  width: 100%;
+  height: 100%;
+  display: none;
+  pointer-events: none;
+}
+html[data-sheet-page] .page-sheet {
+  display: block;
+}
+html[data-sheet-page] body {
+  background: transparent;
+  transition: none;
+}
+.site-header[data-sheet-active] .head-overlay {
+  display: none;
+}
+/* A word inside a word the front is passing keeps its own fill: the fill is inherited. */
+[data-sheet] {
+  transition: none !important;
+  -webkit-text-fill-color: currentColor;
+}
+[data-sheet='night'] {
+  --ground: var(--night);
+  --type: var(--night-type);
+  --muted: #b8b5ad;
+  color: var(--type);
+}
+/* Muted words are darker on a sheet's own tone than on the page's: the stage names its own. */
+[data-sheet='paper'] {
+  --ground: var(--paper);
+  --type: var(--paper-type);
+  --muted: var(--sheet-paper-muted, #68685e);
+  color: var(--type);
+}
+[data-sheet][data-sheet-muted] {
+  color: var(--muted);
+}
+[data-sheet-out] {
+  opacity: 0 !important;
+}
+/* A fill is clipped to a word's underline as to its glyphs: an underline that waits unseen for
+   the hand is set aside while the sheet is worn (sheet-words.ts). */
+[data-sheet-unlined] {
+  text-decoration-line: none !important;
+}
+/* A word the front is passing is filled glyph by glyph: its gradient's stops fall between glyphs. */
+[data-sheet-fill] {
+  -webkit-background-clip: text !important;
+  background-clip: text !important;
+  background-color: transparent !important;
+  -webkit-text-fill-color: transparent !important;
 }
 html[data-turning='time'] .head-overlay {
   transition: clip-path var(--t-turn) var(--ease-turn);

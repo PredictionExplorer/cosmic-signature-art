@@ -5,7 +5,7 @@ import { getCuratedArtwork } from '@/lib/art/catalog';
 import type { Artwork } from '@/lib/art/types';
 import { en } from '@/lib/i18n/en';
 import { fill } from '@/lib/i18n/format';
-import { ArtworkRoom } from './artwork-room';
+import { ArtworkRoom, stripWords } from './artwork-room';
 import { filmOrbit } from '@/lib/art/orbit-windows';
 import { pairName, physicsAt, type FilmScore } from '@/lib/physics/film-score';
 import { lightFilmDuration, lightFilmFrames } from '@/lib/physics/light-film';
@@ -53,6 +53,8 @@ const artwork: Artwork = {
       : media,
   ),
 };
+/** A lens's own canvas: it is the room's media while the lens is on. (The room's other canvas is the sheet a Turn is drawn on.) */
+const LENS = 'canvas[data-room-media]';
 const longStudy = new RegExp(`^${en.longStudy}`);
 const extendedStudy = new RegExp(`^${en.extendedStudy}`);
 
@@ -748,7 +750,7 @@ describe('immersive artwork room', () => {
     // The loupe and the film each take the lens's place; T and the word bring it back.
     fireEvent.keyDown(room, { key: 'z' });
     expect(lens).toHaveAttribute('aria-pressed', 'false');
-    expect(room.querySelector('canvas')).toBeNull();
+    expect(room.querySelector(LENS)).toBeNull();
     fireEvent.keyDown(room, { key: 't' });
     expect(lens).toHaveAttribute('aria-pressed', 'true');
     expect(room.firstElementChild).not.toHaveAttribute('data-loupe');
@@ -834,7 +836,7 @@ describe('immersive artwork room', () => {
       expect(lens).toHaveFocus();
       expect(lens).toHaveAttribute('aria-pressed', 'false');
       expect(within(room).getByRole('status')).toHaveTextContent(en.whenUnavailable);
-      expect(room.querySelector('canvas')).toBeNull();
+      expect(room.querySelector(LENS)).toBeNull();
       // Neither the word nor T disturbs a film that plays after it.
       fireEvent.keyDown(room, { key: 'f' });
       expect(room.querySelector('video')).toHaveAttribute('src', '/complete-ink.mp4');
@@ -853,7 +855,7 @@ describe('immersive artwork room', () => {
     const room = screen.getByRole('dialog');
     expect(within(room).queryByRole('button', { name: en.whenLens })).toBeNull();
     fireEvent.keyDown(room, { key: 't' });
-    expect(room.querySelector('canvas')).toBeNull();
+    expect(room.querySelector(LENS)).toBeNull();
     fireEvent.keyDown(room, { key: '?' });
     expect(within(room).getByLabelText(en.roomKeys)).not.toHaveTextContent(en.keyWhen);
   });
@@ -868,7 +870,7 @@ describe('immersive artwork room', () => {
     const room = screen.getByRole('dialog');
     expect(within(room).queryByRole('button', { name: en.whenLens })).toBeNull();
     fireEvent.keyDown(room, { key: 't' });
-    expect(room.querySelector('canvas')).toBeNull();
+    expect(room.querySelector(LENS)).toBeNull();
   });
 
   describe('the films’ score', () => {
@@ -1192,6 +1194,176 @@ function decoded(video: HTMLVideoElement) {
   fireEvent(video, new Event('loadedmetadata'));
   fireEvent(video, new Event('seeked'));
 }
+
+/*
+  A work's two expressions list different films and offer different views, so their strips wrap
+  to different heights on most screens, and a strip that grew as a Turn landed would move the
+  work above it. The room holds, unseen, the strip the other expression will set, in the same
+  cell as the strip in use (HeldStrip): these tests hold the room held to the strip that takes it.
+*/
+describe('the room held for the other expression’s strip', () => {
+  /** Every word of a strip in use, in order, with what follows a study's name. */
+  const set = (room: HTMLElement) =>
+    [
+      ...room
+        .querySelector('[data-strip]')!
+        .querySelectorAll<HTMLElement>('[class*="number"], button'),
+    ].map((word) => word.textContent);
+  /** Every word the held strip draws, in order, as its attributes spell them. */
+  const held = (room: HTMLElement) =>
+    [
+      ...room
+        .querySelector('[data-strip-room]')!
+        .querySelectorAll<HTMLElement>('[class*="number"], span[class*="word"]'),
+    ].map(
+      (word) =>
+        (word.getAttribute('data-line') ?? '') +
+        [...word.querySelectorAll('[data-line]')]
+          .map((meta) => meta.getAttribute('data-line'))
+          .join(''),
+    );
+  /** The words a strip marks as chosen, among its expressions and its sources. */
+  const chosen = (strip: Element, attribute: string) =>
+    [
+      ...strip.querySelectorAll<HTMLElement>(
+        `[data-sheet-group="identity"] [${attribute}], [data-sheet-group="sources"] [${attribute}]`,
+      ),
+    ]
+      .filter((word) => word.getAttribute(attribute) !== 'false')
+      .map((word) => word.getAttribute('data-line') ?? word.textContent);
+  const turnTo = (room: HTMLElement, expression: string) =>
+    fireEvent.click(within(room).getByRole('button', { name: expression }));
+
+  it('holds, word for word, the strip each expression sets when its Turn lands', () => {
+    const { room } = openRoom();
+    expect(room.querySelector('[data-strip]')).toHaveAttribute('data-strip', 'ink');
+    expect(room.querySelector('[data-strip-room]')).toHaveAttribute('data-strip-room', 'light');
+    // Ink lists three films and Light one: the two strips say different things.
+    const forLight = held(room);
+    expect(forLight).not.toEqual(set(room));
+    const forInk = set(room);
+    turnTo(room, en.light);
+    expect(set(room)).toEqual(forLight);
+    // And now the room is held for Ink's strip, as Ink set it.
+    expect(room.querySelector('[data-strip-room]')).toHaveAttribute('data-strip-room', 'ink');
+    expect(held(room)).toEqual(forInk);
+    turnTo(room, en.ink);
+    expect(set(room)).toEqual(forInk);
+  });
+
+  it('holds the strip of the room as it stands: in the loupe, its detail windows', () => {
+    const { room } = openRoom();
+    fireEvent.keyDown(room, { key: 'z' });
+    // The strip lists the plate's detail windows in place of its films, and so does the room held.
+    expect(set(room)).toContain(en.wholePlate);
+    expect(set(room)).not.toContain(en.still);
+    const forLight = held(room);
+    expect(forLight).toContain(en.wholePlate);
+    expect(forLight).not.toContain(en.still);
+    const forInk = set(room);
+    turnTo(room, en.light);
+    expect(set(room)).toEqual(forLight);
+    expect(held(room)).toEqual(forInk);
+  });
+
+  it('marks in the held strip the words that strip will have chosen', () => {
+    const { room } = openRoom();
+    const live = () => chosen(room.querySelector('[data-strip]')!, 'aria-pressed');
+    const kept = () => chosen(room.querySelector('[data-strip-room]')!, 'data-pressed');
+    // Resting on the still: Light's strip will have Light and Still chosen.
+    expect(kept()).toEqual([en.light, en.still]);
+    turnTo(room, en.light);
+    expect(live()).toEqual([en.light, en.still]);
+    // With a film chosen, the held strip has that expression's film chosen instead.
+    fireEvent.click(within(room).getByRole('button', { name: en.film }));
+    const forInk = kept();
+    expect(forInk).toEqual([en.ink, en.film]);
+    turnTo(room, en.ink);
+    expect(live()).toEqual(forInk);
+  });
+
+  it('draws its words from attributes: none is text, read out, or a second control', () => {
+    const { room } = openRoom();
+    const strip = room.querySelector<HTMLElement>('[data-strip-room]')!;
+    expect(strip).toHaveAttribute('aria-hidden', 'true');
+    expect(strip.textContent).toBe('');
+    expect(strip.querySelector('button, a, input')).toBeNull();
+    // Each word of the room is still found once.
+    expect(within(room).getAllByRole('button', { name: en.still })).toHaveLength(1);
+    expect(within(room).getAllByText(en.close)).toHaveLength(1);
+    // Both strips lie in one cell, the held one beneath the one in use.
+    expect(strip.parentElement).toBe(room.querySelector('[data-strip]')!.parentElement);
+  });
+
+  it('names the same clusters in both strips, so each changes hands whole', () => {
+    const { room } = openRoom();
+    const clusters = (strip: Element) =>
+      [...strip.querySelectorAll('[data-sheet-group]')].map((cluster) =>
+        cluster.getAttribute('data-sheet-group'),
+      );
+    expect(clusters(room.querySelector('[data-strip]')!)).toEqual([
+      'identity',
+      'sources',
+      'actions',
+    ]);
+    expect(clusters(room.querySelector('[data-strip-room]')!)).toEqual([
+      'identity',
+      'sources',
+      'actions',
+    ]);
+  });
+
+  it('holds no room where a work has one expression', () => {
+    const single: Artwork = {
+      ...artwork,
+      media: artwork.media.filter((media) => media.id === 'ink'),
+    };
+    render(
+      <ArtworkRoom
+        artwork={single}
+        t={en}
+        expression="ink"
+        onExpressionChange={vi.fn()}
+        onClose={vi.fn()}
+      />,
+    );
+    expect(screen.getByRole('dialog').querySelector('[data-strip-room]')).toBeNull();
+  });
+
+  it('lists a strip’s words as the strip sets them', () => {
+    const ink = artwork.media.find((media) => media.id === 'ink')!;
+    const words = stripWords({
+      media: ink,
+      t: en,
+      locale: 'en',
+      loupe: null,
+      showFilm: true,
+      selectedFilm: 'medium',
+      derivedViews: false,
+      fullscreenAvailable: true,
+      fullscreen: true,
+    });
+    expect(words.sources.map(({ word, pressed }) => [word, !!pressed])).toEqual([
+      [en.still, false],
+      [en.film, false],
+      [en.longStudy, true],
+      [en.extendedStudy, false],
+    ]);
+    // A study carries its length after its name; the film itself does not.
+    expect(words.sources[1].meta).toBeUndefined();
+    expect(words.sources[2].meta).toMatch(/^116/);
+    // No lens on a sale surface; the fullscreen word as the room says it.
+    expect(words.actions.map(({ word }) => word)).toEqual([en.detail, en.exitFullScreen, en.close]);
+  });
+
+  it('carries the sheet a Turn is drawn on, and marks the strip in use', () => {
+    const { room } = openRoom();
+    const sheet = room.querySelector('canvas');
+    expect(sheet).toHaveAttribute('aria-hidden', 'true');
+    expect(sheet).not.toHaveAttribute('data-active');
+    expect(room.querySelector('[data-room-said]')).not.toBeNull();
+  });
+});
 
 describe('the Wavelength lens in the room', () => {
   it('holds the Light sweep at the work’s own wavelength, labelled analysis, and moves on the keys', () => {

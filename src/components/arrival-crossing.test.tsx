@@ -2,9 +2,9 @@ import { useState } from 'react';
 import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { getCuratedArtwork } from '@/lib/art/catalog';
-import { groundColour, materialAt } from '@/lib/crossing/material';
 import { cubicBezier, invertEasing } from '@/lib/crossing/timing';
-import { rgb, useArrivalCrossing } from './arrival-crossing';
+import { useArrivalCrossing } from './arrival-crossing';
+import { rgb } from './sheet-pictures';
 import { SeamController } from './turn';
 
 const work = getCuratedArtwork(31)!;
@@ -12,7 +12,10 @@ const ink = work.media.find((media) => media.id === 'ink')!;
 const light = work.media.find((media) => media.id === 'light')!;
 const root = () => document.documentElement;
 
-/** A viewer's use of the crossing: its canvas over a plate, and a Turn that asks for it first. */
+/**
+ * A viewer's use of the crossing: its canvas over a stage of two layers, each a plate and a
+ * strip, under a running head; and a Turn that asks for it first.
+ */
 function Viewer({
   enabled,
   expression = 'ink',
@@ -32,56 +35,79 @@ function Viewer({
     wingSeam: () => wing,
   });
   return (
-    <div>
-      <canvas ref={canvas} />
-      <div data-layer="ink">
-        <div data-plate-ground="paper" style={{ backgroundColor: 'rgb(239, 233, 221)' }}>
-          <div className="plate">
-            <div className="art-media" />
+    <>
+      <canvas className="page-sheet" />
+      <header className="site-header">
+        <canvas className="head-sheet" />
+        <div className="head-row">
+          <a href="/collection">Collection</a>
+        </div>
+      </header>
+      <main>
+        <div data-stage="">
+          <canvas ref={canvas} data-crossing="" />
+          <div data-layer="ink">
+            <div data-plate-ground="paper" style={{ backgroundColor: 'rgb(239, 233, 221)' }}>
+              <div className="plate">
+                <div className="art-media" />
+              </div>
+              <div className="strip">
+                <button type="button">Light</button>
+              </div>
+            </div>
+          </div>
+          <div data-layer="light">
+            <div data-plate-ground="night">
+              <div className="strip">
+                <span>Ink</span>
+              </div>
+            </div>
           </div>
         </div>
-      </div>
-      <div data-layer="light">
-        <div data-plate-ground="night" />
-      </div>
-      <div className="head-overlay" />
-      <button
-        type="button"
-        onClick={(event) => {
-          const button = event.currentTarget;
-          void whenReady(400).then(() => button.setAttribute('data-answered', ''));
-        }}
-      >
-        Light
-      </button>
-    </div>
+        <button
+          type="button"
+          onClick={(event) => {
+            const button = event.currentTarget;
+            void whenReady(400).then(() => button.setAttribute('data-answered', ''));
+          }}
+        >
+          Turn
+        </button>
+      </main>
+    </>
   );
 }
 
 /**
- * A WebGL context that records what the crossing asks of it (the last value of each float and
- * float-pair uniform by name), and that the test can lose and restore.
+ * A WebGL context that records what the painter asks of it (the last value of each uniform by
+ * name), and that the test can lose and restore.
  */
 function fakeWebGL() {
   const calls: string[] = [];
   const floats = new Map<string, number>();
+  const ints = new Map<string, number>();
   const pairs = new Map<string, [number, number]>();
   const triples = new Map<string, [number, number, number]>();
+  const quads = new Map<string, [number, number, number, number]>();
+  /** Every texture given its pixels: the size of each upload made from bytes. */
+  const uploads: [number, number][] = [];
   let lost = false;
+  type At = { name: string } | null;
   const methods: Record<string, (...args: never[]) => unknown> = {
     isContextLost: () => lost,
     getShaderParameter: () => true,
     getProgramParameter: () => true,
     getAttribLocation: () => 0,
+    getExtension: () => ({}),
     getUniformLocation: (_program: unknown, name: string) => ({ name }),
-    uniform1f: (location: { name: string } | null, value: number) => {
-      if (location) floats.set(location.name, value);
-    },
-    uniform2f: (location: { name: string } | null, x: number, y: number) => {
-      if (location) pairs.set(location.name, [x, y]);
-    },
-    uniform3f: (location: { name: string } | null, x: number, y: number, z: number) => {
-      if (location) triples.set(location.name, [x, y, z]);
+    uniform1f: (at: At, value: number) => at && floats.set(at.name, value),
+    uniform1i: (at: At, value: number) => at && ints.set(at.name, value),
+    uniform2f: (at: At, x: number, y: number) => at && pairs.set(at.name, [x, y]),
+    uniform3f: (at: At, x: number, y: number, z: number) => at && triples.set(at.name, [x, y, z]),
+    uniform4f: (at: At, x: number, y: number, z: number, w: number) =>
+      at && quads.set(at.name, [x, y, z, w]),
+    texImage2D: (...args: unknown[]) => {
+      if (args.length === 9) uploads.push([args[3] as number, args[4] as number]);
     },
   };
   const gl = new Proxy(methods, {
@@ -96,10 +122,37 @@ function fakeWebGL() {
     gl,
     calls,
     floats,
+    ints,
     pairs,
     triples,
+    quads,
+    uploads,
     lose: () => (lost = true),
     restore: () => (lost = false),
+  };
+}
+
+/** A map as a 2D canvas gives it back: one front from the left of a 48 × 32 map. */
+const MAP = { width: 48, height: 32 };
+function fake2d() {
+  const painted: ImageData[] = [];
+  return {
+    painted,
+    context: {
+      drawImage: () => {},
+      getImageData: (_x: number, _y: number, width: number, height: number) => {
+        const data = new Uint8ClampedArray(width * height * 4);
+        for (let y = 0; y < height; y++)
+          for (let x = 0; x < width; x++) data[(y * width + x) * 4] = Math.min(255, x * 5);
+        return { data, width, height };
+      },
+      createImageData: (width: number, height: number) => ({
+        data: new Uint8ClampedArray(width * height * 4),
+        width,
+        height,
+      }),
+      putImageData: (picture: ImageData) => painted.push(picture),
+    },
   };
 }
 
@@ -141,10 +194,20 @@ beforeEach(() => {
     configurable: true,
     value: () => decode(),
   });
+  // Every image the crossing loads has a size: a map is read at its own.
+  Object.defineProperty(HTMLImageElement.prototype, 'naturalWidth', {
+    configurable: true,
+    get: () => MAP.width,
+  });
+  Object.defineProperty(HTMLImageElement.prototype, 'naturalHeight', {
+    configurable: true,
+    get: () => MAP.height,
+  });
   vi.stubGlobal('requestAnimationFrame', (frame: FrameRequestCallback) => frames.push(frame));
   vi.stubGlobal('cancelAnimationFrame', (handle: number) => {
     if (handle) frames[handle - 1] = () => {};
   });
+  root().setAttribute('data-room', 'paper');
 });
 afterEach(() => {
   cleanup();
@@ -152,41 +215,59 @@ afterEach(() => {
   vi.unstubAllGlobals();
   vi.restoreAllMocks();
   Reflect.deleteProperty(HTMLImageElement.prototype, 'decode');
-  root().removeAttribute('data-crossing');
-  root().removeAttribute('data-turning');
-  root().removeAttribute('data-turn-to');
+  Reflect.deleteProperty(HTMLImageElement.prototype, 'naturalWidth');
+  Reflect.deleteProperty(HTMLImageElement.prototype, 'naturalHeight');
+  for (const name of ['data-crossing', 'data-turning', 'data-turn-to', 'data-room'])
+    root().removeAttribute(name);
   root().style.removeProperty('--seam');
   root().style.removeProperty('--ease-turn');
 });
 
-/** WebGL as the crossing finds it, over a plate laid out at 400 × 300. */
+/** The stage as the page lays it: 400 × 300, the plate filling its upper 240. */
+let stage = { width: 400, height: 300 };
+/** WebGL and a 2D canvas as the crossing finds them, over that stage under a head 48 tall. */
 function withWebGL() {
   const context = fakeWebGL();
+  const flat = fake2d();
+  stage = { width: 400, height: 300 };
   vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockImplementation(((type: string) =>
-    type === 'webgl' ? context.gl : null) as typeof HTMLCanvasElement.prototype.getContext);
-  vi.spyOn(Element.prototype, 'getBoundingClientRect').mockReturnValue({
-    x: 0,
-    y: 0,
-    left: 0,
-    top: 0,
-    right: 400,
-    bottom: 300,
-    width: 400,
-    height: 300,
-    toJSON: () => ({}),
-  } as DOMRect);
-  return context;
+    type === 'webgl'
+      ? context.gl
+      : type === '2d'
+        ? flat.context
+        : null) as typeof HTMLCanvasElement.prototype.getContext);
+  const box = (left: number, top: number, width: number, height: number) =>
+    ({
+      x: left,
+      y: top,
+      left,
+      top,
+      right: left + width,
+      bottom: top + height,
+      width,
+      height,
+      toJSON: () => ({}),
+    }) as DOMRect;
+  vi.spyOn(Element.prototype, 'getBoundingClientRect').mockImplementation(function (this: Element) {
+    if (this.matches('.site-header, .site-header *')) return box(0, 0, stage.width, 48);
+    if (this.matches('.art-media')) return box(0, 48, stage.width, 240);
+    if (this.matches('.strip, .strip *')) return box(0, 288, stage.width, stage.height - 240);
+    return box(0, 48, stage.width, stage.height);
+  });
+  return { ...context, grounds: flat.painted };
 }
 /** Past the idle moment at which the crossing is prepared. */
 async function prepared() {
   await act(async () => vi.advanceTimersByTime(500));
   await act(async () => {});
+  await act(async () => {});
 }
 
 describe('the crossing in the order the work was made', () => {
-  it('reads the room’s computed colours as channels', () => {
+  it('reads the room’s colours as channels, computed or written', () => {
     expect(rgb('rgb(239, 233, 221)')).toEqual([239 / 255, 233 / 255, 221 / 255]);
     expect(rgb('rgba(0, 0, 0, 0.5)')).toEqual([0, 0, 0]);
+    expect(rgb(' #f1ebdf ')).toEqual([241 / 255, 235 / 255, 223 / 255]);
     expect(rgb('color(display-p3 1 1 1)')).toEqual([0, 0, 0]);
   });
 
@@ -197,15 +278,18 @@ describe('the crossing in the order the work was made', () => {
 
   it('keeps the straight seam where this browser has no WebGL, and never holds a Turn', async () => {
     const context = vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue(null);
+    const images = vi.spyOn(HTMLImageElement.prototype, 'src', 'set');
     render(<Viewer enabled />);
     // Prepared at idle; without requestIdleCallback, a moment after the plate settles.
     await act(async () => vi.advanceTimersByTime(500));
     expect(context).toHaveBeenCalledWith('webgl', expect.anything());
     expect(root().hasAttribute('data-crossing')).toBe(false);
-    const turn = screen.getByRole('button', { name: 'Light' });
-    fireEvent.click(turn);
+    // Neither map nor still was asked for: there is nothing to paint them with.
+    expect(images).not.toHaveBeenCalled();
+    const asking = screen.getByRole('button', { name: 'Turn' });
+    fireEvent.click(asking);
     await act(async () => vi.advanceTimersByTime(0));
-    expect(turn).toHaveAttribute('data-answered');
+    expect(asking).toHaveAttribute('data-answered');
     expect(root().hasAttribute('data-crossing')).toBe(false);
   });
 
@@ -216,10 +300,27 @@ describe('the crossing in the order the work was made', () => {
     expect(context).not.toHaveBeenCalled();
     expect(root().hasAttribute('data-crossing')).toBe(false);
     // A Turn asks, and is answered at once.
-    const turn = screen.getByRole('button', { name: 'Light' });
-    fireEvent.click(turn);
+    const asking = screen.getByRole('button', { name: 'Turn' });
+    fireEvent.click(asking);
     await act(async () => vi.advanceTimersByTime(0));
-    expect(turn).toHaveAttribute('data-answered');
+    expect(asking).toHaveAttribute('data-answered');
+  });
+
+  it('lays a sheet for each ground over the stage and the head above it, before any Turn', async () => {
+    const webgl = withWebGL();
+    render(<Viewer enabled />);
+    await prepared();
+    expect(root()).toHaveAttribute('data-crossing', 'arrival');
+    // Each pixel is written as computed, so a still painted at either end is its own.
+    expect(webgl.calls).toContain('disable');
+    // Two sheets, each a grid over 400 × (48 of head + 300 of stage + the spare beneath).
+    const sheets = webgl.uploads.filter(([width, height]) => width > 1 && height > 1);
+    expect(sheets).toHaveLength(2);
+    const [cols, rows] = sheets[0];
+    expect(sheets[1]).toEqual([cols, rows]);
+    // A texel of the 48-wide map is 400 / 48 pixels here, and a cell is as large.
+    expect(cols).toBe(48);
+    expect(rows).toBe(Math.ceil((48 + 300 + 96) / (400 / 48)));
   });
 
   it('comes back after a pause: the context is kept, only what the crossing made is released', async () => {
@@ -231,7 +332,7 @@ describe('the crossing in the order the work was made', () => {
     expect(root().hasAttribute('data-crossing')).toBe(false);
     expect(webgl.calls).toContain('deleteProgram');
     expect(webgl.calls).toContain('deleteTexture');
-    expect(webgl.calls).not.toContain('getExtension');
+    expect(webgl.calls).not.toContain('loseContext');
     rerender(<Viewer enabled />);
     await prepared();
     expect(root()).toHaveAttribute('data-crossing', 'arrival');
@@ -242,7 +343,7 @@ describe('the crossing in the order the work was made', () => {
     const webgl = withWebGL();
     const { container } = render(<Viewer enabled />);
     await prepared();
-    const canvas = container.querySelector('canvas')!;
+    const canvas = container.querySelector('canvas[data-crossing]')!;
     await turn(50);
     paint();
     expect(canvas).toHaveAttribute('data-active');
@@ -255,11 +356,12 @@ describe('the crossing in the order the work was made', () => {
     expect(lost.defaultPrevented).toBe(true);
     expect(root().hasAttribute('data-crossing')).toBe(false);
     expect(canvas).not.toHaveAttribute('data-active');
+    expect(container.querySelector('[data-sheet-active]')).toBeNull();
     paint();
     expect(canvas).not.toHaveAttribute('data-active');
     await turn(null);
     // A Turn asks while the context is gone: it is answered at once, and nothing is cached.
-    const asking = screen.getByRole('button', { name: 'Light' });
+    const asking = screen.getByRole('button', { name: 'Turn' });
     fireEvent.click(asking);
     await act(async () => vi.advanceTimersByTime(0));
     expect(asking).toHaveAttribute('data-answered');
@@ -268,15 +370,15 @@ describe('the crossing in the order the work was made', () => {
     await act(async () => {
       canvas.dispatchEvent(new Event('webglcontextrestored'));
     });
-    await act(async () => {});
+    await prepared();
     expect(root()).toHaveAttribute('data-crossing', 'arrival');
     expect(webgl.calls.filter((call) => call === 'linkProgram')).toHaveLength(2);
   });
 
-  it('paints a Turn only if it was ready when the Turn began', async () => {
+  it('paints a Turn only if it could be painted when the Turn began', async () => {
     withWebGL();
     const { container } = render(<Viewer enabled />);
-    const canvas = container.querySelector('canvas')!;
+    const canvas = container.querySelector('canvas[data-crossing]')!;
     // A Turn under way before the crossing is ready stays the straight seam's to its end.
     await turn(80);
     await prepared();
@@ -296,13 +398,116 @@ describe('the crossing in the order the work was made', () => {
     expect(frames).toHaveLength(0);
   });
 
+  it('paints every Turn by the one sheet: the word, a finger and the Overture alike', async () => {
+    const webgl = withWebGL();
+    const { container } = render(<Viewer enabled />);
+    await prepared();
+    const stageNode = container.querySelector('[data-stage]')!;
+    const head = container.querySelector('.site-header')!;
+    for (const mode of ['time', 'drag', 'overture'] as const) {
+      await turn(50, mode);
+      paint();
+      // Toward the night, in Light's order, with the front part of the way across.
+      expect(webgl.floats.get('uTowardNight')).toBe(1);
+      expect(webgl.ints.get('uSheet')).toBe(2);
+      const share = webgl.floats.get('uShare')!;
+      expect(share).toBeGreaterThan(0);
+      expect(share).toBeLessThan(1);
+      const [first, span] = webgl.pairs.get('uSpan')!;
+      expect(webgl.floats.get('uFront')).toBeGreaterThan(first);
+      expect(webgl.floats.get('uFront')).toBeLessThan(first + span * 2);
+      expect(webgl.floats.get('uEdge')).toBeGreaterThan(0);
+      expect(webgl.floats.get('uTrail')).toBeGreaterThan(webgl.floats.get('uEdge')!);
+      // The stage and the head wear the sheet while it is painted, and the head has its ground.
+      expect(stageNode).toHaveAttribute('data-sheet-active');
+      expect(head).toHaveAttribute('data-sheet-active');
+      expect(webgl.grounds.length).toBeGreaterThan(0);
+      await turn(null);
+      paint();
+      expect(stageNode).not.toHaveAttribute('data-sheet-active');
+      expect(head).not.toHaveAttribute('data-sheet-active');
+      expect(root()).not.toHaveAttribute('data-sheet-page');
+    }
+  });
+
+  it('tells the painter where the work lies and how the canvas falls on the sheet', async () => {
+    const webgl = withWebGL();
+    render(<Viewer enabled />);
+    await prepared();
+    await turn(50);
+    paint();
+    // The canvas is the stage, 400 × 300; the work is its upper 240.
+    expect(webgl.pairs.get('uCanvas')).toEqual([400, 300]);
+    expect(webgl.quads.get('uArt')).toEqual([0, 0, 1, 0.8]);
+    webgl.triples
+      .get('uPaper')!
+      .forEach((value, c) => expect(value).toBeCloseTo([239, 233, 221][c] / 255, 6));
+    // One cell of the sheet is 400 / 48 pixels, and the sheet begins a head's height above the stage.
+    const cell = 400 / 48;
+    const [scaleX, scaleY, fromX, fromY] = webgl.quads.get('uGrid')!;
+    expect(scaleX).toBeCloseTo(1 / cell, 9);
+    expect(scaleY).toBeCloseTo(1 / cell, 9);
+    expect(fromX).toBeCloseTo(0, 9);
+    expect(fromY).toBeCloseTo(48 / cell, 9);
+  });
+
+  it('gives every word the type of the ground beneath it, and takes it back', async () => {
+    withWebGL();
+    const { container } = render(<Viewer enabled />);
+    await prepared();
+    await turn(50);
+    paint();
+    // The head's word and the strips' words stand on one ground or the other.
+    const collection = screen.getByRole('link', { name: 'Collection' });
+    expect(collection.getAttribute('data-sheet')).toMatch(/^(paper|night)$/);
+    const strips = container.querySelectorAll('.strip [data-sheet]');
+    expect(strips.length).toBe(2);
+    // The two strips' words share one place: only one of them shows.
+    expect(container.querySelectorAll('.strip [data-sheet-out]')).toHaveLength(1);
+    await turn(null);
+    paint();
+    expect(container.querySelector('[data-sheet], [data-sheet-out], [data-sheet-fill]')).toBeNull();
+  });
+
+  it('paints the published stills themselves at either end of a Turn', async () => {
+    const webgl = withWebGL();
+    render(<Viewer enabled />);
+    await prepared();
+    await turn(100);
+    paint();
+    expect(webgl.floats.get('uShare')).toBe(0);
+    await act(async () => root().style.setProperty('--seam', '0%'));
+    paint();
+    expect(webgl.floats.get('uShare')).toBe(1);
+  });
+
+  it('paces a Turn by time evenly, through the seam’s slow ends, and a finger’s by the finger', async () => {
+    const webgl = withWebGL();
+    render(<Viewer enabled />);
+    await prepared();
+    root().style.setProperty('--ease-turn', 'cubic-bezier(0.76, 0, 0.24, 1)');
+    // A quarter of the travel, on a curve that starts slowly, is a good deal more of the time.
+    await turn(75);
+    paint();
+    const clock = invertEasing(cubicBezier(0.76, 0, 0.24, 1));
+    expect(webgl.floats.get('uShare')).toBeCloseTo(clock(0.25), 6);
+    expect(webgl.floats.get('uShare')).toBeGreaterThan(0.35);
+    await turn(null);
+    paint();
+    // Under a finger the seam is where the finger is: a quarter of the travel is a quarter.
+    await turn(75, 'drag');
+    paint();
+    expect(webgl.floats.get('uShare')).toBeCloseTo(0.25, 6);
+  });
+
   it('paints the wing’s night as soon as it is ready, in Light’s order', async () => {
     const webgl = withWebGL();
     const { container } = render(<Viewer enabled wing={40} />);
     await prepared();
     paint();
-    expect(container.querySelector('canvas')).toHaveAttribute('data-active');
+    expect(container.querySelector('canvas[data-crossing]')).toHaveAttribute('data-active');
     expect(webgl.floats.get('uTowardNight')).toBe(1);
+    expect(webgl.floats.get('uShare')).toBeCloseTo(0.6, 6);
   });
 
   it('retraces Light’s order back to Ink under the wing, and holds each Turn’s order to its end', async () => {
@@ -320,12 +525,13 @@ describe('the crossing in the order the work was made', () => {
     await turn(30);
     paint();
     expect(webgl.floats.get('uTowardNight')).toBe(0);
+    expect(webgl.ints.get('uSheet')).toBe(3);
     rerender(<Viewer enabled expression="ink" wing={100} />);
     paint();
     expect(webgl.floats.get('uTowardNight')).toBe(0);
   });
 
-  it('lays the outgoing film over its still as the page does, at the film’s own opacity', async () => {
+  it('lays the departing film over its still as the page does, at the film’s own opacity', async () => {
     const webgl = withWebGL();
     const { container } = render(<Viewer enabled />);
     // The Ink film, a few seconds along, which the page fades in over the still and out again.
@@ -355,12 +561,43 @@ describe('the crossing in the order the work was made', () => {
     expect(shown()).toEqual([0, 0]);
   });
 
+  it('asks for new sheets when the stage changes, and paints again only once they are laid', async () => {
+    const webgl = withWebGL();
+    const { container } = render(<Viewer enabled wing={40} />);
+    await prepared();
+    paint();
+    const canvas = container.querySelector('canvas[data-crossing]')!;
+    expect(canvas).toHaveAttribute('data-active');
+    const laid = () => webgl.uploads.filter(([width, height]) => width > 1 && height > 1).length;
+    expect(laid()).toBe(2);
+    // The strip grows a line: within the sheet's spare, so the same sheets serve.
+    stage = { width: 400, height: 330 };
+    act(() => {
+      window.dispatchEvent(new Event('resize'));
+    });
+    paint();
+    expect(canvas).toHaveAttribute('data-active');
+    expect(laid()).toBe(2);
+    // The window narrows: the sheets no longer fit, so the frame is not painted with them.
+    stage = { width: 320, height: 300 };
+    act(() => {
+      window.dispatchEvent(new Event('resize'));
+    });
+    paint();
+    // New ones come, and the wing's rest is drawn again.
+    await act(async () => {});
+    paint();
+    expect(laid()).toBe(4);
+    expect(canvas).toHaveAttribute('data-active');
+    expect(webgl.pairs.get('uCanvas')).toEqual([320, 300]);
+  });
+
   it('a Turn that asked after the viewer left marks nothing and builds nothing', async () => {
     const webgl = withWebGL();
     let release = () => {};
     decode = () => new Promise<void>((resolve) => (release = resolve));
     const { unmount } = render(<Viewer enabled />);
-    fireEvent.click(screen.getByRole('button', { name: 'Light' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Turn' }));
     unmount();
     await act(async () => {
       release();
@@ -394,140 +631,13 @@ describe('the crossing in the order the work was made', () => {
     expect(idles).toHaveLength(1);
     await act(async () => idles[0]({ didTimeout: false, timeRemaining: () => 50 }));
     await act(async () => {});
+    await act(async () => {});
     expect(root()).toHaveAttribute('data-crossing', 'arrival');
     expect(() => unmount()).not.toThrow();
     expect(cancelled).toEqual([1]);
     expect(root().hasAttribute('data-crossing')).toBe(false);
   });
-  it('changes material on a Turn by time, and the room takes the ground on the same frame', async () => {
-    const webgl = withWebGL();
-    const { container } = render(<Viewer enabled />);
-    await prepared();
-    // Each pixel is written as the change computes it, and each order is paced over its marks:
-    // here, where no still can be read back, over the whole map.
-    expect(webgl.calls).toContain('disable');
-    expect(webgl.pairs.get('uInkSpan')).toEqual([0, 1]);
-    expect(webgl.pairs.get('uLightSpan')).toEqual([0, 1]);
-    await turn(50);
-    paint();
-    expect(webgl.floats.get('uMaterial')).toBe(1);
-    expect(webgl.floats.get('uTowardNight')).toBe(1);
-    const change = materialAt(50, 'night');
-    expect(webgl.floats.get('uProgress')).toBeCloseTo(change.progress, 6);
-    const ground = webgl.floats.get('uGround')!;
-    expect(ground).toBeGreaterThan(0);
-    expect(ground).toBeLessThan(1);
-    const sheet = [239 / 255, 233 / 255, 221 / 255] as const;
-    const [paperScreen, nightScreen] =
-      container.querySelectorAll<HTMLElement>('[data-plate-ground]');
-    const night = container.querySelector<HTMLElement>('[data-layer="light"]')!;
-    const head = container.querySelector<HTMLElement>('.head-overlay')!;
-    // Both screens wear the ground beneath the strip, the night's words come in by their share,
-    // and the head's overlay shows as far as the ground has come toward the night.
-    expect(paperScreen.style.backgroundColor).toBe(groundColour(sheet, ground));
-    expect(nightScreen.style.backgroundColor).toBe(groundColour(sheet, ground));
-    expect(night.style.clipPath).toBe('none');
-    expect(Number(night.style.opacity)).toBeCloseTo(change.words, 6);
-    expect(head.style.clipPath).toBe('none');
-    expect(Number(head.style.opacity)).toBeCloseTo(1 - ground, 6);
-    // The sheet's tone was read while its screen wore its own, and is kept while it wears the ground.
-    paint();
-    webgl.triples.get('uPaper')!.forEach((value, c) => expect(value).toBeCloseTo(sheet[c], 6));
-    // The Turn ends: everything goes back, the screen's own colour included.
-    await turn(null);
-    paint();
-    expect(paperScreen.style.backgroundColor).toBe('rgb(239, 233, 221)');
-    expect(nightScreen.style.backgroundColor).toBe('');
-    expect(night.style.opacity).toBe('');
-    expect(night.style.clipPath).toBe('');
-    expect(head.style.opacity).toBe('');
-    expect(head.style.clipPath).toBe('');
-  });
 
-  it('brings the paper back in the sheet’s own tone, the head’s overlay with it', async () => {
-    const webgl = withWebGL();
-    const { container } = render(<Viewer enabled expression="light" />);
-    await prepared();
-    await turn(30, 'time', 'paper');
-    paint();
-    expect(webgl.floats.get('uMaterial')).toBe(1);
-    expect(webgl.floats.get('uTowardNight')).toBe(0);
-    const change = materialAt(30, 'paper');
-    const night = container.querySelector<HTMLElement>('[data-layer="light"]')!;
-    const head = container.querySelector<HTMLElement>('.head-overlay')!;
-    // The night's words leave as the paper's come in; the paper overlay is the sheet's tone.
-    expect(Number(night.style.opacity)).toBeCloseTo(1 - change.words, 6);
-    expect(Number(head.style.opacity)).toBeCloseTo(change.ground, 6);
-    expect(head.style.backgroundColor).toBe('rgb(239, 233, 221)');
-  });
-
-  it('paints the published stills themselves at either end of a change', async () => {
-    const webgl = withWebGL();
-    render(<Viewer enabled />);
-    await prepared();
-    await turn(100);
-    paint();
-    expect(webgl.floats.get('uMaterial')).toBe(1);
-    expect(webgl.floats.get('uProgress')).toBe(0);
-    await act(async () => root().style.setProperty('--seam', '0%'));
-    paint();
-    expect(webgl.floats.get('uProgress')).toBe(1);
-  });
-
-  it('paces the change by the Turn’s own clock, through the seam’s slow ends', async () => {
-    const webgl = withWebGL();
-    render(<Viewer enabled />);
-    await prepared();
-    root().style.setProperty('--ease-turn', 'cubic-bezier(0.76, 0, 0.24, 1)');
-    // A quarter of the travel, on a curve that starts slowly, is a good deal more of the time.
-    await turn(75);
-    paint();
-    const clock = invertEasing(cubicBezier(0.76, 0, 0.24, 1));
-    expect(webgl.floats.get('uProgress')).toBeCloseTo(clock(0.25), 6);
-    expect(webgl.floats.get('uProgress')).toBeGreaterThan(0.35);
-  });
-
-  it('keeps the pixel crossing for a finger, the Overture, and a plate under its wing', async () => {
-    const webgl = withWebGL();
-    const { container, rerender } = render(<Viewer enabled />);
-    await prepared();
-    const night = container.querySelector<HTMLElement>('[data-layer="light"]')!;
-    for (const mode of ['drag', 'overture'] as const) {
-      await turn(50, mode);
-      paint();
-      expect(webgl.floats.get('uMaterial')).toBe(0);
-      expect(night.style.opacity).toBe('');
-      await turn(null);
-      paint();
-    }
-    // Inside a partly drawn wing a Turn by time meets the wing as it is drawn: pixel by pixel.
-    rerender(<Viewer enabled wing={40} />);
-    paint();
-    expect(webgl.floats.get('uMaterial')).toBe(0);
-    await turn(40);
-    paint();
-    expect(webgl.floats.get('uMaterial')).toBe(0);
-    expect(night.style.opacity).toBe('');
-  });
-
-  it('holds a Turn’s material to its end, whoever takes the seam', async () => {
-    const webgl = withWebGL();
-    render(<Viewer enabled />);
-    await prepared();
-    await turn(60);
-    paint();
-    expect(webgl.floats.get('uMaterial')).toBe(1);
-    // A finger takes the seam mid-way: the Turn it takes goes on changing material.
-    await act(async () => root().setAttribute('data-turning', 'drag'));
-    paint();
-    expect(webgl.floats.get('uMaterial')).toBe(1);
-    // And a finger's own Turn, begun afresh, keeps the pixel crossing.
-    await turn(null);
-    paint();
-    await turn(70, 'drag');
-    paint();
-    expect(webgl.floats.get('uMaterial')).toBe(0);
-  });
   it('draws a still more than twice the work’s width down to it before the canvas reads it', async () => {
     withWebGL();
     // The rungs as the browser decodes them: the full still, then the one drawn down, each let go.

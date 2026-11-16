@@ -3,6 +3,9 @@
   position: relative;
   isolation: isolate;
   touch-action: pan-y;
+  /* A word the front has passed reads as it will at rest: muted words on a sheet's own tone
+     are the plate's (plate.module.css), darker than the page's. */
+  --sheet-paper-muted: #5a5a51;
 }
 .layer {
   position: relative;
@@ -50,7 +53,9 @@
 :global(html[data-turning='time'][data-crossing='arrival']) .turn .night {
   transition-duration: var(--t-crossing, var(--t-cross));
 }
-/* The canvas lies over the plate and its walls only while a crossing is painted on it. */
+/* The canvas lies over the whole stage, both grounds and the work, only while a crossing is
+   painted on it. The two layers then lie whole beneath it, neither clipped, and their strips
+   stand above it: the canvas is the ground, and each word shows by the rules of sheet-words.ts. */
 .crossing {
   position: absolute;
   z-index: 2;
@@ -59,6 +64,18 @@
 }
 .crossing[data-active] {
   display: block;
+}
+.turn[data-sheet-active] .night,
+:global(html[data-turning]) .turn[data-sheet-active] .night {
+  clip-path: none !important;
+  transition: none !important;
+}
+/* The strip's words, and the transport of a film the departing layer is still playing, stand
+   over the canvas. */
+.turn[data-sheet-active] :global(.strip),
+.turn[data-sheet-active] :global(.time-line),
+.turn[data-sheet-active] :global([data-film-score]) {
+  z-index: 3;
 }
 /* A finger paints every frame itself. */
 :global(html[data-turning='drag']) .turn .night {
