@@ -24,11 +24,20 @@ const nextConfig: NextConfig = {
   // proxy sends unknown works, exhibitions and orbit numbers there, so they are true 404s.
   experimental: { globalNotFound: true },
   // The optimizer is closed. The venue serves its own hash-named rungs and previews and asks Next
-  // to resize nothing (no module imports next/image), so /_next/image is a 404; left at its
-  // default it fetched and transcoded any file in public/, and with the media host allowed, any
-  // file on that host, for anyone who asked. To open it again, name what it may serve and no
-  // more: remotePatterns with the publisher's pathname, localPatterns with /art/**.
-  images: { unoptimized: true },
+  // to resize nothing (no module imports next/image); left at its default, /_next/image fetched
+  // and transcoded any file in public/, and with the media host allowed, any file on that host,
+  // for anyone who asked. Two servers answer that address, so two settings close it:
+  // - `unoptimized` closes Next's own: under `next start` the address is a 404. (It is also what
+  //   the host's older builder reads, were a deployment ever built without the adapter.)
+  // - On the host the address is the platform's, and /_vercel/image beside it, set up from this
+  //   configuration by an adapter that reads the patterns and never `unoptimized`. With no local
+  //   pattern named, Next names every path itself. The empty list names none, and no remote
+  //   pattern is named. (To any list Next adds the build's own media folders, where the build
+  //   keeps the venue's three icon files, the pages' mono face and the workers' sources: no
+  //   picture of the art is there.)
+  // To open it again, name what it may serve and no more: remotePatterns with the publisher's
+  // pathname, localPatterns with /art/**.
+  images: { unoptimized: true, localPatterns: [] },
   // The sharing cards read a CJK locale's sliced face by name at render time
   // (src/components/sharing-card.tsx), which no bundler can trace; the slices and their
   // range tables travel with the card routes.

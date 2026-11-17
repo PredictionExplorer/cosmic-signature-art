@@ -128,7 +128,9 @@ test('the image optimizer is closed: Next fetches and re-encodes nothing for any
 }, info) => {
   oneProjectAsks(info);
   // The venue serves its own rungs and asks Next to resize nothing (next.config.ts). Left open,
-  // this endpoint re-encoded any file in public/ and any file on the publisher's host.
+  // this endpoint re-encoded any file in public/ and any file on the publisher's host. This asks
+  // Next's own server. The host answers the address itself, from the patterns the same file
+  // names, which src/app/image-optimizer.test.ts holds.
   const published = archivedMedia.find((work) => work.id === 31)!.media[0].sourceUrl;
   for (const picture of ['/art/23-ink.webp', '/icons/mark-512.png', published]) {
     const response = await request.get(
