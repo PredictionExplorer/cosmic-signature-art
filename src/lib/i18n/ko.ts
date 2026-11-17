@@ -573,14 +573,14 @@ export const ko: Messages = {
   verifyOrbitLineByLine: '도출 과정, 한 줄씩',
   verifyOrbitWaiting: '페이지가 준비되면 이곳에서 도출이 시작됩니다.',
   verifyOrbitSeedLine: '시드 {seed}',
-  verifyOrbitFateRun: '기록 구간 너머, 운명을 향해 · {steps}번째 단계까지',
+  verifyOrbitFateRun: '기록된 구간 너머, 최종 상태를 향해 · {steps}번째 단계까지',
   verifyOrbitAt: '{seconds}초',
   verifyOrbitTook: '여기에서 {seconds}초 만에 대조했습니다.',
   verifyOrbitUnchecked: '미대조',
   verifyOrbitSomeUnchecked: '측정값 {total}개 중 {count}개는 이 브라우저에서 대조하지 못했습니다.',
   verifyOrbitAnother: '다른 궤도 검증',
   verifyOrbitNote:
-    '계산은 생성기 고유의 순서를 따릅니다. 난수 흐름을 {index}번 후보까지 읽고, 4차 요시다 적분기로 {steps}단계를 진행한 다음, 운명을 알기 위해 기록 구간 너머까지 이어 갑니다. 덧셈, 뺄셈, 곱셈, 나눗셈과 제곱근만 쓰며, 모두 표준이 정확히 정의하므로 어느 브라우저든 같은 비트에 이릅니다. 아무것도 외부로 보내지 않습니다.',
+    '계산은 생성기 고유의 순서를 따릅니다. 난수 흐름을 {index}번 후보까지 읽고, 4차 요시다 적분기로 {steps}단계를 진행한 다음, 최종 상태를 알기 위해 기록된 구간 너머까지 이어 갑니다. 덧셈, 뺄셈, 곱셈, 나눗셈과 제곱근만 쓰며, 모두 표준이 정확히 정의하므로 어느 브라우저든 같은 비트에 이릅니다. 아무것도 외부로 보내지 않습니다.',
   publishedHashes: '공개된 해시',
   sharingCollection: '컬렉션 · 작품 {count}점',
   // The orbit, re-performed (src/components/orbit-score.tsx)
@@ -597,7 +597,7 @@ export const ko: Messages = {
     '이 브라우저에서는 궤도를 도출할 수 없었습니다. 기록은 공개된 그대로, 대조하지 않은 채 보여 줍니다.',
   orbitProgressBeginnings: '시드를 읽는 중 · 후보 {done} / {total}',
   orbitProgressWarmUp: '후보 {index} 운동 시작 · 예열 단계 {done} / {total}',
-  orbitProgressWindow: '기록 구간 · 단계 {done} / {total}',
+  orbitProgressWindow: '기록된 구간 · 단계 {done} / {total}',
   orbitProgressBraid: '교차를 따라가는 중 · 단계 {done} / {total}',
   orbitPlaying: '단계 {step} / {total} · 빛 영상 {clock}',
   orbitClosestNow: '최근접 · 천체 {pair}, 거리 {distance}',
@@ -629,7 +629,7 @@ export const ko: Messages = {
     '기록된 구간 너머에서도 같은 물리가 영상의 속도로 이어지고, 카메라는 영상이 끝난 자리에 머뭅니다. 이것은 작품이 아니라, 작품의 궤도가 그다음에 하는 일입니다.',
   afterTheFrameNoteAsk:
     '기록된 구간 너머에서도 같은 물리가 영상의 속도로 이어집니다. 프레임은 영상이 끝난 자리에 머물거나, 세 천체 중 하나를 따라갑니다. 그때 그 천체는 프레임 안에서 움직이지 않습니다. 이것은 작품이 아니라, 작품의 궤도가 그다음에 하는 일입니다.',
-  orbitFate: '운명',
+  orbitFate: '최종 상태',
   orbitFateEjection: '{step}번째 단계에서 {body}번 천체는 더 이상 묶여 있지 않음',
   orbitFateDance: '{steps}단계 동안 묶여 있음',
   orbitBeyond: '영상 이후 {clock} · {step}번째 단계',
@@ -679,7 +679,7 @@ export const ko: Messages = {
   orbitTimeLabel: '빛 영상 속의 순간',
   oneInATrillion: '1조분의 1',
   oneInATrillionNote:
-    '기록 구간의 첫 단계에서 {body}번 천체를 x 방향으로 1조분의 1만큼 옮겼습니다. 프레임 너머에서는 같은 물리가 작품과 그 쌍둥이를 함께 이끌어 가다가, 마침내 쌍둥이가 갈라져 나갑니다. 이것은 작품이 아니라, 1조분의 1이 작품을 어떻게 바꾸었을지를 보여 줍니다.',
+    '기록된 구간의 첫 단계에서 {body}번 천체를 x 방향으로 1조분의 1만큼 옮겼습니다. 프레임 너머에서는 같은 물리가 작품과 그 쌍둥이를 함께 이끌어 가다가, 마침내 쌍둥이가 갈라져 나갑니다. 이것은 작품이 아니라, 1조분의 1이 작품을 어떻게 바꾸었을지를 보여 줍니다.',
   twinWorking: '{body}번 천체를 1조분의 1만큼 옮기고, 둘을 프레임 너머까지 따라가는 중…',
   twinApart: '간격 {gap} · 단계 {step} · {pace}',
   twinAtFilmPace: '영상과 같은 속도',

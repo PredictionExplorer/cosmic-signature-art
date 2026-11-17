@@ -76,7 +76,7 @@ export const ja: Messages = {
   integrator: '積分器',
   simulationSteps: 'シミュレーションのステップ数',
   braidCrossings: '組みひもの交差数',
-  detailsUnavailable: '公開された特徴の情報は一時的に取得できません。',
+  detailsUnavailable: '公開された特性の情報は一時的に取得できません。',
   partialRecords: '一部の作品記録を読み込めません。利用可能な作品を表示しています。',
   mediaRecordUnavailable: '一部のメディア情報は一時的に利用できません。',
   collection: 'コレクション',
@@ -576,11 +576,11 @@ export const ja: Messages = {
   verifyOrbitWorks: '公開された記録のあるすべての作品',
   verifyOrbitOf: '{work} の軌道を検証',
   verifyOrbitWorkIntro:
-    'このブラウザがシードから {work} の軌道をもう一度導き出し、公開された記録の測定値を一行ずつ照合します。',
+    'このブラウザがシードから {work} の軌道をもう一度導き出し、公開された記録の計測値を一行ずつ照合します。',
   verifyOrbitLineByLine: '導出を、一行ずつ',
   verifyOrbitWaiting: 'ページの準備が整うと、ここで導出が始まります。',
   verifyOrbitSeedLine: 'シード {seed}',
-  verifyOrbitFateRun: '記録区間の先、運命へ · 第 {steps} ステップまで',
+  verifyOrbitFateRun: '記録区間の先、行く末へ · 第 {steps} ステップまで',
   verifyOrbitAt: '{seconds} 秒',
   verifyOrbitTook: 'この場で {seconds} 秒で照合しました。',
   verifyOrbitUnchecked: '未照合',
@@ -588,7 +588,7 @@ export const ja: Messages = {
     '{total} 項目のうち {count} 項目は、このブラウザでは照合できませんでした。',
   verifyOrbitAnother: 'ほかの軌道を検証',
   verifyOrbitNote:
-    '計算は生成器そのものの手順です。乱数の流れを第 {index} 番の候補まで読み、四次の吉田積分法で {steps} ステップ進め、運命を知るために記録区間の先まで続けます。使うのは加算・減算・乗算・除算と平方根だけで、いずれも規格が厳密に定めているため、どのブラウザでも同じビットに至ります。どこにも何も送信しません。',
+    '計算は生成器そのものの手順です。乱数の流れを第 {index} 番の候補まで読み、四次の吉田積分法で {steps} ステップ進め、行く末を知るために記録区間の先まで続けます。使うのは加算・減算・乗算・除算と平方根だけで、いずれも規格が厳密に定めているため、どのブラウザでも同じビットに至ります。どこにも何も送信しません。',
   publishedHashes: '公開されたハッシュ',
   sharingCollection: 'コレクション · {count} 作品',
   // The orbit, re-performed (src/components/orbit-score.tsx)
@@ -611,10 +611,10 @@ export const ja: Messages = {
   orbitClosestNow: '最接近 · 天体 {pair}、距離 {distance}',
   orbitDerived:
     'この場で {seconds} 秒、シード {seed} から導出：{total} の候補のうち第 {index} 番、続いて {steps} ステップ。',
-  orbitAllExact: 'すべての測定値が、公開された記録と最後のビットまで一致します。',
+  orbitAllExact: 'すべての計測値が、公開された記録と最後のビットまで一致します。',
   orbitSomeDiffer: '{total} 項目のうち {count} 項目が、公開された記録と異なります。',
   orbitTableCaption: '公開された記録を、ここで照合',
-  orbitMeasurement: '測定項目',
+  orbitMeasurement: '計測項目',
   orbitValue: '値',
   orbitCheck: '照合',
   orbitMass: '天体 {n} の質量',
@@ -634,10 +634,10 @@ export const ja: Messages = {
     '映像と静止画は、作品を記録したレンダリングです。この図はその下にある軌道で、生成器そのものの手順でブラウザが計算しました。乱数の流れ、第 {index} 番の候補の選択、そして四次の吉田積分法による {steps} ステップです。',
   afterTheFrame: 'フレームの先',
   afterTheFrameNote:
-    '記録された時間の先でも、同じ物理が映像の速さで続き、カメラは映像が終わった位置にとどまります。これは作品ではありません。作品の軌道がその後どうなるかです。',
+    '記録区間の先でも、同じ物理が映像の速さで続き、カメラは映像が終わった位置にとどまります。これは作品ではありません。作品の軌道がその後どうなるかです。',
   afterTheFrameNoteAsk:
-    '記録された時間の先でも、同じ物理が映像の速さで続きます。フレームは映像が終わった位置にとどまるか、三つの天体のひとつについていきます。その場合、その天体はフレームの中で動きません。これは作品ではありません。作品の軌道がその後どうなるかです。',
-  orbitFate: '運命',
+    '記録区間の先でも、同じ物理が映像の速さで続きます。フレームは映像が終わった位置にとどまるか、三つの天体のひとつについていきます。その場合、その天体はフレームの中で動きません。これは作品ではありません。作品の軌道がその後どうなるかです。',
+  orbitFate: '行く末',
   orbitFateEjection: '第 {step} ステップで天体 {body} はもう束縛されていない',
   orbitFateDance: '{steps} ステップを通じて束縛',
   orbitBeyond: '映像の後 {clock} · 第 {step} ステップ',
@@ -674,8 +674,7 @@ export const ja: Messages = {
   beyondOneStayed: 'その {time}後も、天体 {body} はフレームの中にありました。',
   orbitAdrift:
     '第 {step} ステップ以降は軌道ではなく、計算上のエネルギーが {change} 変化しています。',
-  orbitEnergyHeld:
-    'ここでの計算では、記録された時間を通じてエネルギーは {digits} 桁まで保たれています。',
+  orbitEnergyHeld: 'ここでの計算では、記録区間を通じてエネルギーは {digits} 桁まで保たれています。',
   orbitEnergyBroken:
     '第 {step} ステップ付近で、二つの天体が {distance} まで近づきます。計算の固定された刻みでは追えない近さで、エネルギーが {change} 変化します。重力はエネルギーを一定に保つので、そのステップより先は計算であって、軌道ではありません。',
   orbitStageLabel: '奥行きのある軌道。矢印キーで回し、Escキーで生成器の視点に戻ります。',
@@ -721,7 +720,7 @@ export const ja: Messages = {
   orreryLine:
     'コレクションのすべての軌道を、それぞれのシードからいっせいに、光の映像の速さで演じます。',
   orreryNote:
-    'それぞれの軌道は、記録された区間の最初のステップから動き出します。その状態はシードから導き直し、記録と照合してから残したものです。動いているのは再生ではなく、見ているあいだにこのブラウザが計算しているものです。作品を指すかフォーカスすると、その作品自身の光の静止画が現れます。',
+    'それぞれの軌道は、記録区間の最初のステップから動き出します。その状態はシードから導き直し、記録と照合してから残したものです。動いているのは再生ではなく、見ているあいだにこのブラウザが計算しているものです。作品を指すかフォーカスすると、その作品自身の光の静止画が現れます。',
   orreryStill: '動きを止めているため、それぞれの軌道を一度だけ、全体として描いています。',
   orreryFallback:
     'このブラウザではここで軌道を演じられません。各作品の光の静止画を代わりに表示しています。',

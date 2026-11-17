@@ -131,14 +131,14 @@ export const zhTW: Messages = {
   processTitle: '物理之上，仍是物理。',
   processIntro: '作品是一個運動系統留下的痕跡。兩層物理過程賦予它形態。',
   gravityTitle: '起初，是軌道。',
-  gravityCopy: '三個天體透過引力相互作用。不斷演變的軌跡，成為繪出構圖的路徑。',
+  gravityCopy: '三個天體透過重力相互作用。不斷演變的軌跡，成為繪出構圖的路徑。',
   fluidTitle: '隨後，是流動。',
   fluidCopy:
     '這些軌跡將顏料帶入遵循 Navier–Stokes 方程式的流體模擬。流動在暖色紙面上拉伸、摺疊並擴散墨色。',
   expressionTitle: '同一身分。多種呈現。',
   expressionCopy:
-    '光與墨，是同一件生成作品的不同算繪。影片展現過程，靜態影像保留最終痕跡。新的呈現方式可以加入其中，無須建立另一個代幣。',
-  processNote: '這裡的影片是作品算繪的錄影，並非在此瀏覽器中執行的即時模擬。',
+    '光與墨，是同一件生成作品的不同渲染。影片展現過程，靜態影像保留最終痕跡。新的呈現方式可以加入其中，無須建立另一個代幣。',
+  processNote: '這裡的影片是作品渲染的錄影，並非在此瀏覽器中執行的即時模擬。',
   auctionTitle: '下一段舞跡。',
   auctionKicker: 'Cosmic Signature 拍賣',
   auctionNotLive: '拍賣計畫正在籌備中。',
@@ -259,7 +259,7 @@ export const zhTW: Messages = {
   keyExpressions: '墨與光；按住可預覽',
   keyFilm: '在觀賞室中開啟影片',
   keySit: '靜觀：讓介面淡去',
-  keyStudy: '以完整尺寸細看版面',
+  keyStudy: '以完整尺寸細看圖版',
   keyIndex: '開啟索引',
   keyJump: '輸入編號後按 Enter，前往該作品',
   keyHelp: '顯示這些按鍵',
@@ -276,7 +276,7 @@ export const zhTW: Messages = {
   fateAsPublished: '歸宿（按發布原樣）',
   unmeasured: '未測量',
   spectrumWall: '沿光譜排列的藏品',
-  spectrumNote: '每件光之版面依其公布的主波長懸掛於黑色之上，380 至 700 nm。',
+  spectrumNote: '每幅光之圖版依其公布的主波長懸掛於黑色之上，380 至 700 nm。',
   worksCount: '{count} 件作品',
   oneWork: '1 件作品',
   imprintedOn: '印記於 {date}',
@@ -286,7 +286,7 @@ export const zhTW: Messages = {
   theCollection: '藏品全集',
   collectionControls: '藏品控制',
 
-  // 版面與翻轉
+  // 圖版與翻轉
   showLight: '顯示光的表達',
   showInk: '顯示墨的表達',
   hangAlone: '僅{expression}',
@@ -326,11 +326,11 @@ export const zhTW: Messages = {
   glossaryUnderlay: '底層結構是繪於主結構之下的次級結構，以所述的不透明度呈現。',
   glossarySpectralClass: '光譜型沿恆星序列排列，從最藍的 O 到最紅的 M，由調色盤的主波長讀出。',
   glossaryChaos:
-    '混沌值從 0 到 100，是發布方的測量：在記錄的時段內，軌道的運動在多寬的頻率範圍上展開。接近 0 時，它像節拍器一樣重複；接近 100 時，它不守任何節奏。',
+    '混沌值從 0 到 100，是發布方的測量：在紀錄區間內，軌道的運動在多寬的頻率範圍上展開。接近 0 時，它像節拍器一樣重複；接近 100 時，它不守任何節奏。',
   glossarySyzygies: '合點是三個天體排成一線的瞬間。零表示它們從未如此。',
   glossaryBorda: '十萬條候選軌道經模擬並以波達計數排序；公布的編號即它選出的那一條。',
   glossaryWavelength: '主波長是調色盤基準色相的波長，以可見光的奈米計。',
-  glossaryMasses: '三個質量決定每個天體對另外兩個的引力強弱。',
+  glossaryMasses: '三個質量決定每個天體對另外兩個的重力強弱。',
   glossaryEccentricity:
     '漂移偏心率衡量鏡頭漂移所沿的橢圓偏離圓形的程度。它由種子抽取，不反映三個天體的路徑。',
   fatePublished: '已發布的歸宿：「{fate}」',
@@ -373,7 +373,7 @@ export const zhTW: Messages = {
 
   // 版本記錄
   colophon: '版本記錄',
-  colophonPlates: '版面複製自 16 位元母版已發布的 WebP 衍生檔案，3,456 × 2,234 像素。',
+  colophonPlates: '圖版複製自 16 位元母版已發布的 WebP 衍生檔案，3,456 × 2,234 像素。',
   colophonFilms: '影片為 60 fps ember-v4 渲染的 H.264 衍生檔案。',
   colophonType: '以 Literata 與 IBM Plex Mono 排版。',
 
@@ -496,13 +496,13 @@ export const zhTW: Messages = {
   hungBy: '由{curator}陳列',
   hangTitle: '一場陳列：023、031、035',
   hangNote:
-    '三件作品，陳列為一間展室。二十三號輕盈：光中是紅、藍、綠的絲帶，墨中是帶有淺色漩渦的緻密墨團。三十一號鋪滿整張紙，紫、橄欖與玫瑰色讓位於直抵紙邊的墨色場域。三十五號倚向右上，青檸與紫色沿對角線展開。選擇其一，它便就地生長；另外兩件隨之重新排布。沒有裁切，沒有調色：每一幅版面都是已發布的靜態影像，置於自身測得的底色之上。',
+    '三件作品，陳列為一間展室。二十三號輕盈：光中是紅、藍、綠的絲帶，墨中是帶有淺色漩渦的緻密墨團。三十一號鋪滿整張紙，紫、橄欖與玫瑰色讓位於直抵紙邊的墨色場域。三十五號倚向右上，青檸與紫色沿對角線展開。選擇其一，它便就地生長；另外兩件隨之重新排布。沒有裁切，沒有調色：每一幅圖版都是已發布的靜態影像，置於自身測得的底色之上。',
   theRule: '規則',
   theWorks: '作品',
   trailLongCurve: '長弧',
   trailLongCurveRule: '軌道的長度至少是寬度 1.55 倍的作品：典藏中最長的圖形。',
   trailLongCurveNote:
-    '這項測量並非來自發布方。它是在這裡從軌道本身、而非從畫面量出的：在記錄的時段內每一百步取一步，三個天體都取，置於軌道展開最廣的平面上；以沿該平面第一軸的長度，除以沿第二軸的寬度。它由種子推導而來，所用的演算法與你的瀏覽器在每件作品頁面上執行的相同。這條小徑陳列之時，典藏的中位數為 1.25，五十一號為 2.01，長為寬的兩倍。它們按從長到短依次陳列。',
+    '這項測量並非來自發布方。它是在這裡從軌道本身、而非從畫面量出的：在紀錄區間內每一百步取一步，三個天體都取，置於軌道展開最廣的平面上；以沿該平面第一軸的長度，除以沿第二軸的寬度。它由種子推導而來，所用的演算法與你的瀏覽器在每件作品頁面上執行的相同。這條小徑陳列之時，典藏的中位數為 1.25，五十一號為 2.01，長為寬的兩倍。它們按從長到短依次陳列。',
   trailLongCurveCorrected:
     '2026 年 11 月重新陳列。10 月 27 日初次陳列時，這條小徑依據的是已發布的漂移偏心率，它描述的是鏡頭的路徑，而不是軌道。當時的十件作品為 059、053、034、030、061、002、046、068、043 和 003。',
   trailAlmostStill: '近乎靜止',
@@ -518,7 +518,7 @@ export const zhTW: Messages = {
   trailLightBecomingTrace: '光化為跡',
   trailLightBecomingTraceRule: '已發布的辮狀交叉數不少於 50 的作品：軌道絲帶彼此交叉最頻繁者。',
   trailLightBecomingTraceNote:
-    '每當一條絲帶越過另一條，發布方就計一次交叉。交叉多處，光的版面便成為一張織物；而在墨中，同樣的交叉化作一道筆跡中的褶痕。十一號有 97 次交叉，是這條小徑陳列時典藏中最密的織物；小徑沿著計數一路下行至五十。',
+    '每當一條絲帶越過另一條，發布方就計一次交叉。交叉多處，光的圖版便成為一張織物；而在墨中，同樣的交叉化作一道筆跡中的褶痕。十一號有 97 次交叉，是這條小徑陳列時典藏中最密的織物；小徑沿著計數一路下行至五十。',
   measureElongation: '長為寬的 {value} 倍',
   measureChaos: '混沌 {value} / 100',
   measureCrossings: '{value} 次交叉',
@@ -552,14 +552,14 @@ export const zhTW: Messages = {
   verifyOrbitLineByLine: '推導過程，逐行列出',
   verifyOrbitWaiting: '頁面就緒後，推導便在此開始。',
   verifyOrbitSeedLine: '種子 {seed}',
-  verifyOrbitFateRun: '越過紀錄區間，求其命運 · 直至第 {steps} 步',
+  verifyOrbitFateRun: '越過紀錄區間，求其歸宿 · 直至第 {steps} 步',
   verifyOrbitAt: '{seconds} 秒',
   verifyOrbitTook: '在此核對，用時 {seconds} 秒。',
   verifyOrbitUnchecked: '未核對',
   verifyOrbitSomeUnchecked: '{total} 項測量中有 {count} 項無法在這個瀏覽器中核對。',
   verifyOrbitAnother: '核驗另一條軌道',
   verifyOrbitNote:
-    '演算法是生成器自己的：它的隨機流讀到第 {index} 號候選；四階 Yoshida 積分器的 {steps} 步；再越過紀錄區間，推算命運。只用加、減、乘、除與平方根，每一種運算都由標準精確規定，因此任何瀏覽器都會得到相同的位元。不會向任何地方傳送資料。',
+    '演算法是生成器自己的：它的隨機流讀到第 {index} 號候選；四階 Yoshida 積分器的 {steps} 步；再越過紀錄區間，推算歸宿。只用加、減、乘、除與平方根，每一種運算都由標準精確規定，因此任何瀏覽器都會得到相同的位元。不會向任何地方傳送資料。',
   publishedHashes: '已發布的雜湊值',
   sharingCollection: '典藏 · {count} 件作品',
   // The orbit, re-performed (src/components/orbit-score.tsx)
@@ -604,10 +604,10 @@ export const zhTW: Messages = {
     '影片與靜態影像是作品的紀錄渲染。這幅圖是它們之下的軌道，由你的瀏覽器按生成器自己的順序計算：它的隨機流、第 {index} 號候選的選擇，以及四階 Yoshida 積分器的 {steps} 步。',
   afterTheFrame: '畫面之後',
   afterTheFrameNote:
-    '越過記錄的時段，同樣的物理以影片的速度繼續運行，鏡頭停在影片結束時的位置。這不是作品：這是作品的軌道接下來的樣子。',
+    '越過紀錄區間，同樣的物理以影片的速度繼續運行，鏡頭停在影片結束時的位置。這不是作品：這是作品的軌道接下來的樣子。',
   afterTheFrameNoteAsk:
-    '越過記錄的時段，同樣的物理以影片的速度繼續運行。畫面停在影片結束時的位置，或跟隨三個天體中的一個，這時該天體在畫面中保持不動。這不是作品：這是作品的軌道接下來的樣子。',
-  orbitFate: '命運',
+    '越過紀錄區間，同樣的物理以影片的速度繼續運行。畫面停在影片結束時的位置，或跟隨三個天體中的一個，這時該天體在畫面中保持不動。這不是作品：這是作品的軌道接下來的樣子。',
+  orbitFate: '歸宿',
   orbitFateEjection: '天體 {body} 在第 {step} 步已不再受束縛',
   orbitFateDance: '在 {steps} 步內始終束縛',
   orbitBeyond: '影片之後 {clock} · 第 {step} 步',
@@ -640,9 +640,9 @@ export const zhTW: Messages = {
   beyondAloneForAgain: '影片結束 {time}後起，畫面中又只剩天體 {body}，持續了 {span}。',
   beyondOneStayed: '{time}後，天體 {body} 仍在畫面中。',
   orbitAdrift: '第 {step} 步之後不再是軌道：計算出的能量改變了 {change}。',
-  orbitEnergyHeld: '按此處的計算，能量在整個記錄的時段內保持到 {digits} 位數字。',
+  orbitEnergyHeld: '按此處的計算，能量在整個紀錄區間內保持到 {digits} 位數字。',
   orbitEnergyBroken:
-    '在第 {step} 步附近，兩個天體相距僅 {distance}，近到計算的固定步長無法跟隨，能量隨之改變了 {change}。引力使能量保持不變，所以那一步之後是計算，而不是軌道。',
+    '在第 {step} 步附近，兩個天體相距僅 {distance}，近到計算的固定步長無法跟隨，能量隨之改變了 {change}。重力使能量保持不變，所以那一步之後是計算，而不是軌道。',
   orbitStageLabel: '縱深中的軌道。方向鍵轉動它；Esc 鍵讓它回到生成器的視角。',
   orbitTurnHint: '拖曳軌道，在縱深中轉動它。放開後，它會回到生成器的視角。',
   orbitTurnHintTouch: '按住軌道再拖曳，在縱深中轉動它。放開後，它會回到生成器的視角。',
