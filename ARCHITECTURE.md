@@ -244,7 +244,7 @@ English, Simplified Chinese, Traditional Chinese for Taiwan and for Hong Kong, U
 - `src/lib/art/client-boundary.test.ts`: the registries stay on the server (§1);
 - `src/app/stylesheet-floor.test.ts`: the 12 px floor and the motion tokens;
 - `src/app/stylesheet-classes.test.ts`: every `styles.name` a component reads exists in its CSS module, and every class a module defines is read;
-- `src/app/image-optimizer.test.ts`: Next's image optimizer stays closed, and nothing imports it;
+- `src/app/image-optimizer.test.ts`: the settings that close Next's image optimizer stay as they are, for Next's own server and for the host's, and nothing imports it;
 - `src/proxy.test.ts`: the proxy runs for no file the venue serves;
 - `src/lib/without-script.test.tsx`: no route keeps a loading file, and the stylesheet for a reader with no script still names what React and the venue render (§2).
 
