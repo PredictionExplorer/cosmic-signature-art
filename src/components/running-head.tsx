@@ -208,7 +208,9 @@ export function RunningHead({
       <a className="skip-link" href="#main">
         {t.skip}
       </a>
+      <canvas className="page-sheet" aria-hidden="true" />
       <header className="site-header">
+        <canvas className="head-sheet" aria-hidden="true" />
         <div className="head-row">
           <Link className="brand" href={localizedPath(locale)} aria-label="Cosmic Signature">
             <Wordmark t={t} />

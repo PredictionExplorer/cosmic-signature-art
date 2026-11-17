@@ -24,7 +24,9 @@
   --room-ink: var(--paper-type);
   /* Muted words carry only sizes and status; they still read at 12 px on the darkest measured sheet (#e2ddd2): 5.1:1. */
   --room-muted: #5a5a51;
-  --room-line: color-mix(in srgb, var(--paper-type) 24%, transparent);
+  --room-line-paper: color-mix(in srgb, var(--paper-type) 24%, transparent);
+  --room-line-night: color-mix(in srgb, var(--night-type) 24%, transparent);
+  --room-line: var(--room-line-paper);
   position: relative;
   display: grid;
   /* One column no wider than the viewport, whatever line of status the strip carries. */
@@ -33,12 +35,40 @@
   height: 100%;
   min-height: 0;
   color: var(--room-ink);
-  transition: color var(--t-expand) var(--ease-settle);
 }
 .room[data-material='light'] {
   --room-ink: var(--night-type);
   --room-muted: #b8b5ad;
-  --room-line: color-mix(in srgb, var(--night-type) 24%, transparent);
+  --room-line: var(--room-line-night);
+}
+/* The Turn in the room is the sheet's (room-crossing.ts). While its front crosses, one canvas
+   lies over the whole room, ground and work, and under the strip, whose every word wears the
+   ink of the ground beneath it (sheet-words.ts, globals.css [data-sheet]). */
+.sheet {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  width: 100%;
+  height: 100%;
+  display: none;
+  pointer-events: none;
+}
+.sheet[data-active] {
+  display: block;
+}
+.room {
+  /* Muted words on the sheet's own tone, as the room sets them. */
+  --sheet-paper-muted: #5a5a51;
+}
+.room [data-sheet='night'] {
+  --room-ink: var(--night-type);
+  --room-muted: #b8b5ad;
+  --room-line: var(--room-line-night);
+}
+.room [data-sheet='paper'] {
+  --room-ink: var(--paper-type);
+  --room-muted: #5a5a51;
+  --room-line: var(--room-line-paper);
 }
 .room:fullscreen {
   height: 100vh;
@@ -47,12 +77,13 @@
 .room[data-closing] {
   pointer-events: none;
 }
+/* The ground changes with the front that crosses the room, or at once: a ground faded from
+   paper to night passes through a grey that is neither. */
 .ground {
   position: absolute;
   inset: 0;
   z-index: -1;
   background: var(--room-surface);
-  transition: background-color var(--t-expand) var(--ease-settle);
 }
 /* The edge strip rests after a quiet spell and returns on any input; it never leaves the DOM. */
 .edge {
@@ -141,6 +172,41 @@
   width: 72px;
   height: 6px;
   background: linear-gradient(90deg, rgb(77 92 242), rgb(237 102 140), rgb(255 224 158));
+}
+/* The strip, and beneath it, unseen, the strip the work's other expression sets: one cell, as
+   tall as the taller, so a Turn in the room never moves the work (artwork-room.tsx, HeldStrip).
+   The strip in use keeps its own height at the top of the cell, under its hairline. */
+.strips {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  align-items: start;
+}
+.strips > * {
+  grid-area: 1 / 1;
+  min-width: 0;
+}
+.heldStrip {
+  visibility: hidden;
+  pointer-events: none;
+  /* Its hairline is the strip's own, drawn once. */
+  border-top-color: transparent;
+}
+/* The word a held strip will have chosen, and the ring of the word the hand is on, as the strip
+   draws them: they travel with the words that take their places. */
+.heldStrip [data-pressed] {
+  text-decoration-color: currentColor;
+}
+.heldStrip [data-sheet-focus] {
+  outline: 1px solid currentColor;
+  outline-offset: 3px;
+}
+.heldStrip [data-line]::before {
+  content: attr(data-line);
+}
+/* While a Turn crosses the room the held words are the ones arriving: each shows once the front
+   has passed it, as the strip's own word there goes (sheet-words.ts, [data-sheet-out]). */
+.room[data-sheet-active] .heldStrip {
+  visibility: visible;
 }
 .strip {
   display: grid;
@@ -422,16 +488,12 @@
   }
 }
 @media (prefers-reduced-motion: reduce) {
-  .room,
-  .ground,
   .edge,
   .strip button,
   .notice button {
     transition: none;
   }
 }
-:global(.motion-paused) .room,
-:global(.motion-paused) .ground,
 :global(.motion-paused) .edge {
   transition: none;
 }

@@ -27,6 +27,7 @@ import { lightFilmDuration, lightFilmFrames } from '@/lib/physics/light-film';
 import { scoreWindow } from '@/lib/physics/score-window';
 import type { ScoreReply, ScoreRequest } from '@/lib/physics/score.worker';
 import { forgetFilmScores } from './film-score-store';
+import type { RoomTurn, RoomTurnOutcome } from './room-crossing';
 
 const motion = vi.hoisted(() => ({
   paused: false,
@@ -42,6 +43,36 @@ const returnPlateTone = vi.hoisted(() => vi.fn());
 const imageDecode = Object.getOwnPropertyDescriptor(HTMLImageElement.prototype, 'decode');
 vi.mock('./motion-provider', () => ({ useMotion: () => motion }));
 vi.mock('next/navigation', () => ({ useRouter: () => ({ push }) }));
+/*
+  The room's own Turn (room-crossing.ts) needs WebGL, which jsdom has not: there the room cannot
+  draw a Turn, and the stage's snapshot shows it. A case that sets `roomTurn.current` gives the
+  room a Turn of its own to answer for, as a browser that can paint the sheet does.
+*/
+const roomTurn = vi.hoisted(() => ({ current: null as RoomTurn | null }));
+vi.mock('./room-crossing', async (importOriginal) => {
+  const real = await importOriginal<typeof import('./room-crossing')>();
+  const { useEffect, useRef } = await import('react');
+  type Options = Parameters<typeof real.useRoomCrossing>[0];
+  function useGivenTurn({ turnRef }: Options) {
+    const canvas = useRef<HTMLCanvasElement>(null);
+    useEffect(() => {
+      if (!turnRef) return;
+      turnRef.current = roomTurn.current;
+      return () => {
+        turnRef.current = null;
+      };
+    }, [turnRef]);
+    return { canvas, settled: () => {} };
+  }
+  return {
+    ...real,
+    // Chosen as a room mounts, and the same for as long as it stands.
+    useRoomCrossing: (options: Options) => {
+      const chosen = roomTurn.current ? useGivenTurn : real.useRoomCrossing;
+      return chosen(options);
+    },
+  };
+});
 vi.mock('./room-ground', () => ({ overrideRoom, setPlateTone, lendPlateTone, returnPlateTone }));
 
 const root = () => document.documentElement;
@@ -67,6 +98,7 @@ async function dropSeam() {
 
 beforeEach(() => {
   vi.useFakeTimers();
+  roomTurn.current = null;
   motion.paused = false;
   motion.reducedMotion = false;
   motion.theatre = 'playing';
@@ -377,6 +409,16 @@ describe('the Turn', () => {
       expect(stage()).toHaveAttribute('data-expression', 'light');
       view.unmount();
     }
+  });
+
+  it('says on the document when the plate’s own keys answer, and takes the word back with the plate', () => {
+    // The venue's keys say theirs when their listener is attached (keys.tsx), and that is before
+    // the plate's: a key pressed on that word alone can be heard by no one.
+    expect(document.documentElement).not.toHaveAttribute('data-plate-keys');
+    const { unmount } = renderViewer();
+    expect(document.documentElement).toHaveAttribute('data-plate-keys', 'ready');
+    unmount();
+    expect(document.documentElement).not.toHaveAttribute('data-plate-keys');
   });
 
   it('peeks while L is held and returns on release; a tap commits', async () => {
@@ -776,6 +818,37 @@ describe('the focus across a Turn', () => {
     expect(filmWord()).toHaveFocus();
   });
 
+  it('says that an expression is opening while its still is on the way, and sets no line for it', async () => {
+    // The still is slow to come.
+    const decode = HTMLImageElement.prototype.decode;
+    let arrive!: () => void;
+    Object.defineProperty(HTMLImageElement.prototype, 'decode', {
+      configurable: true,
+      value: () => new Promise<void>((resolve) => (arrive = resolve)),
+    });
+    renderViewer();
+    const light = word(en.light);
+    fireEvent.click(light);
+    await act(async () => {});
+    // A line beneath the stage would move the page as every Turn began, and again a moment
+    // later: the word pressed reads busy, and the status is said without being set.
+    expect(light).toHaveAttribute('aria-busy', 'true');
+    const said = screen.getByRole('status');
+    expect(said).toHaveTextContent(en.preparingExpression);
+    expect(said).toHaveClass('sr-only');
+    expect(stage()).toHaveAttribute('data-expression', 'ink');
+    Object.defineProperty(HTMLImageElement.prototype, 'decode', {
+      configurable: true,
+      value: decode,
+    });
+    await act(async () => arrive());
+    // The still has come: nothing more is said, and the Turn travels.
+    expect(screen.queryByRole('status')).toBeNull();
+    expect(light).toHaveAttribute('aria-busy', 'true');
+    await travel();
+    expect(stage()).toHaveAttribute('data-expression', 'light');
+  });
+
   it('drops the note when the still cannot be had', async () => {
     const decode = HTMLImageElement.prototype.decode;
     Object.defineProperty(HTMLImageElement.prototype, 'decode', {
@@ -786,7 +859,8 @@ describe('the focus across a Turn', () => {
     const pressed = turnWord('light');
     pressByKey(pressed);
     await act(async () => {});
-    expect(screen.getByText(en.expressionFailed)).toBeInTheDocument();
+    // A failure stays to be read, so it is set as a line (where what opens is only said).
+    expect(screen.getByText(en.expressionFailed).className).toMatch(/status/);
     expect(stage()).toHaveAttribute('data-expression', 'ink');
     expect(pressed).toHaveFocus();
     // A move that is not the visitor's then puts the plate in Light: the failed Turn's note
@@ -1151,6 +1225,8 @@ describe('the home', () => {
 
 describe('the Overture, beneath and landing', () => {
   const wing = () => document.querySelector<HTMLElement>('[data-wing]')!;
+  /** --t-overture-hold, as the viewer reads it where no stylesheet says. */
+  const HOLD_MS = 1800;
   afterEach(() => {
     act(() => setOverturePhase(null));
   });
@@ -1163,6 +1239,18 @@ describe('the Overture, beneath and landing', () => {
     await act(async () => {});
     expect(stage()).toHaveAttribute('data-expression', 'light');
     act(() => setOverturePhase('landing'));
+    await act(async () => {});
+    // The light has given the still back: it is held, whole and alone, before anything crosses
+    // (--t-overture-hold: 1800 ms in jsdom's fallback).
+    await act(async () => {
+      vi.advanceTimersByTime(HOLD_MS - 1);
+    });
+    expect(stage()).toHaveAttribute('data-expression', 'light');
+    expect(root().hasAttribute('data-turning')).toBe(false);
+    expect(overturePhase()).toBe('landing');
+    await act(async () => {
+      vi.advanceTimersByTime(1);
+    });
     await act(async () => {});
     await act(async () => {
       vi.advanceTimersByTime(BREATH_MS);
@@ -1179,6 +1267,72 @@ describe('the Overture, beneath and landing', () => {
     // None of it was the visitor's choice: nothing is remembered, and the wing keeps the twin.
     expect(sessionStorage.getItem(EXPRESSION_KEY)).toBeNull();
     expect(wing()).toHaveAttribute('data-twin', 'light');
+  });
+
+  it('holds the landed still for as long as the venue’s own token says', async () => {
+    root().style.setProperty('--t-overture-hold', '600ms');
+    renderViewer({ presentation: 'home', openingExpression: 'ink' });
+    await settle();
+    act(() => setOverturePhase('playing'));
+    await act(async () => {});
+    act(() => setOverturePhase('landing'));
+    await act(async () => {});
+    await act(async () => {
+      vi.advanceTimersByTime(599);
+    });
+    expect(root().hasAttribute('data-turning')).toBe(false);
+    await act(async () => {
+      vi.advanceTimersByTime(1);
+    });
+    await act(async () => {});
+    await act(async () => {
+      vi.advanceTimersByTime(BREATH_MS);
+    });
+    expect(root().getAttribute('data-turning')).toBe('overture');
+    root().style.removeProperty('--t-overture-hold');
+  });
+
+  it('calls the hold off when an input ends the event: the page at once, and no crossing after', async () => {
+    renderViewer({ presentation: 'home', openingExpression: 'ink' });
+    await settle();
+    act(() => setOverturePhase('playing'));
+    await act(async () => {});
+    act(() => setOverturePhase('landing'));
+    await act(async () => {});
+    await act(async () => {
+      vi.advanceTimersByTime(HOLD_MS / 2);
+    });
+    expect(stage()).toHaveAttribute('data-expression', 'light');
+    // Any input: the Overture says it is done.
+    act(() => setOverturePhase('done'));
+    await act(async () => {});
+    expect(stage()).toHaveAttribute('data-expression', 'ink');
+    expect(root().hasAttribute('data-turning')).toBe(false);
+    // The hold's own time comes and goes, and nothing begins.
+    await act(async () => {
+      vi.advanceTimersByTime(HOLD_MS + BREATH_MS);
+    });
+    await act(async () => {});
+    expect(root().hasAttribute('data-turning')).toBe(false);
+    expect(stage()).toHaveAttribute('data-expression', 'ink');
+    expect(sessionStorage.getItem(EXPRESSION_KEY)).toBeNull();
+  });
+
+  it('leaves no hold behind a viewer that is taken away while it lasts', async () => {
+    const { unmount } = renderViewer({ presentation: 'home', openingExpression: 'ink' });
+    await settle();
+    act(() => setOverturePhase('playing'));
+    await act(async () => {});
+    act(() => setOverturePhase('landing'));
+    await act(async () => {});
+    const pending = vi.getTimerCount();
+    unmount();
+    expect(vi.getTimerCount()).toBeLessThan(pending);
+    await act(async () => {
+      vi.advanceTimersByTime(HOLD_MS + BREATH_MS);
+    });
+    expect(root().hasAttribute('data-turning')).toBe(false);
+    expect(overturePhase()).toBe('landing');
   });
 
   it('leaves nothing of a move it called off for the visitor’s own next Turn', async () => {
@@ -1757,5 +1911,144 @@ describe('the live record', () => {
     });
     await act(async () => {});
     expect(currentStill()).toHaveAttribute('src', '/art/31-ink-live.webp');
+  });
+});
+
+/*
+  In the room the Turn is the room's own to draw (room-crossing.ts): its front crosses the room
+  first, and the viewer, which owns the expression, makes the change when the room says the
+  front has crossed.
+*/
+describe('a Turn made in the room', () => {
+  /** A room that can draw its own Turn: each one asked of it, to be answered by the case. */
+  function givenTurn() {
+    const crossings: { to: string; answer: (outcome: RoomTurnOutcome) => void }[] = [];
+    const turn = {
+      heading: vi.fn((): 'ink' | 'light' | null => null),
+      callOff: vi.fn(),
+      cross: vi.fn(
+        (to: 'ink' | 'light') =>
+          new Promise<RoomTurnOutcome>((answer) => crossings.push({ to, answer })),
+      ),
+    };
+    roomTurn.current = turn;
+    return { turn, crossings };
+  }
+  /** The viewer with its room open on the still, by the Z key. */
+  async function inRoom() {
+    renderViewer();
+    await settle();
+    fireEvent.keyDown(window, { key: 'z' });
+    return screen.getByRole('dialog');
+  }
+  const material = (dialog: HTMLElement) =>
+    dialog.querySelector('[data-material]')!.getAttribute('data-material');
+
+  it('asks the room to draw it, and makes the change once its front has crossed', async () => {
+    const { turn, crossings } = givenTurn();
+    const dialog = await inRoom();
+    fireEvent.keyDown(dialog, { key: 'l' });
+    await act(async () => {});
+    expect(turn.cross).toHaveBeenCalledExactlyOnceWith('light');
+    // The front is crossing the room: nothing has changed yet, on the wall or beneath it.
+    expect(material(dialog)).toBe('ink');
+    expect(stage()).toHaveAttribute('data-expression', 'ink');
+    expect(sessionStorage.getItem(EXPRESSION_KEY)).toBeNull();
+    await act(async () => crossings[0].answer('landed'));
+    expect(material(dialog)).toBe('light');
+    expect(stage()).toHaveAttribute('data-expression', 'light');
+    // The visitor's own Turn: the visit remembers it.
+    expect(sessionStorage.getItem(EXPRESSION_KEY)).toBe('light');
+  });
+
+  it('makes the change by the stage’s snapshot where the room cannot draw the Turn', async () => {
+    const { crossings } = givenTurn();
+    const dialog = await inRoom();
+    fireEvent.keyDown(dialog, { key: 'l' });
+    await act(async () => {});
+    await act(async () => crossings[0].answer('undrawn'));
+    expect(material(dialog)).toBe('light');
+    expect(stage()).toHaveAttribute('data-expression', 'light');
+  });
+
+  it('makes no change for a Turn the room took back', async () => {
+    const { crossings } = givenTurn();
+    const dialog = await inRoom();
+    fireEvent.keyDown(dialog, { key: 'l' });
+    await act(async () => {});
+    await act(async () => crossings[0].answer('called off'));
+    expect(material(dialog)).toBe('ink');
+    expect(stage()).toHaveAttribute('data-expression', 'ink');
+    expect(sessionStorage.getItem(EXPRESSION_KEY)).toBeNull();
+  });
+
+  it('leaves a Turn already on its way to land when its word is pressed again', async () => {
+    const { turn, crossings } = givenTurn();
+    const dialog = await inRoom();
+    fireEvent.keyDown(dialog, { key: 'l' });
+    await act(async () => {});
+    turn.heading.mockReturnValue('light');
+    fireEvent.click(within(dialog).getByRole('button', { name: en.light }));
+    await act(async () => {});
+    // Not asked for again, not taken back, and nothing is being readied anew.
+    expect(turn.cross).toHaveBeenCalledOnce();
+    expect(turn.callOff).not.toHaveBeenCalled();
+    expect(within(dialog).getByRole('button', { name: en.light })).not.toHaveAttribute(
+      'aria-busy',
+      'true',
+    );
+    await act(async () => crossings[0].answer('landed'));
+    expect(material(dialog)).toBe('light');
+  });
+
+  it('takes a Turn back when the expression still on the wall is asked for', async () => {
+    const { turn, crossings } = givenTurn();
+    const dialog = await inRoom();
+    fireEvent.keyDown(dialog, { key: 'l' });
+    await act(async () => {});
+    turn.heading.mockReturnValue('light');
+    fireEvent.keyDown(dialog, { key: 'i' });
+    await act(async () => {});
+    expect(turn.callOff).toHaveBeenCalledOnce();
+    expect(turn.cross).toHaveBeenCalledOnce();
+    // Whatever the room then says of the Turn it took back, nothing changes.
+    await act(async () => crossings[0].answer('landed'));
+    expect(material(dialog)).toBe('ink');
+    expect(stage()).toHaveAttribute('data-expression', 'ink');
+  });
+
+  it('lets the newest request stand: an older Turn that lands late changes nothing', async () => {
+    const { turn, crossings } = givenTurn();
+    const dialog = await inRoom();
+    fireEvent.keyDown(dialog, { key: 'l' });
+    await act(async () => {});
+    // Asked for again while the room says no Turn is on its way: readied and drawn anew.
+    fireEvent.click(within(dialog).getByRole('button', { name: en.light }));
+    await act(async () => {});
+    expect(turn.cross).toHaveBeenCalledTimes(2);
+    await act(async () => crossings[0].answer('landed'));
+    expect(material(dialog)).toBe('ink');
+    await act(async () => crossings[1].answer('landed'));
+    expect(material(dialog)).toBe('light');
+  });
+
+  it('never asks the room where the Turn is instant', async () => {
+    motion.reducedMotion = true;
+    const { turn } = givenTurn();
+    const dialog = await inRoom();
+    fireEvent.keyDown(dialog, { key: 'l' });
+    await act(async () => {});
+    expect(turn.cross).not.toHaveBeenCalled();
+    expect(material(dialog)).toBe('light');
+  });
+
+  it('gives the room’s Turn back when the room closes', async () => {
+    const { turn } = givenTurn();
+    const dialog = await inRoom();
+    fireEvent.keyDown(dialog, { key: 'l' });
+    await act(async () => {});
+    // The room takes a Turn still crossing back as it closes.
+    fireEvent.click(within(dialog).getByRole('button', { name: en.close }));
+    expect(turn.callOff).toHaveBeenCalled();
   });
 });

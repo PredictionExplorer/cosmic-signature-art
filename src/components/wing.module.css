@@ -35,6 +35,13 @@
 .wing[data-twin='ink'] .fallback {
   background: var(--paper);
 }
+/* A phone hangs one plate. Its twin is a Turn away, by the word or by a thumb drawn across the
+   plate, and a second screen would show one of the two twice while it turns. */
+@media (max-width: 767px) {
+  .fallback {
+    display: none;
+  }
+}
 /* The plate already shows the twin: the wing has no second screen to add. */
 .wing[data-twin='light'][data-expression='light'] .fallback,
 .wing[data-twin='ink'][data-expression='ink'] .fallback {

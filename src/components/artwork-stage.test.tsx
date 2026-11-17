@@ -638,6 +638,56 @@ describe('expression preparation', () => {
     }
   });
 
+  it('makes a plain commit for a caller that has shown the change itself: no snapshot, no second to wait', async () => {
+    const setTimer = vi.spyOn(globalThis, 'setTimeout');
+    const onCommit = vi.fn();
+    let commit!: (plain?: boolean) => void;
+    try {
+      // A snapshot's stage is on view, and motion is welcome: the commit would be a transition.
+      const { result } = renderHook(() =>
+        useArtworkExpression({
+          openingExpression: 'ink',
+          media,
+          onCommit,
+          onReady: (_expression, ready) => {
+            commit = ready;
+          },
+        }),
+      );
+      act(() => result.current.selectExpression('light'));
+      await ready();
+      // The caller decides the moment (the room's front crosses first).
+      expect(result.current.expression).toBe('ink');
+      setTimer.mockClear();
+      act(() => commit(true));
+      expect(result.current.expression).toBe('light');
+      expect(onCommit).toHaveBeenCalledExactlyOnceWith('light');
+      // An ordinary update: no snapshot is asked for, and nothing waits on a deadline.
+      expect(state.addTransitionType).not.toHaveBeenCalled();
+      expect(setTimer.mock.calls.map(([, delay]) => delay)).not.toContain(1000);
+    } finally {
+      setTimer.mockRestore();
+    }
+  });
+
+  it('keeps the snapshot for a caller that leaves the change to the stage', async () => {
+    let commit!: (plain?: boolean) => void;
+    const { result } = renderHook(() =>
+      useArtworkExpression({
+        openingExpression: 'ink',
+        media,
+        onReady: (_expression, ready) => {
+          commit = ready;
+        },
+      }),
+    );
+    act(() => result.current.selectExpression('light'));
+    await ready();
+    act(() => commit());
+    expect(result.current.expression).toBe('light');
+    expect(state.addTransitionType).toHaveBeenCalledExactlyOnceWith('cosmic-expression-to-light');
+  });
+
   it('falls back to a successful load in browsers without image.decode', () => {
     supportsDecode = false;
     const { result } = renderHook(() => useArtworkExpression({ openingExpression: 'ink', media }));

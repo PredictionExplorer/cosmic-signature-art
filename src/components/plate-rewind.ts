@@ -1,4 +1,3 @@
-import type { Field } from '@/lib/crossing/front';
 import {
   GROUND_TURN,
   containRect,
@@ -7,6 +6,7 @@ import {
   lastMark,
   markWeights,
   maskFrom,
+  type Field,
 } from '@/lib/crossing/rewind';
 
 /*

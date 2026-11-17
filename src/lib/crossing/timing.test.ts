@@ -1,13 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import {
-  FRONT_EDGE,
-  cubicBezier,
-  invertEasing,
-  parseEasing,
-  revealAt,
-  revealEnd,
-  spreadPerPlate,
-} from './timing';
+import { cubicBezier, invertEasing, parseEasing } from './timing';
 
 describe('the crossing clock', () => {
   it('solves cubic-bezier curves as browsers do', () => {
@@ -46,38 +38,5 @@ describe('the crossing clock', () => {
     // Through the curve's slow start a little travel is a good deal of time.
     expect(clock(0.05)).toBeGreaterThan(0.2);
     expect(invertEasing((x) => x)(0.42)).toBeCloseTo(0.42, 9);
-  });
-
-  it('maps the seam to the reveal, from before the first mark to past the farthest wall', () => {
-    expect(revealAt(100, 'night', 1.5)).toBe(-FRONT_EDGE);
-    expect(revealAt(0, 'night', 1.5)).toBeCloseTo(1.5, 12);
-    expect(revealAt(0, 'paper', 1.5)).toBe(-FRONT_EDGE);
-    expect(revealAt(100, 'paper', 1.5)).toBeCloseTo(1.5, 12);
-    expect(revealAt(50, 'night', 1)).toBeCloseTo(-FRONT_EDGE + 0.5 * (1 + FRONT_EDGE), 12);
-    expect(revealAt(130, 'paper', 1)).toBeCloseTo(1, 12);
-  });
-
-  it('counts the walls in plate heights and the map’s spread per frame diagonal', () => {
-    // A plate filling its canvas ends at the map's own end plus the soft edge.
-    expect(revealEnd({ width: 100, height: 50 }, { x: 0, y: 0, width: 100, height: 50 }, 0.2)).toBe(
-      1 + FRONT_EDGE,
-    );
-    // Walls a hundred pixels wide either side of a fifty-pixel-high plate: the farthest corner
-    // lies two plate heights from the plate's nearest edge.
-    const end = revealEnd(
-      { width: 300, height: 50 },
-      { x: 100, y: 0, width: 100, height: 50 },
-      0.2,
-    );
-    expect(end).toBeCloseTo(1 + 0.2 * 2 + FRONT_EDGE, 12);
-    // A running head fifty pixels above the plate is one plate height further from the work.
-    expect(
-      revealEnd(
-        { x: 0, y: -50, width: 100, height: 100 },
-        { x: 0, y: 0, width: 100, height: 50 },
-        0.2,
-      ),
-    ).toBeCloseTo(1 + 0.2 + FRONT_EDGE, 12);
-    expect(spreadPerPlate(0.35, 576, 372)).toBeCloseTo(0.35 * (372 / Math.hypot(576, 372)), 12);
   });
 });

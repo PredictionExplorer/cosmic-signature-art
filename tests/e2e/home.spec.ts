@@ -137,13 +137,9 @@ test.describe('localized home', () => {
       // Light is told in its own sentence, one Turn away under the same plate.
       const lightLine = fill(t.sentences, { first: t.homeLine, second: t.homeLineLight });
       await expect(page.locator(`${nightLayer} .strip p`)).toHaveText(lightLine);
-      // Where the twin hangs on a screen of its own (a phone), it says its line there too.
-      if (isMobile) {
-        const twin = page.locator('.home [data-wing] > [data-ground="night"] .strip p');
-        await expect(twin).toHaveText(lightLine);
-        await twin.scrollIntoViewIfNeeded();
-        await expect(twin).toBeVisible();
-      }
+      // A phone hangs one plate: no twin hangs on a screen of its own beneath it.
+      if (isMobile)
+        await expect(page.locator('.home [data-wing] > [data-ground="night"]')).toBeHidden();
       // No headline, no kicker, no portal on the wall: the page's one h1 is the statement
       // screen's wordmark, below the plate.
       const heading = page.locator('main h1');

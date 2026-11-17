@@ -43,6 +43,7 @@ import {
   rememberExpression,
   seamFor,
   setThemeColor,
+  tokenMs,
   useRememberedExpression,
   type Expression,
   type TurnMode,
@@ -55,11 +56,17 @@ import {
   wingSeamAt,
   type WingMode,
 } from './wing';
-import { setOverturePhase, useOverturePhase, type OverturePhase } from './overture-store';
+import {
+  overturePhase,
+  setOverturePhase,
+  useOverturePhase,
+  type OverturePhase,
+} from './overture-store';
 import { inField } from './keys';
 import { useOpenSheet } from './sheets-store';
 import { ArtworkNeighbours, neighbourHref, type Neighbours } from './artwork-neighbours';
 import { useArrivalCrossing } from './arrival-crossing';
+import type { RoomTurn } from './room-crossing';
 import { ArtworkGatefold } from './artwork-gatefold';
 import { useSit } from './sit';
 import { useTurnFocus } from './turn-focus';
@@ -273,6 +280,8 @@ function ArtworkViewerSession({
   const landingOverture = useRef(false);
   /** Each Turn the twin's decode asked for; a newer one supersedes a Turn still waiting. */
   const turnRequest = useRef(0);
+  /** The room's own Turn, while a room that can draw one is open (room-crossing.ts). */
+  const roomTurn = useRef<RoomTurn | null>(null);
   // A Turn that waited on the crossing reads the room and motion as they are when it ends.
   const landsAtOnce = useRef(false);
 
@@ -291,7 +300,8 @@ function ArtworkViewerSession({
             : { capped: policy.constrained, sizes: shownLines ? LINED_PLATE_SIZES : undefined },
         ),
       // The page's own stage takes no snapshot: the seam has shown the Turn by the time it
-      // commits, so the commit follows the seam at once. Only the room's stage takes one.
+      // commits, so the commit follows the seam at once. Only the room's stage takes one, and
+      // only for a Turn its own sheet has not drawn (onReady, below): that commit asks for none.
       snapshot: room !== null,
       onCommit: (committed) => {
         const chosen = !quiet.current;
@@ -321,9 +331,9 @@ function ArtworkViewerSession({
       },
       onReady: (target, ready) => {
         // The focus is read as the Turn lands, while the layer that leaves is there to ask.
-        const commit = () => {
+        const commit = (plain = false) => {
           turnFocus.landing();
-          ready();
+          ready(plain);
         };
         if (failedLayers.current.delete(target))
           setAttempts((current) => ({ ...current, [target]: (current[target] ?? 0) + 1 }));
@@ -331,13 +341,30 @@ function ArtworkViewerSession({
         // Either way the mode asked for is spent here, so it never carries to a later Turn.
         const mode = turnMode.current;
         turnMode.current = 'time';
-        const now = instantNext.current || instant || room !== null;
+        const now = instantNext.current || instant;
         instantNext.current = false;
         if (now) {
           commit();
           return;
         }
         const to = target as Expression;
+        if (room !== null) {
+          // In the room the Turn is the room's own to draw: its front crosses the room first,
+          // and the change is then made plainly. Where the room cannot draw it, the stage's
+          // snapshot shows the change as it is made. A newer request supersedes this one.
+          const drawn = roomTurn.current?.cross(to);
+          if (!drawn) {
+            commit();
+            return;
+          }
+          const request = ++turnRequest.current;
+          void drawn.then((outcome) => {
+            if (request !== turnRequest.current) return;
+            if (outcome === 'landed') commit(true);
+            else if (outcome === 'undrawn') commit();
+          });
+          return;
+        }
         // The Turn is under way from here, and reads so. A crossing still being prepared is
         // worth a moment; past that the straight seam travels. Whatever takes the seam in the
         // meantime (a newer request, the room, a key, the page left) supersedes this Turn.
@@ -407,6 +434,8 @@ function ArtworkViewerSession({
     rest; and any input puts it there at once. None of it is the visitor's choice.
   */
   const overture = useOverturePhase();
+  /** The landed Light still's hold before it crosses; called off by any input. */
+  const landingHold = useRef<ReturnType<typeof setTimeout> | null>(null);
   const followOverture = useEffectEvent((phase: OverturePhase) => {
     // The home, or a work's own page when a shared link opens the visit on it.
     if (!(home || presentation === 'gallery') || !hasBoth) {
@@ -431,14 +460,33 @@ function ArtworkViewerSession({
       selectExpression(to);
       return true;
     };
+    if (landingHold.current) clearTimeout(landingHold.current);
+    landingHold.current = null;
     if (phase === 'playing') stand('light', 'at once');
     else if (phase === 'done') stand(opening, 'at once');
-    else if (stand(opening, 'overture')) landingOverture.current = true;
-    else setOverturePhase('done');
+    else if (opening === expression) setOverturePhase('done');
+    else
+      // The light has given the still back. It is held, whole and alone, long enough to be
+      // seen; then the plate crosses to the expression the page opens on.
+      landingHold.current = setTimeout(
+        () => {
+          landingHold.current = null;
+          if (overturePhase() !== 'landing') return;
+          if (stand(opening, 'overture')) landingOverture.current = true;
+          else setOverturePhase('done');
+        },
+        tokenMs(document.documentElement, '--t-overture-hold', 1800),
+      );
   });
   useEffect(() => {
     if (overture) followOverture(overture);
   }, [overture]);
+  useEffect(
+    () => () => {
+      if (landingHold.current) clearTimeout(landingHold.current);
+    },
+    [],
+  );
 
   useEffect(() => {
     if (!ended) return;
@@ -653,6 +701,17 @@ function ArtworkViewerSession({
     else turnFocus.drop();
     selectExpression(to);
   };
+  /**
+   * A Turn asked for in the room. One already on its way there is left to land; one on its way
+   * to the other expression is taken back, its front returning the way it came, and asking for
+   * the expression still on the wall then asks for nothing more.
+   */
+  const turnInRoom = (to: string) => {
+    const heading = roomTurn.current?.heading() ?? null;
+    if (heading === to) return;
+    if (heading !== null) roomTurn.current?.callOff();
+    selectExpression(to);
+  };
   function peekStart(to: Expression) {
     if (!canTurn || to === expression || peek.current) return;
     if (instant) {
@@ -746,11 +805,17 @@ function ArtworkViewerSession({
     window.addEventListener('keyup', up);
     window.addEventListener('blur', lost);
     document.addEventListener('visibilitychange', hidden);
+    // The plate's own keys (I and L, Z, the film's) answer from here, and say so as the venue's
+    // keys say theirs (keys.tsx). That mark cannot speak for these: the page's head is hydrated
+    // before its sections, so its listener is attached first, by 20 ms on a desk and by far
+    // more on a slow machine, and a key pressed between the two is heard by no one.
+    document.documentElement.setAttribute('data-plate-keys', 'ready');
     return () => {
       window.removeEventListener('keydown', down);
       window.removeEventListener('keyup', up);
       window.removeEventListener('blur', lost);
       document.removeEventListener('visibilitychange', hidden);
+      document.documentElement.removeAttribute('data-plate-keys');
     };
   }, []);
 
@@ -1138,7 +1203,9 @@ function ArtworkViewerSession({
           )}
         </ArtworkStage>
         {pendingExpression ? (
-          <p className={styles.status} role="status">
+          // Said, not set: a line here would move everything beneath the stage as each Turn
+          // began and again as it landed. The word pressed reads busy until then.
+          <p className="sr-only" role="status">
             {t.preparingExpression}
           </p>
         ) : failedExpression ? (
@@ -1170,7 +1237,8 @@ function ArtworkViewerSession({
           expression={expression}
           pendingExpression={pendingExpression ?? undefined}
           expressionFailed={!!failedExpression}
-          onExpressionChange={selectExpression}
+          onExpressionChange={turnInRoom}
+          turnRef={roomTurn}
           initialFilm={room === 'film'}
           startAt={roomStart ?? (ended ? 0 : time.current)}
           locale={locale}
