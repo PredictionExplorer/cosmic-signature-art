@@ -259,7 +259,7 @@ export const zh: Messages = {
   keyExpressions: '墨与光；按住可预览',
   keyFilm: '在观赏室中打开影片',
   keySit: '静观：让界面淡去',
-  keyStudy: '以全尺寸细看版面',
+  keyStudy: '以全尺寸细看图版',
   keyIndex: '打开索引',
   keyJump: '输入编号后按回车，前往该作品',
   keyHelp: '显示这些按键',
@@ -276,7 +276,7 @@ export const zh: Messages = {
   fateAsPublished: '归宿（按发布原样）',
   unmeasured: '未测量',
   spectrumWall: '沿光谱排列的藏品',
-  spectrumNote: '每件光之版面依其公布的主波长悬挂于黑色之上，380 至 700 nm。',
+  spectrumNote: '每幅光之图版依其公布的主波长悬挂于黑色之上，380 至 700 nm。',
   worksCount: '{count} 件作品',
   oneWork: '1 件作品',
   imprintedOn: '印记于 {date}',
@@ -286,7 +286,7 @@ export const zh: Messages = {
   theCollection: '藏品全集',
   collectionControls: '藏品控制',
 
-  // 版面与翻转
+  // 图版与翻转
   showLight: '显示光的表达',
   showInk: '显示墨的表达',
   hangAlone: '仅{expression}',
@@ -326,7 +326,7 @@ export const zh: Messages = {
   glossaryUnderlay: '底层结构是绘于主结构之下的次级结构，以所述的不透明度呈现。',
   glossarySpectralClass: '光谱型沿恒星序列排列，从最蓝的 O 到最红的 M，由调色板的主波长读出。',
   glossaryChaos:
-    '混沌值从 0 到 100，是发布方的测量：在记录的时段内，轨道的运动在多宽的频率范围上展开。接近 0 时，它像节拍器一样重复；接近 100 时，它不守任何节奏。',
+    '混沌值从 0 到 100，是发布方的测量：在记录区间内，轨道的运动在多宽的频率范围上展开。接近 0 时，它像节拍器一样重复；接近 100 时，它不守任何节奏。',
   glossarySyzygies: '合点是三个天体排成一线的瞬间。零表示它们从未如此。',
   glossaryBorda: '十万条候选轨道经模拟并以博达计数排序；公布的编号即它选出的那一条。',
   glossaryWavelength: '主波长是调色板基准色相的波长，以可见光的纳米计。',
@@ -373,7 +373,7 @@ export const zh: Messages = {
 
   // 版本记录
   colophon: '版本记录',
-  colophonPlates: '版面复制自 16 位母版已发布的 WebP 衍生文件，3,456 × 2,234 像素。',
+  colophonPlates: '图版复制自 16 位母版已发布的 WebP 衍生文件，3,456 × 2,234 像素。',
   colophonFilms: '影片为 60 fps ember-v4 渲染的 H.264 衍生文件。',
   colophonType: '以 Literata 与 IBM Plex Mono 排版。',
 
@@ -496,13 +496,13 @@ export const zh: Messages = {
   hungBy: '由{curator}陈列',
   hangTitle: '一场陈列：023、031、035',
   hangNote:
-    '三件作品，陈列为一间展室。二十三号轻盈：光中是红、蓝、绿的丝带，墨中是带有浅色漩涡的致密墨团。三十一号铺满整张纸，紫、橄榄与玫瑰色让位于直抵纸边的墨色场域。三十五号倚向右上，青柠与紫色沿对角线展开。选择其一，它便就地生长；另外两件随之重新排布。没有裁切，没有调色：每一幅版面都是已发布的静态图像，置于自身测得的底色之上。',
+    '三件作品，陈列为一间展室。二十三号轻盈：光中是红、蓝、绿的丝带，墨中是带有浅色漩涡的致密墨团。三十一号铺满整张纸，紫、橄榄与玫瑰色让位于直抵纸边的墨色场域。三十五号倚向右上，青柠与紫色沿对角线展开。选择其一，它便就地生长；另外两件随之重新排布。没有裁切，没有调色：每一幅图版都是已发布的静态图像，置于自身测得的底色之上。',
   theRule: '规则',
   theWorks: '作品',
   trailLongCurve: '长弧',
   trailLongCurveRule: '轨道的长度至少是宽度 1.55 倍的作品：藏品中最长的图形。',
   trailLongCurveNote:
-    '这项测量并非来自发布方。它是在这里从轨道本身、而非从画面量出的：在记录的时段内每一百步取一步，三个天体都取，置于轨道展开最广的平面上；以沿该平面第一轴的长度，除以沿第二轴的宽度。它由种子推导而来，所用的算法与你的浏览器在每件作品页面上运行的相同。这条小径陈列之时，藏品的中位数为 1.25，五十一号为 2.01，长为宽的两倍。它们按从长到短依次陈列。',
+    '这项测量并非来自发布方。它是在这里从轨道本身、而非从画面量出的：在记录区间内每一百步取一步，三个天体都取，置于轨道展开最广的平面上；以沿该平面第一轴的长度，除以沿第二轴的宽度。它由种子推导而来，所用的算法与你的浏览器在每件作品页面上运行的相同。这条小径陈列之时，藏品的中位数为 1.25，五十一号为 2.01，长为宽的两倍。它们按从长到短依次陈列。',
   trailLongCurveCorrected:
     '2026 年 11 月重新陈列。10 月 27 日初次陈列时，这条小径依据的是已发布的漂移偏心率，它描述的是镜头的路径，而不是轨道。当时的十件作品为 059、053、034、030、061、002、046、068、043 和 003。',
   trailAlmostStill: '近乎静止',
@@ -518,7 +518,7 @@ export const zh: Messages = {
   trailLightBecomingTrace: '光化为迹',
   trailLightBecomingTraceRule: '已发布的辫状交叉数不少于 50 的作品：轨道丝带彼此交叉最频繁者。',
   trailLightBecomingTraceNote:
-    '每当一条丝带越过另一条，发布方就计一次交叉。交叉多处，光的版面便成为一张织物；而在墨中，同样的交叉化作一道笔迹中的褶痕。十一号有 97 次交叉，是这条小径陈列时藏品中最密的织物；小径沿着计数一路下行至五十。',
+    '每当一条丝带越过另一条，发布方就计一次交叉。交叉多处，光的图版便成为一张织物；而在墨中，同样的交叉化作一道笔迹中的褶痕。十一号有 97 次交叉，是这条小径陈列时藏品中最密的织物；小径沿着计数一路下行至五十。',
   measureElongation: '长为宽的 {value} 倍',
   measureChaos: '混沌 {value} / 100',
   measureCrossings: '{value} 次交叉',
@@ -552,14 +552,14 @@ export const zh: Messages = {
   verifyOrbitLineByLine: '推导过程，逐行列出',
   verifyOrbitWaiting: '页面就绪后，推导便在此开始。',
   verifyOrbitSeedLine: '种子 {seed}',
-  verifyOrbitFateRun: '越过记录区间，求其命运 · 直至第 {steps} 步',
+  verifyOrbitFateRun: '越过记录区间，求其归宿 · 直至第 {steps} 步',
   verifyOrbitAt: '{seconds} 秒',
   verifyOrbitTook: '在此核对，用时 {seconds} 秒。',
   verifyOrbitUnchecked: '未核对',
   verifyOrbitSomeUnchecked: '{total} 项测量中有 {count} 项无法在这个浏览器中核对。',
   verifyOrbitAnother: '核验另一条轨道',
   verifyOrbitNote:
-    '算法是生成器自己的：它的随机流读到第 {index} 号候选；四阶 Yoshida 积分器的 {steps} 步；再越过记录区间，推算命运。只用加、减、乘、除与平方根，每一种运算都由标准精确规定，因此任何浏览器都会得到相同的比特。不会向任何地方发送数据。',
+    '算法是生成器自己的：它的随机流读到第 {index} 号候选；四阶 Yoshida 积分器的 {steps} 步；再越过记录区间，推算归宿。只用加、减、乘、除与平方根，每一种运算都由标准精确规定，因此任何浏览器都会得到相同的比特。不会向任何地方发送数据。',
   publishedHashes: '已发布的哈希值',
   sharingCollection: '藏品 · {count} 件作品',
   // The orbit, re-performed (src/components/orbit-score.tsx)
@@ -604,10 +604,10 @@ export const zh: Messages = {
     '影片与静态图像是作品的记录渲染。这幅图是它们之下的轨道，由你的浏览器按生成器自己的顺序计算：它的随机流、第 {index} 号候选的选择，以及四阶 Yoshida 积分器的 {steps} 步。',
   afterTheFrame: '画面之后',
   afterTheFrameNote:
-    '越过记录的时段，同样的物理以影片的速度继续运行，镜头停在影片结束时的位置。这不是作品：这是作品的轨道接下来的样子。',
+    '越过记录区间，同样的物理以影片的速度继续运行，镜头停在影片结束时的位置。这不是作品：这是作品的轨道接下来的样子。',
   afterTheFrameNoteAsk:
-    '越过记录的时段，同样的物理以影片的速度继续运行。画面停在影片结束时的位置，或跟随三个天体中的一个，这时该天体在画面中保持不动。这不是作品：这是作品的轨道接下来的样子。',
-  orbitFate: '命运',
+    '越过记录区间，同样的物理以影片的速度继续运行。画面停在影片结束时的位置，或跟随三个天体中的一个，这时该天体在画面中保持不动。这不是作品：这是作品的轨道接下来的样子。',
+  orbitFate: '归宿',
   orbitFateEjection: '天体 {body} 在第 {step} 步已不再受束缚',
   orbitFateDance: '在 {steps} 步内始终束缚',
   orbitBeyond: '影片之后 {clock} · 第 {step} 步',
@@ -640,7 +640,7 @@ export const zh: Messages = {
   beyondAloneForAgain: '影片结束 {time}后起，画面中又只剩天体 {body}，持续了 {span}。',
   beyondOneStayed: '{time}后，天体 {body} 仍在画面中。',
   orbitAdrift: '第 {step} 步之后不再是轨道：计算出的能量改变了 {change}。',
-  orbitEnergyHeld: '按此处的计算，能量在整个记录的时段内保持到 {digits} 位数字。',
+  orbitEnergyHeld: '按此处的计算，能量在整个记录区间内保持到 {digits} 位数字。',
   orbitEnergyBroken:
     '在第 {step} 步附近，两个天体相距仅 {distance}，近到计算的固定步长无法跟随，能量随之改变了 {change}。引力使能量保持不变，所以那一步之后是计算，而不是轨道。',
   orbitStageLabel: '纵深中的轨道。方向键转动它；Esc 键让它回到生成器的视角。',
