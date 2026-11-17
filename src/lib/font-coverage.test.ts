@@ -1,8 +1,12 @@
+import { existsSync, readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 // @ts-expect-error the check is plain JavaScript; its exports are read here as written.
 import * as check from '../../scripts/check-font-coverage.mjs';
 
 const {
+  PER_LOCALE_TABLES,
+  sourceFiles,
   catalogText,
   covered,
   declaredFaces,
@@ -11,6 +15,8 @@ const {
   requestedFeatures,
   uncoveredCharacters,
 } = check as {
+  PER_LOCALE_TABLES: Map<string, string>;
+  sourceFiles: (directory: string) => Promise<string[]>;
   catalogText: (source: string) => string;
   covered: (codePoint: number, ranges: [number, number][]) => boolean;
   declaredFaces: (css: string, family: string) => { file: string; ranges: [number, number][] }[];
@@ -95,5 +101,34 @@ describe('the feature check', () => {
     expect(declaredFaces(css, 'Literata')).toEqual([
       { file: 'literata-latin-roman.woff2', ranges: [[0, 0xff]] },
     ]);
+  });
+});
+
+describe('a table of one line for each language', () => {
+  const root = process.cwd();
+
+  it('is left out of the text every locale meets, and nothing else is', async () => {
+    const read = (await sourceFiles(join(root, 'src'))).map((path) =>
+      path
+        .slice(root.length + 1)
+        .split('\\')
+        .join('/'),
+    );
+    for (const table of PER_LOCALE_TABLES.keys()) expect(read).not.toContain(table);
+    // Its neighbours are still read: the page that says the table's lines sets words of its own.
+    expect(read).toContain('src/app/global-error.tsx');
+    expect(read).toContain('src/app/venue-document.tsx');
+  });
+
+  it('is excused only with the test that holds its lines to the catalogs', () => {
+    expect(PER_LOCALE_TABLES.size).toBeGreaterThan(0);
+    for (const [table, test] of PER_LOCALE_TABLES) {
+      expect(existsSync(join(root, table)), table).toBe(true);
+      // The test reads the table and the catalogs side by side; without it the lines here
+      // would be checked nowhere.
+      const held = readFileSync(join(root, test), 'utf8');
+      expect(held, test).toContain('catalogs[locale]');
+      expect(held, test).toMatch(/GLOBAL_ERROR_WORDS\)\.toEqual\(/);
+    }
   });
 });

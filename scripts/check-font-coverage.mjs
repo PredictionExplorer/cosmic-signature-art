@@ -1,6 +1,6 @@
 import { readFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
-import { dirname, resolve } from 'node:path';
+import { dirname, relative, resolve, sep } from 'node:path';
 import { log, error } from 'node:console';
 import { CJK_FACES, literataSource } from './build-font-subsets.mjs';
 import { inspectWoff2 } from './lib/woff2.mjs';
@@ -108,6 +108,16 @@ export function catalogText(source) {
   return `${literals}${jsxText}`;
 }
 
+/**
+ * Source files that hold one line for each language, and show a visitor only their own: a
+ * table of a catalog's strings, written out where no catalog can be handed over. Read with
+ * every catalog, each would ask every locale's face for every other locale's characters. Each
+ * is named with the test that holds its lines to the catalogs, where they are checked.
+ */
+export const PER_LOCALE_TABLES = new Map([
+  ['src/app/global-error.words.ts', 'src/app/global-error.test.tsx'],
+]);
+
 /** The venue's own source: components and routes, read with every catalog. */
 export async function sourceFiles(directory) {
   const { readdir } = await import('node:fs/promises');
@@ -119,7 +129,8 @@ export async function sourceFiles(directory) {
     else if (
       /\.tsx?$/.test(entry.name) &&
       !/\.test\.tsx?$/.test(entry.name) &&
-      !/\/i18n\/[a-zA-Z-]+\.ts$/.test(path)
+      !/\/i18n\/[a-zA-Z-]+\.ts$/.test(path) &&
+      !PER_LOCALE_TABLES.has(relative(root, path).split(sep).join('/'))
     )
       files.push(path);
   }
