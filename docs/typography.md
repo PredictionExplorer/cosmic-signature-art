@@ -116,6 +116,15 @@ ss01 ss02 subs sups tnum zero`, with 371 small capitals across Latin, Cyrillic a
    slanted Han, kana and Hangul, a distortion no CJK typesetter accepts (`運動のかたち。`).
    *Fixed:* CJK pages set `font-synthesis-style: none`; Latin keeps Literata's true italic, CJK stays
    upright.
+
+   The same fault stood in small capitals until 15 November 2026. A label that asks for
+   `all-small-caps` on a CJK page asks it of a face that has none, and the browser drew each Han,
+   kana or Hangul character at 70 %: 8.4 px at the floor, as in finding 1, with the computed size
+   still 12 px. Only `.eyebrow` and `.small-caps` cleared the request there; a module's own label
+   did not (the strip's state word, the collection's range and captions, the record's headings and
+   checks). *Fixed:* CJK pages also set `font-synthesis-small-caps: none`, so no face fakes one,
+   whatever a stylesheet asks. A label's Latin words keep Literata's drawn small capitals, and the
+   venue's name keeps its stand-in's until Literata has loaded.
 4. **CJK inside instrument strings fell to the system's gothic.** The mono stack named no CJK face, so
    the Borda line, the counts line, `コピー` and `复制` were drawn in Hiragino Sans, PingFang or Apple SD
    Gothic Neo beside the serif. *Fixed:* each locale's mono stack falls to its own serif; the fallback
@@ -203,8 +212,9 @@ eight catalogs (no straight quote anywhere).
 - **Punctuation.** Chinese and Japanese take `—`, `…`, `“` and `”` from their own face; single quotes
   stay Literata's, so a Latin apostrophe stays Latin. Korean punctuates as Latin does and keeps
   Literata's.
-- **Spacing.** CJK display has no tracking and leads at 1.25; CJK reading leads at 1.9; small capitals
-  and uppercase are off in CJK. `palt` was considered for Japanese display and rejected: Shippori Mincho
+- **Spacing.** CJK display has no tracking and leads at 1.25; CJK reading leads at 1.9; eyebrows and
+  the small-capital class drop their small capitals, tracking and uppercase in CJK, and no other
+  label's ideographs are ever shrunk for one (§3.1.3). `palt` was considered for Japanese display and rejected: Shippori Mincho
   B1 carries no `palt`.
 - **Ukrainian.** Literata's Cyrillic has the Ukrainian forms (`і ї є ґ`); the catalog uses «» and ’
   correctly; digit groups are bound (§3.2.9).
@@ -261,6 +271,13 @@ their faces. Line gaps are 0 throughout.
   do not carry, unless `PENDING_FEATURES` lists it with what the browser does instead. It listed
   `smcp`, `c2sc` and `onum` until the complete Literata shipped; it is empty now, and it fails if
   Literata starts carrying a listed feature, so the list cannot go stale.
+
+That check reads the book face, and a stylesheet's computed sizes read the floor as kept whatever
+is drawn. So the browser suite measures the type itself (`tests/e2e/drawn.spec.ts`, since
+15 November 2026): on each Chinese, Japanese and Korean page it takes every text that holds a Han,
+kana or Hangul character and compares the width that character is drawn at with the same
+character set plainly beside it, in the same face at the same size. A faked small capital is 70 to
+75 % of that width, in Chromium and in WebKit alike.
 
 ### 4.4 Licensing
 

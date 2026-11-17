@@ -728,7 +728,10 @@ export const vi: Messages = {
   orreryLine:
     'Mọi quỹ đạo trong bộ sưu tập, được diễn cùng lúc từ hạt giống của mình, theo nhịp của phim Ánh sáng.',
   orreryNote:
-    'Mỗi quỹ đạo bắt đầu từ bước đầu tiên của khoảng được ghi lại, được suy lại từ hạt giống và đối chiếu với hồ sơ trước khi được lưu. Những gì chuyển động được trình duyệt này tính ngay trong lúc xem, không phải phát lại. Trỏ vào một tác phẩm, hoặc chọn nó bằng bàn phím, để xem ảnh tĩnh Ánh sáng của chính nó.',
+    'Mỗi quỹ đạo bắt đầu từ bước đầu tiên của khoảng được ghi lại, được suy lại từ hạt giống và đối chiếu với hồ sơ trước khi được lưu. Những gì chuyển động được trình duyệt này tính ngay trong lúc xem, không phải phát lại.',
+  orreryPoint:
+    'Trỏ vào một tác phẩm, hoặc chọn nó bằng bàn phím, để xem ảnh tĩnh Ánh sáng của chính nó.',
+  orreryTouch: 'Chạm vào một tác phẩm để vào.',
   orreryStill: 'Chuyển động đang tạm dừng, nên mỗi quỹ đạo được vẽ trọn một lần.',
   orreryFallback:
     'Trình duyệt này không diễn được các quỹ đạo tại đây; ảnh tĩnh Ánh sáng của từng tác phẩm được hiển thị thay thế.',

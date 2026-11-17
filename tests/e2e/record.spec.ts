@@ -2,7 +2,7 @@ import { expect, test, type Page } from './fixtures';
 import { catalogs } from '../../src/lib/i18n/messages';
 import { localizedPath } from '../../src/lib/i18n/routing';
 import { readFileSync } from 'node:fs';
-import { noHorizontalOverflow } from './helpers';
+import { facesLoaded, noHorizontalOverflow } from './helpers';
 
 /** The record tests read the still; ambient motion is paused before the page loads. */
 async function pauseMotion(page: Page) {
@@ -14,6 +14,61 @@ const archive = JSON.parse(
   readFileSync(new URL('../../src/lib/art/curated-records.json', import.meta.url), 'utf8'),
 ) as { records: { id: number; transactionHash: string; seed: string }[] };
 const identity = archive.records.find((entry) => entry.id === 31)!;
+
+test('Verify on chain keeps each Copy whole on its line, and a hash with its arrow', async ({
+  page,
+}) => {
+  await pauseMotion(page);
+  await page.goto('/art/31?view=still#record');
+  const verify = page.getByRole('main').locator('#record details', { hasText: t.verifyOnChain });
+  await verify.locator('summary').click();
+  await facesLoaded(page);
+  // Each address here has the one word that copies it: the recipient's always, the custodian's
+  // and the anchoring participant's when the record names them. Beside 42 characters of address
+  // on a phone the word was squeezed to 28 px and broke in two, Cop over y.
+  const copies = verify.getByRole('button', { name: new RegExp(`^${t.copyAddress} 0x`) });
+  await expect(copies.first()).toBeVisible();
+  const drawn = await copies.evaluateAll((buttons) =>
+    buttons.map((button) => {
+      const word = document.createRange();
+      word.selectNodeContents(button.firstChild!);
+      const lines = new Set(
+        [...word.getClientRects()].filter((rect) => rect.width > 0.5).map((rect) => rect.top),
+      );
+      const box = button.getBoundingClientRect();
+      return {
+        lines: lines.size,
+        wide: Math.round(box.width * 1000) / 1000 >= 44,
+        tall: Math.round(box.height * 1000) / 1000 >= 44,
+      };
+    }),
+  );
+  expect(drawn.length).toBeGreaterThan(0);
+  for (const copy of drawn) expect(copy).toEqual({ lines: 1, wide: true, tall: true });
+  // The arrow that says a link leaves the venue stands in the line its hash ends on: the hash
+  // took two lines on a phone, and the arrow a third, alone.
+  const lines = await verify.getByRole('link', { name: /Transaction/ }).evaluate((link) => {
+    const top = (node: Node, at: number) => {
+      const range = document.createRange();
+      range.setStart(node, at);
+      range.setEnd(node, at + 1);
+      return range.getBoundingClientRect().top;
+    };
+    let hashEnds: number | undefined;
+    let arrow: number | undefined;
+    const texts = document.createTreeWalker(link, NodeFilter.SHOW_TEXT);
+    for (let node = texts.nextNode(); node; node = texts.nextNode()) {
+      const text = node.textContent ?? '';
+      if (text.includes('↗')) arrow = top(node, text.indexOf('↗'));
+      else if (/[\da-f]$/.test(text)) hashEnds = top(node, text.length - 1);
+    }
+    return { hashEnds, arrow };
+  });
+  expect(lines.hashEnds).toBeDefined();
+  expect(lines.arrow).toBeDefined();
+  expect(Math.abs(lines.arrow! - lines.hashEnds!)).toBeLessThan(3);
+  await noHorizontalOverflow(page);
+});
 
 test('an artwork is typed as a catalogue entry from the publisher’s record, with its proofs and files', async ({
   page,

@@ -116,6 +116,12 @@ function Mark({ n, t }: { n: number; t: Messages }) {
   );
 }
 
+/**
+ * How much of a hash's end stays in one line with the arrow after it. A hash wraps wherever its
+ * line ends, so the arrow alone could be all that reaches the next line.
+ */
+const HASH_TAIL = 4;
+
 /** The middle dot between items: it may end a line, never open one (src/lib/typography.ts). */
 function Separator() {
   return <span className={styles.separator}>{SEPARATOR}</span>;
@@ -513,7 +519,10 @@ export function EntryView({
                   rel="noreferrer"
                   aria-label={`${t.transaction} ${work.provenance.mintTransactionHash}`}
                 >
-                  <code>{work.provenance.mintTransactionHash}</code> ↗
+                  <code>{work.provenance.mintTransactionHash.slice(0, -HASH_TAIL)}</code>
+                  <span className={styles.tail}>
+                    <code>{work.provenance.mintTransactionHash.slice(-HASH_TAIL)}</code> ↗
+                  </span>
                 </a>
               </dd>
             </div>

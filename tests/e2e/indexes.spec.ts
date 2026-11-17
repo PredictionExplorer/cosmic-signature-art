@@ -493,6 +493,22 @@ test.describe('The Orrery', () => {
     await expect(page).toHaveURL(/\/art\/31$/);
   });
 
+  for (const locale of locales)
+    test(`says what a pointer can do, or what a finger can, never both: ${locale}`, async ({
+      page,
+      isMobile,
+    }) => {
+      const words = catalogs[locale];
+      await ready(page, localizedPath(locale, '/collection/orrery'));
+      // A finger cannot point: told to, a phone's visitor was asked for what a phone cannot do.
+      const pointing = page.getByText(words.orreryPoint, { exact: true });
+      const touching = page.getByText(words.orreryTouch, { exact: true });
+      await expect(isMobile ? touching : pointing).toBeVisible();
+      await expect(isMobile ? pointing : touching).toBeHidden();
+      // The sentence shown ends the note's own paragraph.
+      await expect(page.locator('section[data-mode] > p').first()).toContainText(words.orreryNote);
+    });
+
   test('a phone hangs two orbits to a row, each wide enough to read', async ({
     page,
     isMobile,

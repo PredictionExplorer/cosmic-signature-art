@@ -111,10 +111,13 @@ describe('the entry', () => {
     const verify = screen.getByText(en.verifyOnChain).closest('details')!;
     expect(verify).toHaveTextContent(artwork().seed!);
     expect(verify).toHaveTextContent(artwork().media.find((m) => m.id === 'ink')!.stillSha256!);
-    expect(within(verify).getByRole('link', { name: /Transaction/ })).toHaveAttribute(
-      'href',
-      `https://arbiscan.io/tx/${artwork().provenance.mintTransactionHash}`,
-    );
+    const transaction = within(verify).getByRole('link', { name: /Transaction/ });
+    const hash = artwork().provenance.mintTransactionHash!;
+    expect(transaction).toHaveAttribute('href', `https://arbiscan.io/tx/${hash}`);
+    // The hash reads whole, and its last characters are one unbroken run with the arrow: a
+    // hash wraps wherever its line ends, and the arrow alone must never be what wraps.
+    expect(transaction.textContent).toBe(`${hash} ↗`);
+    expect(transaction.querySelector('span')?.textContent).toBe(`${hash.slice(-4)} ↗`);
     expect(verify).toHaveTextContent(en.honestyRecord);
     expect(verify).toHaveTextContent(en.honestyMedia);
     expect(screen.queryByText(en.preservedRecord)).not.toBeInTheDocument();

@@ -5,6 +5,7 @@ import { useEffect, useEffectEvent, useRef, useState, useSyncExternalStore } fro
 import type { OrbitWindow } from '@/lib/physics/orbit';
 import type { OrreryReply, OrreryRequest } from '@/lib/physics/orrery';
 import { OrreryPace } from '@/lib/physics/orrery-pace';
+import { sentenceGap } from '@/lib/typography';
 import { useMotion } from './motion-provider';
 import styles from './orrery.module.css';
 
@@ -60,14 +61,18 @@ function subscribeRatio(onChange: () => void) {
  * cell is a canvas handed to one worker (src/lib/physics/orrery.worker.ts), which performs the
  * orbits in view at the Light film's pace and draws each whole, once, under a still preference.
  * The page keeps the worker's beat, a frame at a time (src/lib/physics/orrery-pace.ts). Pointing
- * at a work, or focusing it, shows its own Light still in the cell. A browser that cannot hand
- * canvases to a worker shows every work's Light still instead.
+ * at a work, or focusing it, shows its own Light still in the cell; a finger has no hover, and
+ * its tap enters the work, so the note's last sentence says one thing to a pointer and another
+ * where the screen is touched. A browser that cannot hand canvases to a worker shows every work's
+ * Light still instead.
  */
 export function Orrery({
   cycles,
   title,
   line,
   note,
+  point,
+  touch,
   still,
   fallback,
 }: {
@@ -75,6 +80,10 @@ export function Orrery({
   title: string;
   line: string;
   note: string;
+  /** The note's last sentence, to a pointer: what pointing at a work shows. */
+  point: string;
+  /** The same place in the note where the screen is touched: what a tap does. */
+  touch: string;
   still: string;
   fallback: string;
 }) {
@@ -204,7 +213,13 @@ export function Orrery({
         <h1 className={styles.title}>{title}</h1>
         <p className={styles.line}>{line}</p>
       </header>
-      <p className={styles.note}>{note}</p>
+      <p className={styles.note}>
+        {note}
+        {sentenceGap(note)}
+        {/* One of the two is shown: the stylesheet asks what the screen is used with. */}
+        <span className={styles.pointing}>{point}</span>
+        <span className={styles.touching}>{touch}</span>
+      </p>
       <p className={styles.state} role="status">
         {performing === false ? fallback : performing && !moving ? still : ''}
       </p>
