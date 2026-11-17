@@ -3,6 +3,273 @@ import { catalogs, messages } from './messages';
 import { locales, type Locale } from './routing';
 import { NEVER_OF_AN_ORBIT } from '../../../tests/word-rules';
 
+type Key = keyof typeof catalogs.en;
+type ByLocale = Partial<Record<Locale, RegExp>>;
+const byLocale = (words: ByLocale) => Object.entries(words) as [Locale, RegExp][];
+
+/** The strings where English names a thing. The name of a blank ({window}) is not a word. */
+const whereEnglishSays = (word: RegExp) =>
+  (Object.keys(catalogs.en) as Key[]).filter((key) =>
+    word.test(catalogs.en[key].replace(/\{\w+\}/g, '')),
+  );
+
+/**
+ * One word for one thing (ARCHITECTURE.md § 10): a row for each term that the language reviews of
+ * November 2026 found with two names in one catalogue. Add a row when a review finds another.
+ */
+interface Term {
+  /** The thing, as its test is titled. */
+  thing: string;
+  /** What English calls it. */
+  english: RegExp;
+  /** The strings where English says that word of something else. */
+  apart?: Key[];
+  /** One string that must be among them, so that rewording the source cannot empty a row unseen. */
+  among: Key;
+  /** The one name: every string where English names the thing holds it. */
+  name: ByLocale;
+  /** The second name, which no string of the catalogue may hold. */
+  never?: ByLocale;
+  /** A second name rightly said of something else: refused only where English names this thing. */
+  notHere?: ByLocale;
+}
+const ONE_NAME: Term[] = [
+  {
+    // The published trait's label and its note said 行く末, 최종 상태 and 归宿, while the row of
+    // the orbit's own table, where a browser runs the same test, and the Verify page said 運命,
+    // 운명 and 命运: destiny, which claims an ending the record does not.
+    thing: 'a fate, on the published trait and in the orbit’s own table alike',
+    english: /\bfates?\b/i,
+    among: 'orbitFate',
+    name: {
+      uk: /дол[яюі]/i,
+      ja: /行く末/,
+      ko: /최종 상태/,
+      zh: /归宿/,
+      'zh-TW': /歸宿/,
+      'zh-HK': /歸宿/,
+      vi: /kết cục/i,
+    },
+    never: { ja: /運命/, ko: /운명/, zh: /命运/, 'zh-TW': /命運/, 'zh-HK': /命運/ },
+  },
+  {
+    // The steps a work records. Japanese said it three ways (記録区間, 記録された区間,
+    // 記録された時間), Korean two (기록 구간, 기록된 구간), Chinese two (记录区间, 记录的时段) and
+    // Vietnamese three («khoảng được ghi lại», «cửa sổ đã ghi», «khoảng đã ghi»). The traditional
+    // catalogues spell the noun 紀錄 and the verb 記錄, so the same name in the verb's spelling is
+    // refused too. The magnifier's window is another thing, «khung xem» in Vietnamese.
+    thing: 'the recorded window',
+    english: /\bwindow\b/i,
+    apart: ['loupeKeys'],
+    among: 'orbitProgressWindow',
+    name: {
+      uk: /вікн/i,
+      ja: /記録区間/,
+      ko: /기록된 구간/,
+      zh: /记录区间/,
+      'zh-TW': /紀錄區間/,
+      'zh-HK': /紀錄區間/,
+      vi: /khoảng được ghi lại/i,
+    },
+    never: {
+      ja: /記録された(区間|時間)/,
+      ko: /기록 구간/,
+      zh: /记录的时段/,
+      'zh-TW': /[紀記]錄的時段|記錄區間/,
+      'zh-HK': /[紀記]錄的時段|記錄區間/,
+      vi: /cửa sổ|khoảng đã ghi/i,
+    },
+  },
+  {
+    // English says "measure" and "measurement" of the one thing. Japanese said 計測値 in the
+    // Statement and the trails, and 測定値 in the table of the orbit derived again, where a count
+    // of them is 項目. Ukrainian keeps two forms of the one root, each to its own strings (below).
+    thing: 'a measurement',
+    english: /\bmeasurements?\b|(?:’s|this|same|the) measure\b/i,
+    among: 'orbitMeasurement',
+    name: {
+      uk: /вимір/i,
+      ja: /計測値|項目/,
+      ko: /측정/,
+      zh: /测量/,
+      'zh-TW': /測量/,
+      'zh-HK': /測量/,
+      vi: /phép đo/i,
+    },
+    never: { ja: /測定/ },
+  },
+  {
+    // What the publisher gives each token. English says "characteristics" once and "trait" once,
+    // and Japanese said 特徴 for the first and 特性 for the second.
+    thing: 'a published trait',
+    english: /\btraits?\b|\bcharacteristics\b/i,
+    among: 'glossaryFate',
+    name: { ja: /特性/, ko: /특성/, zh: /特征/, 'zh-TW': /特徵/, 'zh-HK': /特徵/ },
+    never: { ja: /特徴/ },
+  },
+  {
+    // Taiwan's catalogue said 算繪 in two strings and 渲染 in eight, the Statement among them.
+    // Both are Taiwan's words; 渲染 is the painter's, a wash of ink.
+    thing: 'a rendering, in Chinese',
+    english: /\brender/i,
+    among: 'glossaryExpression',
+    name: { zh: /渲染/, 'zh-TW': /渲染/, 'zh-HK': /渲染/ },
+    never: { 'zh-TW': /算繪/ },
+  },
+  {
+    // The Taiwan and Hong Kong catalogues said 引力 in three strings beside 重力 in the
+    // Statement. Taiwan's standard names the force 重力 and Hong Kong admits both; 引力 is the
+    // mainland's name for it, which the Simplified catalogue keeps. Vietnamese said «trọng lực»
+    // once, which is the Earth's pull on a thing, its weight.
+    thing: 'gravity',
+    english: /\bgravity\b/i,
+    among: 'gravityCopy',
+    name: {
+      uk: /гравітац/i,
+      ja: /重力/,
+      ko: /중력/,
+      zh: /引力/,
+      'zh-TW': /重力/,
+      'zh-HK': /重力/,
+      vi: /lực hấp dẫn/i,
+    },
+    never: { zh: /重力/, 'zh-TW': /引力/, 'zh-HK': /引力/, vi: /trọng lực/i },
+  },
+  {
+    // Hong Kong's catalogue said 哈希值, the mainland's word, in two strings, and 雜湊值, the
+    // word of Hong Kong's law and government, in three.
+    thing: 'a hash',
+    english: /\bhash/i,
+    among: 'publishedHashes',
+    name: {
+      uk: /хеш/i,
+      ja: /ハッシュ/,
+      ko: /해시/,
+      zh: /哈希/,
+      'zh-TW': /雜湊/,
+      'zh-HK': /雜湊/,
+      vi: /mã băm/i,
+    },
+    never: { 'zh-TW': /哈希/, 'zh-HK': /哈希/ },
+  },
+  {
+    // A plate was 版面, a page's layout, in five strings of each Chinese catalogue. It is 图版,
+    // the book's word, as 図版 and 도판 are. 幅 is its measure word, and stands for it where the
+    // noun is understood: 整幅, 第 3 幅.
+    thing: 'a plate in Chinese, with its measure word',
+    english: /\bplates?\b/i,
+    among: 'colophonPlates',
+    name: {
+      zh: /图版|整幅|第 \{n\} 幅/,
+      'zh-TW': /圖版|整幅|第 \{n\} 幅/,
+      'zh-HK': /圖版|整幅|第 \{n\} 幅/,
+    },
+    never: { zh: /版面/, 'zh-TW': /版面/, 'zh-HK': /版面/ },
+  },
+  {
+    // Deriving an orbit again from its seed is «наново», afresh. «знову», once more, stood in one
+    // such string; it is rightly said of a body that leaves the picture a second time.
+    thing: 'the orbit derived again, in Ukrainian',
+    english: /\bagain from\b|\bre-(?:derived|performed)\b/i,
+    among: 'orreryNote',
+    name: { uk: /наново/i },
+    notHere: { uk: /знову/i },
+    never: { uk: /заново/i },
+  },
+  {
+    // The room where a work is seen alone. The key sheet said «зала перегляду» and «phòng xem»
+    // beside the name on the room itself.
+    thing: 'the viewing room',
+    english: /\bviewing room\b/i,
+    among: 'keyFilm',
+    name: { uk: /зал\S* споглядання/i, vi: /phòng thưởng lãm/i },
+    never: { uk: /зал\S* перегляду/i, vi: /phòng xem/i },
+  },
+  {
+    // Light and Ink are a work's two expressions. Ukrainian said «вираз», a phrase or a formula,
+    // in five strings beside «втілення» in six; Vietnamese «cách thể hiện» and «cách biểu đạt»,
+    // a manner, beside the bare noun the glossary defines.
+    thing: 'an expression',
+    english: /\bexpressions?\b/i,
+    among: 'glossaryExpression',
+    name: { uk: /втілен/i, vi: /biểu đạt/i },
+    never: { uk: /вираз/i, vi: /cách biểu đạt|thể hiện/i },
+  },
+  {
+    // A work is imprinted when its cycle closes. The cycle's note said «відтиснено» under a label
+    // that says «відбито».
+    thing: 'an imprint, in Ukrainian',
+    english: /\bimprint/i,
+    among: 'cycleNote',
+    name: { uk: /відби/i },
+    never: { uk: /відтис/i },
+  },
+  {
+    // The Vietnamese label said «Lớp phổ» over a note that began «Lớp quang phổ».
+    thing: 'the spectral class',
+    english: /\bspectral class\b/i,
+    among: 'glossarySpectralClass',
+    name: {
+      uk: /спектральн\S* клас/i,
+      ja: /スペクトル型/,
+      'zh-TW': /光譜型/,
+      vi: /lớp quang phổ/i,
+    },
+    never: { vi: /lớp phổ/i },
+  },
+  {
+    // The labels said «điểm giao của các đường bện» and the trail «giao cắt bím»: a plait of hair.
+    thing: 'a braid’s crossings, in Vietnamese',
+    english: /\bcrossings?\b/i,
+    among: 'measureCrossings',
+    name: { vi: /điểm giao/i },
+    never: { vi: /giao cắt|bím/i },
+  },
+  {
+    // A film's name, on its control. The Vietnamese notice called it «bản nghiên cứu dài» beside
+    // «Khảo sát dài»; Korean once did the like (긴 연구, refused above).
+    thing: 'the long study',
+    english: /\b(?:long|extended) study\b/i,
+    among: 'studyWaits',
+    name: {
+      uk: /етюд/i,
+      ja: /習作/,
+      ko: /관찰/,
+      zh: /研究/,
+      'zh-TW': /研究/,
+      'zh-HK': /研究/,
+      vi: /khảo sát/i,
+    },
+    never: { vi: /nghiên cứu/i },
+  },
+  {
+    // «kiểm» is a verb and does not stand as a noun. Vietnamese writing on voting says «đếm
+    // Borda»; with «phép», the catalogue's word for an operation, it is a noun.
+    thing: 'the Borda count, in Vietnamese',
+    english: /\bborda\b/i,
+    among: 'glossaryBorda',
+    name: { vi: /phép đếm Borda/i },
+    never: { vi: /kiểm Borda/i },
+  },
+  {
+    // The camera's drift. Japanese and Korean had the Chinese word once (漂移, 표류) beside the
+    // loan word, and Vietnamese «hình elip trôi» beside «trôi dạt».
+    thing: 'the drift',
+    english: /\bdrift\b/i,
+    among: 'eccentricity',
+    name: {
+      uk: /дрейф/i,
+      ja: /ドリフト/,
+      ko: /드리프트/,
+      zh: /漂移/,
+      'zh-TW': /漂移/,
+      'zh-HK': /漂移/,
+      vi: /trôi dạt/i,
+    },
+    never: { ja: /漂移/, ko: /표류/, vi: /trôi(?! dạt)/i },
+  },
+];
+
 describe('production translations', () => {
   for (const locale of locales) {
     it(`${locale} has every English key and no unexpected key`, () => {
@@ -189,6 +456,48 @@ describe('production translations', () => {
         expect(value, `${locale}.${key}`).not.toMatch(other);
   });
 
+  for (const { thing, english, apart = [], among, name, never = {}, notHere = {} } of ONE_NAME)
+    it(`has one name for ${thing}`, () => {
+      const named = whereEnglishSays(english).filter((key) => !apart.includes(key));
+      expect(named, 'the strings where English names it').toContain(among);
+      for (const [locale, word] of byLocale(name))
+        for (const key of named) expect(catalogs[locale][key], `${locale}.${key}`).toMatch(word);
+      for (const [locale, word] of byLocale(notHere))
+        for (const key of named)
+          expect(catalogs[locale][key], `${locale}.${key}`).not.toMatch(word);
+      for (const [locale, word] of byLocale(never))
+        for (const [key, value] of Object.entries(catalogs[locale]))
+          expect(value, `${locale}.${key}`).not.toMatch(word);
+    });
+
+  it('lets two forms stand only where each keeps to its own strings', () => {
+    const holding = (locale: Locale, word: RegExp) =>
+      (Object.keys(catalogs[locale]) as Key[]).filter((key) => word.test(catalogs[locale][key]));
+    // Ukrainian has the result and the act of one verb, as English has "measure" and
+    // "measurement". «вимір» is a measure that a trait or a trail goes by. «вимірювання» is a row
+    // of the table of the orbit derived again: it heads the column, where «Вимір» alone would
+    // read "Dimension", and the four sentences that count the rows say it after their label.
+    expect(holding('uk', /вимірюван/i).sort()).toEqual([
+      'orbitAllExact',
+      'orbitMeasurement',
+      'orbitSomeDiffer',
+      'verifyOrbitSomeUnchecked',
+      'verifyOrbitWorkIntro',
+    ]);
+    // Vietnamese tells two things apart, as English does with "beginnings" and "start". A «khởi
+    // điểm» is one of the candidates drawn from the seed, a thing one counts (and, of a sale, the
+    // opening bid). It is the word of the choice field, and of the chapter of the Process essay
+    // that stands above that figure and tells the same choice (`essayChoice…`). «trạng thái ban
+    // đầu» is the state a path follows from, wherever English says "its start". «điều kiện ban
+    // đầu», once a third, is said nowhere.
+    const start = whereEnglishSays(/\b(?:their|that|its) start\b/i);
+    expect(start).toContain('statement3');
+    expect(holding('vi', /trạng thái ban đầu/i).sort()).toEqual([...start].sort());
+    for (const key of holding('vi', /khởi điểm/i))
+      expect(key).toMatch(/^choiceField|^essayChoice|^opening/);
+    expect(holding('vi', /điều kiện ban đầu/i)).toEqual([]);
+  });
+
   it('names Sit in its key line by the word on the control', () => {
     // The control's hint and the key sheet read the one line (keySit); in seven languages it
     // once began with another word than the control beside it (Сісти beside Споглядати).
@@ -276,10 +585,12 @@ describe('production translations', () => {
     expect(catalogs['zh-HK'].privacyCopy).toContain('網絡');
     expect(catalogs['zh-TW'].privacy).not.toBe(catalogs['zh-HK'].privacy);
     // Each spells "publish" one way: 發佈 in Hong Kong, where eight strings once said 發布 beside
-    // twenty-eight, and 發布 in Taiwan. "Here" is 這裏 in Hong Kong and 這裡 in Taiwan.
+    // twenty-eight, and 發布 in Taiwan. Hong Kong writes 公佈 with the same 佈, where three strings
+    // said 公布. "Here" is 這裏 in Hong Kong and 這裡 in Taiwan.
     const hongKong = Object.values(catalogs['zh-HK']).join(' ');
     const taiwan = Object.values(catalogs['zh-TW']).join(' ');
-    expect(hongKong).not.toMatch(/發布|這裡/);
+    expect(hongKong).not.toMatch(/發布|公布|這裡/);
+    expect(hongKong).toContain('公佈');
     expect(hongKong).toContain('發佈方');
     expect(taiwan).not.toMatch(/發佈|這裏/);
     expect(taiwan).toContain('發布方');
