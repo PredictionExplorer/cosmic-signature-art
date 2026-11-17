@@ -18,8 +18,8 @@ export const vi: Messages = {
   bidCountdown: 'Thời gian còn lại',
   previewCountdown: 'Đến khi có thể đặt giá',
 
-  preparingExpression: 'Đang mở cách thể hiện này…',
-  expressionFailed: 'Không thể tải cách thể hiện này. Tác phẩm hiện tại vẫn được trưng bày.',
+  preparingExpression: 'Đang mở biểu đạt này…',
+  expressionFailed: 'Không thể tải biểu đạt này. Tác phẩm hiện tại vẫn được trưng bày.',
   viewingRoom: 'Phòng thưởng lãm',
   exitFullScreen: 'Thoát toàn màn hình',
   fullScreenUnavailable:
@@ -55,7 +55,7 @@ export const vi: Messages = {
   block: 'Khối',
   earlierEvents: 'Sự kiện trước',
   latestEvents: 'Sự kiện mới nhất',
-  sources: 'Tệp và cách biểu đạt',
+  sources: 'Tệp và biểu đạt',
   masterFile: 'Tệp gốc',
   originalFilm: 'Phim đã công bố',
   metadataRecord: 'Siêu dữ liệu token',
@@ -68,7 +68,7 @@ export const vi: Messages = {
   noMediaFiles: 'Các tệp phương tiện đã công bố chưa khả dụng.',
   structure: 'Cấu trúc',
   palette: 'Bảng màu',
-  spectralClass: 'Lớp phổ',
+  spectralClass: 'Lớp quang phổ',
   massBalance: 'Cân bằng khối lượng',
   chaos: 'Hỗn độn',
   syzygies: 'Các lần ba vật thể thẳng hàng',
@@ -129,20 +129,20 @@ export const vi: Messages = {
   indexedNote:
     'Thông tin sở hữu được lập chỉ mục và có thể chậm hơn chuỗi. Địa chỉ hợp đồng có thể đại diện cho việc lưu giữ token.',
   viewChain: 'Xem trên Arbiscan',
-  mediaUnavailable: 'Cách biểu đạt này chưa khả dụng.',
+  mediaUnavailable: 'Biểu đạt này chưa khả dụng.',
   recordUnavailable: 'Hồ sơ trực tiếp tạm thời không khả dụng.',
   processTitle: 'Vật lý, trên nền vật lý.',
   processIntro:
     'Tác phẩm là dấu vết của một hệ chuyển động. Hai lớp vật lý tạo nên hình hài của dấu vết ấy.',
   gravityTitle: 'Trước tiên, một quỹ đạo.',
   gravityCopy:
-    'Ba vật thể tương tác qua trọng lực. Những quỹ đạo biến đổi của chúng trở thành các đường nét tạo nên bố cục.',
+    'Ba vật thể tương tác qua lực hấp dẫn. Những quỹ đạo biến đổi của chúng trở thành các đường nét tạo nên bố cục.',
   fluidTitle: 'Sau đó, một dòng chảy.',
   fluidCopy:
     'Những quỹ đạo ấy đưa sắc tố vào mô phỏng chất lưu tuân theo phương trình Navier–Stokes. Dòng chảy kéo giãn, gấp cuộn và khuếch tán mực trên nền giấy có sắc ấm.',
-  expressionTitle: 'Một danh tính. Nhiều cách biểu đạt.',
+  expressionTitle: 'Một danh tính. Nhiều biểu đạt.',
   expressionCopy:
-    'Ánh sáng và Mực là những cách kết xuất khác nhau của cùng một tác phẩm tạo sinh. Phim hé lộ quá trình; ảnh tĩnh lưu lại dấu vết cuối cùng. Những cách biểu đạt mới có thể bổ sung vào hệ này mà không tạo thêm token.',
+    'Ánh sáng và Mực là những cách kết xuất khác nhau của cùng một tác phẩm tạo sinh. Phim hé lộ quá trình; ảnh tĩnh lưu lại dấu vết cuối cùng. Những biểu đạt mới có thể bổ sung vào hệ này mà không tạo thêm token.',
   processNote:
     'Các phim được hiển thị là bản kết xuất tác phẩm đã ghi lại, không phải mô phỏng trực tiếp chạy trong trình duyệt này.',
   auctionTitle: 'Chuyển động tiếp theo.',
@@ -272,7 +272,7 @@ export const vi: Messages = {
   keyPlay: 'Phát hoặc tạm dừng phim',
   keyNeighbours: 'Tác phẩm trước và sau',
   keyExpressions: 'Mực và Ánh sáng; giữ để xem thoáng',
-  keyFilm: 'Mở phim trong phòng xem',
+  keyFilm: 'Mở phim trong phòng thưởng lãm',
   keySit: 'Ngắm: để giao diện mờ đi',
   keyStudy: 'Xem kỹ bản in ở kích cỡ đầy đủ',
   keyIndex: 'Mở mục lục',
@@ -319,7 +319,7 @@ export const vi: Messages = {
   entry: 'Mục ghi',
   selectionLine: 'Một trong {total} quỹ đạo ứng viên. Số {index} đã được chọn.',
   bordaNote:
-    'Kiểm Borda · trọng số hỗn độn {chaos} · trọng số cân bằng {equilibrium} · thẩm mỹ {aesthetic} · điểm {score}',
+    'Phép đếm Borda · trọng số hỗn độn {chaos} · trọng số cân bằng {equilibrium} · thẩm mỹ {aesthetic} · điểm {score}',
   threeBodyOrbit: 'Quỹ đạo ba vật thể.',
   inkMedium: 'Mực: mực tàu được chất lưu mô phỏng đưa lên nền giấy kozo.',
   lightMedium: 'Ánh sáng: những dải quỹ đạo phát sáng trên nền đen.',
@@ -344,11 +344,11 @@ export const vi: Messages = {
   glossarySpectralClass:
     'Lớp quang phổ theo thang sao, từ O xanh nhất đến M đỏ nhất, đọc từ bước sóng chủ đạo của bảng màu.',
   glossaryChaos:
-    'Hỗn độn, từ 0 đến 100, là phép đo của nhà phát hành: chuyển động của quỹ đạo trải rộng đến đâu trên các tần số, trong cửa sổ đã ghi. Gần 0, chuyển động ấy lặp lại như một máy đếm nhịp; gần 100, nó không giữ nhịp nào.',
+    'Hỗn độn, từ 0 đến 100, là phép đo của nhà phát hành: chuyển động của quỹ đạo trải rộng đến đâu trên các tần số, trong khoảng được ghi lại. Gần 0, chuyển động ấy lặp lại như một máy đếm nhịp; gần 100, nó không giữ nhịp nào.',
   glossarySyzygies:
     'Một syzygy là khoảnh khắc ba vật thể thẳng hàng. Số không nghĩa là điều đó chưa từng xảy ra.',
   glossaryBorda:
-    'Một trăm nghìn quỹ đạo ứng viên được mô phỏng và xếp hạng bằng kiểm Borda; số đã công bố là quỹ đạo nó chọn.',
+    'Một trăm nghìn quỹ đạo ứng viên được mô phỏng và xếp hạng bằng phép đếm Borda; số đã công bố là quỹ đạo nó chọn.',
   glossaryWavelength:
     'Bước sóng chủ đạo là sắc độ của màu neo trong bảng màu, đo bằng nanomét ánh sáng khả kiến.',
   glossaryMasses: 'Ba khối lượng định mức mỗi vật thể hút hai vật thể còn lại mạnh đến đâu.',
@@ -388,7 +388,7 @@ export const vi: Messages = {
   statement3:
     'Chúng tôi chọn ba vật thể vì ba là con số nhỏ nhất mà lực hấp dẫn không cho một công thức nào dùng được. Hai vật thể gắn kết với nhau lặp lại một hình elip, được biết trước trọn vẹn. Ba vật thể thì phải tính, từng bước một. Đường đi của chúng được định bởi trạng thái ban đầu đến chữ số cuối cùng, và một thay đổi ở chữ số thập phân thứ mười hai của trạng thái ấy có thể làm thay đổi những gì theo sau: trang của mỗi tác phẩm thử điều đó, trong mục “Một phần nghìn tỷ”. Đó là phẩm chất chúng tôi muốn mỗi tác phẩm mang theo.',
   statement4:
-    'Với mỗi tác phẩm, một trăm nghìn quỹ đạo ứng viên được mô phỏng và chấm điểm theo hỗn độn, cân bằng và hình thể. Một kiểm Borda xếp hạng chúng, và một quỹ đạo được chọn. Số của ứng viên được chọn được công bố trong hồ sơ của tác phẩm, bên cạnh những trọng số đã chọn nó.',
+    'Với mỗi tác phẩm, một trăm nghìn quỹ đạo ứng viên được mô phỏng và chấm điểm theo hỗn độn, cân bằng và hình thể. Một phép đếm Borda xếp hạng chúng, và một quỹ đạo được chọn. Số của ứng viên được chọn được công bố trong hồ sơ của tác phẩm, bên cạnh những trọng số đã chọn nó.',
   statement5:
     'Các tác phẩm được khắc dấu theo chu kỳ. Mỗi vòng thành công của trò chơi Cosmic Signature kết thúc bằng việc đúc token mới trên Arbitrum, và hạt giống của chúng được cố định trong chính giao dịch ấy. Chu kỳ 0 đã mở bộ sưu tập vào tháng 6 năm 2026. Bộ sưu tập lớn dần theo mỗi chu kỳ và không bao giờ sửa lại những gì đã công bố.',
   statement6:
@@ -455,10 +455,10 @@ export const vi: Messages = {
   timeOf: '{current} trên {total}',
   elapsed: 'đã qua {time}',
   slowRoom: 'Phòng chậm',
-  studyWaits: 'Với kết nối này, bản nghiên cứu dài chờ một bản mã nhẹ hơn; ảnh tĩnh tạm thay thế.',
+  studyWaits: 'Với kết nối này, bản khảo sát dài chờ một bản mã nhẹ hơn; ảnh tĩnh tạm thay thế.',
   playAnyway: 'Vẫn phát',
   durationSeconds: '{n} giây',
-  roomKeys: 'Phím trong phòng xem',
+  roomKeys: 'Phím trong phòng thưởng lãm',
   keyScrub: 'Lùi và tiến một giây; giữ Shift để mười giây',
   keyDetail: 'Chi tiết: một điểm ảnh tác phẩm trên một điểm ảnh màn hình',
   keyWhole: 'Toàn bộ bản in',
@@ -530,7 +530,7 @@ export const vi: Messages = {
   trailLongCurveRule:
     'Những tác phẩm có quỹ đạo dài ít nhất gấp 1,55 lần chiều rộng: những hình dài nhất của bộ sưu tập.',
   trailLongCurveNote:
-    'Phép đo này không phải của nhà phát hành. Nó được thực hiện tại đây, trên chính quỹ đạo chứ không phải trên bức ảnh: cứ mỗi một trăm bước của cửa sổ đã ghi, với cả ba vật thể, trên mặt phẳng nơi quỹ đạo trải rộng nhất; chiều dài theo trục thứ nhất của mặt phẳng ấy, chia cho chiều rộng theo trục thứ hai. Nó được suy ra từ hạt giống bằng chính phép tính mà trình duyệt của bạn chạy trên trang của mỗi tác phẩm. Khi lối đi này được treo, giá trị giữa của bộ sưu tập là 1,25, và tác phẩm năm mươi mốt, ở mức 2,01, dài gấp đôi chiều rộng. Chúng được treo theo thứ tự, từ dài nhất trở xuống.',
+    'Phép đo này không phải của nhà phát hành. Nó được thực hiện tại đây, trên chính quỹ đạo chứ không phải trên bức ảnh: cứ mỗi một trăm bước của khoảng được ghi lại, với cả ba vật thể, trên mặt phẳng nơi quỹ đạo trải rộng nhất; chiều dài theo trục thứ nhất của mặt phẳng ấy, chia cho chiều rộng theo trục thứ hai. Nó được suy ra từ hạt giống bằng chính phép tính mà trình duyệt của bạn chạy trên trang của mỗi tác phẩm. Khi lối đi này được treo, giá trị giữa của bộ sưu tập là 1,25, và tác phẩm năm mươi mốt, ở mức 2,01, dài gấp đôi chiều rộng. Chúng được treo theo thứ tự, từ dài nhất trở xuống.',
   trailLongCurveCorrected:
     'Treo lại tháng 11 năm 2026. Khi được treo lần đầu, ngày 27 tháng 10, lối đi này đi theo độ lệch tâm trôi dạt đã công bố, vốn mô tả đường đi của máy quay chứ không phải quỹ đạo. Mười tác phẩm khi ấy là 059, 053, 034, 030, 061, 002, 046, 068, 043 và 003.',
   trailAlmostStill: 'Gần như tĩnh lặng',
@@ -547,12 +547,12 @@ export const vi: Messages = {
     'Đính chính tháng 11 năm 2026. Khi được treo lần đầu, lối đi này nói rằng độ hỗn độn đo mức quỹ đạo phụ thuộc nhạy cảm vào nơi nó bắt đầu. Độ hỗn độn đo mức độ đều đặn của chuyển động.',
   trailLightBecomingTrace: 'Ánh sáng thành dấu vết',
   trailLightBecomingTraceRule:
-    'Những tác phẩm có số giao cắt bím đã công bố từ 50 trở lên: những dải quỹ đạo cắt nhau thường xuyên nhất.',
+    'Những tác phẩm có số điểm giao của các đường bện đã công bố từ 50 trở lên: những dải quỹ đạo cắt nhau thường xuyên nhất.',
   trailLightBecomingTraceNote:
-    'Mỗi lần một dải vượt qua dải khác, nhà phát hành tính một giao cắt. Nơi có nhiều giao cắt, bản in Ánh sáng là một tấm dệt, và trong Mực những giao cắt ấy trở thành nếp gấp trong một dấu vết duy nhất. Mười một, với 97, là tấm dệt dày nhất của bộ sưu tập khi lối đi này được treo; lối đi theo số đếm đi xuống tới năm mươi.',
+    'Mỗi lần một dải vượt qua dải khác, nhà phát hành tính một điểm giao. Nơi có nhiều điểm giao, bản in Ánh sáng là một tấm dệt, và trong Mực những điểm giao ấy trở thành nếp gấp trong một dấu vết duy nhất. Mười một, với 97, là tấm dệt dày nhất của bộ sưu tập khi lối đi này được treo; lối đi theo số đếm đi xuống tới năm mươi.',
   measureElongation: 'dài gấp {value} lần chiều rộng',
   measureChaos: 'hỗn độn {value} / 100',
-  measureCrossings: '{value} giao cắt',
+  measureCrossings: '{value} điểm giao',
   cycleNote:
     'Mọi tác phẩm của một chu kỳ được khắc trong một giao dịch khi chu kỳ khép lại. Chu kỳ là chương của bộ sưu tập, và trang này giữ nó như khi được treo.',
   results: 'Kết quả',
@@ -638,9 +638,9 @@ export const vi: Messages = {
     'Phim và ảnh tĩnh là các bản kết xuất được ghi lại của tác phẩm. Hình vẽ này là quỹ đạo nằm bên dưới chúng, được trình duyệt của bạn tính theo đúng trình tự của bộ tạo: dòng ngẫu nhiên của nó, việc chọn ứng viên {index}, và {steps} bước của bộ tích phân Yoshida bậc bốn.',
   afterTheFrame: 'Sau khung hình',
   afterTheFrameNote:
-    'Quá cửa sổ đã ghi, cùng một vật lý ấy vẫn tiếp diễn, theo nhịp của phim, và máy quay đứng yên ở nơi phim để lại. Đây không phải tác phẩm: đây là điều quỹ đạo của tác phẩm làm tiếp theo.',
+    'Quá khoảng được ghi lại, cùng một vật lý ấy vẫn tiếp diễn, theo nhịp của phim, và máy quay đứng yên ở nơi phim để lại. Đây không phải tác phẩm: đây là điều quỹ đạo của tác phẩm làm tiếp theo.',
   afterTheFrameNoteAsk:
-    'Quá cửa sổ đã ghi, cùng một vật lý ấy vẫn tiếp diễn, theo nhịp của phim. Khung hình đứng yên ở nơi phim để lại, hoặc ở lại với một trong ba vật thể, khi đó vật thể ấy đứng yên trong khung hình. Đây không phải tác phẩm: đây là điều quỹ đạo của tác phẩm làm tiếp theo.',
+    'Quá khoảng được ghi lại, cùng một vật lý ấy vẫn tiếp diễn, theo nhịp của phim. Khung hình đứng yên ở nơi phim để lại, hoặc ở lại với một trong ba vật thể, khi đó vật thể ấy đứng yên trong khung hình. Đây không phải tác phẩm: đây là điều quỹ đạo của tác phẩm làm tiếp theo.',
   orbitFate: 'Kết cục',
   orbitFateEjection: 'vật thể {body} không còn gắn kết ở bước {step}',
   orbitFateDance: 'còn gắn kết qua {steps} bước',
@@ -679,7 +679,7 @@ export const vi: Messages = {
   beyondOneStayed: '{time} sau đó, vật thể {body} vẫn ở trong khung hình.',
   orbitAdrift: 'Sau bước {step} không còn là quỹ đạo: năng lượng tính được đổi {change}.',
   orbitEnergyHeld:
-    'Theo phép tính tại đây, năng lượng được giữ đến {digits} chữ số trong suốt cửa sổ đã ghi.',
+    'Theo phép tính tại đây, năng lượng được giữ đến {digits} chữ số trong suốt khoảng được ghi lại.',
   orbitEnergyBroken:
     'Gần bước {step}, hai vật thể đi qua nhau chỉ cách {distance}, gần hơn mức mà bước cố định của phép tính theo kịp, và năng lượng của nó thay đổi {change}. Lực hấp dẫn giữ năng lượng không đổi, nên sau bước ấy đây là phép tính, không phải quỹ đạo.',
   orbitStageLabel:
@@ -728,7 +728,7 @@ export const vi: Messages = {
   orreryLine:
     'Mọi quỹ đạo trong bộ sưu tập, được diễn cùng lúc từ hạt giống của mình, theo nhịp của phim Ánh sáng.',
   orreryNote:
-    'Mỗi quỹ đạo bắt đầu từ bước đầu tiên của khoảng đã ghi, được suy lại từ hạt giống và đối chiếu với hồ sơ trước khi được lưu. Những gì chuyển động được trình duyệt này tính ngay trong lúc xem, không phải phát lại. Trỏ vào một tác phẩm, hoặc chọn nó bằng bàn phím, để xem ảnh tĩnh Ánh sáng của chính nó.',
+    'Mỗi quỹ đạo bắt đầu từ bước đầu tiên của khoảng được ghi lại, được suy lại từ hạt giống và đối chiếu với hồ sơ trước khi được lưu. Những gì chuyển động được trình duyệt này tính ngay trong lúc xem, không phải phát lại. Trỏ vào một tác phẩm, hoặc chọn nó bằng bàn phím, để xem ảnh tĩnh Ánh sáng của chính nó.',
   orreryStill: 'Chuyển động đang tạm dừng, nên mỗi quỹ đạo được vẽ trọn một lần.',
   orreryFallback:
     'Trình duyệt này không diễn được các quỹ đạo tại đây; ảnh tĩnh Ánh sáng của từng tác phẩm được hiển thị thay thế.',
