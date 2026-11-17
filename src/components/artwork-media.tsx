@@ -74,6 +74,34 @@ export function stillRequest(
   const srcSet = capped ? cappedSourceSet(media) : stillSourceSet(media);
   return { src: media.still, srcSet, sizes: srcSet ? sizes : undefined };
 }
+/**
+ * What a surface asks for once the candidate the browser chose could not be loaded: the venue's
+ * own rungs of the same still and nothing else, or nothing at all when it holds none, when the
+ * candidate is not known, or when the file that failed was itself one of them.
+ *
+ * The published still is the publisher's file, and for most works (those outside the curated
+ * registry) so is every candidate wider than the widest rung. A screen that needs more than that
+ * rung asks the publisher, and with the publisher's host out of reach it had nothing to show.
+ * A rung is the published still at a smaller size, cut from the same master and proved against
+ * both (still-ladder.ts): the work is not altered, but the plate is then below the screen's own
+ * resolution, and the browser fits the rung to the plate as it fits any image. No larger file is
+ * made from it, and no other image stands in.
+ */
+export function localStillRequest(
+  media: ArtInterpretation | undefined,
+  failed: string,
+  { capped = false, sizes = PLATE_SIZES }: { capped?: boolean; sizes?: string } = {},
+): StillRequest | undefined {
+  const held = media?.rungs ?? [];
+  if (!failed || held.some((rung) => failed.endsWith(rung.src))) return undefined;
+  const rungs = capped ? held.filter((rung) => rung.width <= CONSTRAINED_RUNG_PX) : held;
+  if (!rungs.length) return undefined;
+  return {
+    src: rungs[rungs.length - 1].src,
+    srcSet: rungs.map((rung) => `${rung.src} ${rung.width}w`).join(', '),
+    sizes,
+  };
+}
 const noSubscription = () => () => {};
 /** False while the server's markup is being hydrated, true from the first client render after. */
 function useHydrated() {
@@ -278,6 +306,8 @@ function ArtworkMediaSession({
   const [thumbnailFailed, setThumbnailFailed] = useState(false);
   const [previewFailed, setPreviewFailed] = useState(false);
   const [imageFailed, setImageFailed] = useState(false);
+  /** The candidate of the still that could not be loaded, once the venue's own rungs are asked for instead. */
+  const [lostStill, setLostStill] = useState<string>();
   const [settled, setSettled] = useState(false);
   /** The film has ended: its last frame is held, then fades into the still beneath. */
   const [resting, setResting] = useState(false);
@@ -333,14 +363,16 @@ function ArtworkMediaSession({
   );
   const cardSource =
     thumbnail && !thumbnailFailed ? (media?.thumbnail ?? media?.still) : media?.still;
-  const preview =
-    thumbnail || previewFailed
-      ? undefined
-      : (previewSrc ??
-        (media?.thumbnail && media.thumbnail !== media.still ? media.thumbnail : undefined));
+  const previewSource = thumbnail
+    ? undefined
+    : (previewSrc ??
+      (media?.thumbnail && media.thumbnail !== media.still ? media.thumbnail : undefined));
+  const preview = previewFailed ? undefined : previewSource;
   // A plate with a preview layer arrives in two steps; anything else is a single image.
-  // A still that failed leaves the preview as the one image, so the plate still settles.
-  const layered = !thumbnail && !!preview && !!media?.still && !imageFailed;
+  // A still that failed leaves the preview as the one image, so the plate still settles. A
+  // preview that failed is taken away and the plate stays the same plate: its still keeps its
+  // element, so what has loaded is not fetched or decoded again, and arrives as it would have.
+  const layered = !thumbnail && !!previewSource && !!media?.still && !imageFailed;
   const arrival = layered ? (settled ? 'settled' : 'arriving') : 'single';
   const ground =
     artworkId !== undefined && media
@@ -351,11 +383,22 @@ function ArtworkMediaSession({
   // The cap applies only once the client knows its connection, so the hero still is fetched
   // once: the server's markup and the hydrating client's are the same.
   const hydrated = useHydrated();
-  const {
-    src: stillSrc,
-    srcSet: stillSet,
-    sizes: stillSizes,
-  } = stillRequest(media, { capped: hydrated && constrained, sizes }) ?? {};
+  const terms = { capped: hydrated && constrained, sizes };
+  const asked = stillRequest(media, terms);
+  const { src: stillSrc, srcSet: stillSet } = asked ?? {};
+  // What the plate's own still asks for: the ladder, or the venue's rungs alone once the
+  // candidate chosen from the ladder could not be loaded (localStillRequest).
+  const shown =
+    (lostStill === undefined ? undefined : localStillRequest(media, lostStill, terms)) ?? asked;
+  /**
+   * The still's candidate could not be loaded. The first time, the plate asks for the venue's
+   * own rungs if there are any to ask for; a second failure, or none to ask for, is the still's.
+   */
+  const stillBroke = (image: HTMLImageElement, lost: () => void) => {
+    const failed = image.currentSrc ?? '';
+    if (lostStill === undefined && localStillRequest(media, failed, terms)) setLostStill(failed);
+    else lost();
+  };
   if (priority && preview && !preview.startsWith('data:')) {
     preload(preview, { as: 'image', fetchPriority: 'high' });
   }
@@ -482,6 +525,21 @@ function ArtworkMediaSession({
     };
   }, []);
   useEffect(() => () => clearTimeout(restTimer.current), []);
+  // The server's markup asks for the plate's images, and a refused connection can answer before
+  // the plate has hydrated. An error that fired then was heard by no one, and React does not say
+  // it again: the plate stayed as it was sent, empty, with its preview's broken mark. So the
+  // plate looks once for an image that is already broken, and says its error again.
+  useEffect(() => {
+    for (const image of container.current?.querySelectorAll('img') ?? [])
+      if (image.complete && image.naturalWidth === 0 && image.currentSrc)
+        image.dispatchEvent(new Event('error'));
+  }, []);
+  const reportFailure = useEffectEvent(() => onFailure?.());
+  // Neither layer of a plate that began with two could be loaded: nothing is left to show.
+  const lost = !thumbnail && !!previewSource && previewFailed && imageFailed;
+  useEffect(() => {
+    if (lost) reportFailure();
+  }, [lost]);
 
   /** The relay takes over once it holds the film from the cue onward. */
   function tryRelay() {
@@ -673,31 +731,34 @@ function ArtworkMediaSession({
   } else if (layered) {
     image = (
       <>
-        <img
-          className="art-preview"
-          src={preview}
-          alt=""
-          aria-hidden="true"
-          width={media?.thumbnailWidth ?? 640}
-          height={media?.thumbnailHeight ?? 414}
-          decoding="async"
-          loading="eager"
-          fetchPriority={priority ? 'high' : undefined}
-          onError={() => setPreviewFailed(true)}
-        />
+        {/* A preview that cannot be loaded leaves the plate's ground, never a broken image. */}
+        {preview ? (
+          <img
+            className="art-preview"
+            src={preview}
+            alt=""
+            aria-hidden="true"
+            width={media?.thumbnailWidth ?? 640}
+            height={media?.thumbnailHeight ?? 414}
+            decoding="async"
+            loading="eager"
+            fetchPriority={priority ? 'high' : undefined}
+            onError={() => setPreviewFailed(true)}
+          />
+        ) : null}
         <img
           ref={attachStill}
           className={settled ? 'art-still is-settled' : 'art-still'}
-          src={stillSrc}
-          srcSet={stillSet}
-          sizes={stillSizes}
+          src={shown?.src}
+          srcSet={shown?.srcSet}
+          sizes={shown?.sizes}
           alt={alt}
           width={media?.width ?? ART_WIDTH}
           height={media?.height ?? ART_HEIGHT}
           decoding={takenOver ? 'sync' : 'async'}
           loading={loading}
           onLoad={(event) => settleImage(event.currentTarget, settle)}
-          onError={() => setImageFailed(true)}
+          onError={(event) => stillBroke(event.currentTarget, () => setImageFailed(true))}
           // The document's script may have settled the still before the plate hydrated
           // (src/lib/settle.ts): the class it added is kept, and is no mismatch to report.
           suppressHydrationWarning
@@ -715,10 +776,7 @@ function ArtworkMediaSession({
         height={media?.thumbnailHeight ?? 414}
         decoding="async"
         loading="eager"
-        onError={() => {
-          setPreviewFailed(true);
-          onFailure?.();
-        }}
+        onError={() => setPreviewFailed(true)}
       />
     );
   } else {
@@ -726,19 +784,21 @@ function ArtworkMediaSession({
       media?.still && !imageFailed ? (
         <img
           className="art-still is-settled"
-          src={stillSrc}
-          srcSet={stillSet}
-          sizes={stillSizes}
+          src={shown?.src}
+          srcSet={shown?.srcSet}
+          sizes={shown?.sizes}
           alt={alt}
           width={media.width ?? ART_WIDTH}
           height={media.height ?? ART_HEIGHT}
           decoding="async"
           loading={loading}
           fetchPriority={priority ? 'high' : undefined}
-          onError={() => {
-            setImageFailed(true);
-            onFailure?.();
-          }}
+          onError={(event) =>
+            stillBroke(event.currentTarget, () => {
+              setImageFailed(true);
+              onFailure?.();
+            })
+          }
         />
       ) : null;
   }

@@ -26,6 +26,8 @@ type PreparedImage = {
   src: string;
   srcset: string;
   sizes: string;
+  /** The candidate the browser chose, as it names it once it has asked. */
+  currentSrc?: string;
   /** The order the sources were given in: an engine may act on each as it is set. */
   given: string[];
   decoding: string;
@@ -704,6 +706,124 @@ describe('expression preparation', () => {
     expect(result.current.failedExpression).toBe('light');
     expect(result.current.expression).toBe('ink');
     expect(vi.getTimerCount()).toBe(0);
+  });
+
+  describe('when the candidate it asked for cannot be loaded', () => {
+    const light = media.find((item) => item.id === 'light')!;
+    const published = 'https://a1.cosmicsignature.com/images/new/cosmicsignature/0x17/light.png';
+    const asked = {
+      src: published,
+      srcSet: `${light.rungs![0].src} 1280w, ${light.rungs![1].src} 1920w, ${published} 3456w`,
+      sizes: '100vw',
+    };
+    const rungsAlone = {
+      src: light.rungs![1].src,
+      srcSet: `${light.rungs![0].src} 1280w, ${light.rungs![1].src} 1920w`,
+      sizes: '100vw',
+    };
+    /** The surface: its ladder first, then, told what failed, the venue's own rungs. */
+    const surface = () =>
+      vi.fn((_target: ArtInterpretation, failed?: string) =>
+        failed === undefined ? asked : failed === published ? rungsAlone : undefined,
+      );
+
+    it('asks the surface what it would ask for next, and readies that', async () => {
+      const still = surface();
+      const { result } = renderHook(() =>
+        useArtworkExpression({ openingExpression: 'ink', media, still }),
+      );
+      act(() => result.current.selectExpression('light'));
+      // A 1,440 px window at 2x chose the publisher's file, and the publisher is out of reach.
+      images[0].currentSrc = published;
+      act(() => images[0].onerror?.());
+      expect(still).toHaveBeenLastCalledWith(light, published);
+      // The Turn is still being readied: the venue's own rungs, on an image of their own.
+      expect(result.current).toMatchObject({ pendingExpression: 'light', failedExpression: null });
+      expect(images).toHaveLength(2);
+      expect(images[1]).toMatchObject({
+        src: rungsAlone.src,
+        srcset: rungsAlone.srcSet,
+        sizes: rungsAlone.sizes,
+      });
+      expect(images[1].given).toEqual(['sizes', 'srcset', 'src']);
+      // The first image is let go, and what it says afterwards is said of nothing.
+      expect(images[0]).toMatchObject({ onload: null, onerror: null });
+      expect(images[0].removeAttribute.mock.calls.flat()).toEqual(['src', 'srcset', 'sizes']);
+      await act(async () => images[0].reject());
+      expect(result.current).toMatchObject({ pendingExpression: 'light', failedExpression: null });
+      await ready(images[1]);
+      expect(result.current).toMatchObject({
+        expression: 'light',
+        pendingExpression: null,
+        failedExpression: null,
+      });
+      expect(vi.getTimerCount()).toBe(0);
+    });
+
+    it('does the same when the refused decode is the first to say so', async () => {
+      const still = surface();
+      const { result } = renderHook(() =>
+        useArtworkExpression({ openingExpression: 'ink', media, still }),
+      );
+      act(() => result.current.selectExpression('light'));
+      images[0].currentSrc = published;
+      await act(async () => images[0].reject());
+      expect(images).toHaveLength(2);
+      expect(result.current.pendingExpression).toBe('light');
+      await ready(images[1]);
+      expect(result.current.expression).toBe('light');
+    });
+
+    it('fails the Turn when a rung cannot be loaded either, and asks no third time', () => {
+      const still = surface();
+      const { result } = renderHook(() =>
+        useArtworkExpression({ openingExpression: 'ink', media, still }),
+      );
+      act(() => result.current.selectExpression('light'));
+      images[0].currentSrc = published;
+      act(() => images[0].onerror?.());
+      images[1].currentSrc = `http://localhost${rungsAlone.src}`;
+      act(() => images[1].onerror?.());
+      expect(still).toHaveBeenCalledTimes(2);
+      expect(images).toHaveLength(2);
+      expect(result.current).toMatchObject({
+        expression: 'ink',
+        pendingExpression: null,
+        failedExpression: 'light',
+      });
+      expect(vi.getTimerCount()).toBe(0);
+    });
+
+    it('fails at once where the surface has nothing more to ask for', () => {
+      // The room shows the original or says that it cannot.
+      const still = vi.fn((_target: ArtInterpretation, failed?: string) =>
+        failed === undefined ? asked : undefined,
+      );
+      const { result } = renderHook(() =>
+        useArtworkExpression({ openingExpression: 'ink', media, still }),
+      );
+      act(() => result.current.selectExpression('light'));
+      images[0].currentSrc = published;
+      act(() => images[0].onerror?.());
+      expect(images).toHaveLength(1);
+      expect(result.current.failedExpression).toBe('light');
+    });
+
+    it('keeps the one deadline for both requests', () => {
+      const still = surface();
+      const { result } = renderHook(() =>
+        useArtworkExpression({ openingExpression: 'ink', media, still }),
+      );
+      act(() => result.current.selectExpression('light'));
+      act(() => vi.advanceTimersByTime(5000));
+      images[0].currentSrc = published;
+      act(() => images[0].onerror?.());
+      act(() => vi.advanceTimersByTime(2999));
+      expect(result.current.pendingExpression).toBe('light');
+      act(() => vi.advanceTimersByTime(1));
+      expect(result.current.failedExpression).toBe('light');
+      expect(images[1]).toMatchObject({ onload: null, onerror: null });
+    });
   });
 });
 

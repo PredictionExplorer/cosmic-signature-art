@@ -27,7 +27,7 @@ import type { ArtworkViewerWords } from './artwork-viewer.words';
 import { localizedPath, type Locale } from '@/lib/i18n/routing';
 import { AFTER_THE_FRAME_EVENT, SEAM_EVENT } from '@/lib/venue-events';
 import { HOME_RESOLVED_KEY } from '@/lib/storage-keys';
-import { ArtworkMedia, LINED_PLATE_SIZES, stillRequest } from './artwork-media';
+import { ArtworkMedia, LINED_PLATE_SIZES, localStillRequest, stillRequest } from './artwork-media';
 import { useMotion } from './motion-provider';
 import { useMediaPolicy } from './media-policy';
 import { ArtworkTransition } from './artwork-transition';
@@ -292,13 +292,19 @@ function ArtworkViewerSession({
       openingExpression,
       // A Turn readies the twin as its plate asks for it, and a change of material in the room
       // as the room does: the rung each already shows, the original only where the room shows it.
-      still: (target) =>
-        stillRequest(
-          target,
-          room
-            ? { sizes: ROOM_SIZES }
-            : { capped: policy.constrained, sizes: shownLines ? LINED_PLATE_SIZES : undefined },
-        ),
+      // A candidate the plate could not load is asked for again as the plate asks: the venue's
+      // own rungs. The room shows the original or says it cannot, so it has nothing more to ask.
+      still: (target, failed) => {
+        if (room)
+          return failed === undefined ? stillRequest(target, { sizes: ROOM_SIZES }) : undefined;
+        const terms = {
+          capped: policy.constrained,
+          sizes: shownLines ? LINED_PLATE_SIZES : undefined,
+        };
+        return failed === undefined
+          ? stillRequest(target, terms)
+          : localStillRequest(target, failed, terms);
+      },
       // The page's own stage takes no snapshot: the seam has shown the Turn by the time it
       // commits, so the commit follows the seam at once. Only the room's stage takes one, and
       // only for a Turn its own sheet has not drawn (onReady, below): that commit asks for none.
