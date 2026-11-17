@@ -7,6 +7,7 @@ import { NFT_ADDRESS } from '@/lib/contracts';
 import { jsonLd, SITE_URL, DEPLOYMENT_URL } from '@/lib/site';
 import { getArtworkDetails } from '@/lib/art/server';
 import { indexedWork } from '@/lib/art/collection-index';
+import { artworkFromIndex } from '@/lib/art/collection-cards';
 import { detailsFromIndexedWork, type ArtworkDetails } from '@/lib/art/details-validation';
 import { workFolio, workNumber } from '@/lib/art/number';
 import { workOrbit } from '@/lib/art/orbit-records';
@@ -15,13 +16,15 @@ import { getInterpretation, type Artwork, type ArtworkResult } from '@/lib/art/t
 import { ArtworkSources, ChainAddress, RecordDate, recordTime } from './artwork-record';
 import { ArtworkHistorySection, type HistoryQuery } from './artwork-history';
 import { NBSP, SEPARATOR, withUnit } from '@/lib/typography';
+import { AWAITS_STREAM } from '@/lib/without-script';
 import recordStyles from './artwork-record.module.css';
 import styles from './artwork-entry.module.css';
 
 /**
  * Everything beneath the plate: the entry with its footnoted glossary, the Verify-on-chain
  * drawer, the custody timeline and the files by medium, all from the live read so one page
- * never shows two renderings. The artwork page streams this once the record arrives.
+ * never shows two renderings. The artwork page streams this once the record arrives, over the
+ * entry as the venue holds it (HeldEntry), which stands until then.
  */
 export function ArtworkEntry({
   result,
@@ -38,38 +41,122 @@ export function ArtworkEntry({
 }) {
   const work = result.artwork ?? fallback;
   return (
-    <article id="record" className={styles.entry} aria-label={t.entry}>
-      {result.notice ? (
-        <p className={`notice ${styles.notice}`}>
-          {result.notice === 'media-unavailable' ? t.mediaRecordUnavailable : t.recordUnavailable}
-        </p>
-      ) : null}
-      <Suspense
-        fallback={
-          <p className={recordStyles.loading} aria-busy="true">
-            {t.recordLoading}
+    <EntryFrame
+      work={work}
+      locale={locale}
+      t={t}
+      notice={
+        result.notice ? (
+          <p className={`notice ${styles.notice}`}>
+            {result.notice === 'media-unavailable' ? t.mediaRecordUnavailable : t.recordUnavailable}
           </p>
-        }
-      >
-        <EntryBody work={work} locale={locale} t={t} />
-      </Suspense>
-      <section className={styles.provenance} aria-labelledby="provenance-title">
-        <h2 id="provenance-title" className={recordStyles.sectionTitle}>
-          {t.provenanceTitle}
-        </h2>
+        ) : null
+      }
+      body={
+        <Suspense fallback={<Opening t={t} />}>
+          <EntryBody work={work} locale={locale} t={t} />
+        </Suspense>
+      }
+      history={
         <Suspense
           key={`${work.id}-${query.transfers ?? ''}-${query.names ?? ''}`}
-          fallback={
-            <p className={recordStyles.loading} aria-busy="true">
-              {t.recordLoading}
-            </p>
-          }
+          fallback={<Opening t={t} />}
         >
           <ArtworkHistorySection tokenId={work.id} locale={locale} t={t} query={query} />
         </Suspense>
+      }
+    />
+  );
+}
+
+/**
+ * The entry as the venue itself holds it: the build-time index's copy of the published record,
+ * dated by the day the index was read. A work's page sets it at once, outside any Suspense
+ * boundary, and the live entry above takes its place when the record arrives. For a reader
+ * whose browser runs no script nothing ever takes its place (src/lib/without-script.ts), so it
+ * is the whole entry: every published characteristic, the glossary and the files. Only the
+ * custody history is left out there, which nothing but the indexer holds.
+ */
+export function HeldEntry({ work, locale, t }: { work: Artwork; locale: Locale; t: Messages }) {
+  // The index names every file the indexer advertises; the registry's copy holds only the
+  // stills and films the venue keeps itself, so the entry is set from the index where it can be.
+  const indexed = indexedWork(work.id);
+  const held = indexed && indexed.seed === work.seed ? artworkFromIndex(indexed) : work;
+  return (
+    <EntryFrame
+      work={held}
+      locale={locale}
+      t={t}
+      body={<HeldBody work={held} locale={locale} t={t} />}
+      history={<Opening t={t} />}
+      awaitsHistory
+    />
+  );
+}
+
+/** The record's frame: what the live entry and the held one share, so the two cannot drift. */
+function EntryFrame({
+  work,
+  locale,
+  t,
+  notice,
+  body,
+  history,
+  awaitsHistory = false,
+}: {
+  work: Artwork;
+  locale: Locale;
+  t: Messages;
+  notice?: ReactNode;
+  body: ReactNode;
+  history: ReactNode;
+  /** The history can only arrive by the stream: without script its section is taken away. */
+  awaitsHistory?: boolean;
+}) {
+  return (
+    <article id="record" className={styles.entry} aria-label={t.entry}>
+      {notice}
+      {body}
+      <section
+        className={styles.provenance}
+        aria-labelledby="provenance-title"
+        {...(awaitsHistory ? AWAITS_STREAM : {})}
+      >
+        <h2 id="provenance-title" className={recordStyles.sectionTitle}>
+          {t.provenanceTitle}
+        </h2>
+        {history}
       </section>
       <ArtworkSources work={work} locale={locale} t={t} />
     </article>
+  );
+}
+
+/** The line that stands where a part of the record is still being read. */
+function Opening({ t }: { t: Messages }) {
+  return (
+    <p className={recordStyles.loading} aria-busy="true">
+      {t.recordLoading}
+    </p>
+  );
+}
+
+/**
+ * The entry's text from the build-time index, for the identical seed only. A work the index
+ * does not know has nothing to stand in, and says that its record is opening.
+ */
+function HeldBody({ work, locale, t }: { work: Artwork; locale: Locale; t: Messages }) {
+  const indexed = indexedWork(work.id);
+  if (!indexed || !work.seed || indexed.seed !== work.seed) return <Opening t={t} />;
+  return (
+    <EntryView
+      work={work}
+      details={detailsFromIndexedWork(indexed)}
+      recordAt={null}
+      standIn
+      locale={locale}
+      t={t}
+    />
   );
 }
 
@@ -116,6 +203,12 @@ function Mark({ n, t }: { n: number; t: Messages }) {
   );
 }
 
+/**
+ * How much of a hash's end stays in one line with the arrow after it. A hash wraps wherever its
+ * line ends, so the arrow alone could be all that reaches the next line.
+ */
+const HASH_TAIL = 4;
+
 /** The middle dot between items: it may end a line, never open one (src/lib/typography.ts). */
 function Separator() {
   return <span className={styles.separator}>{SEPARATOR}</span>;
@@ -127,6 +220,7 @@ export function EntryView({
   details,
   unavailable = false,
   recordAt,
+  standIn = false,
   locale,
   t,
 }: {
@@ -136,6 +230,11 @@ export function EntryView({
   unavailable?: boolean;
   /** When the live record was read; null for a preserved record, which states its own date. */
   recordAt: Date | null;
+  /**
+   * The held entry, standing until the live one takes its place. It leaves the structured data
+   * to that one, so a page never states its work twice.
+   */
+  standIn?: boolean;
   locale: Locale;
   t: Messages;
 }) {
@@ -513,7 +612,10 @@ export function EntryView({
                   rel="noreferrer"
                   aria-label={`${t.transaction} ${work.provenance.mintTransactionHash}`}
                 >
-                  <code>{work.provenance.mintTransactionHash}</code> ↗
+                  <code>{work.provenance.mintTransactionHash.slice(0, -HASH_TAIL)}</code>
+                  <span className={styles.tail}>
+                    <code>{work.provenance.mintTransactionHash.slice(-HASH_TAIL)}</code> ↗
+                  </span>
                 </a>
               </dd>
             </div>
@@ -563,7 +665,12 @@ export function EntryView({
         <p className={recordStyles.note}>{t.honestyRecord}</p>
         <p className={recordStyles.note}>{t.honestyMedia}</p>
       </details>
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(structured) }} />
+      {standIn ? null : (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: jsonLd(structured) }}
+        />
+      )}
     </div>
   );
 }

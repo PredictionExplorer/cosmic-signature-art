@@ -14,16 +14,25 @@ export default defineConfig({
   fullyParallel: true,
   // A test.only left in by mistake would have CI run that one test and pass: it fails there.
   forbidOnly: !!process.env.CI,
-  workers: process.env.CI ? 2 : 2,
+  workers: 2,
+  // CI tries a failed test once more, because a shared runner without a GPU now and then
+  // starves one. A test that failed and then passed is still a fault somebody should read, so
+  // on CI the `github` reporter writes each one onto the run and the pull request as an
+  // annotation. Failing the run on them (`failOnFlakyTests`) is the step after: on 16 November
+  // 2026 it would have failed 14 of the last 16 runs (ARCHITECTURE.md §11).
   retries: process.env.CI ? 1 : 0,
-  reporter: [['list'], ['html', { open: 'never' }]],
+  reporter: [
+    ['list'],
+    ['html', { open: 'never' }],
+    ...(process.env.CI ? [['github'] as const] : []),
+  ],
   outputDir: './test-results',
   // A reused server must be on the suite's venue day; this says so before any test runs.
   globalSetup: './tests/e2e/global-setup.ts',
   use: {
     baseURL,
     // The suite meets the venue as a returning visitor: the Overture plays once a browser, and
-    // its own spec starts afresh to meet it (tests/e2e/overture.spec.ts).
+    // its own spec starts afresh to meet it (tests/e2e/first-light-home.spec.ts).
     storageState: {
       cookies: [],
       origins: [

@@ -13,8 +13,8 @@ import {
   maskFrom,
   openingAt,
   parseDuration,
+  FRONT_EDGE,
 } from './rewind';
-import { FRONT_EDGE } from './timing';
 
 /** A one-row field and a matching still, from per-pixel levels and greys. */
 function strip(levels: number[], greys: number[]) {

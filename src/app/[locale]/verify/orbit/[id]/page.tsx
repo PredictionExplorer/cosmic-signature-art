@@ -61,23 +61,26 @@ export default async function VerifyOrbitPage({ params }: { params: Params }) {
   return (
     <main id="main" className={styles.page}>
       <div className={styles.sheet}>
-        <header className={styles.head}>
-          <p className={styles.back}>
-            <Link className="word-link" href={localizedPath(locale, '/verify/orbit')}>
-              {t.verifyOrbit}
-            </Link>
-          </p>
-          <h1 className={`${styles.title} ${styles.numeral}`}>{work}</h1>
-          <p className={`reading ${styles.lead}`}>{fill(t.verifyOrbitWorkIntro, { work })}</p>
-          <dl className={styles.seed}>
-            <dt>{t.seed}</dt>
-            <dd>
-              <code>{generation.seed}</code>
-            </dd>
-          </dl>
-        </header>
-        <div className={styles.work}>
-          <OrbitVerifier key={orbit.id} orbit={orbit} t={t} locale={locale} />
+        {/* The first screen is these two's, down to its foot (verify.module.css, .firstScreen). */}
+        <div className={styles.firstScreen}>
+          <header className={styles.head}>
+            <p className={styles.back}>
+              <Link className="word-link" href={localizedPath(locale, '/verify/orbit')}>
+                {t.verifyOrbit}
+              </Link>
+            </p>
+            <h1 className={`${styles.title} ${styles.numeral}`}>{work}</h1>
+            <p className={`reading ${styles.lead}`}>{fill(t.verifyOrbitWorkIntro, { work })}</p>
+            <dl className={styles.seed}>
+              <dt>{t.seed}</dt>
+              <dd>
+                <code>{generation.seed}</code>
+              </dd>
+            </dl>
+          </header>
+          <div className={styles.work}>
+            <OrbitVerifier key={orbit.id} orbit={orbit} t={t} locale={locale} />
+          </div>
         </div>
         <p className={styles.note}>
           {fill(t.verifyOrbitNote, {

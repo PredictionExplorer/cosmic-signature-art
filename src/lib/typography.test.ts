@@ -1,5 +1,14 @@
 import { describe, expect, it } from 'vitest';
-import { bindFigures, bindNumbers, NBSP, SEPARATOR, unbroken, withUnit } from './typography';
+import {
+  bindFigures,
+  bindNumbers,
+  NBSP,
+  sentenceGap,
+  SEPARATOR,
+  unbroken,
+  withUnit,
+} from './typography';
+import { catalogs } from './i18n/messages';
 
 describe('composed lines', () => {
   it('lets a line end on the separator but never open with it', () => {
@@ -37,5 +46,15 @@ describe('composed lines', () => {
     );
     // A year beside a count is not a digit group.
     expect(bindNumbers('since 2026 72 works')).toBe('since 2026 72 works');
+  });
+
+  it('sets a word space after a sentence, and nothing after an ideographic full stop', () => {
+    expect(sentenceGap('Not played back.')).toBe(' ');
+    expect(sentenceGap('재생이 아닙니다.')).toBe(' ');
+    expect(sentenceGap('計算しているものです。')).toBe('');
+    expect(sentenceGap('即时计算的结果。')).toBe('');
+    // Every catalog's sentence that another is set after ends one of the two ways.
+    for (const [locale, words] of Object.entries(catalogs))
+      expect(words.orreryNote, locale).toMatch(/[.。]$/);
   });
 });

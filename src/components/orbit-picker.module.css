@@ -1,6 +1,10 @@
-/* The number field: a rule to type on, the word beside it, and room kept for its one answer. */
+/* The number field: a rule to type on, the word beside it, and room kept for its one answer.
+   Its one column is the form's own width: left to itself a column is as wide as its widest row,
+   and the field's row, twenty characters beside its word, is wider than a 320 px screen holds
+   (310 px in English, 355 px in Ukrainian), so the field gives up the width instead. */
 .picker {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: 9px;
   max-width: 24em;
   margin-top: 9px;

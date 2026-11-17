@@ -14,7 +14,7 @@ beforeEach(() => {
   vi.stubGlobal(
     'IntersectionObserver',
     class {
-      constructor(private callback: IntersectionObserverCallback) {
+      constructor(callback: IntersectionObserverCallback) {
         observers.push({ callback });
       }
       observe(target: Element) {

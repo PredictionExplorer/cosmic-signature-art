@@ -608,7 +608,8 @@ export class GpuLightEngine implements Engine {
     this.kit = kit;
     this.colours = kit.placeholder;
     holders.set(canvas, this);
-    device.lost.then(() => {
+    // The promise settles once, when the device is lost, and never rejects.
+    void device.lost.then(() => {
       this.deviceLost = true;
     });
     device.addEventListener('uncapturederror', this.onError);

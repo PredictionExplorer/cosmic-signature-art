@@ -228,11 +228,11 @@ export async function readBidHistory(
       if (key && !kept) remember(key, { bids, deliveries });
       windowsRead += 1;
       for (const log of bids) {
-        const entry = validBid(log as unknown as RawLog, tokenId, contract);
+        const entry = validBid(log as RawLog, tokenId, contract);
         if (entry) found.push(entry);
       }
       for (const log of deliveries) {
-        const entry = validDelivery(log as unknown as RawLog, tokenId, contract);
+        const entry = validDelivery(log as RawLog, tokenId, contract);
         if (entry) found.push(entry);
       }
     } catch (cause) {

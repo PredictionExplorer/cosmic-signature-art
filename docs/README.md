@@ -28,9 +28,10 @@ In the order they shipped. Third Physics Phases A and E are listed under physics
 
 - [phase-1-signature-moments.md](phase-1-signature-moments.md): Two Grounds Phase 1. It brought the typefaces and tokens, the edgeless plate, the Turn and the night wing.
 - [phase-2-the-plates-move.md](phase-2-the-plates-move.md): Two Grounds Phase 2. Every plate moves honestly, through settling and opening clips and the still ladder. The sale is bound as a catalogue, and the exhibitions open.
-- [third-physics-phase-b.md](third-physics-phase-b.md): the crossing. The Turn follows the order in which each film made its marks, and the When lens shows that order.
+- [third-physics-phase-b.md](third-physics-phase-b.md): the crossing. The Turn follows the order in which each film made its marks, and the When lens shows that order. How the crossing is drawn has since changed ([turn-one-sheet.md](turn-one-sheet.md)).
 - [third-physics-phase-c.md](third-physics-phase-c.md): the collection's two other indexes, All the light and the Orrery.
 - [third-physics-phase-d.md](third-physics-phase-d.md): two equal expressions, phones, and the events. It includes each work's frame on its Light film.
+- [turn-one-sheet.md](turn-one-sheet.md): the Turn as one sheet, after the review of 14 November. One front crosses the plate, the head, the strip and the page, in the viewing room too; it replaces the change of material and the polygons of Phase B.
 
 ## Physics and verification
 

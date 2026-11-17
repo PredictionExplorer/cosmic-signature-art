@@ -25,8 +25,9 @@
 }
 
 /* The opening: a type screen, the essay's contents along its foot (essay.module.css). Its one
-   column is the screen between its gutters: left to itself a column is as wide as the longest
-   word in it, and the lede beside the cover then runs as wide, off a small screen. */
+   column, and the title's, is the screen between its gutters: left to itself a column is as
+   wide as the longest word in it, and the lede beside the cover then runs as wide, off a small
+   screen. */
 .opening {
   min-height: calc(100svh - var(--head));
   display: grid;
@@ -48,6 +49,7 @@
 .title {
   align-self: center;
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: 27px;
   max-width: 1120px;
 }
@@ -64,6 +66,12 @@
   font-weight: var(--weight-hairline);
   letter-spacing: -0.02em;
   max-width: 11ch;
+}
+/* Japanese breaks a display line between phrases and never inside one (globals.css), and the
+   cover's longest phrase is four characters, four ems wide: more than a screen under 368 px
+   holds at the cover's 84 px floor. There the cover is set as large as those four fit. */
+:global(html:lang(ja)) .cover {
+  font-size: min(var(--fs-cover), calc((100vw - 2 * var(--gutter)) / 4.05));
 }
 .intro {
   color: var(--muted);

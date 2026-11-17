@@ -1,8 +1,8 @@
-import { cutShort, expect, failedToLoad, test } from './fixtures';
+import { cutShort, expect, failedToLoad, policyReports, test } from './fixtures';
 
 /**
  * The suite's own `test` (fixtures.ts) fails a test whose page met a fault. These prove it: each
- * of the first four provokes one fault and is marked `test.fail()`, so it passes only because
+ * of the first five provokes one fault and is marked `test.fail()`, so it passes only because
  * the fault failed it. With Playwright's plain `test` every one of them would pass its body and
  * be reported as a failure that did not happen.
  */
@@ -48,6 +48,18 @@ test.describe('a fault the test did not expect fails it', () => {
     );
     await expect.poll(() => faults.seen()).toContain('response: 503 from /api/art/31');
   });
+
+  test('a breach of the venue’s policy', async ({ page, faults }) => {
+    test.fail();
+    await page.goto(QUIET_PAGE);
+    // A picture from a host the policy does not name: refused, and reported to the page.
+    await page.evaluate(() => {
+      new Image().src = 'https://example.com/elsewhere.png';
+    });
+    await expect
+      .poll(() => faults.seen())
+      .toContain('policy: enforce img-src https://example.com/elsewhere.png');
+  });
 });
 
 test.describe('what is no fault of the test', () => {
@@ -87,6 +99,15 @@ test.describe('what is no fault of the test', () => {
     expect((await answered).status()).toBe(404);
     await page.evaluate(() => new Promise((seen) => requestAnimationFrame(seen)));
     expect(faults.seen()).toEqual([]);
+  });
+
+  test('a breach of the policy the test makes on purpose', async ({ page, faults }) => {
+    faults.allow(policyReports);
+    await page.goto(QUIET_PAGE);
+    await page.evaluate(() => {
+      new Image().src = 'https://example.com/elsewhere.png';
+    });
+    await expect.poll(() => faults.seen()).toContainEqual(expect.stringMatching(/^policy: /));
   });
 
   test('a test that opens no page builds no context to listen in', async ({ request }) => {

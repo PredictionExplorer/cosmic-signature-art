@@ -1,5 +1,6 @@
 import { expect, failedToLoad, syntheticFinger, test, type Locator, type Page } from './fixtures';
 import AxeBuilder from '@axe-core/playwright';
+import { WCAG_22_AA } from './standard';
 import { readFileSync } from 'node:fs';
 import { catalogs } from '../../src/lib/i18n/messages';
 import { locales, localizedPath } from '../../src/lib/i18n/routing';
@@ -65,6 +66,9 @@ async function artworkReady(page: Page, path = '/art/31?view=still') {
   // Under a still preference the server and the client agree on the toggle, so it cannot
   // prove hydration; the keys' marker is set only once the client's listeners are attached.
   await expect(page.locator('html')).toHaveAttribute('data-keys', 'ready');
+  // The plate's own keys (I and L, Z) are heard by the plate, which is hydrated after the page's
+  // head: a key pressed on the venue's mark alone can come before anyone listens for it.
+  await expect(page.locator('html')).toHaveAttribute('data-plate-keys', 'ready');
   return page.getByRole('region', { name: t.ways, exact: true });
 }
 
@@ -335,7 +339,7 @@ test('keys are silent while focus is in a field, and the remembered expression f
   );
   // A new visit always opens on Ink.
   const fresh = await context.browser()!.newContext();
-  faults.watch(fresh);
+  await faults.watch(fresh);
   const next = await fresh.newPage();
   await next.goto(`${new URL(page.url()).origin}/art/35?view=still`);
   await expect(next.locator(pageStage)).toHaveAttribute('data-expression', 'ink');
@@ -426,13 +430,16 @@ test('a Turn lands when its seam does, however busy the page around it', async (
 });
 
 /*
-  The room's Turn is the one commit that stays a transition, because there the browser's own
-  snapshot is the Turn and only a transition takes one. So the room's film can set it aside as
-  the plate's once did. It is given a second from the moment its still is ready: past that the
-  commit is made by an ordinary update, without the snapshot. Here the room's film reports its
-  progress once for every task the browser runs, and a transition alone never lands under that.
+  The room's Turn is drawn by the room's own sheet where the browser can paint it
+  (room-crossing.ts): the front crosses the room first, in the Turn's own time, and the change
+  is then made by an ordinary update, which nothing holds. Where the sheet cannot be painted the
+  browser's own snapshot is the Turn, and only a transition takes one; so the room's film could
+  set that commit aside as the plate's once did, and it is given a second from the moment its
+  still is ready: past that the commit is made by an ordinary update, without the snapshot.
+  Here the room's film reports its progress once for every task the browser runs, and a
+  transition alone never lands under that. Either way the Turn lands in its time.
 */
-test('a Turn in the room lands within its second, however busy the room around it', async ({
+test('a Turn in the room lands in its own time, however busy the room around it', async ({
   page,
 }, testInfo) => {
   test.skip(
@@ -508,9 +515,12 @@ test('a Turn in the room lands within its second, however busy the room around i
     busy.on = false;
     return (window as unknown as { __roomTurn: { ready: number; commit: number } }).__roomTurn;
   });
-  // The deadline is a second from there; the commit itself is given the two seconds the page's is.
+  // From there the sheet's front takes the Turn's own two seconds (--t-cross) to cross the room,
+  // or the snapshot's deadline is a second; the commit itself is given the two seconds the
+  // page's is.
+  const sheet = await page.evaluate(() => !!document.createElement('canvas').getContext('webgl'));
   expect(turn.ready).toBeGreaterThan(0);
-  expect(turn.commit - turn.ready).toBeLessThan(1000 + 2000);
+  expect(turn.commit - turn.ready).toBeLessThan((sheet ? 2000 : 1000) + 2000);
   // The room keeps what a Turn there always kept: its focus, and one work on its stage, now Light.
   expect(await dialog.evaluate((element) => element.contains(document.activeElement))).toBe(true);
   await expect(dialog).toHaveAttribute('data-material', 'light');
@@ -519,8 +529,8 @@ test('a Turn in the room lands within its second, however busy the room around i
   await expect(dialog).not.toBeVisible();
   await expect(page.locator(pageStage)).toHaveAttribute('data-expression', 'light');
   await expect(page.locator('html')).not.toHaveAttribute('data-turning', /./);
-  // The transition the deadline overtook lands late and changes nothing: the stage was turned
-  // once, and no snapshot is taken of a Turn already made.
+  // A transition the deadline overtook lands late and changes nothing: the stage was turned
+  // once, and no snapshot is taken of a Turn already made (or of one the sheet drew).
   const after = await page.evaluate(
     () => (window as unknown as { __roomTurn: { commits: number } }).__roomTurn.commits,
   );
@@ -530,6 +540,7 @@ test('a Turn in the room lands within its second, however busy the room around i
 
 test('the night wing is drawn by the hand where the browser can, and is a hard edge elsewhere', async ({
   page,
+  isMobile,
 }) => {
   await page.emulateMedia({ reducedMotion: 'no-preference' });
   await artworkReady(page);
@@ -559,13 +570,18 @@ test('the night wing is drawn by the hand where the browser can, and is a hard e
     await page.evaluate(() => window.scrollTo({ top: 0, behavior: 'instant' }));
     await expect.poll(() => seamInset(page), { timeout: 3000 }).toBe(100);
     await expect(page.locator('html')).toHaveAttribute('data-room', 'paper');
+  } else if (isMobile) {
+    // A phone hangs one plate: its twin is a Turn away, and no second screen hangs beneath.
+    await expect(wing.locator('> div').nth(1)).toBeHidden();
+    expect(Math.abs(height - stage)).toBeLessThan(1);
+    await expect(page.locator('html')).toHaveAttribute('data-room', 'paper');
   } else {
     // The hard edge: a second screen in black with the same Light plate.
     const fallback = wing.locator('> div').nth(1);
     await expect(fallback).toBeVisible();
     await expect(fallback.locator('img.art-still')).toHaveAttribute('alt', '№\u00a0031 · Light');
-    // Compact phones already show both materials. Bring Light to the viewing line rather
-    // than relying on an offscreen, full-height fallback to trigger a scroll.
+    // Bring Light to the viewing line rather than relying on an offscreen, full-height fallback
+    // to trigger a scroll.
     await fallback.evaluate((element) =>
       element.scrollIntoView({ block: 'start', behavior: 'instant' }),
     );
@@ -577,6 +593,7 @@ test('the night wing is drawn by the hand where the browser can, and is a hard e
 
 test('the paper wing beneath a Light plate is drawn back from the left by the hand', async ({
   page,
+  isMobile,
 }) => {
   await page.emulateMedia({ reducedMotion: 'no-preference' });
   await page.goto('/art/31?expression=light&view=still', { waitUntil: 'domcontentloaded' });
@@ -609,6 +626,11 @@ test('the paper wing beneath a Light plate is drawn back from the left by the ha
     await expect(page.locator('.site-header')).toHaveCSS('color', 'rgb(34, 35, 31)');
     await page.evaluate(() => window.scrollTo({ top: 0, behavior: 'instant' }));
     await expect.poll(() => seamInset(page), { timeout: 3000 }).toBe(0);
+    await expect(page.locator('html')).toHaveAttribute('data-room', 'night');
+  } else if (isMobile) {
+    // A phone hangs one plate: no second screen of Ink hangs beneath the Light one.
+    await expect(wing.locator('> div').nth(1)).toBeHidden();
+    expect(Math.abs(height - stage)).toBeLessThan(1);
     await expect(page.locator('html')).toHaveAttribute('data-room', 'night');
   } else {
     // The hard edge: a second screen on paper with the same work's Ink plate.
@@ -683,15 +705,36 @@ test('a slower expression keeps the current work visible and the latest choice w
   await artworkReady(page);
   const stage = page.locator(pageStage);
   const original = await page.locator(`${current} img.art-still`).getAttribute('src');
+  // The room between the stage and what follows it on the page, for as long as the expression
+  // is on its way: a line set there would open it. (The stage's own height is the film's to
+  // change as it plays; this is the room beneath it alone.)
+  const beneath = () =>
+    stage.evaluate((element) => {
+      const next = [...element.parentElement!.children].find(
+        (sibling) =>
+          sibling !== element &&
+          sibling.getAttribute('role') !== 'status' &&
+          sibling.getBoundingClientRect().height > 0 &&
+          sibling.compareDocumentPosition(element) & Node.DOCUMENT_POSITION_PRECEDING,
+      );
+      const bottom = element.getBoundingClientRect().bottom;
+      const top = next ? next.getBoundingClientRect().top : bottom;
+      return Math.round((top - bottom) * 1000);
+    });
+  const rest = await beneath();
+  const opening = page.getByRole('status').filter({ hasText: t.preparingExpression });
   await turnWord(page, 'light').click();
-  await expect(page.getByText(t.preparingExpression, { exact: true })).toBeVisible();
+  // Said, and set nowhere: the word pressed reads busy, and nothing beneath the stage has moved.
+  await expect(opening).toHaveCount(1);
+  await expect(turnWord(page, 'light')).toHaveAttribute('aria-busy', 'true');
+  expect(await beneath()).toBe(rest);
   await expect(stage).toHaveAttribute('data-expression', 'ink');
   await expect(page.locator(`${current} img.art-still`)).toHaveAttribute('src', original!);
   await turnWord(page, 'light').click();
-  await expect(page.getByText(t.preparingExpression, { exact: true })).toBeVisible();
+  await expect(opening).toHaveCount(1);
   // Choosing Ink again cancels the preparation; nothing commits when the bytes arrive.
   await page.keyboard.press('i');
-  await expect(page.getByText(t.preparingExpression, { exact: true })).toHaveCount(0);
+  await expect(opening).toHaveCount(0);
   release();
   expect(intercepted).toBeGreaterThan(0);
   await page.waitForTimeout(1500);
@@ -996,18 +1039,33 @@ test('expression changes in the room stay contained, commit to the plate, and ke
   await open.click();
   const dialog = page.getByRole('dialog');
   const controls = dialog.getByRole('group', { name: t.ways, exact: true });
+  // Which way the room's Turn goes is seen in the page: where its sheet draws it, the sheet's
+  // canvas is shown.
+  await dialog.evaluate((room) => {
+    const seen = { drew: false };
+    Object.assign(window, { __roomSheet: seen });
+    new MutationObserver(() => {
+      if (room.querySelector('canvas[class*="sheet"][data-active]')) seen.drew = true;
+    }).observe(room, { attributes: true, subtree: true, attributeFilter: ['data-active'] });
+  });
   await controls.getByRole('button', { name: /^Light$/ }).click();
   await expect(dialog.locator('[data-artwork-stage="room"]')).toHaveAttribute(
     'data-expression',
     'light',
   );
-  // The room's stage is the one place a Turn is the browser's own snapshot: one of them, where
-  // the browser takes snapshots and motion is welcome. Firefox runs on CI alone, so it is not
-  // counted here.
+  // The room's Turn is the room's own sheet where the sheet was prepared when the word was
+  // pressed, and no snapshot is taken of what the sheet has shown. Where it was not (a browser
+  // that cannot paint it, or a machine still readying it a moment after the room opened: the
+  // Turn waits for neither) the Turn is the browser's own snapshot: one of them, where the
+  // browser takes snapshots and motion is welcome. One way or the other, and never both.
+  // Firefox runs on CI alone, so it is not counted here.
   if (browserName !== 'firefox') {
     const snapshots = await page.evaluate(() => typeof document.startViewTransition === 'function');
+    const drew = await page.evaluate(
+      () => (window as unknown as { __roomSheet: { drew: boolean } }).__roomSheet.drew,
+    );
     const still = testInfo.project.name.endsWith('reduced-motion');
-    expect(await transitionCount(page)).toBe(snapshots && !still ? 1 : 0);
+    expect(await transitionCount(page)).toBe(snapshots && !still && !drew ? 1 : 0);
   }
   await expect(dialog.locator('img')).toHaveAttribute('alt', '№\u00a0031 · Light');
   await imageReady(dialog.locator('img'));
@@ -1060,9 +1118,7 @@ test('the viewing room remains accessible and translated in every gallery langua
             ),
           ),
     );
-    const results = await new AxeBuilder({ page })
-      .withTags(['wcag2a', 'wcag2aa', 'wcag21aa'])
-      .analyze();
+    const results = await new AxeBuilder({ page }).withTags(WCAG_22_AA).analyze();
     expect(
       results.violations.map(({ id, impact, nodes }) => ({
         id,

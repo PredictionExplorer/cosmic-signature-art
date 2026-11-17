@@ -3,17 +3,21 @@ import { expect, syntheticFinger, test, type Page } from './fixtures';
 import sharp from 'sharp';
 import { catalogs } from '../../src/lib/i18n/messages';
 import { pauseAmbientMotion, playAmbientMotion } from './helpers';
+import { recordSheet, sheetRecorded, sheetTurned } from './sheet-record';
 
 /*
-  The Turn in the order the work was made (docs/third-physics-phase-b.md; docs/first-light.md,
-  "The Turn as a change of material, as built").
+  The Turn in the order the work was made (docs/turn-one-sheet.md).
 
-  A Turn by time between the two whole stills changes material. The ground warms or cools as
-  one, never as a front; the light drains or rises and the ink blooms or lifts, each in the
-  work's own order; and the running head and the strip take the ground's colour on the same
-  frame. At either end the plate is the published still. A finger's Turn keeps the crossing
-  pixel by pixel: every frame is the two stills, each pixel one of them or, on the soft front, a
-  mix. The straight seam remains wherever the crossing cannot be painted or motion is still.
+  Every Turn is one sheet turned by one front: by the word and the keys, by a finger, by a key
+  held and let go. The front leaves the work's own first marks and crosses the whole first
+  screen; ahead of it the plate is the still it leaves and behind it the still it brings, on
+  that still's own ground, and the two grounds are mixed nowhere but across the front's few
+  pixels. At either end the plate is the published still. The straight seam remains wherever the
+  sheet cannot be painted, and a still preference makes the Turn one frame.
+
+  These tests look at the pixels: the order the front follows against the work's own arrival
+  map, and what each frame is made of. That the head, the strip and the page take the same front
+  is held in turn-sheet.spec.ts, read back in the page itself.
 */
 
 const t = catalogs.en;
@@ -54,6 +58,8 @@ async function workReady(page: Page, id: number) {
     )
     .toBe(true);
   await expect(page.locator('html')).toHaveAttribute('data-keys', 'ready');
+  // The plate's own keys are heard by the plate, which is hydrated after the page's head.
+  await expect(page.locator('html')).toHaveAttribute('data-plate-keys', 'ready');
 }
 
 /**
@@ -66,25 +72,28 @@ async function holdFilmsBack(page: Page) {
 }
 
 /**
- * Count, from the first script on, every frame on which the crossing's canvas is painted and
- * how it treats the room: by a front (the head's and the strip's clips are polygons) or by the
- * ground (the head's overlay and the night's words shown by a share, unclipped).
+ * Count, from the first script on, every frame on which the sheet's canvas is painted, and
+ * every frame on which the room was shaped the old ways: a layer or the head's overlay clipped
+ * to a front of its own, or faded by a share. The sheet does neither: its canvas is the ground.
  */
 async function watchCanvas(page: Page) {
   await page.addInitScript(() => {
-    const state = { painted: 0, headFront: 0, stripFront: 0, headGround: 0, stripGround: 0 };
+    const state = { painted: 0, shaped: 0 };
     Object.assign(window, { __crossing: state });
-    const share = (value: string) => value !== '' && Number(value) > 0 && Number(value) < 1;
     const look = () => {
-      if (document.querySelector('canvas[data-active]')) state.painted += 1;
-      const head = document.querySelector<HTMLElement>('.head-overlay');
-      const night = document.querySelector<HTMLElement>(
-        '[data-artwork-stage="page"] [data-layer="light"]',
+      if (document.querySelector('[data-artwork-stage="page"] canvas[data-active]'))
+        state.painted += 1;
+      const shaped = [
+        document.querySelector<HTMLElement>('.head-overlay'),
+        ...document.querySelectorAll<HTMLElement>('[data-artwork-stage="page"] [data-layer]'),
+      ].some(
+        (element) =>
+          !!element &&
+          (element.style.clipPath !== '' ||
+            element.style.opacity !== '' ||
+            element.style.backgroundColor !== ''),
       );
-      if (head?.style.clipPath.startsWith('polygon')) state.headFront += 1;
-      if (night?.style.clipPath.startsWith('polygon')) state.stripFront += 1;
-      if (head?.style.clipPath === 'none' && share(head.style.opacity)) state.headGround += 1;
-      if (night?.style.clipPath === 'none' && night.style.opacity !== '') state.stripGround += 1;
+      if (shaped) state.shaped += 1;
       requestAnimationFrame(look);
     };
     requestAnimationFrame(look);
@@ -93,25 +102,14 @@ async function watchCanvas(page: Page) {
 
 function crossingState(page: Page) {
   return page.evaluate(
-    () =>
-      (
-        window as unknown as {
-          __crossing: {
-            painted: number;
-            headFront: number;
-            stripFront: number;
-            headGround: number;
-            stripGround: number;
-          };
-        }
-      ).__crossing,
+    () => (window as unknown as { __crossing: { painted: number; shaped: number } }).__crossing,
   );
 }
 
-/** Whatever the crossing set on the page's own elements and has not given back. */
+/** Whatever the sheet set on the page and has not given back. */
 function leftOver(page: Page) {
-  return page.evaluate(() =>
-    [
+  return page.evaluate(() => [
+    ...[
       ...document.querySelectorAll<HTMLElement>(
         '.head-overlay, [data-artwork-stage="page"] [data-layer], [data-artwork-stage="page"] [data-plate-ground]',
       ),
@@ -122,115 +120,40 @@ function leftOver(page: Page) {
         ),
       )
       .filter(Boolean),
-  );
-}
-
-/**
- * How far the walls lay toward the paper, 0 the night and 1 the sheet: now, on each frame, and
- * when a key was let go.
- */
-type Walls = { share: number; frames: [number, number][]; released: [number, number] | null };
-
-/**
- * Read the walls in the page itself, on every frame, and where they lay when a key was let go.
- * The crossing lays the room's ground on the same frame as the plate's, and the page reads it at
- * once, where a screenshot takes seconds on a runner without a GPU.
- */
-async function watchWalls(page: Page, paper: Rgb) {
-  await page
-    .locator(`${pageStage} [data-layer="ink"] [data-plate-ground]`)
-    .evaluate((wall, sheet) => {
-      const luma = ([r, g, b]: number[]) => 0.2126 * r + 0.7152 * g + 0.0722 * b;
-      const share = () =>
-        luma(
-          getComputedStyle(wall)
-            .backgroundColor.match(/[\d.]+/g)!
-            .slice(0, 3)
-            .map(Number),
-        ) / luma(sheet);
-      const walls: Walls = { share: share(), frames: [], released: null };
-      Object.assign(window, { __walls: walls });
-      const letGo = () => {
-        walls.released ??= [performance.now(), share()];
-      };
-      addEventListener('keyup', letGo, { capture: true });
-      const look = (now: number) => {
-        walls.share = share();
-        walls.frames.push([now, walls.share]);
-        requestAnimationFrame(look);
-      };
-      requestAnimationFrame(look);
-    }, paper);
-}
-
-function wallsOf(page: Page) {
-  return page.evaluate(() => (window as unknown as { __walls: Walls }).__walls);
+    ...[
+      ...document.querySelectorAll(
+        '[data-sheet], [data-sheet-out], [data-sheet-fill], [data-sheet-unlined], [data-sheet-active]',
+      ),
+    ].map((element) => `${element.tagName.toLowerCase()} still worn`),
+  ]);
 }
 
 type Pixels = { data: Buffer; width: number; height: number };
 type Box = { x: number; y: number; width: number; height: number };
 type Rgb = [number, number, number];
 
-/** One frame of a Turn: the plate's pixels, and the ground the running head and the strip wore. */
-type Frame = { plate: Pixels; bands: Rgb[] };
-
-/** A frame as the page keeps it: how far its walls lay toward the paper, and its canvas, copied. */
-type Kept = { ground: number; plate: HTMLCanvasElement; bands: Rgb[] };
-
 /**
- * Keep a Turn's frames in the page itself, as the crossing paints them: its canvas, which is the
- * plate while a Turn travels, and the ground the running head and the strip wear, each composed
- * from the styles that frame laid. A frame is kept every `every` milliseconds, and whenever the
- * ground has moved a quarter of its way, so the record holds the ground's passage however a
- * runner's frames fall. A screenshot takes over a second where WebGL draws without a GPU, longer
- * than a slowed Turn's ground lies mid-way; the page's own record misses nothing it painted.
- * The walls are read by `watchWalls`, which is begun first.
+ * Keep a Turn's frames in the page itself, as the sheet paints them: its canvas, which is the
+ * whole stage while a Turn travels, copied every `every` milliseconds. A screenshot takes over a
+ * second where WebGL draws without a GPU; the page's own record misses nothing it painted.
  */
 async function keepFrames(page: Page, every: number) {
   await page.locator(pageStage).evaluate(
     (stage, { painting, every }) => {
-      const kept: Kept[] = [];
+      const kept: HTMLCanvasElement[] = [];
       Object.assign(window, { __kept: kept });
-      const walls = (window as unknown as { __walls: Walls }).__walls;
-      const styleOf = (selector: string, within: ParentNode = stage) =>
-        getComputedStyle(within.querySelector(selector)!);
-      const ground = (style: CSSStyleDeclaration) =>
-        style.backgroundColor
-          .match(/[\d.]+/g)!
-          .slice(0, 3)
-          .map(Number);
-      /** One ground with another laid over it by a share; a clipped one is a front, and no ground. */
-      const laid = (beneath: number[], over: number[], cover: CSSStyleDeclaration) =>
-        (cover.display === 'none' || cover.clipPath !== 'none'
-          ? beneath
-          : beneath.map(
-              (channel, c) => channel + (over[c] - channel) * Number(cover.opacity),
-            )) as Rgb;
-      // The head's overlay lies over the head, and the night layer, strip and all, over the paper's.
-      const head = () => {
-        const overlay = styleOf('.head-overlay', document);
-        return laid(ground(styleOf('.site-header', document)), ground(overlay), overlay);
-      };
-      const strip = () =>
-        laid(
-          ground(styleOf('[data-layer="ink"] [data-plate-ground]')),
-          ground(styleOf('[data-layer="light"] [data-plate-ground]')),
-          styleOf('[data-layer="light"]'),
-        );
-      let last = { at: -Infinity, ground: walls.share };
+      let last = -Infinity;
       const look = (now: number) => {
         const canvas = stage.querySelector<HTMLCanvasElement>(painting);
-        // Between its first frame and the Turn's end the canvas holds the frame the styles were
-        // laid with: the crossing paints and lays them in one callback.
+        // Between its first frame and the Turn's end the canvas holds the frame last painted.
         const turning = canvas && document.documentElement.hasAttribute('data-turning');
-        const due = now - last.at >= every || Math.abs(walls.share - last.ground) >= 0.25;
-        if (turning && due) {
-          last = { at: now, ground: walls.share };
-          const plate = document.createElement('canvas');
-          plate.width = canvas.width;
-          plate.height = canvas.height;
-          plate.getContext('2d')!.drawImage(canvas, 0, 0);
-          kept.push({ ground: walls.share, plate, bands: [head(), strip()] });
+        if (turning && now - last >= every) {
+          last = now;
+          const copy = document.createElement('canvas');
+          copy.width = canvas.width;
+          copy.height = canvas.height;
+          copy.getContext('2d')!.drawImage(canvas, 0, 0);
+          kept.push(copy);
         }
         requestAnimationFrame(look);
       };
@@ -258,13 +181,6 @@ async function coarse(png: Buffer): Promise<Pixels> {
       .png()
       .toBuffer(),
   );
-}
-
-/** A frame of one colour throughout, the size of another. */
-function flat(like: Pixels, colour: Rgb): Pixels {
-  const data = Buffer.alloc(like.width * like.height * 3);
-  for (let i = 0; i < data.length; i += 3) data.set(colour.map(Math.round), i);
-  return { data, width: like.width, height: like.height };
 }
 
 /** One region of a frame, as a frame of its own. */
@@ -341,15 +257,17 @@ async function arrivalMap(id: number, expression: 'ink' | 'light', width: number
 }
 
 /**
- * The room around the plate as one screenshot: the running head above it, the plate with its
- * walls and the work, and the strip below it, each as a box inside the shot (in CSS pixels),
- * with the sheet's own tone the plate is hung on.
+ * The stage as one screenshot: everything the sheet's canvas covers (the plate, its walls and
+ * the strip) as far as the screen shows it, with the plate and the work as boxes inside the
+ * shot (in CSS pixels) and the sheet's own tone.
  */
-async function roomOf(page: Page) {
+async function stageOf(page: Page) {
   const box = async (selector: string) => (await page.locator(selector).first().boundingBox())!;
-  const head = await box('.site-header');
+  const stage = await page.locator(crossingCanvas).evaluate((canvas) => {
+    const rect = canvas.parentElement!.getBoundingClientRect();
+    return { x: rect.left, y: rect.top, width: rect.width, height: rect.height };
+  });
   const plate = await box(`${current} .plate`);
-  const strip = await box(`${current} .strip`);
   const work = await box(`${current} .art-media`);
   const paper = (
     await page
@@ -360,18 +278,14 @@ async function roomOf(page: Page) {
     .slice(0, 3)
     .map(Number) as Rgb;
   const viewport = page.viewportSize()!;
-  const top = Math.max(0, Math.min(head.y, plate.y));
-  const bottom = Math.min(viewport.height, strip.y + strip.height);
-  const clip = { x: 0, y: top, width: viewport.width, height: bottom - top };
-  const inside = (part: Box) => ({ ...part, x: part.x - clip.x, y: part.y - clip.y });
-  return {
-    clip,
-    head: inside(head),
-    plate: inside(plate),
-    strip: strip.y + strip.height <= bottom ? inside(strip) : null,
-    work: inside(work),
-    paper,
+  const clip = {
+    x: stage.x,
+    y: stage.y,
+    width: stage.width,
+    height: Math.min(viewport.height, stage.y + stage.height) - stage.y,
   };
+  const inside = (part: Box) => ({ ...part, x: part.x - clip.x, y: part.y - clip.y });
+  return { clip, stage, plate: inside(plate), work: inside(work), paper };
 }
 
 /** A box in CSS pixels, in a frame's own pixels. */
@@ -403,28 +317,25 @@ function bareGround(ink: Pixels, light: Pixels | null, region: Box, paper: Rgb) 
 }
 
 /**
- * How far a frame's ground lies toward the paper, 0 the night and 1 the sheet: the median over
- * the bare ground of the frame against the Ink still, and the spread between its quartiles. A
- * change of material lays one ground; a front lays the two, so its spread is wide.
+ * What a frame's bare ground is made of: the shares of it that are the sheet, the night, and
+ * anything between. A front leaves a few pixels in a hundred between, across its edge; a ground
+ * faded as one is all between.
  */
-function groundOf(frame: Pixels, ink: Pixels, bare: number[]) {
-  const shares = bare
-    .map((i) => lum(frame.data, i) / Math.max(1, lum(ink.data, i)))
-    .sort((a, b) => a - b);
-  const at = (share: number) => shares[Math.floor(share * (shares.length - 1))];
-  return { share: at(0.5), spread: at(0.75) - at(0.25) };
-}
-
-/** The colour most of a band shows, channel by channel: its ground, beneath its words. */
-function bandColour(frame: Pixels, band: Box): Rgb {
-  const channels: number[][] = [[], [], []];
-  for (let y = 0; y < band.height; y += 2) {
-    for (let x = 0; x < band.width; x += 2) {
-      const i = ((band.y + y) * frame.width + band.x + x) * 3;
-      for (let c = 0; c < 3; c++) channels[c].push(frame.data[i + c]);
-    }
+function groundsOf(frame: Pixels, bare: number[], paper: Rgb) {
+  const sheet = 0.2126 * paper[0] + 0.7152 * paper[1] + 0.0722 * paper[2];
+  let onPaper = 0;
+  let onNight = 0;
+  for (const i of bare) {
+    const share = lum(frame.data, i) / sheet;
+    if (share > 0.8) onPaper += 1;
+    else if (share < 0.2) onNight += 1;
   }
-  return channels.map((values) => values.sort((a, b) => a - b)[values.length >> 1]) as Rgb;
+  const count = Math.max(1, bare.length);
+  return {
+    paper: onPaper / count,
+    night: onNight / count,
+    between: (bare.length - onPaper - onNight) / count,
+  };
 }
 
 /**
@@ -517,7 +428,7 @@ function composition(frame: Pixels, ink: Pixels, light: Pixels, tolerance = 24) 
 
 type Size = { width: number; height: number };
 
-/** A canvas's picture, from its data URL, at the plate's size in a frame. */
+/** A canvas's picture, from its data URL, at the stage's size in a frame. */
 async function pictured(url: string, size: Size) {
   return pixels(
     await sharp(Buffer.from(url.slice(url.indexOf(',') + 1), 'base64'))
@@ -528,8 +439,8 @@ async function pictured(url: string, size: Size) {
 }
 
 /**
- * The last frame the crossing's canvas painted, at the plate's size in a frame. The canvas
- * keeps its drawing buffer, so after a Turn it still holds the frame it ended on.
+ * The last frame the sheet's canvas painted, at the stage's size in a frame. The canvas keeps
+ * its drawing buffer, so after a Turn it still holds the frame it ended on.
  */
 async function lastPainted(page: Page, size: Size) {
   const url = await page
@@ -538,61 +449,62 @@ async function lastPainted(page: Page, size: Size) {
   return pictured(url, size);
 }
 
-/** The frames the page has kept, each at the plate's size in a frame; it holds none of them after. */
-async function framesKept(page: Page, size: Size) {
-  const frames: Frame[] = [];
-  const count = await page.evaluate(() => (window as unknown as { __kept: Kept[] }).__kept.length);
-  // One at a time: each is a picture the size of the plate.
+/** The frames the page has kept, each at the stage's size, cut to what the screen shows of it. */
+async function framesKept(page: Page, size: Size, seen: Box) {
+  const frames: Pixels[] = [];
+  const count = await page.evaluate(
+    () => (window as unknown as { __kept: HTMLCanvasElement[] }).__kept.length,
+  );
+  // One at a time: each is a picture the size of the stage.
   for (let i = 0; i < count; i++) {
-    const { url, bands } = await page.evaluate((index) => {
-      const { plate, bands } = (window as unknown as { __kept: Kept[] }).__kept[index];
-      return { url: plate.toDataURL('image/png'), bands };
-    }, i);
-    frames.push({ plate: await pictured(url, size), bands });
+    const url = await page.evaluate(
+      (index) =>
+        (window as unknown as { __kept: HTMLCanvasElement[] }).__kept[index].toDataURL('image/png'),
+      i,
+    );
+    frames.push(crop(await pictured(url, size), seen));
   }
   await page.evaluate(() => {
-    (window as unknown as { __kept: Kept[] }).__kept.length = 0;
+    (window as unknown as { __kept: HTMLCanvasElement[] }).__kept.length = 0;
   });
   return frames;
 }
 
 /**
- * Turn by the word. The Turn's frames are the ones the page kept (`keepFrames`); the room is
+ * Turn by the word. The Turn's frames are the ones the page kept (`keepFrames`); the stage is
  * also seen from outside, by as many screenshots as the runner makes once the page has kept a
- * frame whose ground is a quarter of its way. None is asked for sooner: a screenshot holds a
- * page without a GPU still for about a second, and by then the record holds the ground mid-way.
+ * few. None is asked for sooner: a screenshot holds a page without a GPU still for about a
+ * second, and by then the record holds the front on its way.
  */
 async function turnBy(
   page: Page,
   word: 'ink' | 'light',
   cross: number,
-  plate: Size,
-  seen: () => Promise<Frame>,
+  stage: Size,
+  seen: Box,
+  shot: () => Promise<Pixels>,
 ) {
-  const shots: Frame[] = [];
+  const shots: Pixels[] = [];
   await page.locator(`${current} [data-turn="${word}"]`).click();
   const started = Date.now();
   await page.waitForFunction(
-    (night) =>
-      (window as unknown as { __kept: Kept[] }).__kept.some(({ ground }) =>
-        night ? ground <= 0.75 : ground >= 0.25,
-      ),
-    word === 'light',
+    () => (window as unknown as { __kept: HTMLCanvasElement[] }).__kept.length >= 4,
+    null,
     { polling: 'raf', timeout: cross + 3000 },
   );
-  while (Date.now() - started < cross + 300) shots.push(await seen());
+  while (Date.now() - started < cross - 500) shots.push(await shot());
   await expect(page.locator(pageStage)).toHaveAttribute('data-expression', word, {
     timeout: cross + 3000,
   });
   await expect(page.locator('html')).not.toHaveAttribute('data-turning', /./);
-  // The canvas rests, and the room is the seam's own again.
+  // The canvas rests, and the page is its own again.
   await expect(page.locator(`${pageStage} canvas[data-active]`)).toHaveCount(0);
   expect(await leftOver(page)).toEqual([]);
-  return { kept: await framesKept(page, plate), shots };
+  return { kept: await framesKept(page, stage, seen), shots };
 }
 
 for (const id of [31, 23, 35]) {
-  test(`№ ${String(id).padStart(3, '0')} changes its material in its own order, and the room with it`, async ({
+  test(`№ ${String(id).padStart(3, '0')} turns in its own order, from one still to the other, with no ground between`, async ({
     page,
   }) => {
     // Two slowed Turns, and every frame the page kept of them brought back as a picture.
@@ -603,126 +515,91 @@ for (const id of [31, 23, 35]) {
     await page.emulateMedia({ reducedMotion: 'no-preference' });
     await workReady(page, id);
     await crossingOffered(page);
-    const room = await roomOf(page);
+    const room = await stageOf(page);
     const shot = async () => pixels(await page.screenshot({ clip: room.clip }));
-    const inkShot = await settled(page, shot);
-    const scale = inkShot.width / room.clip.width;
-    const plate = scaled(room.plate, scale);
-    const inkStill = crop(inkShot, plate);
-    // The work on its plate, and the bands a screenshot shows beside the plate.
-    const work = scaled(room.work, scale);
-    const box = { ...work, x: work.x - plate.x, y: work.y - plate.y };
-    const bands = [room.head, room.strip].flatMap((band) => (band ? [scaled(band, scale)] : []));
-    /** The room from outside, as one frame: its plate, and the ground beneath each band's words. */
-    const seen = async (): Promise<Frame> => {
-      const frame = await shot();
-      return { plate: crop(frame, plate), bands: bands.map((band) => bandColour(frame, band)) };
+    const inkStill = await settled(page, shot);
+    const scale = inkStill.width / room.clip.width;
+    // The whole stage in a frame's pixels, what the screen shows of it, the plate and the work.
+    const stage = {
+      width: Math.round(room.stage.width * scale),
+      height: Math.round(room.stage.height * scale),
     };
-    // The Turn is slowed through its own token to six seconds, so its ground lies between a
-    // fifth and four fifths of its way for over a second: many frames of the slowest runner. The
-    // page keeps sixteen of the Turn's frames, and the steps of the ground's change besides.
+    const seen = { x: 0, y: 0, width: inkStill.width, height: inkStill.height };
+    const plate = scaled(room.plate, scale);
+    const box = scaled(room.work, scale);
+    // The Turn is slowed through its own token to six seconds, and the page keeps sixteen of its
+    // frames: many of them with the front part-way, on the slowest runner.
     const cross = 6000;
     const slow = await page.addStyleTag({ content: `:root { --t-cross: ${cross}ms; }` });
-    await watchWalls(page, room.paper);
     await keepFrames(page, cross / 16);
 
-    /** The ground's colour at a share of the way from the night to the sheet. */
-    const tone = (share: number) => room.paper.map((channel) => channel * share) as Rgb;
-    /** A ground mid-way between night and paper. */
-    const midway = (ground: { share: number }) => ground.share > 0.2 && ground.share < 0.8;
-
     /**
-     * The checks every frame of a change of material passes, in either direction: the ground is
-     * one, never a front, and moves one way only, and the head and the strip wear it on the same
-     * frame. Each frame's ground, for the checks that follow.
+     * The checks every frame of a Turn passes, in either direction, whether the page kept it or
+     * a screenshot caught it: it is made of the two stills and nothing else, and its bare ground
+     * is the sheet here and the night there, never a ground between them.
      */
-    const changed = (frames: Frame[], bare: number[], toward: 'night' | 'paper') => {
-      const grounds = frames.map((frame) => groundOf(frame.plate, inkStill, bare));
-      for (const ground of grounds) {
-        expect(ground.share).toBeGreaterThan(-0.03);
-        expect(ground.share).toBeLessThan(1.03);
-      }
-      for (let i = 1; i < grounds.length; i++) {
-        if (toward === 'night')
-          expect(grounds[i].share).toBeLessThanOrEqual(grounds[i - 1].share + 0.03);
-        else expect(grounds[i].share).toBeGreaterThanOrEqual(grounds[i - 1].share - 0.03);
-      }
-      // Between night and paper the ground is one ground and not a front.
-      for (const ground of grounds.filter(midway)) expect(ground.spread).toBeLessThan(0.12);
-      // The running head and the strip wear it on the same frame.
-      frames.forEach((frame, i) => {
-        const share = grounds[i].share;
-        if (share < 0.15 || share > 0.85) return;
-        for (const colour of frame.bands)
-          colour.forEach((value, c) =>
-            expect(Math.abs(value - room.paper[c] * share)).toBeLessThan(14),
-          );
-      });
+    const turned = (frames: Pixels[], ink: Pixels, light: Pixels, bare: number[]) => {
+      // On the plate: the strip's words are the page's own, set over the canvas, so a frame the
+      // page kept of its canvas has bare ground where a still has a word.
+      for (const frame of frames)
+        expect(
+          composition(crop(frame, plate), crop(ink, plate), crop(light, plate)).outside,
+        ).toBeLessThan(0.04);
+      const grounds = frames.map((frame) => groundsOf(frame, bare, room.paper));
+      for (const ground of grounds) expect(ground.between).toBeLessThan(0.12);
       return grounds;
     };
+    /** Frames on which both grounds stood at once: a front on its way. */
+    const fronts = (grounds: { paper: number; night: number }[]) =>
+      grounds.filter((ground) => ground.paper > 0.1 && ground.night > 0.1).length;
 
-    // Toward night: the ink lifts, the ground cools, the light rises in its own order.
-    const toNight = await turnBy(page, 'light', cross, plate, seen);
-    const lightStill = crop(await settled(page, shot), plate);
-    const bare = bareGround(inkStill, lightStill, { ...plate, x: 0, y: 0 }, room.paper);
+    // Toward night: the front leaves the first marks the Light film drew.
+    const toNight = await turnBy(page, 'light', cross, stage, seen, shot);
+    const lightStill = await settled(page, shot);
+    const bare = bareGround(inkStill, lightStill, seen, room.paper);
     expect(bare.length).toBeGreaterThan(500);
-    const cooled = changed(toNight.kept, bare, 'night');
-    // Mid-Turn the ground lay between night and paper, in the page's own frames; and whichever
-    // of them the screenshots caught, the room composed as it is shown, pass the same checks.
-    expect(cooled.filter(midway).length).toBeGreaterThan(0);
-    changed(toNight.shots, bare, 'night');
+    expect(fronts(turned(toNight.kept, inkStill, lightStill, bare))).toBeGreaterThan(1);
+    turned(toNight.shots, inkStill, lightStill, bare);
     const lightMap = await arrivalMap(id, 'light', box.width, box.height);
-    // Where the light has yet to rise, a pixel shows the ground, cooled by then nearly to night.
+    // Where the Light still shows untouched lies earlier in its order than where Ink's still does.
     const rising = bestOf(
-      toNight.kept.flatMap(({ plate: frame }, i) =>
-        cooled[i].share < 0.2
-          ? [followsMap(frame, flat(frame, tone(cooled[i].share)), lightStill, lightMap, box)]
-          : [],
-      ),
+      toNight.kept.map((frame) => followsMap(frame, inkStill, lightStill, lightMap, box)),
     );
     expect(rising.arrived).toBeGreaterThan(200);
     expect(rising.waiting).toBeGreaterThan(200);
     expect(rising.latestArrived).toBeLessThanOrEqual(rising.earliestWaiting + 16);
     // At rest the plate is the Light still: the canvas ended on it, as faithfully as it paints.
-    const endedNight = await lastPainted(page, plate);
-    expect(distance(endedNight, lightStill)).toBeLessThan(3);
-    expect(distance(endedNight, inkStill)).toBeGreaterThan(30);
+    // (The plate alone: the strip's words are the page's, set over the canvas.)
+    const endedNight = crop(crop(await lastPainted(page, stage), seen), plate);
+    expect(distance(endedNight, crop(lightStill, plate))).toBeLessThan(3);
+    expect(distance(endedNight, crop(inkStill, plate))).toBeGreaterThan(30);
 
-    // Toward paper, from the Light still at rest (its film, held back, never came): the ground
-    // warms, the light drains, and the ink blooms in the order it came to rest.
+    // Toward paper, from the Light still at rest (its film, held back, never came): the front
+    // leaves where the ink first came to rest.
     await expect(page.locator(`${current} video.has-frame`)).toHaveCount(0);
-    const toPaper = await turnBy(page, 'ink', cross, plate, seen);
+    const toPaper = await turnBy(page, 'ink', cross, stage, seen, shot);
     await slow.evaluate((node) => (node as HTMLElement).remove());
-    const warmed = changed(toPaper.kept, bare, 'paper');
-    expect(warmed.filter(midway).length).toBeGreaterThan(0);
-    changed(toPaper.shots, bare, 'paper');
+    expect(fronts(turned(toPaper.kept, inkStill, lightStill, bare))).toBeGreaterThan(1);
+    turned(toPaper.shots, inkStill, lightStill, bare);
     const inkMap = await arrivalMap(id, 'ink', box.width, box.height);
-    // Where the ink has yet to bloom, a pixel shows the ground, warmed by then nearly to paper.
     const blooming = bestOf(
-      toPaper.kept.flatMap(({ plate: frame }, i) =>
-        warmed[i].share > 0.85
-          ? [followsMap(frame, flat(frame, tone(warmed[i].share)), inkStill, inkMap, box)]
-          : [],
-      ),
+      toPaper.kept.map((frame) => followsMap(frame, lightStill, inkStill, inkMap, box)),
     );
     expect(blooming.arrived).toBeGreaterThan(200);
     expect(blooming.waiting).toBeGreaterThan(200);
     expect(blooming.latestArrived).toBeLessThanOrEqual(blooming.earliestWaiting + 16);
-    const endedPaper = await lastPainted(page, plate);
-    expect(distance(endedPaper, inkStill)).toBeLessThan(3);
-    expect(distance(endedPaper, lightStill)).toBeGreaterThan(30);
-    // And the page itself is the Ink still again, as it was before either Turn. (A ground or a
-    // layer left part-way would lie several levels off; a still moved to its original, under one.)
-    const again = crop(await settled(page, shot), plate);
+    const endedPaper = crop(crop(await lastPainted(page, stage), seen), plate);
+    expect(distance(endedPaper, crop(inkStill, plate))).toBeLessThan(3);
+    expect(distance(endedPaper, crop(lightStill, plate))).toBeGreaterThan(30);
+    // And the page itself is the Ink still again, as it was before either Turn. (A layer left
+    // part-way would lie several levels off; a still moved to its original, under one.)
+    const again = await settled(page, shot);
     expect(distance(shrink(again), shrink(inkStill))).toBeLessThan(1.5);
 
-    // Every frame was painted by the canvas and the room was the ground's, never a front's.
+    // Every frame was painted by the canvas, and the room was never shaped another way.
     const painted = await crossingState(page);
     expect(painted.painted).toBeGreaterThan(5);
-    expect(painted.headGround).toBeGreaterThan(0);
-    expect(painted.stripGround).toBeGreaterThan(0);
-    expect(painted.headFront).toBe(0);
-    expect(painted.stripFront).toBe(0);
+    expect(painted.shaped).toBe(0);
   });
 }
 
@@ -800,10 +677,10 @@ test('a finger’s Turn keeps the crossing pixel by pixel, from the two stills a
   await finger('pointerup', 0.62);
   await expect(page.locator('html')).not.toHaveAttribute('data-turning', /./, { timeout: 6000 });
   await expect(stage).toHaveAttribute('data-expression', 'ink');
+  // Painted by the sheet throughout, and never shaped another way.
   const seen = await crossingState(page);
-  expect(seen.stripFront).toBeGreaterThan(0);
-  expect(seen.headGround).toBe(0);
-  expect(seen.stripGround).toBe(0);
+  expect(seen.painted).toBeGreaterThan(0);
+  expect(seen.shaped).toBe(0);
 });
 
 test('a peek released mid-way returns from where it is, never from the far side', async ({
@@ -816,48 +693,28 @@ test('a peek released mid-way returns from where it is, never from the far side'
   const clip = (await page.locator(`${current} .plate`).boundingBox())!;
   const shot = async () => coarse(await page.screenshot({ clip }));
   const ink = await settled(page, shot);
-  const paper = (
-    await page
-      .locator(`${pageStage} [data-layer="ink"] [data-plate-ground]`)
-      .evaluate((element) => getComputedStyle(element).backgroundColor)
-  )
-    .match(/[\d.]+/g)!
-    .slice(0, 3)
-    .map(Number) as Rgb;
-  const bare = bareGround(ink, null, { x: 0, y: 0, width: ink.width, height: ink.height }, paper);
-  // Slowed to twelve seconds, so the ground takes seconds to cool and the key is let go well
-  // inside that change.
+  // Slowed to twelve seconds, so the key is let go well inside the front's travel.
   await page.addStyleTag({ content: ':root { --t-cross: 12000ms; }' });
-  await watchWalls(page, paper);
-  // Hold L until the walls show the ground has begun to cool: by then most of the ink has lifted.
-  // The page says when. A screenshot first would take seconds on a runner without a GPU, and the
-  // Turn would run on toward the night before the key was let go.
+  // The page keeps the front's course itself, frame by frame, and says when a key was let go:
+  // a screenshot first would take seconds on a runner without a GPU, and the front would run on.
+  await recordSheet(page, { scope: 'page', toward: 'night', every: 0 });
   await page.keyboard.down('l');
   await expect(page.locator('html')).toHaveAttribute('data-turning', 'time');
-  await page.waitForFunction(
-    () => (window as unknown as { __walls: Walls }).__walls.share < 0.9,
-    null,
-    { polling: 'raf' },
-  );
+  // Hold L until the front has passed a fifth of the bare ground the screen shows.
+  await expect.poll(() => sheetTurned(page), { timeout: 20_000 }).toBeGreaterThan(0.2);
   await page.keyboard.up('l');
-  const first = await shot();
-  const after = [distance(first, ink)];
-  const released = Date.now();
-  while (Date.now() - released < 3000) after.push(distance(await shot(), ink));
-  // The first frame after the key is let go keeps the change where it had come: its ground is
-  // still nearer the paper than the night, which a change jumped to the far side would show.
-  expect(groundOf(first, ink, bare).share).toBeGreaterThan(0.4);
-  // And from there it only goes back.
-  for (let i = 1; i < after.length; i++) expect(after[i]).toBeLessThanOrEqual(after[i - 1] + 0.75);
-  await expect(page.locator('html')).not.toHaveAttribute('data-turning', /./, { timeout: 12_000 });
-  // Frame by frame, from the moment the key was let go: the walls went no further toward the
-  // night than a frame or two of a slow runner's change, and came back to the paper.
-  const walls = await wallsOf(page);
-  const [letGo, there] = walls.released!;
-  const back = walls.frames.filter(([time]) => time > letGo).map(([, share]) => share);
-  expect(there).toBeLessThan(0.9);
-  expect(Math.min(...back)).toBeGreaterThan(there - 0.1);
-  expect(back.at(-1)).toBeGreaterThan(0.98);
+  await expect(page.locator('html')).not.toHaveAttribute('data-turning', /./, { timeout: 20_000 });
+  const record = await sheetRecorded(page);
+  const letGo = record.released!;
+  const there = record.course.filter(([time]) => time <= letGo).at(-1)![1];
+  const back = record.course.filter(([time]) => time > letGo).map(([, share]) => share);
+  expect(there).toBeGreaterThan(0.2);
+  // From where it stood the front only went back: no further on than a frame or two of a slow
+  // runner's travel, never to the far side, and all the way to where it began.
+  expect(Math.max(...back)).toBeLessThan(there + 0.1);
+  for (let i = 1; i < back.length; i++) expect(back[i]).toBeLessThanOrEqual(back[i - 1] + 0.02);
+  expect(back.at(-1)).toBeLessThan(0.02);
+  expect(record.left).toEqual([]);
   await expect(page.locator(`${pageStage} canvas[data-active]`)).toHaveCount(0);
   expect(distance(await shot(), ink)).toBeLessThan(1);
   await expect(page.locator(pageStage)).toHaveAttribute('data-expression', 'ink');

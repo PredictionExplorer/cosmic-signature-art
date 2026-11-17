@@ -13,12 +13,33 @@
   gap: 45px;
   align-items: start;
 }
+/* One column, the head's own width. Left to itself the column is as wide as the widest thing in
+   it, and on the door that is the number field (orbit-picker.module.css), wider than a 320 px
+   screen has between its gutters; the lede beside it then ran as wide. */
 .head {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: 18px;
   align-content: start;
   min-width: 0;
   max-width: var(--measure);
+}
+/*
+  A work's page prints its derivation as the worker reports: a line, five more, then the
+  record's eleven rows, a screen's height or more in about a second. Whatever lay beneath was
+  pushed down as it grew: the note on a phone (a layout shift of 0.12 at 390 px), the colophon
+  on a desk. So the work's identity and its derivation are given the first screen whole, down
+  to its foot, and what follows them starts beneath the fold: it is not on the screen when it
+  moves. In one column the two share that height, and the derivation takes what the head
+  leaves; side by side they are the sheet's own columns, and the derivation's is that tall.
+*/
+.firstScreen {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: auto 1fr;
+  gap: 45px;
+  /* The screen, less the running head and the page's padding above the sheet. */
+  min-height: calc(100svh - var(--head) - 36px);
 }
 .back {
   margin-bottom: -9px;
@@ -123,6 +144,12 @@
   .work {
     grid-area: work;
     min-width: 0;
+  }
+  .firstScreen {
+    display: contents;
+  }
+  .firstScreen > .work {
+    min-height: calc(100svh - var(--head) - 54px);
   }
   .sheet > .note {
     grid-area: note;

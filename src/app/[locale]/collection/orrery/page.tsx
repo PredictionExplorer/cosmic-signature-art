@@ -58,6 +58,8 @@ export default async function OrreryPage({ params }: { params: Promise<{ locale:
         title={t.orreryTitle}
         line={t.orreryLine}
         note={t.orreryNote}
+        point={t.orreryPoint}
+        touch={t.orreryTouch}
         still={t.orreryStill}
         fallback={t.orreryFallback}
       />

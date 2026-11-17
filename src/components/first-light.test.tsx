@@ -155,7 +155,7 @@ describe('First Light', () => {
     vi.stubGlobal(
       'Worker',
       class extends SamplingWorker {
-        postMessage() {
+        override postMessage() {
           setTimeout(() => this.onerror?.({ message: 'no' }), 0);
         }
       },

@@ -25,13 +25,31 @@
 .address code {
   font-size: inherit;
 }
+/* A short address stands in a line of words, and its link is that line's height: 26 px in the
+   entry, 18 px in the timeline. Its target is 44 px all the same: the box reaches above and
+   below the line by what a line of 1.5 lacks, and the margins take that back, so no line moves
+   for a finger's sake. The quarter pixel keeps the sum from landing a rounding under 44. */
+.compact a {
+  padding-block: calc(22.25px - 0.75em);
+  margin-block: calc(0.75em - 22.25px);
+}
+/* One word, never broken and never squeezed by the address beside it, in a target 44 px each
+   way. The box reaches 8 px past the word on either side and the margins take that back, so
+   the word stands where it stood: after an address, in brackets, or at the end of a row. */
 .copy {
+  flex: none;
+  min-width: 44px;
+  min-height: 44px;
+  padding-inline: 8px;
+  margin-inline: -8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   font-family: var(--font-mono);
   font-size: var(--fs-folio);
   color: var(--muted);
-  min-height: 44px;
-  display: inline-flex;
-  align-items: center;
+  white-space: nowrap;
+  overflow-wrap: normal;
   text-decoration: underline;
   text-decoration-thickness: 1px;
   text-underline-offset: 0.3em;

@@ -1,5 +1,6 @@
 import { expect, test, type Page } from './fixtures';
 import AxeBuilder from '@axe-core/playwright';
+import { WCAG_22_AA } from './standard';
 import { readFileSync } from 'node:fs';
 import { catalogs } from '../../src/lib/i18n/messages';
 import { fill } from '../../src/lib/i18n/format';
@@ -187,9 +188,7 @@ test('the essay opens on night, pins the day’s Light film, crosses one hard ed
   await wholePagePictures(page, testInfo, 'process-redesign', {
     style: 'nextjs-portal { visibility: hidden; }',
   });
-  const results = await new AxeBuilder({ page })
-    .withTags(['wcag2a', 'wcag2aa', 'wcag21aa'])
-    .analyze();
+  const results = await new AxeBuilder({ page }).withTags(WCAG_22_AA).analyze();
   expect(
     results.violations.map(({ id, impact, nodes }) => ({
       id,

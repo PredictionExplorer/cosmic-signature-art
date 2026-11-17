@@ -8,6 +8,7 @@ import { getArtwork } from '@/lib/art/server';
 import { indexedWork } from '@/lib/art/collection-index';
 import { getCuratedArtwork } from '@/lib/art/catalog';
 import { inlineCuratedPreview } from '@/lib/art/inline-preview';
+import { heldWork } from '@/lib/art/held';
 import type { Artwork } from '@/lib/art/types';
 import { parseArtworkId } from '@/lib/art/validation';
 import { workNumber } from '@/lib/art/number';
@@ -66,20 +67,19 @@ export default async function AuctionWork({
   const view = artworkViewParams(searchParams ? await searchParams : {});
   const initialExpression = view.get('expression') ?? undefined;
   const indexed = indexedWork(tokenId);
-  // A curated work paints at once from the registry while its live record streams, as on the
-  // artwork page; any other token waits for the publisher, and one it reports as not found is
-  // not a lot: no strip, no canonical record.
+  // A work the venue holds paints at once from its own copy while the live record streams, as
+  // on the artwork page (src/lib/art/held.ts). Any other token waits for the publisher, with no
+  // boundary around the wait, so one it reports as not found is not a lot and is answered as
+  // such: a 404, no strip, no canonical record.
   const registry = getCuratedArtwork(tokenId);
   const opening =
     initialExpression ??
     openingExpression(knownExpressions(registry, indexed)) ??
     expressionOfTheDay();
-  const curated = registry?.media.some((item) => item.id === opening && item.still)
-    ? registry
-    : undefined;
+  const held = heldWork(registry, indexed, opening);
   const live = getArtwork(tokenId);
-  let artwork: Artwork | null = curated ?? null;
-  if (!curated) {
+  let artwork: Artwork | null = held?.artwork ?? null;
+  if (!held) {
     const settled = await live;
     if (settled.status === 'not-found') notFound();
     artwork = settled.artwork;
@@ -96,14 +96,14 @@ export default async function AuctionWork({
           initialExpression={initialExpression}
           openingExpression={openingOn(artwork, initialExpression)}
           inlinePreviews={
-            curated
+            held?.curated
               ? {
-                  ink: inlineCuratedPreview(curated.id, 'ink'),
-                  light: inlineCuratedPreview(curated.id, 'light'),
+                  ink: inlineCuratedPreview(tokenId, 'ink'),
+                  light: inlineCuratedPreview(tokenId, 'light'),
                 }
               : undefined
           }
-          live={curated ? live.then((result) => result.artwork) : undefined}
+          live={held ? live.then((result) => result.artwork) : undefined}
           traits={{ structure: indexed?.traits.structure, underlay: indexed?.traits.underlay }}
         />
       ) : (

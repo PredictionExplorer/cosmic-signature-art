@@ -31,9 +31,11 @@ The first thing a visitor sees should be the work, and it should arrive first. L
   - `src/components/artwork-media.tsx`: that preview loads eagerly, at high priority on the page's hero, and the full still follows behind it.
   - `src/lib/room.ts`: on a first visit to the home, First Light's gate keeps the plate alone from the first frame, with the running head held back.
   - `src/components/overture.tsx`: the performance itself loads by `import()`, and only on a first visit.
+  - `src/lib/art/held.ts`: a work's page opens its plate from the venue's own copy, with no Suspense boundary around it, so the work is in the page as it is sent. No route waits behind a loading plate, and `src/lib/without-script.ts` shows the still to a browser that runs no script (ARCHITECTURE.md §2).
 - **Checked by:**
   - `tests/e2e/budgets.spec.ts`: on a desk and on a phone, the largest paint must be the artwork's preview, still or film, within 2.5 s.
   - `tests/e2e/first-light-home.spec.ts`: a first visit opens on the plate.
+  - `tests/e2e/without-script.spec.ts`: each page is read as it is sent, and opened with script off: its still is in `<main>`, at full strength, with its words.
 
 ### Stills are never altered
 
@@ -103,13 +105,18 @@ English, Simplified Chinese, Traditional Chinese for Taiwan and for Hong Kong, U
   - `npm run test:fonts`: every character in every locale is drawn by a shipped face;
   - `tests/e2e/accessibility.spec.ts`: axe runs on every route in every locale.
 
-### A 12 px floor and 44 px targets
+### A 12 px floor, 44 px targets, and nothing cut off at 320 px
 
-Small type and small targets shut people out.
+Small type and small targets shut people out, and so does a word that runs off a small screen.
 
-- **Kept by:** `src/app/globals.css`, whose type scale stops at 12 px in every locale, and controls sized to at least 44 px.
+- **Kept by:**
+  - `src/app/globals.css`, whose type scale stops at 12 px in every locale, and controls sized to at least 44 px.
+  - On a Chinese, Japanese or Korean page, `font-synthesis-small-caps: none` beside `font-synthesis-style: none`: no face fakes a style it lacks, so no ideograph is drawn at 70 % of its size.
+  - Columns that are never wider than the screen between its gutters (`grid-template-columns: minmax(0, 1fr)`), and a wordmark sized to its longer word.
 - **Checked by:**
-  - `src/app/stylesheet-floor.test.ts`: no stylesheet sets type below 12 px;
+  - `src/app/stylesheet-floor.test.ts`: no stylesheet sets type below 12 px.
+  - `tests/e2e/drawn.spec.ts`, which measures what is drawn, because each of these rules can be kept in the stylesheet and broken on the screen. On a 320 px screen, in English, Ukrainian and Japanese, every line of text and every control lies between the screen's sides and inside any box that clips it. In Chinese, Japanese and Korean every ideograph is as wide as the same character set plainly at 12 px or more. On a work's page every control is at least 44 × 44 px, a link set in a line of words excepted.
+  - `noHorizontalOverflow` in `tests/e2e/helpers.ts`, called by the accessibility run on every route in every locale. It reads the same boxes, and not the page's width alone: the venue's frame clips its overflow, so a line too wide for the screen leaves the page 320 px wide and the line cut.
   - `tests/e2e/polish-responsive.spec.ts`: the viewing controls are at least 44 × 44 px, from a 320 px phone to a laptop.
 
 ### Say what is known, and how
@@ -124,9 +131,21 @@ The venue says where each fact comes from and what it cannot promise. It never f
   - `src/components/artwork-entry.test.tsx`, `artwork-record.test.tsx` and `artwork-history.test.tsx`;
   - `src/lib/auction/client.test.ts` and `rules.test.ts`, held to the stricter coverage thresholds in `vitest.config.ts`.
 
+### A page loads from the venue and its publisher, and from nowhere else
+
+A page that can be made to load a script from elsewhere, or to send what it reads elsewhere, is no longer the venue's page. On a site that will ask a wallet to sign, that is the first thing to shut.
+
+- **Kept by:**
+  - `src/lib/security-headers.ts`: a Content-Security-Policy with every response, written from the constants the code itself loads from. Scripts, styles, fonts and workers are the venue's own; stills and films are the venue's and the publisher's; a request goes to the venue or to the chain's endpoint for the sale; nothing frames the venue, and no string is ever run as code.
+  - `src/proxy.ts`: a page rendered for each request is also given a nonce, and a second policy under which a script runs only by that nonce or by its hash. It is sent report-only for now: the browser enforces nothing of it and says what it would have refused. ARCHITECTURE.md §13 says why, and what enforcing it waits for.
+- **Checked by:**
+  - `src/lib/security-headers.test.ts` and `src/proxy.test.ts`;
+  - `tests/e2e/fixtures.ts`: a page that breaks either policy fails the browser test that met it, in every engine;
+  - `tests/e2e/security-headers.spec.ts`: the policy refuses a script, a picture and a request from another host, a string run as code, and a frame around the venue.
+
 ## Run it
 
-Use Node 22.12 or later and npm; the lockfile is authoritative.
+Use Node 22.18 or later and npm; the lockfile is authoritative.
 
 ```sh
 npm ci
@@ -164,7 +183,7 @@ npm run test:budgets:js       # first-load JavaScript per route, read from the b
 npm run test:budgets:paint    # LCP and CLS in Chromium, on a desk and a phone
 ```
 
-The budgets are set in [`scripts/budgets.json`](scripts/budgets.json): first-load JavaScript per route, and LCP within 2.5 s and CLS within 0.1 for the home and a work page. ARCHITECTURE.md, §12, records the baseline they were set from and how to change one. The paint budget is measured only on a production server. Against `npm run dev` it skips, because a development server's timings mean nothing.
+The budgets are set in [`scripts/budgets.json`](scripts/budgets.json): first-load JavaScript per route, and LCP within 2.5 s and CLS within 0.1 for the home, a work page and a work's proof. ARCHITECTURE.md, §12, records the baseline they were set from and how to change one. The paint budget is measured only on a production server. Against `npm run dev` it skips, because a development server's timings mean nothing.
 
 ## Hosting
 

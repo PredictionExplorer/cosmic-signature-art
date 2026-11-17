@@ -1,6 +1,3 @@
-import type { Field } from './front';
-import { FRONT_EDGE } from './timing';
-
 /*
   The run back. A plate that performs its film from the beginning does not cut from its still
   to the film's first frame, which is a bare sheet (Ink) or the night (Light). The still runs
@@ -10,6 +7,20 @@ import { FRONT_EDGE } from './timing';
   the soft edge of the front as it passes. When the front has passed every mark the plate is
   the film's own frame, and the film plays on from it.
 */
+
+/** An arrival map as bytes, 0 the first arrival and 255 the last. */
+export interface Field {
+  data: Uint8Array;
+  width: number;
+  height: number;
+}
+
+/**
+ * The soft edge of the run back's front, in map units: either side of it each pixel is the still
+ * or the film's first frame, untouched; across it the two are mixed as it passes, which also
+ * hides the map's eight-bit steps.
+ */
+export const FRONT_EDGE = 0.035;
 
 /** How long the run back takes where the page sets no --t-rewind. */
 export const REWIND_MS = 1600;

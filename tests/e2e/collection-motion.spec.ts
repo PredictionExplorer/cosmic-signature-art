@@ -1,4 +1,5 @@
 import { expect, failedToLoad, test, type Locator, type Page } from './fixtures';
+import { motionToggle } from './helpers';
 
 const previewSelector = '#works [data-collection-preview]';
 const filmSelector = `${previewSelector} video[src]`;
@@ -24,11 +25,8 @@ async function collectionReady(page: Page, path = '/collection?expression=ink&q=
   const cards = page.locator('#works a[data-preview-id]');
   await expect(cards.first()).toBeVisible();
   await cards.first().scrollIntoViewIfNeeded();
-  const paused = await page.evaluate(() => matchMedia('(prefers-reduced-motion: reduce)').matches);
-  await expect(page.locator('button.motion-toggle')).toHaveAttribute(
-    'aria-pressed',
-    String(paused),
-  );
+  // The page is the visitor's once it is hydrated; a press made before then is lost.
+  await motionToggle(page);
   return cards;
 }
 

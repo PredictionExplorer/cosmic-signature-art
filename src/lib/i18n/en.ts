@@ -736,7 +736,9 @@ export const en = {
   orreryLine:
     'Every orbit in the collection, performed at once from its seed, at the pace of its Light film.',
   orreryNote:
-    'Each orbit starts from the first step of its recorded window, re-derived from the seed and checked against the record before it was kept. What moves is computed in this browser as you watch, not played back. Point at a work, or focus it, to see its own Light still.',
+    'Each orbit starts from the first step of its recorded window, re-derived from the seed and checked against the record before it was kept. What moves is computed in this browser as you watch, not played back.',
+  orreryPoint: 'Point at a work, or focus it, to see its own Light still.',
+  orreryTouch: 'Tap a work to enter it.',
   orreryStill: 'Motion is paused, so each orbit is drawn whole, once.',
   orreryFallback: 'This browser cannot perform the orbits here; each work’s Light still stands in.',
   orreryCell: '{work} · its orbit, performed',

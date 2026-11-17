@@ -34,10 +34,11 @@ export interface Picture {
   drawn: number;
   /** The sample the window is drawn to whole: on the plate, the still's own step. */
   last: number;
+  // Functions, not methods: a painter takes them out of the picture and calls them bare.
   /** The body of the orbit a drawn body is. */
-  body(drawn: number): number;
-  x(sample: number, drawn: number): number;
-  y(sample: number, drawn: number): number;
+  body: (drawn: number) => number;
+  x: (sample: number, drawn: number) => number;
+  y: (sample: number, drawn: number) => number;
   /** A drawn body's place at `index` of a continuation's path (`width` numbers a sample). */
   continued(path: Float32Array, width: number, index: number, drawn: number): [number, number];
   /**

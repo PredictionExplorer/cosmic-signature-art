@@ -415,13 +415,17 @@
   border-top: 1px solid var(--rule);
 }
 /* Two lines, always: the clock and the progress change length as they run, and a readout that
-   grew or shrank would move everything beneath the section. */
+   grew or shrank would move everything beneath the section. Nothing hangs outside a box that
+   clips: where a line's closing mark hangs past the measure (WebKit), the Ukrainian line's
+   closing guillemet stood 2 px outside this one at 390 px and was cut, where the line should
+   have turned. */
 .readout {
   display: -webkit-box;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 2;
   line-clamp: 2;
   overflow: hidden;
+  hanging-punctuation: none;
   height: 45px;
   margin: 0;
   padding-top: 9px;
@@ -613,8 +617,10 @@ a.again {
 .record {
   grid-column: 2;
 }
+/* The record asks its own width, not the screen's: it stands in a column of the page. */
 .record {
   min-width: 0;
+  container-type: inline-size;
 }
 .proof {
   width: 100%;
@@ -658,8 +664,60 @@ a.again {
   letter-spacing: 0.06em;
   white-space: nowrap;
 }
+/* The check's word changes as its row is checked, and the two words are not one width. The cell
+   holds both, unseen and without height (data-room, a line each), so it is as wide as the wider
+   from the first paint and nothing beside it is set again when the word changes. */
+.proof td.check::after {
+  content: attr(data-room);
+  display: block;
+  height: 0;
+  overflow: hidden;
+  visibility: hidden;
+  white-space: pre;
+}
 .proof tr[data-exact='false'] td.check {
   font-style: italic;
+}
+/*
+  In a narrow column, a phone's, a row sets its measurement's name beside its check and its value
+  beneath, at the full width a long number or a braid word needs, as Verify an orbit sets its
+  record (orbit-verifier.module.css). Three columns left the value only what the two unbreaking
+  ones did not take: 46 px in English at 320 px, and 7 px in Ukrainian there and in Vietnamese on
+  any phone, where every value ran one character to a line down 4,300 px and the check's word
+  ran off the screen. The rows keep their roles by name (orbit-record.tsx), since they are no
+  longer laid out as a table's.
+*/
+@container (max-width: 559px) {
+  .proof,
+  .proof tbody {
+    display: block;
+  }
+  .proof tr {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas:
+      'name check'
+      'value value';
+    column-gap: 12px;
+    align-items: baseline;
+    padding: 6px 0;
+    border-top: 1px solid var(--rule);
+  }
+  .proof th,
+  .proof td {
+    padding: 0;
+    border-top: 0;
+  }
+  .proof th[scope='row'] {
+    grid-area: name;
+    white-space: normal;
+  }
+  .proof td:not(.check) {
+    grid-area: value;
+  }
+  .proof td.check {
+    grid-area: check;
+  }
 }
 /* The summary arrives with the derivation; its room is kept from the start. */
 .summary {

@@ -122,13 +122,20 @@
 .file {
   font-variant-numeric: tabular-nums lining-nums;
 }
+/* One word in a target 44 px each way, as beside an address (artwork-record.module.css): the
+   box reaches 8 px past the word on either side, and the word stands where it stood. */
 .copy {
+  min-width: 44px;
+  min-height: 44px;
+  padding-inline: 8px;
+  margin-inline: -8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   font-family: var(--font-mono);
   font-size: var(--fs-folio);
   color: var(--muted);
-  min-height: 44px;
-  display: inline-flex;
-  align-items: center;
+  white-space: nowrap;
   text-decoration: underline;
   text-decoration-thickness: 1px;
   text-underline-offset: 0.3em;

@@ -23,7 +23,10 @@ export type {
  * - an uncaught error or an unhandled rejection;
  * - a console message of type `error`: the page's own (React reports through it), and the
  *   browser's line for a page or a file of the venue's that failed to load;
- * - a response of 500 or more from the venue.
+ * - a response of 500 or more from the venue;
+ * - a report that the page broke the venue's Content-Security-Policy, the enforced one or the
+ *   one sent report-only (src/lib/security-headers.ts). Engines disagree about which of those
+ *   reach the console, so the page's own `securitypolicyviolation` event is read.
  *
  * What does not, each for a reason given where it is decided below:
  * - warnings: a browser without a GPU fills them with its driver's remarks;
@@ -39,8 +42,12 @@ export type {
 export type Faults = {
   /** This test provokes these on purpose: a fault whose line matches one of them is forgiven. */
   allow: (...expected: RegExp[]) => void;
-  /** A context the test made for itself (another visitor, a first visit) is listened to as well. */
-  watch: (context: BrowserContext) => void;
+  /**
+   * A context the test made for itself (another visitor, a first visit) is listened to as well.
+   * Await it before the context opens a page: the policy's reports are heard by a script the
+   * context gives each page as it opens.
+   */
+  watch: (context: BrowserContext) => Promise<void>;
   /** Every fault met so far, forgiven or not: for the tests of this collector itself. */
   seen: () => readonly string[];
 };
@@ -102,8 +109,30 @@ function failedLoad(message: ConsoleMessage) {
 /** One test's faults: `listen` writes them down, and `faults.allow` forgives them by name. */
 type FaultLog = { met: { fault: string; url?: string }[]; allowed: RegExp[]; guesses: Set<string> };
 
+/** The name under which a page hands the suite each report of a policy it broke. */
+const POLICY_REPORT = '__venuePolicyReport';
+
+/**
+ * For `faults.allow`, in a test that breaks the policy on purpose to see it refuse: every
+ * report of the policy, and each engine's line for it on the console.
+ */
+export const policyReports =
+  /^policy: |^console error: .*(?:Content Security Policy|Content-Security-Policy|Refused to )/;
+
 /** Writes down the faults of every page in a context. `venue` is the host the suite serves from. */
-function listen(context: BrowserContext, log: FaultLog, venue: string) {
+async function listen(context: BrowserContext, log: FaultLog, venue: string) {
+  // What the browser says to the page when the page breaks a policy: which policy (enforced,
+  // or report-only), which directive, and what was refused. A context with script off hears
+  // nothing here; it runs no script that a policy could refuse.
+  await context.exposeBinding(POLICY_REPORT, (_source, report: string) => {
+    log.met.push({ fault: `policy: ${report}` });
+  });
+  await context.addInitScript((name) => {
+    document.addEventListener('securitypolicyviolation', (event) => {
+      const said = `${event.disposition} ${event.effectiveDirective} ${event.blockedURI || 'inline'}`;
+      (window as unknown as Record<string, (report: string) => void>)[name]?.(said);
+    });
+  }, POLICY_REPORT);
   /** Served by the venue on whichever port: the suite's server, or a spec's own. */
   const ours = (url: string) => URL.canParse(url) && new URL(url).hostname === venue;
   context.on('weberror', (webError) => {
@@ -168,7 +197,7 @@ export const test = base.extend<{ faults: Faults; faultLog: FaultLog; venueHost:
   // Every page a test opens with `page` lives in this context, so the listening is done here.
   // A test that opens no page (one that only asks the server) builds no context, and pays nothing.
   context: async ({ context, faultLog, venueHost }, use) => {
-    listen(context, faultLog, venueHost);
+    await listen(context, faultLog, venueHost);
     await use(context);
   },
 });

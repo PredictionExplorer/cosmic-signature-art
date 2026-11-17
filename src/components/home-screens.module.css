@@ -14,10 +14,16 @@
   place-items: center;
   padding: 72px var(--gutter);
 }
+/* The block is as wide as the measure or the screen between its gutters, whichever is less, and
+   its one column is the block's own width. Left to themselves, the block and its column take
+   the width of the longest word in them, and every line beside that word then runs as wide: at
+   320 px the counts and the statement's line ran off the screen with the wordmark. */
 .statementBlock {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: 27px;
-  max-width: var(--measure);
+  min-width: 0;
+  max-width: min(var(--measure), 100%);
   justify-items: start;
 }
 .subtitle {

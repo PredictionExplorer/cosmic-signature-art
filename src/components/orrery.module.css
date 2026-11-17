@@ -41,6 +41,19 @@
   line-height: 1.55;
   color: var(--muted);
 }
+/* The note's last sentence: how to see a work's own still with a pointer; where the screen is
+   touched there is no pointing, and it says what a tap does. */
+.touching {
+  display: none;
+}
+@media (pointer: coarse) {
+  .pointing {
+    display: none;
+  }
+  .touching {
+    display: inline;
+  }
+}
 /* The state line keeps its height empty, so a paused page does not move the wall. */
 .state {
   min-height: 1lh;

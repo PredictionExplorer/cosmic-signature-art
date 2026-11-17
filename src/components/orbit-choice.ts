@@ -188,8 +188,11 @@ export type NumberStage = Omit<ChoiceStage, 'painter' | 'mark'>;
 
 /** The bodies' numbers, on their own layer. */
 export interface Numbers {
-  /** The layer drawn again, alone: the three numbers, with these bodies ringed in every copy. */
-  ring(bodies: readonly number[]): void;
+  /**
+   * The layer drawn again, alone: the three numbers, with these bodies ringed in every copy.
+   * A function, not a method: the choice hands it on as its own.
+   */
+  ring: (bodies: readonly number[]) => void;
   /** The layer left bare. */
   clear(): void;
   /** What a pointer may press for each body (`pressTargets`). */
