@@ -335,7 +335,7 @@ test('keys are silent while focus is in a field, and the remembered expression f
   );
   // A new visit always opens on Ink.
   const fresh = await context.browser()!.newContext();
-  faults.watch(fresh);
+  await faults.watch(fresh);
   const next = await fresh.newPage();
   await next.goto(`${new URL(page.url()).origin}/art/35?view=still`);
   await expect(next.locator(pageStage)).toHaveAttribute('data-expression', 'ink');

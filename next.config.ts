@@ -1,4 +1,20 @@
+import { createRequire } from 'node:module';
 import type { NextConfig } from 'next';
+
+/**
+ * The headers are written in src/lib/security-headers.ts, which the proxy and the tests read
+ * too. They are required from this file's own address, not imported. Next 16.4 runs this file
+ * compiled and gives it no filename (next/dist/build/next-config-ts/require-hook.js), so Node
+ * looks for a plain `import` of a neighbour from the working directory: `next start` pointed at
+ * a build in another directory could not find the file, or found another checkout's copy. A
+ * require made from this file's address finds the one beside it, wherever `next` was started.
+ * Outside Next (the unit tests) the same line has Node read TypeScript itself, which it does
+ * from 22.18.
+ */
+const { securityHeaders } = createRequire(import.meta.url)(
+  './src/lib/security-headers.ts',
+) as typeof import('./src/lib/security-headers.ts');
+
 const nextConfig: NextConfig = {
   // A second server in the same checkout (the configured-sale e2e) builds into its own directory.
   distDir: process.env.NEXT_DIST_DIR || '.next',
@@ -47,13 +63,12 @@ const nextConfig: NextConfig = {
         ],
       },
       {
+        // Every response: the Content-Security-Policy and its fellows (src/lib/security-headers.ts).
         source: '/:path*',
-        headers: [
-          { key: 'X-Content-Type-Options', value: 'nosniff' },
-          { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
-          { key: 'X-Frame-Options', value: 'DENY' },
-          { key: 'Permissions-Policy', value: 'camera=(), microphone=(), geolocation=()' },
-        ],
+        headers: securityHeaders({
+          rpcUrl: process.env.NEXT_PUBLIC_RPC_URL,
+          development: process.env.NODE_ENV === 'development',
+        }),
       },
     ];
   },

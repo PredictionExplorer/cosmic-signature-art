@@ -124,9 +124,21 @@ The venue says where each fact comes from and what it cannot promise. It never f
   - `src/components/artwork-entry.test.tsx`, `artwork-record.test.tsx` and `artwork-history.test.tsx`;
   - `src/lib/auction/client.test.ts` and `rules.test.ts`, held to the stricter coverage thresholds in `vitest.config.ts`.
 
+### A page loads from the venue and its publisher, and from nowhere else
+
+A page that can be made to load a script from elsewhere, or to send what it reads elsewhere, is no longer the venue's page. On a site that will ask a wallet to sign, that is the first thing to shut.
+
+- **Kept by:**
+  - `src/lib/security-headers.ts`: a Content-Security-Policy with every response, written from the constants the code itself loads from. Scripts, styles, fonts and workers are the venue's own; stills and films are the venue's and the publisher's; a request goes to the venue or to the chain's endpoint for the sale; nothing frames the venue, and no string is ever run as code.
+  - `src/proxy.ts`: a page rendered for each request is also given a nonce, and a second policy under which a script runs only by that nonce or by its hash. It is sent report-only for now: the browser enforces nothing of it and says what it would have refused. ARCHITECTURE.md §13 says why, and what enforcing it waits for.
+- **Checked by:**
+  - `src/lib/security-headers.test.ts` and `src/proxy.test.ts`;
+  - `tests/e2e/fixtures.ts`: a page that breaks either policy fails the browser test that met it, in every engine;
+  - `tests/e2e/security-headers.spec.ts`: the policy refuses a script, a picture and a request from another host, a string run as code, and a frame around the venue.
+
 ## Run it
 
-Use Node 22.12 or later and npm; the lockfile is authoritative.
+Use Node 22.18 or later and npm; the lockfile is authoritative.
 
 ```sh
 npm ci
