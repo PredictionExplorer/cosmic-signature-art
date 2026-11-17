@@ -31,9 +31,11 @@ The first thing a visitor sees should be the work, and it should arrive first. L
   - `src/components/artwork-media.tsx`: that preview loads eagerly, at high priority on the page's hero, and the full still follows behind it.
   - `src/lib/room.ts`: on a first visit to the home, First Light's gate keeps the plate alone from the first frame, with the running head held back.
   - `src/components/overture.tsx`: the performance itself loads by `import()`, and only on a first visit.
+  - `src/lib/art/held.ts`: a work's page opens its plate from the venue's own copy, with no Suspense boundary around it, so the work is in the page as it is sent. No route waits behind a loading plate, and `src/lib/without-script.ts` shows the still to a browser that runs no script (ARCHITECTURE.md §2).
 - **Checked by:**
   - `tests/e2e/budgets.spec.ts`: on a desk and on a phone, the largest paint must be the artwork's preview, still or film, within 2.5 s.
   - `tests/e2e/first-light-home.spec.ts`: a first visit opens on the plate.
+  - `tests/e2e/without-script.spec.ts`: each page is read as it is sent, and opened with script off: its still is in `<main>`, at full strength, with its words.
 
 ### Stills are never altered
 

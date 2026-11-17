@@ -2,12 +2,12 @@ import { ArtReadError, createArtRequest, type ArtFetchLike } from './art/request
 import { isLocale, locales, type Locale } from './i18n/routing';
 
 /**
- * The addresses the proxy (src/proxy.ts) answers for before anything renders. Every route
- * under a locale streams behind its loading plate ([locale]/loading.tsx), so by the time a
- * page's own notFound() runs the response has begun as a 200. A work, an exhibition or an
- * orbit number that does not exist is refused here instead, while a 404 can still be said.
- * The proxy holds three short lists for that, never the registries behind them;
- * addresses.test.ts keeps the lists in step with the registries.
+ * The addresses the proxy (src/proxy.ts) answers for before anything renders. A page that
+ * must wait for a record streams behind its own waiting plate (src/components/waiting-room.tsx),
+ * so by the time its notFound() runs the response has begun as a 200. A work, an exhibition or
+ * an orbit number that does not exist is refused here instead, while a 404 can still be said,
+ * and before any page is rendered for it. The proxy holds three short lists for that, never
+ * the registries behind them; addresses.test.ts keeps the lists in step with the registries.
  */
 
 /** No route answers this, under any locale: Next serves the venue's own 404 there. */

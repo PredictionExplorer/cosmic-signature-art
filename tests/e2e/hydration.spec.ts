@@ -8,6 +8,11 @@ import { expect, test } from './fixtures';
  * server's HTML and renders the content again on the client. Holding every reveal until the
  * shell has hydrated and settled forces that order in every browser; each page must still keep
  * the nodes it streamed and hydrate them in place.
+ *
+ * No page streams itself any longer: a page is sent whole, and only what the live indexer
+ * answers streams after it (tests/e2e/without-script.spec.ts). So the pages here are the ones
+ * with such a part: a work's live entry over the entry the venue holds, and the essay's live
+ * chapters over the registry's.
  */
 const SETTLE_MS = 1000;
 
@@ -76,8 +81,8 @@ function unhydratedStreamedNodes() {
 
 test.describe('streamed pages hydrate in place', () => {
   for (const [name, route] of [
-    ['the home', '/en'],
-    ['a work page', '/art/31'],
+    ['a work the registry holds', '/art/31'],
+    ['a work the index holds', '/art/50'],
     ['the process essay', '/uk/process'],
   ] as const) {
     test(`${name} keeps the HTML it streamed when its reveal waits for hydration`, async ({

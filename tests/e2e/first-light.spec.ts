@@ -1,4 +1,4 @@
-import { expect, test } from './fixtures';
+import { expect, failedToLoad, test } from './fixtures';
 
 /*
   First Light's proof (docs/first-light.md §8, F0) on № 031: the still is the first thing on the
@@ -61,8 +61,13 @@ test.describe('First Light', () => {
     await expect(stage.locator('canvas')).toHaveCSS('opacity', '0');
   });
 
-  test('has nothing to perform for a work it does not hold', async ({ page }) => {
-    await page.goto('/first-light/9999');
+  test('has nothing to perform for a work it does not hold', async ({ page, faults }) => {
+    // The page refuses the number itself, and no boundary stands above a page to begin the
+    // response before it has: a true 404, with the venue's own not-found.
+    faults.allow(failedToLoad('/first-light/9999'));
+    const response = await page.goto('/first-light/9999');
+    expect(response?.status()).toBe(404);
     await expect(page.locator('main section[data-state]')).toHaveCount(0);
+    await expect(page.locator('meta[name="robots"]')).toHaveAttribute('content', /noindex/);
   });
 });

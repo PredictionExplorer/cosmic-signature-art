@@ -9,6 +9,7 @@ import { compactWorks } from '@/lib/art/collection-index';
 import { CJK_STYLESHEETS, LITERATA_PRELOADS } from '@/lib/fonts';
 import { revealScript } from '@/lib/reveal';
 import { settleScript } from '@/lib/settle';
+import { withoutScriptStyles } from '@/lib/without-script';
 import { roomScript, type Room } from '@/lib/room';
 import { ReadingPlace } from '@/components/reading-place';
 import { MotionProvider } from '@/components/motion-provider';
@@ -75,6 +76,13 @@ export function VenueDocument({
   const cjk = CJK_STYLESHEETS[locale];
   return (
     <html lang={locale} data-scroll-behavior="smooth" data-room={room} suppressHydrationWarning>
+      <head>
+        {/* For a reader with no script: what only waits for the stream is taken away, and a
+            streamed part with no stand-in is shown where it stands (src/lib/without-script.ts). */}
+        <noscript>
+          <style dangerouslySetInnerHTML={{ __html: withoutScriptStyles }} />
+        </noscript>
+      </head>
       <body>
         {cjk ? <link rel="stylesheet" href={cjk} precedence="default" /> : null}
         {room ? null : <script dangerouslySetInnerHTML={{ __html: roomScript(venueDay) }} />}

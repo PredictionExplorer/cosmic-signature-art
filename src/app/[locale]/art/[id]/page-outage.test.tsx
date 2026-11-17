@@ -138,6 +138,8 @@ describe('a work’s page while the indexer cannot be read', () => {
 
   it('still refuses a work the indexer says does not exist, whatever the index holds', async () => {
     indexer.fetch.mockImplementation(absent);
+    // The page opens from the index before the indexer has answered (page-whole.test.tsx), so
+    // the refusal comes by the stream, from the live record's own boundary.
     await expect(page(WORK)).rejects.toThrow('NEXT_NOT_FOUND');
   });
 

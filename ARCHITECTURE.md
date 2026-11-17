@@ -24,7 +24,7 @@ The reasons:
 
 ## 2. Routes
 
-Every page sits under `src/app/[locale]/`. The proxy (`src/proxy.ts`) gives an address without a locale to English, so `/art/31` is served by `/en/art/31`. It also refuses a work, an exhibition or an orbit number that does not exist, using the short lists in `src/lib/addresses.ts`. Every route streams behind its loading plate (`[locale]/loading.tsx`), so by the time a page's own `notFound()` runs, the response has already begun as a 200. A true 404 has to be said before that. The proxy runs for every address except the venue's own files, which its matcher names by folder and by name (a matcher is read at build time and cannot be computed); `src/proxy.test.ts` reads `public/` and fails for a file the matcher does not name.
+Every page sits under `src/app/[locale]/`. The proxy (`src/proxy.ts`) gives an address without a locale to English, so `/art/31` is served by `/en/art/31`. It also refuses a work, an exhibition or an orbit number that does not exist, using the short lists in `src/lib/addresses.ts`: a true 404, said before any page renders. The proxy runs for every address except the venue's own files, which its matcher names by folder and by name (a matcher is read at build time and cannot be computed); `src/proxy.test.ts` reads `public/` and fails for a file the matcher does not name.
 
 | Address                               | What it is                                                                                                                                                | Rendered                                      |
 | :------------------------------------ | :-------------------------------------------------------------------------------------------------------------------------------------------------------- | :-------------------------------------------- |
@@ -42,6 +42,14 @@ Every page sits under `src/app/[locale]/`. The proxy (`src/proxy.ts`) gives an a
 | `/api/art/[id]`                       | One work's public record as JSON. It has no signing, wallet or financial authority.                                                                       | on request                                    |
 
 The sharing cards (`opengraph-image.tsx`, `twitter-image.tsx`, drawn by `src/components/sharing-card.tsx`), `sitemap.ts`, `robots.ts` and `manifest.ts` are routes too. The sitemap lists every work in the collection index, in every locale, and names no address the proxy would refuse. An address no route answers gets the venue's own 404 (`src/app/global-not-found.tsx`), which speaks the visitor's language.
+
+**A page is sent whole.** No route keeps a `loading.tsx`. A loading file wraps every page beneath it in a Suspense boundary, and React sets a boundary's content aside once it is large (over 500 bytes, in a document already past 12,800): it goes to the end of the document in a `<div hidden>`, and an inline script moves it into place. A browser that runs no script was left with the loading plate, on the home, the collection and every work. So a page the venue can set from what it holds itself is rendered with no boundary around it, and only what the live indexer must answer streams after it:
+
+- **A work** opens its plate from the registry or the build-time index (`src/lib/art/held.ts`), and sets its entry from the index (`HeldEntry` in `src/components/artwork-entry.tsx`). The live record streams, and the live entry takes the held one's place. The index's copy names the same stills and films the indexer answers, so the plate does not change when the record arrives.
+- **A work imprinted since the index was read** has nothing to open from. Its page keeps a plate's place (`src/components/waiting-room.tsx`) behind a boundary of its own, around the wait alone. The results of a name search stream in the same way.
+- **With no script**, the document's `<noscript>` stylesheet (`src/lib/without-script.ts`) shows the still that script would have settled, takes away what only waited for the stream, and shows a streamed part that has no stand-in. The instruments (the Turn, the films, the Index sheet, the orbit's derivation) are script, and their controls still stand on such a page.
+
+A page's own `notFound()` is therefore a true 404 wherever the page refuses before it waits: a lot, a First Light proof. A page already streaming behind its waiting plate can only answer 200, marked `noindex`, which is why the proxy refuses a number first. `tests/e2e/without-script.spec.ts` reads each page as it is sent, and again in a browser with script off.
 
 **The document.** `src/app/venue-document.tsx` is the `<html>` every locale shares. Before anything paints, it runs three small inline scripts:
 
@@ -236,7 +244,8 @@ English, Simplified Chinese, Traditional Chinese for Taiwan and for Hong Kong, U
 - `src/app/stylesheet-floor.test.ts`: the 12 px floor and the motion tokens;
 - `src/app/stylesheet-classes.test.ts`: every `styles.name` a component reads exists in its CSS module, and every class a module defines is read;
 - `src/app/image-optimizer.test.ts`: Next's image optimizer stays closed, and nothing imports it;
-- `src/proxy.test.ts`: the proxy runs for no file the venue serves.
+- `src/proxy.test.ts`: the proxy runs for no file the venue serves;
+- `src/lib/without-script.test.tsx`: no route keeps a loading file, and the stylesheet for a reader with no script still names what React and the venue render (§2).
 
 **Guards that read the screen.** Three of the venue's rules can be kept in a stylesheet and broken on the screen, and a check that reads the stylesheet's answer then passes all the same. So the browser suite measures what is drawn (`tests/e2e/drawn.spec.ts`; the readers are in `tests/e2e/helpers.ts`):
 
