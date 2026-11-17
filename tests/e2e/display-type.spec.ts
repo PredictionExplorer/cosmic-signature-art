@@ -6,7 +6,7 @@ import { locales, localizedPath } from '../../src/lib/i18n/routing';
  * page actually loaded, must clear the next line's: no descender may meet an ascender below it,
  * in any language, at any width the line breaks fall.
  */
-const covers = ['/process', '/auctions'];
+const covers = ['/', '/auctions'];
 
 for (const locale of locales) {
   test(`${locale} cover headlines keep every line's ink clear of the next`, async ({ page }) => {

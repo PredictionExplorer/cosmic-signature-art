@@ -18,10 +18,45 @@ export const ROOM_COLORS: Record<Room, string> = { paper: '#f1ebdf', night: '#00
  * so a phone's head is never paper over a black page.
  */
 export const NIGHT_ROUTES: readonly string[] = [
-  '/process',
   '/verify',
   '/collection/all-the-light',
   '/collection/orrery',
+];
+
+/**
+ * The parts of the home that stand on night, by their address on the page (/#choice): the
+ * orbit in depth, the chapters on gravity, the Light plate, its chapters and the spectrum
+ * (src/lib/essay/structure.ts; the home's test holds both lists to the page).
+ */
+export const HOME_NIGHT_PARTS: readonly string[] = [
+  'orbit',
+  'two',
+  'three',
+  'no-formula',
+  'steps',
+  'trillionth',
+  'choice',
+  'light',
+  'view',
+  'stroke',
+  'spectrum',
+];
+
+/**
+ * The parts of the home that stand on paper, by their address on the page (/#ink): the Ink
+ * plate and everything after it. A link to a part opens on that part's ground, whatever the
+ * day's plate shows above it; a source's own address (/#source-12) is on paper too. An address
+ * that names no part (/#main, the skip link's) leaves the plate its own ground.
+ */
+export const HOME_PAPER_PARTS: readonly string[] = [
+  'ink',
+  'current',
+  'plait',
+  'paper',
+  'unknown',
+  'cycle',
+  'terms',
+  'sources',
 ];
 
 /** Views of the collection that open on black: the Spectrum wall and the Light section. */
@@ -50,7 +85,9 @@ export function roomForPath(pathname: string): Room {
  * and on the home and a work, whose first screen is a plate, it paints the ground of the
  * expression the plate opens on: the URL's, else the session's remembered choice, else the
  * day's, by the arithmetic of src/lib/art/day.ts on the day's-work pool's size and the
- * server's pin. The wing takes the ground over at hydration (src/components/wing.tsx).
+ * server's pin. The wing takes the ground over at hydration (src/components/wing.tsx), and on
+ * the home the essay's seams do (src/app/[locale]/_essay/room-seams.tsx). An address that
+ * names a part of the home (/#choice) opens on that part's ground, not the plate's.
  *
  * It also decides the venue's one timed event, First Light (src/components/overture.tsx): a first
  * visit, with nothing asked of the plate in the URL and motion welcome, marks
@@ -77,6 +114,12 @@ export function roomScript({ poolSize, pinned }: { poolSize: number; pinned?: st
     `z=${Math.max(1, poolSize)},t=((d%z)+z)%z+Math.floor(d/z);`,
     "e=((t%2)+2)%2===0?'light':'ink'}}",
     "n=e==='light'}",
+    // A part of the home, by its address: paper from the Ink plate on, night before it. A
+    // part's title is addressed as the part is (#ink-title), the cover by its headline, and the
+    // day's cycle by its row; any other address leaves the plate's ground as it is.
+    `var h='',k=${JSON.stringify([...HOME_PAPER_PARTS, 'home-cycle'])},g=${JSON.stringify([...HOME_NIGHT_PARTS, 'process'])};`,
+    "try{h=decodeURIComponent(location.hash.slice(1)).replace(/-title$/,'')}catch(x){}",
+    "if(p==='/'&&h){if(k.indexOf(h)>-1||h.indexOf('source-')===0)n=false;else if(g.indexOf(h)>-1)n=true}",
     // First Light: on the home, or on a work the visit opens on. Storage that cannot be read
     // never holds a visitor at the gate.
     'var w=/^\\/art\\/[^/]+$/.test(p),f=false;',

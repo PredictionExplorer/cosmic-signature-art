@@ -33,7 +33,7 @@ const { LIGHT_FILM, lightFilmDuration, lightFilmFrames } =
   await import('../src/lib/physics/light-film.ts');
 
 /**
- * The essay's figures (the Process page): every number its words state about the venue's own
+ * The essay's figures (the home's essay): every number its words state about the venue's own
  * works, re-derived here from the committed registries with the modules the page itself runs,
  * so that no figure in the essay is recalled or copied by hand.
  *

@@ -56,7 +56,7 @@ export function SweepPlayer({
     <div className={styles.stage} data-sweep-state={playing ? 'film' : ended ? 'still' : 'rest'}>
       <div className="plate">
         <div className={styles.sweepFrame}>
-          <ArtworkMedia media={still} alt={alt} artworkId={artworkId} still />
+          <ArtworkMedia media={still} alt={alt} artworkId={artworkId} still lazyPreview />
           {film && requested && !failed ? (
             <video
               ref={video}

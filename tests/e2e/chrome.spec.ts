@@ -23,8 +23,8 @@ test('public browsing hides auctions while their direct URL remains available', 
   const directory = page.getByRole('dialog', { name: t.indexSheet });
   await expect(directory).toBeVisible();
   const navigation = directory.getByRole('navigation', { name: t.siteNavigation });
-  await expect(navigation.getByRole('link', { name: t.process, exact: true })).toBeVisible();
-  await expect(navigation.getByRole('link', { name: t.statement, exact: true })).toBeVisible();
+  // The rooms beside the home: the home itself is the essay, reached by the venue's name.
+  await expect(navigation.getByRole('link')).toHaveText([t.collection, t.exhibitions, t.statement]);
   await expect(directory.locator('a[href*="/auctions"]')).toHaveCount(0);
 
   await page.goto('/auctions');
@@ -146,7 +146,6 @@ test('the colophon states the record date and keeps the one outward arrow', asyn
   await expect(rows).toHaveText([
     t.collection,
     t.exhibitions,
-    t.process,
     t.statement,
     t.privacy,
     `${t.openProtocol} ↗`,

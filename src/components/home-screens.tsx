@@ -2,32 +2,16 @@ import Link from 'next/link';
 import type { Messages } from '@/lib/i18n/en';
 import { localizedPath, type Locale } from '@/lib/i18n/routing';
 import { fill } from '@/lib/i18n/format';
-import { words } from '@/lib/i18n/words';
-import { getCuratedArtwork } from '@/lib/art/catalog';
 import { collectionIndex, cycles, indexedAssetUrl, indexedWork } from '@/lib/art/collection-index';
-import { artworkForView } from '@/lib/art/view-media';
 import { workFolio, workNumber } from '@/lib/art/number';
-import type { Expression } from '@/lib/art/types';
-import { SpreadPlates } from './home-spread-plates';
-import { SPREAD_PLATES_WORDS } from './home-spread-plates.words';
-import { bindFigures, SEPARATOR } from '@/lib/typography';
 import styles from './home-screens.module.css';
 import { PreviewImage } from './preview-image';
 
 /**
- * Screen 3 of the home, the one screen with no work: the venue's name set in small caps,
- * its subtitle, the counts read from the index, and the statement's one line with its byline.
+ * What the collection is, in the counts the index holds: the cycles it spans, the works it has,
+ * and since when. The home's cover sets them beneath its standfirst.
  */
-export function HomeStatement({
-  locale,
-  t,
-  firstLight,
-}: {
-  locale: Locale;
-  t: Messages;
-  /** The day's work's First Light, to watch it form again (docs/first-light.md §13). */
-  firstLight?: number;
-}) {
+export function collectionCounts(locale: Locale, t: Messages): string[] {
   const summary = cycles();
   const first = summary[0];
   const last = summary.at(-1);
@@ -36,87 +20,22 @@ export function HomeStatement({
         new Date(first.mintedAt),
       )
     : undefined;
-  const counts = [
-    t.livingCollection,
+  return [
     first && last ? fill(t.cyclesSpan, { first: first.cycle, last: last.cycle }) : undefined,
     collectionIndex.total === 1
       ? t.oneWork
       : fill(t.worksCount, { count: new Intl.NumberFormat(locale).format(collectionIndex.total) }),
     opened ? fill(t.since, { date: opened }) : undefined,
   ].filter((part): part is string => Boolean(part));
-  return (
-    <section className={`${styles.screen} ${styles.statement}`} aria-labelledby="home-statement">
-      <div className={styles.statementBlock}>
-        <h1 id="home-statement" className="wordmark">
-          Cosmic Signature
-        </h1>
-        <p className={`subtitle ${styles.subtitle}`}>{t.shapeOfMotion}</p>
-        <p className="counts">{counts.map(bindFigures).join(SEPARATOR)}</p>
-        <p className={`reading ${styles.line}`}>{t.statementLine}</p>
-        <p className={styles.byline}>{t.statementSigned}</p>
-        <p className={styles.statementLinks}>
-          <Link className="text-link" href={localizedPath(locale, '/collection')}>
-            {t.collection} →
-          </Link>
-          {firstLight === undefined ? null : (
-            <Link className="text-link" href={localizedPath(locale, `/first-light/${firstLight}`)}>
-              {t.firstLightWatch} →
-            </Link>
-          )}
-        </p>
-      </div>
-    </section>
-  );
 }
 
 /**
- * Screen 4: Signatures 031 and 035 across the seam, one in Ink on paper and one in Light on
- * night, each in its own tone. The two change places with the day's expression, so each hangs
- * in both on alternate days.
- */
-export function HomeSpread({
-  locale,
-  t,
-  day,
-}: {
-  locale: Locale;
-  t: Messages;
-  /** The day's expression, which decides which work hangs in Ink. */
-  day: Expression;
-}) {
-  const ids = day === 'ink' ? [31, 35] : [35, 31];
-  const leaves = ids.flatMap((id, index) => {
-    const work = getCuratedArtwork(id);
-    const expression: Expression = index === 0 ? 'ink' : 'light';
-    return work ? [{ work: artworkForView(work, 'card'), expression }] : [];
-  });
-  return <SpreadPlates leaves={leaves} locale={locale} t={words(t, SPREAD_PLATES_WORDS)} />;
-}
-
-/**
- * Screen 5: the day's work's cycle, its count and date, and every work of the cycle as a real
- * preview, twice across the seam: the cycle in Ink on the paper leaf beside the cycle in Light
- * on the night leaf, each work on one line with itself.
- */
-export function HomeCycle({
-  locale,
-  t,
-  dayWork,
-}: {
-  locale: Locale;
-  t: Messages;
-  dayWork: number;
-}) {
-  const cycle = indexedWork(dayWork)?.cycle;
-  if (cycle === undefined) return null;
-  return <CycleRow locale={locale} t={t} cycle={cycle} id="home-cycle" />;
-}
-
-/**
- * A cycle hung twice across the seam, under its heading, its count and its date: the home's
- * screen 5, and the sale's last cycle while no sale is offered. A label set above the heading
- * names the section with it and describes every work's link, so a reader meets it at each work
- * as well as at the top; a note says, beneath the count, what the label means.
+ * A cycle hung twice across the seam, under its heading, its count and its date: every work of
+ * the cycle as a real preview, the cycle in Ink on the paper leaf beside the cycle in Light on
+ * the night leaf, each work on one line with itself. It closes the home, under how a work comes
+ * to exist, and stands as the sale's last cycle while no sale is offered. A label set above the
+ * heading names the section with it and describes every work's link, so a reader meets it at
+ * each work as well as at the top; a note says, beneath the count, what the label means.
  */
 export function CycleRow({
   locale,
@@ -125,6 +44,7 @@ export function CycleRow({
   id,
   label,
   note,
+  ground,
 }: {
   locale: Locale;
   t: Messages;
@@ -133,6 +53,8 @@ export function CycleRow({
   id: string;
   label?: string;
   note?: string;
+  /** The ground the section stands on, where a page's head follows its sections' grounds. */
+  ground?: 'paper' | 'night';
 }) {
   const summary = cycles().find((candidate) => candidate.cycle === cycle);
   if (!summary) return null;
@@ -147,6 +69,7 @@ export function CycleRow({
     <section
       className={`${styles.screen} ${styles.cycle}`}
       aria-labelledby={labelId ? `${labelId} ${id}` : id}
+      data-ground={ground}
     >
       <header className={styles.cycleHead}>
         {label ? (

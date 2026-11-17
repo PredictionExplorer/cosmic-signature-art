@@ -1,5 +1,5 @@
 /**
- * The essay's sources (the Process page). Every sentence of the essay that states a fact about
+ * The essay's sources (the home's essay). Every sentence of the essay that states a fact about
  * the world outside the venue carries a mark, `[^key]`, naming the entry here it was checked
  * against; each entry was opened and read for that sentence, never recalled. The findings, with
  * what each source was read for and which could be read only in part, are kept in
@@ -269,6 +269,79 @@ export const SOURCES = {
     {
       text: 'Reynolds, O. “An experimental investigation of the circumstances which determine whether the motion of water shall be direct or sinuous, and of the law of resistance in parallel channels”, Philosophical Transactions of the Royal Society of London 174 (1883), 935–982',
       href: 'https://doi.org/10.1098/rstl.1883.0029',
+    },
+  ],
+  'generator-view': [
+    { text: 'CS-Image-Generation, src/app.rs', href: `${GENERATOR}/src/app.rs` },
+    {
+      text: 'CS-Image-Generation, src/render/aesthetic_score.rs',
+      href: `${GENERATOR}/src/render/aesthetic_score.rs`,
+    },
+    {
+      text: 'CS-Image-Generation, src/render/visual_profile.rs',
+      href: `${GENERATOR}/src/render/visual_profile.rs`,
+    },
+    {
+      text: 'CS-Image-Generation, src/render/batch_drawing.rs',
+      href: `${GENERATOR}/src/render/batch_drawing.rs`,
+    },
+  ],
+  'generator-camera': [
+    { text: 'CS-Image-Generation, src/drift.rs', href: `${GENERATOR}/src/drift.rs` },
+    {
+      text: 'CS-Image-Generation, src/drift_config.rs',
+      href: `${GENERATOR}/src/drift_config.rs`,
+    },
+  ],
+  'generator-light': [
+    {
+      text: 'CS-Image-Generation, docs/spectral-algorithm.md, §§ 1–3, 5.3, 6.2, 6.4, 7–8',
+      href: `${GENERATOR}/docs/spectral-algorithm.md`,
+    },
+    { text: 'CS-Image-Generation, src/spectrum.rs', href: `${GENERATOR}/src/spectrum.rs` },
+    {
+      text: 'CS-Image-Generation, src/render/drawing.rs',
+      href: `${GENERATOR}/src/render/drawing.rs`,
+    },
+  ],
+  observer: [
+    {
+      text: 'International Commission on Illumination (CIE), ILV: International Lighting Vocabulary, 2nd ed. (CIE S 017:2020), term 17-23-049',
+      href: 'https://cie.co.at/eilvterm/17-23-049',
+    },
+    {
+      text: 'Smith, T., Guild, J. “The C.I.E. colorimetric standards and their use”, Transactions of the Optical Society 33 (1931), 73–134',
+      href: 'https://doi.org/10.1088/1475-4878/33/3/301',
+    },
+  ],
+  'ember-paper': [
+    {
+      text: 'CS-Image-Generation, src/ember/paper.rs',
+      href: `${GENERATOR}/src/ember/paper.rs`,
+    },
+    {
+      text: 'CS-Image-Generation, src/ember/config.rs',
+      href: `${GENERATOR}/src/ember/config.rs`,
+    },
+    {
+      text: 'CS-Image-Generation, docs/ember-design.md, § 7.5',
+      href: `${GENERATOR}/docs/ember-design.md`,
+    },
+  ],
+  'ember-optics': [
+    {
+      text: 'CS-Image-Generation, src/ember/optics.rs',
+      href: `${GENERATOR}/src/ember/optics.rs`,
+    },
+    {
+      text: 'CS-Image-Generation, docs/ember-design.md, §§ 7.1–7.3',
+      href: `${GENERATOR}/docs/ember-design.md`,
+    },
+  ],
+  'kubelka-munk': [
+    {
+      text: 'Kubelka, P., Munk, F. “Ein Beitrag zur Optik der Farbanstriche”, Zeitschrift für technische Physik 12 (1931), 593–601; trans. S. Westin (2004)',
+      href: 'https://www.graphics.cornell.edu/~westin/pubs/kubelka.pdf',
     },
   ],
   ember: [

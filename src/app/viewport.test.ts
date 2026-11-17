@@ -7,7 +7,6 @@ vi.mock('server-only', () => ({}));
 
 /** Each night route's page, as the router finds it; a route added to the list needs its page here. */
 const pages: Record<string, () => Promise<{ viewport?: unknown }>> = {
-  '/process': () => import('./[locale]/process/page'),
   '/verify': () => import('./[locale]/verify/orbit/[id]/page'),
   '/collection/all-the-light': () => import('./[locale]/collection/all-the-light/page'),
   '/collection/orrery': () => import('./[locale]/collection/orrery/page'),

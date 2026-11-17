@@ -1,7 +1,8 @@
 import type { Messages } from '@/lib/i18n/en';
 import { fill, filmSpan } from '@/lib/i18n/format';
 import { essayFigures, essayWork, essayWorkCount, type EssayWork } from '@/lib/art/essay-figures';
-import { collectionIndex, indexedWork } from '@/lib/art/collection-index';
+import { collectionIndex, cycles, indexedWork } from '@/lib/art/collection-index';
+import { workPicture, type WorkPicture } from '@/lib/art/orbit-frames';
 import { workOrbit, type WorkOrbit } from '@/lib/art/orbit-records';
 import { workNumber } from '@/lib/art/number';
 import { QUICK_GATE } from '@/lib/physics/beginnings';
@@ -12,9 +13,10 @@ import type { EssayCase, EssayKey, Part } from './structure';
   What the essay's blanks hold, for one work in one language. Every figure the essay states of
   the venue comes through here from a committed registry: the essay's own
   (src/lib/art/essay-figures.json, by scripts/build-essay-figures.mjs), the orbit records and
-  the collection index. Nothing is typed in by hand but two numbers the essay cites from a
-  source (BELORIZKY). Numbers are written as the reader's language writes them, and a stretch
-  of film as the venue words one everywhere ("5.4 seconds", "2.9 minutes").
+  the collection index. Nothing is typed in by hand but what the essay cites from a source:
+  Belorizky's two counts (BELORIZKY) and the generator's own sheet of paper (KOZO). Numbers are
+  written as the reader's language writes them, and a stretch of film as the venue words one
+  everywhere ("5.4 seconds", "2.9 minutes").
 */
 
 /** What a sentence's blanks hold, by name. */
@@ -37,16 +39,47 @@ export interface EssayFacts {
   readonly cases: Readonly<Record<EssayCase, readonly Sentence[]>>;
   /** The pair of bodies the first figure draws: a bound pair wherever the work has one. */
   readonly pair: EssayWork['pairs'][number];
+  /** How the work's picture is projected, repeated, viewed and carried (orbit-frames.ts). */
+  readonly picture: WorkPicture;
 }
 
 /** The words the facts are worded with. */
-export type FactWords = Pick<Messages, 'fateSeconds' | 'fateMinutes' | 'oneInATrillion'>;
+export type FactWords = Pick<
+  Messages,
+  'fateSeconds' | 'fateMinutes' | 'oneInATrillion' | 'wavelengthValue'
+>;
 
 /**
  * Belorizky's two counts (the source marked `beloriszky`): the powers of ten of the number of
  * terms Sundman's series needs, for three equal masses and for one holding a two-hundredth.
  */
 const BELORIZKY = { equal: 80_000, unequal: 8_000_000 } as const;
+
+/**
+ * The sheet the generator computes for every Ink (the source marked `ember-paper`): its width,
+ * the size of the clouds its fibre gathers in, and the fibres that show at its surface, all in
+ * millimetres but the count, which is to the square centimetre.
+ */
+const KOZO = {
+  width: 1490,
+  floc: { least: 1.5, most: 8 },
+  fibres: 1.5,
+  fibre: { short: 5, long: 15 },
+} as const;
+
+/** The published names of the strokes a work is drawn in, as the collection index keeps them. */
+const STRUCTURES = { ribbons: 'Orbit Ribbons', chords: 'Time Chords' } as const;
+const structureCount = (name: string) =>
+  collectionIndex.works.filter((work) => work.traits?.structure === name).length;
+
+/** How long an Ink took the studio's machine, across the collection, in hours. */
+const INK_HOURS = (() => {
+  const hours = collectionIndex.works
+    .map((work) => essayWork(work.id)?.ink.seconds)
+    .filter((seconds): seconds is number => seconds !== undefined)
+    .map((seconds) => seconds / 3600);
+  return { least: Math.min(...hours), most: Math.max(...hours) };
+})();
 
 /** The published name of the trait a work carries when its three are bound at the horizon. */
 const DANCE =
@@ -107,8 +140,14 @@ const third = ([a, b]: readonly [number, number]) => 3 - a - b;
 export function essayFacts(id: number, locale: string, t: FactWords): EssayFacts | undefined {
   const work = essayWork(id);
   const orbit = workOrbit(id);
-  const weight = indexedWork(id)?.borda?.equilibriumWeight;
-  if (!work || !orbit || weight === undefined) return undefined;
+  const indexed = indexedWork(id);
+  const weight = indexed?.borda?.equilibriumWeight;
+  const picture = workPicture(id);
+  const cycle = cycles().find((candidate) => candidate.cycle === indexed?.cycle);
+  if (!work || !orbit || !indexed || weight === undefined || !picture || !cycle) return undefined;
+  const { structure, palette } = indexed.traits ?? {};
+  if (!structure || !palette || indexed.wavelengthNm === undefined || !indexed.mintedAt)
+    return undefined;
 
   const { clock, energy, twins, past, sheets, ink, traits, integrator, beginnings, plait } =
     essayFigures;
@@ -121,10 +160,46 @@ export function essayFacts(id: number, locale: string, t: FactWords): EssayFacts
   const works = n(essayWorkCount);
   const stepsEach = clock.warmupSteps + clock.steps;
   const { lostExample, heldExample } = energy;
+  const mass = (index: number) => places(1)(orbit.published.masses[index]);
+  /**
+   * The four views' scores as a reader may check them against the rule the sentence before
+   * states (the highest is kept; where two score alike, the first drawn). They are cut, never
+   * rounded up, to three places, or to as many more as it takes for no view to be printed the
+   * equal of the one kept unless it scored exactly the same: № 029's first view scores 0.99979
+   * beside two that score 1, and reads 0.999.
+   */
+  const viewScores = (scores: readonly number[], kept: number): string[] => {
+    for (let digits = 3; ; digits++) {
+      const scale = 10 ** digits;
+      const cut = scores.map((value) => Math.floor(value * scale + 1e-9) / scale);
+      const told = scores.every((value, index) => value === scores[kept] || cut[index] < cut[kept]);
+      if (told || digits === 9) return cut.map(places(digits));
+    }
+  };
+  const scored = viewScores(picture.views.scores, picture.views.kept);
+  /**
+   * The camera's share of a circuit, in whole per cent from a tenth of one up, so that a share
+   * past a whole circuit keeps its last figure (1.076 is 108 %, where two significant figures
+   * gave 110 %); under a tenth, to two figures.
+   */
+  const circuit = (share: number) =>
+    share >= 0.1
+      ? new Intl.NumberFormat(locale, { style: 'percent', maximumFractionDigits: 0 }).format(share)
+      : shareText(share, locale);
+  const day = new Intl.DateTimeFormat(locale, { dateStyle: 'long', timeZone: 'UTC' });
 
   const blanks: Partial<Record<EssayKey, Blanks>> = {
+    essayStandfirst: { work: name },
     essayOfWork: { work: name },
+    essayOrbitCopy: { work: name, one: mass(0), two: mass(1), three: mass(2) },
+    essayDepthLabel: { work: name },
     essayLightCopy: { work: name },
+    essayBorn2: {
+      work: name,
+      date: day.format(new Date(indexed.mintedAt)),
+      count: n(cycle.count),
+      cycle: n(cycle.cycle),
+    },
     essayTakeLead: { work: name },
     essayThree5: {
       work: name,
@@ -217,6 +292,45 @@ export function essayFacts(id: number, locale: string, t: FactWords): EssayFacts
       search: n(clock.candidates * stepsEach),
       candidates: n(clock.candidates),
     },
+    essayViewScores: {
+      work: name,
+      first: scored[0],
+      second: scored[1],
+      third: scored[2],
+      fourth: scored[3],
+      kept: n(picture.views.kept + 1),
+    },
+    essayViewDrift: {
+      work: name,
+      share: circuit(picture.drift.arcFraction),
+      eccentricity: places(2)(picture.drift.eccentricity),
+    },
+    essayView6: {
+      count: n(essayFigures.pictures.otherSpace),
+      works,
+      repeated: n(essayFigures.pictures.symmetry),
+    },
+    essayStroke4: {
+      ribbons: n(structureCount(STRUCTURES.ribbons)),
+      works,
+      chords: n(structureCount(STRUCTURES.chords)),
+    },
+    essayStrokeRecord: {
+      structure,
+      palette,
+      wavelength: fill(t.wavelengthValue, { n: n(indexed.wavelengthNm) }),
+    },
+    essayStroke6: { frames: n(clock.film.frames), stride: n(clock.film.stepsPerFrame) },
+    essayStroke7: { width: n(picture.size.width), height: n(picture.size.height) },
+    essayPaper1: {
+      width: n(KOZO.width),
+      flocLow: n(KOZO.floc.least),
+      flocHigh: n(KOZO.floc.most),
+      fibres: n(KOZO.fibres),
+      fibreShort: n(KOZO.fibre.short),
+      fibreLong: n(KOZO.fibre.long),
+    },
+    essayPaper4: { least: places(1)(INK_HOURS.least), most: places(1)(INK_HOURS.most) },
     essayCurrent3: { reynolds: n(ink.shared.reynolds) },
     essayCurrent5: {
       least: span(ink.opens.seconds.least),
@@ -307,6 +421,18 @@ export function essayFacts(id: number, locale: string, t: FactWords): EssayFacts
   const pair = drawnPair(work);
   const drawn = { a: body(pair.pair[0]), b: body(pair.pair[1]), work: name };
 
+  // What the orbit in depth is a drawing of: places, or the space the work is drawn in; then,
+  // where the picture repeats its strokes, that the repeats turn with it.
+  const depth: Sentence[] = [
+    picture.projection === 'position'
+      ? { key: 'essayOrbitPlaces', blanks: {} }
+      : {
+          key: 'essayOrbitSpace',
+          blanks: { work: name, count: n(essayFigures.pictures.otherSpace) },
+        },
+    ...(picture.repeated ? [{ key: 'essayOrbitCopies', blanks: {} } as const] : []),
+  ];
+
   return {
     id,
     orbit,
@@ -317,8 +443,10 @@ export function essayFacts(id: number, locale: string, t: FactWords): EssayFacts
       twin: [twin],
       claim: [claim],
       pair: [{ key: pair.bound ? 'essayTwoFigure' : 'essayTwoFigureOpen', blanks: drawn }],
+      depth,
     },
     pair,
+    picture,
   };
 }
 

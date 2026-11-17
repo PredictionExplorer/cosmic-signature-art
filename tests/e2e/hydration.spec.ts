@@ -83,7 +83,7 @@ test.describe('streamed pages hydrate in place', () => {
   for (const [name, route] of [
     ['a work the registry holds', '/art/31'],
     ['a work the index holds', '/art/50'],
-    ['the process essay', '/uk/process'],
+    ['the home and its essay', '/uk'],
   ] as const) {
     test(`${name} keeps the HTML it streamed when its reveal waits for hydration`, async ({
       page,

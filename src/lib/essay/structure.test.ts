@@ -18,18 +18,45 @@ describe('the essay’s structure', () => {
     expect([...placed].sort()).toEqual([...essayKeys].sort());
   });
 
-  it('numbers eight chapters, night before paper, each at an address of its own', () => {
+  it('numbers eleven chapters in three parts, night before paper, each at an address of its own', () => {
     expect(ESSAY.map(({ numeral }) => numeral)).toEqual([
-      ...['01', '02', '03', '04', '05', '06', '07', '08'],
+      ...['01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11'],
       '·',
     ]);
     expect(new Set(ESSAY.map(({ id }) => id)).size).toBe(ESSAY.length);
     for (const { id } of ESSAY) expect(id).toMatch(/^[a-z][a-z-]*$/);
     const grounds = ESSAY.map(({ ground }) => ground);
     expect(grounds).toEqual([...grounds].sort());
-    // “(chapter 06)” in the words is the choice.
-    expect(en.essayThree5).toContain('chapter 06');
-    expect(ESSAY.find(({ id }) => id === 'choice')?.numeral).toBe('06');
+    // The parts stand in the order a work is made, and each keeps to one ground.
+    const parts = ESSAY.map(({ part }) => part);
+    expect(parts).toEqual(
+      [...parts].sort(
+        (a, b) =>
+          ['orbit', 'light', 'ink', 'close'].indexOf(a) -
+          ['orbit', 'light', 'ink', 'close'].indexOf(b),
+      ),
+    );
+    for (const { part, ground } of ESSAY)
+      expect(ground, part).toBe(part === 'orbit' || part === 'light' ? 'night' : 'paper');
+    // A chapter the words name by its number is the chapter that says it.
+    const numeralOf = (id: string) => ESSAY.find((chapter) => chapter.id === id)?.numeral;
+    const named: [EssayKey, string][] = [
+      ['essayThree5', 'choice'],
+      ['essayOrbitPlaces', 'view'],
+      ['essayOrbitSpace', 'view'],
+      ['essayView4', 'two'],
+      ['essayPaper2', 'stroke'],
+    ];
+    for (const [key, id] of named) expect(en[key], key).toContain(`chapter ${numeralOf(id)}`);
+    const naming = essayKeys.filter((key) => /chapter \d\d/.test(en[key]));
+    expect(naming.sort()).toEqual(named.map(([key]) => key).sort());
+    // Every language names the same chapters by the same numbers.
+    for (const locale of locales)
+      for (const key of naming)
+        expect(
+          (catalogs[locale][key].match(/\d\d/g) ?? []).filter((n) => /^(0\d|1[01])$/.test(n)),
+          `${locale}.${key}`,
+        ).toEqual(expect.arrayContaining(en[key].match(/(?<=chapter )\d\d/g)!));
     expect(ESSAY.filter(({ blocks }) => blocks.some(({ kind }) => kind === 'choice'))).toHaveLength(
       1,
     );

@@ -2,12 +2,20 @@ import { Suspense, type CSSProperties, type ReactNode } from 'react';
 import { ChoiceField } from '@/components/choice-field';
 import { CHOICE_FIELD_WORDS } from '@/components/choice-field.words';
 import { indexedWork } from '@/lib/art/collection-index';
+import { ART_HEIGHT, ART_WIDTH } from '@/lib/art/constants';
 import { workNumber } from '@/lib/art/number';
+import {
+  getInterpretation,
+  stillSourceSet,
+  type ArtInterpretation,
+  type Artwork,
+  type PlateDetail,
+} from '@/lib/art/types';
 import { paragraph, type EssayFacts } from '@/lib/essay/facts';
 import { SOURCE_ORDER, sourceNumber } from '@/lib/essay/numerals';
 import { rich } from '@/lib/essay/rich';
 import { SOURCES, type SourceKey } from '@/lib/essay/sources';
-import { ESSAY, TERMS, type Block, type Chapter } from '@/lib/essay/structure';
+import { ESSAY, TERMS, type Block, type Chapter, type EssayPart } from '@/lib/essay/structure';
 import { longestRun } from '@/lib/essay/titles';
 import type { Messages } from '@/lib/i18n/en';
 import { fill } from '@/lib/i18n/format';
@@ -20,16 +28,67 @@ import styles from './essay.module.css';
 import room from './process.module.css';
 
 /*
-  The essay on the Process page: its chapters, as src/lib/essay/structure.ts orders them, set
+  The essay the home is made of: its chapters, as src/lib/essay/structure.ts orders them, set
   from the catalog's words with the facts of the work in hand (src/lib/essay/facts.ts). All of
-  it is rendered on the server and is in the document a reader is sent; the one live part is
-  the figure of the choice, which the page already had.
+  it is rendered on the server and is in the document a reader is sent; the one live part here
+  is the figure of the choice. The three plates the parts open with are the page's own.
 */
 
 interface Reading {
   readonly t: Messages;
   readonly locale: Locale;
   readonly facts: EssayFacts;
+  /** The work in hand, for the chapters that show a detail of its stills. */
+  readonly work?: Artwork;
+}
+
+/**
+ * A detail of a still: one of its measured windows, cut from the published still and set across
+ * the column, so that about one point of the picture meets one point of the screen. The still
+ * is drawn whole and the frame shows the window: nothing is resampled but by the browser.
+ */
+function EssayDetail({
+  media,
+  window,
+  label,
+  word,
+}: {
+  media: ArtInterpretation;
+  window: PlateDetail;
+  /** "№ 023 · Light". */
+  label: string;
+  /** "Detail". */
+  word: string;
+}) {
+  const width = media.width ?? ART_WIDTH;
+  const height = media.height ?? ART_HEIGHT;
+  return (
+    <figure className={`${styles.figure} ${styles.detail}`} data-detail={media.id}>
+      <div style={{ aspectRatio: `${window.width} / ${window.height}` }}>
+        <img
+          src={media.still}
+          srcSet={stillSourceSet(media)}
+          // A phone is sent the middle rung, a desk the published still: the window is a third
+          // of the picture's width, set across the column.
+          sizes="(max-width: 767px) 640px, 2400px"
+          width={width}
+          height={height}
+          alt={`${label} · ${word}`}
+          loading="lazy"
+          decoding="async"
+          style={{
+            width: `${(width / window.width) * 100}%`,
+            left: `${(-window.x / window.width) * 100}%`,
+            top: `${(-window.y / window.height) * 100}%`,
+          }}
+        />
+      </div>
+      <figcaption>
+        <span className="small-caps">{word}</span>
+        <span>{label}</span>
+      </figcaption>
+    </figure>
+  );
 }
 
 /** A source's mark in running text: a raised numeral that leads to its entry in the list. */
@@ -54,8 +113,23 @@ function ChapterBlock({
   t,
   locale,
   facts,
+  work,
 }: Reading & { block: Block; chapter: Chapter }) {
   switch (block.kind) {
+    case 'detail': {
+      const media = work ? getInterpretation(work, block.of) : undefined;
+      const window = media?.detail?.[0];
+      // A work whose still has not been measured shows none: the words stand without it.
+      if (!media?.still || !window) return null;
+      return (
+        <EssayDetail
+          media={media}
+          window={window}
+          label={`${workNumber(facts.id)} · ${t[block.of]}`}
+          word={t.detail}
+        />
+      );
+    }
     case 'p':
       return (
         <p className="reading">
@@ -165,22 +239,25 @@ export function ChapterIndex({ numeral, word }: { numeral: string; word: string 
  * A chapter's statement. Its longest word is reckoned here, so that a narrow screen can set the
  * title as large as that word allows and never cut it (src/lib/essay/titles.ts).
  */
-function Title({ id, text, locale }: { id: string; text: string; locale: Locale }) {
+export function Title({ id, text, locale }: { id: string; text: string; locale: Locale }) {
+  // A dash stays with the word before it, so no line of a title begins with one: «Спочатку —»
+  // and then «орбіта.», never the dash alone at the head of the second line.
+  const set = text.replace(/ (?=[—–])/g, NBSP);
   return (
     <h2
       id={id}
       className={`chapter ${styles.title}`}
-      style={{ '--longest': longestRun(text, locale) } as CSSProperties}
+      style={{ '--longest': longestRun(set, locale) } as CSSProperties}
     >
-      {text}
+      {set}
     </h2>
   );
 }
 
-/** The essay's chapters on one ground, in order. */
-export function EssayChapters({ ground, ...reading }: Reading & { ground: Chapter['ground'] }) {
+/** The chapters of one of the essay's parts, in order: they stand beneath that part's plate. */
+export function EssayChapters({ part, ...reading }: Reading & { part: EssayPart }) {
   const { t } = reading;
-  return ESSAY.filter((chapter) => chapter.ground === ground).map((chapter) => (
+  return ESSAY.filter((chapter) => chapter.part === part).map((chapter) => (
     <section
       key={chapter.id}
       id={chapter.id}
@@ -203,22 +280,82 @@ export function EssayChapters({ ground, ...reading }: Reading & { ground: Chapte
   ));
 }
 
-/** The essay's contents: every chapter by number and word, then the two closing lists. */
-export function EssayContents({ t }: { t: Messages }) {
-  const entries = [
-    ...ESSAY.map(({ id, numeral, word }) => ({ id, numeral, word: t[word] })),
-    { id: 'terms', numeral: '·', word: t.essayTermsWord },
-    { id: 'sources', numeral: '·', word: t.essaySourcesWord },
+interface ContentsEntry {
+  readonly id: string;
+  readonly numeral: string;
+  readonly word: string;
+}
+
+/** The three parts' numbers, in the margin of each part's plate and in the contents. */
+export const PART_NUMERALS = { orbit: 'I', light: 'II', ink: 'III' } as const;
+
+/**
+ * The essay's contents, in the page's own order and by its parts: each part's plate under its
+ * number, then its chapters by number and word; then what is not known, how a work comes to
+ * exist, and the two lists that close the page, which stand under no plate.
+ */
+export function essayContents(
+  t: Messages,
+): { readonly plate?: ContentsEntry; readonly entries: readonly ContentsEntry[] }[] {
+  const chapters = (part: EssayPart) =>
+    ESSAY.filter((chapter) => chapter.part === part).map(({ id, numeral, word }) => ({
+      id,
+      numeral,
+      word: t[word],
+    }));
+  const entry = (id: string, word: string, numeral = '·'): ContentsEntry => ({
+    id,
+    numeral,
+    word,
+  });
+  return [
+    {
+      plate: entry('orbit', t.essayOrbitWord, PART_NUMERALS.orbit),
+      entries: chapters('orbit'),
+    },
+    {
+      plate: entry('light', t.light, PART_NUMERALS.light),
+      entries: [...chapters('light'), entry('spectrum', t.chapterSpectrum)],
+    },
+    { plate: entry('ink', t.ink, PART_NUMERALS.ink), entries: chapters('ink') },
+    {
+      entries: [
+        ...chapters('close'),
+        entry('cycle', t.essayBornWord),
+        entry('terms', t.essayTermsWord),
+        entry('sources', t.essaySourcesWord),
+      ],
+    },
   ];
+}
+
+function ContentsLink({ id, numeral, word }: ContentsEntry) {
+  return (
+    <a href={`#${id}`}>
+      <span className="numeral">{numeral}</span>
+      <span>{word}</span>
+    </a>
+  );
+}
+
+export function EssayContents({ t }: { t: Messages }) {
   return (
     <nav aria-label={t.process} className={styles.contents}>
       <ol>
-        {entries.map(({ id, numeral, word }) => (
-          <li key={id}>
-            <a href={`#${id}`}>
-              <span className="numeral">{numeral}</span>
-              <span>{word}</span>
-            </a>
+        {essayContents(t).map(({ plate, entries }, index) => (
+          <li key={plate?.id ?? index}>
+            {plate ? (
+              <span className={styles.part}>
+                <ContentsLink {...plate} />
+              </span>
+            ) : null}
+            <ol>
+              {entries.map((entry) => (
+                <li key={entry.id}>
+                  <ContentsLink {...entry} />
+                </li>
+              ))}
+            </ol>
           </li>
         ))}
       </ol>

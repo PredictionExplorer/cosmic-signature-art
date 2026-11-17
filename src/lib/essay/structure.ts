@@ -1,10 +1,14 @@
 import type { Messages } from '@/lib/i18n/en';
 
 /*
-  The essay on the Process page, in reading order: which of the catalog's words stand where,
+  The essay the home is made of, in reading order: which of the catalog's words stand where,
   and what stands between them. The page renders this list and nothing else of the essay
-  (src/app/[locale]/process/essay.tsx), the sources take their numerals from it
+  (src/app/[locale]/_essay/essay.tsx), the sources take their numerals from it
   (essaySources), and its test holds every essay key in the catalogs to one place here.
+
+  The essay has three parts, in the order a work is made: the orbit, its Light, its Ink. Each
+  part opens with a plate of its own that the page sets (src/app/[locale]/page.tsx): the orbit
+  in depth, the Light still with its film, the Ink still with its film.
 */
 
 /** A key of the essay's own words in the catalogs. */
@@ -19,13 +23,15 @@ export const CASES = {
   twin: ['essayTwinAfter', 'essayTwinInside', 'essayTwinNever'],
   claim: ['essayClaimForced', 'essayClaimFree'],
   pair: ['essayTwoFigure', 'essayTwoFigureOpen'],
+  /** What the orbit in depth is a drawing of: the bodies' places, or the space the work draws. */
+  depth: ['essayOrbitPlaces', 'essayOrbitSpace', 'essayOrbitCopies'],
 } as const satisfies Record<string, readonly EssayKey[]>;
 export type EssayCase = keyof typeof CASES;
 
 /** One of the catalog's sentences, or the one the work decides. */
 export type Part = EssayKey | { readonly choose: EssayCase };
 
-/** The essay's figures, each drawn by src/app/[locale]/process/essay-figures.tsx. */
+/** The essay's figures, each drawn by src/app/[locale]/_essay/essay-figures.tsx. */
 export type FigureName =
   'pair' | 'arrangements' | 'ledger' | 'pushes' | 'energy' | 'twin' | 'plaits' | 'sheet';
 
@@ -46,13 +52,24 @@ export type Block =
       readonly derived: boolean;
     }
   /** The live figure of the choice: every beginning drawn again from the seed, in the browser. */
-  | { readonly kind: 'choice' };
+  | { readonly kind: 'choice' }
+  /**
+   * A detail of the work in hand: the densest window of its published still in one expression
+   * (src/lib/art/plate-details.ts), shown near the still's own scale. The work itself, cut, so
+   * it carries no label of an analysis.
+   */
+  | { readonly kind: 'detail'; readonly of: 'light' | 'ink' };
+
+/** The essay's parts, in the order a work is made, and what follows them. */
+export type EssayPart = 'orbit' | 'light' | 'ink' | 'close';
 
 export interface Chapter {
-  /** The chapter's address on the page: /process#two. */
+  /** The chapter's address on the page: /#two. */
   readonly id: string;
-  /** Its number in the contents; a middle dot for the chapters after the numbered eight. */
+  /** Its number in the contents; a middle dot for the chapter after the numbered eleven. */
   readonly numeral: string;
+  /** The part it belongs to: it stands beneath that part's plate. */
+  readonly part: EssayPart;
   readonly ground: 'night' | 'paper';
   /** The word in the contents and beside the chapter. */
   readonly word: EssayKey | 'chapterChoice';
@@ -64,10 +81,14 @@ export interface Chapter {
 const p = (...parts: Part[]): Block => ({ kind: 'p', parts });
 const choose = (name: EssayCase): Part => ({ choose: name });
 
-/** The first six chapters stand on night with the Light plate; the rest on paper with the Ink. */
+/**
+ * Six chapters on the orbit and two on its Light stand on night; three on its Ink, and what is
+ * not known, stand on paper.
+ */
 export const ESSAY: readonly Chapter[] = [
   {
     id: 'two',
+    part: 'orbit',
     numeral: '01',
     ground: 'night',
     word: 'essayTwoWord',
@@ -82,6 +103,7 @@ export const ESSAY: readonly Chapter[] = [
   },
   {
     id: 'three',
+    part: 'orbit',
     numeral: '02',
     ground: 'night',
     word: 'essayThreeWord',
@@ -97,6 +119,7 @@ export const ESSAY: readonly Chapter[] = [
   },
   {
     id: 'no-formula',
+    part: 'orbit',
     numeral: '03',
     ground: 'night',
     word: 'essayFormulaWord',
@@ -114,6 +137,7 @@ export const ESSAY: readonly Chapter[] = [
   },
   {
     id: 'steps',
+    part: 'orbit',
     numeral: '04',
     ground: 'night',
     word: 'essayStepsWord',
@@ -133,6 +157,7 @@ export const ESSAY: readonly Chapter[] = [
   },
   {
     id: 'trillionth',
+    part: 'orbit',
     numeral: '05',
     ground: 'night',
     word: 'essayTwinWord',
@@ -150,6 +175,7 @@ export const ESSAY: readonly Chapter[] = [
   },
   {
     id: 'choice',
+    part: 'orbit',
     numeral: '06',
     ground: 'night',
     word: 'chapterChoice',
@@ -163,8 +189,47 @@ export const ESSAY: readonly Chapter[] = [
     ],
   },
   {
-    id: 'current',
+    id: 'view',
+    part: 'light',
     numeral: '07',
+    ground: 'night',
+    word: 'essayViewWord',
+    title: 'essayViewTitle',
+    blocks: [
+      p('essayView1'),
+      p('essayView2'),
+      p('essayViewScores'),
+      p('essayView3'),
+      p('essayView4'),
+      { kind: 'record', parts: ['essayViewDrift'] },
+      p('essayView5'),
+      p('essayView6'),
+    ],
+  },
+  {
+    id: 'stroke',
+    part: 'light',
+    numeral: '08',
+    ground: 'night',
+    word: 'essayStrokeWord',
+    title: 'essayStrokeTitle',
+    blocks: [
+      p('essayStroke1'),
+      p('essayStroke2'),
+      p('essayStroke3'),
+      p('essayStroke4'),
+      { kind: 'record', parts: ['essayStrokeRecord'] },
+      p('essayStroke5'),
+      // What the chapter has said of a stroke, seen: its breadth, its brightness, its sum.
+      { kind: 'detail', of: 'light' },
+      p('essayStroke6'),
+      p('essayStroke7'),
+    ],
+  },
+  {
+    id: 'current',
+    part: 'ink',
+    numeral: '09',
     ground: 'paper',
     word: 'essayCurrentWord',
     title: 'essayCurrentTitle',
@@ -189,7 +254,8 @@ export const ESSAY: readonly Chapter[] = [
   },
   {
     id: 'plait',
-    numeral: '08',
+    part: 'ink',
+    numeral: '10',
     ground: 'paper',
     word: 'essayPlaitWord',
     title: 'essayPlaitTitle',
@@ -205,7 +271,24 @@ export const ESSAY: readonly Chapter[] = [
     ],
   },
   {
+    id: 'paper',
+    part: 'ink',
+    numeral: '11',
+    ground: 'paper',
+    word: 'essayPaperWord',
+    title: 'essayPaperTitle',
+    blocks: [
+      p('essayPaper1'),
+      p('essayPaper2'),
+      // The sheet, its fibre and the soot in it, seen.
+      { kind: 'detail', of: 'ink' },
+      p('essayPaper3'),
+      p('essayPaper4'),
+    ],
+  },
+  {
     id: 'unknown',
+    part: 'close',
     numeral: '·',
     ground: 'paper',
     word: 'essayUnknownWord',
@@ -216,6 +299,10 @@ export const ESSAY: readonly Chapter[] = [
 
 /** The venue's terms, each with what it means; the last is the label on every derived view. */
 export const TERMS: readonly (readonly [EssayKey | 'analysisNotWork', EssayKey])[] = [
+  ['essayTermSeed', 'essayTermSeedIs'],
+  ['essayTermGenerator', 'essayTermGeneratorIs'],
+  ['essayTermRecord', 'essayTermRecordIs'],
+  ['essayTermCycle', 'essayTermCycleIs'],
   ['essayTermUnit', 'essayTermUnitIs'],
   ['essayTermStep', 'essayTermStepIs'],
   ['essayTermWarmUp', 'essayTermWarmUpIs'],
@@ -230,12 +317,27 @@ export const TERMS: readonly (readonly [EssayKey | 'analysisNotWork', EssayKey])
   ['analysisNotWork', 'essayTermAnalysisIs'],
 ];
 
-/** The essay's words that frame the chapters: the cover, the two plates, the closing lists. */
+/**
+ * The essay's words that frame the chapters: the cover, the three plates, the closing lists,
+ * and how a work comes to exist. The orbit's own controls are its component's words
+ * (src/components/orbit-depth.words.ts), as the live figure of the choice has its own.
+ */
 export const FRAME = [
   'essayStandfirst',
   'essayOfWork',
+  'essayOrbitWord',
+  'essayOrbitCopy',
+  // What the orbit in depth is a drawing of, as the work decides (CASES.depth).
+  ...CASES.depth,
+  'essayDepthLabel',
+  'essayLightTitle',
   'essayLightCopy',
+  'essaySweepCopy',
   'essayInkCopy',
+  'essayBornWord',
+  'essayBornTitle',
+  'essayBorn1',
+  'essayBorn2',
   'essayTermsWord',
   'essayTermsTitle',
   'essaySourcesWord',
@@ -258,6 +360,7 @@ function blockKeys(block: Block): readonly EssayKey[] {
     case 'figure':
       return keysOf(block.caption);
     case 'choice':
+    case 'detail':
       return [];
   }
 }

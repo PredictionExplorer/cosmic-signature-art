@@ -1,3 +1,4 @@
+import orbitFrames from '@/lib/art/orbit-frames.json';
 import { describe, expect, it } from 'vitest';
 import { collectionIndex } from '@/lib/art/collection-index';
 import { essayFigures, essayWork, essayWorkCount } from '@/lib/art/essay-figures';
@@ -101,6 +102,84 @@ describe('the essay’s facts', () => {
     expect(sentences({ choose: 'pair' }, facts31, en)[0]).toMatch(
       /^Bodies 2 and 3 of №.031, alone/,
     );
+  });
+
+  it('words a work’s picture as the registry of its frame has it: № 031, and every work', () => {
+    const plain = (text: string) => text.replace(/\u00a0/g, ' ');
+    // The registry itself (src/lib/art/orbit-frames.json), read here and not through the facts.
+    expect(sentences('essayViewScores', facts31, en).map(plain)).toEqual([
+      'Derived again from the seed of № 031, the four views score 0.813, 0.828, 0.751 and 0.698 on a scale from 0 to 1, in the order drawn. Number 2 was kept.',
+    ]);
+    expect(sentences('essayViewDrift', facts31, en).map(plain)).toEqual([
+      'While the film of № 031 runs, its camera is carried for 11% of the time one circuit of its ellipse would take. Its drift eccentricity is 0.40; a circle’s is 0.',
+    ]);
+    expect(sentences('essayStrokeRecord', facts31, en).map(plain)).toEqual([
+      'Its structure is “Orbit Ribbons” and its palette “Rose Mono”. Its dominant wavelength is 632 nanometres: the wavelength nearest in hue to its most strongly coloured body.',
+    ]);
+    expect(plain(said('essayOrbitCopy'))).toContain('of masses 130.7, 251.0 and 125.0');
+    const frames = new Map(
+      (
+        orbitFrames as unknown as {
+          frames: {
+            id: number;
+            projection: string;
+            symmetry: string;
+            view: { candidate: number; scores: string[] };
+            drift: { arcFraction: number | string; eccentricity: number | string };
+          }[];
+        }
+      ).frames.map((frame) => [frame.id, frame]),
+    );
+    const more: number[] = [];
+    for (const id of ids) {
+      const facts = essayFacts(id, 'en', en)!;
+      const frame = frames.get(id)!;
+      const scores = frame.view.scores.map(Number);
+      const printed = (['first', 'second', 'third', 'fourth'] as const).map((name) =>
+        Number(facts.blanks.essayViewScores![name]),
+      );
+      // Each score is cut to three places or more and never raised, all four to the same
+      // number of places, and the view kept is the one the generator kept: as printed, no other
+      // view reads its equal unless it scored exactly the same, and the kept is the first of
+      // the highest, as the sentence before says.
+      const places = facts.blanks.essayViewScores!.first.split('.')[1].length;
+      expect(places, `№ ${id}`).toBeGreaterThanOrEqual(3);
+      scores.forEach((score, index) => {
+        expect(printed[index], `№ ${id}`).toBeLessThanOrEqual(score);
+        expect(score - printed[index], `№ ${id}`).toBeLessThan(10 ** -places);
+        if (score !== scores[frame.view.candidate])
+          expect(printed[index], `№ ${id}`).toBeLessThan(printed[frame.view.candidate]);
+      });
+      expect(facts.blanks.essayViewScores!.kept, `№ ${id}`).toBe(String(frame.view.candidate + 1));
+      expect(printed.indexOf(Math.max(...printed)), `№ ${id}`).toBe(frame.view.candidate);
+      more.push(places);
+      // The camera's share of a circuit, to the nearest whole per cent from a tenth up.
+      const share = facts.blanks.essayViewDrift!.share;
+      const arc = Number(frame.drift.arcFraction);
+      if (arc >= 0.1) expect(share, `№ ${id}`).toBe(`${Math.round(arc * 100)}%`);
+      else expect(Number(share.replace('%', '')), `№ ${id}`).toBeGreaterThan(0);
+      expect(facts.blanks.essayViewDrift!.eccentricity, `№ ${id}`).toBe(
+        Number(frame.drift.eccentricity).toFixed(2),
+      );
+      // What the orbit in depth says it is: the bodies' paths, or the drawing of another space;
+      // and that its strokes are repeated exactly where they are.
+      expect(
+        facts.cases.depth.map(({ key }) => key),
+        `№ ${id}`,
+      ).toEqual([
+        frame.projection === 'position' ? 'essayOrbitPlaces' : 'essayOrbitSpace',
+        ...(frame.symmetry === 'none' ? [] : ['essayOrbitCopies']),
+      ]);
+    }
+    // Three places tell nearly every work; a few need one more to tell two views apart.
+    expect(more.filter((places) => places === 3).length).toBeGreaterThan(60);
+    expect(Math.max(...more)).toBeLessThanOrEqual(5);
+    // Two that a rounding would have told wrongly: a first view just under two that score 1,
+    // and a camera carried past one whole circuit.
+    expect(sentences('essayViewScores', essayFacts(29, 'en', en)!, en).map(plain)[0]).toContain(
+      'score 0.999, 1.000, 1.000 and 0.973 on a scale from 0 to 1, in the order drawn. Number 2 was kept.',
+    );
+    expect(essayFacts(13, 'en', en)!.blanks.essayViewDrift!.share).toBe('108%');
   });
 
   it('write numbers as each language does', () => {

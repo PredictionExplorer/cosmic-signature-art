@@ -31,7 +31,7 @@ type Sheet = {
   /**
    * The paragraph under the page's heading must stand in `<main>` too, whatever it says. A page
    * whose opening is being rewritten is held by where its words stand, not by quoting them:
-   * Process's standfirst is the essay's to word.
+   * the home's standfirst is the essay's to word.
    */
   standfirst?: boolean;
 };
@@ -47,10 +47,13 @@ const sheet = (
 ): Sheet => ({ name, path: localizedPath(locale, path), locale, ...page });
 
 const home = {
-  // The suite's day is an Ink day whose work is 023 (tests/e2e/venue-day.ts).
+  // The suite's day is an Ink day whose work is 023 (tests/e2e/venue-day.ts). The plate's still
+  // is in main with the essay's own: the Light plate, the spectrum's and the Ink plate.
   still: (t: Words) => `${workNumber(23)} · ${t.ink}`,
-  stills: 1,
-  words: (t: Words) => [t.shapeOfMotion, t.statementLine],
+  stills: 4,
+  // The cover's headline, a chapter's statement, and how a work comes to exist, at the close.
+  words: (t: Words) => [t.processTitle, t.essayViewTitle, t.essayBorn1],
+  standfirst: true,
 };
 const work = (id: number) => ({
   still: (t: Words) => `${workNumber(id)} · ${t.ink}`,
@@ -72,11 +75,6 @@ const SHEETS: Sheet[] = [
   // In the index alone, as 57 of the 72 works are: its plate opens from the index.
   sheet('a work the index holds', '/art/50', work(50)),
   sheet('the collection', '/collection', { stills: 18, words: (t) => [t.collection] }),
-  sheet('Process', '/process', {
-    stills: 2,
-    words: (t) => [t.processTitle],
-    standfirst: true,
-  }),
 ];
 
 /** An address answers alike in every engine, so one project asks. */

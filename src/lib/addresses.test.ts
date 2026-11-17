@@ -89,6 +89,13 @@ describe('reading an address', () => {
     expect(readAddress(path)).toEqual({ kind: 'respell', path: to });
   });
 
+  it('sends the Process essay’s old address to the home it now is, and nothing that only looks like it', () => {
+    expect(readAddress('/process')).toEqual({ kind: 'moved', path: '/' });
+    // A trailing slash is Next's to normalise first; a longer or another address is its own.
+    for (const path of ['/process/', '/process/essay', '/processes', '/art/process', '/'])
+      expect(readAddress(path), path).not.toMatchObject({ kind: 'moved' });
+  });
+
   it('refuses exactly what the work’s page refuses, and names what it reads', () => {
     const segment = fc.oneof(
       fc.stringMatching(/^\d{1,20}$/),
@@ -298,7 +305,6 @@ describe('the pages rendered for each request', () => {
   it('are not the prerendered pages, nor anything beneath a rendered one', () => {
     for (const path of [
       '/',
-      '/process',
       '/statement',
       '/privacy',
       '/terms',

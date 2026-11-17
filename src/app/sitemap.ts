@@ -13,7 +13,6 @@ export default function sitemap(): MetadataRoute.Sitemap {
       // is never offered for discovery as if it were a work (docs/third-physics.md §9).
       '/collection/orrery',
       '/exhibitions',
-      '/process',
       '/statement',
       '/privacy',
       ...exhibitions().map((item) => `/exhibitions/${item.slug}`),

@@ -93,6 +93,7 @@ export function ChapterPlate({
           artworkId={artworkId}
           hold
           eager={eager}
+          lazyPreview
           ambient={ambient}
           restart={restart}
           playRequest={playRequest}

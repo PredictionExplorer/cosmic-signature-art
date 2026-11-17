@@ -105,6 +105,8 @@ export type Reading =
   | { kind: 'not-here' }
   /** A work's number in another spelling, "031" for 31: the one spelling answers. */
   | { kind: 'respell'; path: string }
+  /** A room that has moved for good: its new address answers. */
+  | { kind: 'moved'; path: string }
   /** A work beyond the index: only the indexer's record can say. */
   | { kind: 'ask'; work: number };
 
@@ -125,6 +127,9 @@ export function readAddress(path: string): Reading {
   // A trailing slash or an empty segment is Next's to normalise, not the proxy's to judge.
   if (segments.some((segment) => !segment)) return HERE;
   const [room, name, number] = segments;
+  // The Process essay is the home now (src/app/[locale]/page.tsx): its old address leads there,
+  // and a chapter's fragment rides along, since a browser carries one onto a redirect's target.
+  if (room === 'process' && segments.length === 1) return { kind: 'moved', path: '/' };
   if (room === 'art' && segments.length === 2) {
     const id = workId(name);
     if (id === null) return NOT;

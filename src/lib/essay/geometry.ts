@@ -1,5 +1,5 @@
 /*
-  The geometry of the essay's figures (src/app/[locale]/process/essay-figures.tsx). Pure: each
+  The geometry of the essay's figures (src/app/[locale]/_essay/essay-figures.tsx). Pure: each
   function turns numbers the essay's registry holds into the lines a figure draws, and says
   nothing of colour or type.
 */

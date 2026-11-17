@@ -576,7 +576,9 @@ function ArtworkViewerSession({
   const twinTone = twinMedia
     ? getPlateGround(artwork.id, twinMedia.id, twinMedia.stillSha256)?.tone
     : undefined;
-  useRoomSeam({ enabled: true, expression, twin, twinTone, mode: wingMode, wingRef, fallbackRef });
+  // Without a wing there is no seam to follow: the ground is the page's to set (the home's
+  // essay follows its own sections, src/app/[locale]/_essay/room-seams.tsx).
+  useRoomSeam({ enabled: wing, expression, twin, twinTone, mode: wingMode, wingRef, fallbackRef });
 
   /**
    * Where the seam rests on the plate's own expression: wherever the hand has drawn the twin
@@ -749,6 +751,15 @@ function ArtworkViewerSession({
   const onKeyDown = useEffectEvent((event: KeyboardEvent) => {
     if (event.defaultPrevented || event.metaKey || event.ctrlKey || event.altKey) return;
     if (inField(event.target) || sheet || room || document.querySelector('dialog[open]')) return;
+    // The home's plate stands above a long essay. Once it has left the screen its page-wide
+    // keys are the page's again: Space pages the text, and no letter acts on a plate out of sight.
+    if (home && section.current) {
+      const head = parseFloat(
+        getComputedStyle(document.documentElement).getPropertyValue('--head'),
+      );
+      const box = section.current.getBoundingClientRect();
+      if (box.height > 0 && box.bottom <= (Number.isFinite(head) ? head : 0)) return;
+    }
     // Space belongs to the focused control; the page-wide playback shortcut is for the
     // artwork itself. Other viewing shortcuts remain available after a dialog restores focus.
     if (

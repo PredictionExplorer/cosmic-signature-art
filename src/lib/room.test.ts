@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { roomFor, roomScript } from './room';
+import { HOME_NIGHT_PARTS, HOME_PAPER_PARTS, roomFor, roomScript } from './room';
 import { dayNumber, expressionOfDay } from './art/day';
 import { HOME_RESOLVED_KEY, MOTION_KEY, OVERTURE_KEY, VISIT_KEY } from './storage-keys';
 
@@ -42,7 +42,8 @@ describe('the room by route and view', () => {
     expect(roomFor('/ja/collection', '?expression=light&q=31')).toBe('night');
     expect(roomFor('/collection', '?order=cycle')).toBe('paper');
     expect(roomFor('/art/31', '?expression=light')).toBe('paper');
-    expect(roomFor('/process', '?order=spectrum')).toBe('night');
+    // A view is the collection's alone: the same words in another room's address do nothing.
+    expect(roomFor('/statement', '?order=spectrum')).toBe('paper');
   });
 
   it('stands All the light and the Orrery on the night, on every screen, from the first paint', () => {
@@ -74,7 +75,56 @@ describe('the room by route and view', () => {
       room: 'night',
       color: '#000000',
     });
-    expect(paint('/zh-TW/process')).toEqual({ room: 'night', color: '#000000' });
+    expect(paint('/zh-TW/verify/orbit')).toEqual({ room: 'night', color: '#000000' });
+  });
+});
+
+describe('the first paint of a part of the home', () => {
+  const NIGHT = { room: 'night', color: '#000000' };
+  const PAPER = { room: 'paper', color: '#f1ebdf' };
+  /** The page opened at a part by its address: /#choice. */
+  const at = (hash: string, pathname = '/', pinned = INK_DAY) =>
+    paint(pathname, `#${hash}`, pinned);
+
+  it('opens on the part’s own ground, whatever the day’s plate shows above it', () => {
+    // The orbit and its Light stand on night: the cover's contents lead there on an Ink day too.
+    for (const part of HOME_NIGHT_PARTS) expect(at(part), part).toEqual(NIGHT);
+    // From the Ink plate on the home stands on paper, on a Light day as well.
+    for (const part of HOME_PAPER_PARTS) {
+      expect(at(part), part).toEqual(PAPER);
+      expect(at(part, '/uk', LIGHT_DAY), part).toEqual(PAPER);
+    }
+    // A source's own address is in the list of sources.
+    expect(at('source-12', '/ja', LIGHT_DAY)).toEqual(PAPER);
+    // A part's title is addressed as the part is; the cover by its headline, the cycle by its row.
+    expect(at('choice-title')).toEqual(NIGHT);
+    expect(at('process-title')).toEqual(NIGHT);
+    expect(at('ink-title', '/', LIGHT_DAY)).toEqual(PAPER);
+    expect(at('home-cycle', '/vi', LIGHT_DAY)).toEqual(PAPER);
+  });
+
+  it('leaves the plate its own ground at an address that names no part', () => {
+    // The skip link's own address, and one that names nothing: the plate is what is seen.
+    for (const hash of ['main', 'nothing', 'inkling', 'source']) {
+      expect(at(hash, '/', INK_DAY), hash).toEqual(PAPER);
+      expect(at(hash, '/zh-TW', LIGHT_DAY), hash).toEqual(NIGHT);
+    }
+  });
+
+  it('is the plate’s ground with no part named, and leaves every other page alone', () => {
+    expect(paint('/', '', LIGHT_DAY)).toEqual(NIGHT);
+    expect(paint('/', '', INK_DAY)).toEqual(PAPER);
+    // A fragment that cannot be read is no part's address.
+    expect(at('%E0%A4%A', '/', LIGHT_DAY)).toEqual(NIGHT);
+    // A work's page keeps its plate's ground whatever its fragment says.
+    expect(paint('/art/31', '?expression=light#ink')).toEqual(NIGHT);
+    expect(paint('/collection', '#ink')).toEqual(PAPER);
+  });
+
+  it('asks for no First Light on an address that names a part', () => {
+    vi.stubGlobal('matchMedia', () => ({ matches: false }));
+    at('choice');
+    expect(document.documentElement.getAttribute('data-overture')).toBeNull();
   });
 });
 

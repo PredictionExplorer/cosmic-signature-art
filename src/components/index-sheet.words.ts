@@ -26,7 +26,6 @@ export const INDEX_SHEET_WORDS = [
   // Every room (NAVIGATION, src/lib/navigation.ts).
   'collection',
   'exhibitions',
-  'process',
   'statement',
   'pauseAmbientMotion',
   'index',

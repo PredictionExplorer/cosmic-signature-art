@@ -3,8 +3,9 @@
 Read this before building anything for cosmicsignature.art. Every change answers to it. When a
 plan, a design or a pull request does not move the venue toward what is written here, it waits.
 
-The owner set these goals in October and November 2026, and restated them on 14 November. They
-are quoted where the words are the owner's own.
+The owner set these goals in October and November 2026, restated them on 14 November, and on
+17 November set the front door and the voice. They are quoted where the words are the owner's
+own.
 
 ## The goal
 
@@ -33,6 +34,27 @@ development principles… best practices everywhere", and a codebase that is wor
 That is kept by looking, not by assuming: "auditing the site… to make sure that everything is
 world-class and that we're following the best practices for everything everywhere" is part of
 the work, done again whenever there is a chance, and never once and for all.
+
+## The front door, and the voice
+
+On 17 November 2026 the owner set both:
+
+- **The home is how a work is made.** "I don't really like how the website is structured right
+  now. I do like the process page. How about we make the process page the main page of the
+  website, like the homepage of the website?" The home opens on the day's work and then takes
+  that work apart in the order it was made: the orbit, its Light, its Ink.
+- **The orbit can be turned, and it is obvious that it can.** "There is some 3D simulation that
+  you can rotate… I think that should be on the process page, and it should be more obvious that
+  it's possible to rotate and see the trajectories in 3D."
+- **Everything is explained, as a museum would.** "I think we need to explain exactly what's
+  going on on the process page. Do a better job of explaining all the little nuances and what
+  makes the art cool on that page. But do it in a cool way, not in a cheesy way. Do it in a way
+  that a museum would do it, or a high-end gallery. Do it like a very high-end artist, like a top
+  artist would describe his work. We want to convey prestige!"
+
+Prestige here is carried by what is true and exact: figures, dates, materials, method and
+provenance, stated plainly; the limit of what is known said as flatly as what is known. The
+words state facts and name no feelings, and nothing is praised.
 
 ## What is unique, and must be said well
 

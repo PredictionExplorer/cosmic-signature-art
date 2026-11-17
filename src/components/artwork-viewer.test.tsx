@@ -421,6 +421,38 @@ describe('the Turn', () => {
     expect(document.documentElement).not.toHaveAttribute('data-plate-keys');
   });
 
+  it('on the home answers its page-wide keys only while the plate is on the screen', async () => {
+    renderViewer({ presentation: 'home', wing: false });
+    const section = document.querySelector<HTMLElement>('section[data-presentation="home"]')!;
+    document.documentElement.style.setProperty('--head', '48px');
+    // The plate has left the screen: a reader is thirty screens down the essay beneath it.
+    section.getBoundingClientRect = () => ({ top: -9_000, bottom: -8_200, height: 800 }) as DOMRect;
+    for (const key of ['L', 'i', 'F', 's']) {
+      fireEvent.keyDown(window, { key });
+      fireEvent.keyUp(window, { key });
+    }
+    await act(async () => {
+      vi.advanceTimersByTime(BREATH_MS + 1000);
+    });
+    // No Turn began unseen, no room opened over the chapter, and the head was not put away.
+    expect(root().hasAttribute('data-turning')).toBe(false);
+    expect(root().hasAttribute('data-sit')).toBe(false);
+    expect(document.querySelector('dialog[open]')).toBeNull();
+    // Space is the page's there: it pages the text, and the plate's film is left alone.
+    const space = new KeyboardEvent('keydown', { key: ' ', bubbles: true, cancelable: true });
+    window.dispatchEvent(space);
+    expect(space.defaultPrevented).toBe(false);
+    // With the plate on the screen the keys are the plate's, as on any page.
+    section.getBoundingClientRect = () => ({ top: 48, bottom: 848, height: 800 }) as DOMRect;
+    fireEvent.keyDown(window, { key: 'L' });
+    await act(async () => {
+      vi.advanceTimersByTime(BREATH_MS);
+    });
+    expect(root().getAttribute('data-turning')).toBe('time');
+    fireEvent.keyUp(window, { key: 'L' });
+    document.documentElement.style.removeProperty('--head');
+  });
+
   it('peeks while L is held and returns on release; a tap commits', async () => {
     renderViewer();
     fireEvent.keyDown(window, { key: 'L' });

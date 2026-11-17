@@ -17,12 +17,24 @@ function readingLine() {
   return (Number.isFinite(head) ? head : 48) + 16;
 }
 
-/** The page's marks that hold no other marks, shown, in reading order. */
+/**
+ * Whether a mark keeps its place in the text. One held in a margin that stays in sight (a
+ * chapter's number and word, on a desk) stands still while the text passes it: it would be the
+ * mark at the reading line all the way down its chapter, and the place within the chapter lost.
+ */
+function movesWithText(mark: HTMLElement, main: Element): boolean {
+  for (let node: HTMLElement | null = mark; node && node !== main; node = node.parentElement)
+    if (getComputedStyle(node).position === 'sticky') return false;
+  return true;
+}
+
+/** The page's marks that hold no other marks, shown, and move with the text, in reading order. */
 function marks(): HTMLElement[] {
   const main = document.querySelector('main');
   if (!main) return [];
   return [...main.querySelectorAll<HTMLElement>(MARKS)].filter(
-    (mark) => !mark.querySelector(MARKS) && mark.getClientRects().length > 0,
+    (mark) =>
+      !mark.querySelector(MARKS) && mark.getClientRects().length > 0 && movesWithText(mark, main),
   );
 }
 

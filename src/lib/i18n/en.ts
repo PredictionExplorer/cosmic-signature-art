@@ -348,7 +348,7 @@ export const en = {
   glossaryBorda:
     'One hundred thousand candidate orbits were simulated and ranked by a Borda count; the published number is the one it chose.',
   glossaryWavelength:
-    'The dominant wavelength is the hue of the palette’s anchor, measured in nanometres of visible light.',
+    'The dominant wavelength is the wavelength nearest in hue to the work’s most strongly coloured body, in nanometres.',
   glossaryMasses: 'The three masses set how strongly each body pulls on the other two.',
   glossaryEccentricity:
     'Drift eccentricity measures how far the ellipse the camera is carried along departs from a circle. It is drawn from the seed and says nothing of the three bodies’ paths.',
@@ -365,6 +365,8 @@ export const en = {
   shapeOfMotion: 'The shape of motion.',
   statementLine:
     'Each work is one recorded three-body orbit, rendered twice, as light and as ink. Both are the same token.',
+  homeDescription:
+    'Each work is one motion of three bodies under gravity, computed step by step from a single number. Today’s work, set out as it was made: orbit, Light, Ink.',
   statementSigned: 'Cosmic Signature · October 2026',
   statementCorrected: 'Corrected November 2026: § 3 and § 6.',
   // The line under a still, sentence by sentence: the home's, with its second sentence for each
@@ -765,17 +767,54 @@ export const en = {
   allTheLightOrbits: 'The orbits in this light',
   // ·
   // ·
-  // ── The essay on the Process page (src/app/[locale]/process/essay.tsx), in reading order.
+  // ── The essay the home is made of (src/app/[locale]/_essay/essay.tsx), in reading order.
   // {braces} are filled from the works' records (src/lib/essay/facts.ts). [^name] marks the
   // source a sentence was checked against (src/lib/essay/sources.ts); *…* is an emphasis,
   // **…** a term defined where it stands, and ^{…} a raised figure.
   essayStandfirst:
-    'Every work here is one motion: three bodies, each pulling on the other two, followed through a million small steps of time. This page says what is known of such a motion, why no formula gives it, how far ahead anyone can see along it, and how the venue computes it all the same. Then it follows the motion into water, where it becomes Ink.',
+    'Each work here is one motion of three bodies under gravity, followed through a million steps of time. Nobody drew it, and no formula anyone can use gives it: a program, the generator, computes it step by step from one number, the work’s seed. It has two expressions: Light, a long exposure of the motion, and Ink, the same motion stirring a sheet of water. Today’s work is {work}. It is set out here in the order it was made: the orbit, the light, the water.',
   essayOfWork: 'From the record of {work}',
+  // · The orbit in depth (src/components/orbit-depth.tsx): what stands beside it, what it is a
+  // drawing of, as the work decides, and what a screen reader hears of it
+  essayOrbitWord: 'Orbit',
+  essayOrbitCopy:
+    'This is {work} before it is a picture: three bodies, of masses {one}, {two} and {three}, followed through the million steps the work records. Their motion has depth, and a picture keeps one view of it. Here it can be turned.',
+  essayOrbitPlaces:
+    'Each line is one body’s path as the picture’s camera followed it, and that camera moves (chapter 07). Seen from the generator’s view, these are the paths the Light still was drawn from.',
+  essayOrbitSpace:
+    '{work} is one of {count} works that the generator draws in a space where a body’s place is mixed with its own velocity, or with another body’s place (chapter 07). What turns here is that drawing in depth, not the paths the bodies took.',
+  essayOrbitCopies:
+    'Its picture repeats every stroke about the centre of the sheet. Here the repeated lines turn with the rest.',
+  essayDepthLabel:
+    'The orbit of {work} in depth. The arrow keys turn it; Home returns it to the generator’s view.',
+  // The orbit's own controls and states (src/components/orbit-depth.words.ts)
+  depthHint: 'Drag the orbit to turn it. The arrows turn it too.',
+  depthHintTouch: 'Touch and hold the orbit, then drag to turn it. The arrows turn it too.',
+  depthTurnLeft: 'Turn left',
+  depthTurnRight: 'Turn right',
+  depthTiltUp: 'Tilt up',
+  depthTiltDown: 'Tilt down',
+  depthOpen: 'Turn it in depth',
+  depthWaiting: 'The orbit is computed in this browser as it comes into view.',
+  depthUnavailable:
+    'This browser cannot draw the orbit in depth. The Light still stands in: the generator’s one view of it.',
+  depthNote:
+    'It opens from the generator’s view, the one the Light still keeps, and returns to it when asked. It is computed in this browser from the places and velocities of the three bodies at the first step of the recorded window; those were re-derived from the seed and checked against the record before they were kept.',
+  // · Light and · Ink: the two plates, and the sweep between them
+  essayLightTitle: 'Next, an exposure.',
   essayLightCopy:
-    'This is {work} in Light, drawn from the million steps it records. The chapters below say what is known of such a motion.',
+    'This is {work} in Light: its million steps, left on the sheet as light. Nothing is erased. The film is the still being exposed.',
+  essaySweepCopy:
+    'The published spectral sweep is a film of ten seconds. It shows the picture by one narrow band of its light at a time, from the violet end of the work’s own light to the red end and back: where on the sheet each wavelength lies.',
   essayInkCopy:
-    'This is the same work in Ink: the same three bodies, moving across a sheet of water. The two chapters below say what the water does.',
+    'This is the same work in Ink: the same three bodies, at the same moments, moving through a sheet of water. The still is the sheet as the last step leaves it.',
+  // · The cycle: how a work comes to exist
+  essayBornWord: 'The cycle',
+  essayBornTitle: 'No work exists before its cycle closes.',
+  essayBorn1:
+    'Nothing was made in advance. Works are imprinted in cycles: each successful round of the Cosmic Signature game ends by minting new tokens on Arbitrum, and their seeds are fixed in that one transaction. Until a cycle closes, its works do not exist anywhere, for anyone. The generator computes them afterwards, from their seeds: the orbit, then the Light, then the Ink.',
+  essayBorn2:
+    '{work} was imprinted on {date}, one of the {count} works of Cycle {cycle}. One token stands for all of it: the seed, the orbit, the Light and the Ink, neither the original of the other. The collection grows with every cycle.',
   // 01 · Two
   essayTwoWord: 'Two',
   essayTwoTitle: 'Two bodies repeat one ellipse.',
@@ -890,7 +929,45 @@ export const en = {
     'Those that remain are measured three ways over their windows: how widely each body’s motion is spread across frequencies; how near the triangle of the three stays to equilateral; and how much path the bodies lay down for the room they take up. They are then ranked by a **Borda count**, the way of voting that Jean-Charles de Borda set before the Paris Academy of Sciences, printed in its volume for 1781: every candidate is ranked on each measure, earns points for its place in each ranking, and the points are added.[^borda] Here the first ranking counts once, the second by a weight the seed itself draws ({weight} for {work}), and the third by 0.15.[^generator-sim] The record calls the first two weights “chaos” and “equilibrium”.',
   essayChoice4:
     'The twenty-four candidates with the most points are then tried as pictures, small, and scored for how they sit on the sheet. The best of them is the work: for {work}, candidate {index}. Its number and its weights are in its record. The search itself runs to as many as {search} steps, too many for a browser. What the page does is draw the {candidates} beginnings again from the seed and check the chosen one’s masses against the record, to the last bit.',
-  // 07 · A current
+  // 07 · The view
+  essayViewWord: 'The view',
+  essayViewTitle: 'A picture keeps one view of a motion in depth.',
+  essayView1:
+    'The three bodies move in three dimensions, and a sheet has two. So before any light is laid, the generator must choose where to stand.[^generator-view]',
+  essayView2:
+    'It does not choose by eye. Left as computed, every work would be seen along the same axis. So from the seed the generator draws four orientations, with no direction favoured, turns the orbit to each, and scores a small trial drawing of each view: among other things, how much of the sheet its lines cover, and how evenly. The view that scores highest is kept; where two score alike, the first drawn.[^generator-view]',
+  essayViewScores:
+    'Derived again from the seed of {work}, the four views score {first}, {second}, {third} and {fourth} on a scale from 0 to 1, in the order drawn. Number {kept} was kept.',
+  essayView3:
+    'Depth is kept, as brightness. It moves no stroke on the sheet, but the farther a stroke lies from the plane of the sheet, the fainter it is laid.[^generator-light]',
+  essayView4:
+    'Nor is the view held still. Through the million steps the camera is carried along an ellipse of its own, and Kepler’s equation, which places a body on its curve (chapter 01), gives the camera’s place on that ellipse.[^generator-camera] The record calls this the drift. Where it carries the camera far, a motion that turns back on itself is spread across the sheet.',
+  essayViewDrift:
+    'While the film of {work} runs, its camera is carried for {share} of the time one circuit of its ellipse would take. Its drift eccentricity is {eccentricity}; a circle’s is 0.',
+  essayView5:
+    'Then the frame. It is the box that holds every step of all three bodies, with a margin of a twentieth on each side, let out in width or in height to the shape of the sheet.[^generator-light]',
+  essayView6:
+    'Not every picture shows where the bodies were. In {count} of the {works} works the generator draws a space in which a body’s place is mixed with its own velocity, or with another body’s place. In {repeated} it repeats every stroke about the centre of the sheet, turned or mirrored; where the copies are turned, the whole drawing is first made smaller, so that each stays on the sheet.[^generator-view]',
+  // 08 · A stroke
+  essayStrokeWord: 'A stroke',
+  essayStrokeTitle: 'A stroke lays no colour. It lays light.',
+  essayStroke1:
+    'The picture is light, added up. Step by step through the million, the generator lays strokes, and what a stroke lays is not a colour but light. Each body has a hue of its own; the hue chooses a wavelength, and the stroke lays a narrow band of light about it.[^generator-light]',
+  essayStroke2:
+    'Every point of the sheet keeps a spectrum: sixty-four bands, each five nanometres wide, from 380, in the violet, to 700, in the red. A stroke adds to the few bands about its wavelength. A purple, which no single wavelength gives, is laid as two lights, one violet and one red. Where strokes cross, their light adds, band by band.[^generator-light]',
+  essayStroke3:
+    'Only when a frame is made is each spectrum weighed as the eye weighs light, and given one colour.[^generator-light] The weights are the standard observer: tables of how an eye of normal colour vision answers each wavelength, adopted by the International Commission on Illumination in 1931.[^observer] So where two strokes meet, neither covers the other, as paint would. The sheet keeps the sum of their light.',
+  essayStroke4:
+    'What the chief stroke is depends on the work, and the record names it the structure. In {ribbons} of the {works} works it is the body’s own path. In {chords} it is a line from where each body is to where it will be a moment later. In the rest it is a tangent to each path, a curved line between two bodies, or a dot set down at equal intervals of time, so that the dots crowd where a body is slow.[^generator-light]',
+  essayStrokeRecord:
+    'Its structure is “{structure}” and its palette “{palette}”. Its dominant wavelength is {wavelength}: the wavelength nearest in hue to its most strongly coloured body.',
+  essayStroke5:
+    'The line carries the speed. Slow and fast are reckoned within each work’s own range of speeds, so that every work runs the whole scale. By speed alone, a stroke is broadest and faintest where the line moves slowest; where it moves fastest it is less than half as wide, and up to eight times as bright. In most works a slow swell, set by the seed, widens and narrows the line besides.[^generator-light]',
+  essayStroke6:
+    'The exposure is metered once for each work, over about 240 moments of its motion, and then held for every frame. The film has {frames} frames, {stride} steps to the frame, and each frame is all the light laid so far. So the film opens dark, and the still is its last frame.[^generator-light]',
+  essayStroke7:
+    'The master of each Light still is an image of {width} points by {height}, with sixteen bits to each colour channel, in the Display P3 colour space. The stills shown here are the copies published from it.[^generator-light]',
+  // 09 · A current
   essayCurrentWord: 'A current',
   essayCurrentTitle: 'The same three bodies stir a sheet of water.',
   essayCurrent1:
@@ -918,7 +995,7 @@ export const en = {
     'The water of {work} is a grid of {gridX} by {gridY} points, advanced {fluidSteps} times. The ink is followed at {inkX} by {inkY} points, nine to each point of the picture. The studio’s machine, running {threads} threads, took {hours} hours over this work’s Ink.',
   essayCurrent7:
     'A sheet is the one case the mathematics has settled. For water with no depth, left to itself, it has long been proved that these equations keep a smooth answer for all time, whatever the start.[^fefferman] For water with depth, the same question was set in 2000 as one of the seven Millennium Prize Problems.[^fefferman]',
-  // 08 · The plait
+  // 10 · The plait
   essayPlaitWord: 'The plait',
   essayPlaitTitle: 'Three stirrers can plait, and a plait must mix.',
   essayPlait1:
@@ -942,6 +1019,17 @@ export const en = {
     'If stirrers that the water had to go round kept repeating the plait drawn above, each repeat would lengthen a line at least {stretch} times. Whether the ink of {work} is stretched like that is something the venue has still to measure.',
   essayClaimFree:
     'The plait drawn above forces nothing: even past stirrers that the water had to go round, a line could keep its length.',
+  // 11 · The paper
+  essayPaperWord: 'The paper',
+  essayPaperTitle: 'The paper is computed too.',
+  essayPaper1:
+    'Each work’s paper is made from its seed, so no two works lie on the same sheet. It is reckoned {width} millimetres wide and is modelled on kozo paper. Its fibre gathers in clouds, {flocLow} to {flocHigh} millimetres from one to the next across the flow that laid them, and longer along it. About {fibres} fibres to the square centimetre show at the surface, nine in ten of them {fibreShort} to {fibreLong} millimetres long.[^ember-paper]',
+  essayPaper2:
+    'The ink is one pigment, the soot of burnt pine, lying in the paper’s fibres. Its darkness is not taken from a scale of greys. It is computed as light, in thirty-six bands from 380 to 730 nanometres. A warm gallery lamp lights the sheet. What soot and fibre absorb and scatter in each band follows the theory of paint layers that Paul Kubelka and Franz Munk published in 1931, the year the standard observer was adopted (chapter 08).[^kubelka-munk] Over the densest ink lies a thin coat of glue.[^ember-optics]',
+  essayPaper3:
+    'So both expressions are computed as light. In Light it is added, in sixty-four bands, on black. In Ink it is taken away, in thirty-six, from a lit sheet. In neither is a colour laid.',
+  essayPaper4:
+    'Across the collection, the Ink of one work took the studio’s machine between {least} and {most} hours. It is computed on the processor alone, in arithmetic chosen so that any machine, given the inputs a work’s certificate records, reaches the same raw frames, bit for bit. The certificate records their hashes.[^ember]',
   // · Not known
   essayUnknownWord: 'Not known',
   essayUnknownTitle: 'What the venue does not know.',
@@ -954,6 +1042,18 @@ export const en = {
   // § The venue's words
   essayTermsWord: 'Terms',
   essayTermsTitle: 'The venue’s words.',
+  essayTermSeed: 'Seed',
+  essayTermSeedIs:
+    'The number fixed in the transaction that mints a work. Everything the generator computes for the work, it computes from this number.',
+  essayTermGenerator: 'Generator',
+  essayTermGeneratorIs:
+    'The program that computes each work from its seed: the orbit, then the Light, then the Ink. Its source is public.',
+  essayTermRecord: 'Record',
+  essayTermRecordIs:
+    'The file published with a work: the candidate chosen, its masses, its closest approach, its syzygies and its braid word, and the names the publisher gives its structure, its palette and its fate.',
+  essayTermCycle: 'Cycle',
+  essayTermCycleIs:
+    'The works imprinted in one transaction, when a successful round of the Cosmic Signature game ends.',
   essayTermUnit: 'Unit',
   essayTermUnitIs:
     'The generator’s own. Gravity’s constant is {gravity}; masses lie between {massLow} and {massHigh}. Not kilograms, metres or seconds.',

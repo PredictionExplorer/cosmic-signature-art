@@ -3,7 +3,7 @@ import data from './essay-figures.json' with { type: 'json' };
 import { workOrbit } from './orbit-records';
 
 /**
- * The essay's figures (the Process page): every number its words state about the venue's own
+ * The essay's figures (the home's essay): every number its words state about the venue's own
  * works, re-derived from the committed registries by scripts/build-essay-figures.mjs with the
  * modules the pages themselves run. Nothing here is published by the generator, and nothing is
  * compared with a record: these are the venue's own measures of the published orbits.

@@ -167,6 +167,18 @@
   color: var(--type);
 }
 
+/* A detail of a still: the frame shows one window of the picture, which lies whole behind it. */
+.detail > div {
+  position: relative;
+  overflow: hidden;
+  background: var(--plate-ground, transparent);
+}
+.detail img {
+  position: absolute;
+  max-width: none;
+  height: auto;
+}
+
 /* A drawing keeps its shape; the page's own marks stand over it at the folio size. */
 .drawing {
   position: relative;
@@ -380,20 +392,28 @@
   margin-top: 0;
 }
 
-/* The contents, on the cover: every chapter by its number and word. */
+/* The contents, on the cover: the essay's three parts side by side, each under its plate, its
+   chapters by their number and word beneath; then what closes the essay. */
 .contents {
   max-width: 72em;
   border-top: 1px solid var(--rule);
   padding-top: 9px;
 }
-.contents > ol {
+.contents ol {
   list-style: none;
   margin: 0;
   padding: 0;
+}
+.contents > ol {
   display: grid;
-  /* Four to a row: the eight numbered chapters fill two, the closing three the last. */
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 0 27px;
+  gap: 18px 27px;
+  align-items: start;
+}
+/* A part's plate heads its column, in the small capitals a chapter's margin word is set in. */
+.part > a > span:last-child {
+  font-variant-caps: all-small-caps;
+  letter-spacing: 0.05em;
 }
 .contents a {
   display: flex;
@@ -443,12 +463,15 @@
   max-width: var(--measure);
 }
 
-/* The sources: a numeral, then each reference as published. */
+/* The sources: a numeral, then each reference as published. Each reference is a row of a
+   finger's height, and a reference that leads somewhere is pressed anywhere on its row. */
 .sourcesNote {
   margin-top: 54px;
   color: var(--muted);
 }
 .sources {
+  /* What a one-line row adds above and beneath its line to stand 44 px tall. */
+  --row: calc((44px - 1.6 * var(--fs-control)) / 2);
   list-style: none;
   margin: 36px 0 0;
   padding: 0;
@@ -457,12 +480,12 @@
 .sources > li {
   display: grid;
   grid-template-columns: 2.5em minmax(0, 1fr);
-  padding-block: 9px;
   border-top: 1px solid var(--rule);
   /* A numeral in the text leads here: the entry clears the running head. */
   scroll-margin-top: calc(var(--head) + 18px);
 }
 .sources > li > span {
+  padding-top: var(--row);
   font-size: var(--fs-folio);
   line-height: calc(1.6 * var(--fs-control));
   color: var(--muted);
@@ -472,15 +495,19 @@
   margin: 0;
   padding: 0;
   display: grid;
-  gap: 6px;
 }
 .sources ul > li {
+  padding-block: var(--row);
   font-size: var(--fs-control);
   line-height: 1.6;
   color: var(--muted);
   overflow-wrap: anywhere;
 }
 .sources a {
+  /* The link takes its row's whole height, so two references never share a finger. */
+  display: inline-block;
+  margin-block: calc(-1 * var(--row));
+  padding-block: var(--row);
   text-decoration: underline;
   text-decoration-thickness: 1px;
   text-underline-offset: 0.2em;
@@ -515,7 +542,7 @@
   }
   .contents > ol {
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 0 18px;
+    gap: 18px;
   }
   .chapter {
     grid-template-columns: minmax(0, 1fr);

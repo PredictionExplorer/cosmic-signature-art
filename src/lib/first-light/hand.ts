@@ -8,6 +8,12 @@ import { smooth, type Shot } from './camera';
   event's own middle. When the hand lets go, the orbit springs back to the generator's view, where
   it meets the still. Keys turn it in steps and leave it where they put it, until it is asked back.
 
+  On the home the orbit is an exhibit of its own (src/components/orbit-depth.tsx): there a turn
+  stays where the hand leaves it (`stays`), and the orbit can be led from one turn to another
+  without a hand, as it opens into depth and as a button steps it round. A turn that stays never
+  rests part-open, where the still and the drawing would lie over each other: it goes on to
+  where the depth stands open, or back to the picture's view (`restingTurn`).
+
   This module is pure. The section feeds it what the visitor does and the time, and draws the
   turn it reads back.
 */
@@ -33,6 +39,8 @@ export const YAW_STEP = (15 * Math.PI) / 180;
 export const PITCH_STEP = (10 * Math.PI) / 180;
 /** The depth opens fully once the turn passes this far, about twenty degrees. */
 const OPENED = 0.35;
+/** A turn left where it stays goes on to a place it may rest, in this long. */
+export const SETTLE_MS = 260;
 
 /** Where the hand has the orbit. */
 export type Hand =
@@ -56,7 +64,15 @@ export type Hand =
   /** Put there by keys, and left there. */
   | { readonly kind: 'turned'; readonly turn: Turn }
   /** On its way back to the generator's view. */
-  | { readonly kind: 'springing'; readonly from: Turn; readonly since: number };
+  | { readonly kind: 'springing'; readonly from: Turn; readonly since: number }
+  /** Led from one turn to another over `ms`, with no hand on it: it rests where it is led. */
+  | {
+      readonly kind: 'led';
+      readonly from: Turn;
+      readonly to: Turn;
+      readonly since: number;
+      readonly ms: number;
+    };
 
 export const FLAT_HAND: Hand = { kind: 'flat' };
 
@@ -69,7 +85,9 @@ export type Gesture =
   | { kind: 'tick'; at: number }
   /** Arrow presses: steps of yaw and of pitch, three to a press with Shift. */
   | { kind: 'key'; yaw: number; pitch: number; at: number }
-  | { kind: 'back'; at: number };
+  | { kind: 'back'; at: number }
+  /** Lead the orbit to a turn over `ms`: an opening into depth, or a button's step round. */
+  | { kind: 'lead'; to: Turn; ms: number; at: number };
 
 const clampPitch = (pitch: number) => Math.max(-PITCH_LIMIT, Math.min(PITCH_LIMIT, pitch));
 
@@ -85,9 +103,40 @@ export function turnOf(hand: Hand, at: number): Turn {
       const left = 1 - smooth((at - hand.since) / SPRING_MS);
       return left <= 0 ? UNTURNED : { yaw: hand.from.yaw * left, pitch: hand.from.pitch * left };
     }
+    case 'led': {
+      const share = smooth((at - hand.since) / hand.ms);
+      if (share >= 1) return hand.to;
+      return {
+        yaw: hand.from.yaw + (hand.to.yaw - hand.from.yaw) * share,
+        pitch: hand.from.pitch + (hand.to.pitch - hand.from.pitch) * share,
+      };
+    }
     default:
       return UNTURNED;
   }
+}
+
+/** A turn at rest: the generator's view where it is no turn at all. */
+function resting(turn: Turn): Hand {
+  return turn.yaw === 0 && turn.pitch === 0 ? FLAT_HAND : { kind: 'turned', turn };
+}
+
+/**
+ * Where a turn that stays may rest, for an orbit brought to `turn` from `from`. Within twenty
+ * degrees of the generator's view the depth is part-open and the drawing lies half over the
+ * still, which is no place to stop: an orbit being opened goes on, the same way, to where the
+ * depth stands open, and one being closed goes back to the picture's view. Farther out it
+ * rests where it is put.
+ */
+export function restingTurn(turn: Turn, from: Turn = UNTURNED): Turn {
+  const far = Math.hypot(turn.yaw, turn.pitch);
+  if (far >= OPENED) return turn;
+  const was = Math.hypot(from.yaw, from.pitch);
+  // Hardly moved from the picture's view, or on its way back to it.
+  const closing = far < was || (far === was && far < OPENED / 2);
+  if (far < OPENED / 16 || closing) return UNTURNED;
+  const out = OPENED / far;
+  return { yaw: turn.yaw * out, pitch: turn.pitch * out };
 }
 
 /** Given back to the generator's view: by a spring, or at once where motion is unwelcome. */
@@ -98,13 +147,21 @@ function giveBack(turn: Turn, at: number, still: boolean): Hand {
 
 /**
  * The hand after a gesture. `still` (reduced motion, the visitor's pause, the hush) gives the
- * orbit back in one step: the view returns, but nothing moves to get there.
+ * orbit back, or leads it, in one step: the view changes, but nothing moves to get there.
+ * `stays` leaves a turn where the hand lets it go: it returns only when it is asked back.
  */
-export function nextHand(hand: Hand, gesture: Gesture, still = false): Hand {
+export function nextHand(hand: Hand, gesture: Gesture, still = false, stays = false): Hand {
   switch (gesture.kind) {
     case 'grab': {
       if (gesture.touch)
-        return { kind: 'pressing', since: gesture.at, x: gesture.x, y: gesture.y, under: hand };
+        return {
+          kind: 'pressing',
+          since: gesture.at,
+          x: gesture.x,
+          y: gesture.y,
+          // A second finger waits over what the first found, never over the first's own wait.
+          under: hand.kind === 'pressing' ? hand.under : hand,
+        };
       // A grab mid-spring catches the orbit where it is.
       const from = turnOf(hand, gesture.at);
       return { kind: 'held', turn: from, from, x: gesture.x, y: gesture.y };
@@ -125,7 +182,13 @@ export function nextHand(hand: Hand, gesture: Gesture, still = false): Hand {
     }
     case 'release':
       if (hand.kind === 'pressing') return hand.under;
-      if (hand.kind === 'held') return giveBack(hand.turn, gesture.at, still);
+      if (hand.kind === 'held') {
+        if (!stays) return giveBack(hand.turn, gesture.at, still);
+        // Left part-open, it goes on to where it may rest.
+        const to = restingTurn(hand.turn, hand.from);
+        if (still || (to.yaw === hand.turn.yaw && to.pitch === hand.turn.pitch)) return resting(to);
+        return { kind: 'led', from: hand.turn, to, since: gesture.at, ms: SETTLE_MS };
+      }
       return hand;
     case 'tick':
       if (hand.kind === 'pressing' && gesture.at - hand.since >= HOLD_MS) {
@@ -133,7 +196,20 @@ export function nextHand(hand: Hand, gesture: Gesture, still = false): Hand {
         return { kind: 'held', turn: from, from, x: hand.x, y: hand.y };
       }
       if (hand.kind === 'springing' && gesture.at - hand.since >= SPRING_MS) return FLAT_HAND;
+      // Where motion has become unwelcome under way, an orbit that stays is where it was going.
+      if (hand.kind === 'springing' && still && stays) return FLAT_HAND;
+      if (hand.kind === 'led' && (still || gesture.at - hand.since >= hand.ms))
+        return resting(hand.to);
       return hand;
+    case 'lead': {
+      // A hand that has the orbit keeps it: nothing leads it out from under a finger.
+      if (hand.kind === 'held' || hand.kind === 'pressing') return hand;
+      const from = turnOf(hand, gesture.at);
+      const asked = { yaw: gesture.to.yaw, pitch: clampPitch(gesture.to.pitch) };
+      const to = stays ? restingTurn(asked, from) : asked;
+      if (still || !(gesture.ms > 0)) return resting(to);
+      return { kind: 'led', from, to, since: gesture.at, ms: gesture.ms };
+    }
     case 'key': {
       const base = turnOf(hand, gesture.at);
       return {
@@ -148,6 +224,7 @@ export function nextHand(hand: Hand, gesture: Gesture, still = false): Hand {
       const base = hand.kind === 'pressing' ? hand.under : hand;
       if (base.kind === 'held' || base.kind === 'turned')
         return giveBack(base.turn, gesture.at, still);
+      if (base.kind === 'led') return giveBack(turnOf(base, gesture.at), gesture.at, still);
       return base;
     }
   }
@@ -159,9 +236,12 @@ export function isTurned(hand: Hand): boolean {
   return base.kind !== 'flat';
 }
 
-/** Whether the hand still changes with time: a hold being waited for, or a spring under way. */
+/**
+ * Whether the hand still changes with time: a hold being waited for, a spring under way, or
+ * the orbit being led.
+ */
 export function isMoving(hand: Hand): boolean {
-  return hand.kind === 'pressing' || hand.kind === 'springing';
+  return hand.kind === 'pressing' || hand.kind === 'springing' || hand.kind === 'led';
 }
 
 /** How open the depth is, 0 to 1: closed at the generator's view, fully open past twenty degrees. */

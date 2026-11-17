@@ -1,56 +1,91 @@
 # The Process essay: the record
 
-*Written 16 November 2026 (UTC), as built. Stage 1 (the English essay, read by the owner) and
-stage 2 (the page, in eight languages) are done; stage 3 is the plan in §8.*
+*Written 16 November 2026 (UTC), as built, and brought up to date on 17 November 2026, when the
+essay became the venue's home (§10). Stage 1 (the English essay, read by the owner) and stage 2
+(the page, in eight languages) are done; of stage 3 the first exhibit is built (§8.1) and three
+are a plan.*
 
 The review of 14 November 2026 found the venue's museum missing: `/process` held about 130 words,
 no history, no reason why three bodies cannot be solved, and the ink's fluid in one clause
 (content juror, finding content-1; creativity-12). This is the essay that answers it: about
-4,900 words in eight chapters, with eight figures, the venue's terms defined, and every statement
-about the world outside the venue set against a source that was opened and read.
+4,900 words in eight chapters when it was written, with eight figures, the venue's terms defined,
+and every statement about the world outside the venue set against a source that was opened and
+read.
+
+On 17 November 2026 the owner made it the home ("make the process page the main page of the
+website"), asked for the orbit that can be turned to stand on it, plainly turnable, and asked
+for everything to be explained "in a way that a museum would do it". It now stands beneath the
+day's plate, in three parts in the order a work is made, with the orbit in depth as its first
+exhibit and three new chapters: about 6,400 words in eleven chapters (§10).
 
 ---
 
 ## 1. What a reader gets
 
-`/process`, in order:
+The home (`/`, and each language's own), in order:
 
 | Part | Address | Ground | What it is |
 | --- | --- | --- | --- |
-| Cover | | night | The title, the standfirst, the contents |
-| Light | `#light` | night | The day's work, its Light film pinned for a screen of scroll (as before) |
+| The day's plate | | its expression's | The day's work in the day's expression, one Turn from its twin; on a first visit First Light performs over it (the home's own, as before) |
+| Cover | | night | What the place is and how large, the title, the standfirst, the contents in three numbered parts |
+| I Orbit | `#orbit` | night | The orbit in depth: the day's work before it is a picture, turned by a hand (§8.1) |
 | 01 Two | `#two` | night | Newton's two bodies; the day's work with one body taken away |
 | 02 Three | `#three` | night | Euler's line and Lagrange's triangle; why they are rare |
 | 03 No formula | `#no-formula` | night | The ten conserved quantities, King Oscar's prize, Bruns and Poincaré, Sundman's series |
 | 04 A million steps | `#steps` | night | The units, the step, the warm-up, the window, the horizon, the three pushes, what the arithmetic keeps and where it fails |
 | 05 A trillionth | `#trillionth` | night | The twin, the doubling time, the price of foresight |
-| 06 The choice | `#choice` | night | The gate, the three measures, the Borda count; the live figure of the choice (as before) |
-| The spectrum | `#spectrum` | night | The spectral sweep (as before; it now closes the night) |
-| Ink | `#ink` | paper | The same work in Ink (as before) |
-| 07 A current | `#current` | paper | What the water does: carries, rubs, cannot be squeezed; the Reynolds number; the bodies; the fading |
-| 08 The plait | `#plait` | paper | Why three stirrers mix; the work's own plait; what the venue does not claim |
+| 06 The choice | `#choice` | night | The gate, the three measures, the Borda count; the live figure of the choice |
+| II Light | `#light` | night | The day's work in Light, its film pinned for a screen of scroll |
+| 07 The view | `#view` | night | Where the generator stands: four orientations drawn from the seed and scored, depth kept as brightness, the camera carried along its own ellipse, the frame, the works drawn in another space |
+| 08 A stroke | `#stroke` | night | Light laid as a spectrum: sixty-four bands, the 1931 observer, the structure, speed as width and brightness, a detail of the Light still, the exposure metered once, the master |
+| The spectrum | `#spectrum` | night | The spectral sweep, and what a viewer of it is seeing |
+| III Ink | `#ink` | paper | The same work in Ink |
+| 09 A current | `#current` | paper | What the water does: carries, rubs, cannot be squeezed; the Reynolds number; the bodies; the fading |
+| 10 The plait | `#plait` | paper | Why three stirrers mix; the work's own plait; what the venue does not claim |
+| 11 The paper | `#paper` | paper | The sheet computed from the seed, soot computed as light in thirty-six bands, a detail of the Ink still, Kubelka and Munk, what is the same to the last bit |
 | Not known | `#unknown` | paper | What nobody can say of a work's three bodies |
-| Terms | `#terms` | paper | The venue's twelve terms |
-| Sources | `#sources` | paper | Thirty-seven sources, numbered as the text cites them |
-| Coda | | paper | The thesis and the way into the day's work (as before) |
+| The cycle | `#cycle` | paper | The close: how a work comes to exist, the day's work's own date and cycle, and the way into the work |
+| The cycle's works | | paper | The works of the day's cycle, two to a leaf (the home's own, as before) |
+| Terms | `#terms` | paper | The venue's sixteen terms |
+| Sources | `#sources` | paper | Forty-four sources, numbered as the text cites them |
 
-Night holds gravity and paper holds the water: one hard seam, where before there were three.
+The three parts are numbered I, II and III, in the margin of each part's plate and in the
+contents, and each part's head is a statement at the size of a chapter's: *First, an orbit.
+Next, an exposure. Then, a current.* The terms and the sources are back matter and come after
+the close, as in a book, so a reader who reads to the end of the last chapter meets the close
+and the way into the work, not a bibliography.
 
-All of the essay is rendered on the server and is in the document a reader is sent. It adds no
-script: the page's own JavaScript is what it was (the Light plate, the choice, the sweep).
+Night holds gravity and its light, and paper holds the water: one hard seam inside the essay. The
+plate above it stands on its own expression's ground, so on an Ink day the page opens on paper
+and turns to night at the cover. On a desk the plate stands 64 px short of the screen, so the
+cover's first line (what the place is, and how large) rides at the foot of the first screen and
+the page says that it goes on; a phone's plate is shorter than its screen already. The running
+head takes the ground of whatever part lies under the middle of the screen (`room-seams.tsx`).
+
+Beneath the plate the page's keys are the page's: once the plate has left the screen, Space
+pages the essay and no letter acts on a plate out of sight (`artwork-viewer.tsx`).
+
+The essay's words and figures are rendered on the server and are in the document a reader is
+sent. Its one script of its own is the orbit in depth, which is fetched when its section nears
+the screen; the home’s first load is 245.8 KiB as sent, against a budget of 255. Nothing below
+the first screen is preloaded with it.
 
 ## 2. How it is built
 
 | File | What it holds |
 | --- | --- |
-| `src/lib/i18n/*.ts` | The words: 127 keys beginning `essay`, in reading order, in all eight catalogs |
+| `src/app/[locale]/page.tsx` | The home: the day's plate, then the essay's parts in the order above |
+| `src/lib/i18n/*.ts` | The words: 173 keys beginning `essay`, in reading order, in all eight catalogs |
 | `src/lib/essay/structure.ts` | The essay in reading order: which key stands where, the figures between, the terms |
 | `src/lib/essay/facts.ts` | What every blank holds, for one work in one language |
 | `src/lib/essay/rich.tsx` | The marks the words carry: `[^source]`, `**term**`, `*emphasis*`, `^{raised}` |
 | `src/lib/essay/sources.ts`, `numerals.ts` | The sources, and the numeral each takes |
 | `src/lib/essay/geometry.ts` | The figures' geometry, pure |
 | `src/lib/art/essay-figures.json`, `.ts` | Every number the essay states of the venue (§3) |
-| `src/app/[locale]/process/essay.tsx`, `essay-figures.tsx`, `essay.module.css` | The chapters, the figures and their type |
+| `src/app/[locale]/_essay/essay.tsx`, `essay-figures.tsx`, `essay.module.css` | The chapters, the figures and their type (a folder no address reaches) |
+| `src/app/[locale]/_essay/chapter-plate.tsx`, `sweep-player.tsx`, `room-seams.tsx`, `process.module.css` | The Light and Ink plates, the sweep, the head's ground, and the page's own layout |
+| `src/components/orbit-depth.tsx`, `src/lib/first-light/depth.ts` | The orbit in depth (§8.1) |
+| `src/lib/art/orbit-frames.ts` (`workPicture`) | What the essay says of one work's picture: its four views' scores and the one kept, its camera's drift, its space, whether its strokes are repeated |
 | `scripts/build-essay-figures.mjs`, `scripts/lib/essay-figures*.mjs` | The script that re-derives the numbers |
 
 **The words are a template; the work fills it.** The essay takes its examples from the work of
@@ -68,6 +103,13 @@ need no translation. The two charts stretch to the page's own shape with their l
 hair-thin. A work's own plait is drawn in lengths of twelve crossings that wrap like lines of
 text, so a phone's width holds one. The three strands are told apart without colour: thick,
 double, thin.
+
+**A detail is the work itself.** Chapters 08 and 11 each show a detail of the day's work: the
+densest of the three windows the venue measured on that still (`plate-records.json`, the loupe's
+own), a third of the picture wide, cut from the published still by its frame and set across the
+column. Nothing is resampled but by the browser; it is labelled *Detail* with the work's number
+and its expression, and carries no label of an analysis. A phone is sent the middle rung of the
+still for it, a desk the published still.
 
 **Derived views are labelled.** The four figures drawn from a work's record (the two bodies
 alone, the two energies, the twin's gap, the plait on the sheet) carry *Analysis, not the work*.
@@ -123,7 +165,7 @@ These corrected what earlier notes and pages said, and the essay says only what 
   can be said. The earlier note "29 of 36 end past the record" counted those 13 among the endings.
 - **On the sheet.** In every one of the 72 works two bodies overlap on the Ink sheet at some
   moment (a sheet flattens a motion in depth), for 0.6 % to 64 % of the film. The theorem the
-  eighth chapter tells is about stirrers the water must go round, so the essay gives no stretching
+  tenth chapter tells is about stirrers the water must go round, so the essay gives no stretching
   figure for any work, and says so under "What the venue does not claim".
 - **Chaos.** The published trait is the spread of each body's motion across frequencies within
   the window, not how fast a small difference grows. The essay says what the generator computes
@@ -141,6 +183,37 @@ These corrected what earlier notes and pages said, and the essay says only what 
 - The words state facts and name no feelings. Never "AI".
 - Modern sources are paraphrased; only Poincaré (1905, public domain) is quoted, in the essay's
   own translation.
+
+Added on 17 November 2026, with the three chapters on how a picture is made, each from a fault
+a reviewer found in a draft:
+
+- Nothing is praised. Exact figures, dates, materials and method carry the weight (the owner:
+  "in a cool way, not in a cheesy way").
+- The view kept is the one "that scores highest; where two score alike, the first drawn", never
+  "the best of four": in eight works two views score alike.
+- A work's four scores are "derived again from the seed". The published record does not carry
+  them; the venue's registry does (`orbit-frames.json`).
+- The camera's arc is a share of the time one circuit of its ellipse would take, never a
+  distance or a share of the ellipse's length.
+- A stroke lays "a narrow band of light", never one wavelength; a colour exists only when a
+  frame is made. 380 and 700 nanometres are the generator's range, never "what the eye sees".
+- The dominant wavelength is "the wavelength nearest in hue to its most strongly coloured body",
+  as the generator computes it, not the palette's.
+- Only Ink's raw frames are said to be the same bit for bit, given the inputs the work's
+  certificate records. Light is never said to be: its arithmetic is not held to that.
+- The paper is "modelled on kozo paper". It is a model, and the files give no papermaker's
+  source for its figures.
+- Speed is one of the things that set a stroke's breadth, never the whole of it: "by speed
+  alone" a stroke is broadest where the line moves slowest, and in most works a slow swell set
+  by the seed widens and narrows it besides (the generator's width pulse).
+- A view's score is cut to three places and never rounded up, and to more places where it
+  takes them, so that no view is printed the equal of the one kept unless it scored exactly the
+  same: the sentence before says that where two score alike the first drawn is kept
+  (`viewScores` in `facts.ts`; № 029's first view scores 0.99979 beside two that score 1).
+- The camera's share of a circuit is said to the whole per cent (1.076 is 108 %).
+- "No work exists before its cycle closes", not that the collection never revises what it has
+  published: the generator's own record says Inks of earlier looks were withdrawn or rendered
+  again, and all 72 certificates now name `ember-v4`.
 
 ## 5. Typography
 
@@ -178,6 +251,27 @@ other string, to the venue's vocabulary: one name for Ink in each language, one 
 plate, 速度 for the film's pace in Chinese, and none of a language's words for eternity, in
 mathematics either ("a sum that holds for all time" is said another way).
 
+The words of 17 November 2026 (57 strings, about 1,700 words: 46 new essay keys, three
+rewritten, and the eight words of the orbit in depth) went the same way. The English was first
+read by six reviewers, each with one question (is every sentence true of the generator's
+source; does every outside statement stand on a source that was opened; does it read as a
+museum's label; as a maker's own account; can a visitor of fifteen follow it; can it be said
+in the catalogs' vocabulary), and rewritten from what they found. Then one translator and one
+second reader for each language, the two Traditional texts made from the reviewed Simplified
+one: the second readers corrected 14 keys of the 57 in Ukrainian, 6 in Japanese, 8 in Korean,
+15 in Simplified Chinese, 15 in Vietnamese, 7 for Taiwan and 11 for Hong Kong. Two things
+were settled afterwards. Where a language writes a decimal comma (Ukrainian, Vietnamese), a
+list of such figures is parted by semicolons («141,8; 37,4 і 96,2»). And the Vietnamese «ai»
+("anyone") stands: only the English abbreviation is refused. The briefs, the drafts and the
+readers' notes are kept with the session's notes.
+
+A review of the whole change (six reviewers, one question each; §10) then corrected three
+sentences, which one translator a language set again: `essayStroke5` (speed alone does not set a
+stroke's breadth), `glossaryWavelength` on a work's page (the dominant wavelength is the most
+strongly coloured body's, as chapter 08 says, not the palette's), and the home's own
+description for a search engine, `homeDescription`, new. The two buttons that tip the orbit,
+`depthTiltUp` and `depthTiltDown`, were worded in each catalog after its own *Turn left*.
+
 ### Catalog keys this added (all eight catalogs)
 
 `essayStandfirst`, `essayOfWork`, `essayLightCopy`, `essayInkCopy`;
@@ -202,7 +296,22 @@ mathematics either ("a sum that holds for all time" is said another way).
 
 No existing key was changed. Three are no longer read by any page and are left in place for
 their owners to remove: `chapterChoiceCopy`, `gravityCopy` and `fluidCopy` (the last said the
-ink "diffuses", which it does not: chapter 07).
+ink "diffuses", which it does not: chapter 09).
+
+Added on 17 November 2026: `essayOrbitWord`, `essayOrbitCopy`, `essayOrbitPlaces`,
+`essayOrbitSpace`, `essayOrbitCopies`, `essayDepthLabel`; `essayLightTitle`, `essaySweepCopy`;
+`essayViewWord`, `essayViewTitle`, `essayView1`–`6`, `essayViewScores`, `essayViewDrift`;
+`essayStrokeWord`, `essayStrokeTitle`, `essayStroke1`–`7`, `essayStrokeRecord`;
+`essayPaperWord`, `essayPaperTitle`, `essayPaper1`–`4`;
+`essayTermSeed`, `essayTermGenerator`, `essayTermRecord`, `essayTermCycle` (each with its `…Is`);
+`essayBornWord`, `essayBornTitle`, `essayBorn1`, `essayBorn2`;
+and, outside the essay's block, `depthHint`, `depthHintTouch`, `depthTurnLeft`,
+`depthTurnRight`, `depthOpen`, `depthWaiting`, `depthUnavailable`, `depthNote`.
+Three were rewritten: `essayStandfirst`, `essayLightCopy`, `essayInkCopy`. After the review:
+`depthTiltUp`, `depthTiltDown` and `homeDescription` were added, and `essayStroke5` and
+`glossaryWavelength` corrected. Five more are now read by no page and are left in place:
+`processIntro`, `expressionTitle`, `expressionCopy`, `sweepCopy` and `selectedWorks` (the name
+of the home's retired spread).
 
 ## 7. The sources, and what each was read for
 
@@ -210,7 +319,7 @@ Each was opened and read for the sentence that cites it, never recalled. Where a
 be read only in part, the note says so. One note the essay does not cite is kept here because it
 decided a sentence: on 11 September 2026 the Clay Mathematics Institute announced a claimed
 resolution of the Navier–Stokes problem that needs an external force; it was reported as checked
-by its authors and not awarded, and the question without a force as still open. So chapter 07
+by its authors and not awarded, and the question without a force as still open. So chapter 09
 says only that the question was set in 2000.
 
 | № | Mark | Reference | What it was read for |
@@ -244,23 +353,105 @@ says only that the question was set in 2000.
 | 27 | `laskar` | [Laskar, J. “Is the Solar System stable?”, Progress in Mathematical Physics 66 (2013), 239–270, § 2.1](https://arxiv.org/abs/1209.5996) | A Lyapunov time of about 5 million years for the inner planets; 15 metres becomes about 150 metres after 10 million years and 150 million kilometres after 100 million. |
 | 28 | `generator-labels` | [CS-Image-Generation, src/traits_analysis.rs](https://github.com/PredictionExplorer/CS-Image-Generation/blob/main/src/traits_analysis.rs) | Chaos is the mean spread (standard deviation over mean) of each body’s frequency spectrum over the window, mapped to 0–100. The braid is read along the principal axis of the raw x–y samples, the nearer body in z passing over. “Eternal Dance” is defined as no body past the escape threshold within the horizon. |
 | 29 | `borda` | [Borda, J.-C. de “Mémoire sur les élections au scrutin”, Histoire de l’Académie royale des sciences, année 1781 (Paris, 1784), 657–665](https://archive.org/details/histoiredelacad81hist)<br>[Pacuit, E. “Voting methods”, Stanford Encyclopedia of Philosophy (2019)](https://plato.stanford.edu/entries/voting-methods/) | Pages 659 to 661: each elector ranks the candidates; the last place is worth one point, the next two, and so on up to the first; the points are added. A note on page 657 says Borda had put the idea to the Academy on 16 June 1770. The generator gives points on Borda’s own scale. |
-| 30 | `navier-stokes` | Navier, C.-L. “Mémoire sur les lois du mouvement des fluides”, Mémoires de l’Académie royale des sciences de l’Institut de France 6 (1827), 389–440<br>Stokes, G. G. “On the theories of the internal friction of fluids in motion, and of the equilibrium and motion of elastic solids”, Transactions of the Cambridge Philosophical Society 8 (1849), 287–319 | Both read in scans of the original volumes for their titles, dates and pages. Stokes’s own footnote says Navier had already obtained the same equations for an incompressible fluid, on other principles. |
-| 31 | `reynolds` | [Reynolds, O. “An experimental investigation of the circumstances which determine whether the motion of water shall be direct or sinuous, and of the law of resistance in parallel channels”, Philosophical Transactions of the Royal Society of London 174 (1883), 935–982](https://doi.org/10.1098/rstl.1883.0029) | §§ 1, 5 and 6: the character of a flow depends on the product of a length and a velocity set against the fluid’s viscosity over its density; “the birth of eddies” on a definite value of that ratio. He gives the ratio no name. |
-| 32 | `ember` | [CS-Image-Generation, docs/ember-design.md, §§ 3–6](https://github.com/PredictionExplorer/CS-Image-Generation/blob/main/docs/ember-design.md)<br>[CS-Image-Generation, docs/ember-edition.md](https://github.com/PredictionExplorer/CS-Image-Generation/blob/main/docs/ember-edition.md) | A two-dimensional, incompressible, viscous flow in vorticity form at Reynolds number 300; bodies of fixed area drawn out by the tidal field of the other two, up to 3 to 1; ink followed back along the water’s path and laid only at a body; no ink inside a body; nothing inked before fluid time 0.5; black for 0.8 seconds of film, then fading to a floor wash. The certificate gives the grids, the steps and the time taken. |
-| 33 | `wake` | [Taira, K. et al. “Modal analysis of fluid flows: applications and outlook”, AIAA Journal 58 (2020), 998–1022](https://arxiv.org/abs/1903.05750) | Water flowing past a round cylinder begins to shed a street of eddies at a Reynolds number of about 46 (experiments and analyses between 45 and 47). C. H. K. Williamson’s review of 1996, the usual reference, could not be opened. |
-| 34 | `fefferman` | [Fefferman, C. L. “Existence and smoothness of the Navier–Stokes equation” (Clay Mathematics Institute)](https://www.claymath.org/wp-content/uploads/2022/06/navierstokes.pdf)<br>[Clay Mathematics Institute, The Millennium Prize Problems](https://www.claymath.org/millennium-problems/) | In two dimensions the existence and smoothness of solutions, for a fluid with no force on it, are long established (he cites Ladyzhenskaya). The seven problems were announced in Paris on 24 May 2000. |
-| 35 | `bas` | [Boyland, P. L., Aref, H., Stremler, M. A. “Topological fluid mechanics of stirring”, Journal of Fluid Mechanics 403 (2000), 277–304](https://doi.org/10.1017/S0022112099007107) | Three stirrers in a dish of glycerol, moved in two ways. Swapped always the same way round (σ₁σ₂), nothing is forced; swapped alternately (σ₁⁻¹σ₂), some lines must stretch by (3 + √5)/2 ≈ 2.62 with each repeat of the two swaps. The results depend only on the continuity of the fluid motion, for a motion that repeats, in two dimensions; they are a lower bound. Three is the critical number: one or two stirrers force nothing. |
-| 36 | `mixing` | [Aref, H. et al. “Frontiers of chaotic advection”, Reviews of Modern Physics 89 (2017), 025007](https://arxiv.org/abs/1403.2953)<br>[Villermaux, E. “Mixing versus stirring”, Annual Review of Fluid Mechanics 51 (2019), 245–273](https://doi.org/10.1146/annurev-fluid-010518-040306) | Stirring draws a patch into filaments whose width shrinks exponentially until diffusion smooths them out; stirring is transport, and mixing is stirring with diffusion. Villermaux adds that the two act together throughout, not one after the other. |
-| 37 | `ejection` | [Stone, N. C., Leigh, N. W. C. “A statistical solution to the chaotic, non-hierarchical three-body problem”, Nature 576 (2019), 406–410](https://arxiv.org/abs/1909.05272)<br>Valtonen, M., Karttunen, H. The Three-Body Problem (Cambridge, 2006), ch. 7 | Bound triples of comparable masses and spacings nearly always break up into one escaping body and a bound pair, as numerical experiments show; the exceptions take up little of the space of beginnings. Specialists call a permanent departure an escape and keep ejection for a temporary one. |
+| 30 | `generator-view` | [CS-Image-Generation, src/app.rs](https://github.com/PredictionExplorer/CS-Image-Generation/blob/main/src/app.rs)<br>[CS-Image-Generation, src/render/aesthetic_score.rs](https://github.com/PredictionExplorer/CS-Image-Generation/blob/main/src/render/aesthetic_score.rs)<br>[CS-Image-Generation, src/render/visual_profile.rs](https://github.com/PredictionExplorer/CS-Image-Generation/blob/main/src/render/visual_profile.rs)<br>[CS-Image-Generation, src/render/batch_drawing.rs](https://github.com/PredictionExplorer/CS-Image-Generation/blob/main/src/render/batch_drawing.rs) | `app.rs`: the motion is in three dimensions and the picture is drawn on one plane; four rotations, uniform over all orientations, are drawn from a stream forked from the seed; each is applied about the centre of mass to a thinned sample of the orbit and scored on what it would cover of the sheet and how evenly; the first with the highest score is kept. Before that, some seeds are mapped into another space: a place with its own velocity, or with the next body’s place. `visual_profile.rs` and `batch_drawing.rs`: a stroke may be repeated about the centre of the frame, mirrored or turned, each copy with its share of the light. The counts for the collection are the venue’s own tally of its registry. |
+| 31 | `generator-light` | [CS-Image-Generation, docs/spectral-algorithm.md, §§ 1–3, 5.3, 6.2, 6.4, 7–8](https://github.com/PredictionExplorer/CS-Image-Generation/blob/main/docs/spectral-algorithm.md)<br>[CS-Image-Generation, src/spectrum.rs](https://github.com/PredictionExplorer/CS-Image-Generation/blob/main/src/spectrum.rs)<br>[CS-Image-Generation, src/render/drawing.rs](https://github.com/PredictionExplorer/CS-Image-Generation/blob/main/src/render/drawing.rs) | The document: the frame is the box about every step of all three bodies, padded by a twentieth of its span on each side and let out to the sheet’s shape; depth moves no point and feeds the fade; each point keeps 64 bands of 5 nm from 380 to 700; the hue chooses the wavelength, a purple being two bands; strokes add; breadth and brightness follow the body’s speed within the orbit’s own range, from 1.90 times as broad to 0.72, and up to 8 times as bright; the kinds of stroke; the spectrum goes to colour through the 1931 observer’s functions; the levels are set in a first pass of about 240 moments and then held; the film is every 555th step and the last, each frame all the light so far; the master is 16 bits in Display P3. `spectrum.rs`: the 64 bands and the observer’s table. `drawing.rs`: the fade with depth, never below 18 %. |
+| 32 | `generator-camera` | [CS-Image-Generation, src/drift.rs](https://github.com/PredictionExplorer/CS-Image-Generation/blob/main/src/drift.rs)<br>[CS-Image-Generation, src/drift_config.rs](https://github.com/PredictionExplorer/CS-Image-Generation/blob/main/src/drift_config.rs) | `drift.rs`: one offset is added to all three bodies at each step; it lies on an ellipse in an orientation drawn from the seed, and its place is found by advancing evenly with time and solving Kepler’s equation. `drift_config.rs`: the arc is up to 1.35 of a period, the eccentricity 0.4 to 0.5; its comments say a long sweep smears the path across the whole sheet. |
+| 33 | `observer` | [International Commission on Illumination (CIE), ILV: International Lighting Vocabulary, 2nd ed. (CIE S 017:2020), term 17-23-049](https://cie.co.at/eilvterm/17-23-049)<br>[Smith, T., Guild, J. “The C.I.E. colorimetric standards and their use”, Transactions of the Optical Society 33 (1931), 73–134](https://doi.org/10.1088/1475-4878/33/3/301) | The CIE’s own vocabulary defines the CIE 1931 standard colorimetric observer as an ideal observer whose colour matching is that of the functions the CIE adopted in 1931: so the essay says “adopted”. Of Smith and Guild only the abstract was read (the paper is behind a paywall): the standards of 1931 define a standard observer, three illuminants and a system of three primaries. |
+| 34 | `navier-stokes` | Navier, C.-L. “Mémoire sur les lois du mouvement des fluides”, Mémoires de l’Académie royale des sciences de l’Institut de France 6 (1827), 389–440<br>Stokes, G. G. “On the theories of the internal friction of fluids in motion, and of the equilibrium and motion of elastic solids”, Transactions of the Cambridge Philosophical Society 8 (1849), 287–319 | Both read in scans of the original volumes for their titles, dates and pages. Stokes’s own footnote says Navier had already obtained the same equations for an incompressible fluid, on other principles. |
+| 35 | `reynolds` | [Reynolds, O. “An experimental investigation of the circumstances which determine whether the motion of water shall be direct or sinuous, and of the law of resistance in parallel channels”, Philosophical Transactions of the Royal Society of London 174 (1883), 935–982](https://doi.org/10.1098/rstl.1883.0029) | §§ 1, 5 and 6: the character of a flow depends on the product of a length and a velocity set against the fluid’s viscosity over its density; “the birth of eddies” on a definite value of that ratio. He gives the ratio no name. |
+| 36 | `ember` | [CS-Image-Generation, docs/ember-design.md, §§ 3–6](https://github.com/PredictionExplorer/CS-Image-Generation/blob/main/docs/ember-design.md)<br>[CS-Image-Generation, docs/ember-edition.md](https://github.com/PredictionExplorer/CS-Image-Generation/blob/main/docs/ember-edition.md) | A two-dimensional, incompressible, viscous flow in vorticity form at Reynolds number 300; bodies of fixed area drawn out by the tidal field of the other two, up to 3 to 1; ink followed back along the water’s path and laid only at a body; no ink inside a body; nothing inked before fluid time 0.5; black for 0.8 seconds of film, then fading to a floor wash. The certificate gives the grids, the steps and the time taken. |
+| 37 | `wake` | [Taira, K. et al. “Modal analysis of fluid flows: applications and outlook”, AIAA Journal 58 (2020), 998–1022](https://arxiv.org/abs/1903.05750) | Water flowing past a round cylinder begins to shed a street of eddies at a Reynolds number of about 46 (experiments and analyses between 45 and 47). C. H. K. Williamson’s review of 1996, the usual reference, could not be opened. |
+| 38 | `fefferman` | [Fefferman, C. L. “Existence and smoothness of the Navier–Stokes equation” (Clay Mathematics Institute)](https://www.claymath.org/wp-content/uploads/2022/06/navierstokes.pdf)<br>[Clay Mathematics Institute, The Millennium Prize Problems](https://www.claymath.org/millennium-problems/) | In two dimensions the existence and smoothness of solutions, for a fluid with no force on it, are long established (he cites Ladyzhenskaya). The seven problems were announced in Paris on 24 May 2000. |
+| 39 | `bas` | [Boyland, P. L., Aref, H., Stremler, M. A. “Topological fluid mechanics of stirring”, Journal of Fluid Mechanics 403 (2000), 277–304](https://doi.org/10.1017/S0022112099007107) | Three stirrers in a dish of glycerol, moved in two ways. Swapped always the same way round (σ₁σ₂), nothing is forced; swapped alternately (σ₁⁻¹σ₂), some lines must stretch by (3 + √5)/2 ≈ 2.62 with each repeat of the two swaps. The results depend only on the continuity of the fluid motion, for a motion that repeats, in two dimensions; they are a lower bound. Three is the critical number: one or two stirrers force nothing. |
+| 40 | `mixing` | [Aref, H. et al. “Frontiers of chaotic advection”, Reviews of Modern Physics 89 (2017), 025007](https://arxiv.org/abs/1403.2953)<br>[Villermaux, E. “Mixing versus stirring”, Annual Review of Fluid Mechanics 51 (2019), 245–273](https://doi.org/10.1146/annurev-fluid-010518-040306) | Stirring draws a patch into filaments whose width shrinks exponentially until diffusion smooths them out; stirring is transport, and mixing is stirring with diffusion. Villermaux adds that the two act together throughout, not one after the other. |
+| 41 | `ember-paper` | [CS-Image-Generation, src/ember/paper.rs](https://github.com/PredictionExplorer/CS-Image-Generation/blob/main/src/ember/paper.rs)<br>[CS-Image-Generation, src/ember/config.rs](https://github.com/PredictionExplorer/CS-Image-Generation/blob/main/src/ember/config.rs)<br>[CS-Image-Generation, docs/ember-design.md, § 7.5](https://github.com/PredictionExplorer/CS-Image-Generation/blob/main/docs/ember-design.md) | `paper.rs`: the sheet is one object measured in millimetres; its formation is 1,024 random waves of 1.5 to 8 mm, each 2.2 times as long along the forming flow; long fibres lie in the sheet’s plane, 35 % of them near the flow’s direction; fibres shed ink. `config.rs`: 1,490 mm wide; 1.5 visible fibres to the square centimetre; nine in ten of them 5 to 15 mm long. The design document § 7.5: the sheet’s seed is the work’s seed and a fixed label, so every work has its own sheet. The files give no source in papermaking for these figures, so the essay says “modelled on”. |
+| 42 | `kubelka-munk` | [Kubelka, P., Munk, F. “Ein Beitrag zur Optik der Farbanstriche”, Zeitschrift für technische Physik 12 (1931), 593–601; trans. S. Westin (2004)](https://www.graphics.cornell.edu/~westin/pubs/kubelka.pdf) | Read in Westin’s English translation (pages 1 to 3 and the conclusion; the German of 1931 was not found in a scan): a layer of paint absorbs and scatters a constant share of the light passing through it each way, and the reflectance of a coat too thick to see through depends only on the ratio of the two. Its own example is lampblack in white paint. The journal, volume and pages were confirmed in a review of the theory’s use on paper (Džimbeg-Malčić and others, Tehnički vjesnik 18, 2011). |
+| 43 | `ember-optics` | [CS-Image-Generation, src/ember/optics.rs](https://github.com/PredictionExplorer/CS-Image-Generation/blob/main/src/ember/optics.rs)<br>[CS-Image-Generation, docs/ember-design.md, §§ 7.1–7.3](https://github.com/PredictionExplorer/CS-Image-Generation/blob/main/docs/ember-design.md) | `optics.rs`: reflectance in 36 bands from 380 to 730 nm; the ink lies in the paper’s fibres, the absorption and scattering of soot and paper added, the reflectance from their ratio (Kubelka and Munk) with a correction for the surface; where ink is dense its glue dries to a smooth film; the sum is taken under a gallery lamp with the 1931 observer. The design document §§ 7.1–7.3: one pigment, pine soot. |
+| 44 | `ejection` | [Stone, N. C., Leigh, N. W. C. “A statistical solution to the chaotic, non-hierarchical three-body problem”, Nature 576 (2019), 406–410](https://arxiv.org/abs/1909.05272)<br>Valtonen, M., Karttunen, H. The Three-Body Problem (Cambridge, 2006), ch. 7 | Bound triples of comparable masses and spacings nearly always break up into one escaping body and a bound pair, as numerical experiments show; the exceptions take up little of the space of beginnings. Specialists call a permanent departure an escape and keep ejection for a temporary one. |
 
-## 8. Stage 3: three live exhibits (a plan, not built)
+## 8. Stage 3: the live exhibits
+
+One is built, the orbit in depth (8.1, 17 November 2026). Three more are a plan (8.2 to 8.4).
 
 Each is computed in the reader's browser from the work's own record, by the modules that already
-verify it, and each is labelled *Analysis, not the work*. Each stands in the chapter that teaches
-it, under the still figure it brings to life, and is still until it is asked: no exhibit moves
-on its own, and with reduced motion each shows its end state and a table of what it found.
+verify it, and each is labelled *Analysis, not the work*. The three planned ones stand in the
+chapter that teaches them, under the still figure they bring to life, and are still until they
+are asked; with reduced motion each shows its end state and a table of what it found.
 
-### 8.1 Take one away (chapter 01)
+### 8.1 The orbit in depth (the head of the Orbit part): built
+
+*What it shows.* The day's work before it is a picture: the three bodies' paths through the
+recorded window, as the picture's camera followed them, drawn in depth over the work's own Light
+still. The camera's drift is kept, so the figure that turns is the picture's own and a visitor
+knows it for the still they have just seen. Eleven works are drawn in another space; of those
+the page says that what turns is that drawing in depth, not the paths the bodies took, and of
+the nine whose strokes are repeated, that the repeated lines turn with the rest
+(`CASES.depth`).
+
+*How it opens.* The Light still stands first. It is in the document a reader is sent, and it is
+the generator's one view. Once half the stage is on the screen, where motion is welcome, the
+still opens into depth by itself over 1.7 seconds, the recorded window is played again at the
+film's own pace, and the camera travels slowly round until a hand takes it. This is the one
+exhibit that moves unasked, on the owner's word that it must be obvious the orbit can be
+turned. A swipe that begins on the stage is the page's and takes nothing from it. With reduced
+motion, or under the venue's Pause, nothing opens and nothing plays: one word, *Turn it in
+depth*, shows it turned and drawn whole.
+
+*How it is turned.* By a drag (a mouse at once; a finger after a hold, so a swipe over the stage
+still scrolls the page, and a second finger is the page's), by the arrow keys (with Shift, in
+larger steps), and by four arrow buttons a finger's square each: left and right step it round,
+up and down tip it, so that no turn needs a drag (WCAG 2.5.7). It rests where it is left, where
+the orbit on a work's page springs back. *The generator's view* (and Home, and Escape) returns
+it to the picture's view, where the still stands alone. Space plays and holds it.
+
+*It never rests part-open.* Within twenty degrees of the picture's view the drawing lies half
+over the still. An orbit left there goes on, the way it was being turned, to where the depth
+stands open, and one being closed goes back to the picture's view (`restingTurn` in `hand.ts`).
+So a step round that passes the front lands on the picture itself, and the next step opens it
+on the other side: the picture is one of the views on the way round.
+
+*It is held whole on the stage.* Turned, a figure reaches where the flat picture never did, and
+a stage has edges. For each tilt the camera stands as near as leaves the figure whole on the
+stage whichever way it is turned round, and no nearer (`holdOnStage` in `depth.ts`: the
+figure's farthest points, in every symmetry copy, measured at every seven and a half degrees);
+so its size is steady as it is turned round, and gives way only as it is tipped.
+
+*That it turns is said in one screen.* On a desk the part's head, the stage, the line that says
+how it is turned and the words that turn it stand in one screen, in every language: the stage
+takes what the head leaves. On a phone, and on any screen too short for the three together (a
+phone on its side), the stage comes first with its strip, then the part's head, then what the
+drawing is; at 320 px the strip still stands in the first screen in every language. The line
+is in the type's own colour, the pointer's words on a desk and the finger's on a phone.
+
+*Its own words.* Its performance has a Pause of its own. Under the venue's Pause it is held
+where it stands, the camera too, and says so: its word is Play, which lifts the pause, as a
+plate's does. Played again, the camera goes on from where it has come to.
+
+*How it is drawn.* By First Light's engine (WebGL 2, or WebGPU where it is there) and its worker,
+fetched when the section is within three-quarters of a screen, so the home's first load does not
+carry them. `src/lib/first-light/depth.ts` holds its beats and its camera, pure; the hand that
+turns it is the work page's (`hand.ts`), which learned to be led by a key and to stay.
+
+*What it says of itself.* Beneath it, and named by the figure as what describes it: *Analysis,
+not the work*; what the drawing is a drawing of; that it opens from the generator's view and is
+computed in this browser from the places and velocities of the three bodies at the first step
+of the recorded window, which were derived again from the seed and checked against the record
+before they were kept; and the way to First Light's own page, where the whole performance may
+be watched (*Watch it form*).
+
+*Where it cannot be drawn* (a browser without WebGL 2, or a drawing context lost) the still
+stands with a sentence that says so, said aloud too, and no control is offered. With no script
+the still stands with its number, and the line that says the orbit will be computed is taken
+away.
+
+*Proof.* Unit tests of the hand, the beats, the fit and the component (`hand.test.ts`,
+`depth.test.ts`, `orbit-depth.test.tsx`); in the browser (`orbit-depth.spec.ts`): one screen in
+all eight languages, at 320 px and on a phone on its side; that it opens by itself; that
+nothing does where motion is unwelcome; the venue's Pause; a hand, from the still at rest; a
+small turn that goes on into depth; the keys; a phone's swipe and hold; and its words whole in
+every language.
+
+### 8.2 Take one away (chapter 01)
 
 *What it shows.* The day's work at the first frame of its film; the reader removes one body, and
 the two that remain trace what two bodies alone do: one ellipse, lap after lap, or one open pass.
@@ -278,9 +469,9 @@ window, replayed. Both are drawn in the plane the two bodies share, at the film'
 digit a double holds; a browser test that the figure's stated period is the registry's.
 
 *Size.* One client component under 6 KB gzipped, loaded when the chapter nears the viewport. The
-page's first-load budget (220 KiB) is not touched.
+home's first-load budget (255 KiB) is not touched.
 
-### 8.2 The step that was too long (chapter 04)
+### 8.3 The step that was too long (chapter 04)
 
 *What it shows.* № 004's near miss, where the published computation loses its energy, and the
 same pass followed with a smaller step, where it does not. One control: the step. At the record's
@@ -302,7 +493,7 @@ the energy at the finest setting within one part in a thousand through the pass.
 *Risk.* Whether dt/64 is small enough for this pass must be measured first; if it is not, the
 exhibit needs an adaptive step, and the words must say that it is a different method.
 
-### 8.3 The plait (chapter 08)
+### 8.4 The plait (chapter 10)
 
 *What it shows.* The day's work on its Ink sheet: the three bodies moving as the film moves
 them, and beside them their three strands being drawn, a crossing added each time two bodies
@@ -318,19 +509,94 @@ two bodies overlap, and its words say that no stretching figure follows for the 
 the ink's stretching from the published film is a research question of its own, outside this
 plan.
 
-### 8.4 Order and cost
+### 8.5 Order and cost
 
-8.1 first (the smallest, and the essay's first chapter), then 8.3 (its parts exist), then 8.2
+8.2 first (the smallest, and the essay's first chapter), then 8.4 (its parts exist), then 8.3
 (it needs the measurement above). Each is one pull request with its own unit and browser tests.
 The words they need are few: a label, a control's name and a sentence of result each, in eight
 languages.
 
 ## 9. Open decisions (the owner's)
 
-1. **Process in the running head** (usability-11). The essay is now the venue's largest piece
-   of teaching, and is reached from the Index and the colophon only. The head belongs to
-   another session's work in progress and is tight at 320 px.
+1. **The first screen.** The home still opens on the day's work, a screen of it, and the essay
+   begins beneath: the work is the first paint, and First Light performs over it on a first
+   visit. If the essay's cover should be the very first thing instead, the plate can move
+   beneath it.
 2. **The cover's signature** still reads "October 2026" (`statementSigned`, as before); the
    essay was written in November 2026.
-3. **The three unread keys** (§6) can be removed once the words session's pull request is in.
-4. **Stage 3** (§8): whether to build it, and in which order.
+3. **The headline.** The home's one headline is the essay's, "Physics, upon physics.", kept as
+   it was.
+4. **The unread keys** (§6), eight now, can be removed once the words session's pull request
+   is in.
+5. **The three planned exhibits** (§8.2 to 8.4): whether to build them, and in which order.
+6. **The twin beneath the home's plate.** The home no longer hangs the twin on a screen of its
+   own under the plate (the wing): one Turn shows it there, and the essay hangs both
+   expressions, each at the head of its part. A work's page keeps its wing.
+7. **A sentence of the Statement that the generator's record does not bear out**, left for its
+   owner: `statement5` says the collection "never revises what it has published". The
+   generator's own record says Inks of earlier looks were withdrawn or rendered again (all 72
+   certificates now name `ember-v4`). The home says instead that no work exists before its
+   cycle closes.
+8. **What the home does not explain, for want of a source that could be read:** what kozo is
+   and how it is made, what Arbitrum is, and how a round of the Cosmic Signature game is won.
+   Each is named and not explained.
+9. **Chapter 07 has no picture of its own.** The orbit in depth is its figure, a part above
+   it. The four views the generator scored could be drawn side by side, from the seed, in the
+   reader's browser: a fourth exhibit, not planned here.
+
+## 10. The essay as the home (17 November 2026)
+
+The owner's words are in [north-star.md](north-star.md) ("The front door, and the voice"); the
+decisions are in the [decision register](decision-register.md) (the home; the orbit in depth;
+the venue's voice on the home). What was done:
+
+- **The page.** `src/app/[locale]/page.tsx` is the day's plate (unchanged: the viewer, the
+  Overture on a first visit), then the essay's parts in the order of §1, then the day's cycle.
+  The essay's own files moved to `src/app/[locale]/_essay/`, a folder no address reaches.
+- **Three parts, each opened by a plate.** Orbit (the orbit in depth), Light (the Light plate
+  and its film), Ink (the Ink plate and its film). Every chapter belongs to one part
+  (`EssayPart` in `structure.ts`), and the contents on the cover list them so.
+- **Three new chapters**, each sentence set against the generator's own source
+  (CS-Image-Generation, `main` at 59b324d) and, where it speaks of the world outside, against a
+  source that was opened: 07 The view, 08 A stroke, 11 The paper. A record under two of them
+  gives the day's work's own figures: its four views' scores and the one kept, its camera's
+  share of a circuit and its drift eccentricity, its structure, palette and dominant wavelength.
+- **A close on how a work comes to exist** (`#cycle`): nothing is made in advance; a work's seed
+  is fixed in the transaction that ends its cycle; the day's work's own date and cycle.
+- **Four terms added** at the head of the list: seed, generator, record, cycle.
+- **The address.** `/process` leads to `/` for good (a 308 from the proxy, in every language),
+  and a chapter's old address still leads to the chapter (`/process#choice` lands on
+  `/#choice`). Process left the Index, the colophon and the sitemap.
+- **Retired from the home:** the statement screen and the spread of two works
+  (`home-spread-plates.tsx`); the wing beneath the home's plate.
+- **The ground at first paint.** A visitor who arrives at a part's address (`/#current`) is
+  given that part's ground before the page's script runs (`roomScript` in `src/lib/room.ts`).
+- **Every control a finger's target.** The home's controls are 44 px each way, each reference
+  in the sources among them (a row a reference); the essay's browser sweep holds them to it
+  in every language at 320 px.
+- **The way to First Light.** *Watch it form*, which stood on the retired statement screen,
+  stands beneath the orbit in depth: the way to the whole performance for a visitor the
+  Overture was not played to.
+- **What a search engine is told.** The home's description says what the page is
+  (`homeDescription`); its title is still the venue's line.
+- **How often it is made again.** Every minute, as the live record its Light plate and its
+  sweep ask for is; the page's own setting now says so.
+
+**The review.** Before it was shown, six reviewers read the whole change, each with one
+question: the exhibit as code; who is shut out; addresses, first paint and the page without
+script; whether every new sentence is true of every work; the page as a visitor of a museum sees
+it; and whether the tests and these records say what was built. They found some thirty faults,
+each reproduced or traced. What was mended from them, beyond what is said above: a scrolling
+thumb that landed on the stage cancelled the exhibit's opening; two fingers left the orbit held
+by nobody; *Again* and the venue's Pause cut the camera to another angle; a small turn left the
+drawing half over the still; the turned figure was cut by the stage's edge; the focus ring on
+the orbit lay under it; the plate's keys ruled the essay thirty screens below it; a Turn made
+in the film room left the head on the wrong ground; an address that named no part painted the
+night over an Ink plate; a view's score was printed the equal of one it fell short of; a
+camera's share past one circuit lost its last figure; the part heads were the smallest headings
+on the page, and on a phone the Orbit part's came after its own caption; the three new chapters
+showed nothing; the close stood behind the bibliography; the Japanese cover broke in three
+lines by one pixel; and a change of language inside a chapter lost the reader's place, because
+the chapter's number, which stays in sight in the margin, was taken for the mark being read
+(`reading-place.tsx`; it was so on `/process` too). The reviewers' notes are kept with the
+session's notes.

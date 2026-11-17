@@ -1,0 +1,193 @@
+/*
+  The orbit in depth (orbit-depth.tsx): the Light still on the night, the orbit drawn over it
+  once it is turned, and a strip of its controls. (What it says of itself is the page's, beneath
+  it.) The stage keeps the picture's shape on a desk, so the still fills it; on a phone it is
+  taller than the picture, so the orbit in depth has room to stand nearer.
+*/
+/* The stage takes what its place leaves it, the strip its own height beneath. On the home the
+   place is a screen less the part's head (process.module.css), so the head, the stage and the
+   strip that turns it stand in one screen whatever the head's length in a language: nobody
+   scrolls to learn that it turns. Left to itself the stage is 300 px, its least. */
+.exhibit {
+  margin: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: minmax(300px, 1fr) auto;
+}
+.stage {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+  background: var(--night);
+}
+.still,
+.depth {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+.still {
+  object-fit: contain;
+}
+/* The orbit is drawn over the still and shows only as it is turned: its cover follows the turn. */
+.depth {
+  opacity: 0;
+  touch-action: pan-y pinch-zoom;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+.depth[data-turns='false'] {
+  pointer-events: none;
+}
+.depth[data-turns='true'] {
+  cursor: grab;
+}
+.depth[data-turns='true']:active {
+  cursor: grabbing;
+}
+.depth:focus {
+  outline: none;
+}
+/* The canvas fades with its cover, and its own ring with it, so the stage shows the focus: a
+   ring drawn last, over the still and the orbit, which an outline of the stage's own lies under. */
+.stage:has(.depth:focus-visible)::after {
+  content: '';
+  position: absolute;
+  inset: 4px;
+  border: 2px solid currentColor;
+  pointer-events: none;
+}
+
+/* The strip: whose orbit it is, how it is turned, and the words that turn it. */
+.strip {
+  color: var(--type);
+  grid-template-columns: auto minmax(0, 1fr) auto;
+}
+.folio {
+  white-space: nowrap;
+  color: var(--muted);
+}
+/* How it is turned, said in the type's own colour: it is the one thing a visitor must read. */
+.hint {
+  min-width: 0;
+  font-size: var(--fs-control);
+  line-height: 1.5;
+  /* The one line a visitor must read never leaves a word alone on its last line. */
+  text-wrap: balance;
+}
+.exhibit:not([data-phase='ready']) .hint {
+  color: var(--muted);
+}
+/* The pointer's words on a desk, the finger's on a phone: never both. */
+.byTouch {
+  display: none;
+}
+@media (pointer: coarse) {
+  .byPointer {
+    display: none;
+  }
+  .byTouch {
+    display: inline;
+  }
+}
+.controls {
+  gap: 6px 18px;
+}
+/* Every word that turns or plays it is a finger's square at the least, a short word too. */
+.controls > button {
+  min-width: 44px;
+  justify-content: center;
+}
+/* The two arrows: a finger's square each under a hairline, so they read as things to press. */
+.controls > .arrow {
+  justify-content: center;
+  width: 44px;
+  min-width: 44px;
+  font-size: var(--fs-reading);
+  border: 1px solid var(--rule-strong, var(--rule));
+  text-decoration: none;
+  transition: border-color var(--t-blink) var(--ease-settle);
+}
+.controls > .arrow + .arrow {
+  margin-left: -9px;
+}
+/* Up and down are the same arrow, turned: one glyph, drawn alike in every language's face. */
+.arrow > span {
+  display: inline-block;
+}
+.up > span {
+  transform: rotate(-90deg);
+}
+.down > span {
+  transform: rotate(90deg);
+}
+.controls > .arrow:not(:disabled):hover,
+.controls > .arrow:focus-visible {
+  border-color: currentColor;
+}
+.controls button:disabled {
+  color: var(--muted);
+  cursor: default;
+}
+
+@media (max-width: 767px) {
+  /* Taller than the picture: the orbit in depth stands nearer on a narrow screen. The stage is
+     the first thing of its chapter here, and its strip stays in the same screen: 190 px is the
+     tallest the strip stands in any of the eight languages at 320 px (Ukrainian: a line of four
+     and the words on two). */
+  .exhibit {
+    grid-template-rows: auto auto;
+  }
+  .stage {
+    height: min(120vw, calc(100svh - var(--head) - 190px));
+    min-height: 240px;
+  }
+  /* How it is turned on its own lines, the words that turn it beneath. The work's number is
+     said by the copy that follows the stage here, so the strip is the controls' alone. */
+  .strip {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 6px;
+    padding-block: 9px;
+  }
+  .folio {
+    display: none;
+  }
+  /* The four arrows on a row of their own; beneath them the word that names the view, and
+     across from it the word that plays or holds the window. No word is left alone on a row
+     by the length of another, in any language. */
+  .controls {
+    display: grid;
+    grid-template-columns: repeat(4, 44px) minmax(0, 1fr);
+    justify-content: start;
+    gap: 6px 14px;
+  }
+  .controls > .arrow + .arrow {
+    margin-left: 0;
+  }
+  .controls > button:not(.arrow) {
+    grid-row: 2;
+  }
+  .controls > button:nth-child(5) {
+    grid-column: 1 / span 4;
+    justify-self: start;
+    justify-content: flex-start;
+  }
+  .controls > button:nth-child(6) {
+    grid-column: 5;
+    justify-self: end;
+  }
+}
+
+/* A screen too short for the copy, the stage and the strip together (a phone on its side, a
+   low window): the stage comes first and takes what the screen leaves, the copy follows, so
+   the line that says how it is turned and the words that turn it are still in the first screen. */
+@media (min-width: 768px) and (max-height: 620px) {
+  .exhibit {
+    grid-template-rows: auto auto;
+  }
+  .stage {
+    height: max(180px, calc(100svh - var(--head) - var(--strip) - 12px));
+  }
+}

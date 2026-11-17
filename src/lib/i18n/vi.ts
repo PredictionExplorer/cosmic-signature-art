@@ -350,7 +350,7 @@ export const vi: Messages = {
   glossaryBorda:
     'Một trăm nghìn quỹ đạo ứng viên được mô phỏng và xếp hạng bằng phép đếm Borda; số đã công bố là quỹ đạo nó chọn.',
   glossaryWavelength:
-    'Bước sóng chủ đạo là sắc độ của màu neo trong bảng màu, đo bằng nanomét ánh sáng khả kiến.',
+    'Bước sóng chủ đạo là bước sóng gần nhất về sắc độ với vật thể có màu đậm nhất của tác phẩm, tính bằng nanomét.',
   glossaryMasses: 'Ba khối lượng định mức mỗi vật thể hút hai vật thể còn lại mạnh đến đâu.',
   glossaryEccentricity:
     'Độ lệch tâm trôi dạt đo mức lệch khỏi hình tròn của hình elip mà máy quay đi theo. Nó được rút ra từ hạt giống và không nói gì về đường đi của ba vật thể.',
@@ -366,6 +366,8 @@ export const vi: Messages = {
   shapeOfMotion: 'Hình dáng của chuyển động.',
   statementLine:
     'Mỗi tác phẩm là một quỹ đạo ba vật thể được ghi lại, kết xuất hai lần, thành ánh sáng và thành mực. Cả hai là cùng một token.',
+  homeDescription:
+    'Mỗi tác phẩm là một chuyển động của ba vật thể dưới lực hấp dẫn, tính từng bước từ một con số. Tác phẩm hôm nay, bày như nó được làm ra: quỹ đạo, Ánh sáng, Mực.',
   statementSigned: 'Cosmic Signature · Tháng 10 năm 2026',
   statementCorrected: 'Đính chính tháng 11 năm 2026: § 3 và § 6.',
   homeLine: 'Ba vật thể, mỗi vật hút hai vật còn lại.',
@@ -759,15 +761,47 @@ export const vi: Messages = {
   allTheLightOrbits: 'Các quỹ đạo trong ánh sáng này',
   // ·
   // ·
-  // The essay on the Process page (src/app/[locale]/process/essay.tsx), in reading order;
+  // The essay the home is made of (src/app/[locale]/_essay/essay.tsx), in reading order;
   // en.ts says what its marks mean.
   essayStandfirst:
-    'Mỗi tác phẩm ở đây là một chuyển động: ba vật thể, mỗi vật thể hút hai vật thể còn lại, được dõi theo qua một triệu bước thời gian nhỏ. Trang này nói những gì đã biết về một chuyển động như thế, vì sao không công thức nào cho ra nó, người ta nhìn trước được bao xa dọc theo nó, và bằng cách nào phòng trưng bày vẫn tính ra nó. Sau đó trang này theo chuyển động ấy vào nước, nơi nó trở thành Mực.',
+    'Mỗi tác phẩm ở đây là một chuyển động của ba vật thể dưới tác dụng của lực hấp dẫn, được dõi theo qua một triệu bước thời gian. Không ai vẽ nó, và không có công thức nào dùng được để đọc ra nó: một chương trình, gọi là bộ tạo, tính nó từng bước một từ một con số, hạt giống của tác phẩm. Nó có hai biểu đạt: Ánh sáng, một lần phơi sáng lâu ghi lại chuyển động ấy, và Mực, chính chuyển động ấy khuấy một lớp nước mỏng. Tác phẩm hôm nay là {work}. Ở đây, tác phẩm được bày ra theo thứ tự nó được làm ra: quỹ đạo, ánh sáng, nước.',
   essayOfWork: 'Từ hồ sơ của {work}',
+  essayOrbitWord: 'Quỹ đạo',
+  essayOrbitCopy:
+    'Đây là {work} trước khi thành một bức tranh: ba vật thể có khối lượng {one}; {two} và {three}, được dõi theo qua một triệu bước mà tác phẩm ghi lại. Chuyển động của chúng có chiều sâu, và một bức tranh giữ lại một góc nhìn về chuyển động ấy. Ở đây, có thể xoay nó.',
+  essayOrbitPlaces:
+    'Mỗi đường là đường đi của một vật thể, đúng như máy quay của bức tranh đã dõi theo nó, và máy quay ấy chuyển động (chương 07). Ở góc nhìn của bộ tạo, đây là những đường đi mà từ đó ảnh tĩnh Ánh sáng được vẽ ra.',
+  essayOrbitSpace:
+    '{work} là một trong {count} tác phẩm mà bộ tạo vẽ trong một không gian nơi vị trí của một vật thể được trộn với vận tốc của chính nó, hoặc với vị trí của một vật thể khác (chương 07). Thứ xoay ở đây là hình vẽ ấy trong chiều sâu, không phải những đường đi mà các vật thể đã đi qua.',
+  essayOrbitCopies:
+    'Bức tranh của nó lặp lại mọi nét vẽ quanh tâm tờ giấy. Ở đây, các đường được lặp lại xoay cùng những đường còn lại.',
+  essayDepthLabel:
+    'Quỹ đạo của {work} trong chiều sâu. Phím mũi tên xoay nó; Home đưa nó về góc nhìn của bộ tạo.',
+  depthHint: 'Kéo quỹ đạo để xoay nó. Các mũi tên cũng xoay nó.',
+  depthHintTouch: 'Chạm và giữ quỹ đạo, rồi kéo để xoay nó. Các mũi tên cũng xoay nó.',
+  depthTurnLeft: 'Xoay sang trái',
+  depthTurnRight: 'Xoay sang phải',
+  depthTiltUp: 'Nghiêng lên',
+  depthTiltDown: 'Nghiêng xuống',
+  depthOpen: 'Xoay trong chiều sâu',
+  depthWaiting: 'Quỹ đạo được tính trong trình duyệt này khi nó hiện ra trên màn hình.',
+  depthUnavailable:
+    'Trình duyệt này không vẽ được quỹ đạo trong chiều sâu. Ảnh tĩnh Ánh sáng được hiển thị thay thế: góc nhìn duy nhất của bộ tạo về quỹ đạo ấy.',
+  depthNote:
+    'Quỹ đạo mở ra từ góc nhìn của bộ tạo, góc nhìn mà ảnh tĩnh Ánh sáng giữ lại, và trở về góc nhìn ấy khi được yêu cầu. Nó được tính trong trình duyệt này từ vị trí và vận tốc của ba vật thể ở bước đầu tiên của khoảng được ghi lại; những giá trị ấy đã được suy ra lại từ hạt giống và đối chiếu với hồ sơ trước khi được lưu.',
+  essayLightTitle: 'Tiếp theo, một lần phơi sáng.',
   essayLightCopy:
-    'Đây là {work} trong Ánh sáng, được vẽ từ một triệu bước mà nó ghi lại. Các chương bên dưới nói những gì đã biết về một chuyển động như thế.',
+    'Đây là {work} trong Ánh sáng: một triệu bước của nó, được để lại trên tờ giấy dưới dạng ánh sáng. Không gì bị xóa đi. Phim là chính ảnh tĩnh ấy đang được phơi sáng.',
+  essaySweepCopy:
+    'Bản quét quang phổ đã công bố là một phim dài mười giây. Nó cho thấy bức tranh mỗi lúc chỉ bằng một dải hẹp trong ánh sáng của bức tranh ấy, từ đầu tím trong ánh sáng riêng của tác phẩm đến đầu đỏ rồi quay lại: mỗi bước sóng nằm ở đâu trên tờ giấy.',
   essayInkCopy:
-    'Đây là cùng tác phẩm ấy trong Mực: vẫn ba vật thể ấy, băng qua một lớp nước mỏng. Hai chương bên dưới nói nước làm gì.',
+    'Đây là cùng tác phẩm ấy trong Mực: vẫn ba vật thể ấy, vào đúng những khoảnh khắc ấy, chuyển động qua một lớp nước mỏng. Ảnh tĩnh là tờ giấy đúng như bước cuối cùng để lại.',
+  essayBornWord: 'Chu kỳ',
+  essayBornTitle: 'Không tác phẩm nào tồn tại trước khi chu kỳ của nó khép lại.',
+  essayBorn1:
+    'Không gì được làm sẵn từ trước. Các tác phẩm được khắc dấu theo chu kỳ: mỗi vòng thành công của trò chơi Cosmic Signature kết thúc bằng việc đúc token mới trên Arbitrum, và hạt giống của chúng được cố định trong chính giao dịch ấy. Cho đến khi một chu kỳ khép lại, các tác phẩm của nó không tồn tại ở bất cứ đâu, với bất cứ ai. Bộ tạo tính chúng sau đó, từ hạt giống của chúng: quỹ đạo, rồi Ánh sáng, rồi Mực.',
+  essayBorn2:
+    '{work} được khắc dấu ngày {date}, là một trong {count} tác phẩm của Chu kỳ {cycle}. Một token đại diện cho tất cả: hạt giống, quỹ đạo, Ánh sáng và Mực, không bên nào là bản gốc của bên kia. Bộ sưu tập lớn dần theo mỗi chu kỳ.',
   essayTwoWord: 'Hai',
   essayTwoTitle: 'Hai vật thể lặp lại một đường elip.',
   essayTwo1:
@@ -876,6 +910,42 @@ export const vi: Messages = {
     'Những khởi điểm còn lại được đo theo ba cách trên khoảng được ghi lại của chúng: chuyển động của mỗi vật thể trải rộng đến đâu trên các tần số; tam giác của ba vật thể giữ gần tam giác đều đến đâu; và các vật thể vạch ra bao nhiêu đường đi so với chỗ chúng chiếm. Sau đó chúng được xếp hạng bằng một **phép đếm Borda**, cách bỏ phiếu mà Jean-Charles de Borda trình trước Viện Hàn lâm Khoa học Paris, in trong tập kỷ yếu của Viện cho năm 1781: mỗi ứng viên được xếp hạng theo từng phép đo, nhận điểm theo thứ hạng của nó trong mỗi bảng xếp hạng, rồi các điểm được cộng lại.[^borda] Ở đây, bảng xếp hạng thứ nhất được tính một lần, bảng thứ hai được nhân với một trọng số do chính hạt giống rút ra ({weight} với {work}), và bảng thứ ba được nhân với 0,15.[^generator-sim] Hồ sơ gọi hai trọng số đầu là “hỗn độn” và “cân bằng”.',
   essayChoice4:
     'Hai mươi bốn ứng viên nhiều điểm nhất sau đó được thử thành những bức tranh nhỏ, và được chấm điểm theo cách chúng nằm trên tờ giấy. Ứng viên tốt nhất trong số đó là tác phẩm: với {work}, đó là ứng viên {index}. Số của nó và các trọng số của nó có trong hồ sơ của tác phẩm. Bản thân cuộc tìm kiếm lên tới {search} bước, quá nhiều đối với một trình duyệt. Điều trang này làm là rút lại {candidates} khởi điểm từ hạt giống và đối chiếu các khối lượng của khởi điểm được chọn với hồ sơ, đến từng bit cuối cùng.',
+  essayViewWord: 'Góc nhìn',
+  essayViewTitle: 'Một bức tranh giữ lại một góc nhìn về chuyển động trong chiều sâu.',
+  essayView1:
+    'Ba vật thể chuyển động trong ba chiều, còn một tờ giấy có hai chiều. Vì vậy, trước khi có ánh sáng nào được đặt xuống, bộ tạo phải chọn chỗ đứng.[^generator-view]',
+  essayView2:
+    'Nó không chọn bằng mắt. Nếu để nguyên như đã tính, mọi tác phẩm sẽ được nhìn dọc theo cùng một trục. Vì vậy, từ hạt giống, bộ tạo rút ra bốn hướng xoay, không thiên về phương nào, xoay quỹ đạo theo từng hướng, rồi chấm điểm một hình vẽ thử cỡ nhỏ của mỗi góc nhìn: trong số các tiêu chí có việc các đường của nó phủ bao nhiêu phần tờ giấy, và phủ đều đến đâu. Góc nhìn có điểm cao nhất được giữ lại; nếu hai góc nhìn bằng điểm nhau thì giữ góc nhìn được rút ra trước.[^generator-view]',
+  essayViewScores:
+    'Khi được suy ra lại từ hạt giống của {work}, bốn góc nhìn đạt {first}; {second}; {third} và {fourth} trên thang từ 0 đến 1, theo thứ tự được rút ra. Góc nhìn số {kept} được giữ lại.',
+  essayView3:
+    'Chiều sâu được giữ lại, dưới dạng độ sáng. Nó không dời nét vẽ nào trên tờ giấy, nhưng một nét vẽ nằm càng xa mặt phẳng của tờ giấy thì được đặt càng mờ.[^generator-light]',
+  essayView4:
+    'Góc nhìn cũng không đứng yên. Suốt một triệu bước, máy quay được đưa đi theo một hình elip của riêng nó, và phương trình Kepler, vốn cho biết vị trí của một vật thể trên đường cong của nó (chương 01), cho biết vị trí của máy quay trên elip ấy.[^generator-camera] Hồ sơ gọi đó là sự trôi dạt. Nơi nó đưa máy quay đi xa, một chuyển động quay ngược về chính nó được trải ra trên tờ giấy.',
+  essayViewDrift:
+    'Trong lúc phim của {work} chạy, máy quay được đưa đi trong {share} thời gian cần để đi hết một vòng elip của nó. Độ lệch tâm trôi dạt của nó là {eccentricity}; độ lệch tâm của một đường tròn là 0.',
+  essayView5:
+    'Rồi đến khung hình. Đó là chiếc hộp chứa mọi bước của cả ba vật thể, thêm lề một phần hai mươi ở mỗi phía, được nới ra theo chiều rộng hoặc chiều cao cho vừa hình dạng tờ giấy.[^generator-light]',
+  essayView6:
+    'Không phải bức tranh nào cũng cho thấy các vật thể đã ở đâu. Ở {count} trong số {works} tác phẩm, bộ tạo vẽ một không gian trong đó vị trí của một vật thể được trộn với vận tốc của chính nó, hoặc với vị trí của một vật thể khác. Ở {repeated} tác phẩm, nó lặp lại mọi nét vẽ quanh tâm tờ giấy, xoay đi hoặc lấy đối xứng gương; khi các bản sao được xoay, toàn bộ hình vẽ được thu nhỏ trước, để mỗi bản sao vẫn nằm trên tờ giấy.[^generator-view]',
+  essayStrokeWord: 'Một nét vẽ',
+  essayStrokeTitle: 'Một nét vẽ không đặt màu. Nó đặt ánh sáng.',
+  essayStroke1:
+    'Bức tranh là ánh sáng, cộng lại. Từng bước một, suốt một triệu bước, bộ tạo đặt các nét vẽ, và thứ một nét vẽ đặt xuống không phải là màu mà là ánh sáng. Mỗi vật thể có một sắc độ riêng; sắc độ ấy chọn một bước sóng, và nét vẽ đặt một dải ánh sáng hẹp quanh bước sóng đó.[^generator-light]',
+  essayStroke2:
+    'Mỗi điểm của tờ giấy giữ một quang phổ: sáu mươi bốn dải, mỗi dải rộng năm nanomét, từ 380, ở vùng tím, đến 700, ở vùng đỏ. Một nét vẽ cộng thêm vào vài dải quanh bước sóng của nó. Một màu tía, màu mà không một bước sóng đơn lẻ nào cho ra, được đặt thành hai ánh sáng, một tím và một đỏ. Nơi các nét vẽ cắt nhau, ánh sáng của chúng cộng lại, từng dải một.[^generator-light]',
+  essayStroke3:
+    'Chỉ khi một khung hình được tạo ra, mỗi quang phổ mới được cân như mắt cân ánh sáng, và được gán một màu.[^generator-light] Các trọng số là người quan sát chuẩn: những bảng cho biết một con mắt có thị giác màu bình thường đáp lại mỗi bước sóng ra sao, được Ủy ban Chiếu sáng Quốc tế thông qua năm 1931.[^observer] Vì vậy, nơi hai nét vẽ gặp nhau, không nét nào che nét kia, như sơn sẽ che. Tờ giấy giữ tổng ánh sáng của chúng.',
+  essayStroke4:
+    'Loại nét vẽ chính thì tùy vào tác phẩm, và hồ sơ gọi nó là cấu trúc. Ở {ribbons} trong số {works} tác phẩm, đó là chính đường đi của vật thể. Ở {chords} tác phẩm, đó là một đoạn thẳng nối nơi mỗi vật thể đang ở với nơi nó sẽ ở một khoảnh khắc sau. Ở những tác phẩm còn lại, đó là một tiếp tuyến với mỗi đường đi, một đường cong nối hai vật thể, hoặc một chấm được đặt xuống sau những khoảng thời gian bằng nhau, nên các chấm dày lên ở nơi vật thể đi chậm.[^generator-light]',
+  essayStrokeRecord:
+    'Cấu trúc của tác phẩm là “{structure}” và bảng màu là “{palette}”. Bước sóng chủ đạo là {wavelength}: bước sóng gần nhất về sắc độ với vật thể có màu đậm nhất của tác phẩm.',
+  essayStroke5:
+    'Đường nét mang theo tốc độ. Chậm và nhanh được tính trong khoảng tốc độ của riêng mỗi tác phẩm, nên tác phẩm nào cũng đi hết cả thang. Chỉ xét riêng tốc độ, nét vẽ rộng nhất và mờ nhất ở nơi đường nét đi chậm nhất; nơi đường nét đi nhanh nhất, nét vẽ rộng chưa bằng một nửa, và sáng gấp đến tám lần. Ở phần lớn tác phẩm, một nhịp phồng chậm, do hạt giống định, còn làm đường nét rộng ra rồi hẹp lại.[^generator-light]',
+  essayStroke6:
+    'Mức phơi sáng được đo một lần cho mỗi tác phẩm, trên khoảng 240 khoảnh khắc trong chuyển động của nó, rồi được giữ nguyên cho mọi khung hình. Phim có {frames} khung hình, mỗi khung hình {stride} bước, và mỗi khung hình là toàn bộ ánh sáng đã được đặt cho đến lúc ấy. Vì vậy phim mở đầu trong bóng tối, và ảnh tĩnh là khung hình cuối cùng của phim.[^generator-light]',
+  essayStroke7:
+    'Bản gốc của mỗi ảnh tĩnh Ánh sáng là một hình ảnh {width} × {height} điểm, mười sáu bit cho mỗi kênh màu, trong không gian màu Display P3. Các ảnh tĩnh được trưng bày ở đây là những bản sao được công bố từ bản gốc ấy.[^generator-light]',
   essayCurrentWord: 'Một dòng chảy',
   essayCurrentTitle: 'Vẫn ba vật thể ấy khuấy một lớp nước mỏng.',
   essayCurrent1:
@@ -926,6 +996,16 @@ export const vi: Messages = {
     'Nếu những que khuấy mà nước buộc phải đi vòng qua cứ lặp lại kiểu tết tóc vẽ ở trên, thì mỗi lần lặp lại sẽ kéo một đường dài ra ít nhất gấp {stretch} lần. Mực của {work} có bị kéo giãn như thế hay không là điều phòng trưng bày còn phải đo.',
   essayClaimFree:
     'Kiểu tết tóc vẽ ở trên không bắt buộc điều gì: ngay cả khi đi qua những que khuấy mà nước buộc phải đi vòng, một đường vẫn có thể giữ nguyên chiều dài.',
+  essayPaperWord: 'Giấy',
+  essayPaperTitle: 'Giấy cũng được tính ra.',
+  essayPaper1:
+    'Giấy của mỗi tác phẩm được làm ra từ hạt giống của nó, nên không có hai tác phẩm nào nằm trên cùng một tờ giấy. Nó được tính với chiều rộng {width} milimét và được mô phỏng theo giấy kozo. Sợi của nó tụ lại thành từng đám, đám này cách đám kia {flocLow} đến {flocHigh} milimét theo chiều ngang dòng chảy đã rải chúng, và xa hơn theo chiều dọc dòng chảy ấy. Khoảng {fibres} sợi trên mỗi xentimét vuông lộ ra ở bề mặt, chín phần mười trong số đó dài {fibreShort} đến {fibreLong} milimét.[^ember-paper]',
+  essayPaper2:
+    'Mực là một sắc tố duy nhất, muội của gỗ thông đốt cháy, nằm trong các sợi giấy. Độ đen của nó không lấy từ một thang xám. Nó được tính dưới dạng ánh sáng, theo ba mươi sáu dải từ 380 đến 730 nanomét. Một ngọn đèn phòng trưng bày, ánh sáng ấm, chiếu lên tờ giấy. Muội và sợi giấy hấp thụ và tán xạ bao nhiêu trong mỗi dải thì tuân theo lý thuyết về các lớp sơn mà Paul Kubelka và Franz Munk công bố năm 1931, năm người quan sát chuẩn được thông qua (chương 08).[^kubelka-munk] Trên chỗ mực đặc nhất có một lớp keo mỏng.[^ember-optics]',
+  essayPaper3:
+    'Vậy cả hai biểu đạt đều được tính dưới dạng ánh sáng. Trong Ánh sáng, ánh sáng được cộng vào, theo sáu mươi bốn dải, trên nền đen. Trong Mực, ánh sáng bị lấy đi, theo ba mươi sáu dải, khỏi một tờ giấy được chiếu sáng. Ở cả hai, không màu nào được đặt xuống.',
+  essayPaper4:
+    'Trong cả bộ sưu tập, máy của xưởng sáng tác mất từ {least} đến {most} giờ cho Mực của một tác phẩm. Mực được tính chỉ trên bộ xử lý, bằng thứ số học được chọn sao cho máy nào, khi nhận các đầu vào mà chứng thư của tác phẩm ghi lại, cũng đi đến cùng những khung hình thô, khớp từng bit. Chứng thư ghi lại mã băm của chúng.[^ember]',
   essayUnknownWord: 'Chưa biết',
   essayUnknownTitle: 'Điều phòng trưng bày không biết.',
   essayUnknown1:
@@ -936,6 +1016,18 @@ export const vi: Messages = {
     'Tất cả đều có thể kiểm chứng. Trang của mỗi tác phẩm suy ra lại quỹ đạo từ hạt giống của nó, ngay trong trình duyệt, rồi in phần đối chiếu với hồ sơ đã công bố, từng dòng một.',
   essayTermsWord: 'Thuật ngữ',
   essayTermsTitle: 'Những từ của phòng trưng bày.',
+  essayTermSeed: 'Hạt giống',
+  essayTermSeedIs:
+    'Con số được cố định trong giao dịch đúc ra một tác phẩm. Mọi thứ bộ tạo tính cho tác phẩm, nó đều tính từ con số này.',
+  essayTermGenerator: 'Bộ tạo',
+  essayTermGeneratorIs:
+    'Chương trình tính mỗi tác phẩm từ hạt giống của nó: quỹ đạo, rồi Ánh sáng, rồi Mực. Mã nguồn của nó được công khai.',
+  essayTermRecord: 'Hồ sơ',
+  essayTermRecordIs:
+    'Tệp được công bố kèm theo một tác phẩm: ứng viên được chọn, các khối lượng của nó, khoảng cách gần nhất, các syzygy và từ bện của nó, cùng những tên mà nhà phát hành đặt cho cấu trúc, bảng màu và kết cục của nó.',
+  essayTermCycle: 'Chu kỳ',
+  essayTermCycleIs:
+    'Những tác phẩm được khắc dấu trong một giao dịch, khi một vòng thành công của trò chơi Cosmic Signature kết thúc.',
   essayTermUnit: 'Đơn vị',
   essayTermUnitIs:
     'Của riêng bộ tạo. Hằng số của lực hấp dẫn là {gravity}; các khối lượng nằm giữa {massLow} và {massHigh}. Không phải kilôgam, mét hay giây.',
