@@ -15,7 +15,6 @@ import { REPORT_GROUP, contentSecurityPolicy } from '../../src/lib/security-head
  */
 const PRERENDERED = [
   '/',
-  '/process',
   '/statement',
   '/privacy',
   '/terms',
@@ -25,7 +24,7 @@ const PRERENDERED = [
   '/collection/all-the-light',
   '/collection/orrery',
   '/ja',
-  '/uk/process',
+  '/uk/statement',
 ];
 const ON_REQUEST = [
   '/collection',

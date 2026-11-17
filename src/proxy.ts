@@ -57,7 +57,8 @@ function isDocument(request: NextRequest): boolean {
 
 /**
  * Every page address passes here first. An address without a locale is the first locale's:
- * /art/31 is /en/art/31. A work, an exhibition or an orbit number that does not exist is sent
+ * /art/31 is /en/art/31. A work's number in another spelling, and a room that has moved, are
+ * sent on to their one address for good. A work, an exhibition or an orbit number that does not exist is sent
  * to an address no route answers, so it is a true 404 before its route can stream a 200
  * (src/lib/addresses.ts). The visitor's own address rides along as a request header, so the
  * venue's 404 speaks their language and its running head points at their address
@@ -78,8 +79,9 @@ export async function proxy(request: NextRequest) {
   // visitor asked for, written the first time, stands.
   if (path !== NOT_HERE || !headers.has(ADDRESS_HEADER)) headers.set(ADDRESS_HEADER, url.pathname);
   const reading = readAddress(path);
-  if (reading.kind === 'respell') {
-    url.pathname = `${prefix}${reading.path}`;
+  if (reading.kind === 'respell' || reading.kind === 'moved') {
+    // The home under a locale is that locale alone: /uk, never /uk/.
+    url.pathname = `${prefix}${reading.path === '/' ? '' : reading.path}` || '/';
     return NextResponse.redirect(url, 308);
   }
   const refused =

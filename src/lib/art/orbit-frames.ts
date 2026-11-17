@@ -161,6 +161,33 @@ export function drawsPositions(id: number): boolean {
   return frame?.projection === 'position' && frame.symmetry === 'none';
 }
 
+/**
+ * What a work's frame says of its picture, for the essay (src/lib/essay/facts.ts): the space it
+ * is drawn in, whether its strokes are repeated, the four views the seed drew with the one
+ * kept, and how far the camera is carried round its ellipse. Nothing without a frame that binds.
+ */
+export interface WorkPicture {
+  projection: FrameEntry['projection'];
+  /** The Light still's size, in the points the frame was fitted to. */
+  size: { width: number; height: number };
+  /** The strokes are drawn again about the sheet's centre, turned or mirrored. */
+  repeated: boolean;
+  /** The four views' scores in the order the seed drew them, and which of them was kept (0 to 3). */
+  views: { scores: readonly number[]; kept: number };
+  drift: { arcFraction: number; eccentricity: number };
+}
+export function workPicture(id: number): WorkPicture | undefined {
+  const entry = frames.get(id);
+  if (!entry || !bindFrame(entry, id)) return undefined;
+  return {
+    projection: entry.projection,
+    size: { width: entry.width, height: entry.height },
+    repeated: entry.symmetry !== 'none',
+    views: { scores: entry.view.scores, kept: entry.view.candidate },
+    drift: { arcFraction: entry.drift.arcFraction, eccentricity: entry.drift.eccentricity },
+  };
+}
+
 /** The Light film a work's frame was measured against: what anything placed by the frame binds to. */
 export function frameFilmSha256(id: number): string | undefined {
   return frames.get(id)?.film.sha256;

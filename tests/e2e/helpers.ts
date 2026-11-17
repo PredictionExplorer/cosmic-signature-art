@@ -241,14 +241,15 @@ export type Small = { control: string; name: string; width: number; height: numb
 
 /**
  * Runs in the page, and measures every control a visitor can press, by its own box: 44 px each
- * way is the venue's rule. A hidden field worked through its label is measured as that label.
+ * way is the venue's rule. Given an element, it measures the controls inside that one alone. A hidden field worked through its label is measured as that label.
  * One kind of control is let be, as WCAG 2.5.8 lets it: a link set in a line of words, a note's
  * mark or a name in a sentence, whose line cannot grow for a finger without parting the text.
  * Sizes are compared to a thousandth of a pixel: Firefox reads a 44 px box that stands at a
  * fractional place as 43.99999.
  */
-function controlsUnder44(): Small[] {
+function controlsUnder44(within: Element | void): Small[] {
   const TARGET = 44;
+  const root: ParentNode = within instanceof Element ? within : document;
   const round = (value: number) => Math.round(value * 1000) / 1000;
   const said = (element: Element) =>
     (element.getAttribute('aria-label') ?? element.textContent ?? '')
@@ -268,7 +269,7 @@ function controlsUnder44(): Small[] {
     'a[href], button, input:not([type="hidden"]), select, textarea, summary, [role="button"], [role="slider"], [role="tab"], [tabindex]:not([tabindex="-1"])';
   const judged = new Set<Element>();
   const small: Small[] = [];
-  for (const control of document.querySelectorAll(controls)) {
+  for (const control of root.querySelectorAll(controls)) {
     if (getComputedStyle(control).visibility !== 'visible' || control.closest('[inert]')) continue;
     let target: Element = control;
     let box = control.getBoundingClientRect();
@@ -292,8 +293,9 @@ function controlsUnder44(): Small[] {
   return small;
 }
 
-/** Every control on the page under 44 px either way (see `controlsUnder44`). */
-export const smallTargets = (page: Page) => page.evaluate(controlsUnder44);
+/** Every control on the page, or inside one part of it, under 44 px either way (see `controlsUnder44`). */
+export const smallTargets = (scope: Page | Locator) =>
+  'goto' in scope ? scope.evaluate(controlsUnder44) : scope.evaluate(controlsUnder44);
 
 export async function imageLoaded(image: Locator) {
   await expect(image).toBeVisible();

@@ -27,7 +27,7 @@ describe('the clocks the stylesheet shares', () => {
   it('rests as long wherever a rest is timed', () => {
     for (const file of [
       'src/components/artwork-viewer.tsx',
-      'src/app/[locale]/process/chapter-plate.tsx',
+      'src/app/[locale]/_essay/chapter-plate.tsx',
     ])
       expect(declared(file, 'REST_MS'), file).toBe(token('t-rest'));
   });

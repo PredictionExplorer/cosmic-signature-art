@@ -2,9 +2,7 @@ import { render, screen, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { en } from '@/lib/i18n/en';
 import { collectionIndex, cycles, indexedWork } from '@/lib/art/collection-index';
-import plateRecords from '@/lib/art/plate-records.json';
-import { MotionProvider } from './motion-provider';
-import { CycleRow, HomeCycle, HomeSpread, HomeStatement } from './home-screens';
+import { collectionCounts, CycleRow } from './home-screens';
 
 vi.mock('next/navigation', () => ({ usePathname: () => '/' }));
 
@@ -26,94 +24,32 @@ function mockMatchMedia() {
 beforeEach(mockMatchMedia);
 afterEach(() => vi.unstubAllGlobals());
 
-const tone = (id: number) =>
-  (plateRecords as { records: { id: number; ink?: { tone: string } }[] }).records.find(
-    (record) => record.id === id,
-  )!.ink!.tone;
-
-describe('home screen 3: the statement', () => {
-  it('types the venue, its subtitle and the counts read from the index', () => {
-    render(<HomeStatement locale="en" t={en} />);
-    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Cosmic Signature');
-    expect(screen.getByText(en.shapeOfMotion)).toBeInTheDocument();
+describe('the collection in the index’s own counts', () => {
+  it('says the cycles it spans, the works it has, and since when', () => {
     const summary = cycles();
-    const counts = screen.getByText(new RegExp(en.livingCollection));
-    expect(counts).toHaveTextContent(`Cycle ${summary[0].cycle} to Cycle ${summary.at(-1)!.cycle}`);
-    expect(counts).toHaveTextContent(`${collectionIndex.total} works`);
-    expect(counts).toHaveTextContent('since June 2026');
-    expect(screen.getByText(en.statementLine)).toBeInTheDocument();
-    expect(screen.getByText(en.statementSigned)).toBeInTheDocument();
-    const link = screen.getByRole('link', { name: `${en.collection} →` });
-    expect(link).toHaveAttribute('href', '/collection');
+    expect(collectionCounts('en', en)).toEqual([
+      `Cycle ${summary[0].cycle} to Cycle ${summary.at(-1)!.cycle}`,
+      `${collectionIndex.total} works`,
+      'since June 2026',
+    ]);
+    // A date is worded as the reader's language words one.
+    expect(collectionCounts('uk', en).at(-1)).toMatch(/червень 2026/);
   });
 });
 
-describe('home screen 4: the spread', () => {
-  it('hangs one work in Ink on paper beside the other in Light on night, with the numerals and the Walk', () => {
-    render(
-      <MotionProvider>
-        <HomeSpread locale="ja" t={en} day="ink" />
-      </MotionProvider>,
-    );
-    const spread = screen.getByRole('region', { name: en.selectedWorks });
-    const links = within(spread).getAllByRole('link');
-    expect(links.map((link) => link.getAttribute('href'))).toEqual([
-      '/ja/art/31?expression=ink',
-      '/ja/art/35?expression=light',
-    ]);
-    expect(links.map((link) => link.getAttribute('aria-label'))).toEqual([
-      '№\u00a0031 · Ink',
-      '№\u00a0035 · Light',
-    ]);
-    expect(links[0].closest('[data-ground]')).toHaveAttribute('data-ground', 'paper');
-    expect(links[1].closest('[data-ground]')).toHaveAttribute('data-ground', 'night');
-    // Both leaves can wake: Ink into its excerpt, Light into its settling clip.
-    expect(links.every((link) => link.getAttribute('data-preview-available') === 'true')).toBe(
-      true,
-    );
-    const images = within(spread).getAllByRole('img', { name: /№\u00a003[15] · (Ink|Light)/ });
-    expect(
-      images.map((image) => new URL(image.getAttribute('src')!, 'http://localhost').pathname),
-    ).toEqual(['/art/31-ink-640.webp', '/art/35-light-640.webp']);
-    const figures = spread.querySelectorAll('figure');
-    expect(figures).toHaveLength(2);
-    // Each half of the screen is its work's own ground: the sheet's measured tone, the night.
-    expect(figures[0].parentElement!.getAttribute('style')).toContain(
-      `--plate-ground: ${tone(31)}`,
-    );
-    expect(figures[1].parentElement!.getAttribute('style')).toContain('--plate-ground: #000000');
-    expect(figures[0].querySelector('.hanging-numeral')).toHaveTextContent('031');
-    expect(figures[1].querySelector('.hanging-numeral')).toHaveTextContent('035');
-    expect(within(spread).getByText('№ 031')).toBeInTheDocument();
-    // No clip plays until a hand or focus asks for it; the label says only the expression.
-    expect(spread.querySelectorAll('video')).toHaveLength(0);
-    expect(within(spread).getByText('Ink')).toBeInTheDocument();
-    expect(within(spread).getByText('Light')).toBeInTheDocument();
-  });
-
-  it('changes the two works’ places with the day, so each hangs in both', () => {
-    render(
-      <MotionProvider>
-        <HomeSpread locale="en" t={en} day="light" />
-      </MotionProvider>,
-    );
-    const spread = screen.getByRole('region', { name: en.selectedWorks });
-    expect(
-      within(spread)
-        .getAllByRole('link')
-        .map((link) => link.getAttribute('aria-label')),
-    ).toEqual(['№\u00a0035 · Ink', '№\u00a0031 · Light']);
-  });
-});
-
-describe('home screen 5: this cycle', () => {
-  it('names the day’s work’s cycle, its count and date, and links every work of the cycle', () => {
-    render(<HomeCycle locale="en" t={en} dayWork={23} />);
+describe('a cycle hung twice across the seam', () => {
+  it('names the cycle, its count and date, and links every work of the cycle', () => {
     const cycle = indexedWork(23)!.cycle!;
+    render(<CycleRow locale="en" t={en} cycle={cycle} id="home-cycle" ground="paper" />);
     const summary = cycles().find((candidate) => candidate.cycle === cycle)!;
     expect(screen.getByRole('heading', { level: 2 })).toHaveTextContent(`Cycle ${cycle}`);
     expect(screen.getByText(new RegExp(`${summary.count} works · imprinted`))).toHaveTextContent(
       'June 15, 2026',
+    );
+    // The section says which ground it stands on, where a page's head follows its sections.
+    expect(screen.getByRole('region', { name: `Cycle ${cycle}` })).toHaveAttribute(
+      'data-ground',
+      'paper',
     );
     // The cycle hangs twice across the seam: in Ink on paper, and in Light on night.
     const ink = screen.getByRole('list', { name: en.ink });
@@ -144,11 +80,6 @@ describe('home screen 5: this cycle', () => {
       'href',
       `/collection?order=cycle&cycle=${cycle}`,
     );
-  });
-
-  it('renders nothing for a work the index does not know', () => {
-    const { container } = render(<HomeCycle locale="en" t={en} dayWork={999} />);
-    expect(container).toBeEmptyDOMElement();
   });
 });
 
@@ -185,9 +116,10 @@ describe('a cycle row under a label', () => {
     }
   });
 
-  it('carries no label, and describes nothing, where none is given', () => {
-    render(<HomeCycle locale="en" t={en} dayWork={23} />);
-    expect(screen.getByRole('region', { name: /^Cycle \d+$/ })).toBeInTheDocument();
+  it('carries no label, no ground, and describes nothing, where none is given', () => {
+    render(<CycleRow locale="en" t={en} cycle={indexedWork(23)!.cycle!} id="home-cycle" />);
+    const section = screen.getByRole('region', { name: /^Cycle \d+$/ });
+    expect(section).not.toHaveAttribute('data-ground');
     for (const link of screen.getAllByRole('link'))
       expect(link).not.toHaveAttribute('aria-describedby');
   });

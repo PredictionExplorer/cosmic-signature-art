@@ -119,7 +119,7 @@ The sites that designers cite as references share a handful of traits. Sources a
 | 4–9 s     | The dance, forward, under real gravity computed in the browser, at the Light film's own pace (Phase E). The trails gather in linear light with the generator's hues while the camera arcs around the event. The closest approach flares: the peak. On an HDR screen the bodies and the brightest crossings are brighter than the page's white.                                                                                                                             |
 | 9–10.5 s  | The camera returns to the generator's view, and its lens narrows until the depth flattens into the picture. The still takes over again, unaltered: the end. The number and title stand beside it, with one line: _Computed from its seed, in this browser, just now._                                                                                                                                                                                                      |
 
-- **A visible Skip**, or any other input, ends it at once on the still. WCAG 2.2.2 asks for a way to stop motion that runs past five seconds. Reduced motion, Save-Data and returning visitors keep the still, with _Watch it form_ beside it.
+- **A visible Skip**, or any other input, ends it at once on the still. WCAG 2.2.2 asks for a way to stop motion that runs past five seconds. Reduced motion, Save-Data and returning visitors keep the still, with _Watch it form_ beside it. (_Since 17 November 2026_ the home's _Watch it form_ stands beneath the orbit in depth, the first exhibit of the essay the home now is: [process-essay.md](process-essay.md) §8.1.)
 - **Why it opens on the still.**
   - People judge a page's look within 50 ms, and leave most often in the first ten seconds (§3). The art should be what they judge.
   - A canvas cannot be a Largest Contentful Paint. An entry that opened on black would make the still's late arrival, about ten seconds in, the page's LCP.
@@ -446,6 +446,13 @@ _8 November 2026, on the branch `claude/orbit-in-hand`: F2's first part (§5D), 
 - **Reduced motion.** Nothing plays unasked: _Play_ is offered where the window stands whole. A turned orbit returns in one step.
 
 **What it looks like.** № 031 [in both materials, flat and then turned](screenshots/orbit-in-hand.jpg): Ink above, Light below.
+
+**On the home, an exhibit of its own** (_since 17 November 2026_). The home's essay opens its first part with the orbit in depth ([process-essay.md](process-essay.md) §8.1): the day's work's orbit over its Light still, drawn by this engine and turned by this hand. For it the hand learned two things, both off unless asked for, so a work's page is as it was:
+
+- **To stay.** `nextHand(hand, gesture, still, stays)`: with `stays`, a hand that lets go leaves the orbit where it is, and only _The generator's view_, Home or Escape give it back. A turn that stays never rests part-open, where the drawing would lie half over the still: within twenty degrees of the generator's view it goes on to where the depth stands open, or back to the picture (`restingTurn`).
+- **To be led.** A `lead` gesture carries the orbit to a named turn over a set time (the `led` state): the exhibit's opening by itself, its two arrow buttons and its keys are all leads. A drag takes it over from wherever the lead has brought it.
+
+The exhibit's beats and its camera are `src/lib/first-light/depth.ts`: it holds the still, rewinds, plays the window at the film's pace while the camera travels a little under a radian, and rests. It keeps the camera's drift, so what turns is the picture's own figure, and it holds that figure whole on its stage at every turn (`holdOnStage`). A second finger on either orbit now waits over what the first found, never over the first's own wait (the work page's had the same fault, unseen because it springs back).
 
 ## 15. One part in a trillion, as built
 

@@ -51,6 +51,31 @@ describe('keeping the place', () => {
     });
   });
 
+  it('passes over a mark held in a margin that stays in sight: it marks no place in the text', () => {
+    Object.defineProperty(window, 'scrollY', { configurable: true, value: 4_000 });
+    // A chapter: its number and word in a margin that stays under the head, then its paragraphs.
+    page([40, 100, 100, 100, 100], -300, { 4: 'steps-4' });
+    const [index, ...text] = [...document.querySelectorAll('p')];
+    const margin = document.createElement('div');
+    margin.style.position = 'sticky';
+    index.replaceWith(margin);
+    margin.append(index);
+    // Stuck, the index stands at the reading line whatever the paragraphs do.
+    index.getBoundingClientRect = () => ({ top: 60, height: 40 }) as DOMRect;
+    text.forEach((mark, at) => {
+      mark.getBoundingClientRect = () => ({ top: -300 + at * 100, height: 100 }) as DOMRect;
+    });
+    keepPlace('/uk');
+    // The place kept is the fourth paragraph, which the line crosses, not the chapter's head.
+    expect(JSON.parse(sessionStorage.getItem(PLACE_KEY)!)).toEqual({
+      to: '/uk',
+      id: 'steps-4',
+      index: 3,
+      count: 4,
+      share: 0.64,
+    });
+  });
+
   it('keeps nothing at the top of a page, and forgets an older place', () => {
     sessionStorage.setItem(PLACE_KEY, '{"to":"/ko/art/31"}');
     page([100, 100], 0);

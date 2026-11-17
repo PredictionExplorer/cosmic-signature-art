@@ -348,7 +348,7 @@ export const en = {
   glossaryBorda:
     'One hundred thousand candidate orbits were simulated and ranked by a Borda count; the published number is the one it chose.',
   glossaryWavelength:
-    'The dominant wavelength is the hue of the palette’s anchor, measured in nanometres of visible light.',
+    'The dominant wavelength is the wavelength nearest in hue to the work’s most strongly coloured body, in nanometres.',
   glossaryMasses: 'The three masses set how strongly each body pulls on the other two.',
   glossaryEccentricity:
     'Drift eccentricity measures how far the ellipse the camera is carried along departs from a circle. It is drawn from the seed and says nothing of the three bodies’ paths.',
@@ -365,6 +365,8 @@ export const en = {
   shapeOfMotion: 'The shape of motion.',
   statementLine:
     'Each work is one recorded three-body orbit, rendered twice, as light and as ink. Both are the same token.',
+  homeDescription:
+    'Each work is one motion of three bodies under gravity, computed step by step from a single number. Today’s work, set out as it was made: orbit, Light, Ink.',
   statementSigned: 'Cosmic Signature · October 2026',
   statementCorrected: 'Corrected November 2026: § 3 and § 6.',
   // The line under a still, sentence by sentence: the home's, with its second sentence for each
@@ -765,5 +767,331 @@ export const en = {
   allTheLightOrbits: 'The orbits in this light',
   // ·
   // ·
+  // ── The essay the home is made of (src/app/[locale]/_essay/essay.tsx), in reading order.
+  // {braces} are filled from the works' records (src/lib/essay/facts.ts). [^name] marks the
+  // source a sentence was checked against (src/lib/essay/sources.ts); *…* is an emphasis,
+  // **…** a term defined where it stands, and ^{…} a raised figure.
+  essayStandfirst:
+    'Each work here is one motion of three bodies under gravity, followed through a million steps of time. Nobody drew it, and no formula anyone can use gives it: a program, the generator, computes it step by step from one number, the work’s seed. It has two expressions: Light, a long exposure of the motion, and Ink, the same motion stirring a sheet of water. Today’s work is {work}. It is set out here in the order it was made: the orbit, the light, the water.',
+  essayOfWork: 'From the record of {work}',
+  // · The orbit in depth (src/components/orbit-depth.tsx): what stands beside it, what it is a
+  // drawing of, as the work decides, and what a screen reader hears of it
+  essayOrbitWord: 'Orbit',
+  essayOrbitCopy:
+    'This is {work} before it is a picture: three bodies, of masses {one}, {two} and {three}, followed through the million steps the work records. Their motion has depth, and a picture keeps one view of it. Here it can be turned.',
+  essayOrbitPlaces:
+    'Each line is one body’s path as the picture’s camera followed it, and that camera moves (chapter 07). Seen from the generator’s view, these are the paths the Light still was drawn from.',
+  essayOrbitSpace:
+    '{work} is one of {count} works that the generator draws in a space where a body’s place is mixed with its own velocity, or with another body’s place (chapter 07). What turns here is that drawing in depth, not the paths the bodies took.',
+  essayOrbitCopies:
+    'Its picture repeats every stroke about the centre of the sheet. Here the repeated lines turn with the rest.',
+  essayDepthLabel:
+    'The orbit of {work} in depth. The arrow keys turn it; Home returns it to the generator’s view.',
+  // The orbit's own controls and states (src/components/orbit-depth.words.ts)
+  depthHint: 'Drag the orbit to turn it. The arrows turn it too.',
+  depthHintTouch: 'Touch and hold the orbit, then drag to turn it. The arrows turn it too.',
+  depthTurnLeft: 'Turn left',
+  depthTurnRight: 'Turn right',
+  depthTiltUp: 'Tilt up',
+  depthTiltDown: 'Tilt down',
+  depthOpen: 'Turn it in depth',
+  depthWaiting: 'The orbit is computed in this browser as it comes into view.',
+  depthUnavailable:
+    'This browser cannot draw the orbit in depth. The Light still stands in: the generator’s one view of it.',
+  depthNote:
+    'It opens from the generator’s view, the one the Light still keeps, and returns to it when asked. It is computed in this browser from the places and velocities of the three bodies at the first step of the recorded window; those were re-derived from the seed and checked against the record before they were kept.',
+  // · Light and · Ink: the two plates, and the sweep between them
+  essayLightTitle: 'Next, an exposure.',
+  essayLightCopy:
+    'This is {work} in Light: its million steps, left on the sheet as light. Nothing is erased. The film is the still being exposed.',
+  essaySweepCopy:
+    'The published spectral sweep is a film of ten seconds. It shows the picture by one narrow band of its light at a time, from the violet end of the work’s own light to the red end and back: where on the sheet each wavelength lies.',
+  essayInkCopy:
+    'This is the same work in Ink: the same three bodies, at the same moments, moving through a sheet of water. The still is the sheet as the last step leaves it.',
+  // · The cycle: how a work comes to exist
+  essayBornWord: 'The cycle',
+  essayBornTitle: 'No work exists before its cycle closes.',
+  essayBorn1:
+    'Nothing was made in advance. Works are imprinted in cycles: each successful round of the Cosmic Signature game ends by minting new tokens on Arbitrum, and their seeds are fixed in that one transaction. Until a cycle closes, its works do not exist anywhere, for anyone. The generator computes them afterwards, from their seeds: the orbit, then the Light, then the Ink.',
+  essayBorn2:
+    '{work} was imprinted on {date}, one of the {count} works of Cycle {cycle}. One token stands for all of it: the seed, the orbit, the Light and the Ink, neither the original of the other. The collection grows with every cycle.',
+  // 01 · Two
+  essayTwoWord: 'Two',
+  essayTwoTitle: 'Two bodies repeat one ellipse.',
+  essayTwo1:
+    'Begin with two. In 1687 Isaac Newton showed what two bodies do when each pulls on the other with a force that weakens as the square of the distance between them. Each moves on one of three curves, an ellipse, a parabola or a hyperbola, about the centre the two share.[^newton]',
+  essayTwo2:
+    'Which curve depends on speed. If the two move too slowly to climb out of each other’s pull they are **bound**: the curve is an ellipse, it is closed, and they trace it again on every lap. If they move faster the curve is open, and they pass once and part.',
+  essayTwo3:
+    'So the whole future of two bodies is one curve, known from the start. One short equation, Kepler’s, then gives the place of each body on its curve at any moment, to as many digits as are wanted.[^kepler] Nothing about two bodies is left to find.',
+  essayTakeLead:
+    'Take one of the three bodies of {work} away at the first frame of its film, and the two that remain are two bodies alone.',
+  essayTakeBound:
+    'Without body {out}, bodies {a} and {b} are bound, and would lap one ellipse every {time} of film.',
+  essayTakeOpen:
+    'Without body {out}, bodies {a} and {b} are not bound: they would pass once and part.',
+  essayTakeAll: 'With all three present, no lap is like the one before.',
+  essayTwoFigure:
+    'Bodies {a} and {b} of {work}, alone, as they stand at the first frame of its film. Each laps its own ellipse about the point marked between them. Drawn to scale from the record.',
+  essayTwoFigureOpen:
+    'Bodies {a} and {b} of {work}, alone, as they stand at the first frame of its film: the path of one past the other, an open curve. They pass once and part.',
+  // 02 · Three
+  essayThreeWord: 'Three',
+  essayThreeTitle: 'Three bodies keep their shape in two arrangements only.',
+  essayThree1:
+    'A third body changes almost everything. Newton tried it on the Moon, which is pulled by the Earth and the Sun at once, and could only say what the Sun’s pull does to the Moon’s ellipse, piece by piece.[^newton3]',
+  essayThree2:
+    'Two arrangements are spared. In the 1760s Leonhard Euler found that three bodies on one straight line can keep the proportions of their spacing.[^euler] In 1772 Joseph-Louis Lagrange found the line again and a second arrangement beside it: three bodies at the corners of an equilateral triangle. In both, he showed, each body moves on a circle or on one of Newton’s curves, as if there were only two.[^lagrange]',
+  essayThree3:
+    'Lagrange thought them a curiosity. These cases, he wrote, do not occur in the system of the world.[^lagrange] In 1906 Max Wolf, at Heidelberg, found an asteroid travelling near the third corner of a triangle whose other corners are the Sun and Jupiter. More than fifteen thousand such asteroids, the Trojans, are known today.[^trojans] And the James Webb telescope circles a point on the line through the Sun and the Earth, a million and a half kilometres beyond the Earth.[^webb]',
+  essayThree4:
+    'They are rare for a reason. Each needs an exact start. Even turning steadily, a line of three does not survive the smallest disturbance, and a triangle survives one only where one body far outweighs the other two, as the Sun outweighs Jupiter and an asteroid.[^gascheau] The bodies of a work are never so unequal: the heaviest is at most three times the lightest.',
+  essayThree5:
+    'The record still looks for both. Its **syzygies** are the moments when the three come nearly into one line: for {work} it counts {count}, and for no work more than {most}. And the search that chose each orbit favoured those whose triangle stays nearest to equilateral (chapter 06).',
+  essayThreeFigure:
+    'The two arrangements in which three bodies move as two do: on one line, and at the corners of an equilateral triangle. Both need an exact start.',
+  // 03 · No formula
+  essayFormulaWord: 'No formula',
+  essayFormulaTitle: 'No formula gives the places of three.',
+  essayFormula1:
+    'Two bodies are solved by finding what never changes. As they move, a few quantities keep the values they began with: the energy; the momentum, in each of three directions; the steady course of the centre of mass, three more; and the angular momentum, the amount of turning about that centre, three more. Ten in all. Two bodies are described by twelve numbers; the ten quantities fix ten of them, two further steps of the same kind dispose of the rest, and what is left is the ellipse.[^integrable]',
+  essayFormula2:
+    'Three bodies need eighteen numbers: three for where each one is, and three for how it is moving. The same ten quantities are conserved, and the same two steps can be taken. Six numbers remain, and no one has reduced them further.[^count] For two centuries the hunt was for an eleventh quantity.',
+  essayFormula3:
+    'In 1885 King Oscar II of Sweden and Norway offered a gold medal and 2,500 crowns for, among other things, a way to write the motion of any number of bodies as a sum that holds for all time. Nobody answered that question. Henri Poincaré won the prize in January 1889 with a memoir on three bodies.[^prize] That summer Lars Edvard Phragmén, preparing it for the press, asked him about some passages that were not clear. In explaining them Poincaré found an error at the memoir’s centre, after it had been printed. The copies were called back, and he paid the bill for the spoiled printing: 3,585 crowns, over a thousand more than the prize.[^prize]',
+  essayFormula4:
+    'The memoir he published in 1890 holds what the error had hidden: motions that part from a repeating orbit and come back to it, in endless variety. Drawn as curves, they fold back on themselves and cut one another infinitely often, a net with meshes infinitely fine. “One will be struck by the complexity of this figure,” Poincaré wrote of it later, “which I do not even try to draw.”[^tangle] It is arguably the first mathematical description of what is now called chaos.[^chaos]',
+  essayFormula5:
+    'Two results closed the old road. In 1887 Heinrich Bruns proved that the three-body problem has no further conserved quantity of the algebraic kind the ten are.[^bruns] Poincaré’s memoir proved the same of a far wider kind, for the case in which one of the three is too light to move the other two.[^poincare1890] The door the ten came through is shut, and the method that solves two bodies does not solve three.',
+  essayFormula6:
+    'This is often retold as “three bodies have no solution”. They have one. In 1912 Karl Sundman, in Helsinki, wrote down a sum of infinitely many terms that gives the places of three bodies at any time, however distant, provided their angular momentum is not exactly zero.[^sundman] It is exact, and it is no use. In 1930 David Belorizky tried it on the one case where the answer is known, Lagrange’s triangle. To give a body’s place two months ahead, correct to a single decimal, the sum needs more than 10^{{small}} terms when the three masses are equal, and more than 10^{{large}} when one of them holds a two-hundredth of the whole.[^beloriszky]',
+  essayFormula7:
+    'So the truth is narrower than the myth. The motion of three bodies is fixed entirely by how they begin; nothing in it is left to chance. But no formula anyone can use reads it off, and the only way to learn what three bodies will do is to follow them, one small step after another.',
+  essayFormulaFigure:
+    'Each square is one number needed to say where the bodies are and how they move: twelve for two bodies above, eighteen for three below. Filled squares are fixed by the ten quantities that never change; the two grey ones are removed by the two further steps. For three bodies, six are left.',
+  // 04 · A million steps
+  essayStepsWord: 'A million steps',
+  essayStepsTitle: 'A million steps, and what the arithmetic keeps.',
+  essayUnitsTitle: 'The units',
+  essayUnits:
+    'The generator works in units of its own. It sets the constant of gravity to {gravity}, and draws each body’s mass between {massLow} and {massHigh}, its first place within {reach} units along each of three axes, and its first velocity within {speed} along each.[^generator-sim] None of these is a kilogram, a metre or a second. Every mass, distance, time and energy on a work’s page is in these units.',
+  essaySteps1:
+    'So the venue follows them, as the generator did. One **step** carries the three bodies forward by {dt} of the generator’s unit of time. Each orbit is first run for {warmup} steps that are not drawn: the **warm-up**. The next {steps} steps are the **recorded window**, and they are what the work is made of. The Light film shows them in {film}, {rate} steps to the second. The Light still is drawn from all of them. The record’s measurements are taken over them.',
+  essaySteps2:
+    'After the window the record computes on, without drawing, as far as step {horizon} from the window’s first: its **horizon**, {span} at the film’s pace. Every {interval} steps on the way it asks whether one body carries more energy of motion than ties it to the other two. After {answers} such answers in a row it finds that body no longer bound, and dates the finding. This is a working test, not a proof that the body will never return: a proof asks for its distance and its outward speed as well.[^standish] If the horizon comes first, the published trait reads “{dance}”. What has been shown is that the three are bound through {horizon} steps, and the venue says only that.',
+  essaySteps3:
+    'Each step is three pushes of the simplest kind there is: move every body along its velocity, then change every velocity by the pull the bodies feel where they now stand. Newton used this push in the first proposition of the *Principia*.[^leapfrog] Three of them in a row, of lengths {forward}, {back} and {forward} of a step, cancel one another’s errors to the fourth order, and the middle one runs backward. Étienne Forest and Ronald Ruth found the scheme in the 1980s; in 1990 Haruo Yoshida showed that it is nothing but three plain pushes, and how to build finer ones the same way.[^yoshida] The generator calls it by his name.',
+  essayPushFigure:
+    'One step of the generator’s integrator, as three pushes: forward, back past the start, and forward again to the step’s end. The three lengths add up to one step.',
+  essaySteps4:
+    'Gravity keeps the energy of three bodies exactly constant. A method built of such pushes does not keep it exactly, but it keeps it from drifting: the computed energy stays within a small distance of where it began, for a very long time, where an ordinary method lets it creep away.[^symplectic]',
+  essaySteps5:
+    'That holds only while a step is small beside what the bodies are doing, and a fixed step cannot follow a near miss.[^chambers] In {lost}, near step {step}, bodies {a} and {b} pass {closest} of a unit apart, and in that one step they travel {travel} times the gap between them. The computed energy changes by {change}. Within {within} steps, after several such passes, it has gone from {before} to {after}, and the three fly apart with energy that came from nowhere. The record dates an ejection of body {ejected} at step {ejection}. It is the arithmetic’s doing, not gravity’s, and the work’s page says so: past that step this is the computation, not an orbit.',
+  essayEnergyFigure:
+    'The computed energy of two works, from the first step of the recorded window to twice its length: how far it stands from where it began, as a share of it. Each mark up the side is a thousand times the one below. {held} stays within a few parts in ten trillion. {lost} stays as close until its near miss, then leaps past the dashed line, one part in a thousand, beyond which the venue calls nothing an orbit. The shaded band is the recorded window.',
+  essaySteps6:
+    'In {kept} of the {works} works the computed energy stays within one part in a thousand from the window’s first step to the step the record dates, or to its horizon. In {failed} it does not, and in {inside} of those, {insideWorks}, it is lost inside the recorded window itself. The pictures are no less exact for that: each is the published computation, reproduced bit for bit. But past such a pass the computation is no longer a motion gravity allows, and the venue calls nothing after it an escape.',
+  essaySteps7:
+    'Bit for bit is meant literally. The computation uses only addition, subtraction, multiplication, division and the square root. The standard for computer arithmetic fixes the result of each of those five to the last binary digit, and the browser’s own language holds to it.[^ieee] So any browser, on any device, reaches the digits the generator reached, and the record can be checked exactly.',
+  // 05 · A trillionth
+  essayTwinWord: 'A trillionth',
+  essayTwinTitle: 'A trillionth of a unit sets how far ahead anyone can see.',
+  essayTwin1:
+    'Following three bodies exactly is still not foreseeing them. Start three bodies. Start them again with one body moved by a hair. For a time the two motions agree. But the gap between them does not stay a hair, and it does not grow at a walk. It doubles, and doubles again. Poincaré put the general point in 1908: small differences at the start can make very great ones in what follows, and then prediction becomes impossible.[^poincare1908]',
+  essayTwin2:
+    'Every work’s page shows this, under *{control}*. The browser follows the work and a twin whose body 1 begins a trillionth of a unit to one side. For {work} the gap doubles, on average, about every {steps} steps, which is {time} of its film.',
+  essayTwinAfter:
+    'When the film ends the two are still one line on the plate, {gap} of a unit apart. At step {step}, {after} after the film, they stand three pixels apart, and soon after they share nothing.',
+  essayTwinInside:
+    'At step {step}, {into} into the film, the two already stand three pixels apart on the plate, and soon after they share nothing.',
+  essayTwinNever:
+    'When the film ends the two are still one line on the plate, {gap} of a unit apart, and they are one line still at step {horizon}, where the venue stops following them.',
+  essayTwinFigure:
+    '{work} and its twin, a trillionth of a unit apart at the first step: the gap between them against time at the film’s pace. Each mark up the side is a thousand times the one below, so steady doubling is a straight line; it is drawn dashed, at the average pace. The gap itself grows in bursts, at the bodies’ nearer passes, and rests between them. The shaded band is the film.',
+  essayTwin3:
+    'Doubling puts a price on foresight. To see {time} further along this orbit, its start must be known twice as well. Each further decimal digit of the start buys about {digit} on average, and no more: the time a forecast holds grows only as the count of digits known.[^horizon] The cost multiplies while the gain only adds. Across the collection the gap doubles every {least} to {most} of film; in half the works it takes less than {median}.',
+  essayTwin4:
+    'The planets pay the same price. By Jacques Laskar’s computation, an error of 15 metres in the Earth’s starting place grows to about 150 metres in ten million years, and to 150 million kilometres, the distance from the Earth to the Sun, in a hundred million.[^laskar]',
+  essayTwin5:
+    'This is why a work’s seed is its identity, and why the venue checks each orbit to the last bit and not to the last few digits. A difference in the last digit would double its way into another work. Only the exact seed gives the exact work.',
+  essayTwin6:
+    'It reaches as far as the fate. In {differ} of the {clean} works where both computations keep their energy, the twin meets a different fate within the record’s horizon than the work does. In {outcome} of them the three bodies of one are still bound there, and those of the other are not.',
+  essayChaosTitle: 'The record’s Chaos number is another measure',
+  essayChaos:
+    'The published trait Chaos runs from 0 to 100. It says how widely each body’s motion is spread across frequencies within the recorded window: low for a motion that keeps to a few rhythms, high for one spread across many.[^generator-labels] It does not say how fast a small difference grows. The doubling time does.',
+  // 06 · The choice
+  essayChoiceTitle: 'One orbit of a hundred thousand.',
+  essayChoice1:
+    'Nobody drew these orbits, and nobody picked them by eye. A work’s seed is fixed in the transaction that mints it. From the seed the generator draws {candidates} beginnings, each with three masses, three places and three velocities.',
+  essayChoice2:
+    'A quick gate comes first. A beginning is set aside if its total energy is above {energy} or its angular momentum is below {momentum}. The first would leave the three with energy enough to scatter; the second would send them almost straight at one another. Each beginning that passes is run for {each} steps, the warm-up and then the window, and dropped if a body gets free during the warm-up.[^generator-sim]',
+  essayChoice3:
+    'Those that remain are measured three ways over their windows: how widely each body’s motion is spread across frequencies; how near the triangle of the three stays to equilateral; and how much path the bodies lay down for the room they take up. They are then ranked by a **Borda count**, the way of voting that Jean-Charles de Borda set before the Paris Academy of Sciences, printed in its volume for 1781: every candidate is ranked on each measure, earns points for its place in each ranking, and the points are added.[^borda] Here the first ranking counts once, the second by a weight the seed itself draws ({weight} for {work}), and the third by 0.15.[^generator-sim] The record calls the first two weights “chaos” and “equilibrium”.',
+  essayChoice4:
+    'The twenty-four candidates with the most points are then tried as pictures, small, and scored for how they sit on the sheet. The best of them is the work: for {work}, candidate {index}. Its number and its weights are in its record. The search itself runs to as many as {search} steps, too many for a browser. What the page does is draw the {candidates} beginnings again from the seed and check the chosen one’s masses against the record, to the last bit.',
+  // 07 · The view
+  essayViewWord: 'The view',
+  essayViewTitle: 'A picture keeps one view of a motion in depth.',
+  essayView1:
+    'The three bodies move in three dimensions, and a sheet has two. So before any light is laid, the generator must choose where to stand.[^generator-view]',
+  essayView2:
+    'It does not choose by eye. Left as computed, every work would be seen along the same axis. So from the seed the generator draws four orientations, with no direction favoured, turns the orbit to each, and scores a small trial drawing of each view: among other things, how much of the sheet its lines cover, and how evenly. The view that scores highest is kept; where two score alike, the first drawn.[^generator-view]',
+  essayViewScores:
+    'Derived again from the seed of {work}, the four views score {first}, {second}, {third} and {fourth} on a scale from 0 to 1, in the order drawn. Number {kept} was kept.',
+  essayView3:
+    'Depth is kept, as brightness. It moves no stroke on the sheet, but the farther a stroke lies from the plane of the sheet, the fainter it is laid.[^generator-light]',
+  essayView4:
+    'Nor is the view held still. Through the million steps the camera is carried along an ellipse of its own, and Kepler’s equation, which places a body on its curve (chapter 01), gives the camera’s place on that ellipse.[^generator-camera] The record calls this the drift. Where it carries the camera far, a motion that turns back on itself is spread across the sheet.',
+  essayViewDrift:
+    'While the film of {work} runs, its camera is carried for {share} of the time one circuit of its ellipse would take. Its drift eccentricity is {eccentricity}; a circle’s is 0.',
+  essayView5:
+    'Then the frame. It is the box that holds every step of all three bodies, with a margin of a twentieth on each side, let out in width or in height to the shape of the sheet.[^generator-light]',
+  essayView6:
+    'Not every picture shows where the bodies were. In {count} of the {works} works the generator draws a space in which a body’s place is mixed with its own velocity, or with another body’s place. In {repeated} it repeats every stroke about the centre of the sheet, turned or mirrored; where the copies are turned, the whole drawing is first made smaller, so that each stays on the sheet.[^generator-view]',
+  // 08 · A stroke
+  essayStrokeWord: 'A stroke',
+  essayStrokeTitle: 'A stroke lays no colour. It lays light.',
+  essayStroke1:
+    'The picture is light, added up. Step by step through the million, the generator lays strokes, and what a stroke lays is not a colour but light. Each body has a hue of its own; the hue chooses a wavelength, and the stroke lays a narrow band of light about it.[^generator-light]',
+  essayStroke2:
+    'Every point of the sheet keeps a spectrum: sixty-four bands, each five nanometres wide, from 380, in the violet, to 700, in the red. A stroke adds to the few bands about its wavelength. A purple, which no single wavelength gives, is laid as two lights, one violet and one red. Where strokes cross, their light adds, band by band.[^generator-light]',
+  essayStroke3:
+    'Only when a frame is made is each spectrum weighed as the eye weighs light, and given one colour.[^generator-light] The weights are the standard observer: tables of how an eye of normal colour vision answers each wavelength, adopted by the International Commission on Illumination in 1931.[^observer] So where two strokes meet, neither covers the other, as paint would. The sheet keeps the sum of their light.',
+  essayStroke4:
+    'What the chief stroke is depends on the work, and the record names it the structure. In {ribbons} of the {works} works it is the body’s own path. In {chords} it is a line from where each body is to where it will be a moment later. In the rest it is a tangent to each path, a curved line between two bodies, or a dot set down at equal intervals of time, so that the dots crowd where a body is slow.[^generator-light]',
+  essayStrokeRecord:
+    'Its structure is “{structure}” and its palette “{palette}”. Its dominant wavelength is {wavelength}: the wavelength nearest in hue to its most strongly coloured body.',
+  essayStroke5:
+    'The line carries the speed. Slow and fast are reckoned within each work’s own range of speeds, so that every work runs the whole scale. By speed alone, a stroke is broadest and faintest where the line moves slowest; where it moves fastest it is less than half as wide, and up to eight times as bright. In most works a slow swell, set by the seed, widens and narrows the line besides.[^generator-light]',
+  essayStroke6:
+    'The exposure is metered once for each work, over about 240 moments of its motion, and then held for every frame. The film has {frames} frames, {stride} steps to the frame, and each frame is all the light laid so far. So the film opens dark, and the still is its last frame.[^generator-light]',
+  essayStroke7:
+    'The master of each Light still is an image of {width} points by {height}, with sixteen bits to each colour channel, in the Display P3 colour space. The stills shown here are the copies published from it.[^generator-light]',
+  // 09 · A current
+  essayCurrentWord: 'A current',
+  essayCurrentTitle: 'The same three bodies stir a sheet of water.',
+  essayCurrent1:
+    'Ink is the same motion, used a second time. The three bodies cross a sheet just as the picture shows, through a layer of water with no depth. They lay ink into the water, and the water carries it.',
+  essayCurrent2:
+    'The water obeys the equations that Claude-Louis Navier set out in 1822 and George Gabriel Stokes derived again in 1845.[^navier-stokes] In words, they say three things.',
+  essayCarriesLead: 'The water carries.',
+  essayCarries:
+    'Each drop moves with the water around it, and whatever is in the drop moves with it. This is advection. Here it is the only thing that moves ink: a mark goes where its water goes.',
+  essayRubsLead: 'The water rubs.',
+  essayRubs:
+    'Water sliding past water drags it along and is slowed in turn. This is viscosity. It spreads a body’s motion into the water around it and lets that motion die away.',
+  essaySqueezeLead: 'The water cannot be squeezed.',
+  essaySqueeze:
+    'As much flows into any patch as flows out of it. So a patch of inked water that is drawn out long must grow thin in proportion. Its area cannot change.',
+  essayCurrent3:
+    'One number sets the balance between carrying and rubbing: the size of the moving thing, times its speed, divided by the water’s viscosity. It is called the Reynolds number, for Osborne Reynolds, who showed in 1883 that it decides how a flow behaves.[^reynolds] Every work’s water is set to {reynolds}, reckoned on a body’s width and the bodies’ usual speed.[^ember] Water flowing past a round body begins to shed eddies behind it once that number passes about 46.[^wake] At {reynolds} it sheds them freely, and those are the whirls in an Ink still, each with ink wound into it.',
+  essayCurrent4:
+    'The bodies are the picture’s own. At every step each stands on the sheet where the Light film draws it. Each is a patch a twentieth of the sheet’s height across: round when it is far from the other two, and drawn out when they are near, up to three times as long as it is wide, as their pull would draw out a drop.[^ember] A body holds no ink. The three pale hollows in an Ink still are the bodies, where the film left them.',
+  essayCurrent5:
+    'Ink enters where water touches a body. The bodies stir for a moment first, so every Ink film opens on bare paper, for between {least} and {most}. Fresh ink is black for {hold} of film. Then it fades, over about six seconds, to a pale wash that stays.[^ember] That fading is a rule of the picture, not a law of the water. It is why the black strokes of an Ink still are the last second or two of the motion, the greys the few seconds before, and the pale field everything earlier, carried and folded by the water since.',
+  essayCurrent6:
+    'One thing is left out of this water. In a real dish, ink also spreads by itself, slowly, as its particles wander. Here it does not: it is only carried. Where black water and clear water come to lie in sheets finer than the picture can show, the picture shows their mixture, and that is all the blurring there is.[^ember]',
+  essayInkMade:
+    'The water of {work} is a grid of {gridX} by {gridY} points, advanced {fluidSteps} times. The ink is followed at {inkX} by {inkY} points, nine to each point of the picture. The studio’s machine, running {threads} threads, took {hours} hours over this work’s Ink.',
+  essayCurrent7:
+    'A sheet is the one case the mathematics has settled. For water with no depth, left to itself, it has long been proved that these equations keep a smooth answer for all time, whatever the start.[^fefferman] For water with depth, the same question was set in 2000 as one of the seven Millennium Prize Problems.[^fefferman]',
+  // 10 · The plait
+  essayPlaitWord: 'The plait',
+  essayPlaitTitle: 'Three stirrers can plait, and a plait must mix.',
+  essayPlait1:
+    'Why is the ink folded through the sheet, and not left lying where it was laid? The eddies are part of the answer. The deeper part is that there are three bodies.',
+  essayPlait2:
+    'Look down on three stirrers and let time run to the right: their paths are three strands. If the strands are only twisted, like the plies of a rope, a line of dye can be wound round and round and keep its length. If they cross as in a plait of hair, left over middle, then right over middle, each repeat catches the line and lays it over itself.',
+  essayPlaitFigure:
+    'Three strands crossed two ways. First a plait, left over middle and then right over middle: each repeat must lengthen some line in the water at least {pigtail} times. Then a twist, the three wound like the plies of a rope: nothing is forced. Last, what two repeats of the plait do to a patch of ink, whose area cannot change.',
+  essayPlait3:
+    'In 2000 Philip Boyland, Hassan Aref and Mark Stremler showed that such a plait, repeated, leaves the water no choice. There are lines in the water, looped round the stirrers, that must grow at least {pigtail} times longer with each repeat, in any fluid, thick or thin, quick or slow: the result rests only on the water moving without tearing.[^bas] And since the water cannot be squeezed, a line that grows longer grows thinner by as much. After ten repeats a patch of ink is {ten} times longer and thinner: sheets too fine for anything to keep apart. In a dish, ink’s own slow spreading then finishes the mixing.[^mixing] In this water, the grain of the picture does.',
+  essayPlait4:
+    'It takes three. Two stirrers may mix the water well or badly, but they can only wind round each other, and nothing is forced.[^bas] Three is the smallest number of bodies whose gravity has no formula, and the smallest number of stirrers that must mix what they stir.',
+  essayPlait5:
+    'A work’s record keeps a plait of its own, the **braid word**. That of {work} begins {word} and counts {count} crossings. Each letter is two neighbouring bodies changing places, s1 for one pair and s2 for the other, with a mark for which of the two passed in front.[^generator-labels] It is read along the long axis of the raw orbit, which is not the sheet’s.',
+  essaySheetFigure:
+    'The three bodies of {work} on its Ink sheet, as three strands through its film, from the first frame at the left to the last at the right, line after line: {crossings} changes of place. The strands stand in the order of the bodies from the left of the sheet, and the numerals name the bodies where each line begins; where two cross, the one drawn across is the body nearer the top of the sheet.',
+  essayClaimTitle: 'What the venue does not claim',
+  essayClaim:
+    'The theorem is about stirrers that the water must go round. The Ink’s bodies come from a motion in depth, pressed flat, and on a sheet two of them can pass across each other. In every one of the {works} works two bodies overlap on the sheet at some moment: in {work} for {share} of the film, in half the works for more than {median}. The bodies are also soft at the edge. So the theorem says why Ink looks as it does. It does not yet give a number for any work.',
+  essayClaimForced:
+    'If stirrers that the water had to go round kept repeating the plait drawn above, each repeat would lengthen a line at least {stretch} times. Whether the ink of {work} is stretched like that is something the venue has still to measure.',
+  essayClaimFree:
+    'The plait drawn above forces nothing: even past stirrers that the water had to go round, a line could keep its length.',
+  // 11 · The paper
+  essayPaperWord: 'The paper',
+  essayPaperTitle: 'The paper is computed too.',
+  essayPaper1:
+    'Each work’s paper is made from its seed, so no two works lie on the same sheet. It is reckoned {width} millimetres wide and is modelled on kozo paper. Its fibre gathers in clouds, {flocLow} to {flocHigh} millimetres from one to the next across the flow that laid them, and longer along it. About {fibres} fibres to the square centimetre show at the surface, nine in ten of them {fibreShort} to {fibreLong} millimetres long.[^ember-paper]',
+  essayPaper2:
+    'The ink is one pigment, the soot of burnt pine, lying in the paper’s fibres. Its darkness is not taken from a scale of greys. It is computed as light, in thirty-six bands from 380 to 730 nanometres. A warm gallery lamp lights the sheet. What soot and fibre absorb and scatter in each band follows the theory of paint layers that Paul Kubelka and Franz Munk published in 1931, the year the standard observer was adopted (chapter 08).[^kubelka-munk] Over the densest ink lies a thin coat of glue.[^ember-optics]',
+  essayPaper3:
+    'So both expressions are computed as light. In Light it is added, in sixty-four bands, on black. In Ink it is taken away, in thirty-six, from a lit sheet. In neither is a colour laid.',
+  essayPaper4:
+    'Across the collection, the Ink of one work took the studio’s machine between {least} and {most} hours. It is computed on the processor alone, in arithmetic chosen so that any machine, given the inputs a work’s certificate records, reaches the same raw frames, bit for bit. The certificate records their hashes.[^ember]',
+  // · Not known
+  essayUnknownWord: 'Not known',
+  essayUnknownTitle: 'What the venue does not know.',
+  essayUnknown1:
+    'Nobody can say what a work’s three bodies do in the end. The record looks as far as step {horizon} and stops. Carried on by the same computation to step {far}, {span} at the film’s pace, {clean} of the {bound} works whose three are bound at the horizon keep their energy all the way. In {lost} of those, one body is found no longer bound, the earliest at step {earliest}. In {still} the three are still bound. In the other {broken} the computation loses its energy on the way, and nothing can be said.',
+  essayUnknown2:
+    'That is the usual end of three bound bodies of like mass and spacing: sooner or later one escapes, and the other two are left as a pair.[^ejection] But a trillionth of a unit changes which one, and when. So of a work whose three are bound at the horizon the venue says exactly that, and nothing about what comes after.',
+  essayUnknown3:
+    'All of it can be checked. Each work’s page derives its orbit again from its seed, in the browser, and prints the comparison with the published record line by line.',
+  // § The venue's words
+  essayTermsWord: 'Terms',
+  essayTermsTitle: 'The venue’s words.',
+  essayTermSeed: 'Seed',
+  essayTermSeedIs:
+    'The number fixed in the transaction that mints a work. Everything the generator computes for the work, it computes from this number.',
+  essayTermGenerator: 'Generator',
+  essayTermGeneratorIs:
+    'The program that computes each work from its seed: the orbit, then the Light, then the Ink. Its source is public.',
+  essayTermRecord: 'Record',
+  essayTermRecordIs:
+    'The file published with a work: the candidate chosen, its masses, its closest approach, its syzygies and its braid word, and the names the publisher gives its structure, its palette and its fate.',
+  essayTermCycle: 'Cycle',
+  essayTermCycleIs:
+    'The works imprinted in one transaction, when a successful round of the Cosmic Signature game ends.',
+  essayTermUnit: 'Unit',
+  essayTermUnitIs:
+    'The generator’s own. Gravity’s constant is {gravity}; masses lie between {massLow} and {massHigh}. Not kilograms, metres or seconds.',
+  essayTermStep: 'Step',
+  essayTermStepIs:
+    'One advance of the computation: {dt} of the generator’s unit of time. {rate} steps pass in each second of a work’s film.',
+  essayTermWarmUp: 'Warm-up',
+  essayTermWarmUpIs: 'The first {warmup} steps of an orbit, computed and not drawn.',
+  essayTermWindow: 'Recorded window',
+  essayTermWindowIs:
+    'The next {steps} steps: the work. The Light film shows them in {film}; the Light still is drawn from them all, and the Ink still is the sheet as the last of them leaves it.',
+  essayTermHorizon: 'Horizon',
+  essayTermHorizonIs:
+    'Step {horizon} from the window’s first: where the record stops looking for a body that has got free.',
+  essayTermBound: 'Bound',
+  essayTermBoundIs:
+    'Without the energy to get away. The record finds a body no longer bound when, at {answers} checks in a row, {interval} steps apart, its energy of motion exceeds the energy tying it to the other two.',
+  essayTermSyzygy: 'Syzygy',
+  essayTermSyzygyIs:
+    'A moment when the three bodies come nearly into one line: the triangle they make is at its flattest, and flatter than a set limit.',
+  essayTermClosest: 'Closest approach',
+  essayTermClosestIs:
+    'The smallest distance between any two of the bodies within the recorded window, with the pair and the step.',
+  essayTermBraid: 'Braid word',
+  essayTermBraidIs:
+    'The order in which pairs of bodies change places along the orbit’s long axis through the window: s1 and s2 name the pair, and a mark tells which body passed in front.',
+  essayTermBorda: 'Borda count',
+  essayTermBordaIs:
+    'A way of choosing among many: rank every candidate on each measure, give one point for the last place, two for the next, and so on up; add them.',
+  essayTermTwin: 'Twin',
+  essayTermTwinIs:
+    'The same orbit begun with body 1 a trillionth of a unit to one side. The doubling time is how long the gap between work and twin takes to double.',
+  essayTermAnalysisIs:
+    'The label on every view the venue derives. The work is the published still and film, unaltered.',
+  // The sources
+  essaySourcesWord: 'Sources',
+  essaySourcesTitle: 'What each sentence was checked against.',
+  essaySourcesNote:
+    'A raised numeral in the text leads to its source here. Each was opened and read for the sentence that cites it. References are given as published.',
 } as const;
 export type Messages = { [K in keyof typeof en]: string };

@@ -1,0 +1,566 @@
+/*
+  The essay's chapters: a book page on each ground. The chapter's number and word stand in the
+  margin and stay in sight while the chapter is read; the statement is display type; the text
+  is the reading size on the venue's measure; figures may run wider than the measure, and
+  their marks are the folio size at every width. The grounds and their tokens are the page's
+  (process.module.css).
+*/
+.chapter {
+  display: grid;
+  grid-template-columns: minmax(0, 0.4fr) minmax(0, 2.4fr);
+  gap: 45px;
+  padding: 90px var(--gutter);
+  align-items: start;
+}
+.index {
+  position: sticky;
+  top: calc(var(--head) + 27px);
+}
+.body {
+  min-width: 0;
+}
+.title {
+  max-width: 19ch;
+}
+.text {
+  margin-top: 54px;
+  font-size: var(--fs-reading);
+}
+.text > * + * {
+  margin-top: 1.5em;
+}
+.text dfn {
+  font-style: italic;
+}
+/* A raised figure, such as a power of ten: never below the 12 px floor (orbit-score.module.css). */
+.text sup:not(.cite) {
+  font-size: max(12px, 0.75em);
+  line-height: 0;
+  vertical-align: super;
+}
+/* On a scale, the power stands at the folio size beside its ten, raised by hand. */
+.chart sup {
+  position: relative;
+  top: -0.4em;
+  font-size: inherit;
+  line-height: 0;
+  vertical-align: baseline;
+}
+
+/* A source's mark: the cataloguer's apparatus, as the entry sets its notes' marks
+   (artwork-entry.module.css): lining figures at the 12 px floor, raised by hand, because
+   Literata's own superiors would be drawn smaller than the floor at the reading size. */
+.cite {
+  font-family: var(--font-book);
+  font-variant-numeric: lining-nums proportional-nums;
+  font-size: var(--fs-folio);
+  font-style: normal;
+  line-height: 0;
+  vertical-align: baseline;
+  position: relative;
+  top: -0.55em;
+  margin-left: 2px;
+}
+/* Its target is a 24 px square centred on the figure (WCAG 2.5.8), drawn by a pseudo-element
+   so the line's spacing never moves for a finger's sake. */
+.cite a {
+  position: relative;
+  color: var(--muted);
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.12em;
+  text-decoration-color: var(--rule-strong);
+}
+.cite a::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 24px;
+  height: 24px;
+  transform: translate(-50%, -50%);
+}
+.cite a:hover,
+.cite a:focus-visible {
+  color: var(--type);
+  text-decoration-color: currentColor;
+}
+
+/* What the record of the work in hand says: set apart by a rule down its side. */
+.record,
+.note {
+  max-width: var(--measure);
+  font-size: var(--fs-control);
+  line-height: 1.6;
+}
+.record {
+  padding-left: 18px;
+  border-left: 1px solid var(--rule-strong);
+}
+.record > p,
+.note > p {
+  line-height: inherit;
+}
+.record > p:first-child {
+  color: var(--muted);
+  line-height: 1.5;
+  margin-bottom: 6px;
+}
+/* An aside with a heading of its own, under a rule. */
+.note {
+  padding-top: 18px;
+  border-top: 1px solid var(--rule);
+}
+.note > h3 {
+  font-size: var(--fs-control);
+  font-weight: 500;
+  line-height: 1.6;
+  margin-bottom: 6px;
+}
+
+/* The three things the equations say: a numeral in the margin, the statement, what it means. */
+.points {
+  list-style: none;
+  padding: 0;
+  margin-bottom: 0;
+  counter-reset: point;
+  display: grid;
+  gap: 1.5em;
+  max-width: var(--measure);
+}
+.points > li {
+  counter-increment: point;
+  display: grid;
+  grid-template-columns: 2em minmax(0, 1fr);
+}
+.points > li::before {
+  content: counter(point);
+  grid-row: 1 / span 2;
+  font-family: var(--font-mono);
+  font-size: var(--fs-folio);
+  font-variant-numeric: tabular-nums lining-nums;
+  line-height: calc(1.5 * var(--fs-reading));
+  color: var(--muted);
+}
+.points > li > p {
+  grid-column: 2;
+}
+.lead {
+  font-style: italic;
+}
+
+/* A figure and its caption. The caption says everything the drawing shows. */
+.figure {
+  margin-block: 54px;
+  max-width: 46em;
+}
+.figure > figcaption {
+  display: grid;
+  gap: 3px;
+  margin-top: 18px;
+  max-width: var(--measure);
+  font-size: var(--fs-control);
+  line-height: 1.6;
+  color: var(--muted);
+}
+.figure > figcaption > :global(.small-caps) {
+  color: var(--type);
+}
+
+/* A detail of a still: the frame shows one window of the picture, which lies whole behind it. */
+.detail > div {
+  position: relative;
+  overflow: hidden;
+  background: var(--plate-ground, transparent);
+}
+.detail img {
+  position: absolute;
+  max-width: none;
+  height: auto;
+}
+
+/* A drawing keeps its shape; the page's own marks stand over it at the folio size. */
+.drawing {
+  position: relative;
+  width: 100%;
+}
+.drawing > svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+.mark {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  font-size: var(--fs-folio);
+  line-height: 1;
+  color: var(--muted);
+}
+.path {
+  fill: none;
+  stroke-width: 1.5;
+}
+.hair {
+  fill: none;
+  stroke: var(--rule-strong);
+  stroke-width: 1;
+}
+.dashed {
+  stroke-dasharray: 5 5;
+}
+.dot {
+  fill: var(--type);
+}
+.ring {
+  fill: var(--ground);
+  stroke: var(--rule-strong);
+  stroke-width: 1;
+}
+.pivot {
+  fill: var(--muted);
+}
+.cellFixed {
+  fill: var(--type);
+}
+.cellRemoved {
+  fill: color-mix(in srgb, var(--type) 42%, var(--ground));
+}
+.cellLeft {
+  fill: none;
+  stroke: var(--type);
+  stroke-width: 1.5;
+}
+.push > line {
+  stroke: var(--type);
+  stroke-width: 1.5;
+}
+.push > polygon {
+  fill: var(--type);
+}
+.patch {
+  fill: var(--type);
+}
+
+/* Three strands. Where two cross, the one that passes across is drawn again over a gap. */
+.strand,
+.hollow,
+.gap {
+  fill: none;
+  stroke-linecap: round;
+}
+.strand {
+  stroke: var(--type);
+}
+.hollow,
+.gap {
+  stroke: var(--ground);
+}
+.gap {
+  stroke-linecap: butt;
+}
+.plaits {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 27px 45px;
+}
+.plaits > .drawing {
+  flex: 1 1 240px;
+}
+/* A work's own plait, line after line: twelve crossings to a line where the page is narrow,
+   thirty-six where it has the room. Both are in the document; the width shows one. */
+.lines {
+  display: grid;
+  gap: 18px;
+}
+.lines > svg {
+  display: block;
+}
+.lines[data-lines='wide'] {
+  display: none;
+}
+@media (min-width: 1100px) {
+  .lines[data-lines='narrow'] {
+    display: none;
+  }
+  .lines[data-lines='wide'] {
+    display: grid;
+  }
+}
+.rowMark {
+  font-family: var(--font-mono);
+  font-size: var(--fs-folio);
+  fill: var(--muted);
+}
+
+/* A chart: the scale's figures down the side, the plot, the time or the steps along its foot. */
+.chart {
+  display: grid;
+  grid-template-columns: 52px minmax(0, 1fr);
+  grid-template-rows: auto 30px;
+  /* Room for the figure at the scale's head. */
+  padding-top: 9px;
+}
+.side,
+.foot {
+  position: relative;
+  font-size: var(--fs-folio);
+  line-height: 1;
+  color: var(--muted);
+}
+.side > span {
+  position: absolute;
+  right: 9px;
+  transform: translateY(-50%);
+  white-space: nowrap;
+}
+.plot {
+  position: relative;
+  height: clamp(216px, 30vw, 324px);
+  border-left: 1px solid var(--rule-strong);
+  border-bottom: 1px solid var(--rule-strong);
+}
+.plot > svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+.foot {
+  grid-column: 2;
+}
+.foot > span {
+  position: absolute;
+  top: 9px;
+  transform: translateX(-50%);
+  white-space: nowrap;
+}
+.foot > span[data-edge='start'] {
+  transform: none;
+}
+.foot > span[data-edge='end'] {
+  transform: translateX(-100%);
+}
+.band {
+  fill: color-mix(in srgb, var(--type) 9%, transparent);
+}
+.grid,
+.series,
+.seriesQuiet {
+  fill: none;
+  vector-effect: non-scaling-stroke;
+}
+.grid {
+  stroke: var(--rule);
+  stroke-width: 1;
+}
+.series {
+  stroke: var(--type);
+  stroke-width: 1.5;
+  stroke-linejoin: round;
+}
+.seriesQuiet {
+  stroke: var(--muted);
+  stroke-width: 1.5;
+  stroke-linejoin: round;
+}
+/* A line's name, set beside it on the ground's own colour so no line runs through it. */
+.tag {
+  position: absolute;
+  padding: 2px 4px;
+  background: var(--ground);
+  font-size: var(--fs-folio);
+  line-height: 1;
+  white-space: nowrap;
+  color: var(--type);
+}
+.tag[data-side='above'] {
+  transform: translate(-100%, calc(-100% - 9px));
+}
+.tag[data-side='below'] {
+  transform: translate(9px, 9px);
+}
+
+/* The live figure of the choice, under the record's own line. */
+.exhibit {
+  margin-top: 54px;
+  padding-top: 27px;
+  border-top: 1px solid var(--rule);
+}
+.exhibit > p:first-child {
+  margin-top: 0;
+}
+
+/* The contents, on the cover: the essay's three parts side by side, each under its plate, its
+   chapters by their number and word beneath; then what closes the essay. */
+.contents {
+  max-width: 72em;
+  border-top: 1px solid var(--rule);
+  padding-top: 9px;
+}
+.contents ol {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.contents > ol {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 18px 27px;
+  align-items: start;
+}
+/* A part's plate heads its column, in the small capitals a chapter's margin word is set in. */
+.part > a > span:last-child {
+  font-variant-caps: all-small-caps;
+  letter-spacing: 0.05em;
+}
+.contents a {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  min-height: 44px;
+  padding-block: 11px;
+  font-size: var(--fs-control);
+  line-height: 22px;
+}
+.contents a > span:first-child {
+  flex: none;
+  min-width: 1.5em;
+  font-size: var(--fs-folio);
+  color: var(--muted);
+}
+.contents a > span:last-child {
+  border-bottom: 1px solid transparent;
+}
+.contents a:hover > span:last-child,
+.contents a:focus-visible > span:last-child {
+  border-color: currentColor;
+}
+
+/* The terms: the word, then what the venue means by it. */
+.terms {
+  margin-top: 54px;
+  max-width: 52em;
+  display: grid;
+}
+.terms > div {
+  display: grid;
+  grid-template-columns: minmax(0, 11em) minmax(0, 1fr);
+  gap: 3px 27px;
+  padding-block: 14px;
+  border-top: 1px solid var(--rule);
+}
+.terms dt {
+  font-size: var(--fs-control);
+  line-height: 1.6;
+  font-style: italic;
+}
+.terms dd {
+  font-size: var(--fs-control);
+  line-height: 1.6;
+  color: var(--muted);
+  max-width: var(--measure);
+}
+
+/* The sources: a numeral, then each reference as published. Each reference is a row of a
+   finger's height, and a reference that leads somewhere is pressed anywhere on its row. */
+.sourcesNote {
+  margin-top: 54px;
+  color: var(--muted);
+}
+.sources {
+  /* What a one-line row adds above and beneath its line to stand 44 px tall. */
+  --row: calc((44px - 1.6 * var(--fs-control)) / 2);
+  list-style: none;
+  margin: 36px 0 0;
+  padding: 0;
+  max-width: 52em;
+}
+.sources > li {
+  display: grid;
+  grid-template-columns: 2.5em minmax(0, 1fr);
+  border-top: 1px solid var(--rule);
+  /* A numeral in the text leads here: the entry clears the running head. */
+  scroll-margin-top: calc(var(--head) + 18px);
+}
+.sources > li > span {
+  padding-top: var(--row);
+  font-size: var(--fs-folio);
+  line-height: calc(1.6 * var(--fs-control));
+  color: var(--muted);
+}
+.sources ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+}
+.sources ul > li {
+  padding-block: var(--row);
+  font-size: var(--fs-control);
+  line-height: 1.6;
+  color: var(--muted);
+  overflow-wrap: anywhere;
+}
+.sources a {
+  /* The link takes its row's whole height, so two references never share a finger. */
+  display: inline-block;
+  margin-block: calc(-1 * var(--row));
+  padding-block: var(--row);
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.2em;
+  text-decoration-color: var(--rule-strong);
+}
+.sources a:hover,
+.sources a:focus-visible {
+  color: var(--type);
+  text-decoration-color: currentColor;
+}
+.sources > li:target > span {
+  color: var(--type);
+}
+
+@media (max-width: 1000px) {
+  .chapter {
+    grid-template-columns: minmax(0, 0.5fr) minmax(0, 2fr);
+  }
+}
+@media (max-width: 767px) {
+  /* One column, from gutter to gutter. A title's longest word stays whole: where the chapter
+     size would run it past the gutters, the whole title is set as large as that word allows
+     (--longest is its width in ems, reckoned by the page: src/lib/essay/titles.ts). */
+  .body .title {
+    font-size: min(var(--fs-chapter), calc((100vw - 2 * var(--gutter)) / var(--longest, 1)));
+  }
+  /* WebKit hangs a paragraph's opening mark outside its first line (globals.css). A Chinese or
+     Japanese mark is an em wide and the gutter here is 16 px: hung, the mark is cut by the
+     screen's edge. So it stays in its line where the text runs from gutter to gutter. */
+  :global(html:is(:lang(zh), :lang(ja))) .chapter :is(h2, h3, p, li, dd, figcaption) {
+    hanging-punctuation: none;
+  }
+  .contents > ol {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 18px;
+  }
+  .chapter {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 18px;
+    padding-block: 54px;
+  }
+  .index {
+    position: static;
+  }
+  .text,
+  .terms,
+  .sourcesNote {
+    margin-top: 36px;
+  }
+  .figure {
+    margin-block: 36px;
+  }
+  .terms > div {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

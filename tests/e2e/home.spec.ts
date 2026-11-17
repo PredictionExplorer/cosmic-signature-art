@@ -18,7 +18,7 @@ const nightLayer = `${stage} [data-layer="light"]`;
 const today = workOfTheDay();
 const folio = String(today).padStart(3, '0');
 
-test('the day’s cycle hangs two to a leaf on a desk and one on a phone, each work readable', async ({
+test('the day’s cycle hangs beneath the close: two to a leaf on a desk and one on a phone, each work readable', async ({
   page,
   isMobile,
 }) => {
@@ -51,64 +51,6 @@ test('the day’s cycle hangs two to a leaf on a desk and one on a phone, each w
   await noHorizontalOverflow(page);
 });
 
-test('the spread hangs each numeral in sight, on the gutter, and lays each plate on its own ground', async ({
-  page,
-  isMobile,
-}) => {
-  await page.goto('/', { waitUntil: 'domcontentloaded' });
-  await pauseAmbientMotion(page);
-  // The hero's numeral stands on the page's gutter; the spread's hang from the same line.
-  const hero = (await page.locator(`${current} .hanging-numeral`).boundingBox())!;
-  const spread = page.getByRole('region', { name: catalogs.en.selectedWorks });
-  await spread.scrollIntoViewIfNeeded();
-  const leaves = await spread.locator('figure').evaluateAll((figures) =>
-    figures.map((figure) => {
-      const numeral = figure.querySelector('.hanging-numeral')!.getBoundingClientRect();
-      const plate = figure.querySelector('a')!.getBoundingClientRect();
-      const side = figure.parentElement!;
-      const hit = document.elementFromPoint(
-        numeral.x + numeral.width / 2,
-        numeral.y + numeral.height / 2,
-      );
-      const hex = side.style.getPropertyValue('--plate-ground');
-      return {
-        seen: !!hit?.closest('.hanging-numeral'),
-        numeral: {
-          left: numeral.left,
-          right: numeral.right,
-          top: numeral.top,
-          bottom: numeral.bottom,
-        },
-        plate: { left: plate.left, right: plate.right, top: plate.top },
-        width: innerWidth,
-        tone: `rgb(${[1, 3, 5].map((at) => parseInt(hex.slice(at, at + 2), 16)).join(', ')})`,
-        side: getComputedStyle(side).backgroundColor,
-        leaf: getComputedStyle(figure).backgroundColor,
-      };
-    }),
-  );
-  expect(leaves).toHaveLength(2);
-  const [ink, light] = leaves as [(typeof leaves)[0], (typeof leaves)[0]];
-  for (const leaf of leaves) {
-    // Nothing covers a numeral; each half and its leaf are the work's own measured ground.
-    expect(leaf.seen).toBe(true);
-    expect(leaf.side).toBe(leaf.tone);
-    expect(leaf.leaf).toBe(leaf.tone);
-  }
-  expect(light.tone).toBe('rgb(0, 0, 0)');
-  if (isMobile) {
-    for (const leaf of leaves) expect(leaf.numeral.bottom).toBeLessThanOrEqual(leaf.plate.top + 1);
-  } else {
-    // In the outer margins, level with the plates' heads and clear of them, on the gutter.
-    expect(Math.abs(ink.numeral.left - hero.x)).toBeLessThanOrEqual(1);
-    expect(Math.abs(light.width - light.numeral.right - hero.x)).toBeLessThanOrEqual(1);
-    expect(ink.numeral.right + 9).toBeLessThanOrEqual(ink.plate.left + 1);
-    expect(light.numeral.left).toBeGreaterThanOrEqual(light.plate.right + 9 - 1);
-    for (const leaf of leaves)
-      expect(Math.abs(leaf.numeral.top - leaf.plate.top)).toBeLessThanOrEqual(1);
-  }
-});
-
 test.describe('localized home', () => {
   for (const locale of locales) {
     test(`${locale} opens on the day's work in Ink with the one line and translated navigation`, async ({
@@ -137,15 +79,16 @@ test.describe('localized home', () => {
       // Light is told in its own sentence, one Turn away under the same plate.
       const lightLine = fill(t.sentences, { first: t.homeLine, second: t.homeLineLight });
       await expect(page.locator(`${nightLayer} .strip p`)).toHaveText(lightLine);
-      // A phone hangs one plate: no twin hangs on a screen of its own beneath it.
-      if (isMobile)
-        await expect(page.locator('.home [data-wing] > [data-ground="night"]')).toBeHidden();
-      // No headline, no kicker, no portal on the wall: the page's one h1 is the statement
-      // screen's wordmark, below the plate.
+      // The home hangs one plate: no twin hangs on a screen of its own beneath it. The essay
+      // hangs both expressions further down, each at the head of its part.
+      await expect(page.locator('.home [data-wing]')).toHaveCount(0);
+      // No headline, no kicker, no portal on the wall: the page's one h1 is the essay's cover,
+      // beneath the plate, and the cover says what kind of place this is.
       const heading = page.locator('main h1');
       await expect(heading).toHaveCount(1);
-      await expect(heading).toHaveText('Cosmic Signature');
+      await expect(heading).toHaveText(t.processTitle);
       expect(await page.locator(`${stage} h1`).count()).toBe(0);
+      await expect(page.locator('main .eyebrow').first()).toHaveText(t.livingCollection);
       await noHorizontalOverflow(page);
       // On phones the words live in the Index sheet, built in the collection workstream.
       if (!isMobile) {

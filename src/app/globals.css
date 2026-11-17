@@ -400,7 +400,7 @@ html {
   font-variant-numeric: lining-nums proportional-nums;
   letter-spacing: -0.02em;
 }
-/* Display type at Literata's own metrics, as the Process cover explains: no line's descenders
+/* Display type at Literata's own metrics, as the essay's cover explains (process.module.css): no line's descenders
    meet the next line's ascenders, in any language, and the last line's stay inside its box. */
 .cover {
   font-size: var(--fs-cover);

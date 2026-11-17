@@ -163,6 +163,30 @@ test('a work’s number in another spelling goes to its one spelling, for good',
   }
 });
 
+test('the Process essay’s old address goes to the home it now is, for good', async ({
+  request,
+}, info) => {
+  oneProjectAsks(info);
+  for (const [from, to] of [
+    ['/process', '/'],
+    ['/uk/process', '/uk'],
+    ['/zh-TW/process?from=index', '/zh-TW?from=index'],
+  ]) {
+    const response = await request.get(from, { maxRedirects: 0 });
+    expect(response.status(), from).toBe(308);
+    const location = new URL(response.headers().location, response.url());
+    expect(`${location.pathname}${location.search}`, from).toBe(to);
+  }
+});
+
+test('a chapter’s old address still leads to the chapter', async ({ page }) => {
+  // A browser carries a fragment across a redirect that names none (RFC 9110 § 10.2.2).
+  await page.goto('/process#choice');
+  await expect(page).toHaveURL(/\/#choice$/);
+  await expect(page.locator('#choice-title')).toBeInViewport();
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText(catalogs.en.processTitle);
+});
+
 test('the venue’s 404 is its own page, in the visitor’s language, on black', async ({
   page,
   faults,
@@ -248,7 +272,8 @@ test('an English address is never taken for the home in a locale of its name', a
   await page.keyboard.press('Escape');
   // The colophon's English addresses come into view after that. The proxy rewrites each to
   // /en/…, so each is asked for its own page, never for the home's (/$d$locale/__PAGE__).
-  const addresses = ['/process', '/statement', '/privacy'];
+  // These two stand nowhere else on the home: the running head's own were asked for at once.
+  const addresses = ['/statement', '/privacy'];
   const pages = addresses.map((address) =>
     page.waitForResponse(
       (response) =>

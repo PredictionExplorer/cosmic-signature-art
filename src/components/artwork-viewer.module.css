@@ -125,6 +125,20 @@
     --plate-height: calc(100svh - var(--chrome));
   }
 }
+/* The home's plate stands a little short of the screen on a desk, so the head of the essay
+   beneath it (what this place is, and how large) rides at the foot of the first screen: the
+   page says that it goes on. A phone's plate is shorter than its screen already. */
+@media (min-width: 767.02px) {
+  .home {
+    --peek: 64px;
+    --plate-height: calc(100svh - var(--chrome) - var(--peek));
+  }
+}
+@media (min-width: 767.02px) and (max-width: 1279.98px) and (min-height: 560.02px) {
+  .home.room[data-lines] :global([data-artwork-stage='page']) {
+    --plate-height: calc(100svh - var(--chrome) - var(--peek));
+  }
+}
 @media (max-width: 767px) {
   /* On a phone the line is read at the reading size, across the sheet, and its sentences run
      on as one paragraph. Japanese breaks between phrases there (Chromium; elsewhere as

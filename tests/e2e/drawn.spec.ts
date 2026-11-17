@@ -26,7 +26,6 @@ const ROUTES = [
   '/collection/all-the-light',
   '/collection/orrery',
   '/art/31',
-  '/process',
   '/auctions',
   '/statement',
   '/exhibitions',

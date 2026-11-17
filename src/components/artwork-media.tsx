@@ -118,6 +118,11 @@ type ArtworkMediaProps = {
   /** The route's one hero: eager, high fetch priority, its preview preloaded. */
   priority?: boolean;
   eager?: boolean;
+  /**
+   * The preview waits until the plate is near, as its still does: for a plate that stands far
+   * down a long page, whose preview the document would otherwise preload with its first screen.
+   */
+  lazyPreview?: boolean;
   /** A browsing card: the publisher's preview is the only image. */
   thumbnail?: boolean;
   still?: boolean;
@@ -241,6 +246,7 @@ function ArtworkMediaSession({
   alt,
   priority = false,
   eager = false,
+  lazyPreview = false,
   thumbnail = false,
   still = false,
   hold = false,
@@ -741,7 +747,7 @@ function ArtworkMediaSession({
             width={media?.thumbnailWidth ?? 640}
             height={media?.thumbnailHeight ?? 414}
             decoding="async"
-            loading="eager"
+            loading={lazyPreview && !priority && !eager ? 'lazy' : 'eager'}
             fetchPriority={priority ? 'high' : undefined}
             onError={() => setPreviewFailed(true)}
           />

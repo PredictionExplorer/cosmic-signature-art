@@ -105,3 +105,41 @@ test('changing language keeps the reader’s place on the page', async ({ page, 
     .toBeLessThan(24);
   expect((await standing(page, index))?.scrolled).toBeGreaterThan(before / 2);
 });
+
+test('changing language inside a chapter of the home’s essay keeps the paragraph being read', async ({
+  page,
+  isMobile,
+}) => {
+  test.skip(isMobile, 'A chapter’s number stays in sight on a desk alone: the case this is for.');
+  await page.goto('/');
+  await pauseAmbientMotion(page);
+  await expect(page.locator('html')).toHaveAttribute('data-keys', 'ready');
+  // The fourth paragraph of chapter 04 at the reading line. The chapter's number and word stay
+  // in sight in the margin beside it: a mark that stands still, and so marks no place.
+  const read = (within: Page) => within.locator('#steps p.reading').nth(3);
+  const offset = (within: Page) =>
+    read(within).evaluate((paragraph) => {
+      const line =
+        parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--head')) + 16;
+      return Math.round(paragraph.getBoundingClientRect().top - line);
+    });
+  await read(page).evaluate((paragraph) => {
+    const line =
+      parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--head')) + 16;
+    window.scrollTo({
+      top: window.scrollY + paragraph.getBoundingClientRect().top - line,
+      behavior: 'instant',
+    });
+  });
+  await page.evaluate(
+    () => new Promise((done) => requestAnimationFrame(() => requestAnimationFrame(done))),
+  );
+  expect(Math.abs(await offset(page))).toBeLessThan(2);
+  await press(page, page.locator('.language-menu button'), false);
+  await press(page, page.locator('.language-menu a[hreflang="uk"]'), false);
+  await expect(page).toHaveURL(/\/uk$/);
+  await expect(page.locator('html')).toHaveAttribute('lang', 'uk');
+  // The same paragraph stands at the reading line in Ukrainian: not the chapter's head, and not
+  // its last lines.
+  await expect.poll(async () => Math.abs(await offset(page)), { timeout: 10_000 }).toBeLessThan(40);
+});

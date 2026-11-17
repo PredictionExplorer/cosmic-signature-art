@@ -109,6 +109,26 @@ describe('the proxy', () => {
     expect(indexer).not.toHaveBeenCalled();
   });
 
+  it.each([
+    ['/process', '/'],
+    ['/uk/process', '/uk'],
+    ['/en/process', '/en'],
+    ['/zh-TW/process?from=index', '/zh-TW?from=index'],
+  ])('sends %s to the home, which the Process essay now is, for good', async (path, to) => {
+    const response = await visit(path);
+    expect(response.status).toBe(308);
+    // No fragment is written: a browser carries the visitor's own (/process#choice) across.
+    expect(getRedirectUrl(response)).toBe(`${ORIGIN}${to}`);
+    expect(indexer).not.toHaveBeenCalled();
+  });
+
+  it.each(['/process/essay', '/processes', '/uk/art/process'])(
+    'leaves %s, which only looks like it, to its own answer',
+    async (path) => {
+      expect((await visit(path)).status).not.toBe(308);
+    },
+  );
+
   it('keeps an address without a locale the first locale’s, as it always was', async () => {
     expect(getRewrittenUrl(await visit('/'))).toBe(`${ORIGIN}/en`);
     expect(getRewrittenUrl(await visit('/collection?order=spectrum'))).toBe(
@@ -293,7 +313,7 @@ describe('the script policy of a page rendered on request', () => {
     expect(handed(response)).toBe(sent(response));
   });
 
-  it.each(['/', '/uk', '/process', '/ja/statement', '/collection/orrery', '/verify/orbit'])(
+  it.each(['/', '/uk', '/statement', '/ja/statement', '/collection/orrery', '/verify/orbit'])(
     'sends none with %s, a file written before any request',
     async (path) => {
       const response = await visit(path);
@@ -326,7 +346,7 @@ describe('the script policy of a page rendered on request', () => {
   });
 
   it('hands a prerendered page no policy a request brought with it', async () => {
-    const response = await visit('/process', { [SCRIPT_POLICY]: "script-src 'nonce-chosen'" });
+    const response = await visit('/statement', { [SCRIPT_POLICY]: "script-src 'nonce-chosen'" });
     expect(handed(response)).toBeNull();
     // The request's headers as the route sees them no longer hold it.
     expect(response.headers.get('x-middleware-override-headers')).not.toContain(SCRIPT_POLICY);

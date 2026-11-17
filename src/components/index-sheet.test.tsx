@@ -319,7 +319,7 @@ describe('the Index of numbers', () => {
       within(menu)
         .getAllByRole('link')
         .map((link) => link.textContent),
-    ).toEqual([en.collection, en.exhibitions, en.process, en.statement]);
+    ).toEqual([en.collection, en.exhibitions, en.statement]);
     expect(within(menu).getByRole('link', { name: en.collection })).toHaveAttribute(
       'aria-current',
       'page',

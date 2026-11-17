@@ -101,13 +101,16 @@ describe('page metadata', () => {
 });
 
 describe('room ground', () => {
-  it('opens the process essay on the night ground in every locale', () => {
-    expect(roomForPath('/process')).toBe('night');
-    expect(roomForPath('/ja/process')).toBe('night');
-    expect(roomForPath('/zh-TW/process/')).toBe('night');
-    expect(roomForPath('/processes')).toBe('paper');
+  it('opens a night route on the night ground in every locale', () => {
+    expect(roomForPath('/verify/orbit')).toBe('night');
+    expect(roomForPath('/ja/verify/orbit/31')).toBe('night');
+    expect(roomForPath('/zh-TW/collection/orrery/')).toBe('night');
+    expect(roomForPath('/verifying')).toBe('paper');
     expect(roomForPath('/collection')).toBe('paper');
+    // The home's ground is its plate's, and then each part's own (room-seams.tsx): by its
+    // route alone it is paper, and the essay's old address is no route of its own any more.
     expect(roomForPath('/')).toBe('paper');
+    expect(roomForPath('/process')).toBe('paper');
   });
   it('ships the same rule as an inline script for the first paint', () => {
     const run = (path: string) => {
@@ -131,7 +134,7 @@ describe('room ground', () => {
       );
       return { room: html.attributes.get('data-room'), color: meta.attributes.get('content') };
     };
-    expect(run('/ko/process')).toEqual({ room: 'night', color: '#000000' });
+    expect(run('/ko/verify/orbit')).toEqual({ room: 'night', color: '#000000' });
     expect(run('/uk/collection')).toEqual({ room: 'paper', color: '#f1ebdf' });
     expect(run('/')).toEqual({ room: 'paper', color: '#f1ebdf' });
   });
