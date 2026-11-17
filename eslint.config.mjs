@@ -38,6 +38,31 @@ const abortSignalAnyMessage =
  */
 const suiteTestMessage =
   "Import `test` from './fixtures' (tests/e2e/fixtures.ts), not from Playwright: the suite's own fails a test whose page threw, logged an error or was answered a 5xx.";
+/**
+ * The suite reads every page against one accessibility standard, named once
+ * (tests/e2e/standard.ts). A scan that wrote a list of its own could hold its page to less and
+ * nobody would see it: every scan once left out two of the five tags, and with them the rules
+ * that found a page whose links lay under a picture.
+ */
+const ownStandard =
+  "CallExpression[callee.property.name='withTags']:not([arguments.0.name='WCAG_22_AA'])";
+const ownStandardMessage =
+  "Pass WCAG_22_AA from './standard' (tests/e2e/standard.ts): the suite's standard is named once, so that no scan holds its page to less.";
+
+/**
+ * The rules that read the types as well as the text (a promise nobody awaits, a value of type
+ * `any` flowing on, a method torn from its object) are held on the venue's own source. The
+ * tests are left to the rules above: under these they report 837 lines, nearly all of them the
+ * ordinary idioms of a mock (an async callback with nothing to await, a spied method read
+ * unbound), and mending those would teach nothing about the venue.
+ *
+ * Some of the types these rules read are written by Next, not by the venue: what
+ * `next/root-params` returns, and the routes. `npm run lint` generates them first, as
+ * `npm run type-check` does. Without them a call into `next/root-params` is `any`, and the
+ * rules refuse the lines that use it: so they did on CI's first run, which lints a fresh
+ * checkout before anything has been built.
+ */
+const typedSource = { files: ['src/**/*.{ts,tsx}'], ignores: ['src/**/*.test.{ts,tsx}'] };
 
 export default tseslint.config(
   {
@@ -57,6 +82,31 @@ export default tseslint.config(
     files: ['src/**/*.{ts,tsx}'],
     plugins: { 'react-hooks': reactHooks },
     rules: reactHooks.configs.recommended.rules,
+  },
+  ...tseslint.configs.recommendedTypeCheckedOnly.map((config) => ({ ...config, ...typedSource })),
+  {
+    ...typedSource,
+    languageOptions: {
+      parserOptions: { projectService: true, tsconfigRootDir: import.meta.dirname },
+    },
+  },
+  {
+    // Held over, six lines in three files that work in progress is rebuilding (the Turn's one
+    // seam, the page sent whole): mending them here would only collide with that work. Each
+    // entry comes off this list when its file next changes hands.
+    files: ['src/components/artwork-room.tsx'],
+    rules: { '@typescript-eslint/unbound-method': 'off' },
+  },
+  {
+    files: ['src/components/arrival-crossing.ts'],
+    rules: {
+      '@typescript-eslint/no-unsafe-assignment': 'off',
+      '@typescript-eslint/no-unnecessary-type-assertion': 'off',
+    },
+  },
+  {
+    files: ['src/components/artwork-entry.tsx'],
+    rules: { '@typescript-eslint/restrict-template-expressions': 'off' },
   },
   { files: ['**/*.mjs'], languageOptions: { globals: { process: 'readonly', URL: 'readonly' } } },
   {
@@ -83,7 +133,8 @@ export default tseslint.config(
     },
   },
   {
-    // A later setting of a rule replaces an earlier one, so the countdown's pattern is said again.
+    // A later setting of a rule replaces an earlier one, so the countdown's pattern and the two
+    // clocks are said again.
     files: ['tests/e2e/**/*.spec.ts'],
     rules: {
       'no-restricted-imports': [
@@ -92,6 +143,12 @@ export default tseslint.config(
           paths: [{ name: '@playwright/test', importNames: ['test'], message: suiteTestMessage }],
           patterns: [{ regex: countdownImportPattern, message: countdownMessage }],
         },
+      ],
+      'no-restricted-syntax': [
+        'error',
+        { selector: oneSecondInterval, message: intervalMessage },
+        { selector: countdownDynamicImport, message: countdownMessage },
+        { selector: ownStandard, message: ownStandardMessage },
       ],
     },
   },

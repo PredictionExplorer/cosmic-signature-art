@@ -50,10 +50,12 @@ export default async function Exhibitions({ params }: { params: Promise<{ locale
           const title = exhibitionTitle(item, t);
           return (
             <li key={item.slug}>
+              {/* The row names itself by what it shows: a label of the title alone would keep
+                  the kind, the date and the line from anyone who hears the page, and would no
+                  longer hold the words a visitor sees and may speak to press it. */}
               <Link
                 className={styles.row}
                 href={localizedPath(locale, `/exhibitions/${item.slug}`)}
-                aria-label={title}
               >
                 <span className={styles.rowPlate}>
                   {pair.map((media) => (

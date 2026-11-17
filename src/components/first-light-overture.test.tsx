@@ -257,7 +257,7 @@ describe('First Light on the home', () => {
     vi.stubGlobal(
       'Worker',
       class extends SamplingWorker {
-        postMessage() {}
+        override postMessage() {}
       },
     );
     vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });

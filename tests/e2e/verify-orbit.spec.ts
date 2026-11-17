@@ -1,6 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { expect, failedToLoad, test } from './fixtures';
 import AxeBuilder from '@axe-core/playwright';
+import { WCAG_22_AA } from './standard';
 import { catalogs } from '../../src/lib/i18n/messages';
 import { fill } from '../../src/lib/i18n/format';
 import { workNumber } from '../../src/lib/art/number';
@@ -115,9 +116,7 @@ test('№ 031 is derived here, line by line, and is its published record', async
     '/verify/orbit',
   );
   await noHorizontalOverflow(page);
-  const results = await new AxeBuilder({ page })
-    .withTags(['wcag2a', 'wcag2aa', 'wcag21aa'])
-    .analyze();
+  const results = await new AxeBuilder({ page }).withTags(WCAG_22_AA).analyze();
   expect(
     results.violations.map(({ id, impact, nodes }) => ({
       id,

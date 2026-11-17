@@ -80,19 +80,29 @@
     transition: none;
   }
 }
+/*
+  On a phone the leaves stack, each plate as wide as the screen, and the wall is as tall as its
+  leaves. A wall held to the screen's height cannot hold three such plates: a leaf does not
+  shrink below its picture, so the last one was drawn over whatever followed the hang, and a
+  visitor could not reach the first links onward. Each leaf takes its own height instead, from
+  the plate's own ratio, so nothing here waits on a height that waits on it.
+*/
 @media (max-width: 767px) {
   .hang {
     flex-direction: column;
-    height: calc(100svh - var(--head));
-    min-height: 480px;
+    height: auto;
+    min-height: 0;
   }
-  .leaf {
-    grid-template-rows: minmax(0, 1fr) 44px;
-  }
+  .leaf,
   .leaf[data-state='chosen'] {
-    flex-grow: 2;
+    flex: none;
+    grid-template-rows: auto 44px;
   }
   .plate {
     padding: 9px 0;
+  }
+  .plate > :global(.art-media) {
+    width: 100%;
+    height: auto;
   }
 }

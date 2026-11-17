@@ -1,5 +1,6 @@
 import { expect, failedToLoad, test } from './fixtures';
 import AxeBuilder from '@axe-core/playwright';
+import { WCAG_22_AA } from './standard';
 import { catalogs } from '../../src/lib/i18n/messages';
 import { locales, localizedPath } from '../../src/lib/i18n/routing';
 import { noHorizontalOverflow } from './helpers';
@@ -28,9 +29,7 @@ for (const locale of locales) {
       page.getByRole('main').getByRole('link', { name: `${t.collection} →` }),
     ).toHaveAttribute('href', localizedPath(locale, '/collection'));
     await noHorizontalOverflow(page);
-    const results = await new AxeBuilder({ page })
-      .withTags(['wcag2a', 'wcag2aa', 'wcag21aa'])
-      .analyze();
+    const results = await new AxeBuilder({ page }).withTags(WCAG_22_AA).analyze();
     expect(
       results.violations.map(({ id, impact, nodes }) => ({
         id,

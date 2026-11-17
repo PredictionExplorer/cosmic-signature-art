@@ -8,6 +8,9 @@ async function pauseMotion(page: Page) {
   await page.addInitScript(() => sessionStorage.setItem('cosmic-art-motion-v1', 'paused'));
 }
 
+/** A catalog line as a pattern reads it: every character its own. */
+const literal = (text: string) => text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
 test('the exhibitions are a quiet list: the hang, four trails and every cycle, each dated and summarised', async ({
   page,
   isMobile,
@@ -17,12 +20,21 @@ test('the exhibitions are a quiet list: the hang, four trails and every cycle, e
   await expect(page.getByRole('heading', { level: 1 })).toHaveText(t.exhibitions);
   const rows = page.getByRole('main').getByRole('listitem').getByRole('link');
   await expect(rows).toHaveCount(8);
-  await expect(rows.first()).toHaveAccessibleName(t.hangTitle);
+  // A row is named by what it shows, in the order it shows it: the kind and date, the title,
+  // its one line. A name of the title alone kept the rest from a listener, and no longer held
+  // the words a visitor reads on the row and may speak to press it (WCAG 2.5.3).
+  await expect(rows.first()).toHaveAccessibleName(
+    new RegExp(`^${literal(t.hang)} · .+\\s${literal(t.hangTitle)}\\s+3 works$`),
+  );
   await expect(rows.first()).toHaveAttribute('href', '/exhibitions/a-hang');
-  await expect(rows.nth(1)).toHaveAccessibleName(t.trailLongCurve);
-  await expect(rows.nth(1)).toContainText(t.trailLongCurveRule);
-  await expect(rows.nth(5)).toHaveAccessibleName('Cycle 0');
-  await expect(rows.nth(5)).toContainText('24 works');
+  await expect(rows.nth(1)).toHaveAccessibleName(
+    new RegExp(
+      `^${literal(t.trail)} · .+\\s${literal(t.trailLongCurve)}\\s+${literal(t.trailLongCurveRule)}$`,
+    ),
+  );
+  await expect(rows.nth(5)).toHaveAccessibleName(
+    new RegExp(`^${literal(t.cycle)} · .+\\sCycle 0\\s+24 works$`),
+  );
   // The running head carries the room; on a phone its words live in the Index sheet.
   if (!isMobile)
     await expect(
@@ -102,6 +114,33 @@ test('the hang seeds three plates from local stills and grows the one under the 
     await expect(page).toHaveURL(/\/exhibitions\/a-hang$/);
     await leaves.nth(2).tap();
     await expect(page).toHaveURL(/\/art\/35\?expression=ink$/);
+  }
+});
+
+test('the hang ends where the way onward begins: every link beneath it can be pressed', async ({
+  page,
+}) => {
+  await pauseMotion(page);
+  await page.goto('/exhibitions/a-hang');
+  const main = page.getByRole('main');
+  const leaves = main.getByRole('link', { name: /^№ 0(23|31|35) · (Ink|Light)$/ });
+  await expect(leaves).toHaveCount(3);
+  const onward = main.getByRole('navigation', { name: t.otherExhibitions }).getByRole('link');
+  await expect(onward).toHaveCount(8);
+  // On a phone the leaves stack. Held to the screen's height, the wall let its last leaf lie
+  // over the first links onward: they were on the page and could be neither seen nor pressed.
+  const wall = (await leaves.last().boundingBox())!;
+  const first = (await onward.first().boundingBox())!;
+  expect(wall.y + wall.height).toBeLessThanOrEqual(first.y);
+  for (const link of await onward.all()) {
+    await link.scrollIntoViewIfNeeded();
+    // The link itself is what a finger at its middle meets.
+    const met = await link.evaluate((element) => {
+      const box = element.getBoundingClientRect();
+      const under = document.elementFromPoint(box.left + box.width / 2, box.top + box.height / 2);
+      return element.contains(under);
+    });
+    expect(met, (await link.getAttribute('href')) ?? '').toBe(true);
   }
 });
 

@@ -89,7 +89,7 @@ export function YourActivity({
       const accounts = (await detail.provider.request({
         method: 'eth_requestAccounts',
       })) as unknown;
-      const account = Array.isArray(accounts) ? accounts[0] : null;
+      const account: unknown = Array.isArray(accounts) ? accounts[0] : null;
       if (typeof account === 'string' && isAddress(account)) {
         setAddress(account);
         void read(account);

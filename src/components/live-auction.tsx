@@ -121,7 +121,7 @@ function AuctionSession({ tokenId, t, locale }: LiveAuctionProps) {
     const accountsChanged = (value: unknown) => {
       const next =
         Array.isArray(value) && typeof value[0] === 'string' && isAddress(value[0])
-          ? (value[0] as Address)
+          ? value[0]
           : null;
       setAccount(next);
       setRecipient(next ?? '');

@@ -86,7 +86,7 @@ export function createArtRepository(config: { fetch?: ArtFetchLike; timeoutMs?: 
   }
 
   async function hydratePage(items: Artwork[]): Promise<Artwork[]> {
-    const result: Artwork[] = new Array(items.length);
+    const result = new Array<Artwork>(items.length);
     let next = 0;
     await Promise.all(
       Array.from({ length: Math.min(6, items.length) }, async () => {

@@ -1,6 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { expect, test, type Locator, type Page } from './fixtures';
 import AxeBuilder from '@axe-core/playwright';
+import { WCAG_22_AA } from './standard';
 import { catalogs } from '../../src/lib/i18n/messages';
 import { fill } from '../../src/lib/i18n/format';
 import { frameForNm, wavelengthRange } from '../../src/lib/art/spectral-sweep';
@@ -207,7 +208,7 @@ test('the rule follows a drag along it, a finger on a phone', async ({
   // The lens is analysis beside the work; the room stays accessible with it on.
   const results = await new AxeBuilder({ page })
     .include('[data-testid="artwork-room"]')
-    .withTags(['wcag2a', 'wcag2aa', 'wcag21aa'])
+    .withTags(WCAG_22_AA)
     .analyze();
   expect(
     results.violations.map(({ id, nodes }) => ({ id, targets: nodes.map((node) => node.target) })),
