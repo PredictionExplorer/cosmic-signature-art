@@ -192,6 +192,7 @@ Nothing writes a published asset, and nothing records a fact the publisher did n
 | `npm run art:frames`   | `build-orbit-frames.mjs`        | `orbit-frames.json`                        | Each work's frame on its Light film, checked against the film frame by frame.               |
 | `npm run art:hollows`  | `build-orbit-hollows.mjs`       | `orbit-hollows.json`                       | Where each body came to rest on the Ink still, found as the hollow it left in the ink.      |
 | `npm run art:energy`   | `build-orbit-energy.mjs`        | `orbit-energy.json`                        | Whether each computation kept its energy to its published fate, which every run must meet.  |
+| `npm run art:essay`    | `build-essay-figures.mjs`       | `essay-figures.json`                       | Every number the Process essay states of the venue's works (docs/process-essay.md §3).      |
 | `npm run art:arrival`  | `build-arrival-maps.mjs`        | `arrival-maps.json`                        | When each part of each still arrived in its film, for the crossing.                         |
 | `npm run art:light`    | `build-all-the-light.mjs`       | `all-the-light.json`                       | All the light, summed in linear light from the verified stills.                             |
 | `npm run art:sweep`    | `build-sweep-spans.mjs`         | `sweep-spans.json`                         | Which wavelengths each work's spectral sweep travels, for the Wavelength lens.              |

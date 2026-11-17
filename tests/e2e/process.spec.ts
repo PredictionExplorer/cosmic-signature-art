@@ -5,8 +5,12 @@ import { readFileSync } from 'node:fs';
 import { catalogs } from '../../src/lib/i18n/messages';
 import { fill } from '../../src/lib/i18n/format';
 import { workOfTheDay } from '../../src/lib/art/work-of-the-day';
+import { SOURCES } from '../../src/lib/essay/sources';
+import { locales, localizedPath } from '../../src/lib/i18n/routing';
+import { ESSAY, TERMS } from '../../src/lib/essay/structure';
 import { deriveBeginnings, QUICK_GATE } from '../../src/lib/physics/beginnings';
 import { artworkImageSource, imageLoaded, noHorizontalOverflow } from './helpers';
+import { wholePagePictures } from './whole-page';
 
 const t = catalogs.en;
 const folio = (id: number) => String(id).padStart(3, '0');
@@ -53,7 +57,7 @@ async function pauseAmbientMotion(page: Page) {
 const rgb = (hex: string) =>
   `rgb(${[1, 3, 5].map((offset) => parseInt(hex.slice(offset, offset + 2), 16)).join(', ')})`;
 
-test('the essay opens on night, pins the day’s Light film, crosses a hard edge into Ink paper and ends on the thesis', async ({
+test('the essay opens on night, pins the day’s Light film, crosses one hard edge into Ink paper and ends on the thesis', async ({
   page,
   isMobile,
 }, testInfo) => {
@@ -68,21 +72,19 @@ test('the essay opens on night, pins the day’s Light film, crosses a hard edge
   // One theme colour, the night's, from the server's first byte.
   await expect(page.locator('meta[name="theme-color"]')).toHaveCount(1);
   await expect(page.locator('meta[name="theme-color"]')).toHaveAttribute('content', '#000000');
-  const chapters = page.getByRole('navigation', { name: t.ways });
-  await expect(chapters.getByRole('link')).toHaveCount(4);
-  await expect(chapters.getByRole('link').nth(0)).toHaveText(`00${t.chapterChoice}`);
-  await expect(chapters.getByRole('link').nth(3)).toHaveText(`03${t.chapterSpectrum}`);
+  // The contents: the eight numbered chapters, what is not known, the terms and the sources.
+  const chapters = page.getByRole('main').getByRole('navigation', { name: t.process });
+  await expect(chapters.getByRole('link')).toHaveText([
+    ...ESSAY.map(({ numeral, word }) => `${numeral}${t[word]}`),
+    `·${t.essayTermsWord}`,
+    `·${t.essaySourcesWord}`,
+  ]);
+  await expect(page.locator('#process-title + p')).toHaveText(t.essayStandfirst);
 
-  // 00 The choice: the day's work's real Borda line, formatted for the reader.
-  const work = index.works.find((candidate) => candidate.id === day)!;
-  const choice = page.locator('#choice');
-  await expect(choice).toHaveCSS('background-color', 'rgb(0, 0, 0)');
-  await expect(choice).toContainText(
-    `One of ${work.borda.totalCandidates.toLocaleString('en')} candidate orbits. Number ${work.borda.selectedIndex.toLocaleString('en')} was chosen.`,
+  // Light: the authentic Light still of the day's work on true black, under the cover.
+  await expect(page.locator('#light header')).toContainText(
+    fill(t.essayLightCopy, { work: `№ ${folio(day)}` }),
   );
-  await expect(choice).toContainText(`№ ${folio(day)}`);
-
-  // 01 Light: the authentic Light still of the day's work on true black.
   const light = page.locator('#light .art-media:visible');
   await light.scrollIntoViewIfNeeded();
   await imageLoaded(light.locator('img.art-still'));
@@ -100,10 +102,42 @@ test('the essay opens on night, pins the day’s Light film, crosses a hard edge
   }
   await expect(header).toHaveCSS('background-color', 'rgb(0, 0, 0)');
 
-  // The chapter words are anchors; 02 Ink is paper, its plate in the sheet's own measured tone.
-  await chapters.getByRole('link', { name: /02/ }).click();
-  await expect(page).toHaveURL(/\/process#ink$/);
-  await expect(page.locator('#ink-title')).toBeInViewport();
+  // The spectrum closes the night: the sweep exists only on intent and never loops.
+  const spectrum = page.locator('#spectrum');
+  await spectrum.scrollIntoViewIfNeeded();
+  await expect(spectrum).toHaveCSS('background-color', 'rgb(0, 0, 0)');
+  await expect(spectrum.locator('video')).toHaveCount(0);
+  await expect(header).toHaveCSS('background-color', 'rgb(0, 0, 0)');
+  await expect(spectrum).toContainText('380 nm');
+  await expect(spectrum).toContainText('700 nm');
+  const play = spectrum.getByRole('button', { name: t.playSweep, exact: true });
+  await expect(play).toBeVisible({ timeout: 30_000 });
+  await play.click();
+  const sweep = spectrum.locator('video');
+  await expect(sweep).toHaveAttribute(
+    'src',
+    new RegExp(`/${seed}/videos/web/spectral_sweep\\.mp4$`),
+  );
+  await expect(sweep).not.toHaveAttribute('loop');
+  await expect(sweep).not.toHaveAttribute('autoplay');
+
+  // 06 The choice is still night: the day's work's real Borda line, formatted for the reader.
+  const work = index.works.find((candidate) => candidate.id === day)!;
+  const choice = page.locator('#choice');
+  await expect(choice).toHaveCSS('background-color', 'rgb(0, 0, 0)');
+  await expect(choice).toContainText(
+    `One of ${work.borda.totalCandidates.toLocaleString('en')} candidate orbits. Number ${work.borda.selectedIndex.toLocaleString('en')} was chosen.`,
+  );
+  await expect(choice).toContainText(`№ ${folio(day)}`);
+
+  // The one seam: Ink is paper, its plate in the sheet's own measured tone, and everything
+  // after it is paper too.
+  await expect(page.locator('#ink header')).toContainText(t.essayInkCopy);
+  // The section's own top is brought to the top of the screen, so that its ground, not the
+  // night chapter's above it, lies under the screen's centre, where the running head looks.
+  await page
+    .locator('#ink')
+    .evaluate((section) => section.scrollIntoView({ block: 'start', behavior: 'instant' }));
   const ink = page.locator('#ink .art-media');
   await ink.scrollIntoViewIfNeeded();
   await imageLoaded(ink.locator('img.art-still'));
@@ -128,28 +162,17 @@ test('the essay opens on night, pins the day’s Light film, crosses a hard edge
     paperPixel.every((channel, index) => Math.abs(channel - [241, 235, 223][index]) <= 8),
   ).toBe(true);
 
-  // 03 The spectrum: the sweep exists only on intent and never loops.
-  const spectrum = page.locator('#spectrum');
-  await spectrum.scrollIntoViewIfNeeded();
-  await expect(spectrum).toHaveCSS('background-color', 'rgb(0, 0, 0)');
-  await expect(spectrum.locator('video')).toHaveCount(0);
-  await expect(header).toHaveCSS('background-color', 'rgb(0, 0, 0)');
-  await expect(spectrum).toContainText('380 nm');
-  await expect(spectrum).toContainText('700 nm');
-  const play = spectrum.getByRole('button', { name: t.playSweep, exact: true });
-  await expect(play).toBeVisible({ timeout: 30_000 });
-  await play.click();
-  const sweep = spectrum.locator('video');
-  await expect(sweep).toHaveAttribute(
-    'src',
-    new RegExp(`/${seed}/videos/web/spectral_sweep\\.mp4$`),
-  );
-  await expect(sweep).not.toHaveAttribute('loop');
-  await expect(sweep).not.toHaveAttribute('autoplay');
+  // Every ground after the seam is paper: no chapter returns to night.
+  expect(
+    await page
+      .locator('main > section')
+      .evaluateAll((sections) => sections.map((section) => section.getAttribute('data-ground'))),
+  ).toEqual([...Array(9).fill('night'), ...Array(7).fill('paper')]);
 
   // The coda: the thesis, and the way into the day's work.
   const coda = page.getByRole('region', { name: t.expressionTitle });
   await coda.scrollIntoViewIfNeeded();
+  await expect(header).toHaveCSS('background-color', 'rgb(241, 235, 223)');
   await expect(coda.getByRole('link', { name: new RegExp(t.enterWork) })).toHaveAttribute(
     'href',
     `/art/${day}`,
@@ -160,14 +183,11 @@ test('the essay opens on night, pins the day’s Light film, crosses a hard edge
   await page.evaluate(() => window.scrollTo({ top: 0, behavior: 'instant' }));
   await expect(header).toBeInViewport();
   await expect(header).toHaveCSS('background-color', 'rgb(0, 0, 0)');
-  const screenshot = testInfo.outputPath('process-redesign.png');
-  await page.screenshot({
-    path: screenshot,
-    fullPage: true,
-    animations: 'disabled',
+  // The whole page as evidence: in strips on a phone, where the essay is longer than one
+  // picture may be in WebKit on Linux (tests/e2e/whole-page.ts).
+  await wholePagePictures(page, testInfo, 'process-redesign', {
     style: 'nextjs-portal { visibility: hidden; }',
   });
-  await testInfo.attach('process-redesign', { path: screenshot, contentType: 'image/png' });
   const results = await new AxeBuilder({ page }).withTags(WCAG_22_AA).analyze();
   expect(
     results.violations.map(({ id, impact, nodes }) => ({
@@ -176,6 +196,16 @@ test('the essay opens on night, pins the day’s Light film, crosses a hard edge
       targets: nodes.map((node) => node.target),
     })),
   ).toEqual([]);
+  // The contents' words are anchors, and one of them crosses the seam: 07 is paper. This comes
+  // last of the page's own checks, because WebKit holds a page to the place a fragment sent it
+  // (it scrolls there again at each later layout, until a reader's own hand scrolls on), so no
+  // scroll a test makes after this one can be trusted to stay.
+  await chapters.getByRole('link', { name: /07/ }).click();
+  await expect(page).toHaveURL(/\/process#current$/);
+  await expect(page.locator('#current-title')).toBeInViewport();
+  await expect(header).toHaveCSS('background-color', 'rgb(241, 235, 223)');
+  await expect(header).toHaveCSS('color', 'rgb(34, 35, 31)');
+
   // On phones the words live in the Index sheet; the route itself proves the chrome returns to paper.
   if (isMobile) await page.goto('/collection');
   else await header.getByRole('link', { name: t.collection, exact: true }).click();
@@ -239,9 +269,10 @@ test('the choice derives every beginning of the day’s work in the browser and 
     ],
   });
   await page.goto('/process');
-  // The figure sits within a screen of the top, so it derives without a scroll; every check
-  // below re-reads it, so none holds on to a node the page has since rendered anew.
+  // The figure stands at the foot of the sixth chapter and derives when a reader reaches it;
+  // every check below re-reads it, so none holds on to a node the page has since rendered anew.
   const field = page.locator('#choice figure');
+  await field.scrollIntoViewIfNeeded();
   await expect(field).toHaveAttribute('data-phase', 'derived', { timeout: 120_000 });
   await expect(field).toHaveAttribute('data-passed', String(walk.passed));
 
@@ -291,4 +322,162 @@ test('the choice derives every beginning of the day’s work in the browser and 
       }),
     )
     .toBeGreaterThan(1_000);
+});
+
+test.describe('the essay', () => {
+  /** A streamed page shows its route's plate until its own content is revealed. */
+  async function essay(page: Page, address = '/process') {
+    await page.goto(address);
+    await expect(page.locator('main.loading-room, div[hidden][id^="S:"]')).toHaveCount(0);
+    await expect(page.locator('main.process-page')).toBeVisible();
+    await page.evaluate(() => document.fonts.ready);
+  }
+
+  test('teaches in eleven parts, each at its own address, with its figures and its sources', async ({
+    page,
+  }) => {
+    const day = workOfTheDay();
+    await essay(page);
+    for (const { id, numeral, word, title } of ESSAY) {
+      const chapter = page.locator(`#${id}`);
+      await expect(chapter).toHaveAccessibleName(t[title]);
+      await expect(chapter.locator('.numeral').first()).toHaveText(numeral);
+      await expect(chapter.locator('.small-caps').first()).toHaveText(t[word]);
+    }
+    // What the day's work says of itself, from its record: two bodies of the three, alone.
+    const record = page.locator('#two [role="note"]');
+    await expect(record).toContainText(`From the record of № ${folio(day)}`);
+    await expect(record).toContainText(fill(t.essayTakeLead, { work: `№ ${folio(day)}` }));
+    await expect(record).toContainText(t.essayTakeAll);
+
+    // Eight figures; the four derived from a work say so, and each caption is the reader's words.
+    const figures = page.locator('figure[data-figure]');
+    await expect(figures).toHaveCount(8);
+    await expect(page.locator('figure[data-figure] figcaption .small-caps')).toHaveText(
+      Array(4).fill(t.analysisNotWork),
+    );
+    for (const name of ['pair', 'energy', 'twin', 'sheet'])
+      await expect(page.locator(`figure[data-figure="${name}"] figcaption .small-caps`)).toHaveText(
+        t.analysisNotWork,
+      );
+
+    // The terms, each with its meaning, and the sources in the order the text cites them.
+    await expect(page.locator('#terms dt')).toHaveText(TERMS.map(([term]) => t[term]));
+    await expect(page.locator('#sources ol > li')).toHaveCount(Object.keys(SOURCES).length);
+
+    // A numeral in the text leads to its source, and the address says which.
+    const first = page.locator('#two sup a').first();
+    await expect(first).toHaveText('1');
+    await expect(first).toHaveAccessibleName(fill(t.footnote, { n: 1 }));
+    await first.click();
+    await expect(page).toHaveURL(/\/process#source-1$/);
+    const source = page.locator('#source-1');
+    await expect(source).toBeInViewport();
+    await expect(source).toContainText('Newton');
+    // The entry comes to rest clear of the running head: its first line is not beneath it. The
+    // venue scrolls smoothly, so the place is read until it holds.
+    const head = (await page.locator('.site-header').boundingBox())!;
+    await expect
+      .poll(async () => {
+        const first = (await source.boundingBox())!.y;
+        await page.waitForTimeout(150);
+        const second = (await source.boundingBox())!.y;
+        return first === second ? Math.round(second - (head.y + head.height)) : -1;
+      })
+      .toBeGreaterThanOrEqual(0);
+    // A reference with an address leaves the venue, in a tab of its own.
+    const outward = source.getByRole('link');
+    await expect(outward).toHaveAttribute('target', '_blank');
+    await expect(outward).toHaveAttribute('href', /^https:\/\/en\.wikisource\.org\//);
+  });
+
+  // Every language on the narrowest phone: a long word in a title, or a mark hung outside a
+  // paragraph, is cut there first (the Ukrainian «розташуваннях.» ran 34 px past the screen).
+  const pages: [name: string, address: string, width: number][] = [
+    ...locales.map((locale): [string, string, number] => [
+      `${locale} at 320 px`,
+      localizedPath(locale, '/process'),
+      320,
+    ]),
+    ['uk on a tablet', '/uk/process', 768],
+  ];
+  for (const [name, address, width] of pages)
+    test(`holds its type to the floor, its words and its figures to the page: ${name}`, async ({
+      page,
+    }) => {
+      await page.setViewportSize({ width, height: 720 });
+      await essay(page, address);
+      await noHorizontalOverflow(page);
+      const found = await page.evaluate(() => {
+        const main = document.querySelector('main')!;
+        const edge = document.documentElement.clientWidth;
+        // Every piece of type in the essay, a drawing's own included, as it is drawn.
+        const small: string[] = [];
+        const walker = document.createTreeWalker(main, NodeFilter.SHOW_TEXT);
+        for (let node = walker.nextNode(); node; node = walker.nextNode()) {
+          if (!node.textContent?.trim()) continue;
+          const element = node.parentElement!;
+          if (!element.getClientRects().length) continue;
+          const drawn =
+            element instanceof SVGGraphicsElement
+              ? parseFloat(getComputedStyle(element).fontSize) * (element.getScreenCTM()?.a ?? 1)
+              : parseFloat(getComputedStyle(element).fontSize);
+          if (drawn < 11.99) small.push(`${node.textContent.trim().slice(0, 24)}: ${drawn}`);
+        }
+        // Every word of the essay whole from side to side: none runs past the screen, where
+        // the page would clip it. (The plates' own strips are the plates' tests'.)
+        const cut: string[] = [];
+        const own =
+          'section[id]:not(#light, #ink, #spectrum), :is(#light, #ink, #spectrum) > header';
+        for (const part of main.querySelectorAll(own)) {
+          const texts = document.createTreeWalker(part, NodeFilter.SHOW_TEXT);
+          for (let node = texts.nextNode(); node; node = texts.nextNode()) {
+            const words = node.textContent?.trim();
+            if (!words || getComputedStyle(node.parentElement!).visibility !== 'visible') continue;
+            const range = document.createRange();
+            range.selectNodeContents(node);
+            for (const box of range.getClientRects())
+              if (box.width >= 0.5 && box.height >= 0.5)
+                if (box.left < -0.5 || box.right > edge + 0.5)
+                  cut.push(
+                    `${words.slice(0, 32)}: ${Math.round(box.left)}–${Math.round(box.right)}`,
+                  );
+          }
+        }
+        // Every figure, and every mark set over one, inside the page's own width.
+        const outside: string[] = [];
+        for (const figure of main.querySelectorAll('figure[data-figure]')) {
+          const marks = figure.querySelectorAll('svg, span');
+          for (const part of [figure, ...marks]) {
+            const box = part.getBoundingClientRect();
+            if (!box.width) continue;
+            if (box.left < -0.5 || box.right > edge + 0.5)
+              outside.push(
+                `${figure.getAttribute('data-figure')} ${part.tagName} ${Math.round(box.left)}–${Math.round(box.right)}`,
+              );
+          }
+        }
+        // No two marks set over one drawing run into each other.
+        const meeting: string[] = [];
+        for (const drawing of main.querySelectorAll('figure[data-figure] [aria-hidden="true"]')) {
+          const marks = [...drawing.querySelectorAll(':scope > span, :scope > div > span')].map(
+            (mark) => ({ text: mark.textContent, box: mark.getBoundingClientRect() }),
+          );
+          for (let a = 0; a < marks.length; a++)
+            for (let b = a + 1; b < marks.length; b++) {
+              const [p, q] = [marks[a].box, marks[b].box];
+              if (p.left < q.right && q.left < p.right && p.top < q.bottom && q.top < p.bottom)
+                meeting.push(`${marks[a].text} / ${marks[b].text}`);
+            }
+        }
+        return {
+          small,
+          cut,
+          outside,
+          meeting,
+          figures: main.querySelectorAll('figure[data-figure]').length,
+        };
+      });
+      expect(found).toEqual({ small: [], cut: [], outside: [], meeting: [], figures: 8 });
+    });
 });

@@ -24,14 +24,15 @@
   color: var(--type);
 }
 
-/* The opening: a type screen with the chapter words along the eye line. Its one column, and the
-   title's, is the screen between its gutters: left to itself a column is as wide as the longest
-   word in it, and the lede beside the cover then runs as wide, off a small screen. */
+/* The opening: a type screen, the essay's contents along its foot (essay.module.css). Its one
+   column, and the title's, is the screen between its gutters: left to itself a column is as
+   wide as the longest word in it, and the lede beside the cover then runs as wide, off a small
+   screen. */
 .opening {
   min-height: calc(100svh - var(--head));
   display: grid;
   grid-template-columns: minmax(0, 1fr);
-  grid-template-rows: auto minmax(0, 1fr);
+  grid-template-rows: auto minmax(0, 1fr) auto;
   gap: 36px;
   padding: 27px var(--gutter) 54px;
 }
@@ -43,27 +44,6 @@
   gap: 9px 24px;
 }
 .eyeline > p {
-  color: var(--muted);
-}
-.chapterNav {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0 27px;
-}
-.chapterNav a {
-  display: inline-flex;
-  align-items: baseline;
-  gap: 9px;
-  min-height: 44px;
-  font-size: var(--fs-control);
-  border-bottom: 1px solid transparent;
-}
-.chapterNav a:hover,
-.chapterNav a:focus-visible {
-  border-color: currentColor;
-}
-.chapterNav a > span:first-child {
-  font-size: var(--fs-folio);
   color: var(--muted);
 }
 .title {
@@ -101,16 +81,7 @@
   color: var(--muted);
 }
 
-/* A type chapter: the numeral column, the statement, the margin note. */
-.chapterType {
-  min-height: calc(100svh - var(--head));
-  display: grid;
-  grid-template-columns: minmax(0, 0.4fr) minmax(0, 1.4fr) minmax(0, 1fr);
-  gap: 45px;
-  padding: 72px var(--gutter);
-  align-content: center;
-  align-items: start;
-}
+/* A chapter's number and word, in its margin (the essay's chapters: essay.module.css). */
 .chapterIndex {
   display: grid;
   gap: 9px;
@@ -120,9 +91,7 @@
 .chapterIndex > span:last-child {
   color: var(--muted);
 }
-.chapterType h2 {
-  max-width: 14ch;
-}
+/* The record's own line over the live figure of the choice. */
 .selection {
   font-size: var(--fs-subtitle);
   line-height: 1.2857;
@@ -141,10 +110,6 @@
   color: var(--muted);
   margin-top: 18px;
   max-width: 44em;
-}
-.chapterCopy {
-  color: var(--muted);
-  align-self: end;
 }
 
 /* A film chapter: copy in the margin strip, then the plate pinned for a screen of scroll. */
@@ -257,12 +222,8 @@
 }
 
 @media (max-width: 1000px) {
-  .chapterType,
   .coda {
     grid-template-columns: minmax(0, 0.5fr) minmax(0, 2fr);
-  }
-  .chapterType > p:last-child {
-    grid-column: 2;
   }
 }
 @media (max-width: 767px) {
@@ -272,18 +233,11 @@
   .title {
     gap: 18px;
   }
-  .chapterType,
   .coda,
   .chapterHead {
     grid-template-columns: minmax(0, 1fr);
     gap: 18px;
     padding-block: 45px;
-  }
-  .chapterType {
-    min-height: 0;
-  }
-  .chapterType > p:last-child {
-    grid-column: auto;
   }
   .chapterIndex {
     grid-auto-flow: column;
