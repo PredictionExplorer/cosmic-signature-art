@@ -21,6 +21,37 @@ const refused = (url: URL) => (ART_MEDIA_ORIGINS as readonly string[]).includes(
 const rungOf = (id: number) =>
   new RegExp(`^/art/stills/${id}-(ink|light)-(1280|1920)-[a-f0-9]{16}\\.webp$`);
 
+/**
+ * Playwright's Firefox loses the density it emulates when a page sends
+ * Cross-Origin-Opener-Policy: the header moves the page to a browsing context of its own, the
+ * emulation is not set on it again, and from then on every page in that tab reads one pixel to a
+ * point, whatever the test asked for. Chromium and WebKit keep theirs. The venue has sent that
+ * header on every response since its Content-Security-Policy went in
+ * (src/lib/security-headers.ts). A real Firefox reads its screen, which no header changes, and
+ * the header has no say in which still a plate asks for. So where a test needs a dense screen,
+ * Firefox is handed the venue's documents without that one header, and every test here checks
+ * the density its page reads (`readsDensity`): neither this nor the engine's fault can go stale
+ * unseen.
+ */
+async function keepTheDensity(context: ReturnType<Page['context']>, browserName: string) {
+  if (browserName !== 'firefox') return;
+  await context.route('**/*', async (route) => {
+    if (route.request().resourceType() !== 'document') return route.fallback();
+    const response = await route.fetch();
+    const headers = Object.fromEntries(
+      Object.entries(response.headers()).filter(([name]) => name !== 'cross-origin-opener-policy'),
+    );
+    return route.fulfill({ response, headers });
+  });
+}
+
+/** The page reads the density its test asked for: what the test goes on to say is of that screen. */
+async function readsDensity(page: Page, density: number) {
+  expect(await page.evaluate(() => window.devicePixelRatio), 'the density the page reads').toBe(
+    density,
+  );
+}
+
 type Sample = { rect: string; still: 'none' | 'publisher' | 'venue' };
 declare global {
   interface Window {
@@ -128,8 +159,9 @@ async function showsItsOwnRung(page: Page, id: number, rung: 1280 | 1920) {
 for (const density of [1, 2, 3])
   test.describe(`at ${density} pixel${density > 1 ? 's' : ''} to a point, the publisher refused`, () => {
     test.use({ deviceScaleFactor: density });
-    test.beforeEach(async ({ context }) => {
+    test.beforeEach(async ({ context, browserName }) => {
       await context.route(refused, (route) => route.abort('connectionrefused'));
+      if (density > 1) await keepTheDensity(context, browserName);
     });
 
     test('a work outside the registry shows its still from the venue’s own rungs', async ({
@@ -139,6 +171,7 @@ for (const density of [1, 2, 3])
       await watchThePlate(page);
       await page.goto('/art/17');
       await expect(page).toHaveTitle(/№\s017/);
+      await readsDensity(page, density);
       // A phone's plate is 390 points wide and rests on the 1280 rung at any density. A desk's
       // is about 1,386: the 1920 rung fills it at one pixel to a point, and at two or three is
       // the widest file the venue holds, shown below the screen's own resolution.
@@ -173,6 +206,7 @@ for (const density of [1, 2, 3])
 
     test('the Turn readies the twin’s rung and lands on it', async ({ page, isMobile }) => {
       await page.goto('/art/17');
+      await readsDensity(page, density);
       await showsItsOwnRung(page, 17, isMobile ? 1280 : 1920);
       const opened = await page.locator(stage).getAttribute('data-expression');
       const twin = opened === 'ink' ? 'light' : 'ink';
@@ -189,6 +223,7 @@ for (const density of [1, 2, 3])
       isMobile,
     }) => {
       await page.goto('/art/31');
+      await readsDensity(page, density);
       const expression = (await page.locator(stage).getAttribute('data-expression')) as
         'ink' | 'light';
       await expect(page.locator(`${current} .art-media`).first()).toHaveAttribute(
@@ -226,8 +261,10 @@ test.describe('with the publisher answering, at two pixels to a point', () => {
   test('the plate keeps the candidate it chose, and its preview', async ({
     page,
     context,
+    browserName,
     isMobile,
   }) => {
+    await keepTheDensity(context, browserName);
     // The publisher's weather is not this test's subject: every image of its is answered here,
     // by a file that can be decoded (the venue's own rung of № 017), and nothing else of its is.
     const standIn = ladder.rungs.find(
@@ -240,6 +277,7 @@ test.describe('with the publisher answering, at two pixels to a point', () => {
       return route.fulfill({ path: `public${standIn.src}`, contentType: 'image/webp' });
     });
     await page.goto('/art/17');
+    await readsDensity(page, 2);
     await expect(page.locator(`${current} .art-media`).first()).toHaveAttribute(
       'data-arrival',
       'settled',
